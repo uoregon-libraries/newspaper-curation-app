@@ -7,4 +7,4 @@ lint:
 	golint src/...
 
 clean:
-	rm -f bin/ pkg/
+	rm -rf bin/ pkg/
