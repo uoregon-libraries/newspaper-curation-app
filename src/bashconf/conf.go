@@ -44,7 +44,7 @@ func ReadString(content string) Config {
 		if len(kvparts) != 2 {
 			continue
 		}
-		var key,val = kvparts[0], kvparts[1]
+		var key, val = kvparts[0], kvparts[1]
 
 		if key == "" {
 			continue
