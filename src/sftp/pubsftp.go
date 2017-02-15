@@ -27,25 +27,28 @@ func readdir(path string) ([]os.FileInfo, error) {
 
 // SFTPPDF stores a single PDF's data and error information
 type SFTPPDF struct {
-	Name     string
-	RelPath  string
-	Error    error
-	Modified time.Time
+	Name         string
+	RelativePath string
+	Error        error
+	Modified     time.Time
+	Issue        *SFTPIssue
 }
 
 // SFTPIssue stores a single issue's pdfs and any errors encountered
 type SFTPIssue struct {
-	Name     string
-	RelPath  string
-	PDFs     []*SFTPPDF
-	Error    error
-	Modified time.Time
+	Name         string
+	RelativePath string
+	PDFs         []*SFTPPDF
+	Error        error
+	Modified     time.Time
+	Publisher    *SFTPPublisher
 }
 
 // ScanPDFs reads in all issue PDFs and stores information about what's found,
 // including definite errors and likely errors.  Returns an actual error object
 // on fatal filesystem errors.
-func (issue *SFTPIssue) ScanPDFs(path string) error {
+func (issue *SFTPIssue) ScanPDFs() error {
+	var path = filepath.Join(issue.Publisher.RealPath, issue.Name)
 	var items, err = readdir(path)
 	if err != nil {
 		return err
@@ -53,7 +56,12 @@ func (issue *SFTPIssue) ScanPDFs(path string) error {
 
 	// Every item should be a PDF file
 	for _, i := range items {
-		var pdf = &SFTPPDF{Name: i.Name(), RelPath: filepath.Join(path, i.Name()), Modified: i.ModTime()}
+		var pdf = &SFTPPDF{
+			Name:         i.Name(),
+			RelativePath: filepath.Join(issue.RelativePath, i.Name()),
+			Modified:     i.ModTime(),
+			Issue:        issue,
+		}
 
 		if !i.Mode().IsRegular() {
 			pdf.Error = fmt.Errorf("regular file expected, got unexpected item instead")
@@ -102,9 +110,9 @@ func (p *SFTPPublisher) ScanIssues() error {
 	// Every item should be a properly formatted date directory which we can turn
 	// into an SFTPIssue
 	for _, i := range items {
-		var issue = &SFTPIssue{}
+		var issue = &SFTPIssue{Publisher: p}
 		issue.Name = i.Name()
-		issue.RelPath = filepath.Join(p.Name, i.Name())
+		issue.RelativePath = filepath.Join(p.Name, i.Name())
 
 		if !i.IsDir() {
 			issue.Error = fmt.Errorf("folder expected, got file instead")
