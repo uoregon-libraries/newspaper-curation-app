@@ -39,10 +39,10 @@ type SFTPIssue struct {
 	Error   error
 }
 
-// scan reads in all issue PDFs and stores information about what's found,
+// ScanPDFs reads in all issue PDFs and stores information about what's found,
 // including definite errors and likely errors.  Returns an actual error object
 // on fatal filesystem errors.
-func (issue *SFTPIssue) scan(path string) error {
+func (issue *SFTPIssue) ScanPDFs(path string) error {
 	var items, err = readdir(path)
 	if err != nil {
 		return err
@@ -83,11 +83,11 @@ type SFTPPublisher struct {
 	Issues []*SFTPIssue
 }
 
-// scan reads in all issue directories and files for a publisher, and stores
-// information about what's found, including definite errors and likely errors.
-// Returns an actual error object on fatal filesystem errors.  This should only
-// be run on a publisher with its path data already set up.
-func (p *SFTPPublisher) scan() error {
+// ScanIssues reads in all issue directories and files for a publisher, and
+// stores information about what's found, including definite errors and likely
+// errors.  Returns an actual error object on fatal filesystem errors.  This
+// should only be run on a publisher with its path data already set up.
+func (p *SFTPPublisher) ScanIssues() error {
 	var items, err = readdir(p.RealPath)
 	if err != nil {
 		return err
@@ -103,8 +103,6 @@ func (p *SFTPPublisher) scan() error {
 		if !i.IsDir() {
 			issue.Error = fmt.Errorf("folder expected, got file instead")
 		}
-
-		issue.scan(filepath.Join(p.RealPath, i.Name()))
 
 		p.Issues = append(p.Issues, issue)
 	}
@@ -145,7 +143,6 @@ func BuildPublishers(path string) ([]*SFTPPublisher, error) {
 		var p = &SFTPPublisher{Name: pubName}
 		p.Path = path
 		p.RealPath = realPath
-		p.scan()
 		pubList = append(pubList, p)
 	}
 
