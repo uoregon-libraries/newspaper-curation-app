@@ -5,6 +5,7 @@ import (
 	"os"
 	"path/filepath"
 	"strings"
+	"time"
 )
 
 // readdir wraps os.File's Readdir to handle common operations we need for
@@ -26,17 +27,19 @@ func readdir(path string) ([]os.FileInfo, error) {
 
 // SFTPPDF stores a single PDF's data and error information
 type SFTPPDF struct {
-	Name    string
-	RelPath string
-	Error   error
+	Name     string
+	RelPath  string
+	Error    error
+	Modified time.Time
 }
 
 // SFTPIssue stores a single issue's pdfs and any errors encountered
 type SFTPIssue struct {
-	Name    string
-	RelPath string
-	PDFs    []*SFTPPDF
-	Error   error
+	Name     string
+	RelPath  string
+	PDFs     []*SFTPPDF
+	Error    error
+	Modified time.Time
 }
 
 // ScanPDFs reads in all issue PDFs and stores information about what's found,
@@ -50,7 +53,7 @@ func (issue *SFTPIssue) ScanPDFs(path string) error {
 
 	// Every item should be a PDF file
 	for _, i := range items {
-		var pdf = &SFTPPDF{Name: i.Name(), RelPath: filepath.Join(path, i.Name())}
+		var pdf = &SFTPPDF{Name: i.Name(), RelPath: filepath.Join(path, i.Name()), Modified: i.ModTime()}
 
 		if !i.Mode().IsRegular() {
 			pdf.Error = fmt.Errorf("regular file expected, got unexpected item instead")
@@ -61,6 +64,9 @@ func (issue *SFTPIssue) ScanPDFs(path string) error {
 			pdf.Error = fmt.Errorf("PDF file expected, got %s instead", ext)
 		}
 
+		if issue.Modified.Before(pdf.Modified) {
+			issue.Modified = pdf.Modified
+		}
 		issue.PDFs = append(issue.PDFs, pdf)
 	}
 
