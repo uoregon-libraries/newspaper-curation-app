@@ -7,6 +7,8 @@ import (
 	"path/filepath"
 
 	"bashconf"
+	"sftp"
+
 	"github.com/jessevdk/go-flags"
 )
 
@@ -53,7 +55,7 @@ func getConf() {
 
 func main() {
 	getConf()
-	var pubList, err = BuildPublishers(SFTPPath)
+	var pubList, err = sftp.BuildPublishers(SFTPPath)
 	if err != nil {
 		log.Fatalf("Error: Unable to read publisher directories: %s\n", SFTPPath, err)
 	}
