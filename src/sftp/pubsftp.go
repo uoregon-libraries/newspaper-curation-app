@@ -1,3 +1,5 @@
+// Package sftp exposes types and minimal logic for finding SFTP publishers'
+// directories and their uploaded issues
 package sftp
 
 import (
@@ -25,29 +27,35 @@ func readdir(path string) ([]os.FileInfo, error) {
 	return items, err
 }
 
-// SFTPPDF stores a single PDF's data and error information
-type SFTPPDF struct {
+// PDF stores a single PDF's data and error information.  Note that this can be
+// used for non-PDF files since we just enumerate over everything in an issue
+// directory.  In these cases, Error will indicate that the "PDF" had a non-PDF
+// extension or was a non-regular file (sym link, directory, etc.)
+type PDF struct {
 	Name         string
 	RelativePath string
 	Error        error
 	Modified     time.Time
-	Issue        *SFTPIssue
+	Issue        *Issue
 }
 
-// SFTPIssue stores a single issue's pdfs and any errors encountered
-type SFTPIssue struct {
+// Issue stores a single issue's pdfs and any errors encountered.  An "issue"
+// is really anything found at the publisher's root directory, and therefore
+// could be a non-issue directory, a file, etc.  In these cases, Error will
+// explain that the "Issue" isn't what we expected an issue to be.
+type Issue struct {
 	Name         string
 	RelativePath string
-	PDFs         []*SFTPPDF
+	PDFs         []*PDF
 	Error        error
 	Modified     time.Time
-	Publisher    *SFTPPublisher
+	Publisher    *Publisher
 }
 
 // ScanPDFs reads in all issue PDFs and stores information about what's found,
 // including definite errors and likely errors.  Returns an actual error object
 // on fatal filesystem errors.
-func (issue *SFTPIssue) ScanPDFs() error {
+func (issue *Issue) ScanPDFs() error {
 	var path = filepath.Join(issue.Publisher.RealPath, issue.Name)
 	var items, err = readdir(path)
 	if err != nil {
@@ -56,7 +64,7 @@ func (issue *SFTPIssue) ScanPDFs() error {
 
 	// Every item should be a PDF file
 	for _, i := range items {
-		var pdf = &SFTPPDF{
+		var pdf = &PDF{
 			Name:         i.Name(),
 			RelativePath: filepath.Join(issue.RelativePath, i.Name()),
 			Modified:     i.ModTime(),
@@ -81,9 +89,9 @@ func (issue *SFTPIssue) ScanPDFs() error {
 	return nil
 }
 
-// SFTPPublisher stores uploaded file information and potential errors related
+// Publisher stores uploaded file information and potential errors related
 // to a publisher's SFTP directory
-type SFTPPublisher struct {
+type Publisher struct {
 	// Name is the directory where the publisher's uploaded files end up; e.g.,
 	// /mnt/news/sftp/dailynews would have a name of "dailynews"
 	Name string
@@ -94,23 +102,23 @@ type SFTPPublisher struct {
 	Path, RealPath string
 
 	// Issues holds information about the per-issue subdirectories
-	Issues []*SFTPIssue
+	Issues []*Issue
 }
 
 // ScanIssues reads in all issue directories and files for a publisher, and
 // stores information about what's found, including definite errors and likely
 // errors.  Returns an actual error object on fatal filesystem errors.  This
 // should only be run on a publisher with its path data already set up.
-func (p *SFTPPublisher) ScanIssues() error {
+func (p *Publisher) ScanIssues() error {
 	var items, err = readdir(p.RealPath)
 	if err != nil {
 		return err
 	}
 
 	// Every item should be a properly formatted date directory which we can turn
-	// into an SFTPIssue
+	// into an Issue
 	for _, i := range items {
-		var issue = &SFTPIssue{Publisher: p}
+		var issue = &Issue{Publisher: p}
 		issue.Name = i.Name()
 		issue.RelativePath = filepath.Join(p.Name, i.Name())
 
@@ -127,8 +135,8 @@ func (p *SFTPPublisher) ScanIssues() error {
 // BuildPublishers takes an SFTP root directory and returns all the directories
 // one level below.  Since it's impossible for a publisher to do anything at
 // this level, we don't try to find or report any non-filesystem errors.
-func BuildPublishers(path string) ([]*SFTPPublisher, error) {
-	var pubList []*SFTPPublisher
+func BuildPublishers(path string) ([]*Publisher, error) {
+	var pubList []*Publisher
 	var items, err = readdir(path)
 	if err != nil {
 		return nil, err
@@ -154,7 +162,7 @@ func BuildPublishers(path string) ([]*SFTPPublisher, error) {
 		if !i.IsDir() && i.Mode()&os.ModeSymlink == 0 {
 			continue
 		}
-		var p = &SFTPPublisher{Name: pubName}
+		var p = &Publisher{Name: pubName}
 		p.Path = path
 		p.RealPath = realPath
 		pubList = append(pubList, p)

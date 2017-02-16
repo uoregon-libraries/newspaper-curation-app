@@ -1,4 +1,4 @@
-// package fileutil holds various things this suite needs for easier
+// Package fileutil holds various things this suite needs for easier
 // identification and processing of files
 package fileutil
 
