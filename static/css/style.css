@@ -1,11 +1,11 @@
-.osd-container {
-  border: 1px solid black;
-  padding: 8px;
+.publisher-with-errors {
+  background: #FEE;
 }
-
-.osd-toolbar {
-  width: 400px;
-  height: 35px;
+.publisher-with-errors .publisher-link {
+  float: left;
+  width: 200px;
+}
+.publisher-with-errors .count {
 }
 
 /* Make alerts more readable */

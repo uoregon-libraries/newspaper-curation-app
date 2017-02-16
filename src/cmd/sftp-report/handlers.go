@@ -37,7 +37,7 @@ func logMiddleware(next http.Handler) http.Handler {
 // HomeHandler spits out the publisher list
 func HomeHandler(w http.ResponseWriter, req *http.Request) {
 	var r = Response(w, req)
-	r.Vars.Title = "Publisher List"
+	r.Vars.Title = "SFTP Publisher List"
 	var pubList, err = sftp.BuildPublishers(SFTPPath)
 	if err != nil {
 		log.Printf("ERROR: Couldn't load publishers in %s: %s", SFTPPath, err)

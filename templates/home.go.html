@@ -1,14 +1,17 @@
 {{template "header" .}}
 
-<p>Publisher List:</p>
-
 <ul>
   {{range $pub := .Data.Publishers}}
     {{if $pub.Show}}
       <li>
-        {{$pub.Name}}
         {{if gt $pub.ErrorCount 0 }}
-          <span class="publisher-error-count">{{$pub.ErrorCount}} error(s) detected</span>
+          <div class="publisher-with-errors">
+            <div class="publisher-link">{{$pub.Link}}</div>
+            <span class="glyphicon glyphicon-exclamation-sign" aria-hidden="true"></span>
+            <span class="count">{{$pub.ErrorCount}} error(s) detected</span>
+          </div>
+        {{- else}}
+          {{$pub.Link}}
         {{- end}}
       </li>
     {{end}}

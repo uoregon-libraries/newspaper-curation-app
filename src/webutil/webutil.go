@@ -15,7 +15,8 @@ var Webroot string
 
 // URL paths
 const (
-	HomePath = ""
+	HomePath      = ""
+	PublisherPath = "publisher"
 )
 
 // FullPath uses the webroot, if not empty, to join together all the path parts
