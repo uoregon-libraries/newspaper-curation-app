@@ -33,7 +33,13 @@ func HTMLComment(s string) template.HTML {
 // initTemplates sets up pre-parsed template data - must be run after config has data
 func initTemplates(Webroot, TemplatePath string) {
 	templateFunctions = template.FuncMap{
-		"Comment": HTMLComment,
+		"Permitted":  func(user interface{}, action string) bool { return false },
+		"IncludeCSS": IncludeCSS,
+		"RawCSS":     RawCSS,
+		"IncludeJS":  IncludeJS,
+		"RawJS":      RawJS,
+		"ImageURL":   ImageURL,
+		"Comment":    HTMLComment,
 	}
 	var t = template.New("root").Funcs(templateFunctions)
 	templates = template.Must(t.ParseGlob(TemplatePath + "/*.go.html"))

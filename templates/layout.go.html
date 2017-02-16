@@ -3,12 +3,71 @@
 <html>
   <head>
     <title>{{.Title}}</title>
+
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta http-equiv="Content-Type" content="text/html;charset=utf-8">
+
+    {{RawCSS "bootstrap/css/bootstrap.min.css"}}
+    {{IncludeCSS "style"}}
+    {{IncludeJS "sortabletable"}}
   </head>
 
   <body>
+    <div id="wrap">
+      <nav class="navbar navbar-default navbar-inverse">
+        <div class="container">
+          <div class="navbar-header">
+            <button type="button" class="navbar-toggle collapsed" data-toggle="collapse" data-target="#navbar-collapse" aria-expanded="false">
+              <span class="sr-only">Toggle navigation</span>
+              <span class="icon-bar"></span>
+              <span class="icon-bar"></span>
+              <span class="icon-bar"></span>
+            </button>
+            <a class="navbar-brand" href="/odnp-admin/index.php">ODNP Admin</a>
+          </div>
+
+          <div class="collapse navbar-collapse" id="navbar-collapse">
+            <ul class="nav navbar-nav">
+              {{if Permitted .User "list titles"}}
+                <li><a href="title-list.php">Newspaper Titles</a></li>
+              {{end}}
+
+              {{if Permitted .User "manage mocs"}}
+                <li><a href="mocs-list.php">MARC Org Codes</a></li>
+              {{end}}
+
+              {{if Permitted .User "list issues"}}
+                <li><a href="issues-list.php">Issues</a></li>
+              {{end}}
+
+              {{if Permitted .User "list users"}}
+                <li><a href="user-list.php">Users</a></li>
+              {{end}}
+
+              {{if Permitted .User "list audit logs"}}
+                <li><a href="audit-logs-list.php">Logs</a></li>
+              {{end}}
+            </ul>
+            <p class="navbar-text navbar-right">
+              {{if .User}}
+                Logged in as {{.User.Login}}
+              {{end}}
+            </p>
+          </div>
+        </div>
+      </nav>
+
+      <div class="container">
+        <h2>{{.Title}}</h2>
 {{end}}
 
 {{define "footer"}}
+      </div>
+    </div>
+
+    {{IncludeJS "jquery-1.12.1.min"}}
+    {{IncludeJS "prevent_double_submit"}}
+    {{RawJS "bootstrap/js/bootstrap.min.js"}}
   </body>
 </html>
 {{Comment (printf "v%s" .Version)}}

@@ -1,0 +1,14 @@
+.osd-container {
+  border: 1px solid black;
+  padding: 8px;
+}
+
+.osd-toolbar {
+  width: 400px;
+  height: 35px;
+}
+
+/* Make alerts more readable */
+.alert-warning  { color: #3E2100; }
+.alert-danger   { color: #4d0200; }
+.alert-success  { color: #103210; }
