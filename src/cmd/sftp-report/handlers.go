@@ -3,13 +3,14 @@ package main
 import (
 	"log"
 	"net/http"
+	"sftp"
 )
 
 // Response generates a Responder with basic data all pages will need: request,
 // response writer, and user
 func Response(w http.ResponseWriter, req *http.Request) *Responder {
 	var u = &User{req.Header.Get("X-Remote-User")}
-	return &Responder{Writer: w, Request: req, Vars: &PageVars{User: u}}
+	return &Responder{Writer: w, Request: req, Vars: &PageVars{User: u, Data: make(GenericVars)}}
 }
 
 // Middleware function to send back no-cache header
@@ -33,10 +34,16 @@ func logMiddleware(next http.Handler) http.Handler {
 }
 
 // HomeHandler spits out the publisher list
-//
-// TODO: Implement this
 func HomeHandler(w http.ResponseWriter, req *http.Request) {
 	var r = Response(w, req)
 	r.Vars.Title = "Publisher List"
+	var pubList, err = sftp.BuildPublishers(SFTPPath)
+	if err != nil {
+		log.Printf("ERROR: Couldn't load publishers in %s: %s", SFTPPath, err)
+		http.Error(w, "Unable to load publisher list!", 500)
+		return
+	}
+
+	r.Vars.Data["Publishers"] = pubList
 	r.Render("home")
 }

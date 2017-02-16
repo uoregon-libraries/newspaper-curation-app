@@ -3,7 +3,9 @@
 <p>Publisher List:</p>
 
 <ul>
-  <li>FOO</li>
+  {{range $pub := .Data.Publishers}}
+    <li>{{$pub.Name}}</li>
+  {{end}}
 </ul>
 
 {{template "footer" .}}

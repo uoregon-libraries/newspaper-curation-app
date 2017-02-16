@@ -7,12 +7,17 @@ import (
 	"net/http"
 )
 
-// PageVars is the generic list of data all pages may need
+// GenericVars holds anything specialized that doesn't make sense to have in PageVars
+type GenericVars map[string]interface{}
+
+// PageVars is the generic list of data all pages may need, and the catch-all
+// "Data" map for specialized one-off data
 type PageVars struct {
 	Title   string
 	Version string
 	Webroot string
 	User    *User
+	Data    GenericVars
 }
 
 // Responder wraps common response logic
