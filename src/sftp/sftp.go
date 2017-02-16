@@ -97,7 +97,20 @@ func (issue *Issue) ScanPDFs() error {
 		issue.PDFs = append(issue.PDFs, pdf)
 	}
 
+	if len(issue.PDFs) == 0 {
+		issue.Errors.Append(fmt.Errorf("no PDFs found"))
+	}
+
 	return nil
+}
+
+// ValidateName determines if the issue's name is valid, and if not, adds an
+// error to the issue's error list
+func (issue *Issue) ValidateName() {
+	var _, err = time.Parse("2006-01-02", issue.Name)
+	if err != nil {
+		issue.Errors.Append(fmt.Errorf("name %#v doesn't conform to folder format", issue.Name))
+	}
 }
 
 // ErrorCount returns the number of errors found on the issue and its pages
@@ -152,6 +165,7 @@ func (p *Publisher) ScanIssues() error {
 		if !i.IsDir() {
 			issue.Errors.Append(fmt.Errorf("folder expected, got file instead"))
 		} else {
+			issue.ValidateName()
 			issue.ScanPDFs()
 		}
 
