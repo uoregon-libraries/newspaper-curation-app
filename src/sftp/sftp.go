@@ -150,9 +150,10 @@ func (p *Publisher) ScanIssues() error {
 
 		if !i.IsDir() {
 			issue.Error = fmt.Errorf("folder expected, got file instead")
+		} else {
+			issue.ScanPDFs()
 		}
 
-		issue.ScanPDFs()
 		p.Issues = append(p.Issues, issue)
 	}
 
