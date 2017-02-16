@@ -6,6 +6,7 @@ import (
 	"fmt"
 	"os"
 	"path/filepath"
+	"sort"
 	"strings"
 	"time"
 )
@@ -26,6 +27,13 @@ func readdir(path string) ([]os.FileInfo, error) {
 	d.Close()
 	return items, err
 }
+
+// byName implements sort.Interface for sorting os.FileInfo data by name
+type byName []os.FileInfo
+
+func (n byName) Len() int           { return len(n) }
+func (n byName) Swap(i, j int)      { n[i], n[j] = n[j], n[i] }
+func (n byName) Less(i, j int) bool { return n[i].Name() < n[j].Name() }
 
 // PDF stores a single PDF's data and error information.  Note that this can be
 // used for non-PDF files since we just enumerate over everything in an issue
@@ -63,6 +71,7 @@ func (issue *Issue) ScanPDFs() error {
 	}
 
 	// Every item should be a PDF file
+	sort.Sort(byName(items))
 	for _, i := range items {
 		var pdf = &PDF{
 			Name:         i.Name(),
@@ -117,6 +126,7 @@ func (p *Publisher) ScanIssues() error {
 
 	// Every item should be a properly formatted date directory which we can turn
 	// into an Issue
+	sort.Sort(byName(items))
 	for _, i := range items {
 		var issue = &Issue{Publisher: p}
 		issue.Name = i.Name()
@@ -142,6 +152,7 @@ func BuildPublishers(path string) ([]*Publisher, error) {
 		return nil, err
 	}
 
+	sort.Sort(byName(items))
 	for _, i := range items {
 		var pubName = i.Name()
 		var path = filepath.Join(path, pubName)
