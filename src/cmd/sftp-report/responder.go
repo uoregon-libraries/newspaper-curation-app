@@ -5,6 +5,7 @@ import (
 	"html/template"
 	"log"
 	"net/http"
+	"webutil"
 )
 
 // GenericVars holds anything specialized that doesn't make sense to have in PageVars
@@ -36,14 +37,14 @@ func HTMLComment(s string) template.HTML {
 }
 
 // initTemplates sets up pre-parsed template data - must be run after config has data
-func initTemplates(Webroot, TemplatePath string) {
+func initTemplates(TemplatePath string) {
 	templateFunctions = template.FuncMap{
 		"Permitted":  func(user interface{}, action string) bool { return false },
-		"IncludeCSS": IncludeCSS,
-		"RawCSS":     RawCSS,
-		"IncludeJS":  IncludeJS,
-		"RawJS":      RawJS,
-		"ImageURL":   ImageURL,
+		"IncludeCSS": webutil.IncludeCSS,
+		"RawCSS":     webutil.RawCSS,
+		"IncludeJS":  webutil.IncludeJS,
+		"RawJS":      webutil.RawJS,
+		"ImageURL":   webutil.ImageURL,
 		"Comment":    HTMLComment,
 	}
 	var t = template.New("root").Funcs(templateFunctions)
@@ -52,7 +53,7 @@ func initTemplates(Webroot, TemplatePath string) {
 
 // injectDefaultTemplateVars sets up default variables used in multiple templates
 func (r *Responder) injectDefaultTemplateVars() {
-	r.Vars.Webroot = Webroot
+	r.Vars.Webroot = webutil.Webroot
 	r.Vars.Version = version
 	if r.Vars.Title == "" {
 		r.Vars.Title = "ODNP Admin"

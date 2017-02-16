@@ -7,6 +7,7 @@ import (
 	"log"
 	"net/http"
 	"os"
+	"webutil"
 
 	"github.com/gorilla/mux"
 	"github.com/jessevdk/go-flags"
@@ -24,10 +25,6 @@ var opts struct {
 // SFTPPath gets the configured path to the SFTP root where each publisher
 // directory resides
 var SFTPPath string
-
-// Webroot tells various URL helpers how to craft a URL in case we're under a
-// sub-path rather than at the root of a host
-var Webroot string
 
 func getConf() {
 	var p = flags.NewParser(&opts, flags.HelpFlag|flags.PassDoubleDash)
@@ -58,13 +55,13 @@ func getConf() {
 		p.WriteHelp(os.Stderr)
 		os.Exit(1)
 	}
-	Webroot = opts.Webroot
-	initTemplates(opts.Webroot, args[0])
+	webutil.Webroot = opts.Webroot
+	initTemplates(args[0])
 }
 
 func startServer() {
 	var r = mux.NewRouter()
-	var hp = FullPath(HomePath) + "/"
+	var hp = webutil.FullPath(webutil.HomePath) + "/"
 	r.HandleFunc(hp, HomeHandler)
 	r.NewRoute().PathPrefix(hp).Handler(http.StripPrefix(hp, http.FileServer(http.Dir(opts.StaticFilePath))))
 

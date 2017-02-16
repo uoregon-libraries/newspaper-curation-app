@@ -1,10 +1,17 @@
-package main
+// Package webutil holds functions and data that other packages may need in
+// order to generate URLs, find static files, etc.
+package webutil
 
 import (
 	"fmt"
 	"html/template"
 	"path"
 )
+
+// Webroot must be set by main to tell us where we are within the main website,
+// such as "/reports", and is used to generate absolute paths to various
+// handlers and site assets
+var Webroot string
 
 // URL paths
 const (
