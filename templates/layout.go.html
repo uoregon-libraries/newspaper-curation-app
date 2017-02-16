@@ -1,0 +1,15 @@
+{{define "header"}}
+<!DOCTYPE html>
+<html>
+  <head>
+    <title>{{.Title}}</title>
+  </head>
+
+  <body>
+{{end}}
+
+{{define "footer"}}
+  </body>
+</html>
+{{Comment (printf "v%s" .Version)}}
+{{end}}

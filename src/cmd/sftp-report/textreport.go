@@ -1,0 +1,43 @@
+package main
+
+import (
+	"fmt"
+	"log"
+	"sftp"
+)
+
+func textReportOut() {
+	var pubList, err = sftp.BuildPublishers(SFTPPath)
+	if err != nil {
+		log.Fatalf("Error: Unable to read publisher directories: %s\n", SFTPPath, err)
+	}
+
+	for _, pub := range pubList {
+		pub.ScanIssues()
+
+		if len(pub.Issues) == 0 {
+			continue
+		}
+
+		fmt.Println("Publisher:", pub.Name)
+
+		for _, issue := range pub.Issues {
+			fmt.Printf("  Issue: %s", issue.RelativePath)
+			if issue.Error != nil {
+				fmt.Printf("    *** Error: %s\n", issue.Error)
+				continue
+			}
+			fmt.Println()
+
+			issue.ScanPDFs()
+			for _, pdf := range issue.PDFs {
+				fmt.Printf("    PDF: %s", pdf.RelativePath)
+				if pdf.Error != nil {
+					fmt.Printf("    *** Error: %s\n", pdf.Error)
+					continue
+				}
+				fmt.Println()
+			}
+		}
+	}
+}
