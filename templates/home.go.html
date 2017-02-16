@@ -4,7 +4,14 @@
 
 <ul>
   {{range $pub := .Data.Publishers}}
-    <li>{{$pub.Name}}</li>
+    {{if $pub.Show}}
+      <li>
+        {{$pub.Name}}
+        {{if gt $pub.ErrorCount 0 }}
+          <span class="publisher-error-count">{{$pub.ErrorCount}} error(s) detected</span>
+        {{- end}}
+      </li>
+    {{end}}
   {{end}}
 </ul>
 

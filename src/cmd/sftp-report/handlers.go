@@ -3,6 +3,7 @@ package main
 import (
 	"log"
 	"net/http"
+	"presenter"
 	"sftp"
 )
 
@@ -44,6 +45,6 @@ func HomeHandler(w http.ResponseWriter, req *http.Request) {
 		return
 	}
 
-	r.Vars.Data["Publishers"] = pubList
+	r.Vars.Data["Publishers"] = presenter.PublisherList(pubList)
 	r.Render("home")
 }
