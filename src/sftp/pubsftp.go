@@ -98,6 +98,22 @@ func (issue *Issue) ScanPDFs() error {
 	return nil
 }
 
+// ErrorCount returns the number of errors found on the issue and its pages
+func (issue *Issue) ErrorCount() int {
+	var count int
+	if issue.Error != nil {
+		count = 1
+	}
+
+	for _, p := range issue.PDFs {
+		if p.Error != nil {
+			count++
+		}
+	}
+
+	return count
+}
+
 // Publisher stores uploaded file information and potential errors related
 // to a publisher's SFTP directory
 type Publisher struct {
@@ -136,10 +152,22 @@ func (p *Publisher) ScanIssues() error {
 			issue.Error = fmt.Errorf("folder expected, got file instead")
 		}
 
+		issue.ScanPDFs()
 		p.Issues = append(p.Issues, issue)
 	}
 
 	return nil
+}
+
+// ErrorCount returns the number of errors found on the publisher's issues and
+// each issue's pages
+func (p *Publisher) ErrorCount() int {
+	var count int
+	for _, i := range p.Issues {
+		count += i.ErrorCount()
+	}
+
+	return count
 }
 
 // BuildPublishers takes an SFTP root directory and returns all the directories
@@ -176,6 +204,7 @@ func BuildPublishers(path string) ([]*Publisher, error) {
 		var p = &Publisher{Name: pubName}
 		p.Path = path
 		p.RealPath = realPath
+		p.ScanIssues()
 		pubList = append(pubList, p)
 	}
 
