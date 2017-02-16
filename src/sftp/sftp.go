@@ -3,6 +3,7 @@
 package sftp
 
 import (
+	"errorlist"
 	"fmt"
 	"os"
 	"path/filepath"
@@ -42,7 +43,7 @@ func (n byName) Less(i, j int) bool { return n[i].Name() < n[j].Name() }
 type PDF struct {
 	Name         string
 	RelativePath string
-	Error        error
+	Errors       *errorlist.Errors
 	Modified     time.Time
 	Issue        *Issue
 }
@@ -55,7 +56,7 @@ type Issue struct {
 	Name         string
 	RelativePath string
 	PDFs         []*PDF
-	Error        error
+	Errors       *errorlist.Errors
 	Modified     time.Time
 	Publisher    *Publisher
 }
@@ -78,15 +79,16 @@ func (issue *Issue) ScanPDFs() error {
 			RelativePath: filepath.Join(issue.RelativePath, i.Name()),
 			Modified:     i.ModTime(),
 			Issue:        issue,
+			Errors:       errorlist.New(),
 		}
 
 		if !i.Mode().IsRegular() {
-			pdf.Error = fmt.Errorf("regular file expected, got unexpected item instead")
+			pdf.Errors.Append(fmt.Errorf("regular file expected, got unexpected item instead"))
 		}
 
 		var ext = strings.ToUpper(filepath.Ext(pdf.Name))
 		if ext != ".PDF" {
-			pdf.Error = fmt.Errorf("PDF file expected, got %s instead", ext)
+			pdf.Errors.Append(fmt.Errorf("PDF file expected, got %s instead", ext))
 		}
 
 		if issue.Modified.Before(pdf.Modified) {
@@ -100,20 +102,14 @@ func (issue *Issue) ScanPDFs() error {
 
 // ErrorCount returns the number of errors found on the issue and its pages
 func (issue *Issue) ErrorCount() int {
-	var count int
-	if issue.Error != nil {
-		count = 1
-	}
-	return count + issue.PDFErrorCount()
+	return issue.Errors.Len() + issue.PDFErrorCount()
 }
 
 // PDFErrorCount returns the number of errors found on the issue's pages
 func (issue *Issue) PDFErrorCount() int {
 	var count int
 	for _, p := range issue.PDFs {
-		if p.Error != nil {
-			count++
-		}
+		count += p.Errors.Len()
 	}
 
 	return count
@@ -149,12 +145,12 @@ func (p *Publisher) ScanIssues() error {
 	// into an Issue
 	sort.Sort(byName(items))
 	for _, i := range items {
-		var issue = &Issue{Publisher: p}
+		var issue = &Issue{Publisher: p, Errors: errorlist.New()}
 		issue.Name = i.Name()
 		issue.RelativePath = filepath.Join(p.Name, i.Name())
 
 		if !i.IsDir() {
-			issue.Error = fmt.Errorf("folder expected, got file instead")
+			issue.Errors.Append(fmt.Errorf("folder expected, got file instead"))
 		} else {
 			issue.ScanPDFs()
 		}

@@ -23,8 +23,8 @@ func textReportOut() {
 
 		for _, issue := range pub.Issues {
 			fmt.Printf("  Issue: %s", issue.RelativePath)
-			if issue.Error != nil {
-				fmt.Printf("    *** Error: %s\n", issue.Error)
+			if issue.Errors.Len() != 0 {
+				fmt.Printf("    *** Error: %s\n", issue.Errors)
 				continue
 			}
 			fmt.Println()
@@ -32,8 +32,8 @@ func textReportOut() {
 			issue.ScanPDFs()
 			for _, pdf := range issue.PDFs {
 				fmt.Printf("    PDF: %s", pdf.RelativePath)
-				if pdf.Error != nil {
-					fmt.Printf("    *** Error: %s\n", pdf.Error)
+				if pdf.Errors.Len() != 0 {
+					fmt.Printf("    *** Error: %s\n", pdf.Errors)
 					continue
 				}
 				fmt.Println()
