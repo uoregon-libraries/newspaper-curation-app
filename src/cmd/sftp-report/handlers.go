@@ -5,6 +5,9 @@ import (
 	"net/http"
 	"presenter"
 	"sftp"
+	"webutil"
+
+	"github.com/gorilla/mux"
 )
 
 // Response generates a Responder with basic data all pages will need: request,
@@ -47,4 +50,33 @@ func HomeHandler(w http.ResponseWriter, req *http.Request) {
 
 	r.Vars.Data["Publishers"] = presenter.PublisherList(pubList)
 	r.Render("home")
+}
+
+// PublisherHandler prints a list of issues for a given publisher
+func PublisherHandler(w http.ResponseWriter, req *http.Request) {
+	var r = Response(w, req)
+
+	var pubList, err = sftp.BuildPublishers(SFTPPath)
+	if err != nil {
+		log.Printf("ERROR: Couldn't load publishers in %s: %s", SFTPPath, err)
+		http.Error(w, "Unable to load publisher list!", 500)
+		return
+	}
+
+	var pubName = mux.Vars(req)["publisher"]
+	var publisher *presenter.Publisher
+	for _, p := range pubList {
+		if p.Name == pubName {
+			publisher = &presenter.Publisher{p}
+		}
+	}
+
+	if publisher == nil {
+		http.Redirect(w, req, webutil.FullPath(webutil.HomePath), http.StatusFound)
+		return
+	}
+
+	r.Vars.Data["Publisher"] = publisher
+	r.Vars.Title = "SFTP Issues for " + publisher.Name
+	r.Render("publisher")
 }

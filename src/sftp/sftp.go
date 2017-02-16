@@ -104,7 +104,12 @@ func (issue *Issue) ErrorCount() int {
 	if issue.Error != nil {
 		count = 1
 	}
+	return count + issue.PDFErrorCount()
+}
 
+// PDFErrorCount returns the number of errors found on the issue's pages
+func (issue *Issue) PDFErrorCount() int {
+	var count int
 	for _, p := range issue.PDFs {
 		if p.Error != nil {
 			count++

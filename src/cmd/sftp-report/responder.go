@@ -5,6 +5,7 @@ import (
 	"html/template"
 	"log"
 	"net/http"
+	"time"
 	"webutil"
 )
 
@@ -46,6 +47,7 @@ func initTemplates(TemplatePath string) {
 		"RawJS":      webutil.RawJS,
 		"ImageURL":   webutil.ImageURL,
 		"Comment":    HTMLComment,
+		"TimeString": func(t time.Time) string { return t.Format("2006-01-02 15:04") },
 	}
 	var t = template.New("root").Funcs(templateFunctions)
 	templates = template.Must(t.ParseGlob(TemplatePath + "/*.go.html"))

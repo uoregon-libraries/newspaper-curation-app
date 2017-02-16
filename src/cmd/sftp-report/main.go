@@ -68,8 +68,10 @@ func makeRedirect(dest string, code int) http.Handler {
 func startServer() {
 	var r = mux.NewRouter()
 	var hp = webutil.FullPath(webutil.HomePath)
+	var pp = webutil.FullPath(webutil.PublisherPath)
 	r.HandleFunc(hp, HomeHandler)
 	r.Handle(hp+"/", makeRedirect(hp, http.StatusMovedPermanently))
+	r.NewRoute().Path(pp + "/{publisher}").HandlerFunc(PublisherHandler)
 	r.NewRoute().PathPrefix(hp).Handler(http.StripPrefix(hp, http.FileServer(http.Dir(opts.StaticFilePath))))
 
 	http.Handle("/", nocache(logMiddleware(r)))
