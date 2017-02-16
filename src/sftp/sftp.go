@@ -159,7 +159,10 @@ func (p *Publisher) ScanIssues() error {
 			issue.ScanPDFs()
 		}
 
-		p.Issues = append(p.Issues, issue)
+		var since = time.Since(issue.Modified)
+		if since > time.Hour*24*7 {
+			p.Issues = append(p.Issues, issue)
+		}
 	}
 
 	return nil
