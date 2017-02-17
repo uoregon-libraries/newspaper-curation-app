@@ -13,8 +13,6 @@ func textReportOut() {
 	}
 
 	for _, pub := range pubList {
-		pub.ScanIssues()
-
 		if len(pub.Issues) == 0 {
 			continue
 		}
@@ -29,7 +27,6 @@ func textReportOut() {
 			}
 			fmt.Println()
 
-			issue.ScanPDFs()
 			for _, pdf := range issue.PDFs {
 				fmt.Printf("    PDF: %s", pdf.RelativePath)
 				if pdf.Errors.Len() != 0 {
