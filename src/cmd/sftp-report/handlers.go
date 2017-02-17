@@ -14,7 +14,7 @@ import (
 // Response generates a Responder with basic data all pages will need: request,
 // response writer, and user
 func Response(w http.ResponseWriter, req *http.Request) *Responder {
-	var u = user.New(req.Header.Get("X-Remote-User"))
+	var u = user.FindByLogin(req.Header.Get("X-Remote-User"))
 	return &Responder{Writer: w, Request: req, Vars: &PageVars{User: u, Data: make(GenericVars)}}
 }
 
