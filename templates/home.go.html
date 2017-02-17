@@ -1,7 +1,7 @@
 {{template "header" .}}
 
 <ul>
-  {{range $pub := .Data.Publishers}}
+  {{range $pub := .Publishers}}
     {{if $pub.Show}}
       <li>
         {{if gt $pub.ErrorCount 0 }}

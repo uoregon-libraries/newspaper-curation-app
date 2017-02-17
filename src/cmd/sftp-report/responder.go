@@ -5,6 +5,7 @@ import (
 	"html/template"
 	"log"
 	"net/http"
+	"presenter"
 	"time"
 	"webutil"
 )
@@ -15,11 +16,12 @@ type GenericVars map[string]interface{}
 // PageVars is the generic list of data all pages may need, and the catch-all
 // "Data" map for specialized one-off data
 type PageVars struct {
-	Title   string
-	Version string
-	Webroot string
-	User    *User
-	Data    GenericVars
+	Title      string
+	Version    string
+	Webroot    string
+	User       *User
+	Publishers []*presenter.Publisher
+	Data       GenericVars
 }
 
 // Responder wraps common response logic

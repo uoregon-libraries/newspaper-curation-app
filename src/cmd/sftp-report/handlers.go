@@ -37,42 +37,61 @@ func logMiddleware(next http.Handler) http.Handler {
 	})
 }
 
-// HomeHandler spits out the publisher list
-func HomeHandler(w http.ResponseWriter, req *http.Request) {
-	var r = Response(w, req)
-	r.Vars.Title = "SFTP Publisher List"
+// LoadPublishers takes a responder and attempts to load the publisher list
+// into it.  If the list can't be loaded, an HTTP error is sent out and the
+// return is false.
+func LoadPublishers(r *Responder) bool {
 	var pubList, err = sftp.BuildPublishers(SFTPPath)
 	if err != nil {
 		log.Printf("ERROR: Couldn't load publishers in %s: %s", SFTPPath, err)
-		http.Error(w, "Unable to load publisher list!", 500)
+		http.Error(r.Writer, "Unable to load publisher list!", 500)
+		return false
+	}
+
+	r.Vars.Publishers = presenter.PublisherList(pubList)
+	return true
+}
+
+// findPublisher attempts to load the publisher list, then find and return the
+// publisher specified in the URL If no publisher is found (or loading
+// publishers fails), nil is returned, and the caller should do nothing, as
+// http headers / rendering is already done.
+func findPublisher(r *Responder) *presenter.Publisher {
+	if !LoadPublishers(r) {
+		return nil
+	}
+
+	var pubName = mux.Vars(r.Request)["publisher"]
+	var publisher *presenter.Publisher
+	for _, p := range r.Vars.Publishers {
+		if p.Name == pubName {
+			publisher = p
+		}
+	}
+
+	if publisher == nil {
+		http.Redirect(r.Writer, r.Request, webutil.HomePath(), http.StatusFound)
+	}
+
+	return publisher
+}
+
+// HomeHandler spits out the publisher list
+func HomeHandler(w http.ResponseWriter, req *http.Request) {
+	var r = Response(w, req)
+	if !LoadPublishers(r) {
 		return
 	}
 
-	r.Vars.Data["Publishers"] = presenter.PublisherList(pubList)
+	r.Vars.Title = "SFTP Publisher List"
 	r.Render("home")
 }
 
 // PublisherHandler prints a list of issues for a given publisher
 func PublisherHandler(w http.ResponseWriter, req *http.Request) {
 	var r = Response(w, req)
-
-	var pubList, err = sftp.BuildPublishers(SFTPPath)
-	if err != nil {
-		log.Printf("ERROR: Couldn't load publishers in %s: %s", SFTPPath, err)
-		http.Error(w, "Unable to load publisher list!", 500)
-		return
-	}
-
-	var pubName = mux.Vars(req)["publisher"]
-	var publisher *presenter.Publisher
-	for _, p := range pubList {
-		if p.Name == pubName {
-			publisher = presenter.DecoratePublisher(p)
-		}
-	}
-
+	var publisher = findPublisher(r)
 	if publisher == nil {
-		http.Redirect(w, req, webutil.HomePath(), http.StatusFound)
 		return
 	}
 
