@@ -10,11 +10,14 @@ import (
 // Publisher wraps sftp.Publisher to provide presentation-specific functions
 type Publisher struct {
 	*sftp.Publisher
+	Issues []*Issue
 }
 
 // DecoratePublisher wraps publisher and returns it
 func DecoratePublisher(publisher *sftp.Publisher) *Publisher {
-	return &Publisher{Publisher: publisher}
+	var p = &Publisher{Publisher: publisher}
+	p.buildIssueList()
+	return p
 }
 
 // PublisherList decorates a list of sftp publishers with presentation logic
@@ -33,9 +36,15 @@ func (p *Publisher) Link() template.HTML {
 	return template.HTML(fmt.Sprintf(`<a href="%s">%s</a>`, webutil.PublisherPath(p.Name), p.Name))
 }
 
-// IssueLink returns the link to an issue's details page
-func (p *Publisher) IssueLink(name string) template.HTML {
-	return template.HTML(fmt.Sprintf(`<a href="%s">%s</a>`, webutil.IssuePath(p.Name, name), name))
+// buildIssueList stores the list of decorated issues from a publisher's list
+// of underlying sftp issues
+func (p *Publisher) buildIssueList() {
+	var sftpIssues = p.Publisher.Issues
+	var list = make([]*Issue, len(sftpIssues))
+	for i, issue := range sftpIssues {
+		list[i] = DecorateIssue(p, issue)
+	}
+	p.Issues = list
 }
 
 // Show tells us whether this publisher should be displayed in the main list of

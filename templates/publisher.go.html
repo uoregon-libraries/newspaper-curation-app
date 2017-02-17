@@ -19,10 +19,9 @@
   </thead>
 
   <tbody>
-    {{$pub := .Data.Publisher}}
     {{range .Data.Publisher.Issues}}
       <tr {{if gt .ErrorCount 0}} class="issue-with-errors"{{end}}>
-        <td>{{$pub.IssueLink .Name}}</td>
+        <td>{{.Link}}</td>
         <td>{{TimeString .Modified}}</td>
         <td>
           {{- if gt .Errors.Len 0}}
