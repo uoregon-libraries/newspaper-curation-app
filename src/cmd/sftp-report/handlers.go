@@ -67,7 +67,7 @@ func PublisherHandler(w http.ResponseWriter, req *http.Request) {
 	var publisher *presenter.Publisher
 	for _, p := range pubList {
 		if p.Name == pubName {
-			publisher = &presenter.Publisher{p}
+			publisher = presenter.DecoratePublisher(p)
 		}
 	}
 

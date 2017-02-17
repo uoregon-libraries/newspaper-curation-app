@@ -12,12 +12,17 @@ type Publisher struct {
 	*sftp.Publisher
 }
 
+// DecoratePublisher wraps publisher and returns it
+func DecoratePublisher(publisher *sftp.Publisher) *Publisher {
+	return &Publisher{Publisher: publisher}
+}
+
 // PublisherList decorates a list of sftp publishers with presentation logic
 // and returns it
 func PublisherList(pubList []*sftp.Publisher) []*Publisher {
 	var list = make([]*Publisher, len(pubList))
 	for i, p := range pubList {
-		list[i] = &Publisher{p}
+		list[i] = DecoratePublisher(p)
 	}
 
 	return list
