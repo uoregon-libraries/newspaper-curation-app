@@ -5,8 +5,6 @@
   float: left;
   width: 200px;
 }
-.publisher-with-errors .count {
-}
 
 /* Make alerts more readable */
 .alert-warning  { color: #3E2100; }
