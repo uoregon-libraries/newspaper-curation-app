@@ -78,6 +78,33 @@ func findPublisher(r *Responder) *presenter.Publisher {
 	return publisher
 }
 
+// findIssue attempts to find the publisher specified in the URL and then the
+// issue for that publisher, also specified in the URL.  If found, the issue is
+// returned.  If not found, some kind of contextual error will be displayed to
+// the end user and the caller should do nothing.
+func findIssue(r *Responder) *presenter.Issue {
+	var publisher = findPublisher(r)
+	if publisher == nil {
+		return nil
+	}
+
+	var name = mux.Vars(r.Request)["issue"]
+	var issue *presenter.Issue
+	for _, iss := range publisher.Issues {
+		if iss.Name == name {
+			issue = iss
+		}
+	}
+
+	if issue == nil {
+		r.Vars.Alert = fmt.Sprintf("Unable to find issue %#v for publisher %#v", name, publisher.Name)
+		r.Render("empty")
+		return nil
+	}
+
+	return issue
+}
+
 // HomeHandler spits out the publisher list
 func HomeHandler(w http.ResponseWriter, req *http.Request) {
 	var r = Response(w, req)
@@ -100,4 +127,16 @@ func PublisherHandler(w http.ResponseWriter, req *http.Request) {
 	r.Vars.Data["Publisher"] = publisher
 	r.Vars.Title = "SFTP Issues for " + publisher.Name
 	r.Render("publisher")
+}
+
+func IssueHandler(w http.ResponseWriter, req *http.Request) {
+	var r = Response(w, req)
+	var issue = findIssue(r)
+	if issue == nil {
+		return
+	}
+
+	r.Vars.Data["Issue"] = issue
+	r.Vars.Title = fmt.Sprintf("SFTP PDFs for %s, issue %s", issue.Publisher.Name, issue.Name)
+	r.Render("issue")
 }

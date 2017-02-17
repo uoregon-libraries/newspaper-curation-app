@@ -48,6 +48,11 @@ type PDF struct {
 	Issue        *Issue
 }
 
+// ErrorCount returns the number of errors found on the PDF
+func (pdf *PDF) ErrorCount() int {
+	return pdf.Errors.Len()
+}
+
 // Issue stores a single issue's pdfs and any errors encountered.  An "issue"
 // is really anything found at the publisher's root directory, and therefore
 // could be a non-issue directory, a file, etc.  In these cases, Error will

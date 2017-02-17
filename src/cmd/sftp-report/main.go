@@ -69,9 +69,11 @@ func startServer() {
 	var r = mux.NewRouter()
 	var hp = webutil.HomePath()
 	var pp = webutil.PublisherPath("{publisher}")
+	var ip = webutil.IssuePath("{publisher}", "{issue}")
 	r.HandleFunc(hp, HomeHandler)
 	r.Handle(hp+"/", makeRedirect(hp, http.StatusMovedPermanently))
 	r.NewRoute().Path(pp).HandlerFunc(PublisherHandler)
+	r.NewRoute().Path(ip).HandlerFunc(IssueHandler)
 	r.NewRoute().PathPrefix(hp).Handler(http.StripPrefix(hp, http.FileServer(http.Dir(opts.StaticFilePath))))
 
 	http.Handle("/", nocache(logMiddleware(r)))

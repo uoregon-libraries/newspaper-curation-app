@@ -27,6 +27,12 @@ func (l *Errors) String() string {
 	return out
 }
 
+// All returns the full list of internal error objects
+func (l *Errors) All() []error {
+	// We actually return a copy to avoid accidental modification
+	return append([]error{}, l.errors...)
+}
+
 // Len returns the number of items in the error list
 func (l *Errors) Len() int {
 	return len(l.errors)
