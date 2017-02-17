@@ -19,22 +19,23 @@
   </thead>
 
   <tbody>
-    {{range $issue := .Data.Publisher.Issues}}
-      <tr {{if gt $issue.ErrorCount 0}} class="issue-with-errors"{{end}}>
-        <td>{{$issue.Name}}</td>
-        <td>{{TimeString $issue.Modified}}</td>
+    {{$pub := .Data.Publisher}}
+    {{range .Data.Publisher.Issues}}
+      <tr {{if gt .ErrorCount 0}} class="issue-with-errors"{{end}}>
+        <td>{{$pub.IssueLink .Name}}</td>
+        <td>{{TimeString .Modified}}</td>
         <td>
-          {{- if gt $issue.Errors.Len 0}}
-            <b>{{$issue.Errors}}</b>
+          {{- if gt .Errors.Len 0}}
+            <b>{{.Errors}}</b>
           {{- else}}
             No issue errors detected
           {{- end}}
         </td>
-        <td>{{len $issue.PDFs}}</td>
+        <td>{{len .PDFs}}</td>
         <td>
-          {{- if gt (len $issue.PDFs) 0}}
-            {{if gt $issue.PDFErrorCount 0}}
-              <b>{{$issue.PDFErrorCount}} PDF error(s)</b>
+          {{- if gt (len .PDFs) 0}}
+            {{if gt .PDFErrorCount 0}}
+              <b>{{.PDFErrorCount}} PDF error(s)</b>
             {{- else}}
               No PDF errors detected
             {{- end}}
