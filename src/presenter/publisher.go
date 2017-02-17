@@ -30,7 +30,7 @@ func PublisherList(pubList []*sftp.Publisher) []*Publisher {
 
 // Link returns a link to a given publisher's details page
 func (p *Publisher) Link() template.HTML {
-	return template.HTML(fmt.Sprintf(`<a href="%s">%s</a>`, webutil.FullPath(webutil.PublisherPath, p.Name), p.Name))
+	return template.HTML(fmt.Sprintf(`<a href="%s">%s</a>`, webutil.PublisherPath(p.Name), p.Name))
 }
 
 // Show tells us whether this publisher should be displayed in the main list of

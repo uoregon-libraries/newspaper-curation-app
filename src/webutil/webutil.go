@@ -13,12 +13,6 @@ import (
 // handlers and site assets
 var Webroot string
 
-// URL paths
-const (
-	HomePath      = ""
-	PublisherPath = "publisher"
-)
-
 // FullPath uses the webroot, if not empty, to join together all the path parts
 // with a slash, returning an absolute path to something
 func FullPath(parts ...string) string {
@@ -26,6 +20,16 @@ func FullPath(parts ...string) string {
 		parts = append([]string{Webroot}, parts...)
 	}
 	return path.Join(parts...)
+}
+
+// HomePath returns the absolute path to the home page (publisher list)
+func HomePath() string {
+	return FullPath("")
+}
+
+// PublisherPath returns the absolute path to the given publisher's issue list page
+func PublisherPath(name string) string {
+	return FullPath(path.Join("publisher", name))
 }
 
 // ImageURL takes a file and constructs an absolute web path string

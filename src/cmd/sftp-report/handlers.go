@@ -72,7 +72,7 @@ func PublisherHandler(w http.ResponseWriter, req *http.Request) {
 	}
 
 	if publisher == nil {
-		http.Redirect(w, req, webutil.FullPath(webutil.HomePath), http.StatusFound)
+		http.Redirect(w, req, webutil.HomePath(), http.StatusFound)
 		return
 	}
 
