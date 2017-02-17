@@ -7,6 +7,7 @@ import (
 	"net/http"
 	"presenter"
 	"time"
+	"user"
 	"webutil"
 )
 
@@ -20,7 +21,7 @@ type PageVars struct {
 	Version    string
 	Webroot    string
 	Alert      string
-	User       *User
+	User       *user.User
 	Publishers []*presenter.Publisher
 	Data       GenericVars
 }
