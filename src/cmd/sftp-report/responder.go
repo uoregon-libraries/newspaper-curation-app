@@ -19,6 +19,7 @@ type PageVars struct {
 	Title      string
 	Version    string
 	Webroot    string
+	Alert      string
 	User       *User
 	Publishers []*presenter.Publisher
 	Data       GenericVars

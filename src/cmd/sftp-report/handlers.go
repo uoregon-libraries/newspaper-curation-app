@@ -1,11 +1,11 @@
 package main
 
 import (
+	"fmt"
 	"log"
 	"net/http"
 	"presenter"
 	"sftp"
-	"webutil"
 
 	"github.com/gorilla/mux"
 )
@@ -70,7 +70,9 @@ func findPublisher(r *Responder) *presenter.Publisher {
 	}
 
 	if publisher == nil {
-		http.Redirect(r.Writer, r.Request, webutil.HomePath(), http.StatusFound)
+		r.Vars.Alert = fmt.Sprintf("Unable to find publisher %#v", pubName)
+		r.Render("empty")
+		return nil
 	}
 
 	return publisher

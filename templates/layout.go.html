@@ -58,7 +58,14 @@
       </nav>
 
       <div class="container">
-        <h2>{{.Title}}</h2>
+        <h1>{{.Title}}</h1>
+
+        {{- if .Alert}}
+          <div class="alert alert-danger">
+            <p>{{.Alert}}</p>
+          </div>
+        {{- end}}
+
 {{end}}
 
 {{define "footer"}}
