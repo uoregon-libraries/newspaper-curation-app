@@ -129,6 +129,7 @@ func PublisherHandler(w http.ResponseWriter, req *http.Request) {
 	r.Render("publisher")
 }
 
+// IssueHandler prints a list of pages for a given issue
 func IssueHandler(w http.ResponseWriter, req *http.Request) {
 	var r = Response(w, req)
 	var issue = findIssue(r)

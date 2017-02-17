@@ -6,6 +6,7 @@ type Errors struct {
 	errors []error
 }
 
+// New returns an empty error list
 func New() *Errors {
 	return &Errors{}
 }
