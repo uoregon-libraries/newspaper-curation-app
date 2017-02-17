@@ -21,7 +21,7 @@
   <tbody>
     {{range .Data.Issue.PDFs}}
       <tr {{if gt .ErrorCount 0}} class="pdf-with-errors"{{end}}>
-        <td>{{.Name}}</td>
+        <td>{{.Link}}</td>
         <td>{{TimeString .Modified}}</td>
         <td>
           {{- if gt .Errors.Len 0}}

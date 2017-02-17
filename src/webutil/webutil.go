@@ -37,6 +37,11 @@ func IssuePath(pName, iName string) string {
 	return FullPath(path.Join("issue", pName, iName))
 }
 
+// PDFPath returns the absolute path to view a given PDF file
+func PDFPath(publisher, issue, filename string) string {
+	return FullPath(path.Join("pdf", publisher, issue, filename))
+}
+
 // ImageURL takes a file and constructs an absolute web path string
 func ImageURL(file string) string {
 	return FullPath("images", file)
