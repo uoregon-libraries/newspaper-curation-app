@@ -32,6 +32,10 @@
                 <li><a href="title-list.php">Newspaper Titles</a></li>
               {{end}}
 
+              {{if .User.PermittedTo "sftp report"}}
+              <li><a href="{{.Webroot}}">SFTP Reports</a></li>
+              {{end}}
+
               {{if .User.PermittedTo "manage mocs"}}
                 <li><a href="mocs-list.php">MARC Org Codes</a></li>
               {{end}}
