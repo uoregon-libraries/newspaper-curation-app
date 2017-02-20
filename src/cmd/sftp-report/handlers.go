@@ -55,6 +55,7 @@ func mustHavePrivilege(priv *user.Privilege, f http.HandlerFunc) http.Handler {
 
 		var resp = Response(w, r)
 		resp.Vars.Title = "Insufficient Privileges"
+		w.WriteHeader(http.StatusForbidden)
 		resp.Render("insufficient-privileges")
 	})
 }
