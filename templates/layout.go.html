@@ -49,9 +49,11 @@
               {{end}}
             </ul>
             <p class="navbar-text navbar-right">
-              {{if .User}}
+              {{- if .User.Guest}}
+                Not Logged In
+              {{- else}}
                 Logged in as {{.User.Login}}
-              {{end}}
+              {{- end}}
             </p>
           </div>
         </div>

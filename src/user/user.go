@@ -13,9 +13,12 @@ type User struct {
 	ID          int `sql:",primary"`
 	Login       string
 	RolesString string `sql:"roles"`
+	Guest       bool `sql:"-"`
 	roles       []*Role
 	privileges  []*Privilege
 }
+
+var EmptyUser = &User{Login: "N/A", Guest: true}
 
 // New returns an empty user with no roles or ID
 func New(login string) *User {
@@ -31,7 +34,7 @@ func FindByLogin(l string) *User {
 	}
 
 	if len(users) == 0 {
-		return nil
+		return EmptyUser
 	}
 	return users[0]
 }
@@ -48,6 +51,9 @@ func (u *User) buildRoles() {
 	var roleStrings = strings.Split(u.RolesString, ",")
 	u.roles = make([]*Role, 0)
 	for _, rs := range roleStrings {
+		if rs == "" {
+			continue
+		}
 		var role = FindRole(rs)
 		if role == nil {
 			log.Printf("ERROR: User %s has an invalid role: %s", u.Login, role)
