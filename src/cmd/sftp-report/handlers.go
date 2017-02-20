@@ -38,6 +38,27 @@ func logMiddleware(next http.Handler) http.Handler {
 	})
 }
 
+// mustHavePrivilege denies access to pages if there's no logged-in user, or
+// there is a user but the user isn't allowed to perform a particular action
+func mustHavePrivilege(priv *user.Privilege, f http.HandlerFunc) http.Handler {
+	return http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
+		var u = user.FindByLogin(r.Header.Get("X-Remote-User"))
+		var roles []*user.Role
+		if u != nil {
+			roles = u.Roles()
+		}
+
+		if priv.AllowedByAny(roles) {
+			f(w, r)
+			return
+		}
+
+		var resp = Response(w, r)
+		resp.Vars.Title = "Insufficient Privileges"
+		resp.Render("insufficient-privileges")
+	})
+}
+
 // LoadPublishers takes a responder and attempts to load the publisher list
 // into it.  If the list can't be loaded, an HTTP error is sent out and the
 // return is false.

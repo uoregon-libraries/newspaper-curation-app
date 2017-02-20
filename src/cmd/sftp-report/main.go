@@ -81,17 +81,29 @@ func makeRedirect(dest string, code int) http.Handler {
 	})
 }
 
+// checkSFTPWorkflow is an alias for the privilege-checking handlerfunc wrapper
+func checkSFTPWorkflow(h http.HandlerFunc) http.Handler {
+	return mustHavePrivilege(user.FindPrivilege("sftp workflow"), h)
+}
+
 func startServer() {
 	var r = mux.NewRouter()
 	var hp = webutil.HomePath()
 	var pp = webutil.PublisherPath("{publisher}")
 	var ip = webutil.IssuePath("{publisher}", "{issue}")
 	var pdfPath = webutil.PDFPath("{publisher}", "{issue}", "{filename}")
-	r.HandleFunc(hp, HomeHandler)
+
+	// Make sure homepath/ isn't considered the canonical path
 	r.Handle(hp+"/", makeRedirect(hp, http.StatusMovedPermanently))
-	r.NewRoute().Path(pp).HandlerFunc(PublisherHandler)
-	r.NewRoute().Path(ip).HandlerFunc(IssueHandler)
-	r.NewRoute().Path(pdfPath).HandlerFunc(PDFFileHandler)
+
+	r.NewRoute().Path(hp).Handler(checkSFTPWorkflow(HomeHandler))
+	r.NewRoute().Path(pp).Handler(checkSFTPWorkflow(PublisherHandler))
+	r.NewRoute().Path(ip).Handler(checkSFTPWorkflow(IssueHandler))
+	r.NewRoute().Path(pdfPath).Handler(checkSFTPWorkflow(PDFFileHandler))
+
+	// The static handler doesn't check permissions.  Right now this is okay, as
+	// what we serve isn't valuable beyond page layout, but this may warrant a
+	// fileserver clone + rewrite.
 	r.NewRoute().PathPrefix(hp).Handler(http.StripPrefix(hp, http.FileServer(http.Dir(opts.StaticFilePath))))
 
 	http.Handle("/", nocache(logMiddleware(r)))
