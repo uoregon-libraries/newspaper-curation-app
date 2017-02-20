@@ -6,6 +6,7 @@ import (
 	"net/http"
 	"presenter"
 	"sftp"
+	"time"
 	"user"
 
 	"github.com/gorilla/mux"
@@ -21,14 +22,16 @@ func getUserLogin(w http.ResponseWriter, req *http.Request) string {
 				l = cookie.Value
 			}
 		}
+		if l == "nil" {
+			l = ""
+			http.SetCookie(w, &http.Cookie{Name: "debuguser", Value: "", Expires: time.Time{}})
+		} else {
+			http.SetCookie(w, &http.Cookie{Name: "debuguser", Value: l})
+		}
 	}
 
 	if l == "" {
 		l = req.Header.Get("X-Remote-User")
-	}
-
-	if DEBUG {
-		http.SetCookie(w, &http.Cookie{Name: "debuguser", Value: l})
 	}
 
 	return l
