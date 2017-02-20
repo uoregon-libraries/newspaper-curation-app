@@ -93,9 +93,9 @@ func makeRedirect(dest string, code int) http.Handler {
 	})
 }
 
-// checkSFTPWorkflow is an alias for the privilege-checking handlerfunc wrapper
-func checkSFTPWorkflow(h http.HandlerFunc) http.Handler {
-	return mustHavePrivilege(user.FindPrivilege("sftp workflow"), h)
+// canViewSFTPReport is an alias for the privilege-checking handlerfunc wrapper
+func canViewSFTPReport(h http.HandlerFunc) http.Handler {
+	return mustHavePrivilege(user.FindPrivilege("sftp report"), h)
 }
 
 func startServer() {
@@ -108,10 +108,10 @@ func startServer() {
 	// Make sure homepath/ isn't considered the canonical path
 	r.Handle(hp+"/", makeRedirect(hp, http.StatusMovedPermanently))
 
-	r.NewRoute().Path(hp).Handler(checkSFTPWorkflow(HomeHandler))
-	r.NewRoute().Path(pp).Handler(checkSFTPWorkflow(PublisherHandler))
-	r.NewRoute().Path(ip).Handler(checkSFTPWorkflow(IssueHandler))
-	r.NewRoute().Path(pdfPath).Handler(checkSFTPWorkflow(PDFFileHandler))
+	r.NewRoute().Path(hp).Handler(canViewSFTPReport(HomeHandler))
+	r.NewRoute().Path(pp).Handler(canViewSFTPReport(PublisherHandler))
+	r.NewRoute().Path(ip).Handler(canViewSFTPReport(IssueHandler))
+	r.NewRoute().Path(pdfPath).Handler(canViewSFTPReport(PDFFileHandler))
 
 	// The static handler doesn't check permissions.  Right now this is okay, as
 	// what we serve isn't valuable beyond page layout, but this may warrant a
