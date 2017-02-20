@@ -22,6 +22,7 @@ var opts struct {
 	ConfigFile     string `short:"c" long:"config" description:"path to P2C config file" required:"true"`
 	Port           int    `short:"p" long:"port" description:"port to listen for HTTP traffic" required:"true"`
 	Bind           string `long:"bind" description:"Bind address, usually safe to leave blank"`
+	Debug          bool   `long:"debug" description:"Enables debug mode for testing different users"`
 	ReportExit     bool   `long:"report-and-exit" description:"Show a textual SFTP report and exit the app"`
 	Webroot        string `long:"webroot" description:"The base path to the app if it isn't just '/'"`
 	StaticFilePath string `long:"static-files" description:"Path on disk to static JS/CSS/images" required:"true"`
@@ -30,6 +31,11 @@ var opts struct {
 // SFTPPath gets the configured path to the SFTP root where each publisher
 // directory resides
 var SFTPPath string
+
+// DEBUG is only enabled via command-line and should be used very sparingly,
+// such as for user-switching (though an actual user-switch permission would be
+// way better)
+var DEBUG bool
 
 func getConf() {
 	var p = flags.NewParser(&opts, flags.HelpFlag|flags.PassDoubleDash)
@@ -72,6 +78,12 @@ func getConf() {
 		os.Exit(1)
 	}
 	webutil.Webroot = opts.Webroot
+
+	if opts.Debug == true {
+		log.Printf("WARNING: Debug mode has been enabled")
+		DEBUG = true
+	}
+
 	initTemplates(args[0])
 }
 

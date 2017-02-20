@@ -11,10 +11,33 @@ import (
 	"github.com/gorilla/mux"
 )
 
+func getUserLogin(w http.ResponseWriter, req *http.Request) string {
+	var l string
+	if DEBUG {
+		l = req.URL.Query().Get("debuguser")
+		if l == "" {
+			var cookie, err = req.Cookie("debuguser")
+			if err == nil {
+				l = cookie.Value
+			}
+		}
+	}
+
+	if l == "" {
+		l = req.Header.Get("X-Remote-User")
+	}
+
+	if DEBUG {
+		http.SetCookie(w, &http.Cookie{Name: "debuguser", Value: l})
+	}
+
+	return l
+}
+
 // Response generates a Responder with basic data all pages will need: request,
 // response writer, and user
 func Response(w http.ResponseWriter, req *http.Request) *Responder {
-	var u = user.FindByLogin(req.Header.Get("X-Remote-User"))
+	var u = user.FindByLogin(getUserLogin(w, req))
 	return &Responder{Writer: w, Request: req, Vars: &PageVars{User: u, Data: make(GenericVars)}}
 }
 
@@ -28,7 +51,7 @@ func nocache(next http.Handler) http.Handler {
 
 func logMiddleware(next http.Handler) http.Handler {
 	return http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
-		var u = r.Header.Get("X-Remote-User")
+		var u = getUserLogin(w, r)
 		if u != "" {
 			log.Printf("Request: [%s] %s", u, r.URL)
 		} else {
@@ -42,7 +65,7 @@ func logMiddleware(next http.Handler) http.Handler {
 // there is a user but the user isn't allowed to perform a particular action
 func mustHavePrivilege(priv *user.Privilege, f http.HandlerFunc) http.Handler {
 	return http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
-		var u = user.FindByLogin(r.Header.Get("X-Remote-User"))
+		var u = user.FindByLogin(getUserLogin(w, r))
 		var roles []*user.Role
 		if u != nil {
 			roles = u.Roles()
