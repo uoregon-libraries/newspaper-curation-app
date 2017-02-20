@@ -17,13 +17,14 @@ type GenericVars map[string]interface{}
 // PageVars is the generic list of data all pages may need, and the catch-all
 // "Data" map for specialized one-off data
 type PageVars struct {
-	Title      string
-	Version    string
-	Webroot    string
-	Alert      string
-	User       *user.User
-	Publishers []*presenter.Publisher
-	Data       GenericVars
+	Title         string
+	Version       string
+	Webroot       string
+	ParentWebroot string
+	Alert         string
+	User          *user.User
+	Publishers    []*presenter.Publisher
+	Data          GenericVars
 }
 
 // Responder wraps common response logic
@@ -50,6 +51,7 @@ func initTemplates(TemplatePath string) {
 		"IncludeJS":  webutil.IncludeJS,
 		"RawJS":      webutil.RawJS,
 		"ImageURL":   webutil.ImageURL,
+		"ParentURL":  webutil.ParentURL,
 		"Comment":    HTMLComment,
 		"TimeString": func(t time.Time) string { return t.Format("2006-01-02 15:04") },
 	}

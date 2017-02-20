@@ -23,13 +23,13 @@
               <span class="icon-bar"></span>
               <span class="icon-bar"></span>
             </button>
-            <a class="navbar-brand" href="/odnp-admin/index.php">ODNP Admin</a>
+            <a class="navbar-brand" href="{{ParentURL "index.php"}}">ODNP Admin</a>
           </div>
 
           <div class="collapse navbar-collapse" id="navbar-collapse">
             <ul class="nav navbar-nav">
               {{if .User.PermittedTo "list titles"}}
-                <li><a href="title-list.php">Newspaper Titles</a></li>
+                <li><a href="{{ParentURL "title-list.php"}}">Newspaper Titles</a></li>
               {{end}}
 
               {{if .User.PermittedTo "sftp report"}}
@@ -37,19 +37,19 @@
               {{end}}
 
               {{if .User.PermittedTo "manage mocs"}}
-                <li><a href="mocs-list.php">MARC Org Codes</a></li>
+                <li><a href="{{ParentURL "mocs-list.php"}}">MARC Org Codes</a></li>
               {{end}}
 
               {{if .User.PermittedTo "list issues"}}
-                <li><a href="issues-list.php">Issues</a></li>
+                <li><a href="{{ParentURL "issues-list.php"}}">Issues</a></li>
               {{end}}
 
               {{if .User.PermittedTo "list users"}}
-                <li><a href="user-list.php">Users</a></li>
+                <li><a href="{{ParentURL "user-list.php"}}">Users</a></li>
               {{end}}
 
               {{if .User.PermittedTo "list audit logs"}}
-                <li><a href="audit-logs-list.php">Logs</a></li>
+                <li><a href="{{ParentURL "audit-logs-list.php"}}">Logs</a></li>
               {{end}}
             </ul>
             <p class="navbar-text navbar-right">

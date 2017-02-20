@@ -18,6 +18,12 @@ import (
 	"github.com/jessevdk/go-flags"
 )
 
+// Various command-line options live here, and yes, they're awful
+//
+// TODO:
+// - Put more of this stuff into the central "bash" config
+// - Migrate parent app in here entirely to get rid of some of the odd stuff
+//   that needs ParentWebroot
 var opts struct {
 	ConfigFile     string `short:"c" long:"config" description:"path to P2C config file" required:"true"`
 	Port           int    `short:"p" long:"port" description:"port to listen for HTTP traffic" required:"true"`
@@ -25,6 +31,7 @@ var opts struct {
 	Debug          bool   `long:"debug" description:"Enables debug mode for testing different users"`
 	ReportExit     bool   `long:"report-and-exit" description:"Show a textual SFTP report and exit the app"`
 	Webroot        string `long:"webroot" description:"The base path to the app if it isn't just '/'"`
+	ParentWebroot  string `long:"parent-webroot" description:"The base path to the parent app"`
 	StaticFilePath string `long:"static-files" description:"Path on disk to static JS/CSS/images" required:"true"`
 }
 
@@ -78,6 +85,7 @@ func getConf() {
 		os.Exit(1)
 	}
 	webutil.Webroot = opts.Webroot
+	webutil.ParentWebroot = opts.ParentWebroot
 
 	if opts.Debug == true {
 		log.Printf("WARNING: Debug mode has been enabled")

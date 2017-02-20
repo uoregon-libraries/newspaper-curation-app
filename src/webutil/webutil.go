@@ -13,6 +13,9 @@ import (
 // handlers and site assets
 var Webroot string
 
+// ParentWebroot is a hack to deal with our horrific painful legacy PHP
+var ParentWebroot string
+
 // FullPath uses the webroot, if not empty, to join together all the path parts
 // with a slash, returning an absolute path to something
 func FullPath(parts ...string) string {
@@ -45,6 +48,11 @@ func PDFPath(publisher, issue, filename string) string {
 // ImageURL takes a file and constructs an absolute web path string
 func ImageURL(file string) string {
 	return FullPath("images", file)
+}
+
+// ParentURL takes a path and joins it with the configured path to the parent app
+func ParentURL(loc string) string {
+	return path.Join(ParentWebroot, loc)
 }
 
 // IncludeCSS generates a <link> tag with an absolute path for including the
