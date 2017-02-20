@@ -7,13 +7,14 @@ type Role struct {
 
 // Hard-coded list of roles
 var (
-	RoleAny           = newRole("-any-")
-	RoleAdmin         = newRole("admin")
-	RoleTitleManager  = newRole("title manager")
-	RoleIssueCurator  = newRole("issue curator")
-	RoleIssueReviewer = newRole("issue reviewer")
-	RoleUserManager   = newRole("user manager")
-	RoleMOCManager    = newRole("marc org code manager")
+	RoleAny             = newRole("-any-")
+	RoleAdmin           = newRole("admin")
+	RoleTitleManager    = newRole("title manager")
+	RoleIssueCurator    = newRole("issue curator")
+	RoleIssueReviewer   = newRole("issue reviewer")
+	RoleUserManager     = newRole("user manager")
+	RoleMOCManager      = newRole("marc org code manager")
+	RoleWorkflowManager = newRole("workflow manager")
 )
 
 // roles is our internal map of string to Role object
