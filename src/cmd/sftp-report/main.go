@@ -2,13 +2,18 @@ package main
 
 import (
 	"bashconf"
+	"database/sql"
 	"fileutil"
 	"fmt"
 	"log"
 	"net/http"
 	"os"
+	"time"
+	"user"
 	"webutil"
 
+	"github.com/Nerdmaster/magicsql"
+	_ "github.com/go-sql-driver/mysql"
 	"github.com/gorilla/mux"
 	"github.com/jessevdk/go-flags"
 )
@@ -17,6 +22,7 @@ var opts struct {
 	ConfigFile     string `short:"c" long:"config" description:"path to P2C config file" required:"true"`
 	Port           int    `short:"p" long:"port" description:"port to listen for HTTP traffic" required:"true"`
 	Bind           string `long:"bind" description:"Bind address, usually safe to leave blank"`
+	Debug          bool   `long:"debug" description:"Enables debug mode for testing different users"`
 	ReportExit     bool   `long:"report-and-exit" description:"Show a textual SFTP report and exit the app"`
 	Webroot        string `long:"webroot" description:"The base path to the app if it isn't just '/'"`
 	StaticFilePath string `long:"static-files" description:"Path on disk to static JS/CSS/images" required:"true"`
@@ -25,6 +31,11 @@ var opts struct {
 // SFTPPath gets the configured path to the SFTP root where each publisher
 // directory resides
 var SFTPPath string
+
+// DEBUG is only enabled via command-line and should be used very sparingly,
+// such as for user-switching (though an actual user-switch permission would be
+// way better)
+var DEBUG bool
 
 func getConf() {
 	var p = flags.NewParser(&opts, flags.HelpFlag|flags.PassDoubleDash)
@@ -50,12 +61,29 @@ func getConf() {
 		os.Exit(1)
 	}
 
+	// DB string format: user:pass@tcp(127.0.0.1:3306)/db
+	var sqldb *sql.DB
+	var connect = fmt.Sprintf("%s:%s@tcp(%s:%s)/%s", c["DB_USER"], c["DB_PASSWORD"], c["DB_HOST"],
+		c["DB_PORT"], c["DB_DATABASE"])
+	sqldb, err = sql.Open("mysql", connect)
+	if err != nil {
+		log.Fatal("Unable to connect to the database: %s", err)
+	}
+	sqldb.SetConnMaxLifetime(time.Second * 14400)
+	user.DB = magicsql.Wrap(sqldb)
+
 	if len(args) == 0 {
 		fmt.Fprintf(os.Stderr, "Missing required parameter, <template path>\n\n", SFTPPath)
 		p.WriteHelp(os.Stderr)
 		os.Exit(1)
 	}
 	webutil.Webroot = opts.Webroot
+
+	if opts.Debug == true {
+		log.Printf("WARNING: Debug mode has been enabled")
+		DEBUG = true
+	}
+
 	initTemplates(args[0])
 }
 
@@ -65,17 +93,29 @@ func makeRedirect(dest string, code int) http.Handler {
 	})
 }
 
+// canViewSFTPReport is an alias for the privilege-checking handlerfunc wrapper
+func canViewSFTPReport(h http.HandlerFunc) http.Handler {
+	return mustHavePrivilege(user.FindPrivilege("sftp report"), h)
+}
+
 func startServer() {
 	var r = mux.NewRouter()
 	var hp = webutil.HomePath()
 	var pp = webutil.PublisherPath("{publisher}")
 	var ip = webutil.IssuePath("{publisher}", "{issue}")
 	var pdfPath = webutil.PDFPath("{publisher}", "{issue}", "{filename}")
-	r.HandleFunc(hp, HomeHandler)
+
+	// Make sure homepath/ isn't considered the canonical path
 	r.Handle(hp+"/", makeRedirect(hp, http.StatusMovedPermanently))
-	r.NewRoute().Path(pp).HandlerFunc(PublisherHandler)
-	r.NewRoute().Path(ip).HandlerFunc(IssueHandler)
-	r.NewRoute().Path(pdfPath).HandlerFunc(PDFFileHandler)
+
+	r.NewRoute().Path(hp).Handler(canViewSFTPReport(HomeHandler))
+	r.NewRoute().Path(pp).Handler(canViewSFTPReport(PublisherHandler))
+	r.NewRoute().Path(ip).Handler(canViewSFTPReport(IssueHandler))
+	r.NewRoute().Path(pdfPath).Handler(canViewSFTPReport(PDFFileHandler))
+
+	// The static handler doesn't check permissions.  Right now this is okay, as
+	// what we serve isn't valuable beyond page layout, but this may warrant a
+	// fileserver clone + rewrite.
 	r.NewRoute().PathPrefix(hp).Handler(http.StripPrefix(hp, http.FileServer(http.Dir(opts.StaticFilePath))))
 
 	http.Handle("/", nocache(logMiddleware(r)))
