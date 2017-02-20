@@ -3,6 +3,7 @@ package user
 import (
 	"github.com/Nerdmaster/magicsql"
 	"log"
+	"strings"
 )
 
 var DB *magicsql.DB
@@ -12,6 +13,8 @@ type User struct {
 	ID          int `sql:",primary"`
 	Login       string
 	RolesString string `sql:"roles"`
+	roles       []*Role
+	privileges  []*Privilege
 }
 
 // New returns an empty user with no roles or ID
@@ -31,4 +34,36 @@ func FindByLogin(l string) *User {
 		return nil
 	}
 	return users[0]
+}
+
+// Roles returns the split list of roles assigned to a user
+func (u *User) Roles() []*Role {
+	if len(u.roles) == 0 {
+		u.buildRoles()
+	}
+	return u.roles
+}
+
+func (u *User) buildRoles() {
+	var roleStrings = strings.Split(u.RolesString, ",")
+	u.roles = make([]*Role, 0)
+	for _, rs := range roleStrings {
+		var role = FindRole(rs)
+		if role == nil {
+			log.Printf("ERROR: User %s has an invalid role: %s", u.Login, role)
+			continue
+		}
+		u.roles = append(u.roles, role)
+	}
+}
+
+// PermittedTo returns true if this user has pName in his privilege list
+func (u *User) PermittedTo(pName string) bool {
+	var priv = FindPrivilege(pName)
+	if priv == nil {
+		log.Printf("WARNING: Invalid privilege checked: %s", pName)
+		return false
+	}
+
+	return priv.AllowedByAny(u.Roles())
 }
