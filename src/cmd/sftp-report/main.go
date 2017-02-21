@@ -31,7 +31,7 @@ var opts struct {
 	Debug          bool   `long:"debug" description:"Enables debug mode for testing different users"`
 	ReportExit     bool   `long:"report-and-exit" description:"Show a textual SFTP report and exit the app"`
 	Webroot        string `long:"webroot" description:"The base path to the app if it isn't just '/'"`
-	ParentWebroot  string `long:"parent-webroot" description:"The base path to the parent app"`
+	ParentWebroot  string `long:"parent-webroot" description:"The base path to the parent app" required:"true"`
 	StaticFilePath string `long:"static-files" description:"Path on disk to static JS/CSS/images" required:"true"`
 }
 
