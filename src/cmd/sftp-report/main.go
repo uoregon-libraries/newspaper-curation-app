@@ -2,18 +2,15 @@ package main
 
 import (
 	"bashconf"
-	"database/sql"
+	"db"
 	"fileutil"
 	"fmt"
 	"log"
 	"net/http"
 	"os"
-	"time"
 	"user"
 	"webutil"
 
-	"github.com/Nerdmaster/magicsql"
-	_ "github.com/go-sql-driver/mysql"
 	"github.com/gorilla/mux"
 	"github.com/jessevdk/go-flags"
 )
@@ -68,16 +65,11 @@ func getConf() {
 		os.Exit(1)
 	}
 
-	// DB string format: user:pass@tcp(127.0.0.1:3306)/db
-	var sqldb *sql.DB
-	var connect = fmt.Sprintf("%s:%s@tcp(%s:%s)/%s", c["DB_USER"], c["DB_PASSWORD"], c["DB_HOST"],
-		c["DB_PORT"], c["DB_DATABASE"])
-	sqldb, err = sql.Open("mysql", connect)
+	err = db.Connect(c)
 	if err != nil {
-		log.Fatal("Unable to connect to the database: %s", err)
+		log.Fatal("Error trying to connect to database: %s", err)
 	}
-	sqldb.SetConnMaxLifetime(time.Second * 14400)
-	user.DB = magicsql.Wrap(sqldb)
+	user.DB = db.DB
 
 	if len(args) == 0 {
 		fmt.Fprintf(os.Stderr, "Missing required parameter, <template path>\n\n", SFTPPath)
