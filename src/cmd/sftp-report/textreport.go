@@ -7,9 +7,9 @@ import (
 )
 
 func textReportOut() {
-	var pubList, err = sftp.BuildPublishers(SFTPPath)
+	var pubList, err = sftp.BuildPublishers(Conf.MasterPDFUploadPath)
 	if err != nil {
-		log.Fatalf("Error: Unable to read publisher directories: %s\n", SFTPPath, err)
+		log.Fatalf("Error: Unable to read publisher directories: %s\n", err)
 	}
 
 	for _, pub := range pubList {

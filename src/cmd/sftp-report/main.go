@@ -1,9 +1,8 @@
 package main
 
 import (
-	"bashconf"
+	"config"
 	"db"
-	"fileutil"
 	"fmt"
 	"log"
 	"net/http"
@@ -32,14 +31,12 @@ var opts struct {
 	StaticFilePath string `long:"static-files" description:"Path on disk to static JS/CSS/images" required:"true"`
 }
 
-// SFTPPath gets the configured path to the SFTP root where each publisher
-// directory resides
-var SFTPPath string
-
 // DEBUG is only enabled via command-line and should be used very sparingly,
 // such as for user-switching (though an actual user-switch permission would be
 // way better)
 var DEBUG bool
+
+var Conf *config.Config
 
 func getConf() {
 	var p = flags.NewParser(&opts, flags.HelpFlag|flags.PassDoubleDash)
@@ -52,27 +49,19 @@ func getConf() {
 		os.Exit(1)
 	}
 
-	var c bashconf.Config
-	c, err = bashconf.ReadFile(opts.ConfigFile)
+	Conf, err = config.Parse(opts.ConfigFile)
 	if err != nil {
-		log.Fatal("Error parsing config file: %s", err)
+		log.Fatalf("Config error: %s", err)
 	}
 
-	SFTPPath = c["MASTER_PDF_UPLOAD_PATH"]
-	if !fileutil.IsDir(SFTPPath) {
-		fmt.Fprintf(os.Stderr, "Error: Cannot access SFTP path %#v\n\n", SFTPPath)
-		p.WriteHelp(os.Stderr)
-		os.Exit(1)
-	}
-
-	err = db.Connect(c)
+	err = db.Connect(Conf.DatabaseConnect)
 	if err != nil {
-		log.Fatal("Error trying to connect to database: %s", err)
+		log.Fatalf("Error trying to connect to database: %s", err)
 	}
 	user.DB = db.DB
 
 	if len(args) == 0 {
-		fmt.Fprintf(os.Stderr, "Missing required parameter, <template path>\n\n", SFTPPath)
+		fmt.Fprintf(os.Stderr, "Missing required parameter, <template path>\n\n")
 		p.WriteHelp(os.Stderr)
 		os.Exit(1)
 	}

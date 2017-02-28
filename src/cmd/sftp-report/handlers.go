@@ -90,9 +90,9 @@ func mustHavePrivilege(priv *user.Privilege, f http.HandlerFunc) http.Handler {
 // into it.  If the list can't be loaded, an HTTP error is sent out and the
 // return is false.
 func LoadPublishers(r *Responder) bool {
-	var pubList, err = sftp.BuildPublishers(SFTPPath)
+	var pubList, err = sftp.BuildPublishers(Conf.MasterPDFUploadPath)
 	if err != nil {
-		log.Printf("ERROR: Couldn't load publishers in %s: %s", SFTPPath, err)
+		log.Printf("ERROR: Couldn't load publishers in %s: %s", Conf.MasterPDFUploadPath, err)
 		http.Error(r.Writer, "Unable to load publisher list!", 500)
 		return false
 	}

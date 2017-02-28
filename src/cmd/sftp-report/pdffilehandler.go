@@ -20,7 +20,7 @@ func PDFFileHandler(w http.ResponseWriter, req *http.Request) {
 	var issue = filepath.Base(mux.Vars(req)["issue"])
 	var filename = filepath.Base(mux.Vars(req)["filename"])
 
-	var path = filepath.Join(SFTPPath, pub, issue, filename)
+	var path = filepath.Join(Conf.MasterPDFUploadPath, pub, issue, filename)
 	if strings.ToUpper(filepath.Ext(path)) != ".PDF" {
 		r.Vars.Alert = fmt.Sprintf("%#v is not a valid PDF file and cannot be viewed", path)
 		r.Render("empty")
