@@ -1,7 +1,10 @@
 .PHONY: all lint format clean
 
-all:
+all: vendor/src
 	gb build
+
+vendor/src:
+	gb vendor restore
 
 lint:
 	golint src/...
