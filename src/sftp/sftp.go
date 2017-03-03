@@ -4,37 +4,13 @@ package sftp
 
 import (
 	"errorlist"
+	"fileutil"
 	"fmt"
 	"os"
 	"path/filepath"
-	"sort"
 	"strings"
 	"time"
 )
-
-// readdir wraps os.File's Readdir to handle common operations we need for
-// getting a list of file info structures
-func readdir(path string) ([]os.FileInfo, error) {
-	var d *os.File
-	var err error
-
-	d, err = os.Open(path)
-	if err != nil {
-		return nil, err
-	}
-
-	var items []os.FileInfo
-	items, err = d.Readdir(-1)
-	d.Close()
-	return items, err
-}
-
-// byName implements sort.Interface for sorting os.FileInfo data by name
-type byName []os.FileInfo
-
-func (n byName) Len() int           { return len(n) }
-func (n byName) Swap(i, j int)      { n[i], n[j] = n[j], n[i] }
-func (n byName) Less(i, j int) bool { return n[i].Name() < n[j].Name() }
 
 // PDF stores a single PDF's data and error information.  Note that this can be
 // used for non-PDF files since we just enumerate over everything in an issue
@@ -71,13 +47,12 @@ type Issue struct {
 // on fatal filesystem errors.
 func (issue *Issue) ScanPDFs() error {
 	var path = filepath.Join(issue.Publisher.RealPath, issue.Name)
-	var items, err = readdir(path)
+	var items, err = fileutil.ReaddirSorted(path)
 	if err != nil {
 		return err
 	}
 
 	// Every item should be a PDF file
-	sort.Sort(byName(items))
 	for _, i := range items {
 		var pdf = &PDF{
 			Name:         i.Name(),
@@ -154,14 +129,13 @@ type Publisher struct {
 // errors.  Returns an actual error object on fatal filesystem errors.  This
 // should only be run on a publisher with its path data already set up.
 func (p *Publisher) ScanIssues() error {
-	var items, err = readdir(p.RealPath)
+	var items, err = fileutil.ReaddirSorted(p.RealPath)
 	if err != nil {
 		return err
 	}
 
 	// Every item should be a properly formatted date directory which we can turn
 	// into an Issue
-	sort.Sort(byName(items))
 	for _, i := range items {
 		var issue = &Issue{Publisher: p, Errors: errorlist.New()}
 		issue.Name = i.Name()
@@ -199,12 +173,11 @@ func (p *Publisher) ErrorCount() int {
 // this level, we don't try to find or report any non-filesystem errors.
 func BuildPublishers(path string) ([]*Publisher, error) {
 	var pubList []*Publisher
-	var items, err = readdir(path)
+	var items, err = fileutil.ReaddirSorted(path)
 	if err != nil {
 		return nil, err
 	}
 
-	sort.Sort(byName(items))
 	for _, i := range items {
 		var pubName = i.Name()
 		var path = filepath.Join(path, pubName)
