@@ -4,6 +4,7 @@ package fileutil
 
 import (
 	"os"
+	"path/filepath"
 	"sort"
 )
 
@@ -62,4 +63,76 @@ func (n byName) Less(i, j int) bool { return n[i].Name() < n[j].Name() }
 // SortFileInfos sorts a slice of os.FileInfo data by the underlying filename
 func SortFileInfos(list []os.FileInfo) {
 	sort.Sort(byName(list))
+}
+
+// FindDirectories returns a list of all directories or symlinks to directories
+// within the given root
+func FindDirectories(root string) ([]string, error) {
+	var results []string
+	var items, err = ReaddirSorted(root)
+	if err != nil {
+		// Don't fail on permission errors, just skip the dir
+		if os.IsPermission(err) {
+			return nil, nil
+		}
+		return nil, err
+	}
+
+	for _, i := range items {
+		var fName = i.Name()
+		var path = filepath.Join(root, fName)
+		var realPath = path
+		if i.Mode()&os.ModeSymlink != 0 {
+			realPath, err = os.Readlink(path)
+			if err != nil {
+				return nil, err
+			}
+			// Symlinks kind of suck - they can be absolute or relative, and if
+			// they're relative we have to make them absolute....
+			if !filepath.IsAbs(realPath) {
+				realPath = filepath.Join(root, realPath)
+			}
+
+			i, err = os.Stat(realPath)
+			if err != nil {
+				// Don't fail on permission errors, just skip the file/dir
+				if os.IsPermission(err) {
+					continue
+				}
+				return nil, err
+			}
+		}
+		realPath = filepath.Clean(realPath)
+
+		// Skip anything we can't descend into
+		if !i.IsDir() {
+			continue
+		}
+
+		results = append(results, path)
+	}
+
+	return results, nil
+}
+
+// Find traverses the filesystem to the given depth, returning only the items
+// that are found at that depth.  Traverses symlinks if they are directories.
+// Returns the first error found if any occur.
+func Find(root string, depth int) ([]string, error) {
+	var paths = []string{root}
+	var newPaths []string
+	for depth > 0 {
+		for _, p := range paths {
+			var appendList, err = FindDirectories(p)
+			if err != nil {
+				return nil, err
+			}
+			newPaths = append(newPaths, appendList...)
+		}
+		paths = newPaths
+		newPaths = nil
+		depth--
+	}
+
+	return paths, nil
 }
