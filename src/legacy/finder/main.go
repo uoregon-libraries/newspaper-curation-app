@@ -100,6 +100,8 @@ func getConf() {
 
 func main() {
 	getConf()
+	cacheSFTPTitlesByName()
+	cacheAllIssues()
 	for _, ik := range issueSearchKeys {
 		log.Printf("DEBUG: Searching for issue %#v", ik)
 	}
