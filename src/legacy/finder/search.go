@@ -19,11 +19,11 @@ var titleLookup = make(map[string]*Title)
 // issueLookup lets us find issues by key
 var issueLookup = make(issueMap)
 
-// issueLocLookup lets us find an issue's raw location
+// issueLocLookup lets us find an issue's raw location(s)
 var issueLocLookup = make(issueLocMap)
 
-// cacheIssue shortcuts the process of getting an issue's key and storing its
-// filesystem path in issueLocLookup and the object in issueLookup
+// cacheIssue shortcuts the process of getting an issue's key and storing issue
+// data in the cache and issue path in the path lookup
 func cacheIssue(i *Issue, location string) {
 	var k = i.Key()
 	var iList = issueLookup[k]

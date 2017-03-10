@@ -57,24 +57,16 @@ func ParseBatchname(fullname string) (*Batch, error) {
 	return b, nil
 }
 
-// Fullname is the full batch name, not just the batch's "simple" name
+// Fullname is the full batch name
 func (b *Batch) Fullname() string {
 	var parts = []string{"batch", b.MARCOrgCode, b.Keyword, fmt.Sprintf("ver%02d", b.Version)}
 	return strings.Join(parts, "_")
 }
 
 // Title represents whatever common data we need across titles we read from
-// filesystem data, database data, and the live site.  Note that each Title
-// instance is a single *source* of Title data, so we could have multiple
-// instances of the same LCCN simply by scanning in multiple locations.  In
-// typical cases, each one will have a unique list of issues, but duped issues
-// can also exist when something goes wrong.
+// filesystem data, database data, and the live site
 type Title struct {
-	// LCCN should be set for all titles regardless where they're found.  If we
-	// read data from an SFTP directory, this will have to be looked up in the
-	// database, as those are named for the SFTP user and won't have an LCCN just
-	// from the filesystem data.
-	LCCN string
+	LCCN   string
 	Issues []*Issue
 }
 
