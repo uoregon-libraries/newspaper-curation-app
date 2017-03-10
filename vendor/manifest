@@ -6,6 +6,13 @@
 			"repository": "https://github.com/go-sql-driver/mysql",
 			"revision": "a0583e0143b1624142adab07e0e97fe106d99561",
 			"branch": "HEAD"
+		},
+		{
+			"importpath": "golang.org/x/crypto/sha3",
+			"repository": "https://go.googlesource.com/crypto",
+			"revision": "728b753d0135da6801d45a38e6f43ff55779c5c2",
+			"branch": "master",
+			"path": "/sha3"
 		}
 	]
 }
