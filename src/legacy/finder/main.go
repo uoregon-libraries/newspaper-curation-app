@@ -8,6 +8,7 @@ package main
 import (
 	"config"
 	"db"
+	"fileutil"
 	"fmt"
 	"io/ioutil"
 	"log"
@@ -24,26 +25,35 @@ var issueSearchKeys []*issueSearchKey
 // Command-line options
 var opts struct {
 	ConfigFile string   `short:"c" long:"config" description:"path to P2C config file" required:"true"`
+	Siteroot   string   `long:"siteroot" description:"URL to the live host" required:"true"`
+	CachePath  string   `long:"cache-path" description:"Path to cache downloaded JSON files" required:"true"`
 	IssueList  string   `long:"issue-list" description:"path to file containing list of newline-separated issue keys"`
 	IssueKeys  []string `long:"issue-key" description:"single issue key to process, e.g., 'sn12345678/1905123101'"`
 }
 
 var p *flags.Parser
 
-func usageFail(format string, args ...interface{}) {
-	fmt.Fprint(os.Stderr, wordutils.Wrap(fmt.Sprintf(format, args...), 80))
+// wrap is a helper to wrap a usage message at 80 characters and print a
+// newline afterward
+func wrap(msg string) {
+	fmt.Fprint(os.Stderr, wordutils.Wrap(msg, 80))
 	fmt.Fprintln(os.Stderr)
+}
+
+func usageFail(format string, args ...interface{}) {
+	wrap(fmt.Sprintf(format, args...))
 	fmt.Fprintln(os.Stderr)
 	p.WriteHelp(os.Stderr)
 	fmt.Fprintln(os.Stderr)
-	fmt.Fprint(os.Stderr, wordutils.Wrap("At least one of --issue-list or " +
-		"--issue-key must be specified.  If both are specified, --issue-key will " +
-		"be ignored.  Note that --issue-key may be specified multiple times.", 80))
+	wrap("At least one of --issue-list or --issue-key must be specified.  " +
+		"If both are specified, --issue-key will be ignored.  Note that " +
+		"--issue-key may be specified multiple times.")
 	fmt.Fprintln(os.Stderr)
+	wrap("Issue keys MUST be formatted as LCCN/YYYY[MM][DD][EE].  The full LCCN and year are mandatory.")
 	fmt.Fprintln(os.Stderr)
-	fmt.Fprint(os.Stderr, wordutils.Wrap("Issue keys MUST be formatted as " +
-		`LCCN/YYYY[MM][DD][EE].  The full LCCN and year are mandatory.`, 80))
-	fmt.Fprintln(os.Stderr)
+	wrap("--siteroot must point to the live site, for downloading batch and " +
+		"issue information so the search knows if an issue is live, and if so, " +
+		"in what batch it was ingested.")
 	os.Exit(1)
 }
 
@@ -79,6 +89,13 @@ func getConf() {
 		opts.IssueKeys = strings.Split(string(contents), "\n")
 	}
 
+	// If we have a batch URL, we must have a valid cache path
+	if opts.Siteroot != "" {
+		if !fileutil.IsDir(opts.CachePath) {
+			usageFail("ERROR: --cache-path %#v is not a valid directory", opts.CachePath)
+		}
+	}
+
 	// Verify that each issue key at least *looks* legit before burning time
 	// searching stuff
 	for _, ik := range opts.IssueKeys {
@@ -101,6 +118,12 @@ func getConf() {
 func main() {
 	getConf()
 	cacheSFTPTitlesByName()
+
+	var err = cacheLiveBatchedIssues(opts.Siteroot, opts.CachePath)
+	if err != nil {
+		log.Fatalf("Error trying to cache live batched issues: %s", err)
+	}
+
 	cacheAllIssues()
 	for _, ik := range issueSearchKeys {
 		log.Printf("DEBUG: Searching for issue %#v", ik)
