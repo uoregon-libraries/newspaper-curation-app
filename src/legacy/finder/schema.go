@@ -88,5 +88,5 @@ type Issue struct {
 
 // Key returns the unique string that represents this issue
 func (i *Issue) Key() string {
-	return fmt.Sprintf("%s/%s%02d", i.Title.LCCN, i.Date.Format("20050102"), i.Edition)
+	return fmt.Sprintf("%s/%s%02d", i.Title.LCCN, i.Date.Format("20060102"), i.Edition)
 }
