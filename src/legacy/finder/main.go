@@ -124,7 +124,7 @@ func main() {
 		log.Fatalf("Error trying to cache live batched issues: %s", err)
 	}
 
-	cacheAllIssues()
+	cacheAllFilesystemIssues()
 	for _, k := range issueSearchKeys {
 		log.Printf("DEBUG: Looking up by issue key %#v", k.String())
 		for _, ik := range k.issueKeys() {
