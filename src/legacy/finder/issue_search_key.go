@@ -58,3 +58,58 @@ func parseSearchKey(ik string) (*issueSearchKey, error) {
 	return key, nil
 }
 
+// String returns the textual representation of this search key for use in lookups
+func (k issueSearchKey) String() string {
+	var keyString = fmt.Sprintf("%s/%04d", k.lccn, k.year)
+	if k.month > 0 {
+		keyString += strconv.Itoa(k.month)
+	}
+	if k.day > 0 {
+		keyString += strconv.Itoa(k.day)
+	}
+	if k.ed > 0 {
+		keyString += strconv.Itoa(k.ed)
+	}
+
+	return keyString
+}
+
+// getLookup returns the appropriate issue map to use when looking up
+// issues using this key
+func (k *issueSearchKey) getLookup() issueMap {
+	if k.month == 0 {
+		return issueLookupNoMonth
+	}
+	if k.day == 0 {
+		return issueLookupNoDay
+	}
+	if k.ed == 0 {
+		return issueLookupNoEdition
+	}
+	return issueLookup
+}
+
+// issues returns all issues cached using the appropriate lookup and this key
+func (k *issueSearchKey) issues() []*Issue {
+	var lookup = k.getLookup()
+	return lookup[k.String()]
+}
+
+// issueKeys returns unique issue keys for this key's lookup.  When reporting,
+// we want to first figure out what the search found, then drill into each
+// issue key to see what locations that key was seen.
+func (k *issueSearchKey) issueKeys() []string {
+	var issues = k.issues()
+	var keys []string
+	var seen = make(map[string]bool)
+	for _, i := range issues {
+		var ik = i.Key()
+		if seen[ik] {
+			continue
+		}
+		seen[ik] = true
+		keys = append(keys, ik)
+	}
+
+	return keys
+}

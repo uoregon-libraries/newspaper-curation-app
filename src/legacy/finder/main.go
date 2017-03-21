@@ -125,7 +125,20 @@ func main() {
 	}
 
 	cacheAllIssues()
-	for _, ik := range issueSearchKeys {
-		log.Printf("DEBUG: Searching for issue %#v", ik)
+	for _, k := range issueSearchKeys {
+		log.Printf("DEBUG: Looking up by issue key %#v", k.String())
+		for _, ik := range k.issueKeys() {
+			var issues = issueLookup[ik]
+			for _, issue := range issues {
+				if issue.Batch != nil {
+					log.Printf("Found issue %#v in batch %#v", ik, issue.Batch.Fullname())
+				}
+			}
+
+			var locs = issueLocLookup[ik]
+			for _, loc := range locs {
+				log.Printf("Found issue %#v at location %#v", ik, loc)
+			}
+		}
 	}
 }

@@ -19,11 +19,21 @@ var titleLookup = make(map[string]*Title)
 // issueLookup lets us find issues by key
 var issueLookup = make(issueMap)
 
+// issueLookupNoEdition is a lookup containing all issues for a given partial
+// key, where the partial key contains everything except an Issue edition
+var issueLookupNoEdition = make(issueMap)
+
+// issueLookupNoDay looks up issues without day number or edition
+var issueLookupNoDay = make(issueMap)
+
+// issueLookupNoDay looks up issues without month, day number, or edition
+var issueLookupNoMonth = make(issueMap)
+
 // issueLocLookup lets us find an issue's raw location(s)
 var issueLocLookup = make(issueLocMap)
 
 // cacheIssue shortcuts the process of getting an issue's key and storing issue
-// data in the cache and issue path in the path lookup
+// data in the caches and issue path in the path lookup
 func cacheIssue(i *Issue, location string) {
 	var k = i.Key()
 	var iList = issueLookup[k]
@@ -33,6 +43,24 @@ func cacheIssue(i *Issue, location string) {
 	var ipList = issueLocLookup[k]
 	ipList = append(ipList, location)
 	issueLocLookup[k] = ipList
+
+	// No edition
+	k = k[:len(k)-2]
+	iList = issueLookupNoEdition[k]
+	iList = append(iList, i)
+	issueLookupNoEdition[k] = iList
+
+	// No day number
+	k = k[:len(k)-2]
+	iList = issueLookupNoDay[k]
+	iList = append(iList, i)
+	issueLookupNoDay[k] = iList
+
+	// No month
+	k = k[:len(k)-2]
+	iList = issueLookupNoMonth[k]
+	iList = append(iList, i)
+	issueLookupNoMonth[k] = iList
 }
 
 // cacheAllIssues calls all the individual cache functions for the myriad of
