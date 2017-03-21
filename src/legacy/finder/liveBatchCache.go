@@ -101,10 +101,9 @@ func findBatchedIssueMetadata(c *httpcache.Client, batchURL string) ([]*issueMet
 }
 
 // findAllLiveBatches hits the web server to request the full list of every
-// known batch.  Results are stored in the cache path for debugging, but in
-// this case the cache is never actually read, just written.  The returned
-// structures are the aggregated batch metadata objects found after traversing
-// all pages of batches.
+// known batch.  Results are stored in the cache path.  The returned structures
+// are the aggregated batch metadata objects found after traversing all pages
+// of batches.
 func findAllLiveBatches(hostname, cachePath string) ([]*batchMetadata, error) {
 	// We don't bother throttling because there won't be more than a handful of
 	// batch list pages
