@@ -17,6 +17,10 @@ func cacheAllFilesystemIssues() {
 	if err != nil {
 		log.Fatalf("Error trying to cache SFTPed issues: %s", err)
 	}
+	err = cacheStandardIssues()
+	if err != nil {
+		log.Fatalf("Error trying to cache standard filesystem issues: %s", err)
+	}
 }
 
 // cacheSFTPIssues is just barely its own special case because unlike the
@@ -29,6 +33,62 @@ func cacheSFTPIssues() error {
 	}
 
 	// Find all issues next
+	for _, titlePath := range titlePaths {
+		err = cacheStandardIssuesForTitle(titlePath)
+		if err != nil {
+			return err
+		}
+	}
+
+	return nil
+}
+
+// cacheStandardIssues deals with all the various locations for issues which
+// are not in a batch directory structure.  This doesn't mean they haven't been
+// batched, just that the directory uses the somewhat consistent pdf-to-chronam
+// structure `topdir/sftpnameOrLCCN/yyyy-mm-dd/`
+func cacheStandardIssues() error {
+	var locs = []string{
+		Conf.PDFPageReviewPath,
+		Conf.PDFPagesAwaitingMetadataReview,
+		Conf.PDFIssuesAwaitingDerivatives,
+		Conf.ScansAwaitingDerivatives,
+		Conf.PDFPageBackupPath,
+		Conf.PDFPageSourcePath,
+	}
+
+	for _, loc := range locs {
+		var err = cacheStandardIssuesFromPath(loc)
+		if err != nil {
+			return err
+		}
+	}
+
+	return nil
+}
+
+// cacheStandardIssuesFromPath does the work of finding and returning all issue
+// information within a given path with the assumption that the path conforms
+// to `topdir/sftpnameOrLCCN/yyyy-mm-dd/`
+func cacheStandardIssuesFromPath(path string) error {
+	// First find all topdirs
+	var topdirs, err = fileutil.FindDirectories(path)
+	if err != nil {
+		return err
+	}
+
+	// Next, find titles
+	var titlePaths []string
+	for _, p := range topdirs {
+		var paths, err = fileutil.FindDirectories(p)
+		if err != nil {
+			return err
+		}
+
+		titlePaths = append(titlePaths, paths...)
+	}
+
+	// Finally, find issues
 	for _, titlePath := range titlePaths {
 		err = cacheStandardIssuesForTitle(titlePath)
 		if err != nil {
