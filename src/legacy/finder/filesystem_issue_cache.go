@@ -34,7 +34,7 @@ func cacheSFTPIssues() error {
 
 	// Find all issues next
 	for _, titlePath := range titlePaths {
-		err = cacheStandardIssuesForTitle(titlePath)
+		err = cacheStandardIssuesForTitle(titlePath, false)
 		if err != nil {
 			return err
 		}
@@ -90,7 +90,7 @@ func cacheStandardIssuesFromPath(path string) error {
 
 	// Finally, find issues
 	for _, titlePath := range titlePaths {
-		err = cacheStandardIssuesForTitle(titlePath)
+		err = cacheStandardIssuesForTitle(titlePath, true)
 		if err != nil {
 			return err
 		}
@@ -103,7 +103,7 @@ func cacheStandardIssuesFromPath(path string) error {
 // by looking for YYYY-MM-DD formatted directories.  The path is expected to be
 // "standard", so the last directory element in the path must be an SFTP title
 // name or an LCCN.
-func cacheStandardIssuesForTitle(path string) error {
+func cacheStandardIssuesForTitle(path string, allowEdition bool) error {
 	// Make sure we have a legitimate title - we have to check both the SFTP
 	// and LCCN lookups
 	var titleName = filepath.Base(path)
@@ -130,6 +130,19 @@ func cacheStandardIssuesForTitle(path string) error {
 		// that's currently one way we flag problems
 		if strings.HasSuffix(base, "-error") {
 			continue
+		}
+
+		// Oh, and sometimes it's okay to have _\d\d in the path.  Technically this
+		// isn't okay for the SFTP uploads, though, so it's an arg, not an
+		// always-on check.
+		if allowEdition && len(base) >= 13 && base[10] == '_' {
+			base = base[:10] + base[13:]
+		}
+
+		// And of course we have to remove our wonderful path hack that was built
+		// to avoid dupes....
+		if len(base) == 16 && base[10:12] == "==" {
+			base = base[:10]
 		}
 
 		var dt, err = time.Parse("2006-01-02", base)
