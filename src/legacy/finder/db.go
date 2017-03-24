@@ -5,30 +5,32 @@ import (
 	"log"
 )
 
-var sftpTitlesByName = make(map[string]*Title)
+var titlesBySFTPDir = make(map[string]*Title)
+var titlesByLCCN = make(map[string]*Title)
 
-// SFTPTitle is used to read non-historic titles from the database
-type SFTPTitle struct {
+type dbTitle struct {
 	ID    int `sql:",primary"`
 	SFTPDir string
 	LCCN  string
 }
 
-// cacheSFTPTitlesByName caches all titles by sftp directory for easy lookup by
-// sftp dir since SFTP dirs are often not the same as LCCN
-func cacheSFTPTitlesByName() {
+// cacheDBTitles caches all titles by SFTP directory and LCCN for easy lookup
+// when we are dealing with unknown path elements that may be from an SFTP
+// source or an in-house scan
+func cacheDBTitles() {
 	var op = db.DB.Operation()
 	op.Dbg = true
-	var titles []*SFTPTitle
-	op.Select("titles", &SFTPTitle{}).AllObjects(&titles)
+	var dbTitles []*dbTitle
+	op.Select("titles", &dbTitle{}).AllObjects(&dbTitles)
 	if op.Err() != nil {
-		log.Fatalf("ERROR: Unable to query sftp titles")
+		log.Fatalf("ERROR: Unable to query titles: %s", op.Err())
 	}
 
-	for _, t := range titles {
-		if t.SFTPDir == "" {
-			continue
+	for _, t := range dbTitles {
+		var title = &Title{LCCN: t.LCCN}
+		if t.SFTPDir != "" {
+			titlesBySFTPDir[t.SFTPDir] = title
 		}
-		sftpTitlesByName[t.SFTPDir] = &Title{LCCN: t.LCCN}
+		titlesByLCCN[t.LCCN] = title
 	}
 }

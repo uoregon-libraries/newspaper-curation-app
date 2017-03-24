@@ -29,7 +29,7 @@ func cacheSFTPIssues() error {
 	for _, titlePath := range titlePaths {
 		// Make sure we have a legitimate title
 		var titleName = filepath.Base(titlePath)
-		var title = sftpTitlesByName[titleName]
+		var title = titlesBySFTPDir[titleName]
 		if title == nil {
 			log.Printf("WARNING: Invalid title detected: %s", titleName)
 			continue

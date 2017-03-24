@@ -117,7 +117,7 @@ func getConf() {
 
 func main() {
 	getConf()
-	cacheSFTPTitlesByName()
+	cacheDBTitles()
 
 	var err = cacheLiveBatchedIssues(opts.Siteroot, opts.CachePath)
 	if err != nil {
