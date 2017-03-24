@@ -115,7 +115,7 @@ func cacheStandardIssuesForTitle(path string, allowEdition bool) error {
 	// Not having a title is a problem, but not a reason to fail the whole
 	// process, so we log an error while letting the caller continue
 	if title == nil {
-		log.Printf("ERROR: Invalid title detected: %s", titleName)
+		log.Printf("ERROR: Invalid title detected in %#v: %s", path, titleName)
 		return nil
 	}
 
