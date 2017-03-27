@@ -144,11 +144,6 @@ func (p *Publisher) ScanIssues() error {
 		if !i.IsDir() {
 			issue.Errors.Append(fmt.Errorf("folder expected, got file instead"))
 		} else {
-			// We need to skip anything ending in "-error" as that's (currently) our
-			// flag that an issue is already a known error
-			if strings.HasSuffix(issue.Name, "-error") {
-				continue
-			}
 			issue.ValidateName()
 			issue.ScanPDFs()
 		}
