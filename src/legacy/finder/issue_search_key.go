@@ -62,13 +62,13 @@ func parseSearchKey(ik string) (*issueSearchKey, error) {
 func (k issueSearchKey) String() string {
 	var keyString = fmt.Sprintf("%s/%04d", k.lccn, k.year)
 	if k.month > 0 {
-		keyString += strconv.Itoa(k.month)
+		keyString += fmt.Sprintf("%02d", k.month)
 	}
 	if k.day > 0 {
-		keyString += strconv.Itoa(k.day)
+		keyString += fmt.Sprintf("%02d", k.day)
 	}
 	if k.ed > 0 {
-		keyString += strconv.Itoa(k.ed)
+		keyString += fmt.Sprintf("%02d", k.ed)
 	}
 
 	return keyString
