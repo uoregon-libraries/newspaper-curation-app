@@ -5,6 +5,8 @@ import (
 	"time"
 
 	"github.com/Nerdmaster/magicsql"
+	// We need to pull in mysql for the side-effect it offers us (allowing
+	// "mysql" as a driver name), not the actual code it provides
 	_ "github.com/go-sql-driver/mysql"
 )
 

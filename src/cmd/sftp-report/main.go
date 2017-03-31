@@ -36,6 +36,7 @@ var opts struct {
 // way better)
 var DEBUG bool
 
+// Conf stores the configuration data read from the legacy Python settings
 var Conf *config.Config
 
 func getConf() {

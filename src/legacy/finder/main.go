@@ -19,6 +19,7 @@ import (
 	"github.com/jessevdk/go-flags"
 )
 
+// Conf stores the configuration data read from the legacy Python settings
 var Conf *config.Config
 var issueSearchKeys []*issueSearchKey
 

@@ -1,11 +1,14 @@
-// wordutils is my very simple and naive port of one small aspect of the apache
-// commons WordUtils Java library
+// Package wordutils is my very simple and naive port of one small aspect of
+// the apache commons WordUtils Java library
 package wordutils
 
 import "strings"
 
 const newline = "\n"
 
+// Wrap takes s and wraps it at the given maximum length by inserting newlines
+// ("\n").  This is intentionally not as configurable as the apache commons
+// WordUtils version in order to simplify code and calling.
 func Wrap(s string, wrapLen int) string {
 	if wrapLen < 1 {
 		wrapLen = 1

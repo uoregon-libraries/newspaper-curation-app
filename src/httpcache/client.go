@@ -107,8 +107,9 @@ func (c *Client) ForceGetBytes(r *Request) ([]byte, error) {
 	return ioutil.ReadAll(body)
 }
 
-// PrepCacheDirectory ensures the directory a request will store its cached
-// file exists or else can be created, and returns the full path if successful
+// PrepCacheFile ensures the directory a request will store its cached file
+// exists or else can be created, and returns the full path to the file to be
+// cached if successful
 func (c *Client) PrepCacheFile(r *Request) (string, error) {
 	if c.CachePath == "" {
 		return "", fmt.Errorf("CachePath hasn't been initialized")
