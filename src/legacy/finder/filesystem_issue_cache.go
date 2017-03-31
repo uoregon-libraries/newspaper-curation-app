@@ -49,6 +49,7 @@ func cacheSFTPIssues() error {
 // structure `topdir/sftpnameOrLCCN/yyyy-mm-dd/`
 func cacheStandardIssues() error {
 	var locs = []string{
+		Conf.MasterPDFBackupPath,
 		Conf.PDFPageReviewPath,
 		Conf.PDFPagesAwaitingMetadataReview,
 		Conf.PDFIssuesAwaitingDerivatives,
