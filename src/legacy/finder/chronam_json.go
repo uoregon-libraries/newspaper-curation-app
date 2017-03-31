@@ -18,7 +18,7 @@ type batchMetadata struct {
 // is present.
 type batchesListJSON struct {
 	Batches []*batchMetadata
-	Next string
+	Next    string
 }
 
 // issueMetadata is stored in a batch's issue list and gives us the information

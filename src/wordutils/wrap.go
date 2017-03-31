@@ -5,6 +5,7 @@ package wordutils
 import "strings"
 
 const newline = "\n"
+
 func Wrap(s string, wrapLen int) string {
 	if wrapLen < 1 {
 		wrapLen = 1
@@ -32,9 +33,9 @@ func Wrap(s string, wrapLen int) string {
 			wrapped += s[offset:spaceToWrapAt] + newline
 			offset = spaceToWrapAt + 1
 		} else {
-      // wrap really long word one line at a time
-      wrapped += s[offset : wrapLen+offset] + newline
-      offset += wrapLen
+			// wrap really long word one line at a time
+			wrapped += s[offset:wrapLen+offset] + newline
+			offset += wrapLen
 		}
 	}
 

@@ -9,9 +9,9 @@ var titlesBySFTPDir = make(map[string]*Title)
 var titlesByLCCN = make(map[string]*Title)
 
 type dbTitle struct {
-	ID    int `sql:",primary"`
+	ID      int `sql:",primary"`
 	SFTPDir string
-	LCCN  string
+	LCCN    string
 }
 
 // cacheDBTitles caches all titles by SFTP directory and LCCN for easy lookup

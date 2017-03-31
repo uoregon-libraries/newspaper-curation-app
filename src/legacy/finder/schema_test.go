@@ -24,7 +24,7 @@ func TestParseNonconformingToSpecBatchname(t *testing.T) {
 	var name = "batch_oru_courage_3_ver01"
 	var b, err = ParseBatchname(name)
 	if err != nil {
-		t.Fatalf("Error parsing valid batch name (yes I know it violates the spec, " +
+		t.Fatalf("Error parsing valid batch name (yes I know it violates the spec, "+
 			"but it's still considered valid for some awful reason): %s", err)
 	}
 

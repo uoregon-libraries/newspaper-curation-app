@@ -13,7 +13,7 @@ type User struct {
 	ID          int `sql:",primary"`
 	Login       string
 	RolesString string `sql:"roles"`
-	Guest       bool `sql:"-"`
+	Guest       bool   `sql:"-"`
 	roles       []*Role
 	privileges  []*Privilege
 }
