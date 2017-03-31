@@ -132,7 +132,11 @@ func main() {
 			var issues = issueLookup[ik]
 			for _, issue := range issues {
 				if issue.Batch != nil {
-					log.Printf("Found issue %#v in batch %#v", ik, issue.Batch.Fullname())
+					var location = "Filesystem"
+					if issue.Batch.Live {
+						location = "Web"
+					}
+					log.Printf("Found issue %#v in batch %#v (%s)", ik, issue.Batch.Fullname(), location)
 				}
 			}
 

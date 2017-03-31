@@ -21,6 +21,10 @@ type Batch struct {
 
 	// Usually 1, but I've seen "_ver02" batches occasionally
 	Version int
+
+	// Live should be set to true when a batch is discovered on the website
+	// rather than somewhere on the filesystem
+	Live bool
 }
 
 // ParseBatchname creates a Batch by splitting up the full name string

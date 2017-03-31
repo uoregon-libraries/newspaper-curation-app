@@ -1,9 +1,13 @@
 package main
 
 import (
+	"encoding/xml"
 	"fileutil"
+	"fmt"
+	"io/ioutil"
 	"log"
 	"path/filepath"
+	"strconv"
 	"strings"
 	"time"
 )
@@ -20,6 +24,10 @@ func cacheAllFilesystemIssues() {
 	err = cacheStandardIssues()
 	if err != nil {
 		log.Fatalf("Error trying to cache standard filesystem issues: %s", err)
+	}
+	err = cacheBatches()
+	if err != nil {
+		log.Fatalf("Error trying to cache batches: %s", err)
 	}
 }
 
@@ -157,6 +165,91 @@ func cacheStandardIssuesForTitle(path string, allowEdition bool) error {
 		}
 		var issue = title.AppendIssue(dt, 1)
 		cacheIssue(issue, issuePath)
+	}
+
+	return nil
+}
+
+// cacheBatches finds all batches in the batch output path, then finds their
+// titles and their titles' issues, and caches everything
+func cacheBatches() error {
+	// First, find batch directories
+	var batchDirs, err = fileutil.FindDirectories(Conf.BatchOutputPath)
+	if err != nil {
+		return err
+	}
+
+	// For each batch, we want to store the batch information as well as
+	// everything in it
+	for _, batchDir := range batchDirs {
+		// To simplify things, we don't actually scour the filesystem for titles
+		// and issues; instead, we parse the batch XML, as that should *always*
+		// contain all issues (and their titles LCCNs).
+		err = cacheBatchDataFromXML(batchDir)
+		if err != nil {
+			return err
+		}
+	}
+
+	return nil
+}
+
+// batchXML is used to deserialize batch.xml files to get at their issues list
+type batchXML struct {
+	XMLName xml.Name   `xml:"batch"`
+	Issues  []issueXML `xml:"issue"`
+}
+
+// issueXML describes each <issue> element in the batch XML
+type issueXML struct {
+	EditionOrder string `xml:"editionOrder,attr"`
+	Date         string `xml:"issueDate,attr"`
+	LCCN         string `xml:"lccn,attr"`
+	Content      string `xml:",innerxml"`
+}
+
+// cacheBatchDataFromXML reads the batch.xml file and caches all titles and
+// issues found inside
+func cacheBatchDataFromXML(batchDir string) error {
+	var parts = strings.Split(batchDir, string(filepath.Separator))
+	var batchName = parts[len(parts)-1]
+	var batch, err = ParseBatchname(batchName)
+	if err != nil {
+		return fmt.Errorf("batch directory %#v isn't valid: %s", batchDir, err)
+	}
+
+	var xmlFile = filepath.Join(batchDir, "data", "batch.xml")
+	if !fileutil.IsFile(xmlFile) {
+		return fmt.Errorf("batch directory %#v has no batch.xml", batchDir)
+	}
+
+	var contents []byte
+	contents, err = ioutil.ReadFile(xmlFile)
+	if err != nil {
+		return fmt.Errorf("batch XML file (%#v) can't be read: %s", xmlFile, err)
+	}
+
+	var bx batchXML
+	err = xml.Unmarshal(contents, &bx)
+	if err != nil {
+		return fmt.Errorf("unable to unmarshal batch XML %#v: %s", xmlFile, err)
+	}
+
+	for _, ix := range bx.Issues {
+		var dt time.Time
+		dt, err = time.Parse("2006-01-02", ix.Date)
+		if err != nil {
+			return fmt.Errorf("invalid issue date in batch XML %#v: %s (issue dump: %#v)", xmlFile, err, ix)
+		}
+		var ed int
+		ed, err = strconv.Atoi(ix.EditionOrder)
+		if err != nil {
+			return fmt.Errorf("invalid edition number in batch XML %#v: %s (issue dump: %#v)", xmlFile, err, ix)
+		}
+		var title = findOrCreateTitle(ix.LCCN)
+		var issue = title.AppendIssue(dt, ed)
+		issue.Batch = batch
+		cacheIssue(issue, filepath.Join(batchDir, ix.Content))
 	}
 
 	return nil

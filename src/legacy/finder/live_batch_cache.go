@@ -29,6 +29,7 @@ func cacheLiveBatchedIssues(hostname, cachePath string) error {
 		if err != nil {
 			return fmt.Errorf("invalid live batch name %#v: %s", batchMetadata.Name, err)
 		}
+		batch.Live = true
 
 		var issueMetadataList []*issueMetadata
 		issueMetadataList, err = findBatchedIssueMetadata(c, batchMetadata.URL)
