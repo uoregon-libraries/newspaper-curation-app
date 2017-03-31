@@ -9,7 +9,7 @@ import (
 
 // validIssueSearchKey defines the format for a minimal issue-key-like search
 // string: strict LCCN, strict year, and optional month, day, and edition
-var validIssueSearchKey = regexp.MustCompile(`^(\w{10})/(\d{4})(\d\d)?(\d\d)?(\d\d)?$`)
+var validIssueSearchKey = regexp.MustCompile(`^(\w{8,10})/(\d{4})(\d\d)?(\d\d)?(\d\d)?$`)
 
 // issueSearchKey defines the precise issue (or subset of issues) we want to
 // find.  Note that the structure here is very specific to this issue finder,
