@@ -75,12 +75,7 @@ func cacheLiveIssuesFromMetadata(batch *Batch, issueMetadataList []*issueMetadat
 func getTitleFromIssueMetadata(meta *issueMetadata) *Title {
 	var base = path.Base(meta.Title.URL)
 	var titleLCCN = base[:len(base)-5]
-	var title = titleLookup[titleLCCN]
-	if title == nil {
-		title = &Title{LCCN: titleLCCN}
-		titleLookup[titleLCCN] = title
-	}
-	return title
+	return findOrCreateTitle(titleLCCN)
 }
 
 func findBatchedIssueMetadata(c *httpcache.Client, batchURL string) ([]*issueMetadata, error) {

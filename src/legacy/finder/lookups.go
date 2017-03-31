@@ -25,6 +25,17 @@ var issueLookupNoMonth = make(issueMap)
 // issueLocLookup lets us find an issue's raw location(s)
 var issueLocLookup = make(issueLocMap)
 
+// findOrCreateTitle looks up the given lccn to return the title, or else
+// instantiates a new Title, caches it, and returns it
+func findOrCreateTitle(lccn string) *Title {
+	var t = titleLookup[lccn]
+	if t == nil {
+		t = &Title{LCCN: lccn}
+		titleLookup[lccn] = t
+	}
+	return t
+}
+
 // cacheIssue shortcuts the process of getting an issue's key and storing issue
 // data in the caches and issue path in the path lookup
 func cacheIssue(i *Issue, location string) {
