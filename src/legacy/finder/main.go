@@ -50,7 +50,9 @@ func usageFail(format string, args ...interface{}) {
 		"If both are specified, --issue-key will be ignored.  Note that " +
 		"--issue-key may be specified multiple times.")
 	fmt.Fprintln(os.Stderr)
-	wrap("Issue keys MUST be formatted as LCCN/YYYY[MM][DD][EE].  The full LCCN and year are mandatory.")
+	wrap("Issue keys MUST be formatted as LCCN[/YYYY][MM][DD][EE].  The full " +
+		"LCCN is mandatory, while the rest of the key's parts can be added to " +
+		"refine the search.")
 	fmt.Fprintln(os.Stderr)
 	wrap("--siteroot must point to the live site, for downloading batch and " +
 		"issue information so the search knows if an issue is live, and if so, " +

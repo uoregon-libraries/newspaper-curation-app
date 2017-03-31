@@ -19,8 +19,11 @@ var issueLookupNoEdition = make(issueMap)
 // issueLookupNoDay looks up issues without day number or edition
 var issueLookupNoDay = make(issueMap)
 
-// issueLookupNoDay looks up issues without month, day number, or edition
+// issueLookupNoMonth looks up issues without month, day number, or edition
 var issueLookupNoMonth = make(issueMap)
+
+// issueLookupNoYear looks up issues without any date information
+var issueLookupNoYear = make(issueMap)
 
 // issueLocLookup lets us find an issue's raw location(s)
 var issueLocLookup = make(issueLocMap)
@@ -65,4 +68,10 @@ func cacheIssue(i *Issue, location string) {
 	iList = issueLookupNoMonth[k]
 	iList = append(iList, i)
 	issueLookupNoMonth[k] = iList
+
+	// No year - which also means no slash
+	k = k[:len(k)-5]
+	iList = issueLookupNoYear[k]
+	iList = append(iList, i)
+	issueLookupNoYear[k] = iList
 }
