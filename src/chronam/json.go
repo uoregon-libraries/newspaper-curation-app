@@ -30,11 +30,18 @@ type IssueMetadata struct {
 	}
 }
 
-// BatchJSON is what we get from a batch-details API request.  For our needs,
-// the Issues list is all we really care about.
+// TitleJSON is what we get from a title-details API request
+type TitleJSON struct {
+	LCCN  string
+	Name  string
+	Place string `json:"place_of_publications"`
+}
+
+// BatchJSON is what we get from a batch-details API request
 type BatchJSON struct {
 	Name   string
 	Issues []*IssueMetadata
+	LCCNs  []string
 }
 
 // ParseBatchJSON takes a pile of bytes and attempts to convert them into a
@@ -53,4 +60,13 @@ func ParseBatchesListJSON(encoded []byte) (*BatchesListJSON, error) {
 	var bList = &BatchesListJSON{}
 	var err = json.Unmarshal(encoded, bList)
 	return bList, err
+}
+
+// ParseBatchesListJSON takes a pile of bytes and attempts to convert them into
+// a TitleJSON structure.  If json.Unmarshal has an error, it will be returned
+// along with a nil object.
+func ParseTitleJSON(encoded []byte) (*TitleJSON, error) {
+	var t = &TitleJSON{}
+	var err = json.Unmarshal(encoded, t)
+	return t, err
 }
