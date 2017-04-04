@@ -1,7 +1,7 @@
 package main
 
 import (
-	"encoding/json"
+	"chronam"
 	"fmt"
 	"httpcache"
 	"log"
@@ -31,7 +31,7 @@ func cacheLiveBatchedIssues(hostname, cachePath string) error {
 		}
 		batch.Live = true
 
-		var issueMetadataList []*issueMetadata
+		var issueMetadataList []*chronam.IssueMetadata
 		issueMetadataList, err = findBatchedIssueMetadata(c, batchMetadata.URL)
 		if err != nil {
 			return fmt.Errorf("unable to load live issues from %#v: %s", batchMetadata.URL, err)
@@ -45,7 +45,7 @@ func cacheLiveBatchedIssues(hostname, cachePath string) error {
 	return nil
 }
 
-func cacheLiveIssuesFromMetadata(batch *Batch, issueMetadataList []*issueMetadata) error {
+func cacheLiveIssuesFromMetadata(batch *Batch, issueMetadataList []*chronam.IssueMetadata) error {
 	for _, meta := range issueMetadataList {
 		var title = getTitleFromIssueMetadata(meta)
 		var dt, err = time.Parse("2006-01-02", meta.Date)
@@ -73,13 +73,13 @@ func cacheLiveIssuesFromMetadata(batch *Batch, issueMetadataList []*issueMetadat
 
 // getTitleFromIssueMetadata finds or creates a title from the given issue
 // metadata.  If a new title is created, it's stored in the title lookup.
-func getTitleFromIssueMetadata(meta *issueMetadata) *Title {
+func getTitleFromIssueMetadata(meta *chronam.IssueMetadata) *Title {
 	var base = path.Base(meta.Title.URL)
 	var titleLCCN = base[:len(base)-5]
 	return findOrCreateTitle(titleLCCN)
 }
 
-func findBatchedIssueMetadata(c *httpcache.Client, batchURL string) ([]*issueMetadata, error) {
+func findBatchedIssueMetadata(c *httpcache.Client, batchURL string) ([]*chronam.IssueMetadata, error) {
 	log.Printf("DEBUG - reading issues list for %#v", batchURL)
 	var request = httpcache.AutoRequest(batchURL, "batches")
 	var contents, err = c.GetCachedBytes(request)
@@ -87,8 +87,8 @@ func findBatchedIssueMetadata(c *httpcache.Client, batchURL string) ([]*issueMet
 		return nil, fmt.Errorf("unable to GET %#v: %s", batchURL, err)
 	}
 
-	var batch *batchJSON
-	batch, err = parseBatchJSON(contents)
+	var batch *chronam.BatchJSON
+	batch, err = chronam.ParseBatchJSON(contents)
 	if err != nil {
 		return nil, fmt.Errorf("invalid JSON in %#v: %s", batchURL, err)
 	}
@@ -100,7 +100,7 @@ func findBatchedIssueMetadata(c *httpcache.Client, batchURL string) ([]*issueMet
 // known batch.  Results are stored in the cache path.  The returned structures
 // are the aggregated batch metadata objects found after traversing all pages
 // of batches.
-func findAllLiveBatches(hostname, cachePath string) ([]*batchMetadata, error) {
+func findAllLiveBatches(hostname, cachePath string) ([]*chronam.BatchMetadata, error) {
 	// We don't bother throttling because there won't be more than a handful of
 	// batch list pages
 	var c = httpcache.NewClient(cachePath, 0)
@@ -110,10 +110,10 @@ func findAllLiveBatches(hostname, cachePath string) ([]*batchMetadata, error) {
 		return nil, err
 	}
 	apiURL.Path = "batches.json"
-	var batchList = &batchesListJSON{Next: apiURL.String()}
+	var batchList = &chronam.BatchesListJSON{Next: apiURL.String()}
 
 	var page int
-	var batchMetadataList []*batchMetadata
+	var batchMetadataList []*chronam.BatchMetadata
 	var request = &httpcache.Request{Subdirectory: "batch-list", Extension: "json"}
 
 	for batchList.Next != "" {
@@ -128,8 +128,7 @@ func findAllLiveBatches(hostname, cachePath string) ([]*batchMetadata, error) {
 		}
 
 		// Create and deserialize into a new structure
-		batchList = &batchesListJSON{}
-		err = json.Unmarshal(contents, batchList)
+		batchList, err = chronam.ParseBatchesListJSON(contents)
 		if err != nil {
 			return nil, err
 		}
