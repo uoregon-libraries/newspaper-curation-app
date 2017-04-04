@@ -5,10 +5,10 @@ import (
 	"html/template"
 	"log"
 	"net/http"
-	"presenter"
 	"time"
 	"user"
-	"webutil"
+	"web/presenter"
+	"web/webutil"
 )
 
 // GenericVars holds anything specialized that doesn't make sense to have in PageVars

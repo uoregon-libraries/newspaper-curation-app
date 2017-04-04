@@ -4,7 +4,7 @@ import (
 	"fmt"
 	"html/template"
 	"sftp"
-	"webutil"
+	"web/webutil"
 )
 
 // Publisher wraps sftp.Publisher to provide presentation-specific functions

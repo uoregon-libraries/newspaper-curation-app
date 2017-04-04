@@ -8,7 +8,7 @@ import (
 	"net/http"
 	"os"
 	"user"
-	"webutil"
+	"web/webutil"
 
 	"github.com/gorilla/mux"
 	"github.com/jessevdk/go-flags"

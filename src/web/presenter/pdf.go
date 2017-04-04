@@ -5,7 +5,7 @@ import (
 	"html/template"
 	"path/filepath"
 	"sftp"
-	"webutil"
+	"web/webutil"
 )
 
 // PDF wraps an sftp PDF for presentation logic
