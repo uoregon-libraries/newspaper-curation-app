@@ -4,7 +4,7 @@ import (
 	"fmt"
 	"html/template"
 	"sftp"
-	"webutil"
+	"web/webutil"
 )
 
 // Issue wraps an sftp Issue with presentation-specific logic
