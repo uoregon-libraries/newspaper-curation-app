@@ -34,7 +34,7 @@ type IssueMetadata struct {
 type TitleJSON struct {
 	LCCN  string
 	Name  string
-	Place string `json:"place_of_publications"`
+	Place string `json:"place_of_publication"`
 }
 
 // BatchJSON is what we get from a batch-details API request
