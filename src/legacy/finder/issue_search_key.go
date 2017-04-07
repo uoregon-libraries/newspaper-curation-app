@@ -3,6 +3,7 @@ package main
 import (
 	"fmt"
 	"regexp"
+	"schema"
 	"strconv"
 	"time"
 )
@@ -113,7 +114,7 @@ func (k *issueSearchKey) getLookup() issueMap {
 }
 
 // issues returns all issues cached using the appropriate lookup and this key
-func (k *issueSearchKey) issues() []*Issue {
+func (k *issueSearchKey) issues() []*schema.Issue {
 	var lookup = k.getLookup()
 	return lookup[k.String()]
 }

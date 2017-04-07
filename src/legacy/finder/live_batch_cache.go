@@ -7,6 +7,7 @@ import (
 	"log"
 	"net/url"
 	"path"
+	"schema"
 	"strconv"
 	"time"
 )
@@ -25,7 +26,7 @@ func cacheLiveBatchedIssues(hostname, cachePath string) error {
 	// We (slightly) throttle batch JSON requests as there can be a few hundred of these
 	var c = httpcache.NewClient(cachePath, 50)
 	for _, batchMetadata := range batchMetadataList {
-		var batch, err = ParseBatchname(batchMetadata.Name)
+		var batch, err = schema.ParseBatchname(batchMetadata.Name)
 		if err != nil {
 			return fmt.Errorf("invalid live batch name %#v: %s", batchMetadata.Name, err)
 		}
@@ -44,7 +45,7 @@ func cacheLiveBatchedIssues(hostname, cachePath string) error {
 	return nil
 }
 
-func cacheLiveIssuesFromMetadata(batch *Batch, issueMetadataList []*chronam.IssueMetadata) error {
+func cacheLiveIssuesFromMetadata(batch *schema.Batch, issueMetadataList []*chronam.IssueMetadata) error {
 	for _, meta := range issueMetadataList {
 		var title = getTitleFromIssueMetadata(meta)
 		var dt, err = time.Parse("2006-01-02", meta.Date)
@@ -72,7 +73,7 @@ func cacheLiveIssuesFromMetadata(batch *Batch, issueMetadataList []*chronam.Issu
 
 // getTitleFromIssueMetadata finds or creates a title from the given issue
 // metadata.  If a new title is created, it's stored in the title lookup.
-func getTitleFromIssueMetadata(meta *chronam.IssueMetadata) *Title {
+func getTitleFromIssueMetadata(meta *chronam.IssueMetadata) *schema.Title {
 	var base = path.Base(meta.Title.URL)
 	var titleLCCN = base[:len(base)-5]
 	return findOrCreateTitle(titleLCCN)

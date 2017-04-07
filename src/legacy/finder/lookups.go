@@ -1,13 +1,17 @@
 package main
 
+import (
+	"schema"
+)
+
 // issueMap links a textual issue key to the Issue object
-type issueMap map[string][]*Issue
+type issueMap map[string][]*schema.Issue
 
 // issueLocMap links a textual issue key to all known issue locations
 type issueLocMap map[string][]string
 
 // titleLookup lets us find titles by LCCN
-var titleLookup = make(map[string]*Title)
+var titleLookup = make(map[string]*schema.Title)
 
 // issueLookup lets us find issues by key
 var issueLookup = make(issueMap)
@@ -33,10 +37,10 @@ var webIssueLocations = make(issueLocMap)
 
 // findOrCreateTitle looks up the given lccn to return the title, or else
 // instantiates a new Title, caches it, and returns it
-func findOrCreateTitle(lccn string) *Title {
+func findOrCreateTitle(lccn string) *schema.Title {
 	var t = titleLookup[lccn]
 	if t == nil {
-		t = &Title{LCCN: lccn}
+		t = &schema.Title{LCCN: lccn}
 		titleLookup[lccn] = t
 	}
 	return t
@@ -44,7 +48,7 @@ func findOrCreateTitle(lccn string) *Title {
 
 // cacheWebIssue stores the URL in the web lookup and caches the issue's key
 // via cacheIssueLookup
-func cacheWebIssue(i *Issue, url string) {
+func cacheWebIssue(i *schema.Issue, url string) {
 	var k = i.Key()
 	var list = webIssueLocations[k]
 	list = append(list, url)
@@ -54,7 +58,7 @@ func cacheWebIssue(i *Issue, url string) {
 
 // cacheFilesystemIssue stores the path in the filesystem lookup and caches the
 // issue's key via cacheIssueLookup
-func cacheFilesystemIssue(i *Issue, path string) {
+func cacheFilesystemIssue(i *schema.Issue, path string) {
 	var k = i.Key()
 	var list = filesystemIssueLocations[k]
 	list = append(list, path)
@@ -64,7 +68,7 @@ func cacheFilesystemIssue(i *Issue, path string) {
 
 // cacheIssueLookup shortcuts the process of getting an issue's key and storing
 // issue data in the various caches
-func cacheIssueLookup(i *Issue) {
+func cacheIssueLookup(i *schema.Issue) {
 	var k = i.Key()
 	var iList = issueLookup[k]
 	iList = append(iList, i)

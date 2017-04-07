@@ -1,7 +1,7 @@
-// schema.go: simple data types for our title and issue finding code to use,
-// isolated here so we can more easily reuse this if it makes sense later.
-
-package main
+// Package schema houses simple data types for titles, issues, batches, etc.
+// Types which live here are generally meant to be very general-case rather
+// than trying to hold all possible information for all possible use cases.
+package schema
 
 import (
 	"fmt"

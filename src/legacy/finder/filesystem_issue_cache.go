@@ -7,6 +7,7 @@ import (
 	"io/ioutil"
 	"log"
 	"path/filepath"
+	"schema"
 	"strconv"
 	"strings"
 	"time"
@@ -213,7 +214,7 @@ type issueXML struct {
 func cacheBatchDataFromXML(batchDir string) error {
 	var parts = strings.Split(batchDir, string(filepath.Separator))
 	var batchName = parts[len(parts)-1]
-	var batch, err = ParseBatchname(batchName)
+	var batch, err = schema.ParseBatchname(batchName)
 	if err != nil {
 		return fmt.Errorf("batch directory %#v isn't valid: %s", batchDir, err)
 	}

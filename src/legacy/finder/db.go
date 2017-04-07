@@ -3,10 +3,11 @@ package main
 import (
 	"db"
 	"log"
+	"schema"
 )
 
-var titlesBySFTPDir = make(map[string]*Title)
-var titlesByLCCN = make(map[string]*Title)
+var titlesBySFTPDir = make(map[string]*schema.Title)
+var titlesByLCCN = make(map[string]*schema.Title)
 
 type dbTitle struct {
 	ID      int `sql:",primary"`
@@ -27,7 +28,7 @@ func cacheDBTitles() {
 	}
 
 	for _, t := range dbTitles {
-		var title = &Title{LCCN: t.LCCN}
+		var title = &schema.Title{LCCN: t.LCCN}
 		if t.SFTPDir != "" {
 			titlesBySFTPDir[t.SFTPDir] = title
 		}
