@@ -29,7 +29,6 @@ func cacheLiveBatchedIssues(hostname, cachePath string) error {
 		if err != nil {
 			return fmt.Errorf("invalid live batch name %#v: %s", batchMetadata.Name, err)
 		}
-		batch.Live = true
 
 		var issueMetadataList []*chronam.IssueMetadata
 		issueMetadataList, err = findBatchedIssueMetadata(c, batchMetadata.URL)
@@ -65,7 +64,7 @@ func cacheLiveIssuesFromMetadata(batch *Batch, issueMetadataList []*chronam.Issu
 
 		var issue = title.AppendIssue(dt, edition)
 		issue.Batch = batch
-		cacheIssue(issue, meta.URL)
+		cacheWebIssue(issue, meta.URL)
 	}
 
 	return nil

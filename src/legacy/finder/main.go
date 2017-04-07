@@ -133,18 +133,19 @@ func main() {
 		for _, ik := range k.issueKeys() {
 			var issues = issueLookup[ik]
 			for _, issue := range issues {
-				if issue.Batch != nil {
-					var location = "Filesystem"
-					if issue.Batch.Live {
-						location = "Web"
-					}
-					log.Printf("Found issue %#v in batch %#v (%s)", ik, issue.Batch.Fullname(), location)
-				}
-			}
+				var fsPaths = filesystemIssueLocations[ik]
+				var webURLs = webIssueLocations[ik]
 
-			var locs = issueLocLookup[ik]
-			for _, loc := range locs {
-				log.Printf("Found issue %#v at location %#v", ik, loc)
+				fmt.Printf("- Found issue %#v:\n", ik)
+				if issue.Batch != nil {
+					fmt.Printf("  - In batch %#v\n", issue.Batch.Fullname())
+				}
+				for _, fsPath := range fsPaths {
+					fmt.Printf("  - Filesystem: %#v\n", fsPath)
+				}
+				for _, webURL := range webURLs {
+					fmt.Printf("  - Web: %#v\n", webURL)
+				}
 			}
 		}
 	}

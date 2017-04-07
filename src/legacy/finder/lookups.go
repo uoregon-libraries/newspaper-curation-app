@@ -25,8 +25,11 @@ var issueLookupNoMonth = make(issueMap)
 // issueLookupNoYear looks up issues without any date information
 var issueLookupNoYear = make(issueMap)
 
-// issueLocLookup lets us find an issue's raw location(s)
-var issueLocLookup = make(issueLocMap)
+// filesystemIssueLocations lets us find an issue's raw location(s)
+var filesystemIssueLocations = make(issueLocMap)
+
+// webIssueLocations tells us where an issue is located when found on the site
+var webIssueLocations = make(issueLocMap)
 
 // findOrCreateTitle looks up the given lccn to return the title, or else
 // instantiates a new Title, caches it, and returns it
@@ -39,17 +42,33 @@ func findOrCreateTitle(lccn string) *Title {
 	return t
 }
 
-// cacheIssue shortcuts the process of getting an issue's key and storing issue
-// data in the caches and issue path in the path lookup
-func cacheIssue(i *Issue, location string) {
+// cacheWebIssue stores the URL in the web lookup and caches the issue's key
+// via cacheIssueLookup
+func cacheWebIssue(i *Issue, url string) {
+	var k = i.Key()
+	var list = webIssueLocations[k]
+	list = append(list, url)
+	webIssueLocations[k] = list
+	cacheIssueLookup(i)
+}
+
+// cacheFilesystemIssue stores the path in the filesystem lookup and caches the
+// issue's key via cacheIssueLookup
+func cacheFilesystemIssue(i *Issue, path string) {
+	var k = i.Key()
+	var list = filesystemIssueLocations[k]
+	list = append(list, path)
+	filesystemIssueLocations[k] = list
+	cacheIssueLookup(i)
+}
+
+// cacheIssueLookup shortcuts the process of getting an issue's key and storing
+// issue data in the various caches
+func cacheIssueLookup(i *Issue) {
 	var k = i.Key()
 	var iList = issueLookup[k]
 	iList = append(iList, i)
 	issueLookup[k] = iList
-
-	var ipList = issueLocLookup[k]
-	ipList = append(ipList, location)
-	issueLocLookup[k] = ipList
 
 	// No edition
 	k = k[:len(k)-2]
