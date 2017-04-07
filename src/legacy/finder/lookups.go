@@ -4,7 +4,7 @@ import (
 	"schema"
 )
 
-// issueMap links a textual issue key to the Issue object
+// issueMap links a textual issue key to one or more Issue objects
 type issueMap map[string][]*schema.Issue
 
 // issueLocMap links a textual issue key to all known issue locations
