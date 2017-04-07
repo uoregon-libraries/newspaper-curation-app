@@ -137,8 +137,16 @@ func main() {
 				var webURLs = webIssueLocations[ik]
 
 				fmt.Printf("- Found issue %#v:\n", ik)
-				if issue.Batch != nil {
-					fmt.Printf("  - In batch %#v\n", issue.Batch.Fullname())
+				for _, batch := range issue.Batches {
+					var locs []string
+					if liveBatches[batch.Fullname()] != nil {
+						locs = append(locs, "live site")
+					}
+					if filesystemBatches[batch.Fullname()] != nil {
+						locs = append(locs, "filesystem")
+					}
+
+					fmt.Printf("  - In batch %#v (%s)\n", batch.Fullname(), strings.Join(locs, ", "))
 				}
 				for _, fsPath := range fsPaths {
 					fmt.Printf("  - Filesystem: %#v\n", fsPath)

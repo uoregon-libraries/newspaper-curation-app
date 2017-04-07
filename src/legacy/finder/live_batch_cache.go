@@ -64,8 +64,7 @@ func cacheLiveIssuesFromMetadata(batch *schema.Batch, issueMetadataList []*chron
 		}
 
 		var issue = title.AppendIssue(dt, edition)
-		issue.Batch = batch
-		cacheWebIssue(issue, meta.URL)
+		cacheWebIssue(issue, meta.URL, batch)
 	}
 
 	return nil

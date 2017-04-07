@@ -83,10 +83,16 @@ type Issue struct {
 	Date    time.Time
 	Edition int
 	Title   *Title
-	Batch   *Batch
+	Batches []*Batch
 }
 
 // Key returns the unique string that represents this issue
 func (i *Issue) Key() string {
 	return fmt.Sprintf("%s/%s%02d", i.Title.LCCN, i.Date.Format("20060102"), i.Edition)
+}
+
+// AddBatch adds the batch to this issue's batch list.  Usually an issue is
+// only in one batch, but there's no app-level guarantee of this.
+func (i *Issue) AddBatch(b *Batch) {
+	i.Batches = append(i.Batches, b)
 }

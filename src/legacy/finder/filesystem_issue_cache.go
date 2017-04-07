@@ -165,7 +165,7 @@ func cacheStandardIssuesForTitle(path string, allowEdition bool) error {
 			continue
 		}
 		var issue = title.AppendIssue(dt, 1)
-		cacheFilesystemIssue(issue, issuePath)
+		cacheFilesystemIssue(issue, issuePath, nil)
 	}
 
 	return nil
@@ -249,8 +249,7 @@ func cacheBatchDataFromXML(batchDir string) error {
 		}
 		var title = findOrCreateTitle(ix.LCCN)
 		var issue = title.AppendIssue(dt, ed)
-		issue.Batch = batch
-		cacheFilesystemIssue(issue, filepath.Join(batchDir, ix.Content))
+		cacheFilesystemIssue(issue, filepath.Join(batchDir, ix.Content), batch)
 	}
 
 	return nil
