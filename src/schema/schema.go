@@ -68,14 +68,25 @@ func (b *Batch) Fullname() string {
 type Title struct {
 	LCCN   string
 	Issues []*Issue
+	imap   map[string]*Issue
 }
 
 // AppendIssue creates an issue under this title, sets up its date and edition
-// number, and returns it
+// number, and returns it.  If an issue already exists for the given date and
+// edition, the title's issue list is left alone, and the existing issue is
+// returned instead.
 func (t *Title) AppendIssue(date time.Time, ed int) *Issue {
+	if t.imap == nil {
+		t.imap = make(map[string]*Issue)
+	}
 	var i = &Issue{Date: date, Edition: ed, Title: t}
-	t.Issues = append(t.Issues, i)
-	return i
+	var ik = i.Key()
+	if t.imap[ik] == nil {
+		fmt.Printf("Creating issue %s", ik)
+		t.Issues = append(t.Issues, i)
+		t.imap[ik] = i
+	}
+	return t.imap[ik]
 }
 
 // Issue is an extremely basic encapsulation of an issue's high-level data

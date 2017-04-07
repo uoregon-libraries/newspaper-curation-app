@@ -1,6 +1,7 @@
 package main
 
 import (
+	"fmt"
 	"schema"
 )
 
@@ -13,7 +14,8 @@ type issueLocMap map[string][]string
 // titleLookup lets us find titles by LCCN
 var titleLookup = make(map[string]*schema.Title)
 
-// issueLookup lets us find issues by key
+// issueLookup lets us find issues by key; we reuse issueMap for consistency,
+// but this should always be a single-element slice
 var issueLookup = make(issueMap)
 
 // issueLookupNoEdition is a lookup containing all issues for a given partial
@@ -81,14 +83,19 @@ func cacheFilesystemIssue(i *schema.Issue, path string, batch *schema.Batch) {
 // cacheIssueLookup shortcuts the process of storing a batch on an issue,
 // getting an issue's key, and storing issue data in the various caches
 func cacheIssueLookup(i *schema.Issue, batch *schema.Batch) {
+	var k = i.Key()
+	var iList = issueLookup[k]
+	if len(iList) == 0 {
+		iList = append(iList, i)
+		issueLookup[k] = iList
+	}
+	if iList[0] != i {
+		panic(fmt.Sprintf("Duplicate issue being created (issue key %s: %#v)", k, iList[0]))
+	}
+
 	if batch != nil {
 		i.AddBatch(batch)
 	}
-
-	var k = i.Key()
-	var iList = issueLookup[k]
-	iList = append(iList, i)
-	issueLookup[k] = iList
 
 	// No edition
 	k = k[:len(k)-2]
