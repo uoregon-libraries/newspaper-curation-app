@@ -28,7 +28,7 @@ func cacheDBTitles() {
 	}
 
 	for _, t := range dbTitles {
-		var title = &schema.Title{LCCN: t.LCCN}
+		var title = findOrCreateTitle(t.LCCN)
 		if t.SFTPDir != "" {
 			titlesBySFTPDir[t.SFTPDir] = title
 		}
