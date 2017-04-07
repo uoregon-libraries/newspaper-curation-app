@@ -81,7 +81,9 @@ func cacheFilesystemIssue(i *schema.Issue, path string, batch *schema.Batch) {
 // cacheIssueLookup shortcuts the process of storing a batch on an issue,
 // getting an issue's key, and storing issue data in the various caches
 func cacheIssueLookup(i *schema.Issue, batch *schema.Batch) {
-	i.AddBatch(batch)
+	if batch != nil {
+		i.AddBatch(batch)
+	}
 
 	var k = i.Key()
 	var iList = issueLookup[k]
