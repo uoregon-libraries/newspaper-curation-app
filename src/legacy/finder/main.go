@@ -120,7 +120,6 @@ func getConf() {
 
 func main() {
 	getConf()
-	cacheDBTitles()
 
 	var err = cacheLiveBatchedIssues(opts.Siteroot, opts.CachePath)
 	if err != nil {

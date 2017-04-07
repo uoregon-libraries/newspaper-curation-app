@@ -1,6 +1,7 @@
 package main
 
 import (
+	"db"
 	"encoding/xml"
 	"fileutil"
 	"fmt"
@@ -114,12 +115,12 @@ func cacheStandardIssuesFromPath(path string) error {
 // "standard", so the last directory element in the path must be an SFTP title
 // name or an LCCN.
 func cacheStandardIssuesForTitle(path string, allowEdition bool) error {
-	// Make sure we have a legitimate title - we have to check both the SFTP
-	// and LCCN lookups
+	// Make sure we have a legitimate title - we have to check titles by
+	// directory and LCCN
 	var titleName = filepath.Base(path)
-	var title = titlesBySFTPDir[titleName]
+	var title = db.FindTitleByDirectory(titleName)
 	if title == nil {
-		title = titlesByLCCN[titleName]
+		title = db.FindTitleByLCCN(titleName)
 	}
 
 	// Not having a title is a problem, but not a reason to fail the whole
@@ -164,8 +165,7 @@ func cacheStandardIssuesForTitle(path string, allowEdition bool) error {
 			log.Printf("WARNING: Invalid issue directory %#v: %s", issuePath, err)
 			continue
 		}
-		var issue = title.AppendIssue(dt, 1)
-		cacheFilesystemIssue(issue, issuePath, nil)
+		cacheFilesystemIssue(issuePath, nil, title.LCCN, dt, 1)
 	}
 
 	return nil
@@ -247,9 +247,7 @@ func cacheBatchDataFromXML(batchDir string) error {
 		if err != nil {
 			return fmt.Errorf("invalid edition number in batch XML %#v: %s (issue dump: %#v)", xmlFile, err, ix)
 		}
-		var title = findOrCreateTitle(ix.LCCN)
-		var issue = title.AppendIssue(dt, ed)
-		cacheFilesystemIssue(issue, filepath.Join(batchDir, ix.Content), batch)
+		cacheFilesystemIssue(filepath.Join(batchDir, ix.Content), batch, ix.LCCN, dt, ed)
 	}
 
 	return nil

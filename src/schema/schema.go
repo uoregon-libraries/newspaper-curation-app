@@ -63,43 +63,17 @@ func (b *Batch) Fullname() string {
 	return strings.Join(parts, "_")
 }
 
-// Title represents whatever common data we need across titles we read from
-// filesystem data, database data, and the live site
-type Title struct {
-	LCCN   string
-	Issues []*Issue
-	imap   map[string]*Issue
-}
-
-// AppendIssue creates an issue under this title, sets up its date and edition
-// number, and returns it.  If an issue already exists for the given date and
-// edition, the title's issue list is left alone, and the existing issue is
-// returned instead.
-func (t *Title) AppendIssue(date time.Time, ed int) *Issue {
-	if t.imap == nil {
-		t.imap = make(map[string]*Issue)
-	}
-	var i = &Issue{Date: date, Edition: ed, Title: t}
-	var ik = i.Key()
-	if t.imap[ik] == nil {
-		fmt.Printf("Creating issue %s", ik)
-		t.Issues = append(t.Issues, i)
-		t.imap[ik] = i
-	}
-	return t.imap[ik]
-}
-
 // Issue is an extremely basic encapsulation of an issue's high-level data
 type Issue struct {
 	Date    time.Time
 	Edition int
-	Title   *Title
+	LCCN    string
 	Batches []*Batch
 }
 
 // Key returns the unique string that represents this issue
 func (i *Issue) Key() string {
-	return fmt.Sprintf("%s/%s%02d", i.Title.LCCN, i.Date.Format("20060102"), i.Edition)
+	return fmt.Sprintf("%s/%s%02d", i.LCCN, i.Date.Format("20060102"), i.Edition)
 }
 
 // AddBatch adds the batch to this issue's batch list.  Usually an issue is

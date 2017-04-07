@@ -3,6 +3,7 @@ package main
 import (
 	"fmt"
 	"schema"
+	"time"
 )
 
 // issueMap links a textual issue key to one or more Issue objects
@@ -10,9 +11,6 @@ type issueMap map[string][]*schema.Issue
 
 // issueLocMap links a textual issue key to all known issue locations
 type issueLocMap map[string][]string
-
-// titleLookup lets us find titles by LCCN
-var titleLookup = make(map[string]*schema.Title)
 
 // issueLookup lets us find issues by key; we reuse issueMap for consistency,
 // but this should always be a single-element slice
@@ -43,21 +41,22 @@ var liveBatches = make(map[string]*schema.Batch)
 // filesystemBatches: batch name => Batch for filesystem batches
 var filesystemBatches = make(map[string]*schema.Batch)
 
-// findOrCreateTitle looks up the given lccn to return the title, or else
-// instantiates a new Title, caches it, and returns it
-func findOrCreateTitle(lccn string) *schema.Title {
-	var t = titleLookup[lccn]
-	if t == nil {
-		t = &schema.Title{LCCN: lccn}
-		titleLookup[lccn] = t
+// findOrCreateIssue looks up and return an existing Issue or prepares a new
+// Issue instance for use
+func findOrCreateIssue(lccn string, dt time.Time, n int) *schema.Issue {
+	var i = &schema.Issue{LCCN: lccn, Date: dt, Edition: n}
+	var ik = i.Key()
+	if len(issueLookup[ik]) == 0 {
+		issueLookup[ik] = append(issueLookup[ik], i)
 	}
-	return t
+	return issueLookup[ik][0]
 }
 
 // cacheWebIssue takes a web issue and stores its url in the web issue lookup,
 // stores the batch as a known live batch, and caches the issue by its various
 // issue key pieces via cacheIssueLookup
-func cacheWebIssue(i *schema.Issue, url string, batch *schema.Batch) {
+func cacheWebIssue(url string, batch *schema.Batch, lccn string, iDate time.Time, ednum int) {
+	var i = findOrCreateIssue(lccn, iDate, ednum)
 	var k = i.Key()
 	var list = webIssueLocations[k]
 	list = append(list, url)
@@ -69,7 +68,8 @@ func cacheWebIssue(i *schema.Issue, url string, batch *schema.Batch) {
 // cacheFilesystemIssue takes an issue and stores its filesystem path in the
 // filesystem issue lookup, stores the batch as a known filesystem batch, and
 // caches the issue by its various issue key pieces via cacheIssueLookup
-func cacheFilesystemIssue(i *schema.Issue, path string, batch *schema.Batch) {
+func cacheFilesystemIssue(path string, batch *schema.Batch, lccn string, iDate time.Time, ednum int) {
+	var i = findOrCreateIssue(lccn, iDate, ednum)
 	var k = i.Key()
 	var list = filesystemIssueLocations[k]
 	list = append(list, path)

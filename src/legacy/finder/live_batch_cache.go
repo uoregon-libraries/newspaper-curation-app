@@ -47,7 +47,7 @@ func cacheLiveBatchedIssues(hostname, cachePath string) error {
 
 func cacheLiveIssuesFromMetadata(batch *schema.Batch, issueMetadataList []*chronam.IssueMetadata) error {
 	for _, meta := range issueMetadataList {
-		var title = getTitleFromIssueMetadata(meta)
+		var lccn = getIssueLCCN(meta)
 		var dt, err = time.Parse("2006-01-02", meta.Date)
 		if err != nil {
 			return fmt.Errorf("invalid date for issue %#v: %s", meta, err)
@@ -63,19 +63,16 @@ func cacheLiveIssuesFromMetadata(batch *schema.Batch, issueMetadataList []*chron
 			return fmt.Errorf("invalid edition (%#v) for issue %#v", editionString, meta)
 		}
 
-		var issue = title.AppendIssue(dt, edition)
-		cacheWebIssue(issue, meta.URL, batch)
+		cacheWebIssue(meta.URL, batch, lccn, dt, edition)
 	}
 
 	return nil
 }
 
-// getTitleFromIssueMetadata finds or creates a title from the given issue
-// metadata.  If a new title is created, it's stored in the title lookup.
-func getTitleFromIssueMetadata(meta *chronam.IssueMetadata) *schema.Title {
+// getIssueLCCN returns the issue's LCCN by peeling apart its title's URL
+func getIssueLCCN(meta *chronam.IssueMetadata) string {
 	var base = path.Base(meta.Title.URL)
-	var titleLCCN = base[:len(base)-5]
-	return findOrCreateTitle(titleLCCN)
+	return base[:len(base)-5]
 }
 
 func findBatchedIssueMetadata(c *httpcache.Client, batchURL string) ([]*chronam.IssueMetadata, error) {
