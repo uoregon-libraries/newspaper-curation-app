@@ -1,11 +1,10 @@
 package main
 
 import (
+	"chronam"
 	"db"
-	"encoding/xml"
 	"fileutil"
 	"fmt"
-	"io/ioutil"
 	"log"
 	"path/filepath"
 	"schema"
@@ -195,20 +194,6 @@ func cacheBatches() error {
 	return nil
 }
 
-// batchXML is used to deserialize batch.xml files to get at their issues list
-type batchXML struct {
-	XMLName xml.Name   `xml:"batch"`
-	Issues  []issueXML `xml:"issue"`
-}
-
-// issueXML describes each <issue> element in the batch XML
-type issueXML struct {
-	EditionOrder string `xml:"editionOrder,attr"`
-	Date         string `xml:"issueDate,attr"`
-	LCCN         string `xml:"lccn,attr"`
-	Content      string `xml:",innerxml"`
-}
-
 // cacheBatchDataFromXML reads the batch.xml file and caches all titles and
 // issues found inside
 func cacheBatchDataFromXML(batchDir string) error {
@@ -219,33 +204,21 @@ func cacheBatchDataFromXML(batchDir string) error {
 		return fmt.Errorf("batch directory %#v isn't valid: %s", batchDir, err)
 	}
 
-	var xmlFile = filepath.Join(batchDir, "data", "batch.xml")
-	if !fileutil.IsFile(xmlFile) {
-		return fmt.Errorf("batch directory %#v has no batch.xml", batchDir)
-	}
-
-	var contents []byte
-	contents, err = ioutil.ReadFile(xmlFile)
+	var bx *chronam.BatchXML
+	bx, err = chronam.ParseBatchXML(batchDir)
 	if err != nil {
-		return fmt.Errorf("batch XML file (%#v) can't be read: %s", xmlFile, err)
+		return err
 	}
-
-	var bx batchXML
-	err = xml.Unmarshal(contents, &bx)
-	if err != nil {
-		return fmt.Errorf("unable to unmarshal batch XML %#v: %s", xmlFile, err)
-	}
-
 	for _, ix := range bx.Issues {
 		var dt time.Time
 		dt, err = time.Parse("2006-01-02", ix.Date)
 		if err != nil {
-			return fmt.Errorf("invalid issue date in batch XML %#v: %s (issue dump: %#v)", xmlFile, err, ix)
+			return fmt.Errorf("invalid issue date in batch XML %#v: %s (issue dump: %#v)", batchDir, err, ix)
 		}
 		var ed int
 		ed, err = strconv.Atoi(ix.EditionOrder)
 		if err != nil {
-			return fmt.Errorf("invalid edition number in batch XML %#v: %s (issue dump: %#v)", xmlFile, err, ix)
+			return fmt.Errorf("invalid edition number in batch XML %#v: %s (issue dump: %#v)", batchDir, err, ix)
 		}
 		cacheFilesystemIssue(filepath.Join(batchDir, ix.Content), batch, ix.LCCN, dt, ed)
 	}
