@@ -11,6 +11,7 @@ import (
 	"fileutil"
 	"fmt"
 	"io/ioutil"
+	"issuefinder"
 	"log"
 	"os"
 	"strings"
@@ -21,7 +22,7 @@ import (
 
 // Conf stores the configuration data read from the legacy Python settings
 var Conf *config.Config
-var issueSearchKeys []*issueSearchKey
+var issueSearchKeys []*IssueSearchKey
 
 // Command-line options
 var opts struct {
@@ -33,6 +34,7 @@ var opts struct {
 }
 
 var p *flags.Parser
+var finder *issuefinder.Finder
 
 // wrap is a helper to wrap a usage message at 80 characters and print a
 // newline afterward
@@ -106,7 +108,7 @@ func getConf() {
 			continue
 		}
 
-		var searchKey, err = parseSearchKey(ik)
+		var searchKey, err = ParseSearchKey(ik)
 		if err != nil {
 			usageFail("Invalid issue search key %#v: %s", ik, err)
 		}
@@ -121,39 +123,15 @@ func getConf() {
 func main() {
 	getConf()
 
-	var err = cacheLiveBatchedIssues(opts.Siteroot, opts.CachePath)
-	if err != nil {
-		log.Fatalf("Error trying to cache live batched issues: %s", err)
-	}
+	finder = issuefinder.New()
+	cacheIssues()
+	var lookup = NewLookup()
+	lookup.Populate(finder.Issues)
 
-	cacheAllFilesystemIssues()
 	for _, k := range issueSearchKeys {
 		log.Printf("DEBUG: Looking up by issue key %#v", k.String())
-		for _, ik := range k.issueKeys() {
-			var issues = issueLookup[ik]
-			for _, issue := range issues {
-				var fsPaths = filesystemIssueLocations[ik]
-				var webURLs = webIssueLocations[ik]
-
-				fmt.Printf("- Found issue %#v:\n", ik)
-				for _, batch := range issue.Batches {
-					var locs []string
-					if liveBatches[batch.Fullname()] != nil {
-						locs = append(locs, "live site")
-					}
-					if filesystemBatches[batch.Fullname()] != nil {
-						locs = append(locs, "filesystem")
-					}
-
-					fmt.Printf("  - In batch %#v (%s)\n", batch.Fullname(), strings.Join(locs, ", "))
-				}
-				for _, fsPath := range fsPaths {
-					fmt.Printf("  - Filesystem: %#v\n", fsPath)
-				}
-				for _, webURL := range webURLs {
-					fmt.Printf("  - Web: %#v\n", webURL)
-				}
-			}
+		for _, issue := range lookup.Issues(k) {
+			fmt.Printf("Issue: %#v\n", issue.Location)
 		}
 	}
 }

@@ -1,6 +1,12 @@
 // Package schema houses simple data types for titles, issues, batches, etc.
 // Types which live here are generally meant to be very general-case rather
 // than trying to hold all possible information for all possible use cases.
+//
+// Except... a Location field exists on all structures because the workflow
+// allows for multiple occurrences of metadata for any of the schema items.
+// They could be on the filesystem or the web.  And in the case of errors,
+// which we need to be able to detect, there can be dupes that need to be
+// reported and figured out.
 package schema
 
 import (
@@ -21,6 +27,12 @@ type Batch struct {
 
 	// Usually 1, but I've seen "_ver02" batches occasionally
 	Version int
+
+	// Issues links the issues which are part of this batch
+	Issues []*Issue
+
+	// Location is where this batch can be found, either a URL or filesystem path
+	Location string
 }
 
 // ParseBatchname creates a Batch by splitting up the full name string
@@ -63,21 +75,30 @@ func (b *Batch) Fullname() string {
 	return strings.Join(parts, "_")
 }
 
+// AddIssue adds the issue to this batch's list, and sets the issue's batch
+func (b *Batch) AddIssue(i *Issue) {
+	b.Issues = append(b.Issues, i)
+	i.Batch = b
+}
+
+// Title is a very simple structure to give us something common we can tie to
+// anything with the same LCCN
+type Title struct {
+	LCCN  string
+}
+
 // Issue is an extremely basic encapsulation of an issue's high-level data
 type Issue struct {
+	Title   *Title
 	Date    time.Time
 	Edition int
-	LCCN    string
-	Batches []*Batch
+	Batch   *Batch
+
+	// Location is where this issue can be found, either a URL or filesystem path
+	Location string
 }
 
 // Key returns the unique string that represents this issue
 func (i *Issue) Key() string {
-	return fmt.Sprintf("%s/%s%02d", i.LCCN, i.Date.Format("20060102"), i.Edition)
-}
-
-// AddBatch adds the batch to this issue's batch list.  Usually an issue is
-// only in one batch, but there's no app-level guarantee of this.
-func (i *Issue) AddBatch(b *Batch) {
-	i.Batches = append(i.Batches, b)
+	return fmt.Sprintf("%s/%s%02d", i.Title.LCCN, i.Date.Format("20060102"), i.Edition)
 }
