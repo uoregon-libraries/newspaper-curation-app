@@ -42,7 +42,7 @@ func ParseSearchKey(ik string) (*IssueSearchKey, error) {
 	var dtformat = "20060102"
 
 	var l = len(dtstring)
-	if l < 4 || l > 10 || l % 2 != 0 {
+	if l < 4 || l > 10 || l%2 != 0 {
 		return nil, fmt.Errorf("incorrect number of date/edition digits")
 	}
 

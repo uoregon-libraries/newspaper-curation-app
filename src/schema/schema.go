@@ -85,7 +85,7 @@ func (b *Batch) AddIssue(i *Issue) {
 // Title is a very simple structure to give us something common we can tie to
 // anything with the same LCCN
 type Title struct {
-	LCCN  string
+	LCCN string
 }
 
 // Issue is an extremely basic encapsulation of an issue's high-level data
