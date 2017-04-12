@@ -5,7 +5,7 @@ import (
 )
 
 // IssueMap links a textual issue key to one or more Issue objects
-type IssueMap map[string][]*schema.Issue
+type IssueMap map[string]schema.IssueList
 
 type Lookup struct {
 	// Issue lets us find issues by key; we should usually have only one
@@ -38,7 +38,7 @@ func NewLookup() *Lookup {
 	}
 }
 
-func (l *Lookup) Populate(issues []*schema.Issue) {
+func (l *Lookup) Populate(issues schema.IssueList) {
 	for _, issue := range issues {
 		l.cacheIssueLookup(issue)
 	}
@@ -92,7 +92,9 @@ func (l *Lookup) getLookup(k *IssueSearchKey) IssueMap {
 }
 
 // Issues returns the list of issues which match the given search key
-func (l *Lookup) Issues(k *IssueSearchKey) []*schema.Issue {
+func (l *Lookup) Issues(k *IssueSearchKey) schema.IssueList {
 	var lookup = l.getLookup(k)
-	return lookup[k.String()]
+	var issues = lookup[k.String()]
+	issues.SortByKey()
+	return issues
 }

@@ -11,6 +11,7 @@ package schema
 
 import (
 	"fmt"
+	"sort"
 	"strconv"
 	"strings"
 	"time"
@@ -101,4 +102,13 @@ type Issue struct {
 // Key returns the unique string that represents this issue
 func (i *Issue) Key() string {
 	return fmt.Sprintf("%s/%s%02d", i.Title.LCCN, i.Date.Format("20060102"), i.Edition)
+}
+
+// IssueList groups a bunch of issues together
+type IssueList []*Issue
+
+// SortByKey modifies the IssueList in place so they're sorted alphabetically
+// by issue key
+func (list IssueList) SortByKey() {
+	sort.Slice(list, func(i, j int) bool { return list[i].Key() < list[j].Key() })
 }
