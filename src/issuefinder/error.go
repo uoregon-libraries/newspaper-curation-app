@@ -38,8 +38,10 @@ func (e *Error) SetTitle(t *schema.Title) *Error {
 	return e
 }
 
-// SetIssue changes the issue and returns the error
+// SetIssue changes the issue, title, and batch, and returns the error
 func (e *Error) SetIssue(i *schema.Issue) *Error {
 	e.Issue = i
+	e.Title = i.Title
+	e.Batch = i.Batch
 	return e
 }
