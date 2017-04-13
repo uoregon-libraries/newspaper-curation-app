@@ -127,11 +127,30 @@ func main() {
 	cacheIssues()
 	var lookup = NewLookup()
 	lookup.Populate(finder.Issues)
+	finder.Errors.Index()
 
+	// Report all errors
+	for _, e := range finder.Errors.Errors {
+		log.Printf("ERROR: %s", e.Message())
+	}
+
+	var lastKey = ""
 	for _, k := range issueSearchKeys {
-		log.Printf("DEBUG: Looking up by issue key %#v", k.String())
 		for _, issue := range lookup.Issues(k) {
-			fmt.Printf("Issue: %#v\n", issue.Location)
+			var currKey = issue.Key()
+			if currKey != lastKey {
+				fmt.Printf("%#v:\n", currKey)
+				lastKey = currKey
+			}
+			fmt.Printf("  - %#v\n", issue.Location)
+			if issue.Batch != nil {
+				fmt.Printf("    - Batch: %s\n", issue.Batch.Fullname())
+			}
+
+			var errors = finder.Errors.IssueErrors[issue]
+			for _, e := range errors {
+				fmt.Printf("    - ERROR: (%#v) %s\n", e.Location, e.Error)
+			}
 		}
 	}
 }
