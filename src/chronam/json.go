@@ -32,9 +32,13 @@ type IssueMetadata struct {
 
 // TitleJSON is what we get from a title-details API request
 type TitleJSON struct {
-	LCCN  string
-	Name  string
-	Place string `json:"place_of_publication"`
+	LCCN               string
+	Name               string
+	PlaceOfPublication string
+	Place              []string
+	StartYear          string
+	EndYear            string
+	Subject            []string
 }
 
 // BatchJSON is what we get from a batch-details API request

@@ -59,6 +59,6 @@ func main() {
 		log.Fatalf("Error trying to cache live batched issues: %s", err)
 	}
 	for _, t := range allTitles {
-		fmt.Printf("%s\t%s\t%s\n", t.LCCN, t.Name, t.Place)
+		fmt.Printf("%s\t%s\t%s\n", t.LCCN, t.Name, t.PlaceOfPublication)
 	}
 }
