@@ -28,12 +28,12 @@ type Finder struct {
 	// enough to halt the rest of the find operation.  These are typically
 	// unavoidable human errors we expect to see sometimes, and we need to fix
 	// them, but we often still need to know what valid items exist.
-	Errors []*Error
+	Errors *ErrorList
 }
 
 // New instantiates a new Finder ready for searching
 func New() *Finder {
-	return &Finder{titleLookup: make(map[string]*schema.Title)}
+	return &Finder{titleLookup: make(map[string]*schema.Title), Errors: &ErrorList{}}
 }
 
 // findTitle looks up the title in the lookup, then the database by directory name and LCCN
