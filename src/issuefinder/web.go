@@ -73,7 +73,7 @@ func (f *Finder) cacheLiveIssuesFromMetadata(batch *schema.Batch, issueMetadataL
 		// We assume title has to be as correct as we can hope for here, so we
 		// don't allow nil titles
 		var title = f.findOrCreateTitle(lccn)
-		var issue = &schema.Issue{Title: title, Date: dt, Edition: edition, Location: meta.URL}
+		var issue = &schema.Issue{Title: title, Date: dt, Edition: edition, Location: meta.URL, Batch: batch}
 		f.Issues = append(f.Issues, issue)
 	}
 
