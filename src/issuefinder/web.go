@@ -41,49 +41,40 @@ func (f *Finder) FindWebBatches(hostname, cachePath string) error {
 		if err != nil {
 			return fmt.Errorf("unable to load live issues from %#v: %s", batchMetadata.URL, err)
 		}
-		f.cacheLiveIssuesFromMetadata(batch, issueMetadataList)
+		for _, meta := range issueMetadataList {
+			var t, err = f.findLiveTitle(c, meta.Title.URL)
+			if err != nil {
+				return fmt.Errorf("unable to load live title %#v: %s", meta.Title.URL, err)
+			}
+			f.cacheLiveIssue(batch, t, meta)
+		}
 	}
 
 	return nil
 }
 
-func (f *Finder) cacheLiveIssuesFromMetadata(batch *schema.Batch, issueMetadataList []*chronam.IssueMetadata) {
-	// All titles within a batch are treated as being unique within the system as
-	// a whole.  And since batched titles may or may not be in our database, and
-	// we always know we have an LCCN, we don't bother doing global lookups.
-	for _, meta := range issueMetadataList {
-		var lccn = getIssueLCCN(meta)
-		var dt, err = time.Parse("2006-01-02", meta.Date)
-		if err != nil {
-			f.newError(batch.Location, fmt.Errorf("invalid date for issue %#v: %s", meta, err)).SetBatch(batch)
-			return
-		}
-
-		// We can determine edition from the issue URL, as it always ends in "ed-?.json"
-		var base = path.Base(meta.URL)
-		var editionString = base[3:]
-		editionString = editionString[:len(editionString)-5]
-		var edition int
-		edition, err = strconv.Atoi(editionString)
-		if err != nil {
-			f.newError(batch.Location, fmt.Errorf("invalid edition for issue %#v", editionString, meta)).SetBatch(batch)
-			return
-		}
-
-		// We assume title has to be as correct as we can hope for here, so we
-		// don't allow nil titles
-		var title = f.findOrCreateTitle(lccn)
-		var issue = &schema.Issue{Title: title, Date: dt, Edition: edition, Location: meta.URL, Batch: batch}
-		f.Issues = append(f.Issues, issue)
+func (f *Finder) cacheLiveIssue(batch *schema.Batch, title *schema.Title, meta *chronam.IssueMetadata) {
+	var dt, err = time.Parse("2006-01-02", meta.Date)
+	if err != nil {
+		f.newError(batch.Location, fmt.Errorf("invalid date for issue %#v: %s", meta, err)).SetBatch(batch)
+		return
 	}
 
-	return
-}
+	// We can determine edition from the issue URL, as it always ends in "ed-?.json"
+	var base = path.Base(meta.URL)
+	var editionString = base[3:]
+	editionString = editionString[:len(editionString)-5]
+	var edition int
+	edition, err = strconv.Atoi(editionString)
+	if err != nil {
+		f.newError(batch.Location, fmt.Errorf("invalid edition for issue %#v", editionString, meta)).SetBatch(batch)
+		return
+	}
 
-// getIssueLCCN returns the issue's LCCN by peeling apart its title's URL
-func getIssueLCCN(meta *chronam.IssueMetadata) string {
-	var base = path.Base(meta.Title.URL)
-	return base[:len(base)-5]
+	var issue = &schema.Issue{Title: title, Date: dt, Edition: edition, Location: meta.URL, Batch: batch}
+	f.Issues = append(f.Issues, issue)
+
+	return
 }
 
 func (f *Finder) findBatchedIssueMetadata(c *httpcache.Client, batchURL string) ([]*chronam.IssueMetadata, error) {
@@ -143,4 +134,35 @@ func (f *Finder) findAllLiveBatches(hostname, cachePath string) ([]*chronam.Batc
 	}
 
 	return batchMetadataList, nil
+}
+
+func (f *Finder) findLiveTitle(c *httpcache.Client, uri string) (*schema.Title, error) {
+	// This is another horrible hack (title lookup needs fixing): we use the URI
+	// for the title lookup because web titles shouldn't be looked up by peeling
+	// apart the URL, but we need to avoid re-reading the same title data dozens
+	// of times.  Even cached, that's just not smart.
+	if f.titleLookup[uri] != nil {
+		return f.titleLookup[uri], nil
+	}
+
+	var request = httpcache.AutoRequest(uri, "titles")
+	var contents, err = c.GetCachedBytes(request)
+	if err != nil {
+		return nil, fmt.Errorf("unable to GET %#v: %s", uri, err)
+	}
+	var tJSON *chronam.TitleJSON
+	tJSON, err = chronam.ParseTitleJSON(contents)
+	if err != nil {
+		return nil, fmt.Errorf("unable to parse title JSON for %#v: %s", uri, err)
+	}
+
+	// For now we just blow away whatever was there before, because live titles
+	// are really quite separate from disk titles, and TODO they'll be split
+	// apart very soon anyway
+	var title = &schema.Title{LCCN: tJSON.LCCN}
+	f.Titles = append(f.Titles, title)
+	f.titleLookup[title.LCCN] = title
+	f.titleLookup[uri] = title
+
+	return title, nil
 }
