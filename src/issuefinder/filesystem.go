@@ -102,15 +102,16 @@ func (f *Finder) findStandardIssuesForTitlePath(titlePath string, allowEdition b
 		// on these, but their contents can still be valuable
 		if strings.HasSuffix(base, "-error") {
 			addErr(fmt.Errorf("manually flagged issue"))
+			base = base[:len(base)-6]
 		}
 
 		// Check for an edition suffix
 		var edition = 1
 		if len(base) >= 13 && base[10] == '_' {
-			var edstr = base[10:13]
+			var edstr = base[11:13]
 			edition, err = strconv.Atoi(edstr)
 			if edition < 1 {
-				addErr(fmt.Errorf("invalid issue directory edition suffix"))
+				addErr(fmt.Errorf("invalid issue directory edition suffix (%s)", edstr))
 			}
 
 			// SFTP dirs can't have an edition suffix, so we conditionally store an error
@@ -130,7 +131,7 @@ func (f *Finder) findStandardIssuesForTitlePath(titlePath string, allowEdition b
 		// Invalid issue directory names can't have an issue, so we can continue
 		// without fixing up the errors
 		if err != nil {
-			addErr(fmt.Errorf("invalid issue directory name: %s", err))
+			addErr(fmt.Errorf("invalid issue directory name: must be formatted YYYY-MM-DD"))
 			continue
 		}
 
