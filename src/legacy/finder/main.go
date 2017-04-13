@@ -11,6 +11,7 @@ import (
 	"fileutil"
 	"fmt"
 	"io/ioutil"
+	"issuefinder"
 	"log"
 	"os"
 	"strings"
@@ -21,7 +22,7 @@ import (
 
 // Conf stores the configuration data read from the legacy Python settings
 var Conf *config.Config
-var issueSearchKeys []*issueSearchKey
+var issueSearchKeys []*IssueSearchKey
 
 // Command-line options
 var opts struct {
@@ -33,6 +34,7 @@ var opts struct {
 }
 
 var p *flags.Parser
+var finder *issuefinder.Finder
 
 // wrap is a helper to wrap a usage message at 80 characters and print a
 // newline afterward
@@ -106,7 +108,7 @@ func getConf() {
 			continue
 		}
 
-		var searchKey, err = parseSearchKey(ik)
+		var searchKey, err = ParseSearchKey(ik)
 		if err != nil {
 			usageFail("Invalid issue search key %#v: %s", ik, err)
 		}
@@ -120,32 +122,34 @@ func getConf() {
 
 func main() {
 	getConf()
-	cacheDBTitles()
 
-	var err = cacheLiveBatchedIssues(opts.Siteroot, opts.CachePath)
-	if err != nil {
-		log.Fatalf("Error trying to cache live batched issues: %s", err)
+	finder = issuefinder.New()
+	cacheIssues()
+	var lookup = NewLookup()
+	lookup.Populate(finder.Issues)
+	finder.Errors.Index()
+
+	// Report all errors
+	for _, e := range finder.Errors.Errors {
+		log.Printf("ERROR: %s", e.Message())
 	}
 
-	cacheAllFilesystemIssues()
+	var lastKey = ""
 	for _, k := range issueSearchKeys {
-		log.Printf("DEBUG: Looking up by issue key %#v", k.String())
-		for _, ik := range k.issueKeys() {
-			var issues = issueLookup[ik]
-			for _, issue := range issues {
-				var fsPaths = filesystemIssueLocations[ik]
-				var webURLs = webIssueLocations[ik]
+		for _, issue := range lookup.Issues(k) {
+			var currKey = issue.Key()
+			if currKey != lastKey {
+				fmt.Printf("%#v:\n", currKey)
+				lastKey = currKey
+			}
+			fmt.Printf("  - %#v\n", issue.Location)
+			if issue.Batch != nil {
+				fmt.Printf("    - Batch: %s\n", issue.Batch.Fullname())
+			}
 
-				fmt.Printf("- Found issue %#v:\n", ik)
-				if issue.Batch != nil {
-					fmt.Printf("  - In batch %#v\n", issue.Batch.Fullname())
-				}
-				for _, fsPath := range fsPaths {
-					fmt.Printf("  - Filesystem: %#v\n", fsPath)
-				}
-				for _, webURL := range webURLs {
-					fmt.Printf("  - Web: %#v\n", webURL)
-				}
+			var errors = finder.Errors.IssueErrors[issue]
+			for _, e := range errors {
+				fmt.Printf("    - ERROR: (%#v) %s\n", e.Location, e.Error)
 			}
 		}
 	}

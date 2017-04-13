@@ -1,23 +1,26 @@
-package main
+package issuefinder
 
 import (
 	"chronam"
 	"fmt"
 	"httpcache"
-	"log"
 	"net/url"
 	"path"
+	"schema"
 	"strconv"
 	"time"
 )
 
-// cacheLiveBatchedIssues reads through the JSON from the batch API URL and
+// FindWebBatches reads through the JSON from the batch API URL and
 // grabs "next" page until there is no next page.  Each batch is then read from
 // the JSON cache path, or read from the site and cached.  The disk cache
 // speeds up the tool's future runs by only having to request what's been
 // batched since a prior run.
-func cacheLiveBatchedIssues(hostname, cachePath string) error {
-	var batchMetadataList, err = findAllLiveBatches(hostname, cachePath)
+//
+// As with other searches, this returns an error only on unexpected behaviors,
+// like the site not responding.
+func (f *Finder) FindWebBatches(hostname, cachePath string) error {
+	var batchMetadataList, err = f.findAllLiveBatches(hostname, cachePath)
 	if err != nil {
 		return fmt.Errorf("unable to load batch list from %#v: %s", hostname, err)
 	}
@@ -25,31 +28,35 @@ func cacheLiveBatchedIssues(hostname, cachePath string) error {
 	// We (slightly) throttle batch JSON requests as there can be a few hundred of these
 	var c = httpcache.NewClient(cachePath, 50)
 	for _, batchMetadata := range batchMetadataList {
-		var batch, err = ParseBatchname(batchMetadata.Name)
+		var batch, err = schema.ParseBatchname(batchMetadata.Name)
 		if err != nil {
-			return fmt.Errorf("invalid live batch name %#v: %s", batchMetadata.Name, err)
+			f.newError(hostname, fmt.Errorf("invalid live batch name %#v: %s", batchMetadata.Name, err))
+			return nil
 		}
+		batch.Location = batchMetadata.URL
+		f.Batches = append(f.Batches, batch)
 
 		var issueMetadataList []*chronam.IssueMetadata
-		issueMetadataList, err = findBatchedIssueMetadata(c, batchMetadata.URL)
+		issueMetadataList, err = f.findBatchedIssueMetadata(c, batchMetadata.URL)
 		if err != nil {
 			return fmt.Errorf("unable to load live issues from %#v: %s", batchMetadata.URL, err)
 		}
-		err = cacheLiveIssuesFromMetadata(batch, issueMetadataList)
-		if err != nil {
-			return fmt.Errorf("unable to load live issues from %#v: %s", batchMetadata.URL, err)
-		}
+		f.cacheLiveIssuesFromMetadata(batch, issueMetadataList)
 	}
 
 	return nil
 }
 
-func cacheLiveIssuesFromMetadata(batch *Batch, issueMetadataList []*chronam.IssueMetadata) error {
+func (f *Finder) cacheLiveIssuesFromMetadata(batch *schema.Batch, issueMetadataList []*chronam.IssueMetadata) {
+	// All titles within a batch are treated as being unique within the system as
+	// a whole.  And since batched titles may or may not be in our database, and
+	// we always know we have an LCCN, we don't bother doing global lookups.
 	for _, meta := range issueMetadataList {
-		var title = getTitleFromIssueMetadata(meta)
+		var lccn = getIssueLCCN(meta)
 		var dt, err = time.Parse("2006-01-02", meta.Date)
 		if err != nil {
-			return fmt.Errorf("invalid date for issue %#v: %s", meta, err)
+			f.newError(batch.Location, fmt.Errorf("invalid date for issue %#v: %s", meta, err)).SetBatch(batch)
+			return
 		}
 
 		// We can determine edition from the issue URL, as it always ends in "ed-?.json"
@@ -59,27 +66,27 @@ func cacheLiveIssuesFromMetadata(batch *Batch, issueMetadataList []*chronam.Issu
 		var edition int
 		edition, err = strconv.Atoi(editionString)
 		if err != nil {
-			return fmt.Errorf("invalid edition (%#v) for issue %#v", editionString, meta)
+			f.newError(batch.Location, fmt.Errorf("invalid edition for issue %#v", editionString, meta)).SetBatch(batch)
+			return
 		}
 
-		var issue = title.AppendIssue(dt, edition)
-		issue.Batch = batch
-		cacheWebIssue(issue, meta.URL)
+		// We assume title has to be as correct as we can hope for here, so we
+		// don't allow nil titles
+		var title = f.findOrCreateTitle(lccn)
+		var issue = &schema.Issue{Title: title, Date: dt, Edition: edition, Location: meta.URL}
+		f.Issues = append(f.Issues, issue)
 	}
 
-	return nil
+	return
 }
 
-// getTitleFromIssueMetadata finds or creates a title from the given issue
-// metadata.  If a new title is created, it's stored in the title lookup.
-func getTitleFromIssueMetadata(meta *chronam.IssueMetadata) *Title {
+// getIssueLCCN returns the issue's LCCN by peeling apart its title's URL
+func getIssueLCCN(meta *chronam.IssueMetadata) string {
 	var base = path.Base(meta.Title.URL)
-	var titleLCCN = base[:len(base)-5]
-	return findOrCreateTitle(titleLCCN)
+	return base[:len(base)-5]
 }
 
-func findBatchedIssueMetadata(c *httpcache.Client, batchURL string) ([]*chronam.IssueMetadata, error) {
-	log.Printf("DEBUG - reading issues list for %#v", batchURL)
+func (f *Finder) findBatchedIssueMetadata(c *httpcache.Client, batchURL string) ([]*chronam.IssueMetadata, error) {
 	var request = httpcache.AutoRequest(batchURL, "batches")
 	var contents, err = c.GetCachedBytes(request)
 	if err != nil {
@@ -99,7 +106,7 @@ func findBatchedIssueMetadata(c *httpcache.Client, batchURL string) ([]*chronam.
 // known batch.  Results are stored in the cache path.  The returned structures
 // are the aggregated batch metadata objects found after traversing all pages
 // of batches.
-func findAllLiveBatches(hostname, cachePath string) ([]*chronam.BatchMetadata, error) {
+func (f *Finder) findAllLiveBatches(hostname, cachePath string) ([]*chronam.BatchMetadata, error) {
 	// We don't bother throttling because there won't be more than a handful of
 	// batch list pages
 	var c = httpcache.NewClient(cachePath, 0)
@@ -120,7 +127,6 @@ func findAllLiveBatches(hostname, cachePath string) ([]*chronam.BatchMetadata, e
 		request.Filename = fmt.Sprintf("page-%d", page)
 		request.URL = batchList.Next
 
-		log.Printf("DEBUG - reading batches list page %d: %#v", page, request.URL)
 		var contents, err = c.ForceGetBytes(request)
 		if err != nil {
 			return nil, err

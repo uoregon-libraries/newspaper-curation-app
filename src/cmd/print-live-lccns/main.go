@@ -15,8 +15,8 @@ import (
 
 // Command-line options
 var opts struct {
-	Siteroot   string   `long:"siteroot" description:"URL to the live host" required:"true"`
-	CachePath  string   `long:"cache-path" description:"Path to cache downloaded JSON files" required:"true"`
+	Siteroot  string `long:"siteroot" description:"URL to the live host" required:"true"`
+	CachePath string `long:"cache-path" description:"Path to cache downloaded JSON files" required:"true"`
 }
 
 var p *flags.Parser

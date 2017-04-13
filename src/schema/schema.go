@@ -1,10 +1,17 @@
-// schema.go: simple data types for our title and issue finding code to use,
-// isolated here so we can more easily reuse this if it makes sense later.
-
-package main
+// Package schema houses simple data types for titles, issues, batches, etc.
+// Types which live here are generally meant to be very general-case rather
+// than trying to hold all possible information for all possible use cases.
+//
+// Except... a Location field exists on all structures because the workflow
+// allows for multiple occurrences of metadata for any of the schema items.
+// They could be on the filesystem or the web.  And in the case of errors,
+// which we need to be able to detect, there can be dupes that need to be
+// reported and figured out.
+package schema
 
 import (
 	"fmt"
+	"sort"
 	"strconv"
 	"strings"
 	"time"
@@ -21,6 +28,12 @@ type Batch struct {
 
 	// Usually 1, but I've seen "_ver02" batches occasionally
 	Version int
+
+	// Issues links the issues which are part of this batch
+	Issues []*Issue
+
+	// Location is where this batch can be found, either a URL or filesystem path
+	Location string
 }
 
 // ParseBatchname creates a Batch by splitting up the full name string
@@ -63,30 +76,39 @@ func (b *Batch) Fullname() string {
 	return strings.Join(parts, "_")
 }
 
-// Title represents whatever common data we need across titles we read from
-// filesystem data, database data, and the live site
-type Title struct {
-	LCCN   string
-	Issues []*Issue
+// AddIssue adds the issue to this batch's list, and sets the issue's batch
+func (b *Batch) AddIssue(i *Issue) {
+	b.Issues = append(b.Issues, i)
+	i.Batch = b
 }
 
-// AppendIssue creates an issue under this title, sets up its date and edition
-// number, and returns it
-func (t *Title) AppendIssue(date time.Time, ed int) *Issue {
-	var i = &Issue{Date: date, Edition: ed, Title: t}
-	t.Issues = append(t.Issues, i)
-	return i
+// Title is a very simple structure to give us something common we can tie to
+// anything with the same LCCN
+type Title struct {
+	LCCN string
 }
 
 // Issue is an extremely basic encapsulation of an issue's high-level data
 type Issue struct {
+	Title   *Title
 	Date    time.Time
 	Edition int
-	Title   *Title
 	Batch   *Batch
+
+	// Location is where this issue can be found, either a URL or filesystem path
+	Location string
 }
 
 // Key returns the unique string that represents this issue
 func (i *Issue) Key() string {
 	return fmt.Sprintf("%s/%s%02d", i.Title.LCCN, i.Date.Format("20060102"), i.Edition)
+}
+
+// IssueList groups a bunch of issues together
+type IssueList []*Issue
+
+// SortByKey modifies the IssueList in place so they're sorted alphabetically
+// by issue key
+func (list IssueList) SortByKey() {
+	sort.Slice(list, func(i, j int) bool { return list[i].Key() < list[j].Key() })
 }
