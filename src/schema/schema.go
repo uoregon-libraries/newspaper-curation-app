@@ -84,7 +84,9 @@ func (b *Batch) AddIssue(i *Issue) {
 
 // Title is a publisher's information, unique per LCCN
 type Title struct {
-	LCCN string
+	LCCN               string
+	Name               string
+	PlaceOfPublication string
 
 	// Location is where the title was found on disk or web; not actual Title metadata
 	Location string

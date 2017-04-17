@@ -30,12 +30,17 @@ func createDBTitle(titleName string) *schema.Title {
 		return nil
 	}
 
-	return &schema.Title{LCCN: dbTitle.LCCN}
+	return &schema.Title{
+		LCCN:               dbTitle.LCCN,
+		Name:               dbTitle.MarcTitle,
+		PlaceOfPublication: dbTitle.MarcLocation,
+	}
 }
 
-// findOrCreateFilesystemTitle looks up the title by path and returns it or
-// creates a new one
-func (f *Finder) findOrCreateFilesystemTitle(lccn, path string) *schema.Title {
+// findOrCreateUnknownFilesystemTitle looks up the title by path and returns it
+// or creates a new one.  This should only be used for titles for which we have
+// no metadata: when LCCN is the only data available, the title is incomplete.
+func (f *Finder) findOrCreateUnknownFilesystemTitle(lccn, path string) *schema.Title {
 	if f.titleByLoc[path] == nil {
 		f.addTitle(&schema.Title{LCCN: lccn, Location: path})
 	}
@@ -67,6 +72,11 @@ func (f *Finder) findOrCreateWebTitle(c *httpcache.Client, uri string) (*schema.
 		return nil, fmt.Errorf("unable to parse title JSON for %#v: %s", uri, err)
 	}
 
-	f.addTitle(&schema.Title{LCCN: tJSON.LCCN, Location: uri})
+	f.addTitle(&schema.Title{
+		LCCN:               tJSON.LCCN,
+		Name:               tJSON.Name,
+		PlaceOfPublication: tJSON.PlaceOfPublication,
+		Location:           uri,
+	})
 	return f.titleByLoc[uri], nil
 }

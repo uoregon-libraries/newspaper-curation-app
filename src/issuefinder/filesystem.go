@@ -206,7 +206,7 @@ func (f *Finder) cacheBatchDataFromXML(batchDir string) {
 		}
 
 		var titleDir = filepath.Join(dataDir, ix.LCCN)
-		var title = f.findOrCreateFilesystemTitle(ix.LCCN, titleDir)
+		var title = f.findOrCreateUnknownFilesystemTitle(ix.LCCN, titleDir)
 		var issueDir = filepath.Join(dataDir, ix.Content)
 		var issue = &schema.Issue{Title: title, Date: dt, Edition: ed, Location: issueDir}
 		batch.AddIssue(issue)
