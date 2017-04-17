@@ -187,6 +187,8 @@ func (f *Finder) cacheBatchDataFromXML(batchDir string) {
 		return
 	}
 
+	var dataDir = filepath.Join(batchDir, "data")
+
 	// All titles within a batch are treated as being unique within the system as
 	// a whole.  And since batched titles may or may not be in our database, and
 	// we always know we have an LCCN, we don't bother doing global lookups.
@@ -204,7 +206,8 @@ func (f *Finder) cacheBatchDataFromXML(batchDir string) {
 		}
 
 		var title = f.findTitle(ix.LCCN)
-		var issue = &schema.Issue{Title: title, Date: dt, Edition: ed, Location: filepath.Join(batchDir, ix.Content)}
+		var issueDir = filepath.Join(dataDir, ix.Content)
+		var issue = &schema.Issue{Title: title, Date: dt, Edition: ed, Location: issueDir}
 		batch.AddIssue(issue)
 		f.Issues = append(f.Issues, issue)
 	}
