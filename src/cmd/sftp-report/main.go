@@ -25,7 +25,6 @@ var opts struct {
 	Port           int    `short:"p" long:"port" description:"port to listen for HTTP traffic" required:"true"`
 	Bind           string `long:"bind" description:"Bind address, usually safe to leave blank"`
 	Debug          bool   `long:"debug" description:"Enables debug mode for testing different users"`
-	ReportExit     bool   `long:"report-and-exit" description:"Show a textual SFTP report and exit the app"`
 	Webroot        string `long:"webroot" description:"The base path to the app if it isn't just '/'"`
 	ParentWebroot  string `long:"parent-webroot" description:"The base path to the parent app" required:"true"`
 	StaticFilePath string `long:"static-files" description:"Path on disk to static JS/CSS/images" required:"true"`
@@ -119,10 +118,5 @@ func startServer() {
 
 func main() {
 	getConf()
-	if opts.ReportExit {
-		textReportOut()
-		os.Exit(0)
-	}
-
 	startServer()
 }
