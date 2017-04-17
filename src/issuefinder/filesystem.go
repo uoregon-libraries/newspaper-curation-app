@@ -135,7 +135,7 @@ func (f *Finder) findStandardIssuesForTitlePath(titlePath string, allowEdition b
 			continue
 		}
 
-		var issue = &schema.Issue{Title: title, Date: dt, Edition: edition, Location: issuePath}
+		var issue = title.AddIssue(&schema.Issue{Date: dt, Edition: edition, Location: issuePath})
 		for _, e := range errors {
 			e.SetIssue(issue)
 		}
@@ -208,7 +208,7 @@ func (f *Finder) cacheBatchDataFromXML(batchDir string) {
 		var titleDir = filepath.Join(dataDir, ix.LCCN)
 		var title = f.findOrCreateUnknownFilesystemTitle(ix.LCCN, titleDir)
 		var issueDir = filepath.Join(dataDir, ix.Content)
-		var issue = &schema.Issue{Title: title, Date: dt, Edition: ed, Location: issueDir}
+		var issue = title.AddIssue(&schema.Issue{Date: dt, Edition: ed, Location: issueDir})
 		batch.AddIssue(issue)
 		f.Issues = append(f.Issues, issue)
 	}

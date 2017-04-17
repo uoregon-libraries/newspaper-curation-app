@@ -88,8 +88,20 @@ type Title struct {
 	Name               string
 	PlaceOfPublication string
 
+	// Issues contains the list of issues associated with a single title; though
+	// this can be derived by iterating over all the issues, it's useful to store
+	// them here, too
+	Issues []*Issue
+
 	// Location is where the title was found on disk or web; not actual Title metadata
 	Location string
+}
+
+// AddIssue adds the issue to this title's list, and sets the issue's title
+func (t *Title) AddIssue(i *Issue) *Issue {
+	t.Issues = append(t.Issues, i)
+	i.Title = t
+	return i
 }
 
 // Issue is an extremely basic encapsulation of an issue's high-level data
