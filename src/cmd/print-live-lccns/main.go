@@ -6,6 +6,7 @@ package main
 import (
 	"fileutil"
 	"fmt"
+	"issuefinder"
 	"log"
 	"os"
 	"wordutils"
@@ -54,11 +55,12 @@ func getConf() {
 func main() {
 	getConf()
 
-	var err = cacheLiveTitles(opts.Siteroot, opts.CachePath)
+	var finder = issuefinder.New()
+	var err = finder.FindWebBatches(opts.Siteroot, opts.CachePath)
 	if err != nil {
-		log.Fatalf("Error trying to cache live batched issues: %s", err)
+		log.Fatalf("Error trying to cache live batches: %s", err)
 	}
-	for _, t := range allTitles {
+	for _, t := range finder.Titles {
 		fmt.Printf("%s\t%s\t%s\n", t.LCCN, t.Name, t.PlaceOfPublication)
 	}
 }
