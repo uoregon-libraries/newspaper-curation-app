@@ -82,10 +82,12 @@ func (b *Batch) AddIssue(i *Issue) {
 	i.Batch = b
 }
 
-// Title is a very simple structure to give us something common we can tie to
-// anything with the same LCCN
+// Title is a publisher's information, unique per LCCN
 type Title struct {
 	LCCN string
+
+	// Location is where the title was found on disk or web; not actual Title metadata
+	Location string
 }
 
 // Issue is an extremely basic encapsulation of an issue's high-level data
