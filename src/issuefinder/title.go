@@ -13,8 +13,9 @@ import (
 // be LCCN or SFTP directory depending on the type of directory.
 func (f *Finder) findFilesystemTitle(titleName, path string) *schema.Title {
 	if f.titleByLoc[path] == nil {
-		f.titleByLoc[path] = createDBTitle(titleName)
-		f.titleByLoc[path].Location = path
+		var t = createDBTitle(titleName)
+		t.Location = path
+		f.addTitle(t)
 	}
 	return f.titleByLoc[path]
 }
@@ -36,9 +37,16 @@ func createDBTitle(titleName string) *schema.Title {
 // creates a new one
 func (f *Finder) findOrCreateFilesystemTitle(lccn, path string) *schema.Title {
 	if f.titleByLoc[path] == nil {
-		f.titleByLoc[path] = &schema.Title{LCCN: lccn, Location: path}
+		f.addTitle(&schema.Title{LCCN: lccn, Location: path})
 	}
 	return f.titleByLoc[path]
+}
+
+// addTitle pushes the title into the global titles list and caches it by its
+// location field
+func (f *Finder) addTitle(title *schema.Title) {
+	f.Titles = append(f.Titles, title)
+	f.titleByLoc[title.Location] = title
 }
 
 // findOrCreateWebTitle looks up the title by its given URI and returns it or
@@ -59,9 +67,6 @@ func (f *Finder) findOrCreateWebTitle(c *httpcache.Client, uri string) (*schema.
 		return nil, fmt.Errorf("unable to parse title JSON for %#v: %s", uri, err)
 	}
 
-	var title = &schema.Title{LCCN: tJSON.LCCN, Location: uri}
-	f.Titles = append(f.Titles, title)
-	f.titleByLoc[uri] = title
-
-	return title, nil
+	f.addTitle(&schema.Title{LCCN: tJSON.LCCN, Location: uri})
+	return f.titleByLoc[uri], nil
 }
