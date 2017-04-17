@@ -14,6 +14,9 @@ import (
 func (f *Finder) findFilesystemTitle(titleName, path string) *schema.Title {
 	if f.titleByLoc[path] == nil {
 		var t = createDBTitle(titleName)
+		if t == nil {
+			return nil
+		}
 		t.Location = path
 		f.addTitle(t)
 	}
