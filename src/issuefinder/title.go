@@ -44,6 +44,11 @@ func createDBTitle(titleName string) *schema.Title {
 // or creates a new one.  This should only be used for titles for which we have
 // no metadata: when LCCN is the only data available, the title is incomplete.
 func (f *Finder) findOrCreateUnknownFilesystemTitle(lccn, path string) *schema.Title {
+	// First see if we can look up the title in the database
+	if f.titleByLoc[path] == nil {
+		f.findFilesystemTitle(lccn, path)
+	}
+	// If it's still empty, we create it with the limited data we have
 	if f.titleByLoc[path] == nil {
 		f.addTitle(&schema.Title{LCCN: lccn, Location: path})
 	}
