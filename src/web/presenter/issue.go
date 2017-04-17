@@ -10,15 +10,15 @@ import (
 // Issue wraps an sftp Issue with presentation-specific logic
 type Issue struct {
 	*sftp.Issue
-	Publisher *Publisher
-	PDFs      []*PDF
+	Title *Title
+	PDFs  []*PDF
 }
 
-// DecorateIssue returns a wrapped issue for the given publisher and sftp
-// issue.  A decorated publisher is required so the decorated issue isn't
-// re-decorating a publisher we've already wrapped.
-func DecorateIssue(publisher *Publisher, si *sftp.Issue) *Issue {
-	var issue = &Issue{Issue: si, Publisher: publisher}
+// DecorateIssue returns a wrapped issue for the given title and sftp
+// issue.  A decorated title is required so the decorated issue isn't
+// re-decorating a title we've already wrapped.
+func DecorateIssue(title *Title, si *sftp.Issue) *Issue {
+	var issue = &Issue{Issue: si, Title: title}
 	issue.buildPDFList()
 	return issue
 }
@@ -36,6 +36,6 @@ func (issue *Issue) buildPDFList() {
 
 // Link returns the link to an issue's details page
 func (issue *Issue) Link() template.HTML {
-	var path = webutil.IssuePath(issue.Publisher.Name, issue.Name)
+	var path = webutil.IssuePath(issue.Title.Name, issue.Name)
 	return template.HTML(fmt.Sprintf(`<a href="%s">%s</a>`, path, issue.Name))
 }

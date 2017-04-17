@@ -90,15 +90,15 @@ func canViewSFTPReport(h http.HandlerFunc) http.Handler {
 func startServer() {
 	var r = mux.NewRouter()
 	var hp = webutil.HomePath()
-	var pp = webutil.PublisherPath("{publisher}")
-	var ip = webutil.IssuePath("{publisher}", "{issue}")
-	var pdfPath = webutil.PDFPath("{publisher}", "{issue}", "{filename}")
+	var tp = webutil.TitlePath("{title}")
+	var ip = webutil.IssuePath("{title}", "{issue}")
+	var pdfPath = webutil.PDFPath("{title}", "{issue}", "{filename}")
 
 	// Make sure homepath/ isn't considered the canonical path
 	r.Handle(hp+"/", makeRedirect(hp, http.StatusMovedPermanently))
 
 	r.NewRoute().Path(hp).Handler(canViewSFTPReport(HomeHandler))
-	r.NewRoute().Path(pp).Handler(canViewSFTPReport(PublisherHandler))
+	r.NewRoute().Path(tp).Handler(canViewSFTPReport(TitleHandler))
 	r.NewRoute().Path(ip).Handler(canViewSFTPReport(IssueHandler))
 	r.NewRoute().Path(pdfPath).Handler(canViewSFTPReport(PDFFileHandler))
 
