@@ -1,4 +1,4 @@
-// Package sftp exposes types and minimal logic for finding SFTP publishers'
+// Package sftp exposes types and minimal logic for finding SFTP title
 // directories and their uploaded issues
 package sftp
 
@@ -30,7 +30,7 @@ func (pdf *PDF) ErrorCount() int {
 }
 
 // Issue stores a single issue's pdfs and any errors encountered.  An "issue"
-// is really anything found at the publisher's root directory, and therefore
+// is really anything found at the title's root directory, and therefore
 // could be a non-issue directory, a file, etc.  In these cases, Error will
 // explain that the "Issue" isn't what we expected an issue to be.
 type Issue struct {
@@ -39,14 +39,14 @@ type Issue struct {
 	PDFs         []*PDF
 	Errors       *errorlist.Errors
 	Modified     time.Time
-	Publisher    *Publisher
+	Title        *Title
 }
 
 // ScanPDFs reads in all issue PDFs and stores information about what's found,
 // including definite errors and likely errors.  Returns an actual error object
 // on fatal filesystem errors.
 func (issue *Issue) ScanPDFs() error {
-	var path = filepath.Join(issue.Publisher.RealPath, issue.Name)
+	var path = filepath.Join(issue.Title.RealPath, issue.Name)
 	var items, err = fileutil.ReaddirSorted(path)
 	if err != nil {
 		return err
@@ -108,15 +108,15 @@ func (issue *Issue) PDFErrorCount() int {
 	return count
 }
 
-// Publisher stores uploaded file information and potential errors related
-// to a publisher's SFTP directory
-type Publisher struct {
-	// Name is the directory where the publisher's uploaded files end up; e.g.,
+// Title stores uploaded file information and potential errors related
+// to a title's SFTP directory
+type Title struct {
+	// Name is the directory where the title's uploaded files end up; e.g.,
 	// /mnt/news/sftp/dailynews would have a name of "dailynews"
 	Name string
 
-	// Path is the location of the publisher directory as found by scanning for
-	// publishers under the configured SFTP location.  RealPath is the target if
+	// Path is the location of the title directory as found by scanning for
+	// titles under the configured SFTP location.  RealPath is the target if
 	// Path is a symlink, otherwise it's equal to Path.
 	Path, RealPath string
 
@@ -124,12 +124,12 @@ type Publisher struct {
 	Issues []*Issue
 }
 
-// ScanIssues reads in all issue directories and files for a publisher, and
+// ScanIssues reads in all issue directories and files for a title, and
 // stores information about what's found, including definite errors and likely
 // errors.  Returns an actual error object on fatal filesystem errors.  This
-// should only be run on a publisher with its path data already set up.
-func (p *Publisher) ScanIssues() error {
-	var items, err = fileutil.ReaddirSorted(p.RealPath)
+// should only be run on a title with its path data already set up.
+func (t *Title) ScanIssues() error {
+	var items, err = fileutil.ReaddirSorted(t.RealPath)
 	if err != nil {
 		return err
 	}
@@ -137,9 +137,9 @@ func (p *Publisher) ScanIssues() error {
 	// Every item should be a properly formatted date directory which we can turn
 	// into an Issue
 	for _, i := range items {
-		var issue = &Issue{Publisher: p, Errors: errorlist.New()}
+		var issue = &Issue{Title: t, Errors: errorlist.New()}
 		issue.Name = i.Name()
-		issue.RelativePath = filepath.Join(p.Name, i.Name())
+		issue.RelativePath = filepath.Join(t.Name, i.Name())
 
 		if !i.IsDir() {
 			issue.Errors.Append(fmt.Errorf("folder expected, got file instead"))
@@ -150,37 +150,37 @@ func (p *Publisher) ScanIssues() error {
 
 		var since = time.Since(issue.Modified)
 		if since > time.Hour*24*7 {
-			p.Issues = append(p.Issues, issue)
+			t.Issues = append(t.Issues, issue)
 		}
 	}
 
 	return nil
 }
 
-// ErrorCount returns the number of errors found on the publisher's issues and
+// ErrorCount returns the number of errors found on the title's issues and
 // each issue's pages
-func (p *Publisher) ErrorCount() int {
+func (t *Title) ErrorCount() int {
 	var count int
-	for _, i := range p.Issues {
+	for _, i := range t.Issues {
 		count += i.ErrorCount()
 	}
 
 	return count
 }
 
-// BuildPublishers takes an SFTP root directory and returns all the directories
-// one level below.  Since it's impossible for a publisher to do anything at
+// BuildTitles takes an SFTP root directory and returns all the directories
+// one level below.  Since it's impossible for an SFTP user to do anything at
 // this level, we don't try to find or report any non-filesystem errors.
-func BuildPublishers(path string) ([]*Publisher, error) {
-	var pubList []*Publisher
+func BuildTitles(path string) ([]*Title, error) {
+	var tList []*Title
 	var items, err = fileutil.ReaddirSorted(path)
 	if err != nil {
 		return nil, err
 	}
 
 	for _, i := range items {
-		var pubName = i.Name()
-		var path = filepath.Join(path, pubName)
+		var tName = i.Name()
+		var path = filepath.Join(path, tName)
 		var realPath = path
 		if i.Mode()&os.ModeSymlink != 0 {
 			realPath, err = os.Readlink(path)
@@ -198,12 +198,12 @@ func BuildPublishers(path string) ([]*Publisher, error) {
 		if !i.IsDir() && i.Mode()&os.ModeSymlink == 0 {
 			continue
 		}
-		var p = &Publisher{Name: pubName}
-		p.Path = path
-		p.RealPath = realPath
-		p.ScanIssues()
-		pubList = append(pubList, p)
+		var t = &Title{Name: tName}
+		t.Path = path
+		t.RealPath = realPath
+		t.ScanIssues()
+		tList = append(tList, t)
 	}
 
-	return pubList, nil
+	return tList, nil
 }

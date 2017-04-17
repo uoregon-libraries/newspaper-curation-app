@@ -23,7 +23,7 @@ type PageVars struct {
 	ParentWebroot string
 	Alert         string
 	User          *user.User
-	Publishers    []*presenter.Publisher
+	Titles        []*presenter.Title
 	Data          GenericVars
 }
 

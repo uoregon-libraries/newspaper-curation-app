@@ -86,67 +86,67 @@ func mustHavePrivilege(priv *user.Privilege, f http.HandlerFunc) http.Handler {
 	})
 }
 
-// LoadPublishers takes a responder and attempts to load the publisher list
+// LoadTitles takes a responder and attempts to load the title list
 // into it.  If the list can't be loaded, an HTTP error is sent out and the
 // return is false.
-func LoadPublishers(r *Responder) bool {
-	var pubList, err = sftp.BuildPublishers(Conf.MasterPDFUploadPath)
+func LoadTitles(r *Responder) bool {
+	var titles, err = sftp.BuildTitles(Conf.MasterPDFUploadPath)
 	if err != nil {
-		log.Printf("ERROR: Couldn't load publishers in %s: %s", Conf.MasterPDFUploadPath, err)
-		http.Error(r.Writer, "Unable to load publisher list!", 500)
+		log.Printf("ERROR: Couldn't load titles in %s: %s", Conf.MasterPDFUploadPath, err)
+		http.Error(r.Writer, "Unable to load title list!", 500)
 		return false
 	}
 
-	r.Vars.Publishers = presenter.PublisherList(pubList)
+	r.Vars.Titles = presenter.TitleList(titles)
 	return true
 }
 
-// findPublisher attempts to load the publisher list, then find and return the
-// publisher specified in the URL If no publisher is found (or loading
-// publishers fails), nil is returned, and the caller should do nothing, as
+// findTitle attempts to load the title list, then find and return the
+// title specified in the URL If no title is found (or loading
+// title fails), nil is returned, and the caller should do nothing, as
 // http headers / rendering is already done.
-func findPublisher(r *Responder) *presenter.Publisher {
-	if !LoadPublishers(r) {
+func findTitle(r *Responder) *presenter.Title {
+	if !LoadTitles(r) {
 		return nil
 	}
 
-	var pubName = mux.Vars(r.Request)["publisher"]
-	var publisher *presenter.Publisher
-	for _, p := range r.Vars.Publishers {
-		if p.Name == pubName {
-			publisher = p
+	var tName = mux.Vars(r.Request)["title"]
+	var title *presenter.Title
+	for _, t := range r.Vars.Titles {
+		if t.Name == tName {
+			title = t
 		}
 	}
 
-	if publisher == nil {
-		r.Vars.Alert = fmt.Sprintf("Unable to find publisher %#v", pubName)
+	if title == nil {
+		r.Vars.Alert = fmt.Sprintf("Unable to find title %#v", tName)
 		r.Render("empty")
 		return nil
 	}
 
-	return publisher
+	return title
 }
 
-// findIssue attempts to find the publisher specified in the URL and then the
-// issue for that publisher, also specified in the URL.  If found, the issue is
+// findIssue attempts to find the title specified in the URL and then the
+// issue for that title, also specified in the URL.  If found, the issue is
 // returned.  If not found, some kind of contextual error will be displayed to
 // the end user and the caller should do nothing.
 func findIssue(r *Responder) *presenter.Issue {
-	var publisher = findPublisher(r)
-	if publisher == nil {
+	var title = findTitle(r)
+	if title == nil {
 		return nil
 	}
 
 	var name = mux.Vars(r.Request)["issue"]
 	var issue *presenter.Issue
-	for _, iss := range publisher.Issues {
+	for _, iss := range title.Issues {
 		if iss.Name == name {
 			issue = iss
 		}
 	}
 
 	if issue == nil {
-		r.Vars.Alert = fmt.Sprintf("Unable to find issue %#v for publisher %#v", name, publisher.Name)
+		r.Vars.Alert = fmt.Sprintf("Unable to find issue %#v for title %#v", name, title.Name)
 		r.Render("empty")
 		return nil
 	}
@@ -154,28 +154,28 @@ func findIssue(r *Responder) *presenter.Issue {
 	return issue
 }
 
-// HomeHandler spits out the publisher list
+// HomeHandler spits out the title list
 func HomeHandler(w http.ResponseWriter, req *http.Request) {
 	var r = Response(w, req)
-	if !LoadPublishers(r) {
+	if !LoadTitles(r) {
 		return
 	}
 
-	r.Vars.Title = "SFTP Publisher List"
+	r.Vars.Title = "SFTP Titles List"
 	r.Render("home")
 }
 
-// PublisherHandler prints a list of issues for a given publisher
-func PublisherHandler(w http.ResponseWriter, req *http.Request) {
+// TitleHandler prints a list of issues for a given title
+func TitleHandler(w http.ResponseWriter, req *http.Request) {
 	var r = Response(w, req)
-	var publisher = findPublisher(r)
-	if publisher == nil {
+	var title = findTitle(r)
+	if title == nil {
 		return
 	}
 
-	r.Vars.Data["Publisher"] = publisher
-	r.Vars.Title = "SFTP Issues for " + publisher.Name
-	r.Render("publisher")
+	r.Vars.Data["Title"] = title
+	r.Vars.Title = "SFTP Issues for " + title.Name
+	r.Render("title")
 }
 
 // IssueHandler prints a list of pages for a given issue
@@ -187,6 +187,6 @@ func IssueHandler(w http.ResponseWriter, req *http.Request) {
 	}
 
 	r.Vars.Data["Issue"] = issue
-	r.Vars.Title = fmt.Sprintf("SFTP PDFs for %s, issue %s", issue.Publisher.Name, issue.Name)
+	r.Vars.Title = fmt.Sprintf("SFTP PDFs for %s, issue %s", issue.Title.Name, issue.Name)
 	r.Render("issue")
 }

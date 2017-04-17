@@ -25,14 +25,14 @@ func FullPath(parts ...string) string {
 	return path.Join(parts...)
 }
 
-// HomePath returns the absolute path to the home page (publisher list)
+// HomePath returns the absolute path to the home page (title list)
 func HomePath() string {
 	return FullPath("")
 }
 
-// PublisherPath returns the absolute path to the given publisher's issue list page
-func PublisherPath(name string) string {
-	return FullPath(path.Join("publisher", name))
+// TitlePath returns the absolute path to the given title's issue list page
+func TitlePath(name string) string {
+	return FullPath(path.Join("title", name))
 }
 
 // IssuePath returns the absolute path to the given issue's PDF list page
@@ -41,8 +41,8 @@ func IssuePath(pName, iName string) string {
 }
 
 // PDFPath returns the absolute path to view a given PDF file
-func PDFPath(publisher, issue, filename string) string {
-	return FullPath(path.Join("pdf", publisher, issue, filename))
+func PDFPath(title, issue, filename string) string {
+	return FullPath(path.Join("pdf", title, issue, filename))
 }
 
 // ImageURL takes a file and constructs an absolute web path string

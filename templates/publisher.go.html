@@ -19,7 +19,7 @@
   </thead>
 
   <tbody>
-    {{range .Data.Publisher.Issues}}
+    {{range .Data.Title.Issues}}
       <tr {{if gt .ErrorCount 0}} class="issue-with-errors"{{end}}>
         <td>{{.Link}}</td>
         <td>{{TimeString .Modified}}</td>

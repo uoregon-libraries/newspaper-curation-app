@@ -1,12 +1,12 @@
 {{template "header" .}}
 
 <ul>
-  {{range .Publishers}}
+  {{range .Titles}}
     {{if .Show}}
       <li>
         {{if gt .ErrorCount 0 }}
-          <div class="publisher-with-errors">
-            <div class="publisher-link">{{.Link}}</div>
+          <div class="title-with-errors">
+            <div class="title-link">{{.Link}}</div>
             <span class="glyphicon glyphicon-exclamation-sign" aria-hidden="true"></span>
             <span class="count">{{.ErrorCount}} error(s) detected</span>
           </div>
