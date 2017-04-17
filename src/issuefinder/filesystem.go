@@ -78,8 +78,8 @@ func (f *Finder) findStandardIssuesForTitlePath(titlePath string, allowEdition b
 	// these are always in-house issues.  Live batches or old batches on the
 	// filesystem wouldn't hit this check.
 	//
-	// Note that despite a valid title we still scan the directory in order to
-	// catch other errors and aggregate the unknown titles' issues.
+	// Note that despite not having a valid title we still scan the directory in
+	// order to catch other errors and aggregate the unknown titles' issues.
 	if title == nil {
 		title = &schema.Title{LCCN: titlePath}
 		f.newError(titlePath, fmt.Errorf("unable to find title %#v in database", titleName))
