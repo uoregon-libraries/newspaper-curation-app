@@ -5,7 +5,6 @@
 package issuefinder
 
 import (
-	"db"
 	"schema"
 )
 
@@ -16,12 +15,10 @@ type Finder struct {
 	Batches []*schema.Batch
 	Titles  []*schema.Title
 
-	// titleLookup is a necessary evil; in all live situations, the titles refer
-	// to the same piece of information.  We can have duped issues and broken
-	// batches, but titles are always unique to their LCCN.  On the filesystem,
-	// having separate title entities could be handy, but the inconsistency gets
-	// difficult to wrangle.
-	titleLookup map[string]*schema.Title
+	// titleByLoc holds titles keyed by their location so we don't duplicate the
+	// same title entry if it's in the same place.  This is most applicable to
+	// live titles, since they're unique per LCCN.
+	titleByLoc map[string]*schema.Title
 
 	// Errors represent things wrong with title directories, issue names, batch
 	// XML, etc. which are in need of addressing, but which aren't critical
@@ -33,42 +30,5 @@ type Finder struct {
 
 // New instantiates a new Finder ready for searching
 func New() *Finder {
-	return &Finder{titleLookup: make(map[string]*schema.Title), Errors: &ErrorList{}}
-}
-
-// findTitle looks up the title in the lookup, then the database by directory name and LCCN
-func (f *Finder) findTitle(titleName string) *schema.Title {
-	var title = f.titleLookup[titleName]
-	if title != nil {
-		return title
-	}
-
-	var dbTitle = db.FindTitleByDirectory(titleName)
-	if dbTitle == nil {
-		dbTitle = db.FindTitleByLCCN(titleName)
-	}
-	if dbTitle == nil {
-		return nil
-	}
-
-	title = &schema.Title{LCCN: dbTitle.LCCN}
-
-	// Store it both by sftp dir and lccn so future lookups are easier
-	f.titleLookup[dbTitle.SFTPDir] = title
-	f.titleLookup[dbTitle.LCCN] = title
-
-	return title
-}
-
-// findOrCreateTitle calls findTitle, and on a nil return, creates a new title.
-// This is meant for cases where we know the name is as correct as it can be
-// and reporting an error isn't helpful.
-func (f *Finder) findOrCreateTitle(titleName string) *schema.Title {
-	var title = f.findTitle(titleName)
-	if title == nil {
-		title = &schema.Title{LCCN: titleName}
-		f.titleLookup[titleName] = title
-	}
-
-	return title
+	return &Finder{titleByLoc: make(map[string]*schema.Title), Errors: &ErrorList{}}
 }

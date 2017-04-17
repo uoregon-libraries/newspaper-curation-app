@@ -42,7 +42,7 @@ func (f *Finder) FindWebBatches(hostname, cachePath string) error {
 			return fmt.Errorf("unable to load live issues from %#v: %s", batchMetadata.URL, err)
 		}
 		for _, meta := range issueMetadataList {
-			var t, err = f.findLiveTitle(c, meta.Title.URL)
+			var t, err = f.findOrCreateWebTitle(c, meta.Title.URL)
 			if err != nil {
 				return fmt.Errorf("unable to load live title %#v: %s", meta.Title.URL, err)
 			}
@@ -134,35 +134,4 @@ func (f *Finder) findAllLiveBatches(hostname, cachePath string) ([]*chronam.Batc
 	}
 
 	return batchMetadataList, nil
-}
-
-func (f *Finder) findLiveTitle(c *httpcache.Client, uri string) (*schema.Title, error) {
-	// This is another horrible hack (title lookup needs fixing): we use the URI
-	// for the title lookup because web titles shouldn't be looked up by peeling
-	// apart the URL, but we need to avoid re-reading the same title data dozens
-	// of times.  Even cached, that's just not smart.
-	if f.titleLookup[uri] != nil {
-		return f.titleLookup[uri], nil
-	}
-
-	var request = httpcache.AutoRequest(uri, "titles")
-	var contents, err = c.GetCachedBytes(request)
-	if err != nil {
-		return nil, fmt.Errorf("unable to GET %#v: %s", uri, err)
-	}
-	var tJSON *chronam.TitleJSON
-	tJSON, err = chronam.ParseTitleJSON(contents)
-	if err != nil {
-		return nil, fmt.Errorf("unable to parse title JSON for %#v: %s", uri, err)
-	}
-
-	// For now we just blow away whatever was there before, because live titles
-	// are really quite separate from disk titles, and TODO they'll be split
-	// apart very soon anyway
-	var title = &schema.Title{LCCN: tJSON.LCCN}
-	f.Titles = append(f.Titles, title)
-	f.titleLookup[title.LCCN] = title
-	f.titleLookup[uri] = title
-
-	return title, nil
 }

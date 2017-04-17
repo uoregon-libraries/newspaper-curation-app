@@ -72,7 +72,7 @@ func (f *Finder) findStandardIssuesForTitlePath(titlePath string, allowEdition b
 	// Make sure we have a legitimate title - we have to check titles by
 	// directory and LCCN
 	var titleName = filepath.Base(titlePath)
-	var title = f.findTitle(titleName)
+	var title = f.findFilesystemTitle(titleName, titlePath)
 
 	// A missing title is a problem for all standard directory layouts, because
 	// these are always in-house issues.  Live batches or old batches on the
@@ -205,7 +205,8 @@ func (f *Finder) cacheBatchDataFromXML(batchDir string) {
 			f.newError(batchDir, fmt.Errorf("invalid issue edition in batch XML (%#v)", ix)).SetBatch(batch)
 		}
 
-		var title = f.findTitle(ix.LCCN)
+		var titleDir = filepath.Join(dataDir, ix.LCCN)
+		var title = f.findOrCreateFilesystemTitle(ix.LCCN, titleDir)
 		var issueDir = filepath.Join(dataDir, ix.Content)
 		var issue = &schema.Issue{Title: title, Date: dt, Edition: ed, Location: issueDir}
 		batch.AddIssue(issue)
