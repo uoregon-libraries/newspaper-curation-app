@@ -11,7 +11,7 @@ import (
 // Finder is *the* component of the issuefinder package, running the filesystem
 // and web queries and providing an API to get the results
 type Finder struct {
-	Issues  []*schema.Issue
+	Issues  schema.IssueList
 	Batches []*schema.Batch
 	Titles  []*schema.Title
 

@@ -30,7 +30,7 @@ type Batch struct {
 	Version int
 
 	// Issues links the issues which are part of this batch
-	Issues []*Issue
+	Issues IssueList
 
 	// Location is where this batch can be found, either a URL or filesystem path
 	Location string
@@ -91,7 +91,7 @@ type Title struct {
 	// Issues contains the list of issues associated with a single title; though
 	// this can be derived by iterating over all the issues, it's useful to store
 	// them here, too
-	Issues []*Issue
+	Issues IssueList
 
 	// Location is where the title was found on disk or web; not actual Title metadata
 	Location string
