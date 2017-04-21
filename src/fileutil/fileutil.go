@@ -26,6 +26,14 @@ func IsFile(path string) bool {
 	return info.Mode().IsRegular()
 }
 
+// Exists returns true if the given path exists and has no errors.  All errors
+// are treated as the path not existing in order to avoid trying to determine
+// what to do to handle the unknown errors which may be returned.
+func Exists(path string) bool {
+	_, err := os.Stat(path)
+	return err == nil
+}
+
 // Readdir wraps os.File's Readdir to handle common operations we need for
 // getting a list of file info structures
 func Readdir(path string) ([]os.FileInfo, error) {
