@@ -33,6 +33,20 @@ func testIntegrity(finderA *issuefinder.Finder, cacheFile string) {
 	validateLen("title", len(finderA.Titles), len(finderB.Titles))
 	validateLen("batch", len(finderA.Batches), len(finderB.Batches))
 	validateLen("error", len(finderA.Errors.Errors), len(finderB.Errors.Errors))
+
+	finderA.Issues.SortByKey()
+	finderB.Issues.SortByKey()
+	for i, issueA := range finderA.Issues {
+		var issueB = finderB.Issues[i]
+		var tsvA, tsvB = issueA.TSV(), issueB.TSV()
+		if tsvA != tsvB {
+			integrityFail(fmt.Sprintf("Issues[%d] don't match: real: %#v cache: %#v", i, tsvA, tsvB))
+			if fails > 5 {
+				break
+			}
+		}
+	}
+
 	if fails == 0 {
 		log.Printf("Cache verified")
 	}
