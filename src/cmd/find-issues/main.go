@@ -1,35 +1,28 @@
-// This app looks all over the filesystem and the database to figure out if an
-// issue exists somewhere in the process.  This is to help find issues we
-// expected to see in production but haven't (in case they got "stuck" in some
-// step) or where we have a dupe but aren't sure where all versions exist.
+// This app reads the finder cache to report where in the process an issue (or
+// group of issues) was last seen.  This is to help find issues we expected to
+// see in production but haven't (in case they got "stuck" in some step) or
+// where we have a dupe but aren't sure where all versions exist.
 
 package main
 
 import (
-	"config"
-	"db"
 	"fileutil"
 	"fmt"
 	"io/ioutil"
 	"issuefinder"
 	"log"
 	"os"
-	"path/filepath"
 	"strings"
 	"wordutils"
 
 	"github.com/jessevdk/go-flags"
 )
 
-// Conf stores the configuration data read from the legacy Python settings
-var Conf *config.Config
 var issueSearchKeys []*IssueSearchKey
 
 // Command-line options
 var opts struct {
-	ConfigFile string   `short:"c" long:"config" description:"path to P2C config file" required:"true"`
-	Siteroot   string   `long:"siteroot" description:"URL to the live host" required:"true"`
-	CachePath  string   `long:"cache-path" description:"Path to cache downloaded JSON files" required:"true"`
+	CacheFile  string   `long:"cache-file" description:"Path to the finder cache" required:"true"`
 	IssueList  string   `long:"issue-list" description:"path to file containing list of newline-separated issue keys"`
 	IssueKeys  []string `long:"issue-key" description:"single issue key to process, e.g., 'sn12345678/1905123101'"`
 }
@@ -55,14 +48,10 @@ func usageFail(format string, args ...interface{}) {
 	wrap("Issue keys MUST be formatted as LCCN[/YYYY][MM][DD][EE].  The full " +
 		"LCCN is mandatory, while the rest of the key's parts can be added to " +
 		"refine the search.")
-	fmt.Fprintln(os.Stderr)
-	wrap("--siteroot must point to the live site, for downloading batch and " +
-		"issue information so the search knows if an issue is live, and if so, " +
-		"in what batch it was ingested.")
 	os.Exit(1)
 }
 
-func getConf() {
+func getOpts() {
 	p = flags.NewParser(&opts, flags.HelpFlag|flags.PassDoubleDash)
 	p.Usage = "[OPTIONS]"
 	var _, err = p.Parse()
@@ -75,16 +64,6 @@ func getConf() {
 		usageFail("Error: You must specify one or more issue keys via --issue-keys or --issue-list")
 	}
 
-	Conf, err = config.Parse(opts.ConfigFile)
-	if err != nil {
-		log.Fatalf("Config error: %s", err)
-	}
-
-	err = db.Connect(Conf.DatabaseConnect)
-	if err != nil {
-		log.Fatalf("Error trying to connect to database: %s", err)
-	}
-
 	// If we have an issue list, read it into opts.IssueKeys
 	if opts.IssueList != "" {
 		var contents, err = ioutil.ReadFile(opts.IssueList)
@@ -94,11 +73,8 @@ func getConf() {
 		opts.IssueKeys = strings.Split(string(contents), "\n")
 	}
 
-	// If we have a batch URL, we must have a valid cache path
-	if opts.Siteroot != "" {
-		if !fileutil.IsDir(opts.CachePath) {
-			usageFail("ERROR: --cache-path %#v is not a valid directory", opts.CachePath)
-		}
+	if !fileutil.IsFile(opts.CacheFile) {
+		usageFail("ERROR: --cache-file %#v is not a valid file", opts.CacheFile)
 	}
 
 	// Verify that each issue key at least *looks* legit before burning time
@@ -121,11 +97,10 @@ func getConf() {
 }
 
 func main() {
-	getConf()
-	var cacheFile = filepath.Join(opts.CachePath, "finder.cache")
-	var finder, err = issuefinder.Deserialize(cacheFile)
+	getOpts()
+	var finder, err = issuefinder.Deserialize(opts.CacheFile)
 	if err != nil {
-		log.Fatalf("Unable to deserialize the cache file %#v: %s", cacheFile, err)
+		log.Fatalf("Unable to deserialize the cache file %#v: %s", opts.CacheFile, err)
 	}
 
 	var lookup = NewLookup()
