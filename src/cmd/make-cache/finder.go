@@ -3,12 +3,12 @@ package main
 import (
 	"issuefinder"
 	"log"
-	"path/filepath"
 )
 
-// cacheIssues calls all the individual cache functions for the
-// myriad of ways we store issue information in the various locations
-func cacheIssues() {
+// findIssues calls all the individual cache functions for the myriad of ways
+// we store issue information in the various locations, returning the finder
+// with all this data
+func findIssues() *issuefinder.Finder {
 	finder = issuefinder.New()
 	var err error
 
@@ -35,10 +35,12 @@ func cacheIssues() {
 	if err != nil {
 		log.Fatalf("Error trying to cache batches: %s", err)
 	}
+	return finder
+}
 
-	var cacheFile = filepath.Join(opts.CachePath, "finder.cache")
+func cacheIssues(finder *issuefinder.Finder, cacheFile string) {
 	log.Printf("Serializing to %q", cacheFile)
-	err = finder.Serialize(cacheFile)
+	var err = finder.Serialize(cacheFile)
 	if err != nil {
 		log.Fatalf("Error trying to serialize: %s", err)
 	}

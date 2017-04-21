@@ -11,6 +11,7 @@ import (
 	"issuefinder"
 	"log"
 	"os"
+	"path/filepath"
 	"wordutils"
 
 	"github.com/jessevdk/go-flags"
@@ -78,5 +79,8 @@ func getConf() {
 
 func main() {
 	getConf()
-	cacheIssues()
+	var finder = findIssues()
+	var cacheFile = filepath.Join(opts.CachePath, "finder.cache")
+	cacheIssues(finder, cacheFile)
+	testIntegrity(finder, cacheFile)
 }
