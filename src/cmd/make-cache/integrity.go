@@ -20,8 +20,8 @@ func validateLen(thing string, a, b int) {
 	integrityFail(fmt.Sprintf("The %s lengths don't match; real finder had %d; cache data had %d", thing, a, b))
 }
 
-
 func testIntegrity(finderA *issuefinder.Finder, cacheFile string) {
+	fails = 0
 	log.Printf("Reading cached file to verify integrity")
 	var finderB, err = issuefinder.Deserialize(cacheFile)
 	if err != nil {
