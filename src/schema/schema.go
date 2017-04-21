@@ -30,7 +30,7 @@ type Batch struct {
 	Version int
 
 	// Issues links the issues which are part of this batch
-	Issues []*Issue
+	Issues IssueList
 
 	// Location is where this batch can be found, either a URL or filesystem path
 	Location string
@@ -76,6 +76,12 @@ func (b *Batch) Fullname() string {
 	return strings.Join(parts, "_")
 }
 
+// TSV returns a string uniquely identifying this batch by location as well
+// as name, and an issue count to offer some verification or reporting
+func (b *Batch) TSV() string {
+	return fmt.Sprintf("%s\t%s\t%06d", b.Location, b.Fullname(), len(b.Issues))
+}
+
 // AddIssue adds the issue to this batch's list, and sets the issue's batch
 func (b *Batch) AddIssue(i *Issue) {
 	b.Issues = append(b.Issues, i)
@@ -91,10 +97,17 @@ type Title struct {
 	// Issues contains the list of issues associated with a single title; though
 	// this can be derived by iterating over all the issues, it's useful to store
 	// them here, too
-	Issues []*Issue
+	Issues IssueList
 
 	// Location is where the title was found on disk or web; not actual Title metadata
 	Location string
+}
+
+// TSV returns a string representing this title uniquely by including its
+// location and a count of issues.  The issue count won't help us deserialize,
+// but the purpose is just for data verification and simple reporting.
+func (t *Title) TSV() string {
+	return fmt.Sprintf("%s\t%s\t%s\t%s\t%06d", t.Location, t.LCCN, t.Name, t.PlaceOfPublication, len(t.Issues))
 }
 
 // AddIssue adds the issue to this title's list, and sets the issue's title
@@ -115,9 +128,25 @@ type Issue struct {
 	Location string
 }
 
+// DateString returns the date in a consistent format for use in issue key TSV output
+func (i *Issue) DateString() string {
+	return i.Date.Format("20060102")
+}
+
 // Key returns the unique string that represents this issue
 func (i *Issue) Key() string {
-	return fmt.Sprintf("%s/%s%02d", i.Title.LCCN, i.Date.Format("20060102"), i.Edition)
+	return fmt.Sprintf("%s/%s%02d", i.Title.LCCN, i.DateString(), i.Edition)
+}
+
+// TSV gives us something which can be used to uniquely identify all aspects of
+// this issue's data for reporting and/or data verification
+func (i *Issue) TSV() string {
+	var bString = "nil"
+	if i.Batch != nil {
+		bString = strings.Replace(i.Batch.TSV(), "\t", "\\t", -1)
+	}
+	var tString = strings.Replace(i.Title.TSV(), "\t", "\\t", -1)
+	return fmt.Sprintf("%s\t%s\t%s\t%s%02d", bString, tString, i.Location, i.DateString(), i.Edition)
 }
 
 // IssueList groups a bunch of issues together

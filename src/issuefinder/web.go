@@ -71,7 +71,9 @@ func (f *Finder) cacheLiveIssue(batch *schema.Batch, title *schema.Title, meta *
 		return
 	}
 
-	var issue = &schema.Issue{Title: title, Date: dt, Edition: edition, Location: meta.URL, Batch: batch}
+	var issue = &schema.Issue{Date: dt, Edition: edition, Location: meta.URL}
+	title.AddIssue(issue)
+	batch.AddIssue(issue)
 	f.Issues = append(f.Issues, issue)
 
 	return

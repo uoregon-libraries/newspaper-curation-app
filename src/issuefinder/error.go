@@ -15,16 +15,14 @@ type ErrorList struct {
 	// is, the lowest-level item associated with the error
 
 	// IssueErrors stores all errors for a unique Issue.  Note that issues are
-	// completely unique: two issues for the same date and LCCN in different
-	// locations are separate objects.
+	// completely unique per location: two issues for the same date and LCCN in
+	// different locations are separate objects.
 	IssueErrors map[*schema.Issue][]*Error
 
-	// TitleErrors stores errors for a Title.  Note that titles are currently
-	// *global* to a single Finder due to their simplicity.
+	// TitleErrors stores errors for a Title.  Titles are unique per location.
 	TitleErrors map[*schema.Title][]*Error
 
-	// BatchErrors stores errors for a batch.  Like issues, batches are unique
-	// per location.
+	// BatchErrors stores errors for a batch.  Batches are unique per location.
 	BatchErrors map[*schema.Batch][]*Error
 
 	// OtherErrors gets everything not assigned to an object

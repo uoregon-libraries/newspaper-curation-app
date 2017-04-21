@@ -1,0 +1,55 @@
+// cached_finder.go creates types which are used when converting a Finder into
+// something we can actually cache to disk
+
+package issuefinder
+
+import (
+	"time"
+)
+
+// cacheID is just an int used to make it clear there's a relationship being expressed
+type cacheID int
+
+// cachedFinder, and cached* "children", are serialization-friendly structures
+// which allows us to store and retrieve issue, title, and batch data without
+// the recursive problems which exist due to things like batches having a list
+// of issues while issues store their batch
+type cachedFinder struct {
+	Batches []cachedBatch
+	Titles  []cachedTitle
+	Issues  []cachedIssue
+	Errors  []cachedError
+}
+
+type cachedBatch struct {
+	ID          cacheID
+	MARCOrgCode string
+	Keyword     string
+	Version     int
+	Location    string
+}
+
+type cachedTitle struct {
+	ID                 cacheID
+	LCCN               string
+	Name               string
+	PlaceOfPublication string
+	Location           string
+}
+
+type cachedIssue struct {
+	ID       cacheID
+	TitleID  cacheID
+	Date     time.Time
+	Edition  int
+	BatchID  cacheID
+	Location string
+}
+
+type cachedError struct {
+	BatchID  cacheID
+	TitleID  cacheID
+	IssueID  cacheID
+	Location string
+	Error    string
+}
