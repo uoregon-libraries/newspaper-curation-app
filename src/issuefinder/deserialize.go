@@ -64,8 +64,10 @@ func (cf cachedFinder) finder() *Finder {
 		issueLookup[ci.ID] = i
 		f.Issues = append(f.Issues, i)
 
-		// Associate the title and batch
-		batchLookup[ci.BatchID].AddIssue(i)
+		// Associate the title and batch; batch is optional, but title isn't
+		if ci.BatchID != 0 {
+			batchLookup[ci.BatchID].AddIssue(i)
+		}
 		titleLookup[ci.TitleID].AddIssue(i)
 	}
 
