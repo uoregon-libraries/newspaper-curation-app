@@ -14,6 +14,7 @@ import (
 	"issuefinder"
 	"log"
 	"os"
+	"path/filepath"
 	"strings"
 	"wordutils"
 
@@ -34,7 +35,6 @@ var opts struct {
 }
 
 var p *flags.Parser
-var finder *issuefinder.Finder
 
 // wrap is a helper to wrap a usage message at 80 characters and print a
 // newline afterward
@@ -122,9 +122,12 @@ func getConf() {
 
 func main() {
 	getConf()
+	var cacheFile = filepath.Join(opts.CachePath, "finder.cache")
+	var finder, err = issuefinder.Deserialize(cacheFile)
+	if err != nil {
+		log.Fatalf("Unable to deserialize the cache file %#v: %s", cacheFile, err)
+	}
 
-	finder = issuefinder.New()
-	cacheIssues()
 	var lookup = NewLookup()
 	lookup.Populate(finder.Issues)
 	finder.Errors.Index()
