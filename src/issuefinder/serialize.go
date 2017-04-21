@@ -21,41 +21,40 @@ func (f *Finder) cachedFinder() cachedFinder {
 
 	var issueID, titleID, batchID cacheID
 
+	for _, b := range f.Batches {
+		batchID++
+		var cb = cachedBatch{
+			ID:          batchID,
+			MARCOrgCode: b.MARCOrgCode,
+			Keyword:     b.Keyword,
+			Version:     b.Version,
+			Location:    b.Location,
+		}
+		batchIDLookup[b] = batchID
+		batchLookup[batchID] = cb
+		cf.Batches = append(cf.Batches, cb)
+	}
+	for _, t := range f.Titles {
+		titleID++
+		var ct = cachedTitle{
+			ID:                 titleID,
+			LCCN:               t.LCCN,
+			Name:               t.Name,
+			PlaceOfPublication: t.PlaceOfPublication,
+			Location:           t.Location,
+		}
+		titleIDLookup[t] = titleID
+		titleLookup[titleID] = ct
+		cf.Titles = append(cf.Titles, ct)
+	}
 	for _, i := range f.Issues {
 		issueID++
 		var ci = cachedIssue{ID: issueID, Date: i.Date, Edition: i.Edition, Location: i.Location}
 		issueIDLookup[i] = issueID
 		issueLookup[issueID] = ci
-
-		if titleIDLookup[i.Title] == 0 {
-			titleID++
-			var ct = cachedTitle{
-				ID:                 titleID,
-				LCCN:               i.Title.LCCN,
-				Name:               i.Title.Name,
-				PlaceOfPublication: i.Title.PlaceOfPublication,
-				Location:           i.Title.Location,
-			}
-			titleIDLookup[i.Title] = titleID
-			titleLookup[titleID] = ct
-			cf.Titles = append(cf.Titles, ct)
-		}
 		ci.TitleID = titleIDLookup[i.Title]
 
 		if i.Batch != nil {
-			if batchIDLookup[i.Batch] == 0 {
-				batchID++
-				var cb = cachedBatch{
-					ID:          batchID,
-					MARCOrgCode: i.Batch.MARCOrgCode,
-					Keyword:     i.Batch.Keyword,
-					Version:     i.Batch.Version,
-					Location:    i.Batch.Location,
-				}
-				batchIDLookup[i.Batch] = batchID
-				batchLookup[batchID] = cb
-				cf.Batches = append(cf.Batches, cb)
-			}
 			ci.BatchID = batchIDLookup[i.Batch]
 		}
 
