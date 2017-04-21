@@ -73,7 +73,7 @@ func (cf cachedFinder) finder() *Finder {
 	for _, ce := range cf.Errors {
 		var e = &Error{
 			Location: ce.Location,
-			Error: fmt.Errorf(ce.Error),
+			Error:    fmt.Errorf(ce.Error),
 		}
 		if ce.BatchID != 0 {
 			e.Batch = batchLookup[ce.BatchID]

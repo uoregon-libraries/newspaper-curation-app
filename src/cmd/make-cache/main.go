@@ -21,9 +21,9 @@ var Conf *config.Config
 
 // Command-line options
 var opts struct {
-	ConfigFile string   `short:"c" long:"config" description:"path to P2C config file" required:"true"`
-	Siteroot   string   `long:"siteroot" description:"URL to the live host" required:"true"`
-	CachePath  string   `long:"cache-path" description:"Path to cache finder data" required:"true"`
+	ConfigFile string `short:"c" long:"config" description:"path to P2C config file" required:"true"`
+	Siteroot   string `long:"siteroot" description:"URL to the live host" required:"true"`
+	CachePath  string `long:"cache-path" description:"Path to cache finder data" required:"true"`
 }
 
 var p *flags.Parser
