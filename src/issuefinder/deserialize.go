@@ -60,7 +60,11 @@ func (cf cachedFinder) finder() *Finder {
 			Date:     ci.Date,
 			Edition:  ci.Edition,
 			Location: ci.Location,
-			Files:    ci.Files,
+		}
+		for _, cf := range ci.Files {
+			// Copy the fileutil.File structure or we get reused data
+			var dupedFile = cf.File
+			i.Files = append(i.Files, &schema.File{File: &dupedFile, Location: cf.Location, Issue: i})
 		}
 		issueLookup[ci.ID] = i
 		f.Issues = append(f.Issues, i)

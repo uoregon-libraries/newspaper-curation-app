@@ -54,7 +54,13 @@ func (f *Finder) cachedFinder() cachedFinder {
 			Date:     i.Date,
 			Edition:  i.Edition,
 			Location: i.Location,
-			Files:    i.Files,
+		}
+		for _, f := range i.Files {
+			var cf = cachedFile{
+				File:     *f.File,
+				Location: f.Location,
+			}
+			ci.Files = append(ci.Files, cf)
 		}
 		issueIDLookup[i] = issueID
 		issueLookup[issueID] = ci

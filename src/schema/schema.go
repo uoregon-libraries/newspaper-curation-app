@@ -12,6 +12,7 @@ package schema
 import (
 	"fileutil"
 	"fmt"
+	"path/filepath"
 	"sort"
 	"strconv"
 	"strings"
@@ -124,7 +125,7 @@ type Issue struct {
 	Date    time.Time
 	Edition int
 	Batch   *Batch
-	Files   []*fileutil.File
+	Files   []*File
 
 	// Location is where this issue can be found, either a URL or filesystem path
 	Location string
@@ -169,7 +170,10 @@ func (i *Issue) FindFiles() {
 	}
 
 	var infos, _ = fileutil.ReaddirSorted(i.Location)
-	i.Files = fileutil.InfosToFiles(infos)
+	for _, file := range fileutil.InfosToFiles(infos) {
+		var loc = filepath.Join(i.Location, file.Name)
+		i.Files = append(i.Files, &File{File: file, Issue: i, Location: loc})
+	}
 }
 
 // IssueList groups a bunch of issues together
@@ -179,4 +183,11 @@ type IssueList []*Issue
 // by issue key
 func (list IssueList) SortByKey() {
 	sort.Slice(list, func(i, j int) bool { return list[i].Key() < list[j].Key() })
+}
+
+// File just gives fileutil.File a location and issue pointer
+type File struct {
+	*fileutil.File
+	Location string
+	Issue    *Issue
 }

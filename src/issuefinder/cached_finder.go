@@ -45,7 +45,12 @@ type cachedIssue struct {
 	Edition  int
 	BatchID  cacheID
 	Location string
-	Files    []*fileutil.File
+	Files    []cachedFile
+}
+
+type cachedFile struct {
+	fileutil.File
+	Location string
 }
 
 type cachedError struct {
