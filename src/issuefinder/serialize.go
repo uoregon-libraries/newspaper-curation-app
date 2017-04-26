@@ -49,7 +49,13 @@ func (f *Finder) cachedFinder() cachedFinder {
 	}
 	for _, i := range f.Issues {
 		issueID++
-		var ci = cachedIssue{ID: issueID, Date: i.Date, Edition: i.Edition, Location: i.Location}
+		var ci = cachedIssue{
+			ID:       issueID,
+			Date:     i.Date,
+			Edition:  i.Edition,
+			Location: i.Location,
+			Files:    i.Files,
+		}
 		issueIDLookup[i] = issueID
 		issueLookup[issueID] = ci
 		ci.TitleID = titleIDLookup[i.Title]

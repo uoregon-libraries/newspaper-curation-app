@@ -4,6 +4,7 @@
 package issuefinder
 
 import (
+	"fileutil"
 	"time"
 )
 
@@ -44,6 +45,7 @@ type cachedIssue struct {
 	Edition  int
 	BatchID  cacheID
 	Location string
+	Files    []*fileutil.File
 }
 
 type cachedError struct {

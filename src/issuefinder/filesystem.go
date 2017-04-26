@@ -136,13 +136,33 @@ func (f *Finder) findStandardIssuesForTitlePath(titlePath string, allowEdition b
 		}
 
 		var issue = title.AddIssue(&schema.Issue{Date: dt, Edition: edition, Location: issuePath})
+
+		issue.FindFiles()
+
 		for _, e := range errors {
 			e.SetIssue(issue)
 		}
 		f.Issues = append(f.Issues, issue)
+		f.verifyStandardIssueFiles(issue)
 	}
 
 	return nil
+}
+
+// verifyStandardIssueFiles looks for errors in any files within a given issue.
+// In our standard layout, the following are considered errors:
+// - There are files that aren't regular (symlinks, directories, etc)
+// - There are files that aren't *.pdf, *.tiff, *.jp2, or *.xml (though a
+//   few exceptions exist, such as .meta.json and Adobe Bridge dot-files we
+//   ignore when we get to the processing phase)
+// - Any derivative file exists without a corresponding PDF
+// - The issue directory is empty
+//
+// We store every error for each file, but attempt to roll them up in a nicer
+// way so we have a single issue-level error.
+func (f *Finder) verifyStandardIssueFiles(issue *schema.Issue) {
+	// TODO: this is a NOOP for now to just get issue file finding up and running
+	// without losing track of the needs of issue file verification
 }
 
 // FindDiskBatches finds all batches in the batch output path, then finds their
@@ -169,6 +189,9 @@ func (f *Finder) FindDiskBatches(path string) error {
 // cacheBatchDataFromXML reads the batch.xml file and caches all titles and
 // issues found inside.  Errors are stored, and many are ignored, as a broken
 // batch or batch XML isn't necessarily uncommon with live data, oddly enough.
+// We don't bother to verify issue directories or files at this point, because
+// only a code bug would cause the generated batches to break, which isn't
+// something anybody but a dev can deal with.
 func (f *Finder) cacheBatchDataFromXML(batchDir string) {
 	var parts = strings.Split(batchDir, string(filepath.Separator))
 	var batchName = parts[len(parts)-1]

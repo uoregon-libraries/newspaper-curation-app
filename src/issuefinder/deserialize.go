@@ -60,6 +60,7 @@ func (cf cachedFinder) finder() *Finder {
 			Date:     ci.Date,
 			Edition:  ci.Edition,
 			Location: ci.Location,
+			Files:    ci.Files,
 		}
 		issueLookup[ci.ID] = i
 		f.Issues = append(f.Issues, i)

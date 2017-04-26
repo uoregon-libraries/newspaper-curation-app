@@ -10,6 +10,7 @@
 package schema
 
 import (
+	"fileutil"
 	"fmt"
 	"sort"
 	"strconv"
@@ -123,6 +124,7 @@ type Issue struct {
 	Date    time.Time
 	Edition int
 	Batch   *Batch
+	Files   []*fileutil.File
 
 	// Location is where this issue can be found, either a URL or filesystem path
 	Location string
@@ -147,6 +149,22 @@ func (i *Issue) TSV() string {
 	}
 	var tString = strings.Replace(i.Title.TSV(), "\t", "\\t", -1)
 	return fmt.Sprintf("%s\t%s\t%s\t%s%02d", bString, tString, i.Location, i.DateString(), i.Edition)
+}
+
+// FindFiles clears the issue's file list and then reads everything in the
+// issue directory, appending it to the now-empty list.  This will silently
+// fail when the issue's location is invalid, not readable, or isn't an
+// absolute path beginning with "/".  This is only meant for issues already
+// discovered on the filesystem.
+func (i *Issue) FindFiles() {
+	i.Files = nil
+
+	if i.Location[0] != '/' {
+		return
+	}
+
+	var infos, _ = fileutil.ReaddirSorted(i.Location)
+	i.Files = fileutil.InfosToFiles(infos)
 }
 
 // IssueList groups a bunch of issues together
