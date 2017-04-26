@@ -22,7 +22,7 @@ func (f *Finder) FindSFTPIssues(path string) error {
 
 	// Find all issues next
 	for _, titlePath := range titlePaths {
-		err = f.findStandardIssuesForTitlePath(titlePath, false)
+		err = f.findStandardIssuesForTitlePath(titlePath, true)
 		if err != nil {
 			return err
 		}
@@ -54,7 +54,7 @@ func (f *Finder) FindStandardIssues(path string) error {
 
 	// Finally, find issues
 	for _, titlePath := range titlePaths {
-		err = f.findStandardIssuesForTitlePath(titlePath, true)
+		err = f.findStandardIssuesForTitlePath(titlePath, false)
 		if err != nil {
 			return err
 		}
@@ -65,10 +65,10 @@ func (f *Finder) FindStandardIssues(path string) error {
 
 // findStandardIssuesForTitle finds all issues within the given title's path by
 // looking for YYYY-MM-DD or YYYY-MM-DD_EE formatted directories.  The latter
-// format is only alled if allowEdition is true (which is not the case for SFTP
-// issues, for instance).  As the path is expected to be "standard", the last
+// format is only allowed if strict is false (SFTP issues, for instance, don't
+// allow an edition).  As the path is expected to be "standard", the last
 // directory element in the path must be an SFTP title name or an LCCN.
-func (f *Finder) findStandardIssuesForTitlePath(titlePath string, allowEdition bool) error {
+func (f *Finder) findStandardIssuesForTitlePath(titlePath string, strict bool) error {
 	// Make sure we have a legitimate title - we have to check titles by
 	// directory and LCCN
 	var titleName = filepath.Base(titlePath)
@@ -115,7 +115,7 @@ func (f *Finder) findStandardIssuesForTitlePath(titlePath string, allowEdition b
 			}
 
 			// SFTP dirs can't have an edition suffix, so we conditionally store an error
-			if !allowEdition {
+			if strict {
 				addErr(fmt.Errorf("edition suffix isn't allowed here"))
 			}
 			base = base[:10] + base[13:]
