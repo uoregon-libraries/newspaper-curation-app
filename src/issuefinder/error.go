@@ -61,7 +61,8 @@ func (list *ErrorList) Index() {
 // easily categorize errors.  Error is built somewhat functionally in order to
 // more easily chain together calls:
 //
-//     finder.newError(path, fmt.Errorf("invalid issue directory name")).SetBatch(batch).SetTitle(title)
+//     var err = fmt.Errorf("invalid issue directory name %q", issuePath)
+//     finder.newError(path, err).SetBatch(batch).SetTitle(title)
 type Error struct {
 	Batch    *schema.Batch
 	Title    *schema.Title
