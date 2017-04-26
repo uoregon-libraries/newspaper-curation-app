@@ -148,7 +148,12 @@ func (i *Issue) TSV() string {
 		bString = strings.Replace(i.Batch.TSV(), "\t", "\\t", -1)
 	}
 	var tString = strings.Replace(i.Title.TSV(), "\t", "\\t", -1)
-	return fmt.Sprintf("%s\t%s\t%s\t%s%02d", bString, tString, i.Location, i.DateString(), i.Edition)
+	var fileNames []string
+	for _, file := range i.Files {
+		fileNames = append(fileNames, file.Name)
+	}
+	return fmt.Sprintf("%s\t%s\t%s\t%s%02d\t%s", bString, tString, i.Location, i.DateString(),
+		i.Edition, strings.Join(fileNames, ","))
 }
 
 // FindFiles clears the issue's file list and then reads everything in the

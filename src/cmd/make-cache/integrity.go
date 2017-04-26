@@ -38,6 +38,8 @@ func testIntegrity(finderA *issuefinder.Finder, cacheFile string) {
 	finderB.Issues.SortByKey()
 	for i, issueA := range finderA.Issues {
 		var issueB = finderB.Issues[i]
+
+		validateLen(fmt.Sprintf("Issues[%d].Files", i), len(issueA.Files), len(issueB.Files))
 		var tsvA, tsvB = issueA.TSV(), issueB.TSV()
 		if tsvA != tsvB {
 			integrityFail(fmt.Sprintf("Issues[%d] don't match: real: %#v cache: %#v", i, tsvA, tsvB))
