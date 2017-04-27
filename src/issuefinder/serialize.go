@@ -18,8 +18,9 @@ func (f *Finder) cachedFinder() cachedFinder {
 	var titleLookup = make(map[cacheID]cachedTitle)
 	var issueIDLookup = make(map[*schema.Issue]cacheID)
 	var issueLookup = make(map[cacheID]cachedIssue)
+	var fileIDLookup = make(map[*schema.File]cacheID)
 
-	var issueID, titleID, batchID cacheID
+	var issueID, titleID, batchID, fileID cacheID
 
 	for _, b := range f.Batches {
 		batchID++
@@ -56,10 +57,13 @@ func (f *Finder) cachedFinder() cachedFinder {
 			Location: i.Location,
 		}
 		for _, f := range i.Files {
+			fileID++
 			var cf = cachedFile{
+				ID:       fileID,
 				File:     *f.File,
 				Location: f.Location,
 			}
+			fileIDLookup[f] = fileID
 			ci.Files = append(ci.Files, cf)
 		}
 		issueIDLookup[i] = issueID
@@ -77,6 +81,7 @@ func (f *Finder) cachedFinder() cachedFinder {
 		var b = e.Batch
 		var t = e.Title
 		var i = e.Issue
+		var f = e.File
 
 		var ce = cachedError{Location: e.Location, Error: e.Error.Error()}
 		if b != nil {
@@ -87,6 +92,9 @@ func (f *Finder) cachedFinder() cachedFinder {
 		}
 		if i != nil {
 			ce.IssueID = issueIDLookup[i]
+		}
+		if f != nil {
+			ce.FileID = fileIDLookup[f]
 		}
 		cf.Errors = append(cf.Errors, ce)
 	}

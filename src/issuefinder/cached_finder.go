@@ -50,6 +50,7 @@ type cachedIssue struct {
 
 type cachedFile struct {
 	fileutil.File
+	ID       cacheID
 	Location string
 }
 
@@ -57,6 +58,7 @@ type cachedError struct {
 	BatchID  cacheID
 	TitleID  cacheID
 	IssueID  cacheID
+	FileID   cacheID
 	Location string
 	Error    string
 }

@@ -31,6 +31,7 @@ func (cf cachedFinder) finder() *Finder {
 	var batchLookup = make(map[cacheID]*schema.Batch)
 	var titleLookup = make(map[cacheID]*schema.Title)
 	var issueLookup = make(map[cacheID]*schema.Issue)
+	var fileLookup = make(map[cacheID]*schema.File)
 	var f = New()
 
 	// Build the basic schema objects with associations
@@ -64,7 +65,9 @@ func (cf cachedFinder) finder() *Finder {
 		for _, cf := range ci.Files {
 			// Copy the fileutil.File structure or we get reused data
 			var dupedFile = cf.File
-			i.Files = append(i.Files, &schema.File{File: &dupedFile, Location: cf.Location, Issue: i})
+			var file = &schema.File{File: &dupedFile, Location: cf.Location, Issue: i}
+			fileLookup[cf.ID] = file
+			i.Files = append(i.Files, file)
 		}
 		issueLookup[ci.ID] = i
 		f.Issues = append(f.Issues, i)
@@ -90,6 +93,9 @@ func (cf cachedFinder) finder() *Finder {
 		}
 		if ce.IssueID != 0 {
 			e.Issue = issueLookup[ce.IssueID]
+		}
+		if ce.FileID != 0 {
+			e.File = fileLookup[ce.FileID]
 		}
 		f.Errors.Append(e)
 	}

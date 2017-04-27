@@ -49,6 +49,20 @@ func testIntegrity(finderA *issuefinder.Finder, cacheFile string) {
 		}
 	}
 
+	var errorFails int
+	for i, errorA := range finderA.Errors.Errors {
+		var errorB = finderB.Errors.Errors[i]
+
+		var msgA, msgB = errorA.Message(), errorB.Message()
+		if msgA != msgB {
+			errorFails++
+			integrityFail(fmt.Sprintf("Errors[%d] don't match: real: %#v cache: %#v", i, msgA, msgB))
+			if errorFails > 5 {
+				break
+			}
+		}
+	}
+
 	if fails == 0 {
 		log.Printf("Cache verified")
 	}

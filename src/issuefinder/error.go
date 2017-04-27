@@ -111,6 +111,9 @@ func (e *Error) SetFile(f *schema.File) *Error {
 // Message returns a description of the error and all the error's context
 func (e *Error) Message() string {
 	var details []string
+	if e.File != nil {
+		details = append(details, e.File.Name)
+	}
 	if e.Issue != nil {
 		details = append(details, e.Issue.Key())
 	}
