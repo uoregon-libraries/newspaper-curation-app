@@ -8,8 +8,8 @@ import (
 	"time"
 )
 
-// cacheID is just an int used to make it clear there's a relationship being expressed
-type cacheID int
+// cacheID is just a uint used to make it clear there's a relationship being expressed
+type cacheID uint
 
 // cachedFinder, and cached* "children", are serialization-friendly structures
 // which allows us to store and retrieve issue, title, and batch data without
