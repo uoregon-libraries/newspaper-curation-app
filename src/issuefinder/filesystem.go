@@ -169,9 +169,12 @@ func (f *Finder) verifyStandardIssueFiles(issue *schema.Issue, strict bool) {
 	}
 
 	// Cache all filenames beforehand
-	var hasFile = make(map[string]bool)
+	var hasPDF = make(map[string]bool)
 	for _, file := range issue.Files {
-		hasFile[file.Name] = true
+		var ext = strings.ToLower(filepath.Ext(file.Name))
+		if ext == ".pdf" {
+			hasPDF[strings.Replace(file.Name, ext, "", 1)] = true
+		}
 	}
 
 	for _, file := range issue.Files {
@@ -195,14 +198,14 @@ func (f *Finder) verifyStandardIssueFiles(issue *schema.Issue, strict bool) {
 			continue
 		}
 
-		var ext = filepath.Ext(file.Name)
+		var ext = strings.ToLower(filepath.Ext(file.Name))
 		if ext != ".pdf" && ext != ".tiff" && ext != ".tif" && ext != ".jp2" && ext != ".xml" {
 			makeErr("%q has an invalid extension", file.Name)
 			continue
 		}
 
 		if ext != ".pdf" {
-			if !hasFile[strings.Replace(file.Name, ext, ".pdf", 1)] {
+			if !hasPDF[strings.Replace(file.Name, ext, "", 1)] {
 				makeErr("%q has no associated PDF", file.Name)
 				continue
 			}
