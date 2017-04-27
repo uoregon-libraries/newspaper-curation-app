@@ -143,7 +143,7 @@ func (f *Finder) findStandardIssuesForTitlePath(titlePath string, strict bool) e
 			e.SetIssue(issue)
 		}
 		f.Issues = append(f.Issues, issue)
-		f.verifyStandardIssueFiles(issue)
+		f.verifyStandardIssueFiles(issue, strict)
 	}
 
 	return nil
@@ -151,18 +151,63 @@ func (f *Finder) findStandardIssuesForTitlePath(titlePath string, strict bool) e
 
 // verifyStandardIssueFiles looks for errors in any files within a given issue.
 // In our standard layout, the following are considered errors:
-// - There are files that aren't regular (symlinks, directories, etc)
-// - There are files that aren't *.pdf, *.tiff, *.jp2, or *.xml (though a
+// - There are files that aren't regular (symlinks, directories, etc), though
+//   some exceptions exist, such as the .derivatives sub-directory
+// - There are files that aren't pdf, tiff, jp2, or xml (though a
 //   few exceptions exist, such as .meta.json and Adobe Bridge dot-files we
 //   ignore when we get to the processing phase)
 // - Any derivative file exists without a corresponding PDF
 // - The issue directory is empty
 //
-// We store every error for each file, but attempt to roll them up in a nicer
-// way so we have a single issue-level error.
-func (f *Finder) verifyStandardIssueFiles(issue *schema.Issue) {
-	// TODO: this is a NOOP for now to just get issue file finding up and running
-	// without losing track of the needs of issue file verification
+// Additionally, if strict is true, we don't allow for any exceptions to the
+// file type and extension rules, to prevent SFTP directories from being
+// processed when there's anything non-conformant.
+func (f *Finder) verifyStandardIssueFiles(issue *schema.Issue, strict bool) {
+	if len(issue.Files) == 0 {
+		f.newError(issue.Location, fmt.Errorf("no issue files found")).SetIssue(issue)
+		return
+	}
+
+	// Cache all filenames beforehand
+	var hasFile = make(map[string]bool)
+	for _, file := range issue.Files {
+		hasFile[file.Name] = true
+	}
+
+	for _, file := range issue.Files {
+		// We could check .meta.json, .derivatives, .Bridge*, etc. individually,
+		// but the very low likelihood of dot-files being real errors just isn't
+		// worth the granularity.
+		if strict == false && file.Name[0] == '.' {
+			continue
+		}
+
+		var makeErr = func(format string, args ...interface{}) {
+			f.newError(file.Location, fmt.Errorf(format, args...)).SetFile(file)
+		}
+		if file.IsDir() {
+			makeErr("%q is a subdirectory", file.Name)
+			continue
+		}
+
+		if !file.IsRegular() {
+			makeErr("%q is not a regular file", file.Name)
+			continue
+		}
+
+		var ext = filepath.Ext(file.Name)
+		if ext != ".pdf" && ext != ".tiff" && ext != ".tif" && ext != ".jp2" && ext != ".xml" {
+			makeErr("%q has an invalid extension", file.Name)
+			continue
+		}
+
+		if ext != ".pdf" {
+			if !hasFile[strings.Replace(file.Name, ext, ".pdf", 1)] {
+				makeErr("%q has no associated PDF", file.Name)
+				continue
+			}
+		}
+	}
 }
 
 // FindDiskBatches finds all batches in the batch output path, then finds their

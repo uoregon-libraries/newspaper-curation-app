@@ -67,6 +67,7 @@ type Error struct {
 	Batch    *schema.Batch
 	Title    *schema.Title
 	Issue    *schema.Issue
+	File     *schema.File
 	Location string
 	Error    error
 }
@@ -97,6 +98,13 @@ func (e *Error) SetIssue(i *schema.Issue) *Error {
 	e.Issue = i
 	e.Title = i.Title
 	e.Batch = i.Batch
+	return e
+}
+
+// SetFile changes the file, issue, title, and batch, and returns the error
+func (e *Error) SetFile(f *schema.File) *Error {
+	e.SetIssue(f.Issue)
+	e.File = f
 	return e
 }
 
