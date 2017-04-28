@@ -180,9 +180,17 @@ func (i *Issue) FindFiles() {
 type IssueList []*Issue
 
 // SortByKey modifies the IssueList in place so they're sorted alphabetically
-// by issue key
+// by issue key.  In cases where the keys are the same, the TSV is used to
+// ensure sorting is still consistent, if not ideal.
 func (list IssueList) SortByKey() {
-	sort.Slice(list, func(i, j int) bool { return list[i].Key() < list[j].Key() })
+	sort.Slice(list, func(i, j int) bool {
+		var kA, kB = list[i].Key(), list[j].Key()
+		if kA != kB {
+			return kA < kB
+		}
+
+		return list[i].TSV() < list[j].TSV()
+	})
 }
 
 // File just gives fileutil.File a location and issue pointer

@@ -11,16 +11,16 @@ import (
 // findFilesystemTitle looks up the title by its given path and returns it or
 // creates a new one if its "titleName" is in the database.  "titleName" can
 // be LCCN or SFTP directory depending on the type of directory.
-func (f *Finder) findFilesystemTitle(titleName, path string) *schema.Title {
-	if f.titleByLoc[path] == nil {
+func (s *Searcher) findFilesystemTitle(titleName, path string) *schema.Title {
+	if s.titleByLoc[path] == nil {
 		var t = createDBTitle(titleName)
 		if t == nil {
 			return nil
 		}
 		t.Location = path
-		f.addTitle(t)
+		s.addTitle(t)
 	}
-	return f.titleByLoc[path]
+	return s.titleByLoc[path]
 }
 
 // createDBTitle looks up the title in the the database by directory name and LCCN
@@ -43,30 +43,30 @@ func createDBTitle(titleName string) *schema.Title {
 // findOrCreateUnknownFilesystemTitle looks up the title by path and returns it
 // or creates a new one.  This should only be used for titles for which we have
 // no metadata: when LCCN is the only data available, the title is incomplete.
-func (f *Finder) findOrCreateUnknownFilesystemTitle(lccn, path string) *schema.Title {
+func (s *Searcher) findOrCreateUnknownFilesystemTitle(lccn, path string) *schema.Title {
 	// First see if we can look up the title in the database
-	if f.titleByLoc[path] == nil {
-		f.findFilesystemTitle(lccn, path)
+	if s.titleByLoc[path] == nil {
+		s.findFilesystemTitle(lccn, path)
 	}
 	// If it's still empty, we create it with the limited data we have
-	if f.titleByLoc[path] == nil {
-		f.addTitle(&schema.Title{LCCN: lccn, Location: path})
+	if s.titleByLoc[path] == nil {
+		s.addTitle(&schema.Title{LCCN: lccn, Location: path})
 	}
-	return f.titleByLoc[path]
+	return s.titleByLoc[path]
 }
 
 // addTitle pushes the title into the global titles list and caches it by its
 // location field
-func (f *Finder) addTitle(title *schema.Title) {
-	f.Titles = append(f.Titles, title)
-	f.titleByLoc[title.Location] = title
+func (s *Searcher) addTitle(title *schema.Title) {
+	s.Titles = append(s.Titles, title)
+	s.titleByLoc[title.Location] = title
 }
 
 // findOrCreateWebTitle looks up the title by its given URI and returns it or
 // requests the URI to create, cache, and return a new one
-func (f *Finder) findOrCreateWebTitle(c *httpcache.Client, uri string) (*schema.Title, error) {
-	if f.titleByLoc[uri] != nil {
-		return f.titleByLoc[uri], nil
+func (s *Searcher) findOrCreateWebTitle(c *httpcache.Client, uri string) (*schema.Title, error) {
+	if s.titleByLoc[uri] != nil {
+		return s.titleByLoc[uri], nil
 	}
 
 	var request = httpcache.AutoRequest(uri, "titles")
@@ -80,11 +80,11 @@ func (f *Finder) findOrCreateWebTitle(c *httpcache.Client, uri string) (*schema.
 		return nil, fmt.Errorf("unable to parse title JSON for %#v: %s", uri, err)
 	}
 
-	f.addTitle(&schema.Title{
+	s.addTitle(&schema.Title{
 		LCCN:               tJSON.LCCN,
 		Name:               tJSON.Name,
 		PlaceOfPublication: tJSON.PlaceOfPublication,
 		Location:           uri,
 	})
-	return f.titleByLoc[uri], nil
+	return s.titleByLoc[uri], nil
 }

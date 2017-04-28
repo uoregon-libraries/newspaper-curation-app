@@ -16,10 +16,16 @@ type cacheID uint
 // the recursive problems which exist due to things like batches having a list
 // of issues while issues store their batch
 type cachedFinder struct {
-	Batches []cachedBatch
-	Titles  []cachedTitle
-	Issues  []cachedIssue
-	Errors  []cachedError
+	Searchers []cachedSearcher
+}
+
+type cachedSearcher struct {
+	Namespace Namespace
+	Location  string
+	Batches   []cachedBatch
+	Titles    []cachedTitle
+	Issues    []cachedIssue
+	Errors    []cachedError
 }
 
 type cachedBatch struct {

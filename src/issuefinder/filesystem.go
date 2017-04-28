@@ -13,16 +13,16 @@ import (
 
 // FindSFTPIssues is just barely its own special case because unlike the
 // standard structure, there is no "topdir" element in the paths
-func (f *Finder) FindSFTPIssues(path string) error {
+func (s *Searcher) FindSFTPIssues() error {
 	// First find all titles
-	var titlePaths, err = fileutil.FindDirectories(path)
+	var titlePaths, err = fileutil.FindDirectories(s.Location)
 	if err != nil {
 		return err
 	}
 
 	// Find all issues next
 	for _, titlePath := range titlePaths {
-		err = f.findStandardIssuesForTitlePath(titlePath, true)
+		err = s.findStandardIssuesForTitlePath(titlePath, true)
 		if err != nil {
 			return err
 		}
@@ -32,11 +32,11 @@ func (f *Finder) FindSFTPIssues(path string) error {
 }
 
 // FindStandardIssues does the work of finding and returning all issue
-// information within a given path with the assumption that the path conforms
-// to `topdir/sftpnameOrLCCN/yyyy-mm-dd/`
-func (f *Finder) FindStandardIssues(path string) error {
+// information within a Searcher's Location with the assumption that the path
+// conforms to `topdir/sftpnameOrLCCN/yyyy-mm-dd/`
+func (s *Searcher) FindStandardIssues() error {
 	// First find all topdirs
-	var topdirs, err = fileutil.FindDirectories(path)
+	var topdirs, err = fileutil.FindDirectories(s.Location)
 	if err != nil {
 		return err
 	}
@@ -54,7 +54,7 @@ func (f *Finder) FindStandardIssues(path string) error {
 
 	// Finally, find issues
 	for _, titlePath := range titlePaths {
-		err = f.findStandardIssuesForTitlePath(titlePath, false)
+		err = s.findStandardIssuesForTitlePath(titlePath, false)
 		if err != nil {
 			return err
 		}
@@ -68,11 +68,11 @@ func (f *Finder) FindStandardIssues(path string) error {
 // format is only allowed if strict is false (SFTP issues, for instance, don't
 // allow an edition).  As the path is expected to be "standard", the last
 // directory element in the path must be an SFTP title name or an LCCN.
-func (f *Finder) findStandardIssuesForTitlePath(titlePath string, strict bool) error {
+func (s *Searcher) findStandardIssuesForTitlePath(titlePath string, strict bool) error {
 	// Make sure we have a legitimate title - we have to check titles by
 	// directory and LCCN
 	var titleName = filepath.Base(titlePath)
-	var title = f.findFilesystemTitle(titleName, titlePath)
+	var title = s.findFilesystemTitle(titleName, titlePath)
 
 	// A missing title is a problem for all standard directory layouts, because
 	// these are always in-house issues.  Live batches or old batches on the
@@ -82,7 +82,7 @@ func (f *Finder) findStandardIssuesForTitlePath(titlePath string, strict bool) e
 	// order to catch other errors and aggregate the unknown titles' issues.
 	if title == nil {
 		title = &schema.Title{LCCN: titlePath}
-		f.newError(titlePath, fmt.Errorf("unable to find title %#v in database", titleName))
+		s.newError(titlePath, fmt.Errorf("unable to find title %#v in database", titleName))
 	}
 
 	var issuePaths, err = fileutil.FindDirectories(titlePath)
@@ -96,7 +96,7 @@ func (f *Finder) findStandardIssuesForTitlePath(titlePath string, strict bool) e
 		// need to aggregate errors.  And we shortcut the aggregation so we don't
 		// forget to set the title.
 		var errors []*Error
-		var addErr = func(e error) { errors = append(errors, f.newError(issuePath, e).SetTitle(title)) }
+		var addErr = func(e error) { errors = append(errors, s.newError(issuePath, e).SetTitle(title)) }
 
 		// A suffix of "-error" is a manually flagged error; we should keep an eye
 		// on these, but their contents can still be valuable
@@ -142,8 +142,8 @@ func (f *Finder) findStandardIssuesForTitlePath(titlePath string, strict bool) e
 		for _, e := range errors {
 			e.SetIssue(issue)
 		}
-		f.Issues = append(f.Issues, issue)
-		f.verifyStandardIssueFiles(issue, strict)
+		s.Issues = append(s.Issues, issue)
+		s.verifyStandardIssueFiles(issue, strict)
 	}
 
 	return nil
@@ -162,9 +162,9 @@ func (f *Finder) findStandardIssuesForTitlePath(titlePath string, strict bool) e
 // Additionally, if strict is true, we don't allow for any exceptions to the
 // file type and extension rules, to prevent SFTP directories from being
 // processed when there's anything non-conformant.
-func (f *Finder) verifyStandardIssueFiles(issue *schema.Issue, strict bool) {
+func (s *Searcher) verifyStandardIssueFiles(issue *schema.Issue, strict bool) {
 	if len(issue.Files) == 0 {
-		f.newError(issue.Location, fmt.Errorf("no issue files found")).SetIssue(issue)
+		s.newError(issue.Location, fmt.Errorf("no issue files found")).SetIssue(issue)
 		return
 	}
 
@@ -191,7 +191,7 @@ func (f *Finder) verifyStandardIssueFiles(issue *schema.Issue, strict bool) {
 		}
 
 		var makeErr = func(format string, args ...interface{}) {
-			f.newError(file.Location, fmt.Errorf(format, args...)).SetFile(file)
+			s.newError(file.Location, fmt.Errorf(format, args...)).SetFile(file)
 		}
 		if file.IsDir() {
 			makeErr("%q is a subdirectory", file.Name)
@@ -223,9 +223,9 @@ func (f *Finder) verifyStandardIssueFiles(issue *schema.Issue, strict bool) {
 
 // FindDiskBatches finds all batches in the batch output path, then finds their
 // titles and their titles' issues, and caches everything
-func (f *Finder) FindDiskBatches(path string) error {
+func (s *Searcher) FindDiskBatches() error {
 	// First, find batch directories
-	var batchDirs, err = fileutil.FindDirectories(path)
+	var batchDirs, err = fileutil.FindDirectories(s.Location)
 	if err != nil {
 		return err
 	}
@@ -236,7 +236,7 @@ func (f *Finder) FindDiskBatches(path string) error {
 		// To simplify things, we don't actually scour the filesystem for titles
 		// and issues; instead, we parse the batch XML, as that should *always*
 		// contain all issues (and their titles LCCNs).
-		f.cacheBatchDataFromXML(batchDir)
+		s.cacheBatchDataFromXML(batchDir)
 	}
 
 	return nil
@@ -248,21 +248,21 @@ func (f *Finder) FindDiskBatches(path string) error {
 // We don't bother to verify issue directories or files at this point, because
 // only a code bug would cause the generated batches to break, which isn't
 // something anybody but a dev can deal with.
-func (f *Finder) cacheBatchDataFromXML(batchDir string) {
+func (s *Searcher) cacheBatchDataFromXML(batchDir string) {
 	var parts = strings.Split(batchDir, string(filepath.Separator))
 	var batchName = parts[len(parts)-1]
 	var batch, err = schema.ParseBatchname(batchName)
 	if err != nil {
-		f.newError(batchDir, fmt.Errorf("invalid batch directory name %#v: %s", batchDir, err))
+		s.newError(batchDir, fmt.Errorf("invalid batch directory name %#v: %s", batchDir, err))
 		return
 	}
 	batch.Location = batchDir
-	f.Batches = append(f.Batches, batch)
+	s.Batches = append(s.Batches, batch)
 
 	var bx *chronam.BatchXML
 	bx, err = chronam.ParseBatchXML(batchDir)
 	if err != nil {
-		f.newError(batchDir, fmt.Errorf("unable to process batch XML: %s", err)).SetBatch(batch)
+		s.newError(batchDir, fmt.Errorf("unable to process batch XML: %s", err)).SetBatch(batch)
 		return
 	}
 
@@ -275,21 +275,21 @@ func (f *Finder) cacheBatchDataFromXML(batchDir string) {
 		var dt time.Time
 		dt, err = time.Parse("2006-01-02", ix.Date)
 		if err != nil {
-			f.newError(batchDir, fmt.Errorf("invalid issue date in batch XML (%#v): %s", ix, err)).SetBatch(batch)
+			s.newError(batchDir, fmt.Errorf("invalid issue date in batch XML (%#v): %s", ix, err)).SetBatch(batch)
 			return
 		}
 		var ed int
 		ed, err = strconv.Atoi(ix.EditionOrder)
 		if err != nil {
-			f.newError(batchDir, fmt.Errorf("invalid issue edition in batch XML (%#v)", ix)).SetBatch(batch)
+			s.newError(batchDir, fmt.Errorf("invalid issue edition in batch XML (%#v)", ix)).SetBatch(batch)
 		}
 
 		var titleDir = filepath.Join(dataDir, ix.LCCN)
-		var title = f.findOrCreateUnknownFilesystemTitle(ix.LCCN, titleDir)
+		var title = s.findOrCreateUnknownFilesystemTitle(ix.LCCN, titleDir)
 		var issueDir = filepath.Join(dataDir, ix.Content)
 		var issue = title.AddIssue(&schema.Issue{Date: dt, Edition: ed, Location: issueDir})
 		batch.AddIssue(issue)
 		title.AddIssue(issue)
-		f.Issues = append(f.Issues, issue)
+		s.Issues = append(s.Issues, issue)
 	}
 }

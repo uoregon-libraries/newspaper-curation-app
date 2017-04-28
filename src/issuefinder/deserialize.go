@@ -26,16 +26,27 @@ func Deserialize(filename string) (*Finder, error) {
 	return cf.finder(), nil
 }
 
-// finder internally converts the cache-friendly data to a Finder instance
+// finder iterates over the cachedFinder's searchers and puts their data into a
+// Finder
 func (cf cachedFinder) finder() *Finder {
+	var f = New()
+	for _, cSrch := range cf.Searchers {
+		var srch = cSrch.searcher()
+		f.storeSearcher(srch)
+	}
+	return f
+}
+
+// searcher internally converts the cache-friendly data to a Searcher instance
+func (cs cachedSearcher) searcher() *Searcher {
 	var batchLookup = make(map[cacheID]*schema.Batch)
 	var titleLookup = make(map[cacheID]*schema.Title)
 	var issueLookup = make(map[cacheID]*schema.Issue)
 	var fileLookup = make(map[cacheID]*schema.File)
-	var f = New()
+	var srch = NewSearcher(cs.Namespace, cs.Location)
 
 	// Build the basic schema objects with associations
-	for _, cb := range cf.Batches {
+	for _, cb := range cs.Batches {
 		var b = &schema.Batch{
 			MARCOrgCode: cb.MARCOrgCode,
 			Keyword:     cb.Keyword,
@@ -43,9 +54,9 @@ func (cf cachedFinder) finder() *Finder {
 			Location:    cb.Location,
 		}
 		batchLookup[cb.ID] = b
-		f.Batches = append(f.Batches, b)
+		srch.Batches = append(srch.Batches, b)
 	}
-	for _, ct := range cf.Titles {
+	for _, ct := range cs.Titles {
 		var t = &schema.Title{
 			LCCN:               ct.LCCN,
 			Name:               ct.Name,
@@ -53,10 +64,10 @@ func (cf cachedFinder) finder() *Finder {
 			Location:           ct.Location,
 		}
 		titleLookup[ct.ID] = t
-		f.Titles = append(f.Titles, t)
-		f.titleByLoc[t.Location] = t
+		srch.Titles = append(srch.Titles, t)
+		srch.titleByLoc[t.Location] = t
 	}
-	for _, ci := range cf.Issues {
+	for _, ci := range cs.Issues {
 		var i = &schema.Issue{
 			Date:     ci.Date,
 			Edition:  ci.Edition,
@@ -70,7 +81,7 @@ func (cf cachedFinder) finder() *Finder {
 			i.Files = append(i.Files, file)
 		}
 		issueLookup[ci.ID] = i
-		f.Issues = append(f.Issues, i)
+		srch.Issues = append(srch.Issues, i)
 
 		// Associate the title and batch; batch is optional, but title isn't
 		if ci.BatchID != 0 {
@@ -80,7 +91,7 @@ func (cf cachedFinder) finder() *Finder {
 	}
 
 	// Populate the Errors list
-	for _, ce := range cf.Errors {
+	for _, ce := range cs.Errors {
 		var e = &Error{
 			Location: ce.Location,
 			Error:    fmt.Errorf(ce.Error),
@@ -97,8 +108,8 @@ func (cf cachedFinder) finder() *Finder {
 		if ce.FileID != 0 {
 			e.File = fileLookup[ce.FileID]
 		}
-		f.Errors.Append(e)
+		srch.Errors.Append(e)
 	}
 
-	return f
+	return srch
 }

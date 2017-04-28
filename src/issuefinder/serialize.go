@@ -9,9 +9,10 @@ import (
 	"schema"
 )
 
-// cachedFinder internally converts a Finder into a cachedFinder for Finder.Serialize
-func (f *Finder) cachedFinder() cachedFinder {
-	var cf cachedFinder
+// cachedSearcher internally converts a Searcher into a cachedSearcher for serialization
+func (s *Searcher) cachedSearcher() cachedSearcher {
+	var cSrch = cachedSearcher{Namespace: s.Namespace, Location: s.Location}
+
 	var batchIDLookup = make(map[*schema.Batch]cacheID)
 	var batchLookup = make(map[cacheID]cachedBatch)
 	var titleIDLookup = make(map[*schema.Title]cacheID)
@@ -22,7 +23,7 @@ func (f *Finder) cachedFinder() cachedFinder {
 
 	var issueID, titleID, batchID, fileID cacheID
 
-	for _, b := range f.Batches {
+	for _, b := range s.Batches {
 		batchID++
 		var cb = cachedBatch{
 			ID:          batchID,
@@ -33,9 +34,9 @@ func (f *Finder) cachedFinder() cachedFinder {
 		}
 		batchIDLookup[b] = batchID
 		batchLookup[batchID] = cb
-		cf.Batches = append(cf.Batches, cb)
+		cSrch.Batches = append(cSrch.Batches, cb)
 	}
-	for _, t := range f.Titles {
+	for _, t := range s.Titles {
 		titleID++
 		var ct = cachedTitle{
 			ID:                 titleID,
@@ -46,9 +47,9 @@ func (f *Finder) cachedFinder() cachedFinder {
 		}
 		titleIDLookup[t] = titleID
 		titleLookup[titleID] = ct
-		cf.Titles = append(cf.Titles, ct)
+		cSrch.Titles = append(cSrch.Titles, ct)
 	}
-	for _, i := range f.Issues {
+	for _, i := range s.Issues {
 		issueID++
 		var ci = cachedIssue{
 			ID:       issueID,
@@ -74,10 +75,10 @@ func (f *Finder) cachedFinder() cachedFinder {
 			ci.BatchID = batchIDLookup[i.Batch]
 		}
 
-		cf.Issues = append(cf.Issues, ci)
+		cSrch.Issues = append(cSrch.Issues, ci)
 	}
 
-	for _, e := range f.Errors.Errors {
+	for _, e := range s.Errors.Errors {
 		var b = e.Batch
 		var t = e.Title
 		var i = e.Issue
@@ -96,10 +97,19 @@ func (f *Finder) cachedFinder() cachedFinder {
 		if f != nil {
 			ce.FileID = fileIDLookup[f]
 		}
-		cf.Errors = append(cf.Errors, ce)
+		cSrch.Errors = append(cSrch.Errors, ce)
 	}
 
-	return cf
+	return cSrch
+}
+
+// cachedFinder iterates over the searchers to create a serializable cachedFinder
+func (f *Finder) cachedFinder() cachedFinder {
+	var cFind cachedFinder
+	for _, srch := range f.Searchers {
+		cFind.Searchers = append(cFind.Searchers, srch.cachedSearcher())
+	}
+	return cFind
 }
 
 // Serialize writes the Finder's state to the given filename or returns an error
