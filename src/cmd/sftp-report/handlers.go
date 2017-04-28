@@ -44,7 +44,7 @@ func Response(w http.ResponseWriter, req *http.Request) *Responder {
 	return &Responder{Writer: w, Request: req, Vars: &PageVars{User: u, Data: make(GenericVars)}}
 }
 
-// Middleware function to send back no-cache header
+// nocache is a Middleware function to send back no-cache header
 func nocache(next http.Handler) http.Handler {
 	return http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
 		w.Header().Set("Cache-Control", "max-age=0, must-revalidate")

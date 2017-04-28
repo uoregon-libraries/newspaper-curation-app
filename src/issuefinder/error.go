@@ -3,6 +3,7 @@ package issuefinder
 import (
 	"fmt"
 	"schema"
+	"sort"
 	"strings"
 )
 
@@ -57,12 +58,25 @@ func (list *ErrorList) Index() {
 	}
 }
 
+// Sort sorts errors first by their target location, then by their message
+func (list *ErrorList) Sort() {
+	var eList = list.Errors
+	sort.Slice(eList, func(i, j int) bool {
+		var lA, lB = eList[i].Location, eList[j].Location
+		if lA != lB {
+			return lA < lB
+		}
+
+		return eList[i].Message() < eList[j].Message()
+	})
+}
+
 // Error combines the standard error interface with some context so we can
 // easily categorize errors.  Error is built somewhat functionally in order to
 // more easily chain together calls:
 //
 //     var err = fmt.Errorf("invalid issue directory name %q", issuePath)
-//     finder.newError(path, err).SetBatch(batch).SetTitle(title)
+//     searcher.newError(path, err).SetBatch(batch).SetTitle(title)
 type Error struct {
 	Batch    *schema.Batch
 	Title    *schema.Title
@@ -75,9 +89,9 @@ type Error struct {
 // newError creates an Error with the two required pieces of information:
 // location and underlying error interface.  This is private on purpose;
 // nothing external should be creating issuefinder errors.
-func (f *Finder) newError(loc string, err error) *Error {
+func (s *Searcher) newError(loc string, err error) *Error {
 	var e = &Error{Location: loc, Error: err}
-	f.Errors.Append(e)
+	s.Errors.Append(e)
 	return e
 }
 

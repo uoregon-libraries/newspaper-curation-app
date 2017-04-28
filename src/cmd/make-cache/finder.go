@@ -61,8 +61,18 @@ func cacheStandardIssues(finder *issuefinder.Finder) error {
 		Conf.PDFPageSourcePath,
 	}
 
+	var namespaces = map[string]issuefinder.Namespace{
+		Conf.MasterPDFBackupPath: issuefinder.MasterBackup,
+		Conf.PDFPageReviewPath: issuefinder.AwaitingPageReview,
+		Conf.PDFPagesAwaitingMetadataReview: issuefinder.AwaitingMetadataReview,
+		Conf.PDFIssuesAwaitingDerivatives: issuefinder.PDFsAwaitingDerivatives,
+		Conf.ScansAwaitingDerivatives: issuefinder.ScansAwaitingDerivatives,
+		Conf.PDFPageBackupPath: issuefinder.PageBackup,
+		Conf.PDFPageSourcePath: issuefinder.ReadyForBatching,
+	}
+
 	for _, loc := range locs {
-		var err = finder.FindStandardIssues(loc)
+		var err = finder.FindStandardIssues(namespaces[loc], loc)
 		if err != nil {
 			return err
 		}

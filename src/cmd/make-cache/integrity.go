@@ -49,6 +49,8 @@ func testIntegrity(finderA *issuefinder.Finder, cacheFile string) {
 		}
 	}
 
+	finderA.Errors.Sort()
+	finderB.Errors.Sort()
 	var errorFails int
 	for i, errorA := range finderA.Errors.Errors {
 		var errorB = finderB.Errors.Errors[i]

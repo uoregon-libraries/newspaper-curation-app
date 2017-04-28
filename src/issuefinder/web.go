@@ -11,18 +11,18 @@ import (
 	"time"
 )
 
-// FindWebBatches reads through the JSON from the batch API URL and
-// grabs "next" page until there is no next page.  Each batch is then read from
-// the JSON cache path, or read from the site and cached.  The disk cache
-// speeds up the tool's future runs by only having to request what's been
-// batched since a prior run.
+// FindWebBatches reads through the JSON from the batch API URL (using
+// Searcher's Location as the web root) and grabs "next" page until there is no
+// next page.  Each batch is then read from the JSON cache path, or read from
+// the site and cached.  The disk cache speeds up the tool's future runs by
+// only having to request what's been batched since a prior run.
 //
 // As with other searches, this returns an error only on unexpected behaviors,
 // like the site not responding.
-func (f *Finder) FindWebBatches(hostname, cachePath string) error {
-	var batchMetadataList, err = f.findAllLiveBatches(hostname, cachePath)
+func (s *Searcher) FindWebBatches(cachePath string) error {
+	var batchMetadataList, err = s.findAllLiveBatches(cachePath)
 	if err != nil {
-		return fmt.Errorf("unable to load batch list from %#v: %s", hostname, err)
+		return fmt.Errorf("unable to load batch list from %#v: %s", s.Location, err)
 	}
 
 	// We (slightly) throttle batch JSON requests as there can be a few hundred of these
@@ -30,33 +30,33 @@ func (f *Finder) FindWebBatches(hostname, cachePath string) error {
 	for _, batchMetadata := range batchMetadataList {
 		var batch, err = schema.ParseBatchname(batchMetadata.Name)
 		if err != nil {
-			f.newError(hostname, fmt.Errorf("invalid live batch name %#v: %s", batchMetadata.Name, err))
+			s.newError(s.Location, fmt.Errorf("invalid live batch name %#v: %s", batchMetadata.Name, err))
 			return nil
 		}
 		batch.Location = batchMetadata.URL
-		f.Batches = append(f.Batches, batch)
+		s.Batches = append(s.Batches, batch)
 
 		var issueMetadataList []*chronam.IssueMetadata
-		issueMetadataList, err = f.findBatchedIssueMetadata(c, batchMetadata.URL)
+		issueMetadataList, err = s.findBatchedIssueMetadata(c, batchMetadata.URL)
 		if err != nil {
 			return fmt.Errorf("unable to load live issues from %#v: %s", batchMetadata.URL, err)
 		}
 		for _, meta := range issueMetadataList {
-			var t, err = f.findOrCreateWebTitle(c, meta.Title.URL)
+			var t, err = s.findOrCreateWebTitle(c, meta.Title.URL)
 			if err != nil {
 				return fmt.Errorf("unable to load live title %#v: %s", meta.Title.URL, err)
 			}
-			f.cacheLiveIssue(batch, t, meta)
+			s.cacheLiveIssue(batch, t, meta)
 		}
 	}
 
 	return nil
 }
 
-func (f *Finder) cacheLiveIssue(batch *schema.Batch, title *schema.Title, meta *chronam.IssueMetadata) {
+func (s *Searcher) cacheLiveIssue(batch *schema.Batch, title *schema.Title, meta *chronam.IssueMetadata) {
 	var dt, err = time.Parse("2006-01-02", meta.Date)
 	if err != nil {
-		f.newError(batch.Location, fmt.Errorf("invalid date for issue %#v: %s", meta, err)).SetBatch(batch)
+		s.newError(batch.Location, fmt.Errorf("invalid date for issue %#v: %s", meta, err)).SetBatch(batch)
 		return
 	}
 
@@ -67,19 +67,19 @@ func (f *Finder) cacheLiveIssue(batch *schema.Batch, title *schema.Title, meta *
 	var edition int
 	edition, err = strconv.Atoi(editionString)
 	if err != nil {
-		f.newError(batch.Location, fmt.Errorf("invalid edition for issue %#v", editionString, meta)).SetBatch(batch)
+		s.newError(batch.Location, fmt.Errorf("invalid edition for issue %#v", editionString, meta)).SetBatch(batch)
 		return
 	}
 
 	var issue = &schema.Issue{Date: dt, Edition: edition, Location: meta.URL}
 	title.AddIssue(issue)
 	batch.AddIssue(issue)
-	f.Issues = append(f.Issues, issue)
+	s.Issues = append(s.Issues, issue)
 
 	return
 }
 
-func (f *Finder) findBatchedIssueMetadata(c *httpcache.Client, batchURL string) ([]*chronam.IssueMetadata, error) {
+func (s *Searcher) findBatchedIssueMetadata(c *httpcache.Client, batchURL string) ([]*chronam.IssueMetadata, error) {
 	var request = httpcache.AutoRequest(batchURL, "batches")
 	var contents, err = c.GetCachedBytes(request)
 	if err != nil {
@@ -99,12 +99,12 @@ func (f *Finder) findBatchedIssueMetadata(c *httpcache.Client, batchURL string) 
 // known batch.  Results are stored in the cache path.  The returned structures
 // are the aggregated batch metadata objects found after traversing all pages
 // of batches.
-func (f *Finder) findAllLiveBatches(hostname, cachePath string) ([]*chronam.BatchMetadata, error) {
+func (s *Searcher) findAllLiveBatches(cachePath string) ([]*chronam.BatchMetadata, error) {
 	// We don't bother throttling because there won't be more than a handful of
 	// batch list pages
 	var c = httpcache.NewClient(cachePath, 0)
 
-	var apiURL, err = url.Parse(hostname)
+	var apiURL, err = url.Parse(s.Location)
 	if err != nil {
 		return nil, err
 	}
