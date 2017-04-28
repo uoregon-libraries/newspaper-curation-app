@@ -177,6 +177,11 @@ func (f *Finder) verifyStandardIssueFiles(issue *schema.Issue, strict bool) {
 		}
 	}
 
+	// NOTE: These rules *seem* general-case, but they only makes sense for
+	// standard issues, so if we extract this code into a more reusable function,
+	// we need to refine or separate some rules.  A batch can have the master
+	// PDFs stored in a subdirectory, a meta.json file (not .meta.json), and
+	// issue-level XMLs that don't have a corresponding PDF.
 	for _, file := range issue.Files {
 		// We could check .meta.json, .derivatives, .Bridge*, etc. individually,
 		// but the very low likelihood of dot-files being real errors just isn't
@@ -198,6 +203,9 @@ func (f *Finder) verifyStandardIssueFiles(issue *schema.Issue, strict bool) {
 			continue
 		}
 
+		// NOTE: It may be a good idea to validate that all content files are
+		// numeric-only.  Mostly ####.jp2/pdf/etc, though if we handle batches at
+		// some point, we may also see YYYYMMDDEE.xml.
 		var ext = strings.ToLower(filepath.Ext(file.Name))
 		if ext != ".pdf" && ext != ".tiff" && ext != ".tif" && ext != ".jp2" && ext != ".xml" {
 			makeErr("%q has an invalid extension", file.Name)
