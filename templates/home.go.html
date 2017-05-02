@@ -4,7 +4,7 @@
   {{range .Titles}}
     {{if .Show}}
       <li>
-        {{if gt .ErrorCount 0 }}
+        {{if gt (len .Errors) 0 }}
           <div class="title-with-errors">
             <div class="title-link">{{.Link}}</div>
             <span class="glyphicon glyphicon-exclamation-sign" aria-hidden="true"></span>

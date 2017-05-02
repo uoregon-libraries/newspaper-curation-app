@@ -1,13 +1,12 @@
 package main
 
 import (
+	"cmd/sftp-report/internal/presenter"
 	"fmt"
 	"log"
 	"net/http"
-	"sftp"
 	"time"
 	"user"
-	"web/presenter"
 
 	"github.com/gorilla/mux"
 )
@@ -90,14 +89,14 @@ func mustHavePrivilege(priv *user.Privilege, f http.HandlerFunc) http.Handler {
 // into it.  If the list can't be loaded, an HTTP error is sent out and the
 // return is false.
 func LoadTitles(r *Responder) bool {
-	var titles, err = sftp.BuildTitles(Conf.MasterPDFUploadPath)
+	var titles, err = sftpSearcher.Titles()
 	if err != nil {
 		log.Printf("ERROR: Couldn't load titles in %s: %s", Conf.MasterPDFUploadPath, err)
 		http.Error(r.Writer, "Unable to load title list!", 500)
 		return false
 	}
 
-	r.Vars.Titles = presenter.TitleList(titles)
+	r.Vars.Titles = titles
 	return true
 }
 
@@ -109,17 +108,11 @@ func findTitle(r *Responder) *presenter.Title {
 	if !LoadTitles(r) {
 		return nil
 	}
-
-	var tName = mux.Vars(r.Request)["title"]
-	var title *presenter.Title
-	for _, t := range r.Vars.Titles {
-		if t.Name == tName {
-			title = t
-		}
-	}
+	var lccn = mux.Vars(r.Request)["lccn"]
+	var title = sftpSearcher.TitleLookup(lccn)
 
 	if title == nil {
-		r.Vars.Alert = fmt.Sprintf("Unable to find title %#v", tName)
+		r.Vars.Alert = fmt.Sprintf("Unable to find title %#v", lccn)
 		r.Render("empty")
 		return nil
 	}
@@ -137,16 +130,11 @@ func findIssue(r *Responder) *presenter.Issue {
 		return nil
 	}
 
-	var name = mux.Vars(r.Request)["issue"]
-	var issue *presenter.Issue
-	for _, iss := range title.Issues {
-		if iss.Name == name {
-			issue = iss
-		}
-	}
+	var issueDate = mux.Vars(r.Request)["issue"]
+	var issue = title.IssueLookup[issueDate]
 
 	if issue == nil {
-		r.Vars.Alert = fmt.Sprintf("Unable to find issue %#v for title %#v", name, title.Name)
+		r.Vars.Alert = fmt.Sprintf("Unable to find issue %#v for title %#v", issueDate, title.Name)
 		r.Render("empty")
 		return nil
 	}
@@ -187,6 +175,6 @@ func IssueHandler(w http.ResponseWriter, req *http.Request) {
 	}
 
 	r.Vars.Data["Issue"] = issue
-	r.Vars.Title = fmt.Sprintf("SFTP PDFs for %s, issue %s", issue.Title.Name, issue.Name)
+	r.Vars.Title = fmt.Sprintf("SFTP PDFs for %s, issue %s", issue.Title.Name, issue.Date.Format("2006-01-02"))
 	r.Render("issue")
 }
