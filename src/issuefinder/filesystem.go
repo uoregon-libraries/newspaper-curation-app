@@ -289,7 +289,6 @@ func (s *Searcher) cacheBatchDataFromXML(batchDir string) {
 		var issueDir = filepath.Join(dataDir, ix.Content)
 		var issue = title.AddIssue(&schema.Issue{Date: dt, Edition: ed, Location: issueDir})
 		batch.AddIssue(issue)
-		title.AddIssue(issue)
 		s.Issues = append(s.Issues, issue)
 	}
 }
