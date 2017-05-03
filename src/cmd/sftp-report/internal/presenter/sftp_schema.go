@@ -142,6 +142,12 @@ func (i *Issue) decorateErrors() {
 	}
 }
 
+// IsNew tells the presentation if the issue is fairly new, which can be
+// important for some publishers who upload over several days
+func (i *Issue) IsNew() bool {
+	return time.Since(i.Modified) < time.Hour*24*14
+}
+
 // Link returns a link for this title
 func (i *Issue) Link() template.HTML {
 	var path = webutil.IssuePath(i.Title.Slug, i.Slug)

@@ -13,14 +13,21 @@
 
   <tbody>
     {{range .Data.Title.Issues}}
-      <tr {{if gt (len .Errors) 0}} class="issue-with-errors"{{end}}>
+      <tr>
         <td>{{.Link}}</td>
         <td>{{TimeString .Modified}}</td>
         <td>
           {{- if gt (len .Errors) 0}}
-            <b>{{.Errors}}</b>
-          {{- else}}
-            No issue errors detected
+            <div class="issue-error-list">
+            Errors:
+            <ul>
+              {{range .Errors}}
+              <li>{{.}}</li>
+              {{end}}
+            </ul>
+          {{- end}}
+          {{- if .IsNew}}
+            <div class="issue-new">This issue was recently uploaded, and might get more changes</div>
           {{- end}}
         </td>
         <td>{{len .PDFs}}</td>

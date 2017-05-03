@@ -6,6 +6,19 @@
   width: 200px;
 }
 
+.issue-error-list {
+  background: #FEE;
+  font-weight: bold;
+}
+
+.issue-error-list ul li {
+  font-weight: normal;
+}
+
+.issue-new {
+  font-style: italic;
+}
+
 /* Make alerts more readable */
 .alert-warning  { color: #3E2100; }
 .alert-danger   { color: #4d0200; }
