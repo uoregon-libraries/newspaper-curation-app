@@ -4,7 +4,6 @@ import (
 	"fmt"
 	"html/template"
 	"issuefinder"
-	"log"
 	"path/filepath"
 	"schema"
 	"sort"
@@ -43,7 +42,6 @@ func (s *SFTPSearcher) decorateTitles() {
 
 func (s *SFTPSearcher) appendSchemaTitle(t *schema.Title) {
 	var title = &Title{Title: t, Slug: t.LCCN, allErrors: s.searcher.Errors.Errors}
-	log.Printf("Errors: %#v", title.allErrors)
 	title.decorateIssues(t.Issues)
 	title.decorateErrors()
 	s.titles = append(s.titles, title)
