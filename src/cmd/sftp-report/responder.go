@@ -8,6 +8,7 @@ import (
 	"net/http"
 	"time"
 	"user"
+	"version"
 	"web/webutil"
 )
 
@@ -68,7 +69,7 @@ func initTemplates(TemplatePath string) {
 // injectDefaultTemplateVars sets up default variables used in multiple templates
 func (r *Responder) injectDefaultTemplateVars() {
 	r.Vars.Webroot = webutil.Webroot
-	r.Vars.Version = version
+	r.Vars.Version = version.Version
 	if r.Vars.Title == "" {
 		r.Vars.Title = "ODNP Admin"
 	}
