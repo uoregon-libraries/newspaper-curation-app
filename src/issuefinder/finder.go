@@ -73,7 +73,17 @@ func New() *Finder {
 // NewSearcher instantiates a Searcher on its own, and typically isn't needed,
 // but could be useful for specific one-off scripts
 func NewSearcher(ns Namespace, loc string) *Searcher {
-	return &Searcher{Namespace: ns, Location: loc, titleByLoc: make(map[string]*schema.Title), Errors: &ErrorList{}}
+	var s = &Searcher{Namespace: ns, Location: loc}
+	s.init()
+	return s
+}
+
+func (s *Searcher) init() {
+	s.Issues = make(schema.IssueList, 0)
+	s.Batches = make([]*schema.Batch, 0)
+	s.Titles = make([]*schema.Title, 0)
+	s.titleByLoc = make(map[string]*schema.Title)
+	s.Errors = &ErrorList{}
 }
 
 func (f *Finder) storeSearcher(s *Searcher) {

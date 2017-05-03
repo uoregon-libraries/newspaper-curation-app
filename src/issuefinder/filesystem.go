@@ -14,6 +14,8 @@ import (
 // FindSFTPIssues is just barely its own special case because unlike the
 // standard structure, there is no "topdir" element in the paths
 func (s *Searcher) FindSFTPIssues() error {
+	s.init()
+
 	// First find all titles
 	var titlePaths, err = fileutil.FindDirectories(s.Location)
 	if err != nil {
@@ -35,6 +37,8 @@ func (s *Searcher) FindSFTPIssues() error {
 // information within a Searcher's Location with the assumption that the path
 // conforms to `topdir/sftpnameOrLCCN/yyyy-mm-dd/`
 func (s *Searcher) FindStandardIssues() error {
+	s.init()
+
 	// First find all topdirs
 	var topdirs, err = fileutil.FindDirectories(s.Location)
 	if err != nil {
@@ -224,6 +228,8 @@ func (s *Searcher) verifyStandardIssueFiles(issue *schema.Issue, strict bool) {
 // FindDiskBatches finds all batches in the batch output path, then finds their
 // titles and their titles' issues, and caches everything
 func (s *Searcher) FindDiskBatches() error {
+	s.init()
+
 	// First, find batch directories
 	var batchDirs, err = fileutil.FindDirectories(s.Location)
 	if err != nil {
