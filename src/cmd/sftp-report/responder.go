@@ -43,6 +43,12 @@ func HTMLComment(s string) template.HTML {
 }
 
 // initTemplates sets up pre-parsed template data - must be run after config has data
+//
+// TODO: Rewrite this; this is the wrong approach:
+// - There should be multiple templates instead of one that gloms together all files
+// - Each template should use a layout rather than the inclusion of "header" and "footer"
+// - Different high-level areas are going to need their own function maps in
+//   addition to a set of "core" functions
 func initTemplates(TemplatePath string) {
 	templateFunctions = template.FuncMap{
 		"Permitted":  func(user interface{}, action string) bool { return false },
