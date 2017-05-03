@@ -4,14 +4,17 @@
   {{range .Titles}}
     {{if .Show}}
       <li>
-        {{if gt (len .Errors) 0 }}
+        {{if gt .ChildErrors 0 }}
           <div class="title-with-errors">
             <div class="title-link">{{.Link}}</div>
             <span class="glyphicon glyphicon-exclamation-sign" aria-hidden="true"></span>
-            <span class="count">{{.ErrorCount}} error(s) detected</span>
+            <span class="count">{{.ChildErrors}} error(s) detected in issues and/or files</span>
           </div>
         {{- else}}
           {{.Link}}
+        {{- end}}
+        {{if gt (len .Errors) 0 }}
+          <span>Title error(s): {{ .Errors }}</span>
         {{- end}}
       </li>
     {{end}}
