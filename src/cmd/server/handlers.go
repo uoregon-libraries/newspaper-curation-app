@@ -1,7 +1,7 @@
 package main
 
 import (
-	"cmd/sftp-report/internal/presenter"
+	"cmd/server/internal/presenter"
 	"fmt"
 	"log"
 	"net/http"
