@@ -22,9 +22,9 @@ var issueSearchKeys []*IssueSearchKey
 
 // Command-line options
 var opts struct {
-	CacheFile  string   `long:"cache-file" description:"Path to the finder cache" required:"true"`
-	IssueList  string   `long:"issue-list" description:"path to file containing list of newline-separated issue keys"`
-	IssueKeys  []string `long:"issue-key" description:"single issue key to process, e.g., 'sn12345678/1905123101'"`
+	CacheFile string   `long:"cache-file" description:"Path to the finder cache" required:"true"`
+	IssueList string   `long:"issue-list" description:"path to file containing list of newline-separated issue keys"`
+	IssueKeys []string `long:"issue-key" description:"single issue key to process, e.g., 'sn12345678/1905123101'"`
 }
 
 var p *flags.Parser

@@ -32,30 +32,30 @@ func InfosToFiles(fiList []os.FileInfo) []*File {
 
 // IsRegular returns true if the file isn't dir/symlink/etc
 func (f *File) IsRegular() bool {
-	return f.Mode & os.ModeType == 0
+	return f.Mode&os.ModeType == 0
 }
 
 // IsDir returns true if the file is a directory
 func (f *File) IsDir() bool {
-	return f.Mode & os.ModeDir != 0
+	return f.Mode&os.ModeDir != 0
 }
 
 // IsSymlink reports if the file is a symlink
 func (f *File) IsSymlink() bool {
-	return f.Mode & os.ModeSymlink != 0
+	return f.Mode&os.ModeSymlink != 0
 }
 
 // IsNamedPipe reports if the file is a named pipe
 func (f *File) IsNamedPipe() bool {
-	return f.Mode & os.ModeNamedPipe != 0
+	return f.Mode&os.ModeNamedPipe != 0
 }
 
 // IsSocket reports if the file is a socket
 func (f *File) IsSocket() bool {
-	return f.Mode & os.ModeSocket != 0
+	return f.Mode&os.ModeSocket != 0
 }
 
 // IsDevice reports if the file is a device
 func (f *File) IsDevice() bool {
-	return f.Mode & os.ModeDevice != 0
+	return f.Mode&os.ModeDevice != 0
 }
