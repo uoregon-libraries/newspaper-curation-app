@@ -12,6 +12,13 @@ import (
 	"web/webutil"
 )
 
+// Errors wraps an array of error strings for nicer display
+type Errors []string
+
+func (e Errors) String() string {
+	return strings.Join(e, "; ")
+}
+
 // Title wraps a schema.Title with some extra information for web presentation.
 // This is probably going to be SFTP-specific for now, but eventually (soon)
 // needs to be useful in other contexts.
@@ -19,7 +26,7 @@ type Title struct {
 	*schema.Title
 	Slug        string
 	allErrors   []*issuefinder.Error
-	Errors      []error
+	Errors      Errors
 	ChildErrors int
 	Issues      []*Issue
 	IssueLookup map[string]*Issue
@@ -65,13 +72,13 @@ func (t *Title) appendSchemaIssue(i *schema.Issue) {
 }
 
 func (t *Title) decorateErrors() {
-	t.Errors = make([]error, 0)
+	t.Errors = make(Errors, 0)
 	for _, e := range t.allErrors {
 		if e.Title != t.Title {
 			continue
 		}
 		if e.Issue == nil && e.File == nil {
-			t.Errors = append(t.Errors, e.Error)
+			t.Errors = append(t.Errors, e.Error.Error())
 		} else {
 			t.ChildErrors++
 		}
@@ -94,7 +101,7 @@ type Issue struct {
 	*schema.Issue
 	Slug        string
 	Title       *Title
-	Errors      []error
+	Errors      Errors
 	ChildErrors int
 	PDFs        []*PDF
 	PDFLookup   map[string]*PDF
@@ -121,14 +128,14 @@ func (i *Issue) appendSchemaFile(f *schema.File) {
 }
 
 func (i *Issue) decorateErrors() {
-	i.Errors = make([]error, 0)
+	i.Errors = make(Errors, 0)
 	for _, e := range i.Title.allErrors {
 		if e.Issue != i.Issue {
 			continue
 		}
 
 		if e.File == nil {
-			i.Errors = append(i.Errors, e.Error)
+			i.Errors = append(i.Errors, e.Error.Error())
 		} else {
 			i.ChildErrors++
 		}
@@ -146,17 +153,17 @@ type PDF struct {
 	*schema.File
 	Issue  *Issue
 	Slug   string
-	Errors []error
+	Errors Errors
 }
 
 func (p *PDF) decorateErrors() {
-	p.Errors = make([]error, 0)
+	p.Errors = make(Errors, 0)
 	for _, e := range p.Issue.Title.allErrors {
 		if e.File != p.File {
 			continue
 		}
 
-		p.Errors = append(p.Errors, e.Error)
+		p.Errors = append(p.Errors, e.Error.Error())
 	}
 }
 
