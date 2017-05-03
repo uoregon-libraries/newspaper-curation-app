@@ -1,9 +1,9 @@
 {{template "header" .}}
 
-{{if gt .Data.Issue.Errors.Len 0}}
+{{if gt (len .Data.Issue.Errors) 0}}
   This issue had the following errors:
   <ul>
-  {{range .Data.Issue.Errors.All}}
+  {{range .Data.Issue.Errors}}
     <li>{{.Error}}</li>
   {{end}}
   </ul>
@@ -20,11 +20,11 @@
 
   <tbody>
     {{range .Data.Issue.PDFs}}
-      <tr {{if gt .ErrorCount 0}} class="pdf-with-errors"{{end}}>
+      <tr {{if gt (len .Errors) 0}} class="pdf-with-errors"{{end}}>
         <td>{{.Link}}</td>
-        <td>{{TimeString .Modified}}</td>
+        <td>{{TimeString .ModTime}}</td>
         <td>
-          {{- if gt .Errors.Len 0}}
+          {{- if gt (len .Errors) 0}}
             <b>{{.Errors}}</b>
           {{- else}}
             No PDF errors detected

@@ -20,11 +20,11 @@
 
   <tbody>
     {{range .Data.Title.Issues}}
-      <tr {{if gt .ErrorCount 0}} class="issue-with-errors"{{end}}>
+      <tr {{if gt (len .Errors) 0}} class="issue-with-errors"{{end}}>
         <td>{{.Link}}</td>
         <td>{{TimeString .Modified}}</td>
         <td>
-          {{- if gt .Errors.Len 0}}
+          {{- if gt (len .Errors) 0}}
             <b>{{.Errors}}</b>
           {{- else}}
             No issue errors detected
@@ -33,8 +33,8 @@
         <td>{{len .PDFs}}</td>
         <td>
           {{- if gt (len .PDFs) 0}}
-            {{if gt .PDFErrorCount 0}}
-              <b>{{.PDFErrorCount}} PDF error(s)</b>
+            {{if gt .ChildErrors 0}}
+              <b>{{.ChildErrors}} PDF error(s)</b>
             {{- else}}
               No PDF errors detected
             {{- end}}

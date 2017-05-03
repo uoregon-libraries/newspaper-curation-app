@@ -1,6 +1,7 @@
 package main
 
 import (
+	"cmd/sftp-report/internal/presenter"
 	"config"
 	"db"
 	"fmt"
@@ -90,9 +91,9 @@ func canViewSFTPReport(h http.HandlerFunc) http.Handler {
 func startServer() {
 	var r = mux.NewRouter()
 	var hp = webutil.HomePath()
-	var tp = webutil.TitlePath("{title}")
-	var ip = webutil.IssuePath("{title}", "{issue}")
-	var pdfPath = webutil.PDFPath("{title}", "{issue}", "{filename}")
+	var tp = webutil.TitlePath("{lccn}")
+	var ip = webutil.IssuePath("{lccn}", "{issue}")
+	var pdfPath = webutil.PDFPath("{lccn}", "{issue}", "{filename}")
 
 	// Make sure homepath/ isn't considered the canonical path
 	r.Handle(hp+"/", makeRedirect(hp, http.StatusMovedPermanently))
@@ -116,7 +117,10 @@ func startServer() {
 	}
 }
 
+var sftpSearcher *presenter.SFTPSearcher
+
 func main() {
 	getConf()
+	sftpSearcher = presenter.NewSFTPSearcher(Conf.MasterPDFUploadPath)
 	startServer()
 }

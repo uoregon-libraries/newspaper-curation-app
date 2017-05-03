@@ -20,6 +20,8 @@ import (
 // As with other searches, this returns an error only on unexpected behaviors,
 // like the site not responding.
 func (s *Searcher) FindWebBatches(cachePath string) error {
+	s.init()
+
 	var batchMetadataList, err = s.findAllLiveBatches(cachePath)
 	if err != nil {
 		return fmt.Errorf("unable to load batch list from %#v: %s", s.Location, err)
