@@ -42,7 +42,7 @@ func (s *SFTPSearcher) decorateTitles() {
 }
 
 func (s *SFTPSearcher) appendSchemaTitle(t *schema.Title) {
-	var title = &Title{Title: t, Slug: t.LCCN, allErrors: s.searcher.Errors.TitleErrors[t]}
+	var title = &Title{Title: t, Slug: t.LCCN, allErrors: s.searcher.Errors.Errors}
 	log.Printf("Errors: %#v", title.allErrors)
 	title.decorateIssues(t.Issues)
 	title.decorateErrors()
@@ -69,7 +69,10 @@ func (t *Title) appendSchemaIssue(i *schema.Issue) {
 func (t *Title) decorateErrors() {
 	t.Errors = make([]error, 0)
 	for _, e := range t.allErrors {
-		if e.Issue == nil {
+		if e.Title != t.Title {
+			continue
+		}
+		if e.Issue == nil && e.File == nil {
 			t.Errors = append(t.Errors, e.Error)
 		} else {
 			t.ChildErrors++

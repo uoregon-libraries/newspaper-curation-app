@@ -43,7 +43,6 @@ func (s *SFTPSearcher) load() error {
 
 	var err = s.searcher.FindSFTPIssues()
 	if err == nil {
-		s.searcher.Errors.Index()
 		s.lastLoaded = time.Now()
 		s.decorateTitles()
 	}
