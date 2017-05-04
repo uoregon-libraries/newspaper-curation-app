@@ -1,4 +1,4 @@
-package presenter
+package sftphandler
 
 import (
 	"issuefinder"
@@ -27,9 +27,9 @@ type SFTPSearcher struct {
 	titleLookup map[string]*Title
 }
 
-// NewSFTPSearcher returns a searcher that wraps issuefinder and schema data
+// newSFTPSearcher returns a searcher that wraps issuefinder and schema data
 // for web presentation of titles, issues, files, and errors in SFTP uploads
-func NewSFTPSearcher(path string) *SFTPSearcher {
+func newSFTPSearcher(path string) *SFTPSearcher {
 	return &SFTPSearcher{searcher: issuefinder.NewSearcher(issuefinder.SFTPUpload, path)}
 }
 

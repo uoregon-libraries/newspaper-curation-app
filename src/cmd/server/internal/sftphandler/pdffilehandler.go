@@ -1,6 +1,7 @@
-package main
+package sftphandler
 
 import (
+	"cmd/server/internal/responder"
 	"fileutil"
 	"fmt"
 	"io"
@@ -15,7 +16,7 @@ import (
 
 // PDFFileHandler attempts to find and display a PDF file to the browser
 func PDFFileHandler(w http.ResponseWriter, req *http.Request) {
-	var r = Response(w, req)
+	var r = responder.Response(w, req)
 	var issue = findIssue(r)
 	var fileslug = mux.Vars(req)["filename"]
 	var pdf = issue.PDFLookup[fileslug]

@@ -1,7 +1,9 @@
-package main
+// Package responder contains all the general functionality necessary for
+// responding to a given server request: template setup, user auth checks,
+// rendering of pages to an http.ResponseWriter
+package responder
 
 import (
-	"cmd/server/internal/presenter"
 	"fmt"
 	"html/template"
 	"log"
@@ -24,7 +26,6 @@ type PageVars struct {
 	ParentWebroot string
 	Alert         string
 	User          *user.User
-	Titles        []*presenter.Title
 	Data          GenericVars
 }
 
@@ -35,6 +36,13 @@ type Responder struct {
 	Vars    *PageVars
 }
 
+// Response generates a Responder with basic data all pages will need: request,
+// response writer, and user
+func Response(w http.ResponseWriter, req *http.Request) *Responder {
+	var u = user.FindByLogin(GetUserLogin(w, req))
+	return &Responder{Writer: w, Request: req, Vars: &PageVars{User: u, Data: make(GenericVars)}}
+}
+
 var templateFunctions template.FuncMap
 var templates *template.Template
 
@@ -43,14 +51,14 @@ func HTMLComment(s string) template.HTML {
 	return template.HTML(fmt.Sprintf("<!-- %s -->", s))
 }
 
-// initTemplates sets up pre-parsed template data - must be run after config has data
+// InitTemplates sets up pre-parsed template data - must be run after config has data
 //
 // TODO: Rewrite this; this is the wrong approach:
 // - There should be multiple templates instead of one that gloms together all files
 // - Each template should use a layout rather than the inclusion of "header" and "footer"
 // - Different high-level areas are going to need their own function maps in
 //   addition to a set of "core" functions
-func initTemplates(TemplatePath string) {
+func InitTemplates(TemplatePath string) {
 	templateFunctions = template.FuncMap{
 		"Permitted":  func(user interface{}, action string) bool { return false },
 		"IncludeCSS": webutil.IncludeCSS,

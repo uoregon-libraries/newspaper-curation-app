@@ -1,13 +1,16 @@
 package main
 
 import (
-	"cmd/server/internal/presenter"
+	"cmd/server/internal/responder"
+	"cmd/server/internal/settings"
+	"cmd/server/internal/sftphandler"
 	"config"
 	"db"
 	"fmt"
 	"log"
 	"net/http"
 	"os"
+	"path"
 	"user"
 	"web/webutil"
 
@@ -30,11 +33,6 @@ var opts struct {
 	ParentWebroot  string `long:"parent-webroot" description:"The base path to the parent app" required:"true"`
 	StaticFilePath string `long:"static-files" description:"Path on disk to static JS/CSS/images" required:"true"`
 }
-
-// DEBUG is only enabled via command-line and should be used very sparingly,
-// such as for user-switching (though an actual user-switch permission would be
-// way better)
-var DEBUG bool
 
 // Conf stores the configuration data read from the legacy Python settings
 var Conf *config.Config
@@ -71,10 +69,10 @@ func getConf() {
 
 	if opts.Debug == true {
 		log.Printf("WARNING: Debug mode has been enabled")
-		DEBUG = true
+		settings.DEBUG = true
 	}
 
-	initTemplates(args[0])
+	responder.InitTemplates(args[0])
 }
 
 func makeRedirect(dest string, code int) http.Handler {
@@ -83,30 +81,21 @@ func makeRedirect(dest string, code int) http.Handler {
 	})
 }
 
-// canViewSFTPReport is an alias for the privilege-checking handlerfunc wrapper
-func canViewSFTPReport(h http.HandlerFunc) http.Handler {
-	return mustHavePrivilege(user.FindPrivilege("sftp report"), h)
-}
-
 func startServer() {
 	var r = mux.NewRouter()
 	var hp = webutil.HomePath()
-	var tp = webutil.TitlePath("{lccn}")
-	var ip = webutil.IssuePath("{lccn}", "{issue}")
-	var pdfPath = webutil.PDFPath("{lccn}", "{issue}", "{filename}")
 
 	// Make sure homepath/ isn't considered the canonical path
 	r.Handle(hp+"/", makeRedirect(hp, http.StatusMovedPermanently))
 
-	r.NewRoute().Path(hp).Handler(canViewSFTPReport(HomeHandler))
-	r.NewRoute().Path(tp).Handler(canViewSFTPReport(TitleHandler))
-	r.NewRoute().Path(ip).Handler(canViewSFTPReport(IssueHandler))
-	r.NewRoute().Path(pdfPath).Handler(canViewSFTPReport(PDFFileHandler))
-
 	// The static handler doesn't check permissions.  Right now this is okay, as
 	// what we serve isn't valuable beyond page layout, but this may warrant a
 	// fileserver clone + rewrite.
-	r.NewRoute().PathPrefix(hp).Handler(http.StripPrefix(hp, http.FileServer(http.Dir(opts.StaticFilePath))))
+	var fileServer = http.FileServer(http.Dir(opts.StaticFilePath))
+	var staticPrefix = path.Join(hp, "static")
+	r.NewRoute().PathPrefix(staticPrefix).Handler(http.StripPrefix(staticPrefix, fileServer))
+
+	sftphandler.Setup(r, hp, Conf.MasterPDFUploadPath)
 
 	http.Handle("/", nocache(logMiddleware(r)))
 
@@ -117,10 +106,8 @@ func startServer() {
 	}
 }
 
-var sftpSearcher *presenter.SFTPSearcher
 
 func main() {
 	getConf()
-	sftpSearcher = presenter.NewSFTPSearcher(Conf.MasterPDFUploadPath)
 	startServer()
 }
