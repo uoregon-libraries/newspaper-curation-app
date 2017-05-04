@@ -4,11 +4,9 @@
 package responder
 
 import (
-	"fmt"
 	"html/template"
 	"log"
 	"net/http"
-	"time"
 	"user"
 	"version"
 	"web/webutil"
@@ -43,37 +41,6 @@ func Response(w http.ResponseWriter, req *http.Request) *Responder {
 	return &Responder{Writer: w, Request: req, Vars: &PageVars{User: u, Data: make(GenericVars)}}
 }
 
-var templateFunctions template.FuncMap
-var templates *template.Template
-
-// HTMLComment forces an HTML comment into the source (since Go templates strip these)
-func HTMLComment(s string) template.HTML {
-	return template.HTML(fmt.Sprintf("<!-- %s -->", s))
-}
-
-// InitTemplates sets up pre-parsed template data - must be run after config has data
-//
-// TODO: Rewrite this; this is the wrong approach:
-// - There should be multiple templates instead of one that gloms together all files
-// - Each template should use a layout rather than the inclusion of "header" and "footer"
-// - Different high-level areas are going to need their own function maps in
-//   addition to a set of "core" functions
-func InitTemplates(TemplatePath string) {
-	templateFunctions = template.FuncMap{
-		"Permitted":  func(user interface{}, action string) bool { return false },
-		"IncludeCSS": webutil.IncludeCSS,
-		"RawCSS":     webutil.RawCSS,
-		"IncludeJS":  webutil.IncludeJS,
-		"RawJS":      webutil.RawJS,
-		"ImageURL":   webutil.ImageURL,
-		"ParentURL":  webutil.ParentURL,
-		"Comment":    HTMLComment,
-		"TimeString": func(t time.Time) string { return t.Format("2006-01-02 15:04") },
-	}
-	var t = template.New("root").Funcs(templateFunctions)
-	templates = template.Must(t.ParseGlob(TemplatePath + "/*.go.html"))
-}
-
 // injectDefaultTemplateVars sets up default variables used in multiple templates
 func (r *Responder) injectDefaultTemplateVars() {
 	r.Vars.Webroot = webutil.Webroot
@@ -84,18 +51,11 @@ func (r *Responder) injectDefaultTemplateVars() {
 }
 
 // Render uses the responder's data to render the given template
-func (r *Responder) Render(name string) {
-	var t = templates.Lookup(name + ".go.html")
-	if t == nil {
-		log.Printf("ERROR: Template %s requested but does not exist!", name)
-		http.Error(r.Writer, "Error rendering the page", http.StatusInternalServerError)
-		return
-	}
-
+func (r *Responder) Render(t *template.Template) {
 	r.injectDefaultTemplateVars()
 
 	var err = t.Execute(r.Writer, r.Vars)
 	if err != nil {
-		log.Printf("ERROR: Unable to render template %s: %s", name, err)
+		log.Printf("ERROR: Unable to render template: %s (%s)", err, t.DefinedTemplates())
 	}
 }

@@ -1,4 +1,4 @@
-{{template "header" .}}
+{{block "content" .}}
 
 <ul>
   {{range .Data.Titles}}
@@ -21,4 +21,4 @@
   {{end}}
 </ul>
 
-{{template "footer" .}}
+{{end}}

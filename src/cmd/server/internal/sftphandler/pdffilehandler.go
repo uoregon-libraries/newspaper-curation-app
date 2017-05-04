@@ -22,20 +22,20 @@ func PDFFileHandler(w http.ResponseWriter, req *http.Request) {
 	var pdf = issue.PDFLookup[fileslug]
 	if pdf == nil {
 		r.Vars.Alert = fmt.Sprintf("Invalid request")
-		r.Render("empty")
+		r.Render(responder.Empty)
 		return
 	}
 
 	var path = pdf.Location
 	if strings.ToUpper(filepath.Ext(path)) != ".PDF" {
 		r.Vars.Alert = fmt.Sprintf("%#v is not a valid PDF file and cannot be viewed", path)
-		r.Render("empty")
+		r.Render(responder.Empty)
 		return
 	}
 
 	if !fileutil.IsFile(path) {
 		r.Vars.Alert = fmt.Sprintf("Unable to locate %#v!", path)
-		r.Render("empty")
+		r.Render(responder.Empty)
 		return
 	}
 
@@ -43,7 +43,7 @@ func PDFFileHandler(w http.ResponseWriter, req *http.Request) {
 	if err != nil {
 		log.Printf("ERROR: Unable to read %#v", path)
 		r.Vars.Alert = fmt.Sprintf("Unable to read %#v!", path)
-		r.Render("empty")
+		r.Render(responder.Empty)
 		return
 	}
 	defer f.Close()

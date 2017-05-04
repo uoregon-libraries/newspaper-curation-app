@@ -3,6 +3,7 @@ package sftphandler
 import (
 	"cmd/server/internal/responder"
 	"fmt"
+	"html/template"
 	"log"
 	"net/http"
 	"path"
@@ -12,6 +13,7 @@ import (
 
 var sftpSearcher *SFTPSearcher
 var basePath string
+var HomeTmpl, IssueTmpl, TitleTmpl *template.Template
 
 // Setup sets up all the SFTP-specific routing rules and does any other
 // init necessary for SFTP reports handling
@@ -23,8 +25,10 @@ func Setup(r *mux.Router, sftpWebPath, sftpDiskPath string) {
 	s.Path("/{lccn}/{issue}").Handler(responder.CanViewSFTPReport(IssueHandler))
 	s.Path("/{lccn}/{issue}/{filename}").Handler(responder.CanViewSFTPReport(PDFFileHandler))
 
-
 	sftpSearcher = newSFTPSearcher(sftpDiskPath)
+	HomeTmpl = responder.BuildTemplate("sftp/home.go.html")
+	IssueTmpl = responder.BuildTemplate("sftp/issue.go.html")
+	TitleTmpl = responder.BuildTemplate("sftp/title.go.html")
 }
 
 // LoadTitles takes a responder and attempts to load the title list
@@ -56,7 +60,7 @@ func findTitle(r *responder.Responder) *Title {
 
 	if title == nil {
 		r.Vars.Alert = fmt.Sprintf("Unable to find title %#v", lccn)
-		r.Render("empty")
+		r.Render(responder.Empty)
 		return nil
 	}
 
@@ -78,7 +82,7 @@ func findIssue(r *responder.Responder) *Issue {
 
 	if issue == nil {
 		r.Vars.Alert = fmt.Sprintf("Unable to find issue %#v for title %#v", issueDate, title.Name)
-		r.Render("empty")
+		r.Render(responder.Empty)
 		return nil
 	}
 
@@ -93,7 +97,7 @@ func HomeHandler(w http.ResponseWriter, req *http.Request) {
 	}
 
 	r.Vars.Title = "SFTP Titles List"
-	r.Render("home")
+	r.Render(HomeTmpl)
 }
 
 // TitleHandler prints a list of issues for a given title
@@ -106,7 +110,7 @@ func TitleHandler(w http.ResponseWriter, req *http.Request) {
 
 	r.Vars.Data["Title"] = title
 	r.Vars.Title = "SFTP Issues for " + title.Name
-	r.Render("title")
+	r.Render(TitleTmpl)
 }
 
 // IssueHandler prints a list of pages for a given issue
@@ -119,5 +123,5 @@ func IssueHandler(w http.ResponseWriter, req *http.Request) {
 
 	r.Vars.Data["Issue"] = issue
 	r.Vars.Title = fmt.Sprintf("SFTP PDFs for %s, issue %s", issue.Title.Name, issue.Date.Format("2006-01-02"))
-	r.Render("issue")
+	r.Render(IssueTmpl)
 }

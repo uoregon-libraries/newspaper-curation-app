@@ -1,4 +1,4 @@
-{{define "header"}}
+{{define "layout"}}
 <!DOCTYPE html>
 <html>
   <head>
@@ -72,9 +72,7 @@
           </div>
         {{- end}}
 
-{{end}}
-
-{{define "footer"}}
+        {{block "content" .}}{{end}}
       </div>
     </div>
 
