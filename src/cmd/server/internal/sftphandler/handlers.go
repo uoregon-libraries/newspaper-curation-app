@@ -3,17 +3,17 @@ package sftphandler
 import (
 	"cmd/server/internal/responder"
 	"fmt"
-	"html/template"
 	"log"
 	"net/http"
 	"path"
+	"web/tmpl"
 
 	"github.com/gorilla/mux"
 )
 
 var sftpSearcher *SFTPSearcher
 var basePath string
-var HomeTmpl, IssueTmpl, TitleTmpl *template.Template
+var HomeTmpl, IssueTmpl, TitleTmpl *tmpl.Template
 
 // Setup sets up all the SFTP-specific routing rules and does any other
 // init necessary for SFTP reports handling
@@ -26,9 +26,10 @@ func Setup(r *mux.Router, sftpWebPath, sftpDiskPath string) {
 	s.Path("/{lccn}/{issue}/{filename}").Handler(responder.CanViewSFTPReport(PDFFileHandler))
 
 	sftpSearcher = newSFTPSearcher(sftpDiskPath)
-	HomeTmpl = responder.BuildTemplate("sftp/home.go.html")
-	IssueTmpl = responder.BuildTemplate("sftp/issue.go.html")
-	TitleTmpl = responder.BuildTemplate("sftp/title.go.html")
+	var layout = responder.Layout
+	HomeTmpl = layout.MustBuild("sftp/home.go.html")
+	IssueTmpl = layout.MustBuild("sftp/issue.go.html")
+	TitleTmpl = layout.MustBuild("sftp/title.go.html")
 }
 
 // LoadTitles takes a responder and attempts to load the title list

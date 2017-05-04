@@ -72,7 +72,7 @@ func getConf() {
 		settings.DEBUG = true
 	}
 
-	responder.InitTemplates(args[0])
+	responder.InitRootTemplate(args[0])
 }
 
 func makeRedirect(dest string, code int) http.Handler {
@@ -105,7 +105,6 @@ func startServer() {
 		log.Fatalf("Error starting listener: %s", err)
 	}
 }
-
 
 func main() {
 	getConf()

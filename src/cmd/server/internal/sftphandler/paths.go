@@ -18,4 +18,3 @@ func IssuePath(title, issue string) string {
 func PDFPath(title, issue, filename string) string {
 	return path.Join(basePath, title, issue, filename)
 }
-

@@ -4,11 +4,11 @@
 package responder
 
 import (
-	"html/template"
 	"log"
 	"net/http"
 	"user"
 	"version"
+	"web/tmpl"
 	"web/webutil"
 )
 
@@ -51,11 +51,11 @@ func (r *Responder) injectDefaultTemplateVars() {
 }
 
 // Render uses the responder's data to render the given template
-func (r *Responder) Render(t *template.Template) {
+func (r *Responder) Render(t *tmpl.Template) {
 	r.injectDefaultTemplateVars()
 
 	var err = t.Execute(r.Writer, r.Vars)
 	if err != nil {
-		log.Printf("ERROR: Unable to render template: %s (%s)", err, t.DefinedTemplates())
+		log.Printf("ERROR: Unable to render template %#v: %s", t.Name, err)
 	}
 }
