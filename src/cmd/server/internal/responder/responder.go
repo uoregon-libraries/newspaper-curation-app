@@ -21,7 +21,6 @@ type PageVars struct {
 	Title         string
 	Version       string
 	Webroot       string
-	ParentWebroot string
 	Alert         string
 	User          *user.User
 	Data          GenericVars

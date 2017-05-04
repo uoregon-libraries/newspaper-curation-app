@@ -20,8 +20,6 @@ func HTMLComment(s string) template.HTML {
 // InitRootTemplate sets up pre-parsed template data in Root
 func InitRootTemplate(templatePath string) {
 	var templateFunctions = template.FuncMap{
-		// TODO: is this used?  Remove it!!
-		"Permitted":  func(user interface{}, action string) bool { return false },
 		"IncludeCSS": webutil.IncludeCSS,
 		"RawCSS":     webutil.RawCSS,
 		"IncludeJS":  webutil.IncludeJS,
