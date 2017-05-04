@@ -3,7 +3,6 @@ package responder
 import (
 	"fmt"
 	"html/template"
-	"path/filepath"
 	"time"
 	"web/tmpl"
 	"web/webutil"
@@ -19,7 +18,7 @@ func HTMLComment(s string) template.HTML {
 
 // InitRootTemplate sets up pre-parsed template data in Root
 func InitRootTemplate(templatePath string) {
-	var templateFunctions = template.FuncMap{
+	var templateFunctions = tmpl.FuncMap{
 		"IncludeCSS": webutil.IncludeCSS,
 		"RawCSS":     webutil.RawCSS,
 		"IncludeJS":  webutil.IncludeJS,
@@ -31,9 +30,9 @@ func InitRootTemplate(templatePath string) {
 	}
 
 	// Set up the layout and then our global templates
-	Layout = tmpl.Root("layout", templatePath, templateFunctions)
+	Layout = tmpl.Root("layout", templatePath)
+	Layout.Funcs(templateFunctions)
 	Layout.MustReadPartials("layout.go.html")
-	template.Must(Layout.ParseFiles(filepath.Join(templatePath, "layout.go.html")))
 	InsufficientPrivileges = Layout.MustBuild("insufficient-privileges.go.html")
 	Empty = Layout.MustBuild("empty.go.html")
 }
