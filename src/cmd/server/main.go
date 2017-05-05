@@ -1,6 +1,7 @@
 package main
 
 import (
+	"cmd/server/internal/findhandler"
 	"cmd/server/internal/responder"
 	"cmd/server/internal/settings"
 	"cmd/server/internal/sftphandler"
@@ -96,6 +97,7 @@ func startServer() {
 	r.NewRoute().PathPrefix(staticPrefix).Handler(http.StripPrefix(staticPrefix, fileServer))
 
 	sftphandler.Setup(r, path.Join(hp, "sftp"), Conf.MasterPDFUploadPath)
+	findhandler.Setup(r, path.Join(hp, "search-issues"))
 
 	http.Handle("/", nocache(logMiddleware(r)))
 

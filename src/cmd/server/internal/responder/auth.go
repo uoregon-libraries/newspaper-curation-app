@@ -39,6 +39,11 @@ func CanViewSFTPReport(h http.HandlerFunc) http.Handler {
 	return MustHavePrivilege(user.FindPrivilege("sftp report"), h)
 }
 
+// CanSearchIssues is an alias for the privilege-checking handlerfunc wrapper
+func CanSearchIssues(h http.HandlerFunc) http.Handler {
+	return MustHavePrivilege(user.FindPrivilege("search workflow issues"), h)
+}
+
 // MustHavePrivilege denies access to pages if there's no logged-in user, or
 // there is a user but the user isn't allowed to perform a particular action
 func MustHavePrivilege(priv *user.Privilege, f http.HandlerFunc) http.Handler {
