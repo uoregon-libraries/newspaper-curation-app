@@ -95,7 +95,7 @@ func startServer() {
 	var staticPrefix = path.Join(hp, "static")
 	r.NewRoute().PathPrefix(staticPrefix).Handler(http.StripPrefix(staticPrefix, fileServer))
 
-	sftphandler.Setup(r, hp, Conf.MasterPDFUploadPath)
+	sftphandler.Setup(r, path.Join(hp, "sftp"), Conf.MasterPDFUploadPath)
 
 	http.Handle("/", nocache(logMiddleware(r)))
 

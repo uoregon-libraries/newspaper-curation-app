@@ -19,9 +19,9 @@ var HomeTmpl, IssueTmpl, TitleTmpl *tmpl.Template
 // Setup sets up all the SFTP-specific routing rules and does any other
 // init necessary for SFTP reports handling
 func Setup(r *mux.Router, sftpWebPath, sftpDiskPath string) {
-	basePath = path.Join(sftpWebPath, "titles")
+	basePath = sftpWebPath
 	var s = r.PathPrefix(basePath).Subrouter()
-	s.Path("").Handler(responder.CanViewSFTPReport(HomeHandler)).Name("titles")
+	s.Path("").Handler(responder.CanViewSFTPReport(HomeHandler))
 	s.Path("/{lccn}").Handler(responder.CanViewSFTPReport(TitleHandler))
 	s.Path("/{lccn}/{issue}").Handler(responder.CanViewSFTPReport(IssueHandler))
 	s.Path("/{lccn}/{issue}/{filename}").Handler(responder.CanViewSFTPReport(PDFFileHandler))

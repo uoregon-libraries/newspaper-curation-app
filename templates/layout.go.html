@@ -33,7 +33,8 @@
               {{end}}
 
               {{if .User.PermittedTo "sftp report"}}
-              <li><a href="{{.Webroot}}">SFTP Reports</a></li>
+              <!-- This URL needs to match the router path in the server's main.go -->
+              <li><a href="{{.Webroot}}/sftp">SFTP Reports</a></li>
               {{end}}
 
               {{if .User.PermittedTo "manage mocs"}}
