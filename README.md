@@ -8,17 +8,22 @@ PHP app has been very difficult to refactor safely.
 
 Compilation requires [Go](https://golang.org/dl/) and gb (`go get github.com/constabulary/gb/...`)
 
-SFTP Reports
+server
 ---
 
-This tool reports likely problems with SFTP uploads.  It is information-only,
-and doesn't yet have any useful way to actually contact publishers, reject bad
-issues, etc.
+This tool currently just reports likely problems with SFTP uploads.  It is
+information-only, and doesn't yet have any useful way to actually contact
+publishers, reject bad issues, etc.
 
-I am planning to fix this up to add queuing from the web to move SFTP issues
-somewhere else where a regular job would run the derivative process and move
-the issues forward in the workflow.  I'm also planning something to reject
+I am planning to fix the SFTP part up to add queuing from the web to move SFTP
+issues somewhere else where a regular job would run the derivative process and
+move the issues forward in the workflow.  I'm also planning something to reject
 issues in some way, but it hasn't been determined the best way to handle that.
+
+I'm also hoping to make "server" more than just sftp reporting.  At the least,
+we want a way to find issues' locations within the workflow and see what
+problems have been found on the filesystem; basically a web interface into the
+find-issues command.
 
 ### Usage
 

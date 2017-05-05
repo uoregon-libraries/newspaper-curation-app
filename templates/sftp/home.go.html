@@ -1,7 +1,7 @@
-{{template "header" .}}
+{{block "content" .}}
 
 <ul>
-  {{range .Titles}}
+  {{range .Data.Titles}}
     {{if .Show}}
       <li>
         {{if gt .ChildErrors 0 }}
@@ -21,4 +21,4 @@
   {{end}}
 </ul>
 
-{{template "footer" .}}
+{{end}}

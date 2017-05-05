@@ -25,29 +25,19 @@ func FullPath(parts ...string) string {
 	return path.Join(parts...)
 }
 
+// StaticPath returns the absolute path to static assets (CSS, JS, etc)
+func StaticPath(dir, file string) string {
+	return FullPath("static", dir, file)
+}
+
 // HomePath returns the absolute path to the home page (title list)
 func HomePath() string {
 	return FullPath("")
 }
 
-// TitlePath returns the absolute path to the given title's issue list page
-func TitlePath(name string) string {
-	return FullPath(path.Join("title", name))
-}
-
-// IssuePath returns the absolute path to the given issue's PDF list page
-func IssuePath(pName, iName string) string {
-	return FullPath(path.Join("issue", pName, iName))
-}
-
-// PDFPath returns the absolute path to view a given PDF file
-func PDFPath(title, issue, filename string) string {
-	return FullPath(path.Join("pdf", title, issue, filename))
-}
-
 // ImageURL takes a file and constructs an absolute web path string
 func ImageURL(file string) string {
-	return FullPath("images", file)
+	return StaticPath("images", file)
 }
 
 // ParentURL takes a path and joins it with the configured path to the parent app
@@ -59,7 +49,7 @@ func ParentURL(loc string) string {
 // given file's CSS.  ".css" is automatically appended to the filename for less
 // verbose use.
 func IncludeCSS(file string) template.HTML {
-	var path = FullPath("css", file+".css")
+	var path = StaticPath("css", file+".css")
 	return template.HTML(fmt.Sprintf(`<link rel="stylesheet" type="text/css" href="%s" />`, path))
 }
 
@@ -67,7 +57,7 @@ func IncludeCSS(file string) template.HTML {
 // given file's CSS.  It doesn't assume the path is /css, and it doesn't
 // auto-append ".css".
 func RawCSS(file string) template.HTML {
-	var path = FullPath(file)
+	var path = StaticPath("", file)
 	return template.HTML(fmt.Sprintf(`<link rel="stylesheet" type="text/css" href="%s" />`, path))
 }
 
@@ -75,7 +65,7 @@ func RawCSS(file string) template.HTML {
 // given file's JS.  ".js" is automatically appended to the filename for less
 // verbose use.
 func IncludeJS(file string) template.HTML {
-	var path = FullPath("js", file+".js")
+	var path = StaticPath("js", file+".js")
 	return template.HTML(fmt.Sprintf(`<script src="%s"></script>`, path))
 }
 
@@ -83,6 +73,6 @@ func IncludeJS(file string) template.HTML {
 // file's JS.  It doesn't assume the path is /js, and it doesn't auto-append
 // ".js".
 func RawJS(file string) template.HTML {
-	var path = FullPath(file)
+	var path = StaticPath("", file)
 	return template.HTML(fmt.Sprintf(`<script src="%s"></script>`, path))
 }

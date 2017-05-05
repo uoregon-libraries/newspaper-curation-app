@@ -1,4 +1,4 @@
-package presenter
+package sftphandler
 
 import (
 	"fmt"
@@ -9,7 +9,6 @@ import (
 	"sort"
 	"strings"
 	"time"
-	"web/webutil"
 )
 
 // Errors wraps an array of error strings for nicer display
@@ -93,7 +92,7 @@ func (t *Title) Show() bool {
 
 // Link returns a link for this title
 func (t *Title) Link() template.HTML {
-	return template.HTML(fmt.Sprintf(`<a href="%s">%s</a>`, webutil.TitlePath(t.Slug), t.Name))
+	return template.HTML(fmt.Sprintf(`<a href="%s">%s</a>`, TitlePath(t.Slug), t.Name))
 }
 
 // Issue wraps a schema.Issue for web presentation
@@ -150,7 +149,7 @@ func (i *Issue) IsNew() bool {
 
 // Link returns a link for this title
 func (i *Issue) Link() template.HTML {
-	var path = webutil.IssuePath(i.Title.Slug, i.Slug)
+	var path = IssuePath(i.Title.Slug, i.Slug)
 	return template.HTML(fmt.Sprintf(`<a href="%s">%s</a>`, path, i.Date.Format("2006-01-02")))
 }
 
@@ -175,6 +174,6 @@ func (p *PDF) decorateErrors() {
 
 // Link returns a link for this title
 func (p *PDF) Link() template.HTML {
-	var path = webutil.PDFPath(p.Issue.Title.Slug, p.Issue.Slug, p.Slug)
+	var path = PDFPath(p.Issue.Title.Slug, p.Issue.Slug, p.Slug)
 	return template.HTML(fmt.Sprintf(`<a href="%s">%s</a>`, path, p.Slug))
 }

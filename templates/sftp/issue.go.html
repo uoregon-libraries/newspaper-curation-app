@@ -1,4 +1,4 @@
-{{template "header" .}}
+{{block "content" .}}
 
 {{if gt (len .Data.Issue.Errors) 0}}
   This issue had the following errors:
@@ -36,4 +36,4 @@
 </table>
 
 <script>SortableTable.initAll()</script>
-{{template "footer" .}}
+{{end}}
