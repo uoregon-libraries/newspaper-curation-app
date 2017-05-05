@@ -1,0 +1,9 @@
+{{block "content" .}}
+
+<form action="{{.SearchFormAction}}" method="GET" role="search">
+  <label for="issuekey">Issue key</label>
+  <input type="text" name="issuekey" id="issuekey" />
+  <button type="submit">Search</button>
+</form>
+
+{{end}}
