@@ -1,4 +1,4 @@
-// This app uses issuefinder to store the locations and metadata of all issues,
+// This app uses legacyfinder to store the locations and metadata of all issues,
 // batches, and titles on the filesystem or the live site.
 
 package main
@@ -8,7 +8,7 @@ import (
 	"db"
 	"fileutil"
 	"fmt"
-	"issuefinder"
+	"legacyfinder"
 	"log"
 	"os"
 	"path/filepath"
@@ -28,7 +28,7 @@ var opts struct {
 }
 
 var p *flags.Parser
-var finder *issuefinder.Finder
+var finder *legacyfinder.Finder
 
 // wrap is a helper to wrap a usage message at 80 characters and print a
 // newline afterward
@@ -79,8 +79,17 @@ func getConf() {
 
 func main() {
 	getConf()
-	var finder = findIssues()
+	var finder = legacyfinder.NewScanner(Conf, opts.Siteroot, opts.CachePath)
+
+	var realFinder, err = finder.FindIssues()
+	if err != nil {
+		log.Fatalf("Error trying to find issues: %s", err)
+	}
+
 	var cacheFile = filepath.Join(opts.CachePath, "finder.cache")
-	cacheIssues(finder, cacheFile)
-	testIntegrity(finder, cacheFile)
+	err = realFinder.Serialize(cacheFile)
+	if err != nil {
+		log.Fatalf("Error trying to serialize: %s", err)
+	}
+	testIntegrity(realFinder, cacheFile)
 }
