@@ -8,10 +8,12 @@ import (
 	"config"
 	"db"
 	"fmt"
+	"legacyfinder"
 	"log"
 	"net/http"
 	"os"
 	"path"
+	"time"
 	"user"
 	"web/webutil"
 
@@ -30,6 +32,7 @@ var opts struct {
 	Port           int    `short:"p" long:"port" description:"port to listen for HTTP traffic" required:"true"`
 	Bind           string `long:"bind" description:"Bind address, usually safe to leave blank"`
 	Debug          bool   `long:"debug" description:"Enables debug mode for testing different users"`
+	ChronamRoot    string `long:"chronam-web-root" description:"Full URL to live site; e.g. http://oregonnews.uoregon.edu" required:"true"`
 	Webroot        string `long:"webroot" description:"The base path to the app if it isn't just '/'"`
 	ParentWebroot  string `long:"parent-webroot" description:"The base path to the parent app" required:"true"`
 	StaticFilePath string `long:"static-files" description:"Path on disk to static JS/CSS/images" required:"true"`
@@ -96,8 +99,23 @@ func startServer() {
 	var staticPrefix = path.Join(hp, "static")
 	r.NewRoute().PathPrefix(staticPrefix).Handler(http.StripPrefix(staticPrefix, fileServer))
 
+	var watcher = legacyfinder.NewWatcher(Conf, opts.ChronamRoot)
+	go watcher.Watch(5 * time.Minute)
 	sftphandler.Setup(r, path.Join(hp, "sftp"), Conf.MasterPDFUploadPath)
-	findhandler.Setup(r, path.Join(hp, "search-issues"))
+	findhandler.Setup(r, path.Join(hp, "search-issues"), watcher)
+
+	var waited, lastWaited int
+	for watcher.IssueFinder().Issues == nil {
+		if waited == 5 {
+			log.Println("Waiting for initial issue scan to complete.  This can take " +
+				"several minutes if the cache has not already been created.")
+		} else if waited / 30 > lastWaited {
+			log.Println("Still waiting...")
+			lastWaited = waited/30
+		}
+		waited++
+		time.Sleep(1 * time.Second)
+	}
 
 	http.Handle("/", nocache(logMiddleware(r)))
 
