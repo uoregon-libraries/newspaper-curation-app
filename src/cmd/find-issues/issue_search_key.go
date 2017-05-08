@@ -1,6 +1,7 @@
 package main
 
 import (
+	"db"
 	"fmt"
 	"regexp"
 	"strconv"
@@ -8,8 +9,8 @@ import (
 )
 
 // validIssueSearchKey defines the format for a minimal issue-key-like search
-// string: strict LCCN, strict year, and optional month, day, and edition
-var validIssueSearchKey = regexp.MustCompile(`^(\w{8,10})(/\d+)?`)
+// string: LCCN, year, month, day, and edition
+var validIssueSearchKey = regexp.MustCompile(`^(\w+)(/\d+)?`)
 
 // IssueSearchKey defines the precise issue (or subset of issues) we want to
 // find.  Note that the structure here is very specific to this issue finder,
@@ -31,6 +32,13 @@ func ParseSearchKey(ik string) (*IssueSearchKey, error) {
 		return nil, fmt.Errorf("invalid issue key format")
 	}
 	var key = &IssueSearchKey{source: ik, lccn: groups[1]}
+
+	// Attempt to look up the "LCCN" in the titles database in case it's an SFTP
+	// name rather than an actual LCCN
+	var title = db.FindTitleByDirectory(key.lccn)
+	if title != nil {
+		key.lccn = title.LCCN
+	}
 
 	if groups[2] == "" {
 		return key, nil

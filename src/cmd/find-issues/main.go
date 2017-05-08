@@ -6,6 +6,8 @@
 package main
 
 import (
+	"config"
+	"db"
 	"fileutil"
 	"fmt"
 	"io/ioutil"
@@ -20,8 +22,12 @@ import (
 
 var issueSearchKeys []*IssueSearchKey
 
+// Conf stores the configuration data read from the legacy Python settings
+var Conf *config.Config
+
 // Command-line options
 var opts struct {
+	ConfigFile string `short:"c" long:"config" description:"path to P2C config file" required:"true"`
 	CacheFile string   `long:"cache-file" description:"Path to the finder cache" required:"true"`
 	IssueList string   `long:"issue-list" description:"path to file containing list of newline-separated issue keys"`
 	IssueKeys []string `long:"issue-key" description:"single issue key to process, e.g., 'sn12345678/1905123101'"`
@@ -58,6 +64,16 @@ func getOpts() {
 
 	if err != nil {
 		usageFail("Error: %s", err)
+	}
+
+	Conf, err = config.Parse(opts.ConfigFile)
+	if err != nil {
+		log.Fatalf("Config error: %s", err)
+	}
+
+	err = db.Connect(Conf.DatabaseConnect)
+	if err != nil {
+		log.Fatalf("Error trying to connect to database: %s", err)
 	}
 
 	if len(opts.IssueKeys) == 0 && opts.IssueList == "" {
