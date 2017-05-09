@@ -81,12 +81,14 @@ func main() {
 	getConf()
 	var finder = legacyfinder.NewScanner(Conf, opts.Siteroot, opts.CachePath)
 
+	log.Printf("Running scan")
 	var realFinder, err = finder.FindIssues()
 	if err != nil {
 		log.Fatalf("Error trying to find issues: %s", err)
 	}
 
 	var cacheFile = filepath.Join(opts.CachePath, "finder.cache")
+	log.Printf("Serializing to disk")
 	err = realFinder.Serialize(cacheFile)
 	if err != nil {
 		log.Fatalf("Error trying to serialize: %s", err)
