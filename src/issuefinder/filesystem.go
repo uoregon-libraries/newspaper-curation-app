@@ -141,6 +141,11 @@ func (s *Searcher) findStandardIssuesForTitlePath(titlePath string, strict bool)
 
 		var issue = title.AddIssue(&schema.Issue{Date: dt, Edition: edition, Location: issuePath})
 
+		err = issue.ParseMetadata()
+		if err != nil {
+			addErr(fmt.Errorf("invalid issue metadata: %s", err))
+		}
+
 		issue.FindFiles()
 
 		for _, e := range errors {
