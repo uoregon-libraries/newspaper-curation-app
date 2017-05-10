@@ -123,11 +123,6 @@ func main() {
 	lookup.Populate(finder.Issues)
 	finder.Errors.Index()
 
-	// Report all errors
-	for _, e := range finder.Errors.Errors {
-		log.Printf("ERROR: %s", e.Message())
-	}
-
 	var lastKey = ""
 	for _, k := range issueSearchKeys {
 		for _, issue := range lookup.Issues(k) {
