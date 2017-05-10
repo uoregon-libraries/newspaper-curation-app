@@ -54,7 +54,7 @@ func (i *Issue) ParseMetadata() error {
 		return err
 	}
 
-	if meta.LCCN != i.Title.LCCN {
+	if meta.LCCN != "" && meta.LCCN != i.Title.LCCN {
 		return fmt.Errorf("LCCN doesn't match Title's LCCN")
 	}
 
@@ -62,13 +62,14 @@ func (i *Issue) ParseMetadata() error {
 		return fmt.Errorf("missing uuid key")
 	}
 
-	var dt time.Time
-	dt, err = time.Parse("2006-01-02", meta.Date)
-	if err != nil {
-		return fmt.Errorf("invalid date value <%s>", meta.Date)
+	if meta.Date != "" {
+		var dt time.Time
+		dt, err = time.Parse("2006-01-02", meta.Date)
+		if err != nil {
+			return fmt.Errorf("invalid date value <%s>", meta.Date)
+		}
+		i.Date = dt
 	}
-
-	i.Date = dt
 
 	return nil
 }
