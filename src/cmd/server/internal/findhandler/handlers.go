@@ -14,6 +14,7 @@ var basePath string
 var watcher *legacyfinder.Watcher
 var Layout *tmpl.TRoot
 var HomeTmpl *tmpl.Template
+var SearchFormAction = path.Join(basePath, "results")
 
 // Setup sets up all the handler-specific routing, templates, etc
 func Setup(r *mux.Router, webPath string, w *legacyfinder.Watcher) {
