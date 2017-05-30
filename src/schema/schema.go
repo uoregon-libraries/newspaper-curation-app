@@ -119,6 +119,48 @@ func (t *Title) AddIssue(i *Issue) *Issue {
 	return i
 }
 
+// GenericTitle returns a title with the same generic information, but none of
+// the data which is tied to a specific title on the filesystem or website:
+// location and issue list
+func (t *Title) GenericTitle() *Title {
+	return &Title{LCCN: t.LCCN, Name: t.Name, PlaceOfPublication: t.PlaceOfPublication}
+}
+
+// TitleList is a simple slice of titles for easier built-in sorting and
+// identifying a unique list of all titles
+type TitleList []*Title
+
+// SortByName sorts the titles by their name, using location and lccn when
+// names are the same
+func (list TitleList) SortByName() {
+	sort.Slice(list, func(i, j int) bool {
+		var a, b = list[i].Name, list[j].Name
+		if a == b {
+			a, b = list[i].Location, list[j].Location
+		}
+		if a == b {
+			a, b = list[i].LCCN, list[j].LCCN
+		}
+
+		return a < b
+	})
+}
+
+// Unique returns a new list containing generic versions of each unique LCCN
+func (list TitleList) Unique() TitleList {
+	var l2 TitleList
+	var seen = make(map[string]bool)
+	for _, title := range list {
+		if seen[title.LCCN] {
+			continue
+		}
+
+		seen[title.LCCN] = true
+		l2 = append(l2, title.GenericTitle())
+	}
+	return l2
+}
+
 // Issue is an extremely basic encapsulation of an issue's high-level data
 type Issue struct {
 	Title   *Title

@@ -37,7 +37,7 @@ type Searcher struct {
 
 	Issues  schema.IssueList
 	Batches []*schema.Batch
-	Titles  []*schema.Title
+	Titles  schema.TitleList
 
 	// titleByLoc holds titles keyed by their location so we don't duplicate the
 	// same title entry if it's in the same place.  This is most applicable to
@@ -60,7 +60,7 @@ type Searcher struct {
 type Finder struct {
 	Searchers map[Namespace]*Searcher
 	Batches   []*schema.Batch
-	Titles    []*schema.Title
+	Titles    schema.TitleList
 	Issues    schema.IssueList
 	Errors    *ErrorList
 }
@@ -81,7 +81,7 @@ func NewSearcher(ns Namespace, loc string) *Searcher {
 func (s *Searcher) init() {
 	s.Issues = make(schema.IssueList, 0)
 	s.Batches = make([]*schema.Batch, 0)
-	s.Titles = make([]*schema.Title, 0)
+	s.Titles = make(schema.TitleList, 0)
 	s.titleByLoc = make(map[string]*schema.Title)
 	s.Errors = &ErrorList{}
 }
