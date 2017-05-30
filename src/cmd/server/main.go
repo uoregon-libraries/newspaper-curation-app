@@ -108,7 +108,9 @@ func startServer() {
 	for watcher.IssueFinder().Issues == nil {
 		if waited == 5 {
 			log.Println("Waiting for initial issue scan to complete.  This can take " +
-				"several minutes if the cache has not already been created.")
+				"several minutes if the issues haven't been scanned in a while.  If this " +
+				"is the first time scanning the live site, expect 10 minutes or more to " +
+				"build the web JSON cache.")
 		} else if waited / 30 > lastWaited {
 			log.Println("Still waiting...")
 			lastWaited = waited/30
