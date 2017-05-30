@@ -40,6 +40,9 @@ func rsp(w http.ResponseWriter, req *http.Request) *responder.Responder {
 func HomeHandler(w http.ResponseWriter, req *http.Request) {
 	var r = rsp(w, req)
 	r.Vars.Title = "Find issues"
+	var titles = watcher.IssueFinder().Titles.Unique()
+	titles.SortByName()
+	r.Vars.Data["Titles"] = titles
 	r.Render(HomeTmpl)
 }
 
