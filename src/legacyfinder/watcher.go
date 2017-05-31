@@ -201,4 +201,6 @@ func (w *Watcher) refresh() {
 	w.status &= ^refreshing
 	w.finder = finder
 	w.Unlock()
+
+	log.Println("DEBUG: Issue data refreshed")
 }
