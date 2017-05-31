@@ -34,8 +34,10 @@ func ParseSearchKey(ik string) (*Key, error) {
 	var key = &Key{source: ik, lccn: groups[1]}
 
 	// Attempt to look up the "LCCN" in the titles database in case it's an SFTP
-	// name rather than an actual LCCN
-	var title = db.FindTitleByDirectory(key.lccn)
+	// name rather than an actual LCCN.  For testing and possibly other
+	// use-cases, we don't actually care if the database is present, so we ignore
+	// the potential error returned.
+	var title, _ = db.FindTitleByDirectory(key.lccn)
 	if title != nil {
 		key.lccn = title.LCCN
 	}

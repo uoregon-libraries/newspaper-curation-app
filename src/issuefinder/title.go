@@ -25,9 +25,14 @@ func (s *Searcher) findFilesystemTitle(titleName, path string) *schema.Title {
 
 // createDBTitle looks up the title in the the database by directory name and LCCN
 func createDBTitle(titleName string) *schema.Title {
-	var dbTitle = db.FindTitleByDirectory(titleName)
-	if dbTitle == nil {
-		dbTitle = db.FindTitleByLCCN(titleName)
+	// If the DB hasn't been set up, this will fail, and the DB really should
+	// always be set up by this point
+	var dbTitle, err = db.FindTitleByDirectory(titleName)
+	if err == nil && dbTitle == nil {
+		dbTitle, err = db.FindTitleByLCCN(titleName)
+	}
+	if err != nil {
+		panic(err)
 	}
 	if dbTitle == nil {
 		return nil

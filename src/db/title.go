@@ -1,5 +1,7 @@
 package db
 
+import "fmt"
+
 // Title holds records from the titles table
 type Title struct {
 	ID           int `sql:",primary"`
@@ -19,34 +21,46 @@ type Title struct {
 var allTitles []*Title
 
 // FindTitleByLCCN returns the title matching the given LCCN or nil
-func FindTitleByLCCN(lccn string) *Title {
-	LoadTitles()
+func FindTitleByLCCN(lccn string) (*Title, error) {
+	var err = LoadTitles()
+	if err != nil {
+		return nil, err
+	}
 	for _, t := range allTitles {
 		if t.LCCN == lccn {
-			return t
+			return t, nil
 		}
 	}
-	return nil
+	return nil, nil
 }
 
-func FindTitleByDirectory(dir string) *Title {
-	LoadTitles()
+func FindTitleByDirectory(dir string) (*Title, error) {
+	var err = LoadTitles()
+	if err != nil {
+		return nil, err
+	}
+
 	for _, t := range allTitles {
 		if t.SFTPDir == dir {
-			return t
+			return t, nil
 		}
 	}
-	return nil
+	return nil, nil
 }
 
 // LoadTitles reads and stores all title data in memory
-func LoadTitles() {
+func LoadTitles() error {
+	if DB == nil {
+		return fmt.Errorf("DB is not initialized")
+	}
+
 	if len(allTitles) != 0 {
-		return
+		return nil
 	}
 
 	var op = DB.Operation()
 	op.Dbg = Debug
 	op.Select("titles", &Title{}).AllObjects(&allTitles)
 	LastError = op.Err()
+	return nil
 }
