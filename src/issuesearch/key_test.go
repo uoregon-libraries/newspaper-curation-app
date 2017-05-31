@@ -7,7 +7,7 @@ import (
 )
 
 func expectError(testName, ik, errStr string, t *testing.T) {
-	var _, err = parseSearchKey(ik)
+	var _, err = ParseSearchKey(ik)
 	if err == nil {
 		t.Fatalf("[%s] No error returned, expected error with %#v in string", testName, errStr)
 	}
@@ -18,7 +18,7 @@ func expectError(testName, ik, errStr string, t *testing.T) {
 }
 
 func expectKey(testName, ik, lccn string, year, month, day, edition int, t *testing.T) {
-	var key, err = parseSearchKey(ik)
+	var key, err = ParseSearchKey(ik)
 	if err != nil {
 		t.Fatalf("[%s] Error parsing search key %#v: %s", testName, ik, err)
 	}
@@ -57,5 +57,5 @@ func TestPartialSearchKeys(t *testing.T) {
 
 func TestInvalidSearchKey(t *testing.T) {
 	expectError("Key with bad month", "sn12345678/2000019901", "invalid date", t)
-	expectError("Key with weird date", "sn12345678/2000010001", "date string is non-canonical", t)
+	expectError("Key with weird date", "sn12345678/2000010001", "invalid date", t)
 }

@@ -1,6 +1,7 @@
 package fileutil
 
 import (
+	"os"
 	"testing"
 )
 
@@ -8,7 +9,7 @@ import (
 // Readdir wrapper function so we can get actual high-level testing without
 // relying on a completely unknown filesystem....
 func TestFind(t *testing.T) {
-	var _, err = Find("/", 2)
+	var _, err = Find(os.TempDir(), 1)
 	if err != nil {
 		t.Fatalf("Got an error trying to read the filesystem!  %s", err)
 	}

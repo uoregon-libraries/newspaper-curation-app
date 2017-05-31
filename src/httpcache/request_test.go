@@ -23,9 +23,9 @@ func assertAutoRequest(t *testing.T, url, subdir, expectedFilename, expectedExt 
 
 func TestAutoRequest(t *testing.T) {
 	assertAutoRequest(t, "http://oregonnews.uoregon.edu/batches/batch_foo_bar.json",
-		"subdir", "batch_foo_bar-5AVNKD7E.json", "json")
+		"subdir", "batch_foo_bar-5AVNKD7E", "json")
 	assertAutoRequest(t, "http://oregonnews.uoregon.edu/batches/", "subdir", "batches-QSMI620P", "")
-	assertAutoRequest(t, "", "subdir", "index-7J52DCBI.html", "html")
-	assertAutoRequest(t, "/", "subdir", "index-KP0FTT5O.html", "html")
-	assertAutoRequest(t, "http://oregonnews.uoregon.edu", "subdir", "index-BUBGO14U.html", "html")
+	assertAutoRequest(t, "", "subdir", "index-7J52DCBI", "html")
+	assertAutoRequest(t, "/", "subdir", "index-KP0FTT5O", "html")
+	assertAutoRequest(t, "http://oregonnews.uoregon.edu", "subdir", "index-BUBGO14U", "html")
 }

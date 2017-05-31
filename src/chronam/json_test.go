@@ -52,7 +52,7 @@ func TestBatchJSON(t *testing.T) {
 }
 		`
 
-	var b, err = parseBatchJSON([]byte(encoded))
+	var b, err = ParseBatchJSON([]byte(encoded))
 	if err != nil {
 		t.Fatalf("JSON wouldn't parse: %s", err)
 	}
