@@ -29,7 +29,7 @@ func (t *Template) Clone() (*Template, error) {
 // (e.g., sidebar), and template functions for reuse in renderable templates
 type TRoot struct {
 	template *Template
-	Path string
+	Path     string
 }
 
 // Root creates a new TRoot for use in spawning templates.  The name should

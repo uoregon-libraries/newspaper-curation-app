@@ -18,12 +18,12 @@ type GenericVars map[string]interface{}
 // PageVars is the generic list of data all pages may need, and the catch-all
 // "Data" map for specialized one-off data
 type PageVars struct {
-	Title         string
-	Version       string
-	Webroot       string
-	Alert         string
-	User          *user.User
-	Data          GenericVars
+	Title   string
+	Version string
+	Webroot string
+	Alert   string
+	User    *user.User
+	Data    GenericVars
 }
 
 // Responder wraps common response logic

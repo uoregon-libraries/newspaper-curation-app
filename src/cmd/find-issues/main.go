@@ -28,10 +28,10 @@ var Conf *config.Config
 
 // Command-line options
 var opts struct {
-	ConfigFile string `short:"c" long:"config" description:"path to P2C config file" required:"true"`
-	CacheFile string   `long:"cache-file" description:"Path to the finder cache" required:"true"`
-	IssueList string   `long:"issue-list" description:"path to file containing list of newline-separated issue keys"`
-	IssueKeys []string `long:"issue-key" description:"single issue key to process, e.g., 'sn12345678/1905123101'"`
+	ConfigFile string   `short:"c" long:"config" description:"path to P2C config file" required:"true"`
+	CacheFile  string   `long:"cache-file" description:"Path to the finder cache" required:"true"`
+	IssueList  string   `long:"issue-list" description:"path to file containing list of newline-separated issue keys"`
+	IssueKeys  []string `long:"issue-key" description:"single issue key to process, e.g., 'sn12345678/1905123101'"`
 }
 
 var p *flags.Parser
