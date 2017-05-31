@@ -24,6 +24,32 @@ type Key struct {
 	ed     int
 }
 
+// NewKey returns a key for the given data
+func NewKey(lccn string, year, month, day, ed int) (*Key, error) {
+	var key = &Key{source: "raw", lccn: lccn, year: year, month: month, day: day, ed: ed}
+
+	if month > 0 && year == 0 {
+		return nil, fmt.Errorf("month cannot be set when year is zero")
+	}
+	if day > 0 && (year == 0 || month == 0) {
+		return nil, fmt.Errorf("day cannot be set when either month or year are zero")
+	}
+	if ed > 0 && (year == 0 || month == 0 || day == 0) {
+		return nil, fmt.Errorf("edition cannot be set when any of day, month, or year are zero")
+	}
+
+	// We don't care if the date is legitimate per se, since zeroes are valid in
+	// this context, but we can still do a little sanity checking
+	if month < 0 || month > 12 {
+		return nil, fmt.Errorf("month must be between 1 and 12")
+	}
+	if day < 0 || day > 31 {
+		return nil, fmt.Errorf("day must be between 1 and 31")
+	}
+
+	return key, nil
+}
+
 // ParseSearchKey attempts to read the given string, returning an error if the
 // string isn't a valid search key, otherwise returning a proper issueSearchKey
 func ParseSearchKey(ik string) (*Key, error) {

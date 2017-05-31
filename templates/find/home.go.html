@@ -1,23 +1,18 @@
 {{block "content" .}}
 
-<h2>Filters</h2>
-
-<p>Use the form below to find issues.  You can find all issues for a given
-LCCN, or you can further refine by year, month, and/or day.</p>
+<p>
+  Select a title to view its issues' locations
+</p>
 
 <form action="{{.Data.SearchFormAction}}" method="GET" role="search">
-  <label for="lccn">LCCN</label>
-  <input list="titles" id="lccn" name="lccn" aria-describedby="lccn-hint" />
-  <datalist id="titles">
+  <label for="lccn">Title</label>
+  <select id="lccn" name="lccn">
     {{range .Data.Titles}}
-      <option value="{{.LCCN}}">{{.LCCN}} - {{.Name}}</option>
+      <option value="{{.LCCN}}">{{.Name}} - {{.LCCN}}</option>
     {{end}}
-  </datalist>
-  <p class="help-block" id="lccn-hint">
-    Enter an LCCN directly, or start typing a title's LCCN or name and select it from the dropdown
-  </p>
+  </select>
 
-  <button type="submit">Search</button>
+  <button type="submit">View Issues</button>
 </form>
 
 {{end}}
