@@ -1,4 +1,4 @@
-package main
+package issuesearch
 
 import (
 	"schema"
@@ -7,6 +7,7 @@ import (
 // IssueMap links a textual issue key to one or more Issue objects
 type IssueMap map[string]schema.IssueList
 
+// Lookup aggregates issue lists to create very granularly searchable data
 type Lookup struct {
 	// Issue lets us find issues by key; we should usually have only one
 	// issue per key, but the live site could have something that's still sitting
@@ -75,7 +76,7 @@ func (l *Lookup) cacheIssueLookup(i *schema.Issue) {
 
 // getLookupForKey returns the appropriate issue map to use when looking up
 // issues using the given key
-func (l *Lookup) getLookup(k *IssueSearchKey) IssueMap {
+func (l *Lookup) getLookup(k *Key) IssueMap {
 	if k.year == 0 {
 		return l.IssueNoYear
 	}
@@ -92,7 +93,7 @@ func (l *Lookup) getLookup(k *IssueSearchKey) IssueMap {
 }
 
 // Issues returns the list of issues which match the given search key
-func (l *Lookup) Issues(k *IssueSearchKey) schema.IssueList {
+func (l *Lookup) Issues(k *Key) schema.IssueList {
 	var lookup = l.getLookup(k)
 	var issues = lookup[k.String()]
 	issues.SortByKey()

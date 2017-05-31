@@ -1,4 +1,4 @@
-package main
+package issuesearch
 
 import (
 	"db"
@@ -8,14 +8,14 @@ import (
 	"time"
 )
 
-// validIssueSearchKey defines the format for a minimal issue-key-like search
+// validKey defines the format for a minimal issue-key-like search
 // string: LCCN, year, month, day, and edition
-var validIssueSearchKey = regexp.MustCompile(`^(\w+)(/\d+)?`)
+var validKey = regexp.MustCompile(`^(\w+)(/\d+)?`)
 
-// IssueSearchKey defines the precise issue (or subset of issues) we want to
+// Key defines the precise issue (or subset of issues) we want to
 // find.  Note that the structure here is very specific to this issue finder,
 // so we don't expect (or even want) reuse.
-type IssueSearchKey struct {
+type Key struct {
 	source string
 	lccn   string
 	year   int
@@ -26,12 +26,12 @@ type IssueSearchKey struct {
 
 // ParseSearchKey attempts to read the given string, returning an error if the
 // string isn't a valid search key, otherwise returning a proper issueSearchKey
-func ParseSearchKey(ik string) (*IssueSearchKey, error) {
-	var groups = validIssueSearchKey.FindStringSubmatch(ik)
+func ParseSearchKey(ik string) (*Key, error) {
+	var groups = validKey.FindStringSubmatch(ik)
 	if groups == nil {
 		return nil, fmt.Errorf("invalid issue key format")
 	}
-	var key = &IssueSearchKey{source: ik, lccn: groups[1]}
+	var key = &Key{source: ik, lccn: groups[1]}
 
 	// Attempt to look up the "LCCN" in the titles database in case it's an SFTP
 	// name rather than an actual LCCN
@@ -84,7 +84,7 @@ func ParseSearchKey(ik string) (*IssueSearchKey, error) {
 }
 
 // String returns the textual representation of this search key for use in lookups
-func (k IssueSearchKey) String() string {
+func (k Key) String() string {
 	var keyString = fmt.Sprintf("%s", k.lccn)
 	if k.year > 0 {
 		keyString += fmt.Sprintf("/%04d", k.year)

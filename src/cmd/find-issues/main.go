@@ -12,6 +12,7 @@ import (
 	"fmt"
 	"io/ioutil"
 	"issuefinder"
+	"issuesearch"
 	"log"
 	"os"
 	"strings"
@@ -20,7 +21,7 @@ import (
 	"github.com/jessevdk/go-flags"
 )
 
-var issueSearchKeys []*IssueSearchKey
+var issueSearchKeys []*issuesearch.Key
 
 // Conf stores the configuration data read from the legacy Python settings
 var Conf *config.Config
@@ -100,7 +101,7 @@ func getOpts() {
 			continue
 		}
 
-		var searchKey, err = ParseSearchKey(ik)
+		var searchKey, err = issuesearch.ParseSearchKey(ik)
 		if err != nil {
 			usageFail("Invalid issue search key %#v: %s", ik, err)
 		}
@@ -119,7 +120,7 @@ func main() {
 		log.Fatalf("Unable to deserialize the cache file %#v: %s", opts.CacheFile, err)
 	}
 
-	var lookup = NewLookup()
+	var lookup = issuesearch.NewLookup()
 	lookup.Populate(finder.Issues)
 	finder.Errors.Index()
 
