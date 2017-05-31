@@ -2,6 +2,7 @@ package legacyfinder
 
 import (
 	"config"
+	"fileutil"
 	"issuefinder"
 	"log"
 	"os"
@@ -45,13 +46,13 @@ func (ws watcherStatus) String() string {
 
 // NewWatcher creates a legacy issue Watcher.  Watch() must be called to begin
 // looking for issues.
-func NewWatcher(conf *config.Config, webroot string) *Watcher {
+func NewWatcher(conf *config.Config, webroot string, cachePath string) *Watcher {
 	// We want our first load to reuse the existing cache if available, because
 	// an app restart usually happens very shortly after a crash / server reboot
 	return &Watcher{
-		Finder: &Finder{finder: issuefinder.New(), config: conf, webroot: webroot},
+		Finder:          &Finder{finder: issuefinder.New(), config: conf, webroot: webroot, tempdir: cachePath},
 		lastFullRefresh: time.Now(),
-		done:   make(chan bool),
+		done:            make(chan bool),
 	}
 }
 
@@ -67,6 +68,18 @@ func (w *Watcher) IssueFinder() *issuefinder.Finder {
 // read access.
 func (w *Watcher) Watch(interval time.Duration) {
 	w.Lock()
+
+	// If a cache file is available, use it, but we'll still be refreshing data
+	// immediately; this just gets the watcher up and running more quickly
+	var cacheFile = filepath.Join(w.tempdir, "finder.cache")
+	if cacheFile != "" && fileutil.Exists(cacheFile) {
+		var finder, err = issuefinder.Deserialize(cacheFile)
+		if err != nil {
+			log.Fatalf("Unable to deserialize the cache file %#v: %s", cacheFile, err)
+		}
+		w.finder = finder
+	}
+
 	if w.status&running != 0 {
 		log.Printf("WARNING: Trying to watch issues on an in-progress finder (status: %s)", w.status)
 		w.Unlock()
@@ -80,6 +93,10 @@ func (w *Watcher) Watch(interval time.Duration) {
 		if time.Since(lastRefresh) > interval {
 			w.refresh()
 			lastRefresh = time.Now()
+			var err = w.finder.Serialize(cacheFile)
+			if err != nil {
+				log.Printf("WARNING: Unable to cache to %#v: %s", cacheFile, err)
+			}
 		}
 		time.Sleep(time.Second * 1)
 
@@ -128,11 +145,6 @@ func (w *Watcher) cleanupTempDir() {
 // makeTempDir creates the temporary directory for httpcache to use.  This does
 // nothing if a temporary directory already exists.
 func (w *Watcher) makeTempDir() {
-	if w.tempdir != "" {
-		return
-	}
-
-	w.tempdir = filepath.Join(os.TempDir(), "p2cgo", "cache")
 	var err = os.MkdirAll(w.tempdir, 0700)
 	if err != nil {
 		log.Printf("ERROR: unable to create legacyfinder.Watcher's temp dir: %s", err)

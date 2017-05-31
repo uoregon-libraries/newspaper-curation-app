@@ -7,6 +7,7 @@ import (
 	"cmd/server/internal/sftphandler"
 	"config"
 	"db"
+	"fileutil"
 	"fmt"
 	"legacyfinder"
 	"log"
@@ -33,6 +34,7 @@ var opts struct {
 	Bind           string `long:"bind" description:"Bind address, usually safe to leave blank"`
 	Debug          bool   `long:"debug" description:"Enables debug mode for testing different users"`
 	ChronamRoot    string `long:"chronam-web-root" description:"Full URL to live site; e.g. http://oregonnews.uoregon.edu" required:"true"`
+	CachePath      string `long:"cache-path" description:"Location to cache scanned results across startups" required:"true"`
 	Webroot        string `long:"webroot" description:"The base path to the app if it isn't just '/'"`
 	ParentWebroot  string `long:"parent-webroot" description:"The base path to the parent app" required:"true"`
 	StaticFilePath string `long:"static-files" description:"Path on disk to static JS/CSS/images" required:"true"`
@@ -50,6 +52,10 @@ func getConf() {
 		fmt.Fprintf(os.Stderr, "Error: %s\n\n", err)
 		p.WriteHelp(os.Stderr)
 		os.Exit(1)
+	}
+
+	if !fileutil.IsDir(opts.CachePath) {
+		log.Fatalf("ERROR: --cache-path %#v is not a valid directory", opts.CachePath)
 	}
 
 	Conf, err = config.Parse(opts.ConfigFile)
@@ -99,7 +105,7 @@ func startServer() {
 	var staticPrefix = path.Join(hp, "static")
 	r.NewRoute().PathPrefix(staticPrefix).Handler(http.StripPrefix(staticPrefix, fileServer))
 
-	var watcher = legacyfinder.NewWatcher(Conf, opts.ChronamRoot)
+	var watcher = legacyfinder.NewWatcher(Conf, opts.ChronamRoot, opts.CachePath)
 	go watcher.Watch(5 * time.Minute)
 	sftphandler.Setup(r, path.Join(hp, "sftp"), Conf.MasterPDFUploadPath)
 	findhandler.Setup(r, path.Join(hp, "search-issues"), watcher)
@@ -111,9 +117,9 @@ func startServer() {
 				"several minutes if the issues haven't been scanned in a while.  If this " +
 				"is the first time scanning the live site, expect 10 minutes or more to " +
 				"build the web JSON cache.")
-		} else if waited / 30 > lastWaited {
+		} else if waited/30 > lastWaited {
 			log.Println("Still waiting...")
-			lastWaited = waited/30
+			lastWaited = waited / 30
 		}
 		waited++
 		time.Sleep(1 * time.Second)
