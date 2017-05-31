@@ -37,13 +37,18 @@ func rsp(w http.ResponseWriter, req *http.Request) *responder.Responder {
 	return r
 }
 
-// HomeHandler shows the search form
-func HomeHandler(w http.ResponseWriter, req *http.Request) {
-	var r = rsp(w, req)
-	r.Vars.Title = "Find issues"
+// assignUniqueTitles puts a title list into the given responder's data
+func assignUniqueTitles(r *responder.Responder) {
 	var titles = watcher.IssueFinder().Titles.Unique()
 	titles.SortByName()
 	r.Vars.Data["Titles"] = titles
+}
+
+// HomeHandler shows the search form
+func HomeHandler(w http.ResponseWriter, req *http.Request) {
+	var r = rsp(w, req)
+	assignUniqueTitles(r)
+	r.Vars.Title = "Find issues"
 	r.Render(HomeTmpl)
 }
 
