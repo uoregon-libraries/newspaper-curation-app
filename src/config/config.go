@@ -18,7 +18,7 @@ import (
 type Config struct {
 	// DatabaseConnect is the all-in-one database connection value build from the
 	// individual database settings
-	DatabaseConnect                string
+	DatabaseConnect string
 
 	// Paths to the various places we expect to find files
 	MasterPDFUploadPath            string `setting:"MASTER_PDF_UPLOAD_PATH" type:"path"`

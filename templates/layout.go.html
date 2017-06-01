@@ -1,4 +1,4 @@
-{{define "header"}}
+{{define "layout"}}
 <!DOCTYPE html>
 <html>
   <head>
@@ -33,7 +33,13 @@
               {{end}}
 
               {{if .User.PermittedTo "sftp report"}}
-              <li><a href="{{.Webroot}}">SFTP Reports</a></li>
+              <!-- This URL needs to match the router path in the server's main.go -->
+              <li><a href="{{.Webroot}}/sftp">SFTP Reports</a></li>
+              {{end}}
+
+              {{if .User.PermittedTo "search workflow issues"}}
+              <!-- This URL needs to match the router path in the server's main.go -->
+              <li><a href="{{.Webroot}}/search-issues">Issue Finder</a></li>
               {{end}}
 
               {{if .User.PermittedTo "manage mocs"}}
@@ -72,9 +78,7 @@
           </div>
         {{- end}}
 
-{{end}}
-
-{{define "footer"}}
+        {{block "content" .}}{{end}}
       </div>
     </div>
 

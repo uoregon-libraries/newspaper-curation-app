@@ -26,6 +26,14 @@ func IsFile(path string) bool {
 	return info.Mode().IsRegular()
 }
 
+// Exists returns true if the given path exists and has no errors.  All errors
+// are treated as the path not existing in order to avoid trying to determine
+// what to do to handle the unknown errors which may be returned.
+func Exists(path string) bool {
+	_, err := os.Stat(path)
+	return err == nil
+}
+
 // Readdir wraps os.File's Readdir to handle common operations we need for
 // getting a list of file info structures
 func Readdir(path string) ([]os.FileInfo, error) {
@@ -65,22 +73,25 @@ func SortFileInfos(list []os.FileInfo) {
 	sort.Sort(byName(list))
 }
 
-// FindDirectories returns a list of all directories or symlinks to directories
-// within the given root
-func FindDirectories(root string) ([]string, error) {
+// FindIf iterates over all directory entries in the given path, running the
+// given selector on each, and returning a list of those for which the selector
+// returned true.
+//
+// Symlinks are resolved to their real file for the selector function, but the
+// path added to the return will be a path to the symlink, not its target.
+//
+// Filesystem errors, including permission errors, will cause FindIf to halt
+// and return an empty list and the error.
+func FindIf(path string, selector func(i os.FileInfo) bool) ([]string, error) {
 	var results []string
-	var items, err = ReaddirSorted(root)
+	var items, err = ReaddirSorted(path)
 	if err != nil {
-		// Don't fail on permission errors, just skip the dir
-		if os.IsPermission(err) {
-			return nil, nil
-		}
 		return nil, err
 	}
 
 	for _, i := range items {
 		var fName = i.Name()
-		var path = filepath.Join(root, fName)
+		var path = filepath.Join(path, fName)
 		var realPath = path
 		if i.Mode()&os.ModeSymlink != 0 {
 			realPath, err = os.Readlink(path)
@@ -90,22 +101,18 @@ func FindDirectories(root string) ([]string, error) {
 			// Symlinks kind of suck - they can be absolute or relative, and if
 			// they're relative we have to make them absolute....
 			if !filepath.IsAbs(realPath) {
-				realPath = filepath.Join(root, realPath)
+				realPath = filepath.Join(path, realPath)
 			}
 
 			i, err = os.Stat(realPath)
 			if err != nil {
-				// Don't fail on permission errors, just skip the file/dir
-				if os.IsPermission(err) {
-					continue
-				}
 				return nil, err
 			}
 		}
 		realPath = filepath.Clean(realPath)
 
-		// Skip anything we can't descend into
-		if !i.IsDir() {
+		// See if the selector allows this file to be put in the list
+		if !selector(i) {
 			continue
 		}
 
@@ -113,6 +120,23 @@ func FindDirectories(root string) ([]string, error) {
 	}
 
 	return results, nil
+}
+
+// FindFiles returns a list of all entries in a given path which are *not*
+// directories or symlinks to directories.  For the purpose of this function,
+// we define "files" as "things from which we can directly read data".
+func FindFiles(path string) ([]string, error) {
+	return FindIf(path, func(i os.FileInfo) bool {
+		return !i.IsDir()
+	})
+}
+
+// FindDirectories returns a list of all directories or symlinks to directories
+// within the given path
+func FindDirectories(path string) ([]string, error) {
+	return FindIf(path, func(i os.FileInfo) bool {
+		return i.IsDir()
+	})
 }
 
 // Find traverses the filesystem to the given depth, returning only the items

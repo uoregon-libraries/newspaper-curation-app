@@ -6,6 +6,8 @@ import (
 	"strings"
 )
 
+// DB holds the persistent magicsql.DB object, and must be set externally in
+// order for this package's database operations to succeed
 var DB *magicsql.DB
 
 // User identifies a person who has logged in via Apache's auth
@@ -13,11 +15,14 @@ type User struct {
 	ID          int `sql:",primary"`
 	Login       string
 	RolesString string `sql:"roles"`
-	Guest       bool `sql:"-"`
+	Guest       bool   `sql:"-"`
 	roles       []*Role
 	privileges  []*Privilege
 }
 
+// EmptyUser gives us a way to avoid returning a nil *User while still being
+// able to detect a user not being found.  Also lets us use any User functions
+// without risking a panic.
 var EmptyUser = &User{Login: "N/A", Guest: true}
 
 // New returns an empty user with no roles or ID
@@ -25,6 +30,8 @@ func New(login string) *User {
 	return &User{Login: login}
 }
 
+// FindByLogin looks for a user whose login name is the given string.  The
+// package variable DB must be set before this is called.
 func FindByLogin(l string) *User {
 	var users []*User
 	var op = DB.Operation()

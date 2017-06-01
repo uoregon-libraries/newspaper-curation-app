@@ -1,9 +1,22 @@
-.publisher-with-errors {
+.title-with-errors {
   background: #FEE;
 }
-.publisher-with-errors .publisher-link {
+.title-with-errors .title-link {
   float: left;
   width: 200px;
+}
+
+.issue-error-list {
+  background: #FEE;
+  font-weight: bold;
+}
+
+.issue-error-list ul li {
+  font-weight: normal;
+}
+
+.issue-new {
+  font-style: italic;
 }
 
 /* Make alerts more readable */

@@ -23,6 +23,7 @@ func init() {
 	newPrivilege("modify users", RoleUserManager)
 	newPrivilege("view title sftp", RoleTitleManager)
 	newPrivilege("sftp report", RoleAny)
+	newPrivilege("search workflow issues", RoleWorkflowManager)
 	newPrivilege("queue sftp workflow", RoleWorkflowManager)
 	newPrivilege("modify title sftp")
 	newPrivilege("list audit logs")
