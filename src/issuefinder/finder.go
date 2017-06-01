@@ -63,11 +63,19 @@ type Finder struct {
 	Titles    schema.TitleList
 	Issues    schema.IssueList
 	Errors    *ErrorList
+
+	// This little var helps us answer the age-old question: for a given unique
+	// issue, where is it in the workflow?
+	IssueNamespace map[*schema.Issue]Namespace
 }
 
 // New instantiates a new Finder read to spawn searchers
 func New() *Finder {
-	return &Finder{Searchers: make(map[Namespace]*Searcher), Errors: &ErrorList{}}
+	return &Finder{
+		Searchers: make(map[Namespace]*Searcher),
+		Errors: &ErrorList{},
+		IssueNamespace: make(map[*schema.Issue]Namespace),
+	}
 }
 
 // NewSearcher instantiates a Searcher on its own, and typically isn't needed,
@@ -134,6 +142,7 @@ func (f *Finder) aggregate(s *Searcher) {
 	}
 	for _, i := range s.Issues {
 		f.Issues = append(f.Issues, i)
+		f.IssueNamespace[i] = s.Namespace
 	}
 	for _, e := range s.Errors.Errors {
 		f.Errors.Append(e)
