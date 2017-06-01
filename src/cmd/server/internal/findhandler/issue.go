@@ -1,6 +1,7 @@
 package findhandler
 
 import (
+	"fmt"
 	"schema"
 )
 
@@ -10,7 +11,7 @@ type Issue struct {
 	*schema.Issue
 }
 
-// DateString returns the issue date in the format we use for directory names
-func (i *Issue) DateString() string {
-	return i.Date.Format("2006-01-02")
+// DateEdition returns the issue date and edition in a user-friendly way
+func (i *Issue) DateEdition() string {
+	return fmt.Sprintf("%s, ed. %d", i.Date.Format("2006-01-02"), i.Edition)
 }

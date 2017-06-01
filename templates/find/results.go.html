@@ -40,8 +40,7 @@
 <table class="table table-striped table-bordered table-condensed sortable">
   <thead>
   <tr>
-    <th scope="col" class="sort-alpha">Date</th>
-    <th scope="col" class="sort-alpha">Edition</th>
+    <th scope="col" class="sort-alpha">Date / Edition</th>
     <th scope="col" class="sort-alpha">Workflow Location</th>
     <th scope="col" class="sort-alpha">Raw File / Web Location</th>
   </tr>
@@ -50,8 +49,7 @@
   <tbody>
   {{range .Data.Issues}}
   <tr>
-    <td>{{.DateString}}</td>
-    <td>{{.Edition}}</td>
+    <td>{{.DateEdition}}</td>
     <td>Not Implemented Yet</td>
     <td>{{.Location}}</td>
   </tr>
