@@ -83,7 +83,8 @@ func getIssues(k *issuesearch.Key) []*Issue {
 	var schemaIssues = lookup.Issues(k)
 	var issues = make([]*Issue, len(schemaIssues))
 	for i, issue := range schemaIssues {
-		issues[i] = &Issue{issue}
+		issues[i] = &Issue{Issue: issue}
+		issues[i].Namespace = watcher.IssueFinder().IssueNamespace[issue]
 	}
 	return issues
 }

@@ -41,7 +41,7 @@
   <thead>
   <tr>
     <th scope="col" class="sort-alpha">Date / Edition</th>
-    <th scope="col" class="sort-alpha">Workflow Location</th>
+    <th scope="col" class="sort-alpha">Workflow Step</th>
     <th scope="col" class="sort-alpha">Raw File / Web Location</th>
   </tr>
   </thead>
@@ -50,7 +50,7 @@
   {{range .Data.Issues}}
   <tr>
     <td>{{.DateEdition}}</td>
-    <td>Not Implemented Yet</td>
+    <td>{{.WorkflowStep}}</td>
     <td>{{.Location}}</td>
   </tr>
   {{end}}
