@@ -1,3 +1,7 @@
+body {
+  padding-bottom: 70px;
+}
+
 .title-with-errors {
   background: #FEE;
 }
