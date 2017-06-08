@@ -11,37 +11,18 @@ Compilation requires [Go](https://golang.org/dl/) and gb (`go get github.com/con
 server
 ---
 
-This tool currently just reports likely problems with SFTP uploads.  It is
-information-only, and doesn't yet have any useful way to actually contact
-publishers, reject bad issues, etc.
+This tool currently adds two areas to the site: an SFTP reportin tool, and an
+issue finder.  Both tools are information-only, and don't yet have any useful
+way to actually contact publishers, reject bad issues, etc.
 
 I am planning to fix the SFTP part up to add queuing from the web to move SFTP
 issues somewhere else where a regular job would run the derivative process and
 move the issues forward in the workflow.  I'm also planning something to reject
 issues in some way, but it hasn't been determined the best way to handle that.
 
-I'm also hoping to make "server" more than just sftp reporting.  At the least,
-we want a way to find issues' locations within the workflow and see what
-problems have been found on the filesystem; basically a web interface into the
-find-issues command.
-
 ### Usage
 
-For use in production, the following bash works.  Port 12345 is forwarded in
-Apache so that /odnp-admin/sftpreport hits this app instead of the PHP app.  If
-things can slowly migrate to this app, we'll eventually just forward
-/odnp-admin to this app.  If we can't migrate everything, we will want to
-instead pull this app's functionality into PHP.
-
-    # I compiled the server and renamed bin/sftp-report to "server111" so it's
-    # clear we're running v1.1.1
-    ./server111 \
-        -c /home/jechols/projects/pdf-to-chronam/src/config/settings.py \
-        -p 12345 \
-        --webroot=/odnp-admin/sftpreport \
-        --parent-webroot=/odnp-admin \
-        --static-files $(pwd)/static \
-        $(pwd)/templates
+See `dev-server.sh` or `rhel7/p2cgo.service`
 
 Issue Finder
 ---
