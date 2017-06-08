@@ -20,10 +20,12 @@ sudo rm /usr/local/p2c-go/templates/ -rf
 echo Copying in the new stuff
 src=$(pwd)
 sudo cp $src/bin/server /usr/local/p2c-go/server
-sudo cp $src/p2cgo.service /usr/local/p2c-go/
+sudo cp $src/rhel7/p2cgo.service /usr/local/p2c-go/
 sudo cp -r $src/templates/ /usr/local/p2c-go/
 sudo cp -r $src/static/ /usr/local/p2c-go/
 
 echo Doing a daemon reload and starting the service
 sudo systemctl daemon-reload
 sudo systemctl start p2cgo
+
+git co master
