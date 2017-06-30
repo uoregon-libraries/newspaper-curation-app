@@ -42,6 +42,13 @@ func CanViewSFTPIssues(h http.HandlerFunc) http.Handler {
 	return MustHavePrivilege("sftp report", h)
 }
 
+// CanWorkflowSFTPIssues is an alias for the privilege-checking handlerfunc
+// wrapper, and tells us if a user is allowed to move SFTP issues forward,
+// reject them, etc.
+func CanWorkflowSFTPIssues(h http.HandlerFunc) http.Handler {
+	return MustHavePrivilege("sftp workflow", h)
+}
+
 // CanSearchIssues is an alias for the privilege-checking handlerfunc wrapper
 func CanSearchIssues(h http.HandlerFunc) http.Handler {
 	return MustHavePrivilege("search workflow issues", h)

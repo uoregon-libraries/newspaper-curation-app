@@ -39,6 +39,7 @@ func Setup(r *mux.Router, sftpWebPath, sftpDiskPath string) {
 	s.Path("").Handler(responder.CanViewSFTPIssues(HomeHandler))
 	s.Path("/{lccn}").Handler(responder.CanViewSFTPIssues(TitleHandler))
 	s.Path("/{lccn}/{issue}").Handler(responder.CanViewSFTPIssues(IssueHandler))
+	s.Path("/{lccn}/{issue}/workflow/{action}").Methods("POST").Handler(responder.CanWorkflowSFTPIssues(IssueWorkflowHandler))
 	s.Path("/{lccn}/{issue}/{filename}").Handler(responder.CanViewSFTPIssues(PDFFileHandler))
 
 	sftpSearcher = newSFTPSearcher(sftpDiskPath)
@@ -142,4 +143,17 @@ func IssueHandler(w http.ResponseWriter, req *http.Request) {
 	r.Vars.Data["Issue"] = issue
 	r.Vars.Title = fmt.Sprintf("SFTP PDFs for %s, issue %s", issue.Title.Name, issue.Date.Format("2006-01-02"))
 	r.Render(IssueTmpl)
+}
+
+// IssueWorkflowHandler handles SFTP workflow tasks: moving issues into the
+// holding tank for derivative processing and renaming issues' folders to
+// "*-error" with a user-defined message when issues are manually flagged
+func IssueWorkflowHandler(w http.ResponseWriter, req *http.Request) {
+	var r = responder.Response(w, req)
+	var issue = findIssue(r)
+	if issue == nil {
+		return
+	}
+
+	panic("Not implemented")
 }
