@@ -37,8 +37,8 @@ func GetUserLogin(w http.ResponseWriter, req *http.Request) string {
 	return l
 }
 
-// CanViewSFTPReport is an alias for the privilege-checking handlerfunc wrapper
-func CanViewSFTPReport(h http.HandlerFunc) http.Handler {
+// CanViewSFTPIssues is an alias for the privilege-checking handlerfunc wrapper
+func CanViewSFTPIssues(h http.HandlerFunc) http.Handler {
 	return MustHavePrivilege(user.FindPrivilege("sftp report"), h)
 }
 

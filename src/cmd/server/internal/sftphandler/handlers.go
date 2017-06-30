@@ -36,10 +36,10 @@ var (
 func Setup(r *mux.Router, sftpWebPath, sftpDiskPath string) {
 	basePath = sftpWebPath
 	var s = r.PathPrefix(basePath).Subrouter()
-	s.Path("").Handler(responder.CanViewSFTPReport(HomeHandler))
-	s.Path("/{lccn}").Handler(responder.CanViewSFTPReport(TitleHandler))
-	s.Path("/{lccn}/{issue}").Handler(responder.CanViewSFTPReport(IssueHandler))
-	s.Path("/{lccn}/{issue}/{filename}").Handler(responder.CanViewSFTPReport(PDFFileHandler))
+	s.Path("").Handler(responder.CanViewSFTPIssues(HomeHandler))
+	s.Path("/{lccn}").Handler(responder.CanViewSFTPIssues(TitleHandler))
+	s.Path("/{lccn}/{issue}").Handler(responder.CanViewSFTPIssues(IssueHandler))
+	s.Path("/{lccn}/{issue}/{filename}").Handler(responder.CanViewSFTPIssues(PDFFileHandler))
 
 	sftpSearcher = newSFTPSearcher(sftpDiskPath)
 	Layout = responder.Layout.Clone()
