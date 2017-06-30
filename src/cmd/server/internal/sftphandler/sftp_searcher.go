@@ -33,7 +33,7 @@ func newSFTPSearcher(path string) *SFTPSearcher {
 	return &SFTPSearcher{searcher: issuefinder.NewSearcher(issuefinder.SFTPUpload, path)}
 }
 
-// sftpLoad checks the time since the last load, and loads issues from the
+// load checks the time since the last load, and loads issues from the
 // filesystem if necessary.  If issues were loaded, the various types are
 // decorated as needed for web presentation.
 func (s *SFTPSearcher) load() error {
