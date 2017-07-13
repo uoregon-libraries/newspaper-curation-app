@@ -51,7 +51,14 @@
   <tr>
     <td>{{.DateEdition}}</td>
     <td>{{.WorkflowStep}}</td>
-    <td>{{.Location}}</td>
+    <td>
+      {{if .Batch}}
+        <p>{{.Location}}</p>
+        <p>Batch: {{.Batch.Fullname}}</p>
+      {{else}}
+        {{.Location}}
+      {{end}}
+    </td>
   </tr>
   {{end}}
   </tbody>
