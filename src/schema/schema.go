@@ -146,7 +146,7 @@ func trimCommonPrefixes(s string) string {
 // names are the same
 func (list TitleList) SortByName() {
 	sort.Slice(list, func(i, j int) bool {
-		var a, b = trimCommonPrefixes(list[i].Name), trimCommonPrefixes(list[j].Name)
+		var a, b = strings.ToLower(trimCommonPrefixes(list[i].Name)), strings.ToLower(trimCommonPrefixes(list[j].Name))
 
 		if a == b {
 			a, b = list[i].Location, list[j].Location
