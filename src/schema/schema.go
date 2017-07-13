@@ -130,11 +130,24 @@ func (t *Title) GenericTitle() *Title {
 // identifying a unique list of all titles
 type TitleList []*Title
 
+// trimCommonPrefixes strips "The", "A", and "An" from the string if they're at
+// the beginning, and removes leading spaces
+func trimCommonPrefixes(s string) string {
+		s = strings.TrimPrefix(s, "The")
+		s = strings.TrimPrefix(s, "the")
+		s = strings.TrimPrefix(s, "A")
+		s = strings.TrimPrefix(s, "a")
+		s = strings.TrimPrefix(s, "An")
+		s = strings.TrimPrefix(s, "an")
+		return strings.TrimSpace(s)
+}
+
 // SortByName sorts the titles by their name, using location and lccn when
 // names are the same
 func (list TitleList) SortByName() {
 	sort.Slice(list, func(i, j int) bool {
-		var a, b = list[i].Name, list[j].Name
+		var a, b = trimCommonPrefixes(list[i].Name), trimCommonPrefixes(list[j].Name)
+
 		if a == b {
 			a, b = list[i].Location, list[j].Location
 		}
