@@ -192,6 +192,9 @@ func (w *Watcher) refresh() {
 	// This is supposed to happen in the background, so an error can only be
 	// reported; we can't do much else....
 	if err != nil {
+		w.Lock()
+		w.status &= ^refreshing
+		w.Unlock()
 		log.Printf("ERROR: unable to refresh legacyfinder: %s", err)
 		return
 	}
