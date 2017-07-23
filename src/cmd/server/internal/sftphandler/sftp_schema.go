@@ -98,13 +98,13 @@ func (t *Title) Link() template.HTML {
 // Issue wraps a schema.Issue for web presentation
 type Issue struct {
 	*schema.Issue
-	Slug        string
-	Title       *Title
-	Errors      Errors
-	ChildErrors int
-	PDFs        []*PDF
-	PDFLookup   map[string]*PDF
-	Modified    time.Time
+	Slug        string          // Short, URL-friendly identifier for an issue
+	Title       *Title          // Title to which this issue belongs
+	Errors      Errors          // List of errors automatically identified for this issue
+	ChildErrors int             // Count of child errors for use in the templates
+	PDFs        []*PDF          // List of "PDFs" - which are actually any associated files in the sftp issue's dir
+	PDFLookup   map[string]*PDF // Lookup for finding a PDF by its filename / slug
+	Modified    time.Time       // When this issue's most recent file was modified
 }
 
 func (i *Issue) decorateFiles(fileList []*schema.File) {
