@@ -6,6 +6,7 @@ package responder
 import (
 	"log"
 	"net/http"
+	"time"
 	"user"
 	"version"
 	"web/tmpl"
@@ -52,8 +53,13 @@ func (r *Responder) injectDefaultTemplateVars() {
 // Render uses the responder's data to render the given template
 func (r *Responder) Render(t *tmpl.Template) {
 	r.injectDefaultTemplateVars()
+	var cookie, err = r.Request.Cookie("Alert")
+	if err == nil && cookie.Value != "" {
+		r.Vars.Alert = cookie.Value
+		http.SetCookie(r.Writer, &http.Cookie{Name: "Alert", Value: "", Expires: time.Time{}, Path: "/"})
+	}
 
-	var err = t.Execute(r.Writer, r.Vars)
+	err = t.Execute(r.Writer, r.Vars)
 	if err != nil {
 		log.Printf("ERROR: Unable to render template %#v: %s", t.Name, err)
 	}
