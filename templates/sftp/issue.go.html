@@ -7,7 +7,18 @@
     <li>{{.}}</li>
   {{end}}
   </ul>
+{{else}}
+  <form action="{{.Data.Issue.WorkflowPath "queue"}}" method="POST">
+    <p>No problems detected</p>
+    {{if .Data.Issue.IsNew}}
+      <p>This issue is relatively new and may get more uploads</p>
+    {{else if .User.PermittedTo "sftp workflow"}}
+      <p><button type="submit">Queue Issue</button> for derivative generation</p>
+    {{end}}
+  </form>
 {{end}}
+
+<hr />
 
 <table class="table table-striped table-bordered table-condensed sortable">
   <thead>
