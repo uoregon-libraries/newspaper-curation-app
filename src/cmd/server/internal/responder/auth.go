@@ -2,6 +2,7 @@ package responder
 
 import (
 	"cmd/server/internal/settings"
+	"log"
 	"net/http"
 	"time"
 	"user"
@@ -22,8 +23,10 @@ func GetUserLogin(w http.ResponseWriter, req *http.Request) string {
 		if l == "nil" {
 			l = ""
 			http.SetCookie(w, &http.Cookie{Name: "debuguser", Value: "", Expires: time.Time{}})
-		} else {
+			log.Printf(`Explicit request to clear "debuguser" cookie`)
+		} else if l != "" {
 			http.SetCookie(w, &http.Cookie{Name: "debuguser", Value: l})
+			log.Printf(`Setting cookie: debuguser="%s"`, l)
 		}
 	}
 
