@@ -22,10 +22,10 @@ func GetUserLogin(w http.ResponseWriter, req *http.Request) string {
 		}
 		if l == "nil" {
 			l = ""
-			http.SetCookie(w, &http.Cookie{Name: "debuguser", Value: "", Expires: time.Time{}})
+			http.SetCookie(w, &http.Cookie{Name: "debuguser", Value: "", Expires: time.Time{}, Path: "/"})
 			log.Printf(`Explicit request to clear "debuguser" cookie`)
 		} else if l != "" {
-			http.SetCookie(w, &http.Cookie{Name: "debuguser", Value: l})
+			http.SetCookie(w, &http.Cookie{Name: "debuguser", Value: l, Path: "/"})
 			log.Printf(`Setting cookie: debuguser="%s"`, l)
 		}
 	}
