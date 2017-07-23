@@ -148,6 +148,9 @@ func IssueHandler(w http.ResponseWriter, req *http.Request) {
 // IssueWorkflowHandler handles SFTP workflow tasks: moving issues into the
 // holding tank for derivative processing and renaming issues' folders to
 // "*-error" with a user-defined message when issues are manually flagged
+//
+// All destructive operations run in the background, so a flag is set to tell
+// the UI to consider the issue "pending workflow" until the next refresh
 func IssueWorkflowHandler(w http.ResponseWriter, req *http.Request) {
 	var r = responder.Response(w, req)
 	var issue = findIssue(r)
@@ -155,5 +158,18 @@ func IssueWorkflowHandler(w http.ResponseWriter, req *http.Request) {
 		return
 	}
 
-	panic("Not implemented")
+	var action = mux.Vars(r.Request)["action"]
+	switch action {
+	case "queue":
+		queueIssueForDerivatives(issue)
+		http.SetCookie(w, &http.Cookie{
+			Name:  "Alert",
+			Value: fmt.Sprintf("Issue '%s' queued for processing", issue.Slug),
+			Path:  "/",
+		})
+		http.Redirect(w, req, TitlePath(issue.Title.Slug), http.StatusFound)
+	default:
+		r.Vars.Alert = fmt.Sprintf("Invalid workflow action %#v", action)
+		r.Render(responder.Empty)
+	}
 }

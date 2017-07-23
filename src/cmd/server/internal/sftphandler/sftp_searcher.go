@@ -62,6 +62,12 @@ func (s *SFTPSearcher) Titles() ([]*Title, error) {
 	return s.titles, nil
 }
 
+// ForceReload clears the last loaded time and refreshed the titles cache
+func (s *SFTPSearcher) ForceReload() {
+	s.lastLoaded = time.Time{}
+	s.Titles()
+}
+
 // TitleLookup returns the Title for a given LCCN
 func (s *SFTPSearcher) TitleLookup(lccn string) *Title {
 	s.Lock()
