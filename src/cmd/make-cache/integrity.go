@@ -26,6 +26,7 @@ func testIntegrity(finderA *issuefinder.Finder, cacheFile string) {
 	var finderB, err = issuefinder.Deserialize(cacheFile)
 	if err != nil {
 		integrityFail(fmt.Sprintf("Unable to deserialize the cached file: %s", err))
+		return
 	}
 
 	log.Printf("Testing deserialized finder against live finder")
