@@ -86,6 +86,7 @@ func (s *Searcher) findStandardIssuesForTitlePath(titlePath string, strict bool)
 	// order to catch other errors and aggregate the unknown titles' issues.
 	if title == nil {
 		title = &schema.Title{LCCN: titlePath}
+		s.addTitle(title)
 		s.newError(titlePath, fmt.Errorf("unable to find title %#v in database", titleName))
 	}
 
