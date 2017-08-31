@@ -34,6 +34,14 @@ func Exists(path string) bool {
 	return err == nil
 }
 
+// DoesNotExist is used when we need to be absolutely certain a path doesn't
+// exist, such as when a directory's existence means a duplicate operation
+// occurred.
+func DoesNotExist(path string) bool {
+	_, err := os.Stat(path)
+	return err != nil && os.IsNotExist(err)
+}
+
 // Readdir wraps os.File's Readdir to handle common operations we need for
 // getting a list of file info structures
 func Readdir(path string) ([]os.FileInfo, error) {

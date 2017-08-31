@@ -4,7 +4,91 @@ import (
 	"fmt"
 	"io"
 	"os"
+	"path/filepath"
 )
+
+// CopyDirectory attempts to copy all files from srcPath to dstPath
+// recursively.  dstPath must not exist.  Anything that isn't a file or a
+// directory returns an error.  This includes symlinks for now.  The operation
+// stops on the first error, and the partial copy is left in place.  Currently,
+// permissions are not preserved.
+func CopyDirectory(srcPath, dstPath string) error {
+	var err error
+
+	// Figure out absolute paths for clarity
+	srcPath, err = filepath.Abs(srcPath)
+	if err != nil {
+		return fmt.Errorf("source %q error: %s", srcPath, err)
+	}
+	dstPath, err = filepath.Abs(dstPath)
+	if err != nil {
+		return fmt.Errorf("destination %q error: %s", dstPath, err)
+	}
+
+	// Validate source exists and destination does not
+	if !Exists(srcPath) {
+		return fmt.Errorf("source %q does not exist", srcPath)
+	}
+	if !DoesNotExist(dstPath) {
+		return fmt.Errorf("destination %q already exists", dstPath)
+	}
+
+	// Destination parent must already exist
+	if !IsDir(filepath.Dir(dstPath)) {
+		return fmt.Errorf("destination's parent %q does not exist", dstPath)
+	}
+
+	// Get source path info and validate it's a directory
+	var srcInfo os.FileInfo
+	srcInfo, err = os.Stat(srcPath)
+	if err != nil {
+		return fmt.Errorf("source %q error: %s", srcPath, err)
+	}
+	if !srcInfo.IsDir() {
+		return fmt.Errorf("source %q is not a directory", srcPath)
+	}
+
+	return copyRecursive(srcPath, dstPath)
+}
+
+// copyRecursive is the actual file-copying function which CopyDirectory uses
+func copyRecursive(srcPath, dstPath string) error {
+	var err = os.MkdirAll(dstPath, 0700)
+	if err != nil {
+		return fmt.Errorf("unable to create directory %q: %s", dstPath, err)
+	}
+
+	var infos []os.FileInfo
+	infos, err = Readdir(srcPath)
+	if err != nil {
+		return fmt.Errorf("unable to read source directory %q: %s", srcPath, err)
+	}
+
+	for _, info := range infos {
+		var srcFull = filepath.Join(srcPath, info.Name())
+		var dstFull = filepath.Join(dstPath, info.Name())
+
+		var file = InfoToFile(info)
+		switch {
+		case file.IsDir():
+			err = copyRecursive(srcFull, dstFull)
+			if err != nil {
+				return err
+			}
+
+		case file.IsRegular():
+			err = copyFileContents(srcFull, dstFull)
+			if err != nil {
+				return fmt.Errorf("unable to copy %q to %q: %s", srcFull, dstFull, err)
+			}
+
+		default:
+			return fmt.Errorf("unable to copy special file %q", srcFull)
+		}
+	}
+
+	return nil
+}
 
 // CopyFile attempts to copy the bytes from src into dst, returning an error if
 // applicable.  Does not use os.Link regardless of where the two files reside,
