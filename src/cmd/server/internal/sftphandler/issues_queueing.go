@@ -44,6 +44,7 @@ func startPDFWorkflow(i *Issue, workflowPath string) {
 	var err = fileutil.CopyDirectory(i.Location, newLocation)
 	if err != nil {
 		log.Printf("ERROR - unable to copy directory; cannot queue issue: %s", err)
+		return
 	}
 	os.RemoveAll(i.Location)
 	i.Location = newLocation
