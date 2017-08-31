@@ -101,6 +101,8 @@ func getOpts() {
 			continue
 		}
 
+		// Just to be nice, let's strip dashes so it's easier to paste in dates
+		ik = strings.Replace(ik, "-", "", -1)
 		var searchKey, err = issuesearch.ParseSearchKey(ik)
 		if err != nil {
 			usageFail("Invalid issue search key %#v: %s", ik, err)
