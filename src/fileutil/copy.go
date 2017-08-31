@@ -1,6 +1,7 @@
 package fileutil
 
 import (
+	"hash/crc32"
 	"fmt"
 	"io"
 	"os"
@@ -82,12 +83,44 @@ func copyRecursive(srcPath, dstPath string) error {
 				return fmt.Errorf("unable to copy %q to %q: %s", srcFull, dstFull, err)
 			}
 
+			var srcChecksum, dstChecksum string
+			srcChecksum, err = CRC32(srcFull)
+			if err != nil {
+				return fmt.Errorf("unable to get source file's checksum: %s", err)
+			}
+			dstChecksum, err = CRC32(dstFull)
+			if err != nil {
+				return fmt.Errorf("unable to get destination file's checksum: %s", err)
+			}
+			if srcChecksum != dstChecksum {
+				return fmt.Errorf("checksum failure")
+			}
+
 		default:
 			return fmt.Errorf("unable to copy special file %q", srcFull)
 		}
 	}
 
 	return nil
+}
+
+// CRC32 returns the checksum of the given file.  This is intended for
+// verifying file copies immediately after the copy happens.  It should not be
+// relied upon to detect bitrot or malicious file changes.
+func CRC32(file string) (string, error) {
+	var f, err = os.Open(file)
+	if err != nil {
+		return "", err
+	}
+	defer f.Close()
+
+	var h = crc32.NewIEEE()
+	_, err = io.Copy(h, f)
+	if err != nil {
+		return "", err
+	}
+
+	return fmt.Sprintf("%x", h.Sum(nil)), nil
 }
 
 // CopyFile attempts to copy the bytes from src into dst, returning an error if
