@@ -66,8 +66,8 @@ func ParseBatchesListJSON(encoded []byte) (*BatchesListJSON, error) {
 	return bList, err
 }
 
-// ParseBatchesListJSON takes a pile of bytes and attempts to convert them into
-// a TitleJSON structure.  If json.Unmarshal has an error, it will be returned
+// ParseTitleJSON takes a pile of bytes and attempts to convert them into a
+// TitleJSON structure.  If json.Unmarshal has an error, it will be returned
 // along with a nil object.
 func ParseTitleJSON(encoded []byte) (*TitleJSON, error) {
 	var t = &TitleJSON{}

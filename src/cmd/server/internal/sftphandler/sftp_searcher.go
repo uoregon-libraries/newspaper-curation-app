@@ -49,7 +49,7 @@ func (s *SFTPSearcher) load() error {
 	return err
 }
 
-// GetSFTPTitles returns the list of titles in the SFTP directory
+// Titles returns the list of titles in the SFTP directory
 func (s *SFTPSearcher) Titles() ([]*Title, error) {
 	s.Lock()
 	defer s.Unlock()
@@ -62,6 +62,7 @@ func (s *SFTPSearcher) Titles() ([]*Title, error) {
 	return s.titles, nil
 }
 
+// TitleLookup returns the Title for a given LCCN
 func (s *SFTPSearcher) TitleLookup(lccn string) *Title {
 	s.Lock()
 	defer s.Unlock()

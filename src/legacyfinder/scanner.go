@@ -5,6 +5,7 @@ import (
 	"issuefinder"
 )
 
+// A Scanner is just a finder.  I don't recall why this was necessary.
 type Scanner struct {
 	*Finder
 }

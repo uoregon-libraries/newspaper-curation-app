@@ -34,6 +34,8 @@ func FindTitleByLCCN(lccn string) (*Title, error) {
 	return nil, nil
 }
 
+// FindTitleByDirectory looks up a title by the given directory string,
+// matching it against the sftp_dir field in the database
 func FindTitleByDirectory(dir string) (*Title, error) {
 	var err = LoadTitles()
 	if err != nil {

@@ -11,10 +11,25 @@ import (
 	"github.com/gorilla/mux"
 )
 
-var sftpSearcher *SFTPSearcher
-var basePath string
-var Layout *tmpl.TRoot
-var HomeTmpl, IssueTmpl, TitleTmpl *tmpl.Template
+var (
+	sftpSearcher *SFTPSearcher
+
+	// basePath is the path to the main sftp page.  Subpages all start with this path.
+	basePath string
+
+	// Layout is the base template, cloned from the responder's layout, from
+	// which all sftp pages are built
+	Layout *tmpl.TRoot
+
+	// HomeTmpl renders the main sftp reports page
+	HomeTmpl *tmpl.Template
+
+	// TitleTmpl renders the list of issues and a summary of errors for a given title
+	TitleTmpl *tmpl.Template
+
+	// IssueTmpl renders the list of PDFs and errors in a given issue
+	IssueTmpl *tmpl.Template
+)
 
 // Setup sets up all the SFTP-specific routing rules and does any other
 // init necessary for SFTP reports handling

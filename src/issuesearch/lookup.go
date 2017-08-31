@@ -39,6 +39,7 @@ func NewLookup() *Lookup {
 	}
 }
 
+// Populate stores the given list of issues in the various maps
 func (l *Lookup) Populate(issues schema.IssueList) {
 	for _, issue := range issues {
 		l.cacheIssueLookup(issue)

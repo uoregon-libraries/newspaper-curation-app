@@ -12,11 +12,22 @@ import (
 	"github.com/gorilla/mux"
 )
 
-var basePath string
-var watcher *legacyfinder.Watcher
-var Layout *tmpl.TRoot
-var ResultsTmpl *tmpl.Template
-var SearchFormAction string
+var (
+	// basePath is the path to the search handler.  If we add other search
+	// sub-pages, they'll start with this path.
+	basePath string
+	watcher *legacyfinder.Watcher
+
+	// Layout represents a cloned version of the responder's Layout template for
+	// building the issue finder's "sub-templates"
+	Layout *tmpl.TRoot
+
+	// ResultsTmpl is our search results page's template
+	ResultsTmpl *tmpl.Template
+
+	// SearchFormAction is the path used in the HTML form for hitting a search page
+	SearchFormAction string
+)
 
 // Setup sets up all the handler-specific routing, templates, etc
 func Setup(r *mux.Router, webPath string, w *legacyfinder.Watcher) {

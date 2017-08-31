@@ -8,8 +8,19 @@ import (
 	"web/webutil"
 )
 
-var Layout *tmpl.TRoot
-var InsufficientPrivileges, Empty *tmpl.Template
+var (
+	// Layout holds the base site layout template.  Handlers should clone and use
+	// this for parsing their specific page templates
+	Layout *tmpl.TRoot
+
+	// InsufficientPrivileges is a simple page to declare to a user they are not
+	// allowed to visit a certain page or perform a certain action
+	InsufficientPrivileges *tmpl.Template
+
+	// Empty holds a simple blank page for rendering the header/footer and often
+	// a simple alert-style message
+	Empty *tmpl.Template
+)
 
 // HTMLComment forces an HTML comment into the source (since Go templates strip these)
 func HTMLComment(s string) template.HTML {
