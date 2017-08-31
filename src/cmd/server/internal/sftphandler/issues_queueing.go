@@ -40,6 +40,7 @@ func startPDFWorkflow(i *Issue, workflowPath string) {
 	}
 
 	// Move the issue directory to the workflow path
+	os.MkdirAll(filepath.Dir(newLocation), 0700)
 	log.Println("INFO - Queueing %q to %q", i.Location, newLocation)
 	var err = fileutil.CopyDirectory(i.Location, newLocation)
 	if err != nil {
