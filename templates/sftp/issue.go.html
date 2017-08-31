@@ -11,8 +11,10 @@
   <form action="{{.Data.Issue.WorkflowPath "queue"}}" method="POST">
     <p>No problems detected</p>
     {{if .Data.Issue.IsNew}}
-      <p>This issue is relatively new and may get more uploads</p>
-    {{else if .User.PermittedTo "sftp workflow"}}
+      <p class="alert alert-warning">This issue is relatively new and may get more uploads - queue with care!</p>
+    {{end}}
+
+    {{if .User.PermittedTo "sftp workflow"}}
       <p><button type="submit">Queue Issue</button> for derivative generation</p>
     {{end}}
   </form>
