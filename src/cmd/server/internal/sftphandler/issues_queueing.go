@@ -6,9 +6,11 @@
 package sftphandler
 
 import (
+	"fileutil"
 	"log"
+	"os"
+	"path/filepath"
 	"sync"
-	"time"
 )
 
 // _issuesInProcess stores "true" for issue keys that are currently in the
@@ -16,29 +18,45 @@ import (
 var _issuesInProcess = make(map[string]bool)
 var iipm sync.Mutex
 
-func queueIssueForDerivatives(i *Issue) {
+func queueIssueForProcessing(i *Issue, workflowPath string) {
 	iipm.Lock()
 	_issuesInProcess[i.Key()] = true
 	iipm.Unlock()
 	sftpSearcher.ForceReload()
 
-	go processDerivatives(i)
+	go startPDFWorkflow(i, workflowPath)
 }
 
-// processDerivatives moves the issue out of the SFTP issue location and runs
-// the derivative processor
-func processDerivatives(i *Issue) {
-	// Move the issue directory
-	log.Println("Hiding issue for one minute")
-	time.Sleep(time.Minute)
+// startPDFWorkflow moves the issue out of the SFTP issue location into our "in
+// process" bucket, records the issue workflow information in the database, and
+// cleans the issue key out of the in-process map.  At this time, it's expected
+// that an external cron job will process the PDFs.
+func startPDFWorkflow(i *Issue, workflowPath string) {
+	// Verify new path will work
+	var newLocation = filepath.Join(workflowPath, i.Key())
+	if !fileutil.DoesNotExist(newLocation) {
+		log.Printf("ERROR - %q already exists; cannot queue issue", newLocation)
+		return
+	}
 
-	// Remove the issue key from the "issuesInProcess" map
+	// Move the issue directory to the workflow path
+	log.Println("INFO - Queueing %q to %q", i.Location, newLocation)
+	var err = fileutil.CopyDirectory(i.Location, newLocation)
+	if err != nil {
+		log.Printf("ERROR - unable to copy directory; cannot queue issue: %s", err)
+	}
+	os.RemoveAll(i.Location)
+	i.Location = newLocation
+
+	// TODO: Record the workflow info in the database for external processors
+	log.Printf("*** TODO: Record worklow in db ***")
+
+	// Reload the sftp issue list and remove the issue key from the
+	// "issuesInProcess" map
+	sftpSearcher.ForceReload()
 	iipm.Lock()
 	delete(_issuesInProcess, i.Key())
-	log.Println("Issue no longer hidden")
 	iipm.Unlock()
-
-	// Generate derivatives for the issue
 }
 
 // isIssueInProcess tells the caller if the given issue is being processed so

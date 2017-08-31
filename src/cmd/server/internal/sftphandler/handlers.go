@@ -14,6 +14,10 @@ import (
 var (
 	sftpSearcher *SFTPSearcher
 
+	// workflowPath stores the directory where issues are moved when queued
+	// for processing
+	workflowPath string
+
 	// basePath is the path to the main sftp page.  Subpages all start with this path.
 	basePath string
 
@@ -33,8 +37,9 @@ var (
 
 // Setup sets up all the SFTP-specific routing rules and does any other
 // init necessary for SFTP reports handling
-func Setup(r *mux.Router, sftpWebPath, sftpDiskPath string) {
+func Setup(r *mux.Router, sftpWebPath, sftpDiskPath, sftpWorkflowPath string) {
 	basePath = sftpWebPath
+	workflowPath = sftpWorkflowPath
 	var s = r.PathPrefix(basePath).Subrouter()
 	s.Path("").Handler(responder.CanViewSFTPIssues(HomeHandler))
 	s.Path("/{lccn}").Handler(responder.CanViewSFTPIssues(TitleHandler))
@@ -161,7 +166,7 @@ func IssueWorkflowHandler(w http.ResponseWriter, req *http.Request) {
 	var action = mux.Vars(r.Request)["action"]
 	switch action {
 	case "queue":
-		queueIssueForDerivatives(issue)
+		queueIssueForProcessing(issue, workflowPath)
 		http.SetCookie(w, &http.Cookie{
 			Name:  "Alert",
 			Value: fmt.Sprintf("Issue '%s' queued for processing", issue.Slug),
