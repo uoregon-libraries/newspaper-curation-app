@@ -89,9 +89,7 @@ func HomeHandler(w http.ResponseWriter, req *http.Request) {
 }
 
 func getIssues(k *issuesearch.Key) []*Issue {
-	var lookup = issuesearch.NewLookup()
-	lookup.Populate(watcher.IssueFinder().Issues)
-	var schemaIssues = lookup.Issues(k)
+	var schemaIssues = watcher.LookupIssues(k)
 	var issues = make([]*Issue, len(schemaIssues))
 	for i, issue := range schemaIssues {
 		issues[i] = &Issue{Issue: issue}
