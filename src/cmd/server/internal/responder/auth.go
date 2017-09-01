@@ -37,19 +37,27 @@ func GetUserLogin(w http.ResponseWriter, req *http.Request) string {
 	return l
 }
 
-// CanViewSFTPReport is an alias for the privilege-checking handlerfunc wrapper
-func CanViewSFTPReport(h http.HandlerFunc) http.Handler {
-	return MustHavePrivilege(user.FindPrivilege("sftp report"), h)
+// CanViewSFTPIssues is an alias for the privilege-checking handlerfunc wrapper
+func CanViewSFTPIssues(h http.HandlerFunc) http.Handler {
+	return MustHavePrivilege("sftp report", h)
+}
+
+// CanWorkflowSFTPIssues is an alias for the privilege-checking handlerfunc
+// wrapper, and tells us if a user is allowed to move SFTP issues forward,
+// reject them, etc.
+func CanWorkflowSFTPIssues(h http.HandlerFunc) http.Handler {
+	return MustHavePrivilege("sftp workflow", h)
 }
 
 // CanSearchIssues is an alias for the privilege-checking handlerfunc wrapper
 func CanSearchIssues(h http.HandlerFunc) http.Handler {
-	return MustHavePrivilege(user.FindPrivilege("search workflow issues"), h)
+	return MustHavePrivilege("search workflow issues", h)
 }
 
 // MustHavePrivilege denies access to pages if there's no logged-in user, or
 // there is a user but the user isn't allowed to perform a particular action
-func MustHavePrivilege(priv *user.Privilege, f http.HandlerFunc) http.Handler {
+func MustHavePrivilege(privName string, f http.HandlerFunc) http.Handler {
+	var priv = user.FindPrivilege(privName)
 	return http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
 		var u = user.FindByLogin(GetUserLogin(w, r))
 		var roles []*user.Role

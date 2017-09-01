@@ -58,7 +58,9 @@ func (t *Title) decorateIssues(issueList []*schema.Issue) {
 	t.Issues = make([]*Issue, 0)
 	t.IssueLookup = make(map[string]*Issue)
 	for _, i := range issueList {
-		t.appendSchemaIssue(i)
+		if !isIssueInProcess(i.Key()) {
+			t.appendSchemaIssue(i)
+		}
 	}
 }
 
@@ -151,6 +153,11 @@ func (i *Issue) IsNew() bool {
 func (i *Issue) Link() template.HTML {
 	var path = IssuePath(i.Title.Slug, i.Slug)
 	return template.HTML(fmt.Sprintf(`<a href="%s">%s</a>`, path, i.Date.Format("2006-01-02")))
+}
+
+// WorkflowPath returns the path to perform a workflow action against this issue
+func (i *Issue) WorkflowPath(action string) string {
+	return IssueWorkflowPath(i.Title.Slug, i.Slug, action)
 }
 
 // PDF wraps a schema.File for web presentation

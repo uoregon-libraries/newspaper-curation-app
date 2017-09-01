@@ -191,6 +191,12 @@ func (i *Issue) DateString() string {
 	return i.Date.Format("20060102")
 }
 
+// DateStringReadable is how we format dates for folder names and metadata
+// entry: YYYY-MM-DD
+func (i *Issue) DateStringReadable() string {
+	return i.Date.Format("2006-01-02")
+}
+
 // Key returns the unique string that represents this issue
 func (i *Issue) Key() string {
 	return fmt.Sprintf("%s/%s%02d", i.Title.LCCN, i.DateString(), i.Edition)

@@ -14,6 +14,10 @@ import (
 var (
 	sftpSearcher *SFTPSearcher
 
+	// workflowPath stores the directory where issues are moved when queued
+	// for processing
+	workflowPath string
+
 	// basePath is the path to the main sftp page.  Subpages all start with this path.
 	basePath string
 
@@ -33,13 +37,15 @@ var (
 
 // Setup sets up all the SFTP-specific routing rules and does any other
 // init necessary for SFTP reports handling
-func Setup(r *mux.Router, sftpWebPath, sftpDiskPath string) {
+func Setup(r *mux.Router, sftpWebPath, sftpDiskPath, sftpWorkflowPath string) {
 	basePath = sftpWebPath
+	workflowPath = sftpWorkflowPath
 	var s = r.PathPrefix(basePath).Subrouter()
-	s.Path("").Handler(responder.CanViewSFTPReport(HomeHandler))
-	s.Path("/{lccn}").Handler(responder.CanViewSFTPReport(TitleHandler))
-	s.Path("/{lccn}/{issue}").Handler(responder.CanViewSFTPReport(IssueHandler))
-	s.Path("/{lccn}/{issue}/{filename}").Handler(responder.CanViewSFTPReport(PDFFileHandler))
+	s.Path("").Handler(responder.CanViewSFTPIssues(HomeHandler))
+	s.Path("/{lccn}").Handler(responder.CanViewSFTPIssues(TitleHandler))
+	s.Path("/{lccn}/{issue}").Handler(responder.CanViewSFTPIssues(IssueHandler))
+	s.Path("/{lccn}/{issue}/workflow/{action}").Methods("POST").Handler(responder.CanWorkflowSFTPIssues(IssueWorkflowHandler))
+	s.Path("/{lccn}/{issue}/{filename}").Handler(responder.CanViewSFTPIssues(PDFFileHandler))
 
 	sftpSearcher = newSFTPSearcher(sftpDiskPath)
 	Layout = responder.Layout.Clone()
@@ -142,4 +148,33 @@ func IssueHandler(w http.ResponseWriter, req *http.Request) {
 	r.Vars.Data["Issue"] = issue
 	r.Vars.Title = fmt.Sprintf("SFTP PDFs for %s, issue %s", issue.Title.Name, issue.Date.Format("2006-01-02"))
 	r.Render(IssueTmpl)
+}
+
+// IssueWorkflowHandler handles SFTP workflow tasks: moving issues into the
+// holding tank for derivative processing and renaming issues' folders to
+// "*-error" with a user-defined message when issues are manually flagged
+//
+// All destructive operations run in the background, so a flag is set to tell
+// the UI to consider the issue "pending workflow" until the next refresh
+func IssueWorkflowHandler(w http.ResponseWriter, req *http.Request) {
+	var r = responder.Response(w, req)
+	var issue = findIssue(r)
+	if issue == nil {
+		return
+	}
+
+	var action = mux.Vars(r.Request)["action"]
+	switch action {
+	case "queue":
+		queueIssueForProcessing(issue, workflowPath)
+		http.SetCookie(w, &http.Cookie{
+			Name:  "Alert",
+			Value: fmt.Sprintf("Issue '%s' queued for processing", issue.Slug),
+			Path:  "/",
+		})
+		http.Redirect(w, req, TitlePath(issue.Title.Slug), http.StatusFound)
+	default:
+		r.Vars.Alert = fmt.Sprintf("Invalid workflow action %#v", action)
+		r.Render(responder.Empty)
+	}
 }

@@ -4,3 +4,4 @@
 /tmp
 /settings.py
 /.make.txt
+/db/dbconf.yml
