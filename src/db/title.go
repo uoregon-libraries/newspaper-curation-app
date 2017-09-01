@@ -63,6 +63,5 @@ func LoadTitles() error {
 	var op = DB.Operation()
 	op.Dbg = Debug
 	op.Select("titles", &Title{}).AllObjects(&allTitles)
-	LastError = op.Err()
-	return nil
+	return op.Err()
 }
