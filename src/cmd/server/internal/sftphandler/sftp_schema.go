@@ -12,10 +12,14 @@ import (
 )
 
 // Errors wraps an array of error strings for nicer display
-type Errors []string
+type Errors []template.HTML
 
 func (e Errors) String() string {
-	return strings.Join(e, "; ")
+	var sList = make([]string, len(e))
+	for i, s := range e {
+		sList[i] = string(s)
+	}
+	return strings.Join(sList, "; ")
 }
 
 // Title wraps a schema.Title with some extra information for web presentation.
@@ -79,11 +83,18 @@ func (t *Title) decorateErrors() {
 			continue
 		}
 		if e.Issue == nil && e.File == nil {
-			t.Errors = append(t.Errors, e.Error.Error())
+			t.Errors = append(t.Errors, safeError(e.Error.Error()))
 		} else {
 			t.ChildErrors++
 		}
 	}
+}
+
+// We want HTML-friendly errors for when we need to put in our own, but
+// we don't necessarily trust that the more internal errors won't have
+// things like "<" in 'em, so... this happens.
+func safeError(err string) template.HTML {
+	return template.HTML(template.HTMLEscapeString(err))
 }
 
 // Show returns true if the title has any issues or errors.  If there are no
@@ -136,7 +147,7 @@ func (i *Issue) decorateErrors() {
 		}
 
 		if e.File == nil {
-			i.Errors = append(i.Errors, e.Error.Error())
+			i.Errors = append(i.Errors, safeError(e.Error.Error()))
 		} else {
 			i.ChildErrors++
 		}
@@ -182,7 +193,7 @@ func (p *PDF) decorateErrors() {
 			continue
 		}
 
-		p.Errors = append(p.Errors, e.Error.Error())
+		p.Errors = append(p.Errors, safeError(e.Error.Error()))
 	}
 }
 
