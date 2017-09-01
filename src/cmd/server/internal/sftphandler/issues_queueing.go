@@ -55,10 +55,10 @@ func startPDFWorkflow(i *Issue, workflowPath string) {
 
 	// Reload the sftp issue list and remove the issue key from the
 	// "issuesInProcess" map
-	sftpSearcher.ForceReload()
 	iipm.Lock()
 	delete(_issuesInProcess, i.Key())
 	iipm.Unlock()
+	sftpSearcher.ForceReload()
 }
 
 // isIssueInProcess tells the caller if the given issue is being processed so
