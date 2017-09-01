@@ -68,7 +68,8 @@ type Issue struct {
 
 	// Workflow data
 	Location         string
-	WorkflowStep     WorkflowStep
+	WorkflowStepInt  int          `sql:"workflow_step"`
+	WorkflowStep     WorkflowStep `sql:"-"`
 	NeedsDerivatives bool
 	Status           string
 }
@@ -120,10 +121,12 @@ func (i *Issue) Save() error {
 // serialize prepares struct data to work with the database fields better
 func (i *Issue) serialize() {
 	i.PageLabelsCSV = strings.Join(i.PageLabels, ",")
+	i.WorkflowStepInt = (int)(i.WorkflowStep)
 }
 
 // deserialize performs operations necessary to get the database data into a more
 // useful Go structure
 func (i *Issue) deserialize() {
 	i.PageLabels = strings.Split(i.PageLabelsCSV, ",")
+	i.WorkflowStep = (WorkflowStep)(i.WorkflowStepInt)
 }
