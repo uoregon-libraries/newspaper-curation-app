@@ -3,6 +3,7 @@ package sftphandler
 import (
 	"cmd/server/internal/responder"
 	"fmt"
+	"legacyfinder"
 	"log"
 	"net/http"
 	"path"
@@ -13,6 +14,7 @@ import (
 
 var (
 	sftpSearcher *SFTPSearcher
+	watcher *legacyfinder.Watcher
 
 	// workflowPath stores the directory where issues are moved when queued
 	// for processing
@@ -37,7 +39,8 @@ var (
 
 // Setup sets up all the SFTP-specific routing rules and does any other
 // init necessary for SFTP reports handling
-func Setup(r *mux.Router, sftpWebPath, sftpDiskPath, sftpWorkflowPath string) {
+func Setup(r *mux.Router, sftpWebPath, sftpDiskPath, sftpWorkflowPath string, w *legacyfinder.Watcher) {
+	watcher = w
 	basePath = sftpWebPath
 	workflowPath = sftpWorkflowPath
 	var s = r.PathPrefix(basePath).Subrouter()

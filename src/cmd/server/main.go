@@ -108,7 +108,7 @@ func startServer() {
 
 	var watcher = legacyfinder.NewWatcher(Conf, opts.ChronamRoot, opts.CachePath)
 	go watcher.Watch(5 * time.Minute)
-	sftphandler.Setup(r, path.Join(hp, "sftp"), Conf.MasterPDFUploadPath, Conf.WorkflowPath)
+	sftphandler.Setup(r, path.Join(hp, "sftp"), Conf.MasterPDFUploadPath, Conf.WorkflowPath, watcher)
 	findhandler.Setup(r, path.Join(hp, "search-issues"), watcher)
 
 	var waited, lastWaited int
