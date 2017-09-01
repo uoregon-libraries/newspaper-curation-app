@@ -32,6 +32,13 @@ func queueIssueForProcessing(i *Issue, workflowPath string) {
 // cleans the issue key out of the in-process map.  At this time, it's expected
 // that an external cron job will process the PDFs.
 func startPDFWorkflow(i *Issue, workflowPath string) {
+	// Make sure we release the issue key no matter what else happens
+	defer func() {
+		iipm.Lock()
+		delete(_issuesInProcess, i.Key())
+		iipm.Unlock()
+	}()
+
 	// Verify new path will work
 	var newLocation = filepath.Join(workflowPath, i.Key())
 	if !fileutil.DoesNotExist(newLocation) {
@@ -53,11 +60,7 @@ func startPDFWorkflow(i *Issue, workflowPath string) {
 	// TODO: Record the workflow info in the database for external processors
 	log.Printf("*** TODO: Record worklow in db ***")
 
-	// Reload the sftp issue list and remove the issue key from the
-	// "issuesInProcess" map
-	iipm.Lock()
-	delete(_issuesInProcess, i.Key())
-	iipm.Unlock()
+	// Forcibly reload the sftp issue list if all went well
 	sftpSearcher.ForceReload()
 }
 
