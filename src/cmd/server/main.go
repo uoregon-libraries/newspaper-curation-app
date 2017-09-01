@@ -80,6 +80,7 @@ func getConf() {
 	if opts.Debug == true {
 		log.Printf("WARNING: Debug mode has been enabled")
 		settings.DEBUG = true
+		db.Debug = true
 	}
 
 	responder.InitRootTemplate(args[0])
