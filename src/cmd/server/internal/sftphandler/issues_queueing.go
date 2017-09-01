@@ -98,9 +98,9 @@ func startPDFWorkflow(i *Issue, workflowPath string) {
 	// Verify new path will work
 	var newLocation = filepath.Join(workflowPath, i.Key())
 	if !fileutil.DoesNotExist(newLocation) {
-		dbi.Status = fmt.Sprintf("%q already exists; cannot queue issue", newLocation)
+		dbi.Error = fmt.Sprintf("%q already exists; cannot queue issue", newLocation)
 		saveOrCrit("Unable to save status update")
-		log.Printf("ERROR - %s", dbi.Status)
+		log.Printf("ERROR - %s", dbi.Error)
 		return
 	}
 

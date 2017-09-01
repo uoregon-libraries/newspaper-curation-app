@@ -71,7 +71,7 @@ type Issue struct {
 	WorkflowStepInt  int          `sql:"workflow_step"`
 	WorkflowStep     WorkflowStep `sql:"-"`
 	NeedsDerivatives bool
-	Status           string
+	Error            string
 }
 
 // FindIssueByKey looks for an issue in the database that has the given issue key

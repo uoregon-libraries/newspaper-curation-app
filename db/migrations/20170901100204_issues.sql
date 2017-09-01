@@ -17,7 +17,7 @@ CREATE TABLE `issues` (
 	`location`          TINYTEXT COLLATE utf8_bin,
 	`workflow_step`     TINYINT NOT NULL,
 	`needs_derivatives` TINYINT,
-  `status`            MEDIUMTEXT COLLATE utf8_bin,
+  `error`             MEDIUMTEXT COLLATE utf8_bin,
 
   PRIMARY KEY (`id`)
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8 COLLATE=utf8_bin;
