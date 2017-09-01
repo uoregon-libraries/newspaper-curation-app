@@ -1,6 +1,9 @@
 package db
 
-import "fmt"
+import (
+	"fmt"
+	"sync"
+)
 
 // Title holds records from the titles table
 type Title struct {
@@ -19,6 +22,7 @@ type Title struct {
 // allTitles is a cache of every title read from the database the first time
 // any title operations are requested, since the titles table is fairly small
 var allTitles []*Title
+var atMutex sync.RWMutex
 
 // FindTitleByLCCN returns the title matching the given LCCN or nil
 func FindTitleByLCCN(lccn string) (*Title, error) {
@@ -26,6 +30,10 @@ func FindTitleByLCCN(lccn string) (*Title, error) {
 	if err != nil {
 		return nil, err
 	}
+
+	atMutex.RLock()
+	defer atMutex.RUnlock()
+
 	for _, t := range allTitles {
 		if t.LCCN == lccn {
 			return t, nil
@@ -42,6 +50,9 @@ func FindTitleByDirectory(dir string) (*Title, error) {
 		return nil, err
 	}
 
+	atMutex.RLock()
+	defer atMutex.RUnlock()
+
 	for _, t := range allTitles {
 		if t.SFTPDir == dir {
 			return t, nil
@@ -55,6 +66,9 @@ func LoadTitles() error {
 	if DB == nil {
 		return fmt.Errorf("DB is not initialized")
 	}
+
+	atMutex.Lock()
+	defer atMutex.Unlock()
 
 	if len(allTitles) != 0 {
 		return nil
