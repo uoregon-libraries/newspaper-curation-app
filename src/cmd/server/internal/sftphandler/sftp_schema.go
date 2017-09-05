@@ -62,9 +62,8 @@ func (t *Title) decorateIssues(issueList []*schema.Issue) {
 	t.Issues = make([]*Issue, 0)
 	t.IssueLookup = make(map[string]*Issue)
 	for _, i := range issueList {
-		var issue *Issue
 		if !isIssueInProcess(i.Key()) {
-			issue = t.appendSchemaIssue(i)
+			t.appendSchemaIssue(i)
 		}
 	}
 }
