@@ -5,7 +5,12 @@
 
 version=$(git tag | tail -1)
 echo "Checking out $version and recompiling for deployment"
-git co $version
+status=$(git status --porcelain | grep -v "^??")
+if [[ $status != "" ]]; then
+  echo "Stash changes to deploy"
+  exit 1
+fi
+git checkout $version
 make clean
 make
 
@@ -28,4 +33,4 @@ echo Doing a daemon reload and starting the service
 sudo systemctl daemon-reload
 sudo systemctl start p2cgo
 
-git co master
+git checkout master
