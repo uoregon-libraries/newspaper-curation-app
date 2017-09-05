@@ -22,11 +22,14 @@ var iipm sync.Mutex
 
 func queueIssueForProcessing(i *Issue, workflowPath string) {
 	iipm.Lock()
+	var alreadyInProcess = _issuesInProcess[i.Key()]
 	_issuesInProcess[i.Key()] = true
 	iipm.Unlock()
 	sftpSearcher.ForceReload()
 
-	go startPDFWorkflow(i, workflowPath)
+	if !alreadyInProcess {
+		go startPDFWorkflow(i, workflowPath)
+	}
 }
 
 // startPDFWorkflow moves the issue out of the SFTP issue location into our "in
