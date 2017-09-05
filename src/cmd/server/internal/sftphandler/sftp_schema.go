@@ -65,7 +65,6 @@ func (t *Title) decorateIssues(issueList []*schema.Issue) {
 		var issue *Issue
 		if !isIssueInProcess(i.Key()) {
 			issue = t.appendSchemaIssue(i)
-			issue.decorateExternalErrors()
 		}
 	}
 }
@@ -74,6 +73,7 @@ func (t *Title) appendSchemaIssue(i *schema.Issue) *Issue {
 	var issue = &Issue{Issue: i, Slug: i.DateString(), Title: t}
 	issue.decorateFiles(i.Files)
 	issue.decorateErrors()
+	issue.decorateExternalErrors()
 	t.Issues = append(t.Issues, issue)
 	t.IssueLookup[issue.Slug] = issue
 
