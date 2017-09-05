@@ -56,6 +56,8 @@ func startPDFWorkflow(i *Issue, workflowPath string) {
 	// queuing previously
 	dbi, err = db.FindIssueByKey(i.Key())
 	if err != nil {
+		dbi.Info = "Unable to connect to the database.  Try again or contact the system administrator."
+		saveOrCrit("Couldn't store error information")
 		log.Printf("CRIT - Couldn't search the database for %q: %s", i.Key(), err)
 		return
 	}
@@ -71,7 +73,7 @@ func startPDFWorkflow(i *Issue, workflowPath string) {
 
 		// Make sure we record the issue info in the database right away so we can
 		// track things if the move operation fails
-		if !saveOrCrit("Couldn't store workflow data") {
+		if !saveOrCrit("Couldn't create initial workflow data") {
 			return
 		}
 	} else {
@@ -91,6 +93,8 @@ func startPDFWorkflow(i *Issue, workflowPath string) {
 		}
 
 		if fail {
+			dbi.Error = "This issue appears to be an untracked dupe.  Contact the system administrator."
+			saveOrCrit("Couldn't store error information")
 			return
 		}
 	}
@@ -98,9 +102,11 @@ func startPDFWorkflow(i *Issue, workflowPath string) {
 	// Verify new path will work
 	var newLocation = filepath.Join(workflowPath, i.Key())
 	if !fileutil.DoesNotExist(newLocation) {
-		dbi.Error = fmt.Sprintf("%q already exists; cannot queue issue", newLocation)
-		saveOrCrit("Unable to save status update")
-		log.Printf("ERROR - %s", dbi.Error)
+		dbi.Info = fmt.Sprintf("The issue was unable to be queued due to the " +
+			"destination folder already existing.  You may attempt to queue this " +
+			"issue again if there are no other errors, but it may be a duplicate.")
+			saveOrCrit("Couldn't store info")
+		log.Printf("ERROR - unable to queue issue: %q already exists", newLocation)
 		return
 	}
 
@@ -109,12 +115,20 @@ func startPDFWorkflow(i *Issue, workflowPath string) {
 	log.Printf("INFO - Queueing %q to %q", i.Location, newLocation)
 	err = fileutil.CopyDirectory(i.Location, newLocation)
 	if err != nil {
-		dbi.Error = fmt.Sprintf("Unable to move the issue for processing - contact the system administrator for help")
-		saveOrCrit("Unable to save status update")
+		dbi.Error = fmt.Sprintf("Unable to move the issue for processing - " +
+			"contact the system administrator for help")
+		saveOrCrit("Couldn't store error")
 		log.Printf("ERROR - unable to copy directory; cannot queue issue: %s", err)
 		return
 	}
-	os.RemoveAll(i.Location)
+	err = os.RemoveAll(i.Location)
+	if err != nil {
+		dbi.Error = fmt.Sprintf("Error trying to clean up after previous queue " +
+			"operation - contact the system administrator for help")
+		saveOrCrit("Couldn't store error")
+		log.Printf("ERROR - unable to remove old issue directory post-copy: %s", err)
+		return
+	}
 	i.Location = newLocation
 
 	// This is tricky - if we can't update the workflow, but the move succeeded,
