@@ -1,6 +1,7 @@
 package sftphandler
 
 import (
+	"db"
 	"fmt"
 	"html/template"
 	"issuefinder"
@@ -116,6 +117,7 @@ type Issue struct {
 	*schema.Issue
 	Slug        string          // Short, URL-friendly identifier for an issue
 	Title       *Title          // Title to which this issue belongs
+	QueueInfo   template.HTML   // Informational message from the queue process, if any
 	Errors      Errors          // List of errors automatically identified for this issue
 	ChildErrors int             // Count of child errors for use in the templates
 	PDFs        []*PDF          // List of "PDFs" - which are actually any associated files in the sftp issue's dir
@@ -157,10 +159,11 @@ func (i *Issue) decorateErrors() {
 	}
 }
 
-// decorateExternalErrors checks for external problems we can't detect simply
-// looking at the files/directories
+// decorateExternalErrors checks for external problems we don't detect when
+// just scanning the issue directories and files
 func (i *Issue) decorateExternalErrors() {
 	i.decorateDupeErrors()
+	i.decorateDatabaseMessages()
 }
 
 // decorateDupeErrors adds errors to the issue if we find the same key in the global watcher
@@ -202,6 +205,27 @@ func (i *Issue) decorateDupeErrors() {
 		}
 
 		i.Errors = append(i.Errors, template.HTML(errstr))
+	}
+}
+
+// decorateQueueInfoMessages adds information to issues that failed being
+// queued previously.  These don't prevent re-queueing, but can help explain
+// problems that cause an issue to keep getting back in the queue.
+func (i *Issue) decorateDatabaseMessages() {
+	var dbi, err = db.FindIssueByKey(i.Key())
+	if err != nil {
+		log.Printf("ERROR - unable to look up issue for decorating queue messages: %s", err)
+		return
+	}
+	if dbi == nil {
+		return
+	}
+
+	if dbi.Error != "" {
+		i.Errors = append(i.Errors, template.HTML(dbi.Error))
+	}
+	if dbi.Info != "" {
+		i.QueueInfo = template.HTML(dbi.Info)
 	}
 }
 
