@@ -67,44 +67,56 @@ func (t *Title) decorateIssues(issueList []*schema.Issue) {
 		var issue *Issue
 		if !isIssueInProcess(i.Key()) {
 			issue = t.appendSchemaIssue(i)
+			issue.decorateExternalErrors()
 		}
+	}
+}
 
-		// Check for duped issues
-		var key, err = issuesearch.ParseSearchKey(i.Key())
-		if err != nil {
-			log.Printf("ERROR - invalid issue key %q", i.Key())
+// decorateExternalErrors checks for external problems we can't detect simply
+// looking at the files/directories
+func (i *Issue) decorateExternalErrors() {
+	i.decorateDupeErrors()
+}
+
+// decorateDupeErrors adds errors to the issue if we find the same key in the global watcher
+func (i *Issue) decorateDupeErrors() {
+	var key, err = issuesearch.ParseSearchKey(i.Key())
+	// This shouldn't be able to happen, but if it does the best we can do is log
+	// it and skip dupe checking; better than panicking in the lookup below
+	if err != nil {
+		log.Printf("ERROR - invalid issue key %q", i.Key())
+		return
+	}
+
+	var watcherIssues = watcher.LookupIssues(key)
+	for _, wi := range watcherIssues {
+		var namespace = watcher.IssueFinder().IssueNamespace[wi]
+		if namespace == issuefinder.SFTPUpload {
 			continue
 		}
-		var watcherIssues = watcher.LookupIssues(key)
-		for _, wi := range watcherIssues {
-			var namespace = watcher.IssueFinder().IssueNamespace[wi]
-			if namespace == issuefinder.SFTPUpload {
-				continue
-			}
 
-			var errstr = "likely duplicate of "
-			switch namespace {
-			case issuefinder.Website:
-				errstr += fmt.Sprintf(`a live issue: <a href="%s">%s, %s</a>`,
-					wi.Location[:len(wi.Location)-5], wi.Title.Name, wi.DateStringReadable())
-			case issuefinder.AwaitingPageReview:
-				errstr += "an issue waiting on page reordering and/or metadata entry"
-			case issuefinder.AwaitingMetadataReview:
-				errstr += "an issue waiting for metadata review"
-			case issuefinder.PDFsAwaitingDerivatives:
-				errstr += "an issue waiting for derivatives to be built"
-			case issuefinder.ScansAwaitingDerivatives:
-				errstr += "an issue waiting for derivatives to be built"
-			case issuefinder.ReadyForBatching:
-				errstr += "an issue which will be batched soon"
-			case issuefinder.BatchedOnDisk:
-				errstr += "an issue in an uningested batch"
-			default:
-				errstr += fmt.Sprintf("an unknown issue (location: %q)", wi.Location)
-			}
-
-			issue.Errors = append(issue.Errors, template.HTML(errstr))
+		var errstr = "likely duplicate of "
+		switch namespace {
+		case issuefinder.Website:
+			errstr += fmt.Sprintf(`a live issue: <a href="%s">%s, %s</a>`,
+				wi.Location[:len(wi.Location)-5], wi.Title.Name, wi.DateStringReadable())
+		case issuefinder.AwaitingPageReview:
+			errstr += "an issue waiting on page reordering and/or metadata entry"
+		case issuefinder.AwaitingMetadataReview:
+			errstr += "an issue waiting for metadata review"
+		case issuefinder.PDFsAwaitingDerivatives:
+			errstr += "an issue waiting for derivatives to be built"
+		case issuefinder.ScansAwaitingDerivatives:
+			errstr += "an issue waiting for derivatives to be built"
+		case issuefinder.ReadyForBatching:
+			errstr += "an issue which will be batched soon"
+		case issuefinder.BatchedOnDisk:
+			errstr += "an issue in an uningested batch"
+		default:
+			errstr += fmt.Sprintf("an unknown issue (location: %q)", wi.Location)
 		}
+
+		i.Errors = append(i.Errors, template.HTML(errstr))
 	}
 }
 
