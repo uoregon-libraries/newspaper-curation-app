@@ -136,6 +136,7 @@ func startPDFWorkflow(i *Issue, workflowPath string) {
 	dbi.Location = newLocation
 	dbi.WorkflowStep = db.WSAwaitingPDFProcessing
 	dbi.Error = ""
+	dbi.Info = ""
 	saveOrCrit("Couldn't update location and workflow step after the move")
 
 	// Forcibly reload the sftp issue list if all went well
