@@ -111,9 +111,10 @@ func startPDFWorkflow(i *Issue, workflowPath string) {
 	}
 
 	// Move the issue directory to the workflow path
-	os.MkdirAll(filepath.Dir(newLocation), 0700)
-	log.Printf("INFO - Queueing %q to %q", i.Location, newLocation)
-	err = fileutil.CopyDirectory(i.Location, newLocation)
+	var wipLocation = newLocation + "-wip"
+	os.MkdirAll(filepath.Dir(wipLocation), 0700)
+	log.Printf("INFO - Queueing %q to %q", i.Location, wipLocation)
+	err = fileutil.CopyDirectory(i.Location, wipLocation)
 	if err != nil {
 		dbi.Error = fmt.Sprintf("Unable to move the issue for processing - " +
 			"contact the system administrator for help")
@@ -127,6 +128,14 @@ func startPDFWorkflow(i *Issue, workflowPath string) {
 			"operation - contact the system administrator for help")
 		saveOrCrit("Couldn't store error")
 		log.Printf("ERROR - unable to remove old issue directory post-copy: %s", err)
+		return
+	}
+	err = os.Rename(wipLocation, newLocation)
+	if err != nil {
+		dbi.Error = fmt.Sprintf("Error trying to clean up after previous queue " +
+			"operation - contact the system administrator for help")
+		saveOrCrit("Couldn't store error")
+		log.Printf("ERROR - unable to rename WIP issue directory (%q -> %q) post-copy: %s", wipLocation, newLocation, err)
 		return
 	}
 	i.Location = newLocation
