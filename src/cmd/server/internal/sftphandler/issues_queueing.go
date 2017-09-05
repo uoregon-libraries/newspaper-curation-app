@@ -96,8 +96,13 @@ func startPDFWorkflow(i *Issue, workflowPath string) {
 		}
 
 		if fail {
-			dbi.Error = "This issue appears to be an untracked dupe.  Contact the system administrator."
-			saveOrCrit("Couldn't store error information")
+			// TODO: Figure out a way to store alerts / incidents for a given user so
+			// we can alert the user without an issue-specific update.  This right
+			// here would actually break an in-process issue that got double-clicked
+			// or something weird.  SEE ABOVE COMMENT!!!
+			//
+			// dbi.Error = "This issue appears to be an untracked dupe.  Contact the system administrator."
+			// saveOrCrit("Couldn't store error information")
 			return
 		}
 	}
