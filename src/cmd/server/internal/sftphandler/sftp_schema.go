@@ -25,8 +25,6 @@ func (e Errors) String() string {
 }
 
 // Title wraps a schema.Title with some extra information for web presentation.
-// This is probably going to be SFTP-specific for now, but eventually (soon)
-// needs to be useful in other contexts.
 type Title struct {
 	*schema.Title
 	Slug        string
