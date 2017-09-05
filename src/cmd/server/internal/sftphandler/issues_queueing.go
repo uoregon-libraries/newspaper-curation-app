@@ -109,6 +109,8 @@ func startPDFWorkflow(i *Issue, workflowPath string) {
 	log.Printf("INFO - Queueing %q to %q", i.Location, newLocation)
 	err = fileutil.CopyDirectory(i.Location, newLocation)
 	if err != nil {
+		dbi.Error = fmt.Sprintf("Unable to move the issue for processing - contact the system administrator for help")
+		saveOrCrit("Unable to save status update")
 		log.Printf("ERROR - unable to copy directory; cannot queue issue: %s", err)
 		return
 	}
