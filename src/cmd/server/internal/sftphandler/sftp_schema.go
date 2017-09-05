@@ -1,9 +1,12 @@
 package sftphandler
 
 import (
+	"db"
 	"fmt"
 	"html/template"
 	"issuefinder"
+	"issuesearch"
+	"log"
 	"path/filepath"
 	"schema"
 	"sort"
@@ -12,15 +15,17 @@ import (
 )
 
 // Errors wraps an array of error strings for nicer display
-type Errors []string
+type Errors []template.HTML
 
 func (e Errors) String() string {
-	return strings.Join(e, "; ")
+	var sList = make([]string, len(e))
+	for i, s := range e {
+		sList[i] = string(s)
+	}
+	return strings.Join(sList, "; ")
 }
 
 // Title wraps a schema.Title with some extra information for web presentation.
-// This is probably going to be SFTP-specific for now, but eventually (soon)
-// needs to be useful in other contexts.
 type Title struct {
 	*schema.Title
 	Slug        string
@@ -64,12 +69,15 @@ func (t *Title) decorateIssues(issueList []*schema.Issue) {
 	}
 }
 
-func (t *Title) appendSchemaIssue(i *schema.Issue) {
+func (t *Title) appendSchemaIssue(i *schema.Issue) *Issue {
 	var issue = &Issue{Issue: i, Slug: i.DateString(), Title: t}
 	issue.decorateFiles(i.Files)
 	issue.decorateErrors()
+	issue.decorateExternalErrors()
 	t.Issues = append(t.Issues, issue)
 	t.IssueLookup[issue.Slug] = issue
+
+	return issue
 }
 
 func (t *Title) decorateErrors() {
@@ -79,11 +87,18 @@ func (t *Title) decorateErrors() {
 			continue
 		}
 		if e.Issue == nil && e.File == nil {
-			t.Errors = append(t.Errors, e.Error.Error())
+			t.Errors = append(t.Errors, safeError(e.Error.Error()))
 		} else {
 			t.ChildErrors++
 		}
 	}
+}
+
+// We want HTML-friendly errors for when we need to put in our own, but
+// we don't necessarily trust that the more internal errors won't have
+// things like "<" in 'em, so... this happens.
+func safeError(err string) template.HTML {
+	return template.HTML(template.HTMLEscapeString(err))
 }
 
 // Show returns true if the title has any issues or errors.  If there are no
@@ -102,6 +117,7 @@ type Issue struct {
 	*schema.Issue
 	Slug        string          // Short, URL-friendly identifier for an issue
 	Title       *Title          // Title to which this issue belongs
+	QueueInfo   template.HTML   // Informational message from the queue process, if any
 	Errors      Errors          // List of errors automatically identified for this issue
 	ChildErrors int             // Count of child errors for use in the templates
 	PDFs        []*PDF          // List of "PDFs" - which are actually any associated files in the sftp issue's dir
@@ -136,10 +152,80 @@ func (i *Issue) decorateErrors() {
 		}
 
 		if e.File == nil {
-			i.Errors = append(i.Errors, e.Error.Error())
+			i.Errors = append(i.Errors, safeError(e.Error.Error()))
 		} else {
 			i.ChildErrors++
 		}
+	}
+}
+
+// decorateExternalErrors checks for external problems we don't detect when
+// just scanning the issue directories and files
+func (i *Issue) decorateExternalErrors() {
+	i.decorateDupeErrors()
+	i.decorateDatabaseMessages()
+}
+
+// decorateDupeErrors adds errors to the issue if we find the same key in the global watcher
+func (i *Issue) decorateDupeErrors() {
+	var key, err = issuesearch.ParseSearchKey(i.Key())
+	// This shouldn't be able to happen, but if it does the best we can do is log
+	// it and skip dupe checking; better than panicking in the lookup below
+	if err != nil {
+		log.Printf("ERROR - invalid issue key %q", i.Key())
+		return
+	}
+
+	var watcherIssues = watcher.LookupIssues(key)
+	for _, wi := range watcherIssues {
+		var namespace = watcher.IssueFinder().IssueNamespace[wi]
+		if namespace == issuefinder.SFTPUpload {
+			continue
+		}
+
+		var errstr = "likely duplicate of "
+		switch namespace {
+		case issuefinder.Website:
+			errstr += fmt.Sprintf(`a live issue: <a href="%s">%s, %s</a>`,
+				wi.Location[:len(wi.Location)-5], wi.Title.Name, wi.DateStringReadable())
+		case issuefinder.AwaitingPageReview:
+			errstr += "an issue waiting on page reordering and/or metadata entry"
+		case issuefinder.AwaitingMetadataReview:
+			errstr += "an issue waiting for metadata review"
+		case issuefinder.PDFsAwaitingDerivatives:
+			errstr += "an issue waiting for derivatives to be built"
+		case issuefinder.ScansAwaitingDerivatives:
+			errstr += "an issue waiting for derivatives to be built"
+		case issuefinder.ReadyForBatching:
+			errstr += "an issue which will be batched soon"
+		case issuefinder.BatchedOnDisk:
+			errstr += "an issue in an uningested batch"
+		default:
+			errstr += fmt.Sprintf("an unknown issue (location: %q)", wi.Location)
+		}
+
+		i.Errors = append(i.Errors, template.HTML(errstr))
+	}
+}
+
+// decorateQueueInfoMessages adds information to issues that failed being
+// queued previously.  These don't prevent re-queueing, but can help explain
+// problems that cause an issue to keep getting back in the queue.
+func (i *Issue) decorateDatabaseMessages() {
+	var dbi, err = db.FindIssueByKey(i.Key())
+	if err != nil {
+		log.Printf("ERROR - unable to look up issue for decorating queue messages: %s", err)
+		return
+	}
+	if dbi == nil {
+		return
+	}
+
+	if dbi.Error != "" {
+		i.Errors = append(i.Errors, template.HTML(dbi.Error))
+	}
+	if dbi.Info != "" {
+		i.QueueInfo = template.HTML(dbi.Info)
 	}
 }
 
@@ -182,7 +268,7 @@ func (p *PDF) decorateErrors() {
 			continue
 		}
 
-		p.Errors = append(p.Errors, e.Error.Error())
+		p.Errors = append(p.Errors, safeError(e.Error.Error()))
 	}
 }
 

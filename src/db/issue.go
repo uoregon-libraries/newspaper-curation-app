@@ -66,12 +66,22 @@ type Issue struct {
 	PageLabelsCSV string
 	PageLabels    []string `sql:"-"`
 
-	// Workflow data
+	/* Workflow data */
+
 	Location         string
 	WorkflowStepInt  int          `sql:"workflow_step"`
 	WorkflowStep     WorkflowStep `sql:"-"`
 	NeedsDerivatives bool
-	Error            string
+
+	// Info holds any informational message the end-user may need, but which
+	// doesn't prevent that user from workflow actions.  These messages may have
+	// caused the workflow to stop previously, and are explaining to the user why
+	// a problem occurred, while still allowing the user to try again.
+	Info string
+
+	// Error holds critical errors with the issue; if present, the end-user
+	// cannot perform any actions, as some kind of manual intervention is needed.
+	Error string
 }
 
 // FindIssueByKey looks for an issue in the database that has the given issue key

@@ -4,9 +4,11 @@ import (
 	"config"
 	"fileutil"
 	"issuefinder"
+	"issuesearch"
 	"log"
 	"os"
 	"path/filepath"
+	"schema"
 	"strings"
 	"sync"
 	"time"
@@ -17,6 +19,7 @@ import (
 type Watcher struct {
 	sync.RWMutex
 	*Finder
+	lookup          *issuesearch.Lookup
 	status          watcherStatus
 	lastFullRefresh time.Time
 	done            chan bool
@@ -78,6 +81,8 @@ func (w *Watcher) Watch(interval time.Duration) {
 			log.Fatalf("Unable to deserialize the cache file %#v: %s", cacheFile, err)
 		}
 		w.finder = finder
+		w.lookup = issuesearch.NewLookup()
+		w.lookup.Populate(w.Finder.finder.Issues)
 	}
 
 	if w.status&running != 0 {
@@ -204,11 +209,21 @@ func (w *Watcher) refresh() {
 		return
 	}
 
-	// Re-acquire lock to swap out the finder and update status
+	// Create a new lookup using the new finder's data
+	var lookup = issuesearch.NewLookup()
+	lookup.Populate(finder.Issues)
+
+	// Re-acquire lock to swap out the finder and lookup, then update status
 	w.Lock()
-	w.status &= ^refreshing
 	w.finder = finder
+	w.lookup = lookup
+	w.status &= ^refreshing
 	w.Unlock()
 
 	log.Println("DEBUG: Issue data refreshed")
+}
+
+// LookupIssues returns a list of schema Issues for the give search key
+func (w *Watcher) LookupIssues(key *issuesearch.Key) []*schema.Issue {
+	return w.lookup.Issues(key)
 }
