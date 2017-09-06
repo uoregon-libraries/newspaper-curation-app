@@ -5,7 +5,7 @@ import (
 	"fileutil"
 	"issuefinder"
 	"issuesearch"
-	"log"
+	"logger"
 	"os"
 	"path/filepath"
 	"schema"
@@ -78,7 +78,7 @@ func (w *Watcher) Watch(interval time.Duration) {
 	if cacheFile != "" && fileutil.Exists(cacheFile) {
 		var finder, err = issuefinder.Deserialize(cacheFile)
 		if err != nil {
-			log.Fatalf("Unable to deserialize the cache file %#v: %s", cacheFile, err)
+			logger.Fatal("Unable to deserialize the cache file %#v: %s", cacheFile, err)
 		}
 		w.finder = finder
 		w.lookup = issuesearch.NewLookup()
@@ -86,7 +86,7 @@ func (w *Watcher) Watch(interval time.Duration) {
 	}
 
 	if w.status&running != 0 {
-		log.Printf("WARNING: Trying to watch issues on an in-progress finder (status: %s)", w.status)
+		logger.Warn("Trying to watch issues on an in-progress finder (status: %s)", w.status)
 		w.Unlock()
 		return
 	}
@@ -100,7 +100,7 @@ func (w *Watcher) Watch(interval time.Duration) {
 			lastRefresh = time.Now()
 			var err = w.finder.Serialize(cacheFile)
 			if err != nil {
-				log.Printf("WARNING: Unable to cache to %#v: %s", cacheFile, err)
+				logger.Warn("Unable to cache to %#v: %s", cacheFile, err)
 			}
 		}
 		time.Sleep(time.Second * 1)
@@ -142,7 +142,7 @@ func (w *Watcher) cleanupTempDir() {
 	}
 	var err = os.RemoveAll(w.tempdir)
 	if err != nil {
-		log.Printf("ERROR: unable to remove legacyfinder.Watcher's temp dir %#v: %s", w.tempdir, err)
+		logger.Error("Unable to remove legacyfinder.Watcher's temp dir %#v: %s", w.tempdir, err)
 	}
 	w.tempdir = ""
 }
@@ -152,27 +152,27 @@ func (w *Watcher) cleanupTempDir() {
 func (w *Watcher) makeTempDir() {
 	var err = os.MkdirAll(w.tempdir, 0700)
 	if err != nil {
-		log.Printf("ERROR: unable to create legacyfinder.Watcher's temp dir: %s", err)
+		logger.Error("Unable to create legacyfinder.Watcher's temp dir: %s", err)
 	}
 }
 
 // refresh runs the searchers and replaces the underlying issuefinder.Finder.
 // Every week, it forces a full refresh of web data as well.
 func (w *Watcher) refresh() {
-	log.Println("DEBUG: Refreshing issue data")
+	logger.Debug("Refreshing issue data")
 	w.Lock()
 
 	// Safety: is run off already?  This can only happen if stop was called just
 	// as this was about to be called, but it's still better to be safe.
 	if w.status&running == 0 {
-		log.Printf("ERROR: Trying to refresh a stopped legacyfinder")
+		logger.Error("Trying to refresh a stopped legacyfinder")
 		w.Unlock()
 		return
 	}
 
 	// Don't try to run multiple refreshes!
 	if w.status&refreshing != 0 {
-		log.Printf("ERROR: Trying to double-refresh a legacyfinder")
+		logger.Error("Trying to double-refresh a legacyfinder")
 		w.Unlock()
 		return
 	}
@@ -183,7 +183,7 @@ func (w *Watcher) refresh() {
 	// Every week, we force a full web refresh
 	var tempdir string
 	if time.Since(w.lastFullRefresh) > time.Hour*24*7 {
-		log.Println("DEBUG: Purging cache and reindexing all data from scratch")
+		logger.Debug("Purging cache and reindexing all data from scratch")
 
 		// We don't want to delete tempdir when it's a routine cleaning!  TODO: make this way less hacky
 		tempdir = w.tempdir
@@ -205,7 +205,7 @@ func (w *Watcher) refresh() {
 		w.Lock()
 		w.status &= ^refreshing
 		w.Unlock()
-		log.Printf("ERROR: unable to refresh legacyfinder: %s", err)
+		logger.Error("Unable to refresh legacyfinder: %s", err)
 		return
 	}
 
@@ -220,7 +220,7 @@ func (w *Watcher) refresh() {
 	w.status &= ^refreshing
 	w.Unlock()
 
-	log.Println("DEBUG: Issue data refreshed")
+	logger.Debug("Issue data refreshed")
 }
 
 // LookupIssues returns a list of schema Issues for the give search key

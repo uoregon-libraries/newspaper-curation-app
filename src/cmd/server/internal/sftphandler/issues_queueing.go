@@ -9,7 +9,7 @@ import (
 	"db"
 	"fileutil"
 	"fmt"
-	"log"
+	"logger"
 	"os"
 	"path/filepath"
 	"sync"
@@ -50,7 +50,7 @@ func startPDFWorkflow(i *Issue, workflowPath string) {
 		var err = dbi.Save()
 		if err != nil {
 			var fullmsg = fmt.Sprintf(format, args...)
-			log.Printf("CRIT - %s: %s (issue %q)", fullmsg, err, i.Key())
+			logger.Critical("%s: %s (issue %q)", fullmsg, err, i.Key())
 		}
 		return err == nil
 	}
@@ -61,7 +61,7 @@ func startPDFWorkflow(i *Issue, workflowPath string) {
 	if err != nil {
 		dbi.Info = "Unable to connect to the database.  Try again or contact the system administrator."
 		saveOrCrit("Couldn't store error information")
-		log.Printf("CRIT - Couldn't search the database for %q: %s", i.Key(), err)
+		logger.Critical("Couldn't search the database for %q: %s", i.Key(), err)
 		return
 	}
 
@@ -87,11 +87,11 @@ func startPDFWorkflow(i *Issue, workflowPath string) {
 		// need to take steps to let them know ahead of time.
 		var fail bool
 		if dbi.Location != i.Location {
-			log.Printf("CRIT - %q is being tracked at %q; our issue is in %q", i.Key(), dbi.Location, i.Location)
+			logger.Critical("%q is being tracked at %q; our issue is in %q", i.Key(), dbi.Location, i.Location)
 			fail = true
 		}
 		if dbi.WorkflowStep != db.WSPreppingSFTPIssueForMove {
-			log.Printf("CRIT - %q is being tracked with an unexpected workflow step, %d", i.Key(), dbi.WorkflowStep)
+			logger.Critical("%q is being tracked with an unexpected workflow step, %d", i.Key(), dbi.WorkflowStep)
 			fail = true
 		}
 
@@ -114,20 +114,20 @@ func startPDFWorkflow(i *Issue, workflowPath string) {
 			"destination folder already existing.  You may attempt to queue this " +
 			"issue again if there are no other errors, but it may be a duplicate.")
 			saveOrCrit("Couldn't store info")
-		log.Printf("ERROR - unable to queue issue: %q already exists", newLocation)
+		logger.Error("Unable to queue issue: %q already exists", newLocation)
 		return
 	}
 
 	// Move the issue directory to the workflow path
 	var wipLocation = newLocation + "-wip"
 	os.MkdirAll(filepath.Dir(wipLocation), 0700)
-	log.Printf("INFO - Queueing %q to %q", i.Location, wipLocation)
+	logger.Info("Queueing %q to %q", i.Location, wipLocation)
 	err = fileutil.CopyDirectory(i.Location, wipLocation)
 	if err != nil {
 		dbi.Error = fmt.Sprintf("Unable to move the issue for processing - " +
 			"contact the system administrator for help")
 		saveOrCrit("Couldn't store error")
-		log.Printf("ERROR - unable to copy directory; cannot queue issue: %s", err)
+		logger.Error("Unable to copy directory; cannot queue issue: %s", err)
 		return
 	}
 	err = os.RemoveAll(i.Location)
@@ -135,7 +135,7 @@ func startPDFWorkflow(i *Issue, workflowPath string) {
 		dbi.Error = fmt.Sprintf("Error trying to clean up after previous queue " +
 			"operation - contact the system administrator for help")
 		saveOrCrit("Couldn't store error")
-		log.Printf("ERROR - unable to remove old issue directory post-copy: %s", err)
+		logger.Error("Unable to remove old issue directory post-copy: %s", err)
 		return
 	}
 	err = os.Rename(wipLocation, newLocation)
@@ -143,7 +143,7 @@ func startPDFWorkflow(i *Issue, workflowPath string) {
 		dbi.Error = fmt.Sprintf("Error trying to clean up after previous queue " +
 			"operation - contact the system administrator for help")
 		saveOrCrit("Couldn't store error")
-		log.Printf("ERROR - unable to rename WIP issue directory (%q -> %q) post-copy: %s", wipLocation, newLocation, err)
+		logger.Error("Unable to rename WIP issue directory (%q -> %q) post-copy: %s", wipLocation, newLocation, err)
 		return
 	}
 	i.Location = newLocation

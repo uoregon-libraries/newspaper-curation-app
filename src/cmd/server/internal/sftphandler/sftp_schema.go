@@ -6,7 +6,7 @@ import (
 	"html/template"
 	"issuefinder"
 	"issuesearch"
-	"log"
+	"logger"
 	"path/filepath"
 	"schema"
 	"sort"
@@ -172,7 +172,7 @@ func (i *Issue) decorateDupeErrors() {
 	// This shouldn't be able to happen, but if it does the best we can do is log
 	// it and skip dupe checking; better than panicking in the lookup below
 	if err != nil {
-		log.Printf("ERROR - invalid issue key %q", i.Key())
+		logger.Error("Invalid issue key %q", i.Key())
 		return
 	}
 
@@ -214,7 +214,7 @@ func (i *Issue) decorateDupeErrors() {
 func (i *Issue) decorateDatabaseMessages() {
 	var dbi, err = db.FindIssueByKey(i.Key())
 	if err != nil {
-		log.Printf("ERROR - unable to look up issue for decorating queue messages: %s", err)
+		logger.Error("Unable to look up issue for decorating queue messages: %s", err)
 		return
 	}
 	if dbi == nil {

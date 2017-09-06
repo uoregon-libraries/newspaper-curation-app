@@ -6,7 +6,7 @@ import (
 	"fileutil"
 	"fmt"
 	"issuefinder"
-	"log"
+	"logger"
 	"os"
 	"wordutils"
 
@@ -51,13 +51,13 @@ func main() {
 	getOpts()
 	var finder, err = issuefinder.Deserialize(opts.CacheFile)
 	if err != nil {
-		log.Fatalf("Unable to deserialize the cache file %#v: %s", opts.CacheFile, err)
+		logger.Fatal("Unable to deserialize the cache file %#v: %s", opts.CacheFile, err)
 	}
 
 	finder.Errors.Index()
 
 	// Report all errors
 	for _, e := range finder.Errors.Errors {
-		log.Printf("ERROR: %s", e.Message())
+		logger.Error(e.Message())
 	}
 }

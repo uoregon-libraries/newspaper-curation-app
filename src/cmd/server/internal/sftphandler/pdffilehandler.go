@@ -5,7 +5,7 @@ import (
 	"fileutil"
 	"fmt"
 	"io"
-	"log"
+	"logger"
 	"net/http"
 	"os"
 	"path/filepath"
@@ -41,7 +41,7 @@ func PDFFileHandler(w http.ResponseWriter, req *http.Request) {
 
 	var f, err = os.Open(path)
 	if err != nil {
-		log.Printf("ERROR: Unable to read %#v", path)
+		logger.Error("Unable to read %#v", path)
 		r.Vars.Alert = fmt.Sprintf("Unable to read %#v!", path)
 		r.Render(responder.Empty)
 		return
