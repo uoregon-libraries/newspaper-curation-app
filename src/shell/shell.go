@@ -10,6 +10,7 @@ import (
 
 func Exec(binary string, args ...string) (ok bool) {
 	var cmd = exec.Command(binary, args...)
+	logger.Debug("Running %s %s", binary, strings.Join(args, " "))
 	var output, err = cmd.CombinedOutput()
 	if err != nil {
 		logger.Error("Unable to run '%s %s': %s", binary, strings.Join(args, " "), err)
