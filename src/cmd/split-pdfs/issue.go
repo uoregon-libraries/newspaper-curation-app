@@ -44,7 +44,7 @@ func (i *Issue) ProcessPDFs(config *config.Config) {
 }
 
 func (i *Issue) makeTempFiles() (ok bool) {
-	var f, err = ioutil.TempFile("", "")
+	var f, err = ioutil.TempFile("", "splitter-master-")
 	if err != nil {
 		logger.Error("Unable to create temp file for combining PDFs: %s", err)
 		return false
@@ -52,7 +52,7 @@ func (i *Issue) makeTempFiles() (ok bool) {
 	i.FakeMasterFile = f.Name()
 	f.Close()
 
-	i.TempDir, err = ioutil.TempDir("", "")
+	i.TempDir, err = ioutil.TempDir("", "splitter-pages-")
 	if err != nil {
 		logger.Error("Unable to create temp dir for issue processing: %s", err)
 		return false
