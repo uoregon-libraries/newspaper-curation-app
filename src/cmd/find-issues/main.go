@@ -13,7 +13,7 @@ import (
 	"io/ioutil"
 	"issuefinder"
 	"issuesearch"
-	"log"
+	"logger"
 	"os"
 	"strings"
 	"wordutils"
@@ -69,12 +69,12 @@ func getOpts() {
 
 	Conf, err = config.Parse(opts.ConfigFile)
 	if err != nil {
-		log.Fatalf("Config error: %s", err)
+		logger.Fatal("Config error: %s", err)
 	}
 
 	err = db.Connect(Conf.DatabaseConnect)
 	if err != nil {
-		log.Fatalf("Error trying to connect to database: %s", err)
+		logger.Fatal("Error trying to connect to database: %s", err)
 	}
 
 	if len(opts.IssueKeys) == 0 && opts.IssueList == "" {
@@ -119,7 +119,7 @@ func main() {
 	getOpts()
 	var finder, err = issuefinder.Deserialize(opts.CacheFile)
 	if err != nil {
-		log.Fatalf("Unable to deserialize the cache file %#v: %s", opts.CacheFile, err)
+		logger.Fatal("Unable to deserialize the cache file %#v: %s", opts.CacheFile, err)
 	}
 
 	var lookup = issuesearch.NewLookup()

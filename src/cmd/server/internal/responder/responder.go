@@ -4,7 +4,7 @@
 package responder
 
 import (
-	"log"
+	"logger"
 	"net/http"
 	"time"
 	"user"
@@ -61,6 +61,6 @@ func (r *Responder) Render(t *tmpl.Template) {
 
 	err = t.Execute(r.Writer, r.Vars)
 	if err != nil {
-		log.Printf("ERROR: Unable to render template %#v: %s", t.Name, err)
+		logger.Error("Unable to render template %#v: %s", t.Name, err)
 	}
 }

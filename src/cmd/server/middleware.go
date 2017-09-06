@@ -2,7 +2,7 @@ package main
 
 import (
 	"cmd/server/internal/responder"
-	"log"
+	"logger"
 	"net/http"
 )
 
@@ -18,9 +18,9 @@ func logMiddleware(next http.Handler) http.Handler {
 	return http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
 		var u = responder.GetUserLogin(w, r)
 		if u != "" {
-			log.Printf("Request: [%s] %s", u, r.URL)
+			logger.Info("Request: [%s] %s", u, r.URL)
 		} else {
-			log.Printf("Request: [nil] %s", r.URL)
+			logger.Info("Request: [nil] %s", r.URL)
 		}
 		next.ServeHTTP(w, r)
 	})

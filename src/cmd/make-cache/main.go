@@ -9,7 +9,7 @@ import (
 	"fileutil"
 	"fmt"
 	"legacyfinder"
-	"log"
+	"logger"
 	"os"
 	"path/filepath"
 	"wordutils"
@@ -64,12 +64,12 @@ func getConf() {
 
 	Conf, err = config.Parse(opts.ConfigFile)
 	if err != nil {
-		log.Fatalf("Config error: %s", err)
+		logger.Fatal("Config error: %s", err)
 	}
 
 	err = db.Connect(Conf.DatabaseConnect)
 	if err != nil {
-		log.Fatalf("Error trying to connect to database: %s", err)
+		logger.Fatal("Error trying to connect to database: %s", err)
 	}
 
 	if !fileutil.IsDir(opts.CachePath) {
@@ -81,17 +81,17 @@ func main() {
 	getConf()
 	var finder = legacyfinder.NewScanner(Conf, opts.Siteroot, opts.CachePath)
 
-	log.Printf("Running scan")
+	logger.Info("Running scan")
 	var realFinder, err = finder.FindIssues()
 	if err != nil {
-		log.Fatalf("Error trying to find issues: %s", err)
+		logger.Fatal("Error trying to find issues: %s", err)
 	}
 
 	var cacheFile = filepath.Join(opts.CachePath, "finder.cache")
-	log.Printf("Serializing to disk")
+	logger.Debug("Serializing to disk")
 	err = realFinder.Serialize(cacheFile)
 	if err != nil {
-		log.Fatalf("Error trying to serialize: %s", err)
+		logger.Fatal("Error trying to serialize: %s", err)
 	}
 	testIntegrity(realFinder, cacheFile)
 }

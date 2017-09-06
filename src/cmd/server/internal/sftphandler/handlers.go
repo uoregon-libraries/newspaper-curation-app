@@ -4,7 +4,7 @@ import (
 	"cmd/server/internal/responder"
 	"fmt"
 	"legacyfinder"
-	"log"
+	"logger"
 	"net/http"
 	"path"
 	"web/tmpl"
@@ -64,7 +64,7 @@ func Setup(r *mux.Router, sftpWebPath, sftpDiskPath, sftpWorkflowPath string, w 
 func LoadTitles(r *responder.Responder) bool {
 	var titles, err = sftpSearcher.Titles()
 	if err != nil {
-		log.Printf("ERROR: Couldn't load titles in %s: %s", sftpSearcher.searcher.Location, err)
+		logger.Error("Couldn't load titles in %s: %s", sftpSearcher.searcher.Location, err)
 		http.Error(r.Writer, "Unable to load title list!", 500)
 		return false
 	}

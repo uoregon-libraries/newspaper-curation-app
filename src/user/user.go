@@ -2,7 +2,7 @@ package user
 
 import (
 	"github.com/Nerdmaster/magicsql"
-	"log"
+	"logger"
 	"strings"
 )
 
@@ -37,7 +37,7 @@ func FindByLogin(l string) *User {
 	var op = DB.Operation()
 	op.Select("users", &User{}).Where("login = ?", l).AllObjects(&users)
 	if op.Err() != nil {
-		log.Printf("ERROR: Unable to query users: %s", op.Err())
+		logger.Error("Unable to query users: %s", op.Err())
 	}
 
 	if len(users) == 0 {
@@ -63,7 +63,7 @@ func (u *User) buildRoles() {
 		}
 		var role = FindRole(rs)
 		if role == nil {
-			log.Printf("ERROR: User %s has an invalid role: %s", u.Login, role)
+			logger.Error("User %s has an invalid role: %s", u.Login, role)
 			continue
 		}
 		u.roles = append(u.roles, role)
@@ -74,7 +74,7 @@ func (u *User) buildRoles() {
 func (u *User) PermittedTo(pName string) bool {
 	var priv = FindPrivilege(pName)
 	if priv == nil {
-		log.Printf("WARNING: Invalid privilege checked: %s", pName)
+		logger.Warn("Invalid privilege checked: %s", pName)
 		return false
 	}
 
