@@ -30,7 +30,10 @@ func (i *Issue) ProcessPDFs(config *config.Config) {
 	}
 	log.Printf("DEBUG - Processing issue id %d (%q)", i.DBIssue.ID, i.Key())
 	i.process(config, tmpdir)
-	os.RemoveAll(tmpdir)
+	err = os.RemoveAll(tmpdir)
+	if err != nil {
+		log.Printf("WARN - Unable to remove temp dir %q: %s", tmpdir, err)
+	}
 }
 
 func (i *Issue) process(config *config.Config, tmpdir string) {
