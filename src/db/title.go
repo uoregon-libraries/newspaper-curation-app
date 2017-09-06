@@ -18,8 +18,6 @@ type Title struct {
 	MarcTitle    string
 	MarcLocation string
 	IsHistoric   bool
-
-	schemaTitle *schema.Title
 }
 
 // allTitles is a cache of every title read from the database the first time
@@ -106,13 +104,9 @@ func (t *Title) SchemaTitle() *schema.Title {
 	if t == nil {
 		return nil
 	}
-	if t.schemaTitle == nil {
-		t.schemaTitle = &schema.Title{
-			LCCN:               t.LCCN,
-			Name:               t.MarcTitle,
-			PlaceOfPublication: t.MarcLocation,
-		}
+	return &schema.Title{
+		LCCN:               t.LCCN,
+		Name:               t.MarcTitle,
+		PlaceOfPublication: t.MarcLocation,
 	}
-
-	return t.schemaTitle
 }
