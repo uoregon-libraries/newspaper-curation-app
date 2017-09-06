@@ -13,7 +13,12 @@ import (
 // be LCCN or SFTP directory depending on the type of directory.
 func (s *Searcher) findFilesystemTitle(titleName, path string) *schema.Title {
 	if s.titleByLoc[path] == nil {
-		var t = createDBTitle(titleName)
+		// Make sure titles are loaded from the DB, and puke on any errors
+		var err = db.LoadTitles()
+		if err != nil {
+			panic(err)
+		}
+		var t = db.LookupTitle(titleName).SchemaTitle()
 		if t == nil {
 			return nil
 		}
@@ -21,28 +26,6 @@ func (s *Searcher) findFilesystemTitle(titleName, path string) *schema.Title {
 		s.addTitle(t)
 	}
 	return s.titleByLoc[path]
-}
-
-// createDBTitle looks up the title in the the database by directory name and LCCN
-func createDBTitle(titleName string) *schema.Title {
-	// If the DB hasn't been set up, this will fail, and the DB really should
-	// always be set up by this point
-	var dbTitle, err = db.FindTitleByDirectory(titleName)
-	if err == nil && dbTitle == nil {
-		dbTitle, err = db.FindTitleByLCCN(titleName)
-	}
-	if err != nil {
-		panic(err)
-	}
-	if dbTitle == nil {
-		return nil
-	}
-
-	return &schema.Title{
-		LCCN:               dbTitle.LCCN,
-		Name:               dbTitle.MarcTitle,
-		PlaceOfPublication: dbTitle.MarcLocation,
-	}
 }
 
 // findOrCreateUnknownFilesystemTitle looks up the title by path and returns it
