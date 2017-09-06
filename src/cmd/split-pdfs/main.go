@@ -12,6 +12,7 @@ import (
 	"log"
 	"os"
 	"schema"
+	"time"
 	"wordutils"
 
 	"github.com/jessevdk/go-flags"
@@ -62,6 +63,10 @@ func getOpts() *config.Config {
 
 func main() {
 	var c = getOpts()
+	var err = db.LoadTitles()
+	if err != nil {
+		log.Fatalf("ERROR - Cannot load titles: %s", err)
+	}
 	for _, issue := range getIssuesAwaitingSplit() {
 		issue.ProcessPDFs(c)
 	}
@@ -81,7 +86,21 @@ func getIssuesAwaitingSplit() []*Issue {
 			log.Printf("WARN - Skipping issue (id %d, location %q): %s", dbi.ID, dbi.Location, dbi.Error)
 			continue
 		}
-		issues[i] = &Issue{DBIssue: dbi, Issue: &schema.Issue{Location: dbi.Location}}
+		var dt time.Time
+		dt, err = time.Parse("2006-01-02", dbi.Date)
+		if err != nil {
+			log.Printf("ERROR - Skipping issue (id %d, location %q): time is formatted incorrectly", dbi.ID, dbi.Location)
+			continue
+		}
+
+		var t = db.LookupTitle(dbi.LCCN).SchemaTitle()
+		var si = &schema.Issue{
+			Location: dbi.Location,
+			Date:     dt,
+			Edition:  dbi.Edition,
+			Title:    t,
+		}
+		issues[i] = &Issue{DBIssue: dbi, Issue: si}
 	}
 
 	return issues
