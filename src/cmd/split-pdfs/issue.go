@@ -4,6 +4,7 @@ import (
 	"config"
 	"db"
 	"fileutil"
+	"fmt"
 	"io/ioutil"
 	"logger"
 	"os"
@@ -11,9 +12,10 @@ import (
 	"regexp"
 	"schema"
 	"shell"
+	"strconv"
 )
 
-var splitPageFilenames = regexp.MustCompile(`^.*/seq-(\d+).pdf$`)
+var splitPageFilenames = regexp.MustCompile(`^seq-(\d+).pdf$`)
 
 // Issue holds a schema issue, db issue, and various bits of specific
 // information for splitting a publisher's uploaded issue into PDF/a pages
@@ -77,6 +79,12 @@ func (i *Issue) process() {
 	if !i.splitPages() {
 		return
 	}
+	if !i.fixPageNames() {
+		return
+	}
+	if !i.convertToPDFA() {
+		return
+	}
 
 	// Copy tmpdir to "<page review>/.wip/<issue dir>", then move it once the
 	// copy succeeded so we can avoid broken dir moves
@@ -115,40 +123,74 @@ func (i *Issue) splitPages() (ok bool) {
 	return shell.Exec("pdfseparate", i.FakeMasterFile, filepath.Join(i.TempDir, "seq-%d.pdf"))
 }
 
+// fixPageNames converts sequenced PDFs to have 4-digit page numbers
+func (i *Issue) fixPageNames() (ok bool) {
+	logger.Info("Renaming pages so they're sortable")
+	var fileinfos, err = fileutil.ReaddirSorted(i.TempDir)
+	if err != nil {
+		logger.Error("Unable to read seq-* files for renumbering")
+		return false
+	}
+
+	for _, fi := range fileinfos {
+		var name = fi.Name()
+		var fullPath = filepath.Join(i.TempDir, name)
+		var matches = splitPageFilenames.FindStringSubmatch(name)
+		if len(matches) != 2 || matches[1] == "" {
+			logger.Error("File %q doesn't match expected pdf page pattern!", fullPath)
+			return false
+		}
+
+		var pageNum int
+		pageNum, err = strconv.Atoi(matches[1])
+		if err != nil {
+			logger.Critical("Error parsing pagenum for %q: %s", fullPath, err)
+			return false
+		}
+
+		var newFullPath = filepath.Join(i.TempDir, fmt.Sprintf("seq-%04d.pdf", pageNum))
+		err = os.Rename(fullPath, newFullPath)
+		if err != nil {
+			logger.Error("Unable to rename %q to %q: %s", fullPath, newFullPath, err)
+			return false
+		}
+	}
+
+	return true
+}
+
+// convertToPDFA finds all files in the temp dir and converts them to PDF/a
+func (i *Issue) convertToPDFA() (ok bool) {
+	logger.Info("Converting pages to PDF/A")
+	var fileinfos, err = fileutil.ReaddirSorted(i.TempDir)
+	if err != nil {
+		logger.Error("Unable to read seq-* files for PDF/a conversion")
+		return false
+	}
+
+	for _, fi := range fileinfos {
+		var fullPath = filepath.Join(i.TempDir, fi.Name())
+		logger.Debug("Converting %q to PDF/a", fullPath)
+		var dotA = fullPath + ".a"
+		var ok = shell.Exec(i.GhostScript, "-dPDFA=2", "-dBATCH", "-dNOPAUSE",
+			"-sProcessColorModel=DeviceCMYK", "-sDEVICE=pdfwrite",
+			"-sPDFACompatibilityPolicy=1", "-sOutputFile="+dotA, fullPath)
+		if !ok {
+			return false
+		}
+
+		err = os.Rename(fullPath+".a", fullPath)
+		if err != nil {
+			logger.Error("Unable to rename PDF/a file %q to %q: %s", dotA, fullPath, err)
+			return false
+		}
+	}
+
+	return true
+}
+
 /*
-  def fix_page_names(self, directory):
-    """Convert sequenced PDFs to have 4-digit page numbers"""
-    self.log.info("Renaming pages so they're sortable")
-    p = re.compile(splitPageFilenames)
-    for pdfpage in utils.find(directory, "seq-*.pdf"):
-      self.log.debug("Renaming %s to be sortable" % pdfpage)
-      m = p.match(pdfpage)
-      if m:
-        shutil.move(pdfpage, os.path.join(directory, "seq-%04d.pdf" % int(m.group(1))))
-      else:
-        self.log.error("File '%s' didn't match expected pdf page pattern!" % pdfpage)
-
-  def convert_to_pdfa(self, tempdir):
-    self.log.info("Converting pages to PDF/A")
-    for pdfpage in utils.find(tempdir, "seq-*.pdf"):
-      self.log.debug("PDF-A for %s" % pdfpage)
-      exit_status = utils.shell([settings.GHOSTSCRIPT, "-dPDFA=2", "-dBATCH", "-dNOPAUSE", "-sProcessColorModel=DeviceCMYK",
-          "-sDEVICE=pdfwrite", "-sPDFACompatibilityPolicy=1",
-          "-sOutputFile=%s.a" % pdfpage, pdfpage])
-      if exit_status != 0:
-        return False
-
-      shutil.move("%s.a" % pdfpage, pdfpage)
-
-    return True
-
   def process_issue(self, pdf_dir, tempdir):
-    self.fix_page_names(tempdir)
-
-    if self.convert_to_pdfa(tempdir) != True:
-      self.log.error("Unable to convert pages to PDF/A")
-      return
-
     self.log.info("Moving split pages to '%s'" % pdf_dir.pdf_split_dir)
     os.makedirs(pdf_dir.pdf_split_dir)
     for pdfpage in utils.find(tempdir, "seq-*.pdf"):
