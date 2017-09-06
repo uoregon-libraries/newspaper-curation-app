@@ -9,7 +9,7 @@ import (
 	"config"
 	"db"
 	"fmt"
-	"log"
+	"logger"
 	"os"
 	"schema"
 	"time"
@@ -50,12 +50,12 @@ func getOpts() *config.Config {
 	var c *config.Config
 	c, err = config.Parse(opts.ConfigFile)
 	if err != nil {
-		log.Fatalf("ERROR - Invalid configuration: %s", err)
+		logger.Fatal("Invalid configuration: %s", err)
 	}
 
 	err = db.Connect(c.DatabaseConnect)
 	if err != nil {
-		log.Fatalf("ERROR - Unable to connect to the database: %s", err)
+		logger.Fatal("Unable to connect to the database: %s", err)
 	}
 
 	return c
@@ -65,7 +65,7 @@ func main() {
 	var c = getOpts()
 	var err = db.LoadTitles()
 	if err != nil {
-		log.Fatalf("ERROR - Cannot load titles: %s", err)
+		logger.Fatal("Cannot load titles: %s", err)
 	}
 	for _, issue := range getIssuesAwaitingSplit() {
 		issue.ProcessPDFs(c)
@@ -77,19 +77,19 @@ func main() {
 func getIssuesAwaitingSplit() []*Issue {
 	var dbIssues, err = db.FindAllAwaitingPDFProcessing()
 	if err != nil {
-		log.Fatalf("ERROR - Unable to find issues needing processing in the database: %s", err)
+		logger.Fatal("Unable to find issues needing processing in the database: %s", err)
 	}
 
 	var issues = make([]*Issue, len(dbIssues))
 	for i, dbi := range dbIssues {
 		if dbi.Error != "" {
-			log.Printf("WARN - Skipping issue (id %d, location %q): %s", dbi.ID, dbi.Location, dbi.Error)
+			logger.Warn("Skipping issue (id %d, location %q): %s", dbi.ID, dbi.Location, dbi.Error)
 			continue
 		}
 		var dt time.Time
 		dt, err = time.Parse("2006-01-02", dbi.Date)
 		if err != nil {
-			log.Printf("ERROR - Skipping issue (id %d, location %q): time is formatted incorrectly", dbi.ID, dbi.Location)
+			logger.Error("Skipping issue (id %d, location %q): time is formatted incorrectly", dbi.ID, dbi.Location)
 			continue
 		}
 

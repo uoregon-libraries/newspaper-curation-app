@@ -4,7 +4,7 @@ import (
 	"config"
 	"db"
 	"io/ioutil"
-	"log"
+	"logger"
 	"os"
 	"regexp"
 	"schema"
@@ -25,14 +25,14 @@ type Issue struct {
 func (i *Issue) ProcessPDFs(config *config.Config) {
 	var tmpdir, err = ioutil.TempDir("", "")
 	if err != nil {
-		log.Printf("ERROR - Unable to create temp dir for issue processing: %s", err)
+		logger.Error("Unable to create temp dir for issue processing: %s", err)
 		return
 	}
-	log.Printf("DEBUG - Processing issue id %d (%q)", i.DBIssue.ID, i.Key())
+	logger.Debug("Processing issue id %d (%q)", i.DBIssue.ID, i.Key())
 	i.process(config, tmpdir)
 	err = os.RemoveAll(tmpdir)
 	if err != nil {
-		log.Printf("WARN - Unable to remove temp dir %q: %s", tmpdir, err)
+		logger.Warn("Unable to remove temp dir %q: %s", tmpdir, err)
 	}
 }
 
