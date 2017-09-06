@@ -28,6 +28,7 @@ func (i *Issue) ProcessPDFs(config *config.Config) {
 		log.Printf("ERROR - Unable to create temp dir for issue processing: %s", err)
 		return
 	}
+	log.Printf("DEBUG - Processing issue id %d (%q)", i.DBIssue.ID, i.Key())
 	i.process(config, tmpdir)
 	os.RemoveAll(tmpdir)
 }

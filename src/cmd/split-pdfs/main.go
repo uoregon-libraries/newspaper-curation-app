@@ -49,12 +49,12 @@ func getOpts() *config.Config {
 	var c *config.Config
 	c, err = config.Parse(opts.ConfigFile)
 	if err != nil {
-		log.Fatalf("Config error: %s", err)
+		log.Fatalf("ERROR - Invalid configuration: %s", err)
 	}
 
 	err = db.Connect(c.DatabaseConnect)
 	if err != nil {
-		log.Fatalf("Error trying to connect to database: %s", err)
+		log.Fatalf("ERROR - Unable to connect to the database: %s", err)
 	}
 
 	return c
