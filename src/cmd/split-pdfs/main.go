@@ -103,8 +103,8 @@ func getIssuesAwaitingSplit() []*Issue {
 			Location: dbi.Location,
 			Date:     dt,
 			Edition:  dbi.Edition,
-			Title:    t,
 		}
+		t.AddIssue(si)
 		issues[i] = &Issue{DBIssue: dbi, Issue: si}
 	}
 
