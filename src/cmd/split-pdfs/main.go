@@ -24,6 +24,7 @@ var opts struct {
 }
 
 var p *flags.Parser
+var titles = make(map[string]*schema.Title)
 
 // wrap is a helper to wrap a usage message at 80 characters and print a
 // newline afterward
@@ -93,7 +94,11 @@ func getIssuesAwaitingSplit() []*Issue {
 			continue
 		}
 
-		var t = db.LookupTitle(dbi.LCCN).SchemaTitle()
+		var t = titles[dbi.LCCN]
+		if t == nil {
+			t = db.LookupTitle(dbi.LCCN).SchemaTitle()
+			titles[dbi.LCCN] = t
+		}
 		var si = &schema.Issue{
 			Location: dbi.Location,
 			Date:     dt,
