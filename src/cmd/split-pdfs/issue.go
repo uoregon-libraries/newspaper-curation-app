@@ -94,6 +94,7 @@ func (i *Issue) createMasterPDF() (ok bool) {
 
 	var fileinfos, err = fileutil.ReaddirSorted(i.Location)
 	if err != nil {
+		logger.Error("Unable to list files in %q: %s", i.Location, err)
 		return false
 	}
 
