@@ -104,7 +104,7 @@ func (i *Issue) createMasterPDF() (ok bool) {
 		"-dCompressFonts=true", "-r150", "-sOutputFile=" + i.FakeMasterFile,
 	}
 	for _, fi := range fileinfos {
-		args = append(args, fi.Name())
+		args = append(args, filepath.Join(i.Location, fi.Name()))
 	}
 	return shell.Exec(i.GhostScript, args...)
 }
