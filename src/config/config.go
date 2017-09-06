@@ -20,6 +20,9 @@ type Config struct {
 	// individual database settings
 	DatabaseConnect string
 
+	// GhostScript stores the path to the ghostscript binary for processing PDFs
+	GhostScript string `setting:"GHOSTSCRIPT"`
+
 	// Paths to the various places we expect to find files
 	MasterPDFUploadPath            string `setting:"MASTER_PDF_UPLOAD_PATH" type:"path"`
 	MasterPDFBackupPath            string `setting:"MASTER_PDF_BACKUP_PATH" type:"path"`
