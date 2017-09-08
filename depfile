@@ -1,3 +1,3 @@
 github.com/gorilla/mux version=1.3.0
 github.com/jessevdk/go-flags version=1.2.0
-github.com/Nerdmaster/magicsql version=0.6.0
+github.com/Nerdmaster/magicsql version=0.6.1
