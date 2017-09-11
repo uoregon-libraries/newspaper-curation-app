@@ -23,6 +23,7 @@ type Issue struct {
 	*schema.Issue
 	DBIssue        *db.Issue
 	FakeMasterFile string // Where we store the processed, combined PDF
+	MasterBackup   string // Where the real master file(s) will eventually live
 	TempDir        string // Where we do all page-level processing
 	WIPDir         string // Where we copy files after processing
 	FinalOutputDir string // Where we move files after the copy was successful
@@ -47,6 +48,7 @@ func (i *Issue) ProcessPDFs(config *config.Config) {
 
 	i.WIPDir = filepath.Join(config.PDFPageReviewPath, ".wip-"+i.Dir())
 	i.FinalOutputDir = filepath.Join(config.PDFPageReviewPath, i.Dir())
+	i.MasterBackup = filepath.Join(config.MasterPDFBackupPath, i.Dir())
 
 	if !fileutil.MustNotExist(i.WIPDir) {
 		logger.Error("WIP dir %q already exists", i.WIPDir)
@@ -54,6 +56,10 @@ func (i *Issue) ProcessPDFs(config *config.Config) {
 	}
 	if !fileutil.MustNotExist(i.FinalOutputDir) {
 		logger.Error("Final output dir %q already exists", i.FinalOutputDir)
+		return
+	}
+	if !fileutil.MustNotExist(i.MasterBackup) {
+		logger.Error("Master backup dir %q already exists", i.MasterBackup)
 		return
 	}
 
@@ -111,6 +117,9 @@ func (i *Issue) process() (ok bool) {
 		return false
 	}
 	if !i.moveToPageReview() {
+		return false
+	}
+	if !i.backupOriginals() {
 		return false
 	}
 
@@ -222,6 +231,32 @@ func (i *Issue) moveToPageReview() (ok bool) {
 	err = os.Rename(i.WIPDir, i.FinalOutputDir)
 	if err != nil {
 		logger.Error("Unable to rename WIP directory %q to %q", i.WIPDir, i.FinalOutputDir)
+		return false
+	}
+
+	return true
+}
+
+// backupOriginals stores the original uploads in the master backup location.
+// If this fails, we have a problem, because the pages were already split and
+// moved.  All we can do is log critical errors.
+func (i *Issue) backupOriginals() (ok bool) {
+	var masterParent = filepath.Dir(i.MasterBackup)
+	var err = os.MkdirAll(masterParent, 0700)
+	if err != nil {
+		logger.Critical("Unable to create master backup parent %q: %s", masterParent, err)
+		return false
+	}
+
+	err = fileutil.CopyDirectory(i.Location, i.MasterBackup)
+	if err != nil {
+		logger.Critical("Unable to copy master file(s) from %q to %q: %s", i.Location, i.MasterBackup, err)
+		return false
+	}
+
+	err = os.RemoveAll(i.Location)
+	if err != nil {
+		logger.Critical("Unable to remove original files after making master backup: %s", err)
 		return false
 	}
 
