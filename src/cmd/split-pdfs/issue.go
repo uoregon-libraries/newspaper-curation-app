@@ -103,10 +103,9 @@ func (i *Issue) process() {
 	if !i.convertToPDFA() {
 		return
 	}
-
-	// Copy tmpdir to "<page review>/.wip/<issue dir>", then move it once the
-	// copy succeeded so we can avoid broken dir moves
-	// TODO: Copy tmpdir -> config.PDFPageReviewPath/.wip/issuekey
+	if !i.moveToPageReview() {
+		return
+	}
 
 	// Copy the original file(s) into a "-wip" folder, remove the original, and
 	// then rename the "-wip" folder
@@ -207,16 +206,25 @@ func (i *Issue) convertToPDFA() (ok bool) {
 	return true
 }
 
+// moveToPageReview copies tmpdir to the WIPDir, then moves it to the final
+// location once the copy succeeded so we can avoid broken dir moves
+func (i *Issue) moveToPageReview() (ok bool) {
+	var err = fileutil.CopyDirectory(i.TempDir, i.WIPDir)
+	if err != nil {
+		logger.Error("Unable to move temporary directory %q to %q", i.TempDir, i.WIPDir)
+		return false
+	}
+	err = os.Rename(i.WIPDir, i.FinalOutputDir)
+	if err != nil {
+		logger.Error("Unable to rename WIP directory %q to %q", i.WIPDir, i.FinalOutputDir)
+		return false
+	}
+
+	return true
+}
+
 /*
   def process_issue(self, pdf_dir, tempdir):
-    self.log.info("Moving split pages to '%s'" % pdf_dir.pdf_split_dir)
-    os.makedirs(pdf_dir.pdf_split_dir)
-    for pdfpage in utils.find(tempdir, "seq-*.pdf"):
-      shutil.move(pdfpage, pdf_dir.pdf_split_dir)
-
-    self.log.info("Tagging file hashes")
-    utils.tag_pdf_hashes(pdf_dir.pdf_split_dir)
-
     self.log.info("Backing up to '%s' and cleaning up" % pdf_dir.master_backup)
     d, f = os.path.split(pdf_dir.master_backup)
     if not os.path.exists(d):
