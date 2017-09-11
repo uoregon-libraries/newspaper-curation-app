@@ -39,7 +39,7 @@ func (i *Issue) Dir() string {
 // in a "best guess" order.  Files are then put into place for manual
 // processors to reorder if necessary, remove duped pages, etc.
 func (i *Issue) ProcessPDFs(config *config.Config) {
-	logger.Debug("Processing issue id %d (%q)", i.DBIssue.ID, i.Dir())
+	logger.Debug("Processing issue id %d (%q)", i.DBIssue.ID, i.Key())
 	if !i.makeTempFiles() {
 		return
 	}
