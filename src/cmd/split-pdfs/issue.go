@@ -122,6 +122,9 @@ func (i *Issue) process() (ok bool) {
 	if !i.backupOriginals() {
 		return false
 	}
+	if !i.createMetaJSON() {
+		return false
+	}
 
 	return true
 }
@@ -263,15 +266,9 @@ func (i *Issue) backupOriginals() (ok bool) {
 	return true
 }
 
-/*
-  def process_issue(self, pdf_dir, tempdir):
-    self.log.info("Backing up to '%s' and cleaning up" % pdf_dir.master_backup)
-    d, f = os.path.split(pdf_dir.master_backup)
-    if not os.path.exists(d):
-      os.makedirs(d)
-    shutil.move(pdf_dir.full_path, pdf_dir.master_backup)
-
-    self.log.info("Storing generated path to issue for linking backup")
-    metafile = "%s/.meta.json" % pdf_dir.pdf_split_dir
-    utils.buildmeta(metafile, pdf_dir.structured_subpath, settings.PDF_BATCH_MARC_ORG_CODE)
-*/
+// createMetaJSON builds and writes out a basic metadata file for legacy
+// processors to use
+func (i *Issue) createMetaJSON() (ok bool) {
+	logger.Warn("Not implemented!")
+	return false
+}
