@@ -24,21 +24,39 @@ type Issue struct {
 	DBIssue        *db.Issue
 	FakeMasterFile string // Where we store the processed, combined PDF
 	TempDir        string // Where we do all page-level processing
-	OutputDir      string // Where we put files when they're considered complete
+	WIPDir         string // Where we copy files after processing
+	FinalOutputDir string // Where we move files after the copy was successful
 	GhostScript    string // The path to gs for combining the fake master PDF
+}
+
+// Dir gives us a single-level directory for the issue in a similar way to the
+// schema.Issue.Key() function, but with no path delimiters
+func (i *Issue) Dir() string {
+	return fmt.Sprintf("%s-%s%02d", i.Title.LCCN, i.DateString(), i.Edition)
 }
 
 // ProcessPDFs combines, splits, and then renames files so they're sequential
 // in a "best guess" order.  Files are then put into place for manual
 // processors to reorder if necessary, remove duped pages, etc.
 func (i *Issue) ProcessPDFs(config *config.Config) {
-	logger.Debug("Processing issue id %d (%q)", i.DBIssue.ID, i.Key())
+	logger.Debug("Processing issue id %d (%q)", i.DBIssue.ID, i.Dir())
 	if !i.makeTempFiles() {
 		return
 	}
 	defer i.removeTempFiles()
 
-	i.OutputDir = config.PDFPageReviewPath
+	i.WIPDir = filepath.Join(config.PDFPageReviewPath, ".wip-"+i.Dir())
+	i.FinalOutputDir = filepath.Join(config.PDFPageReviewPath, i.Dir())
+
+	if !fileutil.MustNotExist(i.WIPDir) {
+		logger.Error("WIP dir %q already exists", i.WIPDir)
+		return
+	}
+	if !fileutil.MustNotExist(i.FinalOutputDir) {
+		logger.Error("Final output dir %q already exists", i.FinalOutputDir)
+		return
+	}
+
 	i.GhostScript = config.GhostScript
 	i.process()
 }
