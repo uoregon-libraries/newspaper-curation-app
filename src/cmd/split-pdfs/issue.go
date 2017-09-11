@@ -58,7 +58,14 @@ func (i *Issue) ProcessPDFs(config *config.Config) {
 	}
 
 	i.GhostScript = config.GhostScript
-	i.process()
+	if i.process() {
+		i.DBIssue.Location = i.FinalOutputDir
+		i.DBIssue.WorkflowStep = db.WSAwaitingManualProcessing
+		var err = i.DBIssue.Save()
+		if err != nil {
+			logger.Critical("Unable to update workflow metadata after page splitting: %s", err)
+		}
+	}
 }
 
 func (i *Issue) makeTempFiles() (ok bool) {
@@ -90,26 +97,24 @@ func (i *Issue) removeTempFiles() {
 	}
 }
 
-func (i *Issue) process() {
+func (i *Issue) process() (ok bool) {
 	if !i.createMasterPDF() {
-		return
+		return false
 	}
 	if !i.splitPages() {
-		return
+		return false
 	}
 	if !i.fixPageNames() {
-		return
+		return false
 	}
 	if !i.convertToPDFA() {
-		return
+		return false
 	}
 	if !i.moveToPageReview() {
-		return
+		return false
 	}
 
-	// Copy the original file(s) into a "-wip" folder, remove the original, and
-	// then rename the "-wip" folder
-	// TODO: copy to config.MasterPDFBackupPath
+	return true
 }
 
 // createMasterPDF combines pages and pre-processes PDFs - ghostscript seems to
