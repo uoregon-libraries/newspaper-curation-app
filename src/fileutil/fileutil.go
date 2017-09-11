@@ -34,10 +34,10 @@ func Exists(path string) bool {
 	return err == nil
 }
 
-// DoesNotExist is used when we need to be absolutely certain a path doesn't
+// MustNotExist is used when we need to be absolutely certain a path doesn't
 // exist, such as when a directory's existence means a duplicate operation
 // occurred.
-func DoesNotExist(path string) bool {
+func MustNotExist(path string) bool {
 	_, err := os.Stat(path)
 	return err != nil && os.IsNotExist(err)
 }

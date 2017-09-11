@@ -114,6 +114,19 @@ func FindIssueByKey(key string) (*Issue, error) {
 	return i, op.Err()
 }
 
+// FindAllAwaitingPDFProcessing finds, deserializes, and returns all issues
+// with a workflow status of WSAwaitingManualProcessing
+func FindAllAwaitingPDFProcessing() ([]*Issue, error) {
+	var op = DB.Operation()
+	op.Dbg = Debug
+	var issues = make([]*Issue, 0)
+	op.Select("issues", &Issue{}).Where("workflow_step = ?", int(WSAwaitingPDFProcessing)).AllObjects(&issues)
+	for _, i := range issues {
+		i.deserialize()
+	}
+	return issues, op.Err()
+}
+
 // NewIssue sets up a structure for storing issue metadata in the database
 func NewIssue(location string) *Issue {
 	return &Issue{Location: location, NeedsDerivatives: true}
