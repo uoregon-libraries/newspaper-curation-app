@@ -30,7 +30,7 @@ func CopyDirectory(srcPath, dstPath string) error {
 	if !Exists(srcPath) {
 		return fmt.Errorf("source %q does not exist", srcPath)
 	}
-	if !DoesNotExist(dstPath) {
+	if !MustNotExist(dstPath) {
 		return fmt.Errorf("destination %q already exists", dstPath)
 	}
 

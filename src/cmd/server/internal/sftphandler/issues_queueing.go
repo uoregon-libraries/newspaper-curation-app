@@ -109,7 +109,7 @@ func startPDFWorkflow(i *Issue, workflowPath string) {
 
 	// Verify new path will work
 	var newLocation = filepath.Join(workflowPath, i.Key())
-	if !fileutil.DoesNotExist(newLocation) {
+	if !fileutil.MustNotExist(newLocation) {
 		dbi.Info = fmt.Sprintf("The issue was unable to be queued due to the " +
 			"destination folder already existing.  You may attempt to queue this " +
 			"issue again if there are no other errors, but it may be a duplicate.")
