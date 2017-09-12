@@ -6,6 +6,7 @@ package logger
 
 import (
 	"fmt"
+	"io"
 	"os"
 	"path/filepath"
 	"time"
@@ -21,40 +22,85 @@ const (
 	crit  logLevel = "CRIT"
 )
 
+// Logger holds basic data to format log messages
+type Logger struct {
+	TimeFormat string
+	AppName    string
+	Output     io.Writer
+}
+
+// DefaultLogger gives an app semi-sane logging without creating and managing a
+// Logger instance
+var DefaultLogger = Logger{
+	TimeFormat: "2006/01/02 15:04:05.000",
+	AppName:    filepath.Base(os.Args[0]),
+	Output:     os.Stderr,
+}
+
 // log is the central logger for all helpers to use
-func log(level logLevel, message string) {
-	var timeString = time.Now().Format("2006/01/02 15:04:05.000")
-	var appName = filepath.Base(os.Args[0])
-	var output = fmt.Sprintf("%s - %s - %s - %s\n", timeString, appName, level, message)
-	fmt.Fprintf(os.Stderr, output)
+func (l *Logger) log(level logLevel, message string) {
+	var timeString = time.Now().Format(l.TimeFormat)
+	var output = fmt.Sprintf("%s - %s - %s - %s\n", timeString, l.AppName, level, message)
+	fmt.Fprintf(l.Output, output)
+}
+
+// Debug logs a debug-level message using the default logger
+func Debug(format string, args ...interface{}) {
+	DefaultLogger.Debug(format, args...)
 }
 
 // Debug logs a debug-level message
-func Debug(format string, args ...interface{}) {
-	log(debug, fmt.Sprintf(format, args...))
+func (l *Logger) Debug(format string, args ...interface{}) {
+	l.log(debug, fmt.Sprintf(format, args...))
+}
+
+// Info logs an info-level message using the default logger
+func Info(format string, args ...interface{}) {
+	DefaultLogger.Info(format, args...)
 }
 
 // Info logs an info-level message
-func Info(format string, args ...interface{}) {
-	log(info, fmt.Sprintf(format, args...))
+func (l *Logger) Info(format string, args ...interface{}) {
+	l.log(info, fmt.Sprintf(format, args...))
+}
+
+// Warn logs a warn-level message using the default logger
+func Warn(format string, args ...interface{}) {
+	DefaultLogger.Warn(format, args...)
 }
 
 // Warn logs a warn-level message
-func Warn(format string, args ...interface{}) {
-	log(warn, fmt.Sprintf(format, args...))
+func (l *Logger) Warn(format string, args ...interface{}) {
+	l.log(warn, fmt.Sprintf(format, args...))
+}
+
+// Error logs an error-level message using the default logger
+func Error(format string, args ...interface{}) {
+	DefaultLogger.Error(format, args...)
 }
 
 // Error logs an error-level message
-func Error(format string, args ...interface{}) {
-	log(err, fmt.Sprintf(format, args...))
+func (l *Logger) Error(format string, args ...interface{}) {
+	l.log(err, fmt.Sprintf(format, args...))
+}
+
+// Critical logs a critical-level message using the default logger
+func Critical(format string, args ...interface{}) {
+	DefaultLogger.Critical(format, args...)
 }
 
 // Critical logs a critical-level message
-func Critical(format string, args ...interface{}) {
-	log(crit, fmt.Sprintf(format, args...))
+func (l *Logger) Critical(format string, args ...interface{}) {
+	l.log(crit, fmt.Sprintf(format, args...))
 }
 
+// Fatal logs a critical-level message using the default logger, then exits
 func Fatal(format string, args ...interface{}) {
-	log(crit, fmt.Sprintf(format, args...))
+	DefaultLogger.Fatal(format, args...)
+}
+
+// Fatal logs a critical-level message, then exits
+func (l *Logger) Fatal(format string, args ...interface{}) {
+	l.log(crit, fmt.Sprintf(format, args...))
 	os.Exit(1)
 }
