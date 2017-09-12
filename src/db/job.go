@@ -1,21 +1,26 @@
 package db
 
+import "time"
+
 // JobLog is a single log entry attached to a job
 type JobLog struct {
-	ID       int `sql:",primary"`
-	JobID    int
-	LogLevel string
-	Message  string
+	ID        int `sql:",primary"`
+	JobID     int
+	CreatedAt time.Time `sql:",readonly"`
+	LogLevel  string
+	Message   string
 }
 
 // A Job is anything the app needs to process and track in the background
 type Job struct {
-	ID       int    `sql:",primary"`
-	Type     string `sql:"job_type"`
-	ObjectID int
-	Location string
-	Status   string
-	logs     []*JobLog
+	ID            int       `sql:",primary"`
+	CreatedAt     time.Time `sql:",readonly"`
+	NextAttemptAt time.Time `sql:",noinsert"`
+	Type          string    `sql:"job_type"`
+	ObjectID      int
+	Location      string
+	Status        string
+	logs          []*JobLog
 }
 
 func FindJob(id int) (*Job, error) {
