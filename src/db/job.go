@@ -23,6 +23,7 @@ type Job struct {
 	logs          []*JobLog
 }
 
+// FindJob gets a job by its id
 func FindJob(id int) (*Job, error) {
 	var op = DB.Operation()
 	op.Dbg = Debug
@@ -34,6 +35,15 @@ func FindJob(id int) (*Job, error) {
 	return j, op.Err()
 }
 
+// FindJobsByStatusAndType returns all jobs of the given status and type
+func FindJobsByStatusAndType(st string, t string) ([]*Job, error) {
+	var op = DB.Operation()
+	op.Dbg = Debug
+	var list []*Job
+	op.Select("jobs", &Job{}).Where("status = ? AND job_type = ?", st, t).AllObjects(&list)
+	return list, op.Err()
+}
+
 // Logs lazy-loads all logs for this job from the database
 func (j *Job) Logs() []*JobLog {
 	if j.logs == nil {
@@ -43,4 +53,21 @@ func (j *Job) Logs() []*JobLog {
 	}
 
 	return j.logs
+}
+
+// WriteLog stores a log message on this job
+func (j *Job) WriteLog(level string, message string) error {
+	var l = &JobLog{JobID: j.ID, LogLevel: level, Message: message}
+	var op = DB.Operation()
+	op.Dbg = Debug
+	op.Save("job_logs", l)
+	return op.Err()
+}
+
+// Save creates or updates the Job in the jobs table
+func (j *Job) Save() error {
+	var op = DB.Operation()
+	op.Dbg = Debug
+	op.Save("jobs", j)
+	return op.Err()
 }

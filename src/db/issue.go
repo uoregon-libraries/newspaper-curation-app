@@ -32,6 +32,19 @@ type Issue struct {
 	PageLabels    []string `sql:"-"`
 }
 
+// FindIssue looks for an issue by its id
+func FindIssue(id int) (*Issue, error) {
+	var op = DB.Operation()
+	op.Dbg = Debug
+	var i = &Issue{}
+	var ok = op.Select("issues", &Issue{}).Where("id = ?", id).First(i)
+	if !ok {
+		return nil, op.Err()
+	}
+	i.deserialize()
+	return i, op.Err()
+}
+
 // FindIssueByKey looks for an issue in the database that has the given issue key
 func FindIssueByKey(key string) (*Issue, error) {
 	var parts = strings.Split(key, "/")

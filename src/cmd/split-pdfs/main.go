@@ -9,10 +9,10 @@ import (
 	"config"
 	"db"
 	"fmt"
+	"jobs"
 	"logger"
 	"os"
 	"schema"
-	"time"
 	"wordutils"
 
 	"github.com/jessevdk/go-flags"
@@ -68,45 +68,9 @@ func main() {
 	if err != nil {
 		logger.Fatal("Cannot load titles: %s", err)
 	}
-	for _, issue := range getIssuesAwaitingSplit() {
-		issue.ProcessPDFs(c)
+	logger.Debug("Looking for page split jobs to process")
+	for _, job := range jobs.FindPendingPageSplitJobs() {
+		job.ProcessPDFs(c)
 	}
-}
-
-// getIssuesAwaitingSplit finds all issues in the database which are awaiting
-// PDF processing
-func getIssuesAwaitingSplit() []*Issue {
-	var dbIssues, err = db.FindAllAwaitingPDFProcessing()
-	if err != nil {
-		logger.Fatal("Unable to find issues needing processing in the database: %s", err)
-	}
-
-	var issues = make([]*Issue, len(dbIssues))
-	for i, dbi := range dbIssues {
-		if dbi.Error != "" {
-			logger.Warn("Skipping issue (id %d, location %q): %s", dbi.ID, dbi.Location, dbi.Error)
-			continue
-		}
-		var dt time.Time
-		dt, err = time.Parse("2006-01-02", dbi.Date)
-		if err != nil {
-			logger.Error("Skipping issue (id %d, location %q): time is formatted incorrectly", dbi.ID, dbi.Location)
-			continue
-		}
-
-		var t = titles[dbi.LCCN]
-		if t == nil {
-			t = db.LookupTitle(dbi.LCCN).SchemaTitle()
-			titles[dbi.LCCN] = t
-		}
-		var si = &schema.Issue{
-			Location: dbi.Location,
-			Date:     dt,
-			Edition:  dbi.Edition,
-		}
-		t.AddIssue(si)
-		issues[i] = &Issue{DBIssue: dbi, Issue: si}
-	}
-
-	return issues
+	logger.Debug("Complete")
 }
