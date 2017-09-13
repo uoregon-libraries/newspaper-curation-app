@@ -35,30 +35,45 @@ func FindPendingPageSplitJobs() []*PageSplit {
 	}
 
 	var pageSplits []*PageSplit
-	for _, dbJob := range dbJobs {
-		var dbi *db.Issue
-		dbi, err = db.FindIssue(dbJob.ObjectID)
-		if err != nil {
-			logger.Critical("Unable to find issue for job %d: %s", dbJob.ID, err)
-			continue
-		}
+	dbJobsToIssueJobs(dbJobs, func(ij *IssueJob) {
+		pageSplits = append(pageSplits, &PageSplit{IssueJob: ij})
+	})
 
-		var si *schema.Issue
-		si, err = dbToSchemaIssue(dbi)
-		if err != nil {
-			logger.Critical("Unable to prepare a schema.Issue for database issue %d: %s", dbi.ID, err)
-			continue
-		}
-
-		pageSplits = append(pageSplits, &PageSplit{
-			IssueJob: &IssueJob{
-				Job: NewJob(dbJob),
-				DBIssue: dbi,
-				Issue:   si,
-			},
-		})
-	}
 	return pageSplits
+}
+
+// dbJobToIssueJob setups up an IssueJob from a database Job, centralizing the
+// common validations and data manipulation
+func dbJobToIssueJob(dbJob *db.Job) *IssueJob {
+	var dbi, err = db.FindIssue(dbJob.ObjectID)
+	if err != nil {
+		logger.Critical("Unable to find issue for job %d: %s", dbJob.ID, err)
+		return nil
+	}
+
+	var si *schema.Issue
+	si, err = dbToSchemaIssue(dbi)
+	if err != nil {
+		logger.Critical("Unable to prepare a schema.Issue for database issue %d: %s", dbi.ID, err)
+		return nil
+	}
+
+	return &IssueJob{
+		Job:     NewJob(dbJob),
+		DBIssue: dbi,
+		Issue:   si,
+	}
+}
+
+// dbJobsToIssueJobs simplifies the conversion / processing of lists of database Jobs
+func dbJobsToIssueJobs(dbJobs []*db.Job, cb func(*IssueJob)) {
+	for _, dbJob := range dbJobs {
+		var j = dbJobToIssueJob(dbJob)
+		if j == nil {
+			continue
+		}
+		cb(j)
+	}
 }
 
 // dbToSchemaIssue is a simple helper to make a job-friendly schema.Issue out
