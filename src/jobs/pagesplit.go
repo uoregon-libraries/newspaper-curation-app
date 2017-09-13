@@ -32,10 +32,10 @@ func (ps *PageSplit) Dir() string {
 	return fmt.Sprintf("%s-%s%02d", ps.Issue.Title.LCCN, ps.Issue.DateString(), ps.Issue.Edition)
 }
 
-// ProcessPDFs combines, splits, and then renames files so they're sequential
-// in a "best guess" order.  Files are then put into place for manual
-// processors to reorder if necessary, remove duped pages, etc.
-func (ps *PageSplit) ProcessPDFs(config *config.Config) {
+// Process combines, splits, and then renames files so they're sequential in a
+// "best guess" order.  Files are then put into place for manual processors to
+// reorder if necessary, remove duped pages, etc.
+func (ps *PageSplit) Process(config *config.Config) {
 	ps.Logger.Debug("Processing issue id %d (%q)", ps.DBIssue.ID, ps.Issue.Key())
 	if !ps.makeTempFiles() {
 		return

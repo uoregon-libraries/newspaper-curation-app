@@ -70,7 +70,7 @@ func main() {
 	}
 	logger.Debug("Looking for page split jobs to process")
 	for _, job := range jobs.FindPendingPageSplitJobs() {
-		job.ProcessPDFs(c)
+		job.Process(c)
 	}
 	logger.Debug("Complete")
 }
