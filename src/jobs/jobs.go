@@ -25,12 +25,6 @@ const (
 	JobStatusSuccessful JobStatus = "success"
 )
 
-// QueuePageSplit creates and queues a page-splitting job with the given data
-func QueuePageSplit(t JobType, id int, path string) error {
-	var j = &db.Job{Type: string(t), ObjectID: id, Location: path, Status: string(JobStatusPending)}
-	return j.Save()
-}
-
 // FindPendingPageSplitJobs returns PageSplits that need to be processed
 func FindPendingPageSplitJobs() []*PageSplit {
 	var dbJobs, err = db.FindJobsByStatusAndType(string(JobStatusPending), string(JobTypePageSplit))
