@@ -2,6 +2,7 @@ package sftphandler
 
 import (
 	"cmd/server/internal/responder"
+	"config"
 	"fmt"
 	"legacyfinder"
 	"logger"
@@ -15,10 +16,7 @@ import (
 var (
 	sftpSearcher *SFTPSearcher
 	watcher      *legacyfinder.Watcher
-
-	// workflowPath stores the directory where issues are moved when queued
-	// for processing
-	workflowPath string
+	conf         *config.Config
 
 	// basePath is the path to the main sftp page.  Subpages all start with this path.
 	basePath string
@@ -39,10 +37,10 @@ var (
 
 // Setup sets up all the SFTP-specific routing rules and does any other
 // init necessary for SFTP reports handling
-func Setup(r *mux.Router, sftpWebPath, sftpDiskPath, sftpWorkflowPath string, w *legacyfinder.Watcher) {
+func Setup(r *mux.Router, sftpWebPath string, c *config.Config, w *legacyfinder.Watcher) {
+	conf = c
 	watcher = w
 	basePath = sftpWebPath
-	workflowPath = sftpWorkflowPath
 	var s = r.PathPrefix(basePath).Subrouter()
 	s.Path("").Handler(responder.CanViewSFTPIssues(HomeHandler))
 	s.Path("/{lccn}").Handler(responder.CanViewSFTPIssues(TitleHandler))
@@ -50,7 +48,7 @@ func Setup(r *mux.Router, sftpWebPath, sftpDiskPath, sftpWorkflowPath string, w 
 	s.Path("/{lccn}/{issue}/workflow/{action}").Methods("POST").Handler(responder.CanWorkflowSFTPIssues(IssueWorkflowHandler))
 	s.Path("/{lccn}/{issue}/{filename}").Handler(responder.CanViewSFTPIssues(PDFFileHandler))
 
-	sftpSearcher = newSFTPSearcher(sftpDiskPath)
+	sftpSearcher = newSFTPSearcher(conf.MasterPDFUploadPath)
 	Layout = responder.Layout.Clone()
 	Layout.Path = path.Join(Layout.Path, "sftp")
 	HomeTmpl = Layout.MustBuild("home.go.html")
@@ -164,12 +162,10 @@ func IssueWorkflowHandler(w http.ResponseWriter, req *http.Request) {
 	var action = mux.Vars(r.Request)["action"]
 	switch action {
 	case "queue":
-		var err = queueIssueForProcessing(issue, workflowPath)
+		var ok, msg = queueSFTPIssueMove(issue)
 		var cname = "Info"
-		var msg = fmt.Sprintf("Issue '%s' queued for processing", issue.Slug)
-		if err != nil {
+		if !ok {
 			cname = "Alert"
-			msg = fmt.Sprintf("Unable to queue %q for processing: %s", issue.Slug, err)
 		}
 
 		http.SetCookie(w, &http.Cookie{Name: cname, Value: msg, Path: "/"})
