@@ -37,6 +37,9 @@ func newSFTPSearcher(path string) *SFTPSearcher {
 // filesystem if necessary.  If issues were loaded, the various types are
 // decorated as needed for web presentation.
 func (s *SFTPSearcher) load() error {
+	s.Lock()
+	defer s.Unlock()
+
 	if time.Since(s.lastLoaded) < time.Second*secondsBetweenSFTPReload {
 		return nil
 	}
@@ -52,9 +55,6 @@ func (s *SFTPSearcher) load() error {
 
 // Titles returns the list of titles in the SFTP directory
 func (s *SFTPSearcher) Titles() ([]*Title, error) {
-	s.Lock()
-	defer s.Unlock()
-
 	var err = s.load()
 	if err != nil && time.Since(s.lastLoaded) > secondsBeforeFatalError {
 		return nil, err
@@ -71,8 +71,6 @@ func (s *SFTPSearcher) ForceReload() {
 
 // TitleLookup returns the Title for a given LCCN
 func (s *SFTPSearcher) TitleLookup(lccn string) *Title {
-	s.Lock()
-	defer s.Unlock()
 	s.load()
 	return s.titleLookup[lccn]
 }
