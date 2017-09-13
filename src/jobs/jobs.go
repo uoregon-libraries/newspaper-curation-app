@@ -68,9 +68,9 @@ func dbToSchemaIssue(dbi *db.Issue) (*schema.Issue, error) {
 
 	var t = db.LookupTitle(dbi.LCCN).SchemaTitle()
 	var si = &schema.Issue{
-		Date:     dt,
-		Edition:  dbi.Edition,
-		Title:    t,
+		Date:    dt,
+		Edition: dbi.Edition,
+		Title:   t,
 	}
 	return si, nil
 }
