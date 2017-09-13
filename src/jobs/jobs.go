@@ -51,9 +51,11 @@ func FindPendingPageSplitJobs() []*PageSplit {
 		}
 
 		pageSplits = append(pageSplits, &PageSplit{
-			Job:     NewJob(dbJob),
-			DBIssue: dbi,
-			Issue:   si,
+			IssueJob: &IssueJob{
+				Job: NewJob(dbJob),
+				DBIssue: dbi,
+				Issue:   si,
+			},
 		})
 	}
 	return pageSplits

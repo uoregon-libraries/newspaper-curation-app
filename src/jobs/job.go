@@ -6,6 +6,7 @@ import (
 	"logger"
 	"os"
 	"path/filepath"
+	"schema"
 	"strings"
 )
 
@@ -14,6 +15,14 @@ import (
 type Job struct {
 	*db.Job
 	Logger *logger.Logger
+}
+
+// IssueJob wraps the Job type to add things needed in all jobs tied to
+// specific issues
+type IssueJob struct {
+	*Job
+	Issue   *schema.Issue
+	DBIssue *db.Issue
 }
 
 // jobLogWriter is our internal structure, which implements io.Writer in order

@@ -2,27 +2,22 @@ package jobs
 
 import (
 	"config"
-	"db"
 	"fileutil"
 	"fmt"
 	"io/ioutil"
 	"os"
 	"path/filepath"
 	"regexp"
-	"schema"
 	"shell"
 	"strconv"
 )
 
 var splitPageFilenames = regexp.MustCompile(`^seq-(\d+).pdf$`)
 
-// PageSplit holds a schema issue, db issue, and a job, as well as other
-// page-split-specific bits of information for splitting a publisher's uploaded
-// issue into PDF/a pages
+// PageSplit is an IssueJob with job-specific information and logic for
+// splitting a publisher's uploaded issue into PDF/a pages
 type PageSplit struct {
-	Job            *Job
-	Issue          *schema.Issue
-	DBIssue        *db.Issue
+	*IssueJob
 	FakeMasterFile string // Where we store the processed, combined PDF
 	MasterBackup   string // Where the real master file(s) will eventually live
 	TempDir        string // Where we do all page-level processing
@@ -41,7 +36,7 @@ func (ps *PageSplit) Dir() string {
 // in a "best guess" order.  Files are then put into place for manual
 // processors to reorder if necessary, remove duped pages, etc.
 func (ps *PageSplit) ProcessPDFs(config *config.Config) {
-	ps.Job.Logger.Debug("Processing issue id %d (%q)", ps.DBIssue.ID, ps.Issue.Key())
+	ps.Logger.Debug("Processing issue id %d (%q)", ps.DBIssue.ID, ps.Issue.Key())
 	if !ps.makeTempFiles() {
 		return
 	}
@@ -52,24 +47,24 @@ func (ps *PageSplit) ProcessPDFs(config *config.Config) {
 	ps.MasterBackup = filepath.Join(config.MasterPDFBackupPath, ps.Dir())
 
 	if !fileutil.MustNotExist(ps.WIPDir) {
-		ps.Job.Logger.Error("WIP dir %q already exists", ps.WIPDir)
+		ps.Logger.Error("WIP dir %q already exists", ps.WIPDir)
 		return
 	}
 	if !fileutil.MustNotExist(ps.FinalOutputDir) {
-		ps.Job.Logger.Error("Final output dir %q already exists", ps.FinalOutputDir)
+		ps.Logger.Error("Final output dir %q already exists", ps.FinalOutputDir)
 		return
 	}
 	if !fileutil.MustNotExist(ps.MasterBackup) {
-		ps.Job.Logger.Error("Master backup dir %q already exists", ps.MasterBackup)
+		ps.Logger.Error("Master backup dir %q already exists", ps.MasterBackup)
 		return
 	}
 
 	ps.GhostScript = config.GhostScript
 	if ps.process() {
-		ps.Job.Status = string(JobStatusSuccessful)
-		var err = ps.Job.Save()
+		ps.Status = string(JobStatusSuccessful)
+		var err = ps.Save()
 		if err != nil {
-			ps.Job.Logger.Critical("Unable to update workflow metadata after page splitting: %s", err)
+			ps.Logger.Critical("Unable to update workflow metadata after page splitting: %s", err)
 			return
 		}
 
@@ -80,7 +75,7 @@ func (ps *PageSplit) ProcessPDFs(config *config.Config) {
 func (ps *PageSplit) makeTempFiles() (ok bool) {
 	var f, err = ioutil.TempFile("", "splitter-master-")
 	if err != nil {
-		ps.Job.Logger.Error("Unable to create temp file for combining PDFs: %s", err)
+		ps.Logger.Error("Unable to create temp file for combining PDFs: %s", err)
 		return false
 	}
 	ps.FakeMasterFile = f.Name()
@@ -88,7 +83,7 @@ func (ps *PageSplit) makeTempFiles() (ok bool) {
 
 	ps.TempDir, err = ioutil.TempDir("", "splitter-pages-")
 	if err != nil {
-		ps.Job.Logger.Error("Unable to create temp dir for issue processing: %s", err)
+		ps.Logger.Error("Unable to create temp dir for issue processing: %s", err)
 		return false
 	}
 
@@ -98,11 +93,11 @@ func (ps *PageSplit) makeTempFiles() (ok bool) {
 func (ps *PageSplit) removeTempFiles() {
 	var err = os.Remove(ps.FakeMasterFile)
 	if err != nil {
-		ps.Job.Logger.Warn("Unable to remove temp file %q: %s", ps.FakeMasterFile, err)
+		ps.Logger.Warn("Unable to remove temp file %q: %s", ps.FakeMasterFile, err)
 	}
 	err = os.RemoveAll(ps.TempDir)
 	if err != nil {
-		ps.Job.Logger.Warn("Unable to remove temp dir %q: %s", ps.TempDir, err)
+		ps.Logger.Warn("Unable to remove temp dir %q: %s", ps.TempDir, err)
 	}
 }
 
@@ -135,11 +130,11 @@ func (ps *PageSplit) process() (ok bool) {
 // createMasterPDF combines pages and pre-processes PDFs - ghostscript seems to
 // be able to handle some PDFs that crash poppler utils (even as recent as 0.41)
 func (ps *PageSplit) createMasterPDF() (ok bool) {
-	ps.Job.Logger.Debug("Preprocessing with ghostscript")
+	ps.Logger.Debug("Preprocessing with ghostscript")
 
-	var fileinfos, err = fileutil.ReaddirSorted(ps.Job.Location)
+	var fileinfos, err = fileutil.ReaddirSorted(ps.Location)
 	if err != nil {
-		ps.Job.Logger.Error("Unable to list files in %q: %s", ps.Job.Location, err)
+		ps.Logger.Error("Unable to list files in %q: %s", ps.Location, err)
 		return false
 	}
 
@@ -149,23 +144,23 @@ func (ps *PageSplit) createMasterPDF() (ok bool) {
 		"-dCompressFonts=true", "-r150", "-sOutputFile=" + ps.FakeMasterFile,
 	}
 	for _, fi := range fileinfos {
-		args = append(args, filepath.Join(ps.Job.Location, fi.Name()))
+		args = append(args, filepath.Join(ps.Location, fi.Name()))
 	}
 	return shell.Exec(ps.GhostScript, args...)
 }
 
 // splitPages ensures we end up with exactly one PDF per page
 func (ps *PageSplit) splitPages() (ok bool) {
-	ps.Job.Logger.Info("Splitting PDF(s)")
+	ps.Logger.Info("Splitting PDF(s)")
 	return shell.Exec("pdfseparate", ps.FakeMasterFile, filepath.Join(ps.TempDir, "seq-%d.pdf"))
 }
 
 // fixPageNames converts sequenced PDFs to have 4-digit page numbers
 func (ps *PageSplit) fixPageNames() (ok bool) {
-	ps.Job.Logger.Info("Renaming pages so they're sortable")
+	ps.Logger.Info("Renaming pages so they're sortable")
 	var fileinfos, err = fileutil.ReaddirSorted(ps.TempDir)
 	if err != nil {
-		ps.Job.Logger.Error("Unable to read seq-* files for renumbering")
+		ps.Logger.Error("Unable to read seq-* files for renumbering")
 		return false
 	}
 
@@ -174,21 +169,21 @@ func (ps *PageSplit) fixPageNames() (ok bool) {
 		var fullPath = filepath.Join(ps.TempDir, name)
 		var matches = splitPageFilenames.FindStringSubmatch(name)
 		if len(matches) != 2 || matches[1] == "" {
-			ps.Job.Logger.Error("File %q doesn't match expected pdf page pattern!", fullPath)
+			ps.Logger.Error("File %q doesn't match expected pdf page pattern!", fullPath)
 			return false
 		}
 
 		var pageNum int
 		pageNum, err = strconv.Atoi(matches[1])
 		if err != nil {
-			ps.Job.Logger.Critical("Error parsing pagenum for %q: %s", fullPath, err)
+			ps.Logger.Critical("Error parsing pagenum for %q: %s", fullPath, err)
 			return false
 		}
 
 		var newFullPath = filepath.Join(ps.TempDir, fmt.Sprintf("seq-%04d.pdf", pageNum))
 		err = os.Rename(fullPath, newFullPath)
 		if err != nil {
-			ps.Job.Logger.Error("Unable to rename %q to %q: %s", fullPath, newFullPath, err)
+			ps.Logger.Error("Unable to rename %q to %q: %s", fullPath, newFullPath, err)
 			return false
 		}
 	}
@@ -198,16 +193,16 @@ func (ps *PageSplit) fixPageNames() (ok bool) {
 
 // convertToPDFA finds all files in the temp dir and converts them to PDF/a
 func (ps *PageSplit) convertToPDFA() (ok bool) {
-	ps.Job.Logger.Info("Converting pages to PDF/A")
+	ps.Logger.Info("Converting pages to PDF/A")
 	var fileinfos, err = fileutil.ReaddirSorted(ps.TempDir)
 	if err != nil {
-		ps.Job.Logger.Error("Unable to read seq-* files for PDF/a conversion")
+		ps.Logger.Error("Unable to read seq-* files for PDF/a conversion")
 		return false
 	}
 
 	for _, fi := range fileinfos {
 		var fullPath = filepath.Join(ps.TempDir, fi.Name())
-		ps.Job.Logger.Debug("Converting %q to PDF/a", fullPath)
+		ps.Logger.Debug("Converting %q to PDF/a", fullPath)
 		var dotA = fullPath + ".a"
 		var ok = shell.Exec(ps.GhostScript, "-dPDFA=2", "-dBATCH", "-dNOPAUSE",
 			"-sProcessColorModel=DeviceCMYK", "-sDEVICE=pdfwrite",
@@ -218,7 +213,7 @@ func (ps *PageSplit) convertToPDFA() (ok bool) {
 
 		err = os.Rename(fullPath+".a", fullPath)
 		if err != nil {
-			ps.Job.Logger.Error("Unable to rename PDF/a file %q to %q: %s", dotA, fullPath, err)
+			ps.Logger.Error("Unable to rename PDF/a file %q to %q: %s", dotA, fullPath, err)
 			return false
 		}
 	}
@@ -231,12 +226,12 @@ func (ps *PageSplit) convertToPDFA() (ok bool) {
 func (ps *PageSplit) moveToPageReview() (ok bool) {
 	var err = fileutil.CopyDirectory(ps.TempDir, ps.WIPDir)
 	if err != nil {
-		ps.Job.Logger.Error("Unable to move temporary directory %q to %q", ps.TempDir, ps.WIPDir)
+		ps.Logger.Error("Unable to move temporary directory %q to %q", ps.TempDir, ps.WIPDir)
 		return false
 	}
 	err = os.Rename(ps.WIPDir, ps.FinalOutputDir)
 	if err != nil {
-		ps.Job.Logger.Error("Unable to rename WIP directory %q to %q", ps.WIPDir, ps.FinalOutputDir)
+		ps.Logger.Error("Unable to rename WIP directory %q to %q", ps.WIPDir, ps.FinalOutputDir)
 		return false
 	}
 
@@ -250,19 +245,19 @@ func (ps *PageSplit) backupOriginals() (ok bool) {
 	var masterParent = filepath.Dir(ps.MasterBackup)
 	var err = os.MkdirAll(masterParent, 0700)
 	if err != nil {
-		ps.Job.Logger.Critical("Unable to create master backup parent %q: %s", masterParent, err)
+		ps.Logger.Critical("Unable to create master backup parent %q: %s", masterParent, err)
 		return false
 	}
 
-	err = fileutil.CopyDirectory(ps.Job.Location, ps.MasterBackup)
+	err = fileutil.CopyDirectory(ps.Location, ps.MasterBackup)
 	if err != nil {
-		ps.Job.Logger.Critical("Unable to copy master file(s) from %q to %q: %s", ps.Job.Location, ps.MasterBackup, err)
+		ps.Logger.Critical("Unable to copy master file(s) from %q to %q: %s", ps.Location, ps.MasterBackup, err)
 		return false
 	}
 
-	err = os.RemoveAll(ps.Job.Location)
+	err = os.RemoveAll(ps.Location)
 	if err != nil {
-		ps.Job.Logger.Critical("Unable to remove original files after making master backup: %s", err)
+		ps.Logger.Critical("Unable to remove original files after making master backup: %s", err)
 		return false
 	}
 
@@ -272,6 +267,6 @@ func (ps *PageSplit) backupOriginals() (ok bool) {
 // createMetaJSON builds and writes out a basic metadata file for legacy
 // processors to use
 func (ps *PageSplit) createMetaJSON() (ok bool) {
-	ps.Job.Logger.Warn("Not implemented!")
+	ps.Logger.Warn("Not implemented!")
 	return false
 }
