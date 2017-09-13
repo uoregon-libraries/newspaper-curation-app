@@ -14,7 +14,7 @@ import (
 
 var (
 	sftpSearcher *SFTPSearcher
-	watcher *legacyfinder.Watcher
+	watcher      *legacyfinder.Watcher
 
 	// workflowPath stores the directory where issues are moved when queued
 	// for processing
