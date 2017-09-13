@@ -10,7 +10,7 @@ import (
 //
 // TODO: Right now this is only used by the Go tools, but eventually the PHP
 // and Python scripts need to use this (or be rewritten) so we are managing
-// more of the workflow via data, not directories.  Hence all the extra data
+// more of the workflow via data, not JSON files.  Hence all the extra data
 // which these tools currently don't use.
 type Issue struct {
 	ID int `sql:",primary"`
