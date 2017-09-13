@@ -153,12 +153,7 @@ func IssueHandler(w http.ResponseWriter, req *http.Request) {
 	r.Render(IssueTmpl)
 }
 
-// IssueWorkflowHandler handles SFTP workflow tasks: moving issues into the
-// holding tank for derivative processing and renaming issues' folders to
-// "*-error" with a user-defined message when issues are manually flagged
-//
-// All destructive operations run in the background, so a flag is set to tell
-// the UI to consider the issue "pending workflow" until the next refresh
+// IssueWorkflowHandler handles setting up the sftp move job
 func IssueWorkflowHandler(w http.ResponseWriter, req *http.Request) {
 	var r = responder.Response(w, req)
 	var issue = findIssue(r)
@@ -169,13 +164,17 @@ func IssueWorkflowHandler(w http.ResponseWriter, req *http.Request) {
 	var action = mux.Vars(r.Request)["action"]
 	switch action {
 	case "queue":
-		queueIssueForProcessing(issue, workflowPath)
-		http.SetCookie(w, &http.Cookie{
-			Name:  "Alert",
-			Value: fmt.Sprintf("Issue '%s' queued for processing", issue.Slug),
-			Path:  "/",
-		})
+		var err = queueIssueForProcessing(issue, workflowPath)
+		var cname = "Info"
+		var msg = fmt.Sprintf("Issue '%s' queued for processing", issue.Slug)
+		if err != nil {
+			cname = "Alert"
+			msg = fmt.Sprintf("Unable to queue %q for processing: %s", issue.Slug, err)
+		}
+
+		http.SetCookie(w, &http.Cookie{Name: cname, Value: msg, Path: "/"})
 		http.Redirect(w, req, TitlePath(issue.Title.Slug), http.StatusFound)
+
 	default:
 		r.Vars.Alert = fmt.Sprintf("Invalid workflow action %#v", action)
 		r.Render(responder.Empty)
