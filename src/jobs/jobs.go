@@ -22,9 +22,31 @@ type JobStatus string
 
 // The full list of job statuses
 const (
-	JobStatusPending    JobStatus = "pending"
-	JobStatusSuccessful JobStatus = "success"
+	JobStatusPending    JobStatus = "pending" // Jobs needing to be processed
+	JobStatusSuccessful JobStatus = "success" // Jobs which were successful
+	JobStatusFailed     JobStatus = "failed"  // Jobs which are complete, but did not succeed
+	JobStatusDone       JobStatus = "done"    // Jobs we ignore - e.g., failed jobs which were manually remedied
 )
+
+// FindJobsForIssue looks for and returns all jobs which are tied to the given issue's id
+//
+// TODO: If we have another use of ObjectID someday, we should put an
+// ObjectType field in or something so we can differentiate issue jobs from
+// other jobs tied to tables
+func FindJobsForIssue(dbi *db.Issue) []*IssueJob {
+	var dbJobs, err = db.FindJobsForIssueID(dbi.ID)
+	if err != nil {
+		logger.Critical("Unable to find jobs for issue id %d: %s", dbi.ID, err)
+		return nil
+	}
+
+	var issueJobs []*IssueJob
+	dbJobsToIssueJobs(dbJobs, func(ij *IssueJob) {
+		issueJobs = append(issueJobs, ij)
+	})
+
+	return issueJobs
+}
 
 // FindPendingPageSplitJobs returns PageSplits that need to be processed
 func FindPendingPageSplitJobs() []*PageSplit {

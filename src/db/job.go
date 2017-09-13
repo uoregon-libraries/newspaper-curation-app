@@ -44,6 +44,15 @@ func FindJobsByStatusAndType(st string, t string) ([]*Job, error) {
 	return list, op.Err()
 }
 
+// FindJobsForIssueID returns all jobs tied to the given issue
+func FindJobsForIssueID(id int) ([]*Job, error) {
+	var op = DB.Operation()
+	op.Dbg = Debug
+	var list []*Job
+	op.Select("jobs", &Job{}).Where("object_id = ?", id).AllObjects(&list)
+	return list, op.Err()
+}
+
 // Logs lazy-loads all logs for this job from the database
 func (j *Job) Logs() []*JobLog {
 	if j.logs == nil {
