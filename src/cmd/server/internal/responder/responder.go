@@ -23,6 +23,7 @@ type PageVars struct {
 	Version string
 	Webroot string
 	Alert   string
+	Info    string
 	User    *user.User
 	Data    GenericVars
 }
@@ -57,6 +58,11 @@ func (r *Responder) Render(t *tmpl.Template) {
 	if err == nil && cookie.Value != "" {
 		r.Vars.Alert = cookie.Value
 		http.SetCookie(r.Writer, &http.Cookie{Name: "Alert", Value: "", Expires: time.Time{}, Path: "/"})
+	}
+	cookie, err = r.Request.Cookie("Info")
+	if err == nil && cookie.Value != "" {
+		r.Vars.Info = cookie.Value
+		http.SetCookie(r.Writer, &http.Cookie{Name: "Info", Value: "", Expires: time.Time{}, Path: "/"})
 	}
 
 	err = t.Execute(r.Writer, r.Vars)
