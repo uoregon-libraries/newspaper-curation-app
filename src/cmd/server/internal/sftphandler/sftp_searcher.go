@@ -42,6 +42,7 @@ func (s *SFTPSearcher) load() error {
 	}
 
 	var err = s.searcher.FindSFTPIssues()
+	// TODO: Find all in-process jobs and remove those issues from the searcher's list
 	if err == nil {
 		s.lastLoaded = time.Now()
 		s.decorateTitles()
