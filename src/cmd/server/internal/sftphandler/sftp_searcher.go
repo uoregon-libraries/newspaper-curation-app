@@ -2,6 +2,7 @@ package sftphandler
 
 import (
 	"issuefinder"
+	"jobs"
 	"sync"
 	"time"
 )
@@ -21,10 +22,11 @@ const secondsBeforeFatalError = 600
 // rescanning of the file system.
 type SFTPSearcher struct {
 	sync.Mutex
-	lastLoaded  time.Time
-	searcher    *issuefinder.Searcher
-	titles      []*Title
-	titleLookup map[string]*Title
+	lastLoaded      time.Time
+	searcher        *issuefinder.Searcher
+	titles          []*Title
+	titleLookup     map[string]*Title
+	inProcessIssues sync.Map
 }
 
 // newSFTPSearcher returns a searcher that wraps issuefinder and schema data
@@ -44,13 +46,32 @@ func (s *SFTPSearcher) load() error {
 		return nil
 	}
 
-	var err = s.searcher.FindSFTPIssues()
-	// TODO: Find all in-process jobs and remove those issues from the searcher's list
+	var err = s.buildInProcessList()
+	if err != nil {
+		return err
+	}
+
+	err = s.searcher.FindSFTPIssues()
 	if err == nil {
 		s.lastLoaded = time.Now()
 		s.decorateTitles()
 	}
 	return err
+}
+
+// buildInProcessList pulls all pending SFTP move jobs from the database and
+// indexes them by location in order to avoid showing issues which are already
+// awaiting processing.
+//
+// The searcher must be locked here, as it completely replaces inProcessIssues.
+func (s *SFTPSearcher) buildInProcessList() error {
+	s.inProcessIssues = sync.Map{}
+	var list = jobs.FindPendingSFTPIssueMoverJobs()
+	for _, job := range list {
+		s.inProcessIssues.Store(job.Issue.Key(), true)
+	}
+
+	return nil
 }
 
 // Titles returns the list of titles in the SFTP directory

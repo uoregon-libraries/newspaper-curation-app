@@ -48,6 +48,15 @@ func FindPendingPageSplitJobs() (jobs []*PageSplit) {
 	return
 }
 
+func FindPendingSFTPIssueMoverJobs() (jobs []*SFTPIssueMover) {
+	var dbJobs, err = db.FindJobsByStatusAndType(string(JobStatusPending), string(JobTypeSFTPIssueMove))
+	for _, ij := range issueJobFindWrapper(dbJobs, err, "find sftp issues needing to be moved") {
+		jobs = append(jobs, &SFTPIssueMover{IssueJob: ij})
+	}
+
+	return
+}
+
 // issueJobFindWrapper takes the response from most job-finding db functions
 // and returns a list of IssueJobs, validating everything as needed and logging
 // Critical errors when any DB operation failed

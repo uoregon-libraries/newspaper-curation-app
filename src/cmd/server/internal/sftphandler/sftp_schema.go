@@ -63,7 +63,10 @@ func (t *Title) decorateIssues(issueList []*schema.Issue) {
 	t.Issues = make([]*Issue, 0)
 	t.IssueLookup = make(map[string]*Issue)
 	for _, i := range issueList {
-		t.appendSchemaIssue(i)
+		var _, isInProcess = sftpSearcher.inProcessIssues.Load(i.Key())
+		if !isInProcess {
+			t.appendSchemaIssue(i)
+		}
 	}
 }
 
