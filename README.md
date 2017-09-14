@@ -15,7 +15,9 @@ as PHP was proving unsuitable for disk scanning jobs.  It is now planned to
 slowly replace the other codebases entirely, to simplify the application as
 well as provide something significantly faster.
 
-Compilation requires [Go](https://golang.org/dl/) and gb (`go get github.com/constabulary/gb/...`)
+Compilation requires [Go](https://golang.org/dl/) 1.9 or later and gb:
+
+    go get github.com/constabulary/gb/...
 
 server
 ---
