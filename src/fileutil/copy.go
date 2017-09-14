@@ -1,8 +1,8 @@
 package fileutil
 
 import (
-	"hash/crc32"
 	"fmt"
+	"hash/crc32"
 	"io"
 	"os"
 	"path/filepath"

@@ -40,7 +40,7 @@ type Config struct {
 	// Eventually many of the paths above will be removed and this will be the
 	// main location for all issues.  We'll have metadata in the database to tell
 	// us workflow steps, rather relying on the filesystem paths.
-	WorkflowPath                   string `setting:"WORKFLOW_PATH" type:"path"`
+	WorkflowPath string `setting:"WORKFLOW_PATH" type:"path"`
 }
 
 // Parse reads the given settings file and returns a parsed Config.  File paths

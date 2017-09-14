@@ -16,7 +16,7 @@ var (
 	// basePath is the path to the search handler.  If we add other search
 	// sub-pages, they'll start with this path.
 	basePath string
-	watcher *legacyfinder.Watcher
+	watcher  *legacyfinder.Watcher
 
 	// Layout represents a cloned version of the responder's Layout template for
 	// building the issue finder's "sub-templates"

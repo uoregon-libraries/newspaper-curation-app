@@ -16,10 +16,10 @@ func QueuePageSplit(issue *db.Issue, path string) error {
 // QueueSFTPIssueMove creates an sftp issue move job
 func QueueSFTPIssueMove(issue *db.Issue, path string) error {
 	var j = &db.Job{
-		Type: string(JobTypeSFTPIssueMove),
+		Type:     string(JobTypeSFTPIssueMove),
 		ObjectID: issue.ID,
 		Location: path,
-		Status: string(JobStatusPending),
+		Status:   string(JobStatusPending),
 	}
 	return j.Save()
 }
