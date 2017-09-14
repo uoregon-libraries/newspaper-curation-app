@@ -98,7 +98,11 @@ func dbToSchemaIssue(dbi *db.Issue) (*schema.Issue, error) {
 		return nil, fmt.Errorf("invalid time format (%s) in database issue", dbi.Date)
 	}
 
+	db.LoadTitles()
 	var t = db.LookupTitle(dbi.LCCN).SchemaTitle()
+	if t == nil {
+		return nil, fmt.Errorf("missing title for issue ID %d", dbi.ID)
+	}
 	var si = &schema.Issue{
 		Date:    dt,
 		Edition: dbi.Edition,
