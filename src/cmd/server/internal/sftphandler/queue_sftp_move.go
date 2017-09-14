@@ -49,6 +49,8 @@ func queueSFTPIssueMove(i *Issue) (ok bool, status string) {
 		return false, "Error trying to queue issue.  Try again or contact the system administrator."
 	}
 
+	sftpSearcher.ForceReload()
+
 	return true, "Issue queued successfully"
 }
 
