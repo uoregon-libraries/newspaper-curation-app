@@ -35,33 +35,36 @@ const (
 // other jobs tied to tables
 func FindJobsForIssue(dbi *db.Issue) []*IssueJob {
 	var dbJobs, err = db.FindJobsForIssueID(dbi.ID)
-	if err != nil {
-		logger.Critical("Unable to find jobs for issue id %d: %s", dbi.ID, err)
-		return nil
-	}
-
-	var issueJobs []*IssueJob
-	dbJobsToIssueJobs(dbJobs, func(ij *IssueJob) {
-		issueJobs = append(issueJobs, ij)
-	})
-
-	return issueJobs
+	return issueJobFindWrapper(dbJobs, err, fmt.Sprintf("find jobs for issue id %d", dbi.ID))
 }
 
 // FindPendingPageSplitJobs returns PageSplits that need to be processed
-func FindPendingPageSplitJobs() []*PageSplit {
+func FindPendingPageSplitJobs() (jobs []*PageSplit) {
 	var dbJobs, err = db.FindJobsByStatusAndType(string(JobStatusPending), string(JobTypePageSplit))
-	if err != nil {
-		logger.Critical("Unable to find issues needing page splitting: %s", err)
-		return nil
+	for _, ij := range issueJobFindWrapper(dbJobs, err, "find issues needing page splitting") {
+		jobs = append(jobs, &PageSplit{IssueJob: ij})
 	}
 
-	var pageSplits []*PageSplit
-	dbJobsToIssueJobs(dbJobs, func(ij *IssueJob) {
-		pageSplits = append(pageSplits, &PageSplit{IssueJob: ij})
-	})
+	return
+}
 
-	return pageSplits
+// issueJobFindWrapper takes the response from most job-finding db functions
+// and returns a list of IssueJobs, validating everything as needed and logging
+// Critical errors when any DB operation failed
+func issueJobFindWrapper(dbJobs []*db.Job, err error, onErrorMessage string) (issueJobs []*IssueJob) {
+	if err != nil {
+		logger.Critical("Unable to %s: %s", onErrorMessage, err)
+		return
+	}
+
+	for _, dbJob := range dbJobs {
+		var j = dbJobToIssueJob(dbJob)
+		if j == nil {
+			continue
+		}
+		issueJobs = append(issueJobs, j)
+	}
+	return
 }
 
 // dbJobToIssueJob setups up an IssueJob from a database Job, centralizing the
@@ -84,17 +87,6 @@ func dbJobToIssueJob(dbJob *db.Job) *IssueJob {
 		Job:     NewJob(dbJob),
 		DBIssue: dbi,
 		Issue:   si,
-	}
-}
-
-// dbJobsToIssueJobs simplifies the conversion / processing of lists of database Jobs
-func dbJobsToIssueJobs(dbJobs []*db.Job, cb func(*IssueJob)) {
-	for _, dbJob := range dbJobs {
-		var j = dbJobToIssueJob(dbJob)
-		if j == nil {
-			continue
-		}
-		cb(j)
 	}
 }
 
