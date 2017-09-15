@@ -68,6 +68,10 @@ func main() {
 	if err != nil {
 		logger.Fatal("Cannot load titles: %s", err)
 	}
+	logger.Debug("Looking for SFTP issues to move")
+	for _, job := range jobs.FindPendingSFTPIssueMoverJobs() {
+		job.Process(c)
+	}
 	logger.Debug("Looking for page split jobs to process")
 	for _, job := range jobs.FindPendingPageSplitJobs() {
 		job.Process(c)
