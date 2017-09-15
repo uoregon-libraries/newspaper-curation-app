@@ -19,6 +19,7 @@ func (im *SFTPIssueMover) Process(config *config.Config) {
 	var iKey = im.Issue.Key()
 
 	// Verify new path will work
+	var oldLocation = im.Location
 	var newLocation = filepath.Join(config.WorkflowPath, iKey)
 	if !fileutil.MustNotExist(newLocation) {
 		im.Logger.Error("Destination %q already exists for issue %q", newLocation, iKey)
@@ -28,13 +29,13 @@ func (im *SFTPIssueMover) Process(config *config.Config) {
 	// Move the issue directory to the workflow path
 	var wipLocation = newLocation + "-wip"
 	os.MkdirAll(filepath.Dir(wipLocation), 0700)
-	im.Logger.Info("Queueing %q to %q", im.Issue.Location, wipLocation)
-	var err = fileutil.CopyDirectory(im.Issue.Location, wipLocation)
+	im.Logger.Info("Copying %q to %q", oldLocation, wipLocation)
+	var err = fileutil.CopyDirectory(oldLocation, wipLocation)
 	if err != nil {
 		im.Logger.Error("Unable to copy issue %q directory: %s", iKey, err)
 		return
 	}
-	err = os.RemoveAll(im.Issue.Location)
+	err = os.RemoveAll(oldLocation)
 	if err != nil {
 		im.Logger.Error("Unable to clean up issue %q after copying to WIP directory: %s", iKey, err)
 		return
