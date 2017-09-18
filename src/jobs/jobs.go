@@ -71,7 +71,7 @@ func FindAllPendingJobs() (processors []Processor) {
 // reprocessed (though they can be requeued by creating new jobs)
 func FindAllFailedJobs() (jobs []*Job) {
 	var dbJobs, err = db.FindJobsByStatus(string(JobStatusFailed))
-	if err !=  nil {
+	if err != nil {
 		logger.Critical("Unable to look up failed jobs: %s", err)
 		return
 	}

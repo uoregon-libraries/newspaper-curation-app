@@ -17,8 +17,8 @@ import (
 
 // Command-line options
 var opts struct {
-	ConfigFile string `short:"c" long:"config" description:"path to P2C config file" required:"true"`
-	RetryFailedJobs bool `long:"retry-failed-jobs" description:"if set, puts failed jobs back into the queue before running pending jobs"`
+	ConfigFile      string `short:"c" long:"config" description:"path to P2C config file" required:"true"`
+	RetryFailedJobs bool   `long:"retry-failed-jobs" description:"if set, puts failed jobs back into the queue before running pending jobs"`
 }
 
 var p *flags.Parser
