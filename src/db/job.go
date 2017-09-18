@@ -45,6 +45,11 @@ func findJobs(where string, args ...interface{}) ([]*Job, error) {
 	return list, op.Err()
 }
 
+// FindJobsByStatus returns all jobs that have the given status
+func FindJobsByStatus(st string) ([]*Job, error) {
+	return findJobs("status = ?", st)
+}
+
 // FindJobsByStatusAndType returns all jobs of the given status and type
 func FindJobsByStatusAndType(st string, t string) ([]*Job, error) {
 	return findJobs("status = ? AND job_type = ?", st, t)
