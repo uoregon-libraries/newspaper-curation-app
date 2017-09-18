@@ -30,6 +30,20 @@ type Issue struct {
 	EditionLabel  string
 	PageLabelsCSV string
 	PageLabels    []string `sql:"-"`
+
+	/* Workflow information to keep track of the issue and what it needs */
+
+	Location               string // Where is this issue on disk?
+	AwaitingManualOrdering bool   // Is the issue waiting for page sort / other manual intervention?
+	HasDerivatives         bool   // Does the issue have derivatives done?
+	ReadyForMetadataEntry  bool   // Is the issue ready for metadata entry?
+	AwaitingMetadataReview bool   // Is the issue awaiting metadata review?
+	ReviewedBy             string // Has the issue's metadata been reviewed by somebody?  Who?
+}
+
+// NewIssue creates an issue ready for saving to the issues table
+func NewIssue(moc, lccn, dt string, ed int) *Issue {
+	return &Issue{MARCOrgCode: moc, LCCN: lccn, Date: dt, Edition: ed}
 }
 
 // FindIssue looks for an issue by its id

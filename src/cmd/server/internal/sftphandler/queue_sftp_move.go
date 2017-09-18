@@ -14,6 +14,12 @@ func queueSFTPIssueMove(i *Issue) (ok bool, status string) {
 		return false, "Unable to connect to the database.  Try again or contact the system administrator."
 	}
 
+	// If an issue exists, but isn't new, we have something broken going on
+	if dbi != nil && dbi.Location != i.Location {
+		logger.Error("Broken / duplicate issue %q: DB id %d; location %q", i.Key(), dbi.ID, dbi.Location)
+		return false, "Broken / duplicate issue detected.  Please contact the system administrator."
+	}
+
 	if dbi == nil {
 		dbi, err = createDatabaseIssue(i)
 		if err != nil {
@@ -67,11 +73,7 @@ func queueSFTPIssueMove(i *Issue) (ok bool, status string) {
 }
 
 func createDatabaseIssue(i *Issue) (*db.Issue, error) {
-	var dbi = &db.Issue{
-		MARCOrgCode: conf.PDFBatchMARCOrgCode,
-		LCCN:        i.Title.LCCN,
-		Date:        i.DateStringReadable(),
-		Edition:     i.Edition,
-	}
+	var dbi = db.NewIssue(conf.PDFBatchMARCOrgCode, i.Title.LCCN, i.DateStringReadable(), i.Edition)
+	dbi.Location = i.Location
 	return dbi, dbi.Save()
 }
