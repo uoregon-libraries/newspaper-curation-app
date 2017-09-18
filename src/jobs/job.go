@@ -60,7 +60,7 @@ func (j *Job) Requeue() error {
 		Type:     j.Type,
 		ObjectID: j.ObjectID,
 		Location: j.Location,
-		Status:   j.Status,
+		Status:   string(JobStatusPending),
 	}
 	clone.Save()
 
