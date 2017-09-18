@@ -15,7 +15,7 @@ type SFTPIssueMover struct {
 }
 
 // Process moves the SFTP issue directory to the workflow area
-func (im *SFTPIssueMover) Process(config *config.Config) {
+func (im *SFTPIssueMover) Process(config *config.Config) bool {
 	var iKey = im.Issue.Key()
 
 	// Verify new path will work
@@ -23,7 +23,7 @@ func (im *SFTPIssueMover) Process(config *config.Config) {
 	var newLocation = filepath.Join(config.WorkflowPath, iKey)
 	if !fileutil.MustNotExist(newLocation) {
 		im.Logger.Error("Destination %q already exists for issue %q", newLocation, iKey)
-		return
+		return false
 	}
 
 	// Move the issue directory to the workflow path
@@ -33,17 +33,17 @@ func (im *SFTPIssueMover) Process(config *config.Config) {
 	var err = fileutil.CopyDirectory(oldLocation, wipLocation)
 	if err != nil {
 		im.Logger.Error("Unable to copy issue %q directory: %s", iKey, err)
-		return
+		return false
 	}
 	err = os.RemoveAll(oldLocation)
 	if err != nil {
 		im.Logger.Error("Unable to clean up issue %q after copying to WIP directory: %s", iKey, err)
-		return
+		return false
 	}
 	err = os.Rename(wipLocation, newLocation)
 	if err != nil {
 		im.Logger.Error("Unable to rename WIP issue directory (%q -> %q) post-copy: %s", wipLocation, newLocation, err)
-		return
+		return false
 	}
 	im.Issue.Location = newLocation
 
@@ -51,6 +51,8 @@ func (im *SFTPIssueMover) Process(config *config.Config) {
 	err = im.Save()
 	if err != nil {
 		im.Logger.Critical("Unable to update workflow metadata after moving sftp issue %q: %s", iKey, err)
-		return
+		return false
 	}
+
+	return true
 }

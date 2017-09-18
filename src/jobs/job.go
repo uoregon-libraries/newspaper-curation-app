@@ -1,6 +1,7 @@
 package jobs
 
 import (
+	"config"
 	"db"
 	"fmt"
 	"logger"
@@ -10,11 +11,28 @@ import (
 	"strings"
 )
 
+// A Processor is a general interface for all database-driven jobs that process something
+type Processor interface {
+	Process(*config.Config) bool
+	JobID() int
+	JobType() JobType
+}
+
 // Job wraps the DB job data and provides business logic for things like
 // logging to the database
 type Job struct {
 	*db.Job
 	Logger *logger.Logger
+}
+
+// JobID gets the underlying database job's id
+func (j *Job) JobID() int {
+	return j.Job.ID
+}
+
+// JobType converts the underlying database job's type to a proper JobType variable
+func (j *Job) JobType() JobType {
+	return JobType(j.Job.Type)
 }
 
 // IssueJob wraps the Job type to add things needed in all jobs tied to
