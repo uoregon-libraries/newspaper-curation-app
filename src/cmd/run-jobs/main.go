@@ -69,9 +69,8 @@ func main() {
 
 	if opts.RetryFailedJobs {
 		retryFailedJobs()
-	} else {
-		runPendingJobs(c)
 	}
+	runPendingJobs(c)
 }
 
 func retryFailedJobs() {
