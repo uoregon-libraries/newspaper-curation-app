@@ -59,5 +59,13 @@ func (im *SFTPIssueMover) Process(config *config.Config) bool {
 		logger.Critical("Unable to queue new page-split job!")
 	}
 
+	// Updating the issue location has the same problem as queueing a page-split
+	// job; we can log something, and log it loudly, but we already moved the issue
+	im.DBIssue.Location = newLocation
+	err = im.DBIssue.Save()
+	if err != nil {
+		im.Logger.Critical("Unable to update Issue's location!")
+	}
+
 	return true
 }
