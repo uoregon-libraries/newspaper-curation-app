@@ -35,10 +35,10 @@ func (ps *PageSplit) Dir() string {
 // Process combines, splits, and then renames files so they're sequential in a
 // "best guess" order.  Files are then put into place for manual processors to
 // reorder if necessary, remove duped pages, etc.
-func (ps *PageSplit) Process(config *config.Config) {
+func (ps *PageSplit) Process(config *config.Config) bool {
 	ps.Logger.Debug("Processing issue id %d (%q)", ps.DBIssue.ID, ps.Issue.Key())
 	if !ps.makeTempFiles() {
-		return
+		return false
 	}
 	defer ps.removeTempFiles()
 
@@ -48,28 +48,19 @@ func (ps *PageSplit) Process(config *config.Config) {
 
 	if !fileutil.MustNotExist(ps.WIPDir) {
 		ps.Logger.Error("WIP dir %q already exists", ps.WIPDir)
-		return
+		return false
 	}
 	if !fileutil.MustNotExist(ps.FinalOutputDir) {
 		ps.Logger.Error("Final output dir %q already exists", ps.FinalOutputDir)
-		return
+		return false
 	}
 	if !fileutil.MustNotExist(ps.MasterBackup) {
 		ps.Logger.Error("Master backup dir %q already exists", ps.MasterBackup)
-		return
+		return false
 	}
 
 	ps.GhostScript = config.GhostScript
-	if ps.process() {
-		ps.Status = string(JobStatusSuccessful)
-		var err = ps.Save()
-		if err != nil {
-			ps.Logger.Critical("Unable to update workflow metadata after page splitting: %s", err)
-			return
-		}
-
-		// TODO: Spawn an "alert somebody to check on manual processing" job?
-	}
+	return ps.process()
 }
 
 func (ps *PageSplit) makeTempFiles() (ok bool) {
