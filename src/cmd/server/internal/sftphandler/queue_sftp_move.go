@@ -40,12 +40,12 @@ func queueSFTPIssueMove(i *Issue) (ok bool, status string) {
 			// more important to keep things flowing.  But we MUST alert somebody
 			// that the old job is "stuck" in a failed state, as that could get
 			// really weird if we mass-retry failed jobs.
-			job.Status = string(jobs.JobStatusDone)
+			job.Status = string(jobs.JobStatusFailedDone)
 			err = job.Save()
 			if err != nil {
 				logger.Critical("Unable to close failed job!  Manually fix this!  Job id %d; error: %s", job.ID, err)
 			}
-		case jobs.JobStatusDone:
+		case jobs.JobStatusFailedDone:
 			continue
 		default:
 			logger.Critical("Unexpected job detected for issue %q (db id %d): job id %d, status %q",

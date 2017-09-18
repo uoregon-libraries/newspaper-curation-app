@@ -64,7 +64,7 @@ func (j *Job) Requeue() error {
 	}
 	clone.Save()
 
-	j.Status = string(JobStatusDone)
+	j.Status = string(JobStatusFailedDone)
 	j.Save()
 
 	op.EndTransaction()

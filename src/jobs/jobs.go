@@ -22,10 +22,10 @@ type JobStatus string
 
 // The full list of job statuses
 const (
-	JobStatusPending    JobStatus = "pending" // Jobs needing to be processed
-	JobStatusSuccessful JobStatus = "success" // Jobs which were successful
-	JobStatusFailed     JobStatus = "failed"  // Jobs which are complete, but did not succeed
-	JobStatusDone       JobStatus = "done"    // Jobs we ignore - e.g., failed jobs which were manually remedied
+	JobStatusPending    JobStatus = "pending"     // Jobs needing to be processed
+	JobStatusSuccessful JobStatus = "success"     // Jobs which were successful
+	JobStatusFailed     JobStatus = "failed"      // Jobs which are complete, but did not succeed
+	JobStatusFailedDone JobStatus = "failed_done" // Jobs we ignore - e.g., failed jobs which were rerun
 )
 
 // FindJobsForIssue looks for and returns all jobs which are tied to the given issue's id
