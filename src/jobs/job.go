@@ -87,13 +87,18 @@ type jobLogWriter struct {
 
 // Write implements io.Writer, splitting the logger output to produce log level
 // and message strings for the database
-func (jlw jobLogWriter) Write(p []byte) (n int, err error) {
+func (jlw jobLogWriter) Write(msg []byte) (n int, err error) {
+	// Kill trailing space, and turn newlines into literal \n so we can see them
+	// if they are in any messages
+	var line = strings.TrimSpace(string(msg))
+	line = strings.Replace(line, "\n", "\\n", -1)
+
 	// Duplicate the output to stderr so we have something to grep in cases where
 	// looking at logs is easier
-	fmt.Fprintf(os.Stderr, "%s (job id %d)\n", strings.Replace(string(p), "\n", "", -1), jlw.Job.ID)
+	fmt.Fprintf(os.Stderr, "%s (job id %d)\n", line, jlw.Job.ID)
 
 	// Split the log message into its relevant parts
-	var parts = strings.Split(string(p), " - ")
+	var parts = strings.Split(line, " - ")
 	if len(parts) < 4 {
 		logger.Critical("Invalid logger message format")
 		return 0, fmt.Errorf("invalid logger message format")
@@ -107,7 +112,7 @@ func (jlw jobLogWriter) Write(p []byte) (n int, err error) {
 		return 0, err
 	}
 
-	return len(p), nil
+	return len(msg), nil
 }
 
 // NewJob wraps the given db.Job and sets up a logger
