@@ -23,6 +23,9 @@ type Config struct {
 	// GhostScript stores the path to the ghostscript binary for processing PDFs
 	GhostScript string `setting:"GHOSTSCRIPT"`
 
+	// Org code used for sftp-uploaded batches
+	PDFBatchMARCOrgCode string `setting:"PDF_BATCH_MARC_ORG_CODE"`
+
 	// Paths to the various places we expect to find files
 	MasterPDFUploadPath            string `setting:"MASTER_PDF_UPLOAD_PATH" type:"path"`
 	MasterPDFBackupPath            string `setting:"MASTER_PDF_BACKUP_PATH" type:"path"`
@@ -37,7 +40,7 @@ type Config struct {
 	// Eventually many of the paths above will be removed and this will be the
 	// main location for all issues.  We'll have metadata in the database to tell
 	// us workflow steps, rather relying on the filesystem paths.
-	WorkflowPath                   string `setting:"WORKFLOW_PATH" type:"path"`
+	WorkflowPath string `setting:"WORKFLOW_PATH" type:"path"`
 }
 
 // Parse reads the given settings file and returns a parsed Config.  File paths

@@ -63,7 +63,8 @@ func (t *Title) decorateIssues(issueList []*schema.Issue) {
 	t.Issues = make([]*Issue, 0)
 	t.IssueLookup = make(map[string]*Issue)
 	for _, i := range issueList {
-		if !isIssueInProcess(i.Key()) {
+		var _, isInProcess = sftpSearcher.inProcessIssues.Load(i.Key())
+		if !isInProcess {
 			t.appendSchemaIssue(i)
 		}
 	}
@@ -221,12 +222,15 @@ func (i *Issue) decorateDatabaseMessages() {
 		return
 	}
 
+	/* TODO: Pull this from job logs on jobs which failed
+
 	if dbi.Error != "" {
 		i.Errors = append(i.Errors, template.HTML(dbi.Error))
 	}
 	if dbi.Info != "" {
 		i.QueueInfo = template.HTML(dbi.Info)
 	}
+	*/
 }
 
 // IsNew tells the presentation if the issue is fairly new, which can be

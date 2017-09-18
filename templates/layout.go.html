@@ -77,6 +77,11 @@
             <p>{{.Alert}}</p>
           </div>
         {{- end}}
+        {{- if .Info}}
+          <div class="alert alert-info">
+            <p>{{.Info}}</p>
+          </div>
+        {{- end}}
 
         {{block "content" .}}{{end}}
 

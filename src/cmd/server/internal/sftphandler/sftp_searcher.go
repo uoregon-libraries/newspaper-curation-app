@@ -2,6 +2,7 @@ package sftphandler
 
 import (
 	"issuefinder"
+	"jobs"
 	"sync"
 	"time"
 )
@@ -21,10 +22,11 @@ const secondsBeforeFatalError = 600
 // rescanning of the file system.
 type SFTPSearcher struct {
 	sync.Mutex
-	lastLoaded  time.Time
-	searcher    *issuefinder.Searcher
-	titles      []*Title
-	titleLookup map[string]*Title
+	lastLoaded      time.Time
+	searcher        *issuefinder.Searcher
+	titles          []*Title
+	titleLookup     map[string]*Title
+	inProcessIssues sync.Map
 }
 
 // newSFTPSearcher returns a searcher that wraps issuefinder and schema data
@@ -37,11 +39,19 @@ func newSFTPSearcher(path string) *SFTPSearcher {
 // filesystem if necessary.  If issues were loaded, the various types are
 // decorated as needed for web presentation.
 func (s *SFTPSearcher) load() error {
+	s.Lock()
+	defer s.Unlock()
+
 	if time.Since(s.lastLoaded) < time.Second*secondsBetweenSFTPReload {
 		return nil
 	}
 
-	var err = s.searcher.FindSFTPIssues()
+	var err = s.buildInProcessList()
+	if err != nil {
+		return err
+	}
+
+	err = s.searcher.FindSFTPIssues()
 	if err == nil {
 		s.lastLoaded = time.Now()
 		s.decorateTitles()
@@ -49,11 +59,23 @@ func (s *SFTPSearcher) load() error {
 	return err
 }
 
+// buildInProcessList pulls all pending SFTP move jobs from the database and
+// indexes them by location in order to avoid showing issues which are already
+// awaiting processing.
+//
+// The searcher must be locked here, as it completely replaces inProcessIssues.
+func (s *SFTPSearcher) buildInProcessList() error {
+	s.inProcessIssues = sync.Map{}
+	var list = jobs.FindPendingSFTPIssueMoverJobs()
+	for _, job := range list {
+		s.inProcessIssues.Store(job.Issue.Key(), true)
+	}
+
+	return nil
+}
+
 // Titles returns the list of titles in the SFTP directory
 func (s *SFTPSearcher) Titles() ([]*Title, error) {
-	s.Lock()
-	defer s.Unlock()
-
 	var err = s.load()
 	if err != nil && time.Since(s.lastLoaded) > secondsBeforeFatalError {
 		return nil, err
@@ -70,8 +92,6 @@ func (s *SFTPSearcher) ForceReload() {
 
 // TitleLookup returns the Title for a given LCCN
 func (s *SFTPSearcher) TitleLookup(lccn string) *Title {
-	s.Lock()
-	defer s.Unlock()
 	s.load()
 	return s.titleLookup[lccn]
 }

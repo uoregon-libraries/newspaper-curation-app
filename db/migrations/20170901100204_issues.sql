@@ -4,19 +4,19 @@
 /*!40101 SET character_set_client = utf8 */;
 CREATE TABLE `issues` (
   `id`                int(11) NOT NULL AUTO_INCREMENT,
-	`marc_org_code`     TINYTEXT COLLATE utf8_bin,
-	`lccn`              TINYTEXT COLLATE utf8_bin,
-	`date`              TINYTEXT COLLATE utf8_bin,
-	`date_as_labeled`   TINYTEXT COLLATE utf8_bin,
-	`volume`            TINYTEXT COLLATE utf8_bin,
-	`issue`             TINYTEXT COLLATE utf8_bin,
-	`edition`           TINYINT NOT NULL,
-	`edition_label`     TINYTEXT COLLATE utf8_bin,
-	`page_labels_csv`   TINYTEXT COLLATE utf8_bin,
+  `marc_org_code`     TINYTEXT COLLATE utf8_bin,
+  `lccn`              TINYTEXT COLLATE utf8_bin,
+  `date`              TINYTEXT COLLATE utf8_bin,
+  `date_as_labeled`   TINYTEXT COLLATE utf8_bin,
+  `volume`            TINYTEXT COLLATE utf8_bin,
+  `issue`             TINYTEXT COLLATE utf8_bin,
+  `edition`           TINYINT NOT NULL,
+  `edition_label`     TINYTEXT COLLATE utf8_bin,
+  `page_labels_csv`   TINYTEXT COLLATE utf8_bin,
 
-	`location`          TINYTEXT COLLATE utf8_bin,
-	`workflow_step`     TINYINT NOT NULL,
-	`needs_derivatives` TINYINT,
+  `location`          TINYTEXT COLLATE utf8_bin,
+  `workflow_step`     TINYINT NOT NULL,
+  `needs_derivatives` TINYINT,
   `info`              MEDIUMTEXT COLLATE utf8_bin, /* Status message the end-user may need, but
                                                       which shouldn't prevent workflow actions */
   `error`             MEDIUMTEXT COLLATE utf8_bin, /* Error which prevents further action until

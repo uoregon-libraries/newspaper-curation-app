@@ -2,6 +2,7 @@ package sftphandler
 
 import (
 	"cmd/server/internal/responder"
+	"config"
 	"fmt"
 	"legacyfinder"
 	"logger"
@@ -14,11 +15,8 @@ import (
 
 var (
 	sftpSearcher *SFTPSearcher
-	watcher *legacyfinder.Watcher
-
-	// workflowPath stores the directory where issues are moved when queued
-	// for processing
-	workflowPath string
+	watcher      *legacyfinder.Watcher
+	conf         *config.Config
 
 	// basePath is the path to the main sftp page.  Subpages all start with this path.
 	basePath string
@@ -39,10 +37,10 @@ var (
 
 // Setup sets up all the SFTP-specific routing rules and does any other
 // init necessary for SFTP reports handling
-func Setup(r *mux.Router, sftpWebPath, sftpDiskPath, sftpWorkflowPath string, w *legacyfinder.Watcher) {
+func Setup(r *mux.Router, sftpWebPath string, c *config.Config, w *legacyfinder.Watcher) {
+	conf = c
 	watcher = w
 	basePath = sftpWebPath
-	workflowPath = sftpWorkflowPath
 	var s = r.PathPrefix(basePath).Subrouter()
 	s.Path("").Handler(responder.CanViewSFTPIssues(HomeHandler))
 	s.Path("/{lccn}").Handler(responder.CanViewSFTPIssues(TitleHandler))
@@ -50,7 +48,7 @@ func Setup(r *mux.Router, sftpWebPath, sftpDiskPath, sftpWorkflowPath string, w 
 	s.Path("/{lccn}/{issue}/workflow/{action}").Methods("POST").Handler(responder.CanWorkflowSFTPIssues(IssueWorkflowHandler))
 	s.Path("/{lccn}/{issue}/{filename}").Handler(responder.CanViewSFTPIssues(PDFFileHandler))
 
-	sftpSearcher = newSFTPSearcher(sftpDiskPath)
+	sftpSearcher = newSFTPSearcher(conf.MasterPDFUploadPath)
 	Layout = responder.Layout.Clone()
 	Layout.Path = path.Join(Layout.Path, "sftp")
 	HomeTmpl = Layout.MustBuild("home.go.html")
@@ -153,12 +151,7 @@ func IssueHandler(w http.ResponseWriter, req *http.Request) {
 	r.Render(IssueTmpl)
 }
 
-// IssueWorkflowHandler handles SFTP workflow tasks: moving issues into the
-// holding tank for derivative processing and renaming issues' folders to
-// "*-error" with a user-defined message when issues are manually flagged
-//
-// All destructive operations run in the background, so a flag is set to tell
-// the UI to consider the issue "pending workflow" until the next refresh
+// IssueWorkflowHandler handles setting up the sftp move job
 func IssueWorkflowHandler(w http.ResponseWriter, req *http.Request) {
 	var r = responder.Response(w, req)
 	var issue = findIssue(r)
@@ -169,13 +162,15 @@ func IssueWorkflowHandler(w http.ResponseWriter, req *http.Request) {
 	var action = mux.Vars(r.Request)["action"]
 	switch action {
 	case "queue":
-		queueIssueForProcessing(issue, workflowPath)
-		http.SetCookie(w, &http.Cookie{
-			Name:  "Alert",
-			Value: fmt.Sprintf("Issue '%s' queued for processing", issue.Slug),
-			Path:  "/",
-		})
+		var ok, msg = queueSFTPIssueMove(issue)
+		var cname = "Info"
+		if !ok {
+			cname = "Alert"
+		}
+
+		http.SetCookie(w, &http.Cookie{Name: cname, Value: msg, Path: "/"})
 		http.Redirect(w, req, TitlePath(issue.Title.Slug), http.StatusFound)
+
 	default:
 		r.Vars.Alert = fmt.Sprintf("Invalid workflow action %#v", action)
 		r.Render(responder.Empty)

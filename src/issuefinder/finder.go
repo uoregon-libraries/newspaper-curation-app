@@ -72,8 +72,8 @@ type Finder struct {
 // New instantiates a new Finder read to spawn searchers
 func New() *Finder {
 	return &Finder{
-		Searchers: make(map[Namespace]*Searcher),
-		Errors: &ErrorList{},
+		Searchers:      make(map[Namespace]*Searcher),
+		Errors:         &ErrorList{},
 		IssueNamespace: make(map[*schema.Issue]Namespace),
 	}
 }
