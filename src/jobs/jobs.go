@@ -69,6 +69,10 @@ func FindAllPendingJobs() (processors []Processor) {
 // issueJobFindWrapper takes the response from most job-finding db functions
 // and returns a list of IssueJobs, validating everything as needed and logging
 // Critical errors when any DB operation failed
+//
+// TODO: Remove this and build a db Job converter than switches on the job type
+// to determine exactly what needs to be created, then returns a Processor with
+// all the information set up as needed.
 func issueJobFindWrapper(dbJobs []*db.Job, err error, onErrorMessage string) (issueJobs []*IssueJob) {
 	if err != nil {
 		logger.Critical("Unable to %s: %s", onErrorMessage, err)
