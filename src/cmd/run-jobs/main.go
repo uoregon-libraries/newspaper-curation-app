@@ -1,7 +1,4 @@
-// This script traverses the database to find born-digital issues in
-// WORKFLOW_PATH which need to be split, then splits them (one PDF per page),
-// converts pages to PDF/A, and moves them to PDF_PAGE_REVIEW_PATH for
-// reordering / cleanup.  The intact originals are then backed up.
+// This script finds and runs pending jobs
 
 package main
 
