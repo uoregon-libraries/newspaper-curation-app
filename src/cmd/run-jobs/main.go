@@ -18,6 +18,7 @@ import (
 // Command-line options
 var opts struct {
 	ConfigFile string `short:"c" long:"config" description:"path to P2C config file" required:"true"`
+	RetryFailedJobs bool `long:"retry-failed-jobs" description:"if set, puts failed jobs back into the queue before running pending jobs"`
 }
 
 var p *flags.Parser
@@ -65,6 +66,23 @@ func main() {
 	if err != nil {
 		logger.Fatal("Cannot load titles: %s", err)
 	}
+
+	if opts.RetryFailedJobs {
+		retryFailedJobs()
+	} else {
+		runPendingJobs(c)
+	}
+}
+
+func retryFailedJobs() {
+	logger.Debug("Looking for failed jobs to requeue")
+	for _, j := range jobs.FindAllFailedJobs() {
+		j.Requeue()
+	}
+	logger.Debug("Complete")
+}
+
+func runPendingJobs(c *config.Config) {
 	logger.Debug("Looking for pending jobs")
 	for _, p := range jobs.FindAllPendingJobs() {
 		logger.Debug("Starting job id %d: %q", p.JobID(), p.JobType())

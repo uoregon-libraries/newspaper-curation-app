@@ -66,6 +66,22 @@ func FindAllPendingJobs() (processors []Processor) {
 	return
 }
 
+// FindAllFailedJobs returns a list of all jobs which failed; these are not
+// wrapped into IssueJobs or Processors, as failed jobs aren't meant to be
+// reprocessed (though they can be requeued by creating new jobs)
+func FindAllFailedJobs() (jobs []*Job) {
+	var dbJobs, err = db.FindJobsByStatus(string(JobStatusFailed))
+	if err !=  nil {
+		logger.Critical("Unable to look up failed jobs: %s", err)
+		return
+	}
+
+	for _, dbj := range dbJobs {
+		jobs = append(jobs, NewJob(dbj))
+	}
+	return
+}
+
 // issueJobFindWrapper takes the response from most job-finding db functions
 // and returns a list of IssueJobs, validating everything as needed and logging
 // Critical errors when any DB operation failed

@@ -51,6 +51,25 @@ func (j *Job) SetProcessSuccess(success bool) {
 	}
 }
 
+// Requeue closes out this job and queues a new, duplicate job
+func (j *Job) Requeue() error {
+	var op = db.DB.Operation()
+	op.BeginTransaction()
+
+	var clone = &db.Job{
+		Type:     j.Type,
+		ObjectID: j.ObjectID,
+		Location: j.Location,
+		Status:   j.Status,
+	}
+	clone.Save()
+
+	j.Status = string(JobStatusDone)
+	j.Save()
+
+	op.EndTransaction()
+	return op.Err()
+}
 
 // IssueJob wraps the Job type to add things needed in all jobs tied to
 // specific issues
