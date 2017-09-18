@@ -65,7 +65,7 @@ func (j *Job) Logs() []*JobLog {
 	if j.logs == nil {
 		var op = DB.Operation()
 		op.Dbg = Debug
-		op.Select("job_logs", &JobLog{}).Where("job_id = ?", j.ID).AllObjects(j.logs)
+		op.Select("job_logs", &JobLog{}).Where("job_id = ?", j.ID).AllObjects(&j.logs)
 	}
 
 	return j.logs

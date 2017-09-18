@@ -6,6 +6,7 @@ import (
 	"html/template"
 	"issuefinder"
 	"issuesearch"
+	"jobs"
 	"logger"
 	"path/filepath"
 	"schema"
@@ -164,7 +165,7 @@ func (i *Issue) decorateErrors() {
 // just scanning the issue directories and files
 func (i *Issue) decorateExternalErrors() {
 	i.decorateDupeErrors()
-	i.decorateDatabaseMessages()
+	i.decoratePriorJobLogs()
 }
 
 // decorateDupeErrors adds errors to the issue if we find the same key in the global watcher
@@ -209,10 +210,8 @@ func (i *Issue) decorateDupeErrors() {
 	}
 }
 
-// decorateQueueInfoMessages adds information to issues that failed being
-// queued previously.  These don't prevent re-queueing, but can help explain
-// problems that cause an issue to keep getting back in the queue.
-func (i *Issue) decorateDatabaseMessages() {
+// decoratePriorJobLogs adds information to issues that have old failed jobs.
+func (i *Issue) decoratePriorJobLogs() {
 	var dbi, err = db.FindIssueByKey(i.Key())
 	if err != nil {
 		logger.Error("Unable to look up issue for decorating queue messages: %s", err)
@@ -222,15 +221,47 @@ func (i *Issue) decorateDatabaseMessages() {
 		return
 	}
 
-	/* TODO: Pull this from job logs on jobs which failed
+	var issueJobs = jobs.FindJobsForIssue(dbi)
+	if err != nil {
+		logger.Error("Unable to look up jobs for issue id %d (%q): %s", dbi.ID, i.Key(), err)
+		return
+	}
 
-	if dbi.Error != "" {
-		i.Errors = append(i.Errors, template.HTML(dbi.Error))
+	var subErrors []string
+	for _, ij := range issueJobs {
+		// We only care to report on the failed jobs, as those haven't been requeued
+		if ij.Status != string(jobs.JobStatusFailed) {
+			continue
+		}
+
+		for _, log := range ij.Logs() {
+			switch log.LogLevel {
+			case "DEBUG", "INFO", "WARN":
+				continue
+			case "ERROR", "CRIT":
+				subErrors = append(subErrors, log.Message)
+			default:
+				logger.Error("Unknown job log level: %q", log.LogLevel)
+			}
+		}
 	}
-	if dbi.Info != "" {
-		i.QueueInfo = template.HTML(dbi.Info)
+
+	if len(subErrors) > 0 {
+		var listItems string
+		for _, e := range subErrors {
+			listItems += "<li>" + e + "</li>\n"
+		}
+		var msg = fmt.Sprintf(`
+			A previous queue attempt failed, but you can attempt to re-queue or
+			contact the system administrator.
+			<br /><br />
+			Details:
+			<ul>
+				%s
+			</ul>
+			`, listItems)
+		i.QueueInfo = template.HTML(msg)
 	}
-	*/
 }
 
 // IsNew tells the presentation if the issue is fairly new, which can be

@@ -11,17 +11,17 @@
   <form action="{{.Data.Issue.WorkflowPath "queue"}}" method="POST">
     <p>No critical errors detected</p>
     {{if .Data.Issue.QueueInfo}}
-      <p class="alert alert-warning">{{.Data.Issue.QueueInfo}}</p>
+      <div class="alert alert-warning">{{.Data.Issue.QueueInfo}}</div>
     {{end}}
     {{if .Data.Issue.IsDangerouslyNew}}
-        <p class="alert alert-warning">This issue is very new and may get more uploads, so queueing is not permitted</p>
+        <div class="alert alert-warning">This issue is very new and may get more uploads, so queueing is not permitted</div>
     {{else}}
       {{if .Data.Issue.IsNew}}
-        <p class="alert alert-warning">This issue is relatively new and may get more uploads - queue with care!</p>
+        <div class="alert alert-warning">This issue is relatively new and may get more uploads - queue with care!</div>
       {{end}}
 
       {{if .User.PermittedTo "sftp workflow"}}
-        <p><button type="submit">Queue Issue</button> for derivative generation</p>
+        <div><button type="submit">Queue Issue</button> for derivative generation</div>
       {{end}}
     {{end}}
   </form>
