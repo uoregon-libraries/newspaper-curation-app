@@ -14,6 +14,7 @@ import (
 // A Processor is a general interface for all database-driven jobs that process something
 type Processor interface {
 	Process(*config.Config) bool
+	SetProcessSuccess(bool)
 	JobID() int
 	JobType() JobType
 }
@@ -34,6 +35,22 @@ func (j *Job) JobID() int {
 func (j *Job) JobType() JobType {
 	return JobType(j.Job.Type)
 }
+
+// SetProcessSuccess changes the process status to successful or failed and
+// stores it, logging a critical error if the database operation fails
+func (j *Job) SetProcessSuccess(success bool) {
+	switch success {
+	case true:
+		j.Status = string(JobStatusSuccessful)
+	case false:
+		j.Status = string(JobStatusFailed)
+	}
+	var err = j.Save()
+	if err != nil {
+		j.Logger.Critical("Unable to update job status after completion (job: %d; success: %q): %s", j.ID, err)
+	}
+}
+
 
 // IssueJob wraps the Job type to add things needed in all jobs tied to
 // specific issues

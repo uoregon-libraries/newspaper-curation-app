@@ -3,6 +3,7 @@ package jobs
 import (
 	"config"
 	"fileutil"
+	"logger"
 	"os"
 	"path/filepath"
 )
@@ -47,12 +48,15 @@ func (im *SFTPIssueMover) Process(config *config.Config) bool {
 	}
 	im.Issue.Location = newLocation
 
-	im.Status = string(JobStatusSuccessful)
-	err = im.Save()
+	// Queue a new page-split job.  The SFTPIssueMover process is considered a
+	// success at this point, as the move is complete, so failure to queue the
+	// new job just has to be logged loudly.
+	err = QueuePageSplit(im.DBIssue, im.Issue.Location)
 	if err != nil {
-		// We can log this, but we can't actually claim the process failed, because
-		// the move was done.  There's really no nice way to handle this.
-		im.Logger.Critical("Unable to update workflow metadata after moving sftp issue %q: %s", iKey, err)
+		// NOTE: This is *not* attached to the sftp mover because the ability to
+		// queue a new job isn't relevant to the completed job
+		// TODO: Maybe critical logging should also be emailed somewhere
+		logger.Critical("Unable to queue new page-split job!")
 	}
 
 	return true

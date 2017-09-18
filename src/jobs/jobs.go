@@ -38,20 +38,29 @@ func FindJobsForIssue(dbi *db.Issue) []*IssueJob {
 	return issueJobFindWrapper(dbJobs, err, fmt.Sprintf("find jobs for issue id %d", dbi.ID))
 }
 
-// FindPendingPageSplitJobs returns PageSplits that need to be processed
-func FindPendingPageSplitJobs() (jobs []*PageSplit) {
-	var dbJobs, err = db.FindJobsByStatusAndType(string(JobStatusPending), string(JobTypePageSplit))
-	for _, ij := range issueJobFindWrapper(dbJobs, err, "find issues needing page splitting") {
-		jobs = append(jobs, &PageSplit{IssueJob: ij})
+// FindPendingSFTPIssueMoverJobs returns all sftp issue move jobs that are currently
+// waiting for processing
+func FindPendingSFTPIssueMoverJobs() (jobs []*SFTPIssueMover) {
+	var dbJobs, err = db.FindJobsByStatusAndType(string(JobStatusPending), string(JobTypeSFTPIssueMove))
+	for _, ij := range issueJobFindWrapper(dbJobs, err, "find sftp issues needing to be moved") {
+		jobs = append(jobs, &SFTPIssueMover{IssueJob: ij})
 	}
 
 	return
 }
 
-func FindPendingSFTPIssueMoverJobs() (jobs []*SFTPIssueMover) {
-	var dbJobs, err = db.FindJobsByStatusAndType(string(JobStatusPending), string(JobTypeSFTPIssueMove))
+// FindAllPendingJobs returns a list of all jobs needing processing
+func FindAllPendingJobs() (processors []Processor) {
+	var dbJobs, err = db.FindJobsByStatus(string(JobStatusPending))
 	for _, ij := range issueJobFindWrapper(dbJobs, err, "find sftp issues needing to be moved") {
-		jobs = append(jobs, &SFTPIssueMover{IssueJob: ij})
+		switch JobType(ij.Type) {
+		case JobTypeSFTPIssueMove:
+			processors = append(processors, &SFTPIssueMover{IssueJob: ij})
+		case JobTypePageSplit:
+			processors = append(processors, &PageSplit{IssueJob: ij})
+		default:
+			logger.Error("Unknown job type %q for job id %d", ij.Type, ij.ID)
+		}
 	}
 
 	return
