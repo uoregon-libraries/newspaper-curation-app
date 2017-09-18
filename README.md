@@ -45,6 +45,19 @@ back into our app.  The relevant commit links follow:
 If you wish to use this application with an ONI install, you'll need to do
 something similar.
 
+Job Runner
+---
+
+Queued jobs (such as SFTP issues manually reviewed and queued) will not be
+processed until the job runner is executed.  This can be as simple as:
+
+    ./bin/run-jobs -c ./settings.py
+
+If you wish to re-queue all failed jobs before running pending jobs, simply add
+`--retry-failed-jobs` to the command:
+
+    ./bin/run-jobs -c ./settings.py --retry-failed-jobs
+
 Cache builder
 ---
 
