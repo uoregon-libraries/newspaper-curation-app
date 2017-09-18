@@ -35,22 +35,24 @@ func FindJob(id int) (*Job, error) {
 	return j, op.Err()
 }
 
-// FindJobsByStatusAndType returns all jobs of the given status and type
-func FindJobsByStatusAndType(st string, t string) ([]*Job, error) {
+// findJobs wraps all the job finding functionality so helpers can be
+// one-liners.  This is purposely *not* exported to enforce a stricter API.
+func findJobs(where string, args ...interface{}) ([]*Job, error) {
 	var op = DB.Operation()
 	op.Dbg = Debug
 	var list []*Job
-	op.Select("jobs", &Job{}).Where("status = ? AND job_type = ?", st, t).AllObjects(&list)
+	op.Select("jobs", &Job{}).Where(where, args...).AllObjects(&list)
 	return list, op.Err()
+}
+
+// FindJobsByStatusAndType returns all jobs of the given status and type
+func FindJobsByStatusAndType(st string, t string) ([]*Job, error) {
+	return findJobs("status = ? AND job_type = ?", st, t)
 }
 
 // FindJobsForIssueID returns all jobs tied to the given issue
 func FindJobsForIssueID(id int) ([]*Job, error) {
-	var op = DB.Operation()
-	op.Dbg = Debug
-	var list []*Job
-	op.Select("jobs", &Job{}).Where("object_id = ?", id).AllObjects(&list)
-	return list, op.Err()
+	return findJobs("object_id = ?", id)
 }
 
 // Logs lazy-loads all logs for this job from the database
