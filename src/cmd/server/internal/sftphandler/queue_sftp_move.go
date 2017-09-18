@@ -33,7 +33,19 @@ func queueSFTPIssueMove(i *Issue) (ok bool, status string) {
 	}
 	for _, job := range jobList {
 		switch jobs.JobStatus(job.Status) {
-		case jobs.JobStatusFailed, jobs.JobStatusDone:
+		case jobs.JobStatusFailed:
+			// We can just assume the user wasn't worried about the job's message,
+			// and re-queued anyway.  We're therefore okay with a silent (to the end
+			// user) failure if we can't close the job out, because requeueing is
+			// more important to keep things flowing.  But we MUST alert somebody
+			// that the old job is "stuck" in a failed state, as that could get
+			// really weird if we mass-retry failed jobs.
+			job.Status = string(jobs.JobStatusDone)
+			err = job.Save()
+			if err != nil {
+				logger.Critical("Unable to close failed job!  Manually fix this!  Job id %d; error: %s", job.ID, err)
+			}
+		case jobs.JobStatusDone:
 			continue
 		default:
 			logger.Critical("Unexpected job detected for issue %q (db id %d): job id %d, status %q",
