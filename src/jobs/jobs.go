@@ -52,7 +52,7 @@ func FindPendingSFTPIssueMoverJobs() (jobs []*SFTPIssueMover) {
 // FindAllPendingJobs returns a list of all jobs needing processing
 func FindAllPendingJobs() (processors []Processor) {
 	var dbJobs, err = db.FindJobsByStatus(string(JobStatusPending))
-	for _, ij := range issueJobFindWrapper(dbJobs, err, "find sftp issues needing to be moved") {
+	for _, ij := range issueJobFindWrapper(dbJobs, err, "find pending jobs") {
 		switch JobType(ij.Type) {
 		case JobTypeSFTPIssueMove:
 			processors = append(processors, &SFTPIssueMover{IssueJob: ij})
