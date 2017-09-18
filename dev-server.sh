@@ -8,6 +8,11 @@ set -eu
 
 port=${1:-12346}
 suffix=${2:--indev}
+debugflag="--debug"
+
+if [[ ! -z ${NODEBUG:-} ]]; then
+  debugflag=""
+fi
 
 oldmd5=""
 pid=""
@@ -64,7 +69,7 @@ while true; do
         --parent-webroot=/odnp-admin \
         --static-files $(pwd)/static \
         --cache-path $(pwd)/tmp \
-        --debug \
+        $debugflag \
         $(pwd)/templates &
       pid=$!
     fi
