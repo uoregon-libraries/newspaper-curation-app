@@ -111,9 +111,6 @@ func (ps *PageSplit) process() (ok bool) {
 	if !ps.backupOriginals() {
 		return false
 	}
-	if !ps.createMetaJSON() {
-		return false
-	}
 
 	return true
 }
@@ -253,11 +250,4 @@ func (ps *PageSplit) backupOriginals() (ok bool) {
 	}
 
 	return true
-}
-
-// createMetaJSON builds and writes out a basic metadata file for legacy
-// processors to use
-func (ps *PageSplit) createMetaJSON() (ok bool) {
-	ps.Logger.Warn("Not implemented!")
-	return false
 }
