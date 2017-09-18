@@ -8,6 +8,8 @@ import (
 	"strings"
 )
 
+// Exec attempts to run the given command, using logger to give consistent
+// formatting to whatever the command spits out if an error occurs
 func Exec(binary string, args ...string) (ok bool) {
 	var cmd = exec.Command(binary, args...)
 	logger.Debug(`Running "%s %s"`, binary, strings.Replace(strings.Join(args, " "), "%", "%%", -1))

@@ -1,4 +1,4 @@
-// package logger centralizes logging things in a way that gives similar output
+// Package logger centralizes logging things in a way that gives similar output
 // to the Python tools.  For now, there is no filtering via log levels, and the
 // app name is figured out just by pulling os.Args[0] rather than being
 // manually set.
