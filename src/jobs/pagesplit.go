@@ -105,14 +105,10 @@ func (ps *PageSplit) process() (ok bool) {
 	if !ps.convertToPDFA() {
 		return false
 	}
-	if !ps.moveToPageReview() {
-		return false
-	}
 	if !ps.backupOriginals() {
 		return false
 	}
-
-	return true
+	return ps.moveToPageReview()
 }
 
 // createMasterPDF combines pages and pre-processes PDFs - ghostscript seems to
