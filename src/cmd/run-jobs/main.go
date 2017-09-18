@@ -69,7 +69,7 @@ func main() {
 	for _, p := range jobs.FindAllPendingJobs() {
 		logger.Debug("Starting job id %d: %q", p.JobID(), p.JobType())
 		p.SetProcessSuccess(p.Process(c))
-		logger.Debug("Finished job id %d: %q", p.JobID())
+		logger.Debug("Finished job id %d", p.JobID())
 	}
 	logger.Debug("Complete")
 }

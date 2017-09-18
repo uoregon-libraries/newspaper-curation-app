@@ -71,7 +71,7 @@ type jobLogWriter struct {
 func (jlw jobLogWriter) Write(p []byte) (n int, err error) {
 	// Duplicate the output to stderr so we have something to grep in cases where
 	// looking at logs is easier
-	fmt.Fprintf(os.Stderr, "%s (job id %d)\n", strings.Replace(string(p), "\n", "", -1))
+	fmt.Fprintf(os.Stderr, "%s (job id %d)\n", strings.Replace(string(p), "\n", "", -1), jlw.Job.ID)
 
 	// Split the log message into its relevant parts
 	var parts = strings.Split(string(p), " - ")
