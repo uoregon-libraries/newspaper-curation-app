@@ -11,9 +11,10 @@ repositories for the complete suite:
 
 This project was created initially just to have a quick way to scan publisher's
 PDFs and find errors before running the Python scripts in the other repository,
-as PHP was proving unsuitable for disk scanning jobs.  It is now planned to
-slowly replace the other codebases entirely, to simplify the application as
-well as provide something significantly faster.
+as PHP was proving unsuitable for disk scanning jobs, and Python wasn't a great
+fit for a new front-end app (and neither had great error detection and
+handling).  It is now planned to slowly replace the other codebases entirely,
+to simplify the application as well as provide something significantly faster.
 
 Compilation requires [Go](https://golang.org/dl/) 1.9 or later and gb:
 
