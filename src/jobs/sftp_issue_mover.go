@@ -50,8 +50,9 @@ func (im *SFTPIssueMover) Process(config *config.Config) bool {
 	im.Status = string(JobStatusSuccessful)
 	err = im.Save()
 	if err != nil {
+		// We can log this, but we can't actually claim the process failed, because
+		// the move was done.  There's really no nice way to handle this.
 		im.Logger.Critical("Unable to update workflow metadata after moving sftp issue %q: %s", iKey, err)
-		return false
 	}
 
 	return true
