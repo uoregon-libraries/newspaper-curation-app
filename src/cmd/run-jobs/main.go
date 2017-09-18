@@ -76,7 +76,11 @@ func main() {
 func retryFailedJobs() {
 	logger.Debug("Looking for failed jobs to requeue")
 	for _, j := range jobs.FindAllFailedJobs() {
-		j.Requeue()
+		logger.Debug("Requeuing job %d", j.ID)
+		var err = j.Requeue()
+		if err != nil {
+			logger.Error("Unable to requeue job %d: %s", j.ID, err)
+		}
 	}
 	logger.Debug("Complete")
 }
