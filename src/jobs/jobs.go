@@ -13,8 +13,9 @@ type JobType string
 
 // The full list of job types
 const (
-	JobTypePageSplit     JobType = "page_split"
-	JobTypeSFTPIssueMove JobType = "sftp_issue_move"
+	JobTypePageSplit       JobType = "page_split"
+	JobTypeSFTPIssueMove   JobType = "sftp_issue_move"
+	JobTypeMakeDerivatives JobType = "make_derivatives"
 )
 
 // JobStatus represents the different states in which a job can exist
@@ -58,6 +59,8 @@ func FindAllPendingJobs() (processors []Processor) {
 			processors = append(processors, &SFTPIssueMover{IssueJob: ij})
 		case JobTypePageSplit:
 			processors = append(processors, &PageSplit{IssueJob: ij})
+		case JobTypeMakeDerivatives:
+			processors = append(processors, &MakeDerivatives{IssueJob: ij})
 		default:
 			logger.Error("Unknown job type %q for job id %d", ij.Type, ij.ID)
 		}
