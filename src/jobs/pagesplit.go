@@ -5,6 +5,7 @@ import (
 	"fileutil"
 	"fmt"
 	"io/ioutil"
+	"logger"
 	"os"
 	"path/filepath"
 	"regexp"
@@ -108,7 +109,17 @@ func (ps *PageSplit) process() (ok bool) {
 	if !ps.backupOriginals() {
 		return false
 	}
-	return ps.moveToPageReview()
+	if !ps.moveToPageReview() {
+		return false
+	}
+
+	// The move above is done, so failing to update the workflow doesn't actually
+	// mean the operation failed; it just means we have to loudly log things
+	var err = ps.updateIssueWorkflow()
+	if err != nil {
+		logger.Critical("Unable to update issue (dbid %d) workflow post-split: %s", ps.DBIssue.ID, err)
+	}
+	return true
 }
 
 // createMasterPDF combines pages and pre-processes PDFs - ghostscript seems to
@@ -246,4 +257,13 @@ func (ps *PageSplit) backupOriginals() (ok bool) {
 	}
 
 	return true
+}
+
+// updateIssueWorkflow sets the Issue's location and flips the "awaiting manual
+// ordering" flag so we can track the issue with our "move manually ordered
+// issues" scanner
+func (ps *PageSplit) updateIssueWorkflow() error {
+	ps.DBIssue.Location = ps.FinalOutputDir
+	ps.DBIssue.AwaitingManualOrdering = true
+	return ps.DBIssue.Save()
 }
