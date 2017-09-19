@@ -17,10 +17,11 @@ func nocache(next http.Handler) http.Handler {
 func logMiddleware(next http.Handler) http.Handler {
 	return http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
 		var u = responder.GetUserLogin(w, r)
+		var ip = responder.GetUserIP(r)
 		if u != "" {
-			logger.Info("Request: [%s] %s", u, r.URL)
+			logger.Info("Request: [%s] [%s] %s", u, ip, r.URL)
 		} else {
-			logger.Info("Request: [nil] %s", r.URL)
+			logger.Info("Request: [nil] [%s] %s", ip, r.URL)
 		}
 		next.ServeHTTP(w, r)
 	})

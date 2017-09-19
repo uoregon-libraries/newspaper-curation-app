@@ -37,6 +37,10 @@ func GetUserLogin(w http.ResponseWriter, req *http.Request) string {
 	return l
 }
 
+func GetUserIP(req *http.Request) string {
+	return req.Header.Get("X-Forwarded-For")
+}
+
 // CanViewSFTPIssues is an alias for the privilege-checking handlerfunc wrapper
 func CanViewSFTPIssues(h http.HandlerFunc) http.Handler {
 	return MustHavePrivilege("sftp report", h)

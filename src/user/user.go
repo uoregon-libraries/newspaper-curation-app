@@ -16,6 +16,7 @@ type User struct {
 	Login       string
 	RolesString string `sql:"roles"`
 	Guest       bool   `sql:"-"`
+	IP          string `sql:"-"`
 	roles       []*Role
 	privileges  []*Privilege
 }
