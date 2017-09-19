@@ -168,6 +168,7 @@ func IssueWorkflowHandler(w http.ResponseWriter, req *http.Request) {
 			cname = "Alert"
 		}
 
+		r.Audit("sftp-queue", fmt.Sprintf("Issue %q, success: %#v", issue.Key(), ok))
 		http.SetCookie(w, &http.Cookie{Name: cname, Value: msg, Path: "/"})
 		http.Redirect(w, req, TitlePath(issue.Title.Slug), http.StatusFound)
 

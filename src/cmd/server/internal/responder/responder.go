@@ -4,6 +4,7 @@
 package responder
 
 import (
+	"db"
 	"logger"
 	"net/http"
 	"time"
@@ -69,5 +70,15 @@ func (r *Responder) Render(t *tmpl.Template) {
 	err = t.Execute(r.Writer, r.Vars)
 	if err != nil {
 		logger.Error("Unable to render template %#v: %s", t.Name, err)
+	}
+}
+
+// Audit stores an audit log in the database and logs to the command line if
+// the database audit fails
+func (r *Responder) Audit(action, msg string) {
+	var u = r.Vars.User
+	var err = db.CreateAuditLog(u.IP, u.Login, action, msg)
+	if err != nil {
+		logger.Critical("Unable to write AuditLog{%s (%s), %q, %s}: %s", u.Login, u.IP, action, msg, err)
 	}
 }
