@@ -21,15 +21,14 @@ func (im *SFTPIssueMover) Process(config *config.Config) bool {
 
 	// Verify new path will work
 	var oldLocation = im.Location
-	var newLocation = filepath.Join(config.WorkflowPath, iKey)
+	var newLocation = filepath.Join(config.WorkflowPath, im.Subdir())
 	if !fileutil.MustNotExist(newLocation) {
 		im.Logger.Error("Destination %q already exists for issue %q", newLocation, iKey)
 		return false
 	}
 
 	// Move the issue directory to the workflow path
-	var wipLocation = newLocation + "-wip"
-	os.MkdirAll(filepath.Dir(wipLocation), 0700)
+	var wipLocation = filepath.Join(config.WorkflowPath, im.WIPDir())
 	im.Logger.Info("Copying %q to %q", oldLocation, wipLocation)
 	var err = fileutil.CopyDirectory(oldLocation, wipLocation)
 	if err != nil {

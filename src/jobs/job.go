@@ -79,6 +79,18 @@ type IssueJob struct {
 	DBIssue *db.Issue
 }
 
+// Subdir returns a subpath to the job issue's directory for consistent
+// directory naming and single-level paths
+func (ij *IssueJob) Subdir() string {
+	return fmt.Sprintf("%s-%s%02d", ij.Issue.Title.LCCN, ij.Issue.DateString(), ij.Issue.Edition)
+}
+
+// WIPDir returns a hidden name for a work-in-progress directory to allow
+// processing / copying to occur in a way that won't mess up end users
+func (ij *IssueJob) WIPDir() string {
+	return ".wip-" + ij.Subdir()
+}
+
 // jobLogWriter is our internal structure, which implements io.Writer in order
 // to write to the database
 type jobLogWriter struct {

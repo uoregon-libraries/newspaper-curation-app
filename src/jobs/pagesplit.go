@@ -27,12 +27,6 @@ type PageSplit struct {
 	GhostScript    string // The path to gs for combining the fake master PDF
 }
 
-// Dir gives us a single-level directory for the issue in a similar way to the
-// schema.Issue.Key() function, but with no path delimiters
-func (ps *PageSplit) Dir() string {
-	return fmt.Sprintf("%s-%s%02d", ps.Issue.Title.LCCN, ps.Issue.DateString(), ps.Issue.Edition)
-}
-
 // Process combines, splits, and then renames files so they're sequential in a
 // "best guess" order.  Files are then put into place for manual processors to
 // reorder if necessary, remove duped pages, etc.
@@ -43,9 +37,9 @@ func (ps *PageSplit) Process(config *config.Config) bool {
 	}
 	defer ps.removeTempFiles()
 
-	ps.WIPDir = filepath.Join(config.PDFPageReviewPath, ".wip-"+ps.Dir())
-	ps.FinalOutputDir = filepath.Join(config.PDFPageReviewPath, ps.Dir())
-	ps.MasterBackup = filepath.Join(config.MasterPDFBackupPath, ps.Dir())
+	ps.WIPDir = filepath.Join(config.PDFPageReviewPath, ps.IssueJob.WIPDir())
+	ps.FinalOutputDir = filepath.Join(config.PDFPageReviewPath, ps.Subdir())
+	ps.MasterBackup = filepath.Join(config.MasterPDFBackupPath, ps.Subdir())
 
 	if !fileutil.MustNotExist(ps.WIPDir) {
 		ps.Logger.Error("WIP dir %q already exists", ps.WIPDir)
