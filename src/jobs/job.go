@@ -26,6 +26,16 @@ type Job struct {
 	Logger *logger.Logger
 }
 
+// Find looks up the job in the database and wraps it
+func Find(id int) *Job {
+	var dbJob, err = db.FindJob(id)
+	if err != nil {
+		logger.Error("Unable to find job id %d", id)
+		return nil
+	}
+	return NewJob(dbJob)
+}
+
 // JobID gets the underlying database job's id
 func (j *Job) JobID() int {
 	return j.Job.ID

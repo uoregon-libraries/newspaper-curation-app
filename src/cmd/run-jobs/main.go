@@ -17,8 +17,8 @@ import (
 
 // Command-line options
 var opts struct {
-	ConfigFile      string `short:"c" long:"config" description:"path to P2C config file" required:"true"`
-	RetryFailedJobs bool   `long:"retry-failed-jobs" description:"if set, puts failed jobs back into the queue before running pending jobs"`
+	ConfigFile string `short:"c" long:"config" description:"path to P2C config file" required:"true"`
+	RetryJobID      int    `long:"retry-job-id" description:"if set, queues a copy of the given failed job id"`
 }
 
 var p *flags.Parser
@@ -67,22 +67,25 @@ func main() {
 		logger.Fatal("Cannot load titles: %s", err)
 	}
 
-	if opts.RetryFailedJobs {
-		retryFailedJobs()
+	if opts.RetryJobID > 0 {
+		retry(opts.RetryJobID)
 	}
 	runPendingJobs(c)
 }
 
-func retryFailedJobs() {
-	logger.Debug("Looking for failed jobs to requeue")
-	for _, j := range jobs.FindAllFailedJobs() {
-		logger.Debug("Requeuing job %d", j.ID)
-		var err = j.Requeue()
-		if err != nil {
-			logger.Error("Unable to requeue job %d: %s", j.ID, err)
-		}
+func retry(id int) {
+	var j = jobs.Find(id)
+	var failStatus = jobs.JobStatusFailed
+	if j.Status != string(failStatus) {
+		logger.Error("Cannot requeue job id %d: status is %s (it must be %s to requeue)", id, j.Status, failStatus)
+		return
 	}
-	logger.Debug("Complete")
+
+	logger.Debug("Requeuing job %d", j.ID)
+	var err = j.Requeue()
+	if err != nil {
+		logger.Error("Unable to requeue job %d: %s", j.ID, err)
+	}
 }
 
 func runPendingJobs(c *config.Config) {
