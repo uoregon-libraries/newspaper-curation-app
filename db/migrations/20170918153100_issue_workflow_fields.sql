@@ -5,7 +5,7 @@
 /*!40101 SET character_set_client = utf8 */;
 
 ALTER TABLE `issues` ADD `location` TINYTEXT COLLATE utf8_bin;
-ALTER TABLE `issues` ADD `awaiting_manual_ordering` TINYINT;
+ALTER TABLE `issues` ADD `awaiting_page_review` TINYINT;
 ALTER TABLE `issues` ADD `has_derivatives` TINYINT;
 ALTER TABLE `issues` ADD `ready_for_metadata_entry` TINYINT;
 ALTER TABLE `issues` ADD `awaiting_metadata_review` TINYINT;
@@ -20,7 +20,7 @@ ALTER TABLE `issues` ADD `reviewed_by` TINYTEXT COLLATE utf8_bin;
 /*!40101 SET character_set_client = utf8 */;
 
 ALTER TABLE `issues` DROP COLUMN `location`;
-ALTER TABLE `issues` DROP COLUMN `awaiting_manual_ordering`;
+ALTER TABLE `issues` DROP COLUMN `awaiting_page_review`;
 ALTER TABLE `issues` DROP COLUMN `has_derivatives`;
 ALTER TABLE `issues` DROP COLUMN `ready_for_metadata_entry`;
 ALTER TABLE `issues` DROP COLUMN `awaiting_metadata_review`;

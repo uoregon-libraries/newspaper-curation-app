@@ -258,6 +258,6 @@ func (ps *PageSplit) backupOriginals() (ok bool) {
 // issues" scanner
 func (ps *PageSplit) updateIssueWorkflow() error {
 	ps.DBIssue.Location = ps.FinalOutputDir
-	ps.DBIssue.AwaitingManualOrdering = true
+	ps.DBIssue.AwaitingPageReview = true
 	return ps.DBIssue.Save()
 }
