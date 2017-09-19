@@ -24,7 +24,8 @@ server
 ---
 
 This tool currently adds two areas to the site: an SFTP queueing tool, and an
-issue finder.
+issue finder.  Please note that, at the moment, this requires Apache sitting in
+front of the server for authentication.
 
 ### Usage
 
