@@ -26,6 +26,9 @@ type Config struct {
 	// Org code used for sftp-uploaded batches
 	PDFBatchMARCOrgCode string `setting:"PDF_BATCH_MARC_ORG_CODE"`
 
+	// Minimum number of pages an SFTPed issue must contain to be processed
+	MinimumIssuePages int
+
 	// Paths to the various places we expect to find files
 	MasterPDFUploadPath            string `setting:"MASTER_PDF_UPLOAD_PATH" type:"path"`
 	MasterPDFBackupPath            string `setting:"MASTER_PDF_BACKUP_PATH" type:"path"`
@@ -65,6 +68,11 @@ func Parse(filename string) (*Config, error) {
 	}
 	c.DatabaseConnect = fmt.Sprintf("%s:%s@tcp(%s:%s)/%s", bc["DB_USER"],
 		bc["DB_PASSWORD"], bc["DB_HOST"], bc["DB_PORT"], bc["DB_DATABASE"])
+
+	c.MinimumIssuePages, _ = strconv.Atoi(bc["MINIMUM_ISSUE_PAGES"])
+	if c.MinimumIssuePages == 0 {
+		errors = append(errors, "invalid MINIMUM_ISSUE_PAGES: must be numeric and greater than 0")
+	}
 
 	if len(errors) > 0 {
 		return nil, fmt.Errorf("invalid configuration: %s", strings.Join(errors, ", "))

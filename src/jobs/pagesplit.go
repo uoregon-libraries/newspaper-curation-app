@@ -25,6 +25,7 @@ type PageSplit struct {
 	WIPDir         string // Where we copy files after processing
 	FinalOutputDir string // Where we move files after the copy was successful
 	GhostScript    string // The path to gs for combining the fake master PDF
+	MinPages       int    // Number of pages below which we refuse to process
 }
 
 // Process combines, splits, and then renames files so they're sequential in a
@@ -55,6 +56,7 @@ func (ps *PageSplit) Process(config *config.Config) bool {
 	}
 
 	ps.GhostScript = config.GhostScript
+	ps.MinPages = config.MinimumIssuePages
 	return ps.process()
 }
 
@@ -150,6 +152,11 @@ func (ps *PageSplit) fixPageNames() (ok bool) {
 	var fileinfos, err = fileutil.ReaddirSorted(ps.TempDir)
 	if err != nil {
 		ps.Logger.Error("Unable to read seq-* files for renumbering")
+		return false
+	}
+
+	if len(fileinfos) < ps.MinPages {
+		ps.Logger.Error("Too few pages to continue processing (found %d, need %d or more)", len(fileinfos), ps.MinPages)
 		return false
 	}
 
