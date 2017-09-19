@@ -2,10 +2,9 @@ package jobs
 
 import "db"
 
-// QueuePageSplit creates and queues a page-splitting job with the given data
-func QueuePageSplit(issue *db.Issue, path string) error {
+func queueIssueJob(t JobType, issue *db.Issue, path string) error {
 	var j = &db.Job{
-		Type:     string(JobTypePageSplit),
+		Type:     string(t),
 		ObjectID: issue.ID,
 		Location: path,
 		Status:   string(JobStatusPending),
@@ -13,13 +12,12 @@ func QueuePageSplit(issue *db.Issue, path string) error {
 	return j.Save()
 }
 
+// QueuePageSplit creates and queues a page-splitting job with the given data
+func QueuePageSplit(issue *db.Issue, path string) error {
+	return queueIssueJob(JobTypePageSplit, issue, path)
+}
+
 // QueueSFTPIssueMove creates an sftp issue move job
 func QueueSFTPIssueMove(issue *db.Issue, path string) error {
-	var j = &db.Job{
-		Type:     string(JobTypeSFTPIssueMove),
-		ObjectID: issue.ID,
-		Location: path,
-		Status:   string(JobStatusPending),
-	}
-	return j.Save()
+	return queueIssueJob(JobTypeSFTPIssueMove, issue, path)
 }
