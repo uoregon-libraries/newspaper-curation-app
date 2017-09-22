@@ -28,12 +28,15 @@ func (md *MakeDerivatives) Process(c *config.Config) bool {
 	md.Logger.Debug("Starting make-derivatives job for issue id %d", md.DBIssue.ID)
 
 	// Run our serial operations, failing on the first non-ok response
-	md.RunWhileTrue(
+	var ok = md.RunWhileTrue(
 		md.findPDFs,
 		md.findTIFFs,
 		md.validateSourceFiles,
 		md.generateDerivatives,
 	)
+	if !ok {
+		return false
+	}
 
 	// The derivatives are generated, so failing to update the workflow doesn't
 	// actually mean the operation failed; it just means we have to YELL about
