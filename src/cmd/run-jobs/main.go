@@ -18,7 +18,7 @@ import (
 // Command-line options
 var opts struct {
 	ConfigFile string `short:"c" long:"config" description:"path to P2C config file" required:"true"`
-	RetryJobID      int    `long:"retry-job-id" description:"if set, queues a copy of the given failed job id"`
+	RetryJobID int    `long:"retry-job-id" description:"if set, queues a copy of the given failed job id"`
 }
 
 var p *flags.Parser
