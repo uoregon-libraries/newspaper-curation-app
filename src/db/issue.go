@@ -89,6 +89,16 @@ func FindIssueByKey(key string) (*Issue, error) {
 	return i, op.Err()
 }
 
+// FindIssuesInPageReview looks for all issues currently awaiting page review
+// and returns them
+func FindIssuesInPageReview() ([]*Issue, error) {
+	var op = DB.Operation()
+	op.Dbg = Debug
+	var list []*Issue
+	op.Select("issues", &Issue{}).Where("awaiting_page_review = ?", true).AllObjects(&list)
+	return list, op.Err()
+}
+
 // Save creates or updates the Issue in the issues table
 func (i *Issue) Save() error {
 	i.serialize()

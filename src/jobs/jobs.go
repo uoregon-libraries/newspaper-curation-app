@@ -13,9 +13,10 @@ type JobType string
 
 // The full list of job types
 const (
-	JobTypePageSplit       JobType = "page_split"
-	JobTypeSFTPIssueMove   JobType = "sftp_issue_move"
-	JobTypeMakeDerivatives JobType = "make_derivatives"
+	JobTypePageSplit               JobType = "page_split"
+	JobTypeSFTPIssueMove           JobType = "sftp_issue_move"
+	JobTypeMoveIssueForDerivatives JobType = "move_issue_for_derivatives"
+	JobTypeMakeDerivatives         JobType = "make_derivatives"
 )
 
 // JobStatus represents the different states in which a job can exist

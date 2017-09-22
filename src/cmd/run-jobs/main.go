@@ -1,4 +1,6 @@
-// This script finds and runs pending jobs
+// This script finds and runs pending jobs, scans for page review issues which
+// have been renamed and are ready for derivatives, and will eventually perform
+// all automated processes Batch Maker has to offer.
 
 package main
 
@@ -70,6 +72,7 @@ func main() {
 	if opts.RetryJobID > 0 {
 		retry(opts.RetryJobID)
 	}
+	scanPageReviewIssues(c)
 	runPendingJobs(c)
 }
 
