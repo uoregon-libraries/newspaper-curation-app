@@ -60,6 +60,8 @@ func FindAllPendingJobs() (processors []Processor) {
 			processors = append(processors, &SFTPIssueMover{IssueJob: ij})
 		case JobTypePageSplit:
 			processors = append(processors, &PageSplit{IssueJob: ij})
+		case JobTypeMoveIssueForDerivatives:
+			processors = append(processors, &MoveIssueForDerivatives{IssueJob: ij})
 		case JobTypeMakeDerivatives:
 			processors = append(processors, &MakeDerivatives{IssueJob: ij})
 		default:

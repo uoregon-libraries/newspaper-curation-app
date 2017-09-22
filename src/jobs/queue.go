@@ -27,3 +27,9 @@ func QueueSFTPIssueMove(issue *db.Issue, path string) error {
 func QueueMoveIssueForDerivatives(issue *db.Issue, path string) error {
 	return queueIssueJob(JobTypeMoveIssueForDerivatives, issue, path)
 }
+
+// QueueMakeDerivatives creates and queues a job to generate ALTO XML, JP2s,
+// and .meta.json for an issue
+func QueueMakeDerivatives(issue *db.Issue, path string) error {
+	return queueIssueJob(JobTypeMakeDerivatives, issue, path)
+}
