@@ -151,7 +151,8 @@ func (md *MakeDerivatives) validateSourceFiles() (ok bool) {
 		var jp2Parts = strings.Split(jp2Base, ".")
 		var jp2NoExt = jp2Parts[0]
 		if altoNoExt != jp2NoExt {
-			md.Logger.Error("Derivative mismatch: ALTO source %q doesn't match JP2 source %q", altoSource, jp2Source)
+			md.Logger.Error("Derivative mismatch: At index %d, ALTO source (%q) doesn't match JP2 source (%q)",
+				i, altoSource, jp2Source)
 			return false
 		}
 	}
