@@ -29,6 +29,12 @@ type Config struct {
 	// Minimum number of pages an SFTPed issue must contain to be processed
 	MinimumIssuePages int
 
+	// DPI for generating JP2s
+	DPI float64
+
+	// DPI used for images embedded in scanned PDFs, needed for ALTO XML
+	ScannedPDFDPI float64
+
 	// Paths to the various places we expect to find files
 	MasterPDFUploadPath            string `setting:"MASTER_PDF_UPLOAD_PATH" type:"path"`
 	MasterPDFBackupPath            string `setting:"MASTER_PDF_BACKUP_PATH" type:"path"`
@@ -72,6 +78,16 @@ func Parse(filename string) (*Config, error) {
 	c.MinimumIssuePages, _ = strconv.Atoi(bc["MINIMUM_ISSUE_PAGES"])
 	if c.MinimumIssuePages == 0 {
 		errors = append(errors, "invalid MINIMUM_ISSUE_PAGES: must be numeric and greater than 0")
+	}
+
+	c.DPI, _ = strconv.ParseFloat(bc["DPI"], 64)
+	if c.DPI < 72 {
+		errors = append(errors, "invalid DPI: must be numeric and at least 72 (150 or higher is preferred)")
+	}
+
+	c.ScannedPDFDPI, _ = strconv.ParseFloat(bc["SCANNED_PDF_DPI"], 64)
+	if c.ScannedPDFDPI < 72 {
+		errors = append(errors, "invalid DPI: must be numeric and at least 72")
 	}
 
 	if len(errors) > 0 {
