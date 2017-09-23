@@ -22,10 +22,26 @@ type MakeDerivatives struct {
 	*IssueJob
 	AltoDerivativeSources []string
 	JP2DerivativeSources  []string
+	findTIFFs             func() bool
+	AltoDPI               float64
+	JP2DPI                float64
 }
 
 func (md *MakeDerivatives) Process(c *config.Config) bool {
 	md.Logger.Debug("Starting make-derivatives job for issue id %d", md.DBIssue.ID)
+
+	md.JP2DPI = c.DPI
+
+	if md.DBIssue.IsFromScanner {
+		// For scanned issues, we have to verify TIFFs and use the scan DPI for
+		// generating ALTO XML
+		md.findTIFFs = md._findTIFFs
+		md.AltoDPI = c.ScannedPDFDPI
+	} else {
+		// Born-digital issues don't check TIFFs and use the JP2 DPI for ALTO
+		md.findTIFFs = func() bool { return true }
+		md.AltoDPI = c.DPI
+	}
 
 	// Run our serial operations, failing on the first non-ok response
 	var ok = md.RunWhileTrue(
@@ -73,10 +89,9 @@ func (md *MakeDerivatives) findPDFs() (ok bool) {
 	return true
 }
 
-// findTIFFs looks for any TIFF files in the issue directory.  If a single TIFF
-// exists, the JP2 derivative sources list is replaced, as we assume TIFFs to
-// always be a superior source format when they're present.
-func (md *MakeDerivatives) findTIFFs() (ok bool) {
+// _findTIFFs looks for any TIFF files in the issue directory.  This is only
+// called for scanned issues, so there *must* be TIFFs or this is a failure.
+func (md *MakeDerivatives) _findTIFFs() (ok bool) {
 	var tiffs, err = fileutil.FindIf(md.Location, func(i os.FileInfo) bool {
 		return tiffFilenameRegex.MatchString(i.Name())
 	})
@@ -86,10 +101,9 @@ func (md *MakeDerivatives) findTIFFs() (ok bool) {
 		return false
 	}
 
-	// Having no TIFF files means it's PDF-only, which is perfectly legitimate
 	if len(tiffs) < 1 {
-		md.Logger.Debug("No TIFFs present")
-		return true
+		md.Logger.Error("No TIFFs present")
+		return false
 	}
 	md.Logger.Debug("Found TIFFs: %#v", tiffs)
 
