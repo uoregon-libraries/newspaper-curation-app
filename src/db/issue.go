@@ -34,6 +34,7 @@ type Issue struct {
 	/* Workflow information to keep track of the issue and what it needs */
 
 	Location               string // Where is this issue on disk?
+	IsFromScanner          bool   // Is the issue scanned in-house?  (Born-digital == false)
 	AwaitingPageReview     bool   // Is the issue ready for page review?  (page sort / other manual intervention)
 	HasDerivatives         bool   // Does the issue have derivatives done?
 	ReadyForMetadataEntry  bool   // Is the issue ready for metadata entry?
