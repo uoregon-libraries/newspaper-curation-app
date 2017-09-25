@@ -20,6 +20,12 @@ type Config struct {
 	// individual database settings
 	DatabaseConnect string
 
+	// OPJCompress stores the path to the openjpeg binary for creating JP2 files
+	OPJCompress string `setting:"OPJ_COMPRESS"`
+
+	// OPJDecompress stores the path to the openjpeg binary for reading JP2 files
+	OPJDecompress string `setting:"OPJ_DECOMPRESS"`
+
 	// GhostScript stores the path to the ghostscript binary for processing PDFs
 	GhostScript string `setting:"GHOSTSCRIPT"`
 
@@ -34,6 +40,10 @@ type Config struct {
 
 	// DPI used for images embedded in scanned PDFs, needed for ALTO XML
 	ScannedPDFDPI int
+
+	// JP2 quality value; converts to a rate using a an algorithm similar to that
+	// which GraphicsMagick uses
+	Quality float64
 
 	// Paths to the various places we expect to find files
 	MasterPDFUploadPath            string `setting:"MASTER_PDF_UPLOAD_PATH" type:"path"`
@@ -88,6 +98,11 @@ func Parse(filename string) (*Config, error) {
 	c.ScannedPDFDPI, _ = strconv.Atoi(bc["SCANNED_PDF_DPI"])
 	if c.ScannedPDFDPI < 72 {
 		errors = append(errors, "invalid DPI: must be numeric and at least 72")
+	}
+
+	c.Quality, _ = strconv.ParseFloat(bc["QUALITY"], 64)
+	if c.Quality == 0 {
+		errors = append(errors, "invalid QUALITY: must be numeric")
 	}
 
 	if len(errors) > 0 {

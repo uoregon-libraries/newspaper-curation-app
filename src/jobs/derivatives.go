@@ -3,6 +3,7 @@ package jobs
 import (
 	"config"
 	"derivatives/alto"
+	"derivatives/jp2"
 	"fileutil"
 	"logger"
 	"os"
@@ -26,12 +27,20 @@ type MakeDerivatives struct {
 	findTIFFs             func() bool
 	AltoDPI               int
 	JP2DPI                int
+	JP2Quality            float64
+	OPJCompress           string
+	OPJDecompress         string
+	GhostScript           string
 }
 
 func (md *MakeDerivatives) Process(c *config.Config) bool {
 	md.Logger.Debug("Starting make-derivatives job for issue id %d", md.DBIssue.ID)
 
+	md.OPJCompress = c.OPJCompress
+	md.OPJDecompress = c.OPJDecompress
+	md.GhostScript = c.GhostScript
 	md.JP2DPI = c.DPI
+	md.JP2Quality = c.Quality
 
 	if md.DBIssue.IsFromScanner {
 		// For scanned issues, we have to verify TIFFs and use the scan DPI for
@@ -197,7 +206,20 @@ func (md *MakeDerivatives) createAltoXML(file string, pageno int) (ok bool) {
 }
 
 func (md *MakeDerivatives) createJP2(file string) (ok bool) {
-	return false
+	var outputJP2 = strings.Replace(file, filepath.Ext(file), ".jp2", 1)
+	var transformer = jp2.New(file, outputJP2, md.JP2Quality, md.JP2DPI)
+	transformer.Logger = md.Logger
+	transformer.OPJCompress = md.OPJCompress
+	transformer.OPJDecompress = md.OPJDecompress
+	transformer.GhostScript = md.GhostScript
+
+	var err = transformer.Transform()
+	if err != nil {
+		md.Logger.Error("Couldn't convert %q to JP2: %s", file, err)
+		return false
+	}
+
+	return true
 }
 
 func (md *MakeDerivatives) generateMetaJSON() (ok bool) {
