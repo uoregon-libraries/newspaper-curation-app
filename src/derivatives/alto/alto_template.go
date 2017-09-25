@@ -29,7 +29,7 @@ var altoTemplateString = `
   {{range .Blocks -}}
     {{$blockIndex := NextBlockNumber -}}
     {{$blockid := (printf "TB.%d.%d" $.ImageNumber $blockIndex)}}
-      <TextBlock xmlns:ns{{$blockIndex}}="http://www.w3.org/1999/xlink" ID="{{$blockid}}" {{MakeCoordAttrs .Rect}}>
+      <TextBlock xmlns:ns{{$blockIndex}}="http://www.w3.org/1999/xlink" ID="{{$blockid}}" {{MakeCoordAttrs .Rect}} ns{{$blockIndex}}:type="simple" language="en">
         {{range $index, $line := .Lines -}}
         {{$lineid := (printf "%s_%d" $blockid $index) -}}
         <TextLine ID="{{$lineid}}" {{MakeCoordAttrs .Rect}}>
