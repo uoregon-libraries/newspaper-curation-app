@@ -2,6 +2,7 @@ package jobs
 
 import (
 	"config"
+	"derivatives/alto"
 	"fileutil"
 	"logger"
 	"os"
@@ -163,8 +164,8 @@ func (md *MakeDerivatives) validateSourceFiles() (ok bool) {
 func (md *MakeDerivatives) generateDerivatives() (ok bool) {
 	// Try to build all derivatives regardless of individual failures
 	var derivativeSuccess = true
-	for _, file := range md.AltoDerivativeSources {
-		if !md.createAltoXML(file) {
+	for i, file := range md.AltoDerivativeSources {
+		if !md.createAltoXML(file, i+1) {
 			derivativeSuccess = false
 		}
 	}
@@ -186,8 +187,19 @@ func (md *MakeDerivatives) generateDerivatives() (ok bool) {
 	return derivativeSuccess
 }
 
-func (md *MakeDerivatives) createAltoXML(file string) (ok bool) {
-	return false
+// createAltoXML produces ALTO XML from the given PDF file
+func (md *MakeDerivatives) createAltoXML(file string, pageno int) (ok bool) {
+	var outputFile = strings.Replace(file, filepath.Ext(file), ".xml", 1)
+	var transformer = alto.New(file, outputFile, md.AltoDPI, pageno)
+	transformer.Logger = md.Logger
+	var err = transformer.Transform()
+
+	if err != nil {
+		md.Logger.Error("Couldn't convert %q to ALTO: %s", file, err)
+		return false
+	}
+
+	return true
 }
 
 func (md *MakeDerivatives) createJP2(file string) (ok bool) {
