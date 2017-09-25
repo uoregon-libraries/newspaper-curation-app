@@ -12,6 +12,7 @@ import (
 	"strings"
 )
 
+var allowedFilesRegex = regexp.MustCompile(`(?i:^[0-9]{4}.(pdf|jp2|xml|tiff?))`)
 var pdfFilenameRegex = regexp.MustCompile(`(?i:^[0-9]{4}.pdf)`)
 var tiffFilenameRegex = regexp.MustCompile(`(?i:^[0-9]{4}.tiff?)`)
 
@@ -128,9 +129,6 @@ func (md *MakeDerivatives) _findTIFFs() (ok bool) {
 // validateSourceFiles is an attempt to verify sanity again.  Some of these
 // checks are redundant, but it's clear that with the complexity of our
 // process, more failsafes are better than fewer.
-//
-//     * There must only be *.pdf or *.tiff files
-//     * If there are any *.tiff files, then all *.pdf files must have a matching *.tiff file
 func (md *MakeDerivatives) validateSourceFiles() (ok bool) {
 	var infos, err = fileutil.ReaddirSorted(md.Location)
 	if err != nil {
@@ -139,8 +137,9 @@ func (md *MakeDerivatives) validateSourceFiles() (ok bool) {
 	}
 
 	for _, info := range infos {
-		if !tiffFilenameRegex.MatchString(info.Name()) && !pdfFilenameRegex.MatchString(info.Name()) {
-			md.Logger.Error("Unexpected file found: %q", info.Name())
+		var n = info.Name()
+		if !allowedFilesRegex.MatchString(n) {
+			md.Logger.Error("Unexpected file found: %q", n)
 			return false
 		}
 	}
