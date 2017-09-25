@@ -24,8 +24,8 @@ type MakeDerivatives struct {
 	AltoDerivativeSources []string
 	JP2DerivativeSources  []string
 	findTIFFs             func() bool
-	AltoDPI               float64
-	JP2DPI                float64
+	AltoDPI               int
+	JP2DPI                int
 }
 
 func (md *MakeDerivatives) Process(c *config.Config) bool {

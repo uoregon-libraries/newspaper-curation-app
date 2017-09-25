@@ -32,11 +32,11 @@ type Transformer struct {
 }
 
 // New sets up a new transformer to convert a PDF to ALTO XML
-func New(pdfFile, altoFile string, pdfDPI float64, imgNo int) *Transformer {
+func New(pdfFile, altoFile string, pdfDPI int, imgNo int) *Transformer {
 	return &Transformer{
 		PDFFilename:        pdfFile,
 		ALTOOutputFilename: altoFile,
-		ScaleFactor:        pdfDPI / 72.0,
+		ScaleFactor:        float64(pdfDPI) / 72.0,
 		ImageNumber:        imgNo,
 		Logger:             logger.DefaultLogger,
 	}

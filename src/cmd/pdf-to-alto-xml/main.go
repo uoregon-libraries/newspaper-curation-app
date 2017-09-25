@@ -28,7 +28,7 @@ func main() {
 
 	var pdfFile = os.Args[1]
 	var xmlFile = os.Args[2]
-	var dpi, _ = strconv.ParseFloat(os.Args[3], 64)
+	var dpi, _ = strconv.Atoi(os.Args[3])
 	var pageNumber, _ = strconv.Atoi(os.Args[4])
 
 	if !fileutil.Exists(pdfFile) {

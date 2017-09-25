@@ -30,10 +30,10 @@ type Config struct {
 	MinimumIssuePages int
 
 	// DPI for generating JP2s
-	DPI float64
+	DPI int
 
 	// DPI used for images embedded in scanned PDFs, needed for ALTO XML
-	ScannedPDFDPI float64
+	ScannedPDFDPI int
 
 	// Paths to the various places we expect to find files
 	MasterPDFUploadPath            string `setting:"MASTER_PDF_UPLOAD_PATH" type:"path"`
@@ -80,12 +80,12 @@ func Parse(filename string) (*Config, error) {
 		errors = append(errors, "invalid MINIMUM_ISSUE_PAGES: must be numeric and greater than 0")
 	}
 
-	c.DPI, _ = strconv.ParseFloat(bc["DPI"], 64)
+	c.DPI, _ = strconv.Atoi(bc["DPI"])
 	if c.DPI < 72 {
 		errors = append(errors, "invalid DPI: must be numeric and at least 72 (150 or higher is preferred)")
 	}
 
-	c.ScannedPDFDPI, _ = strconv.ParseFloat(bc["SCANNED_PDF_DPI"], 64)
+	c.ScannedPDFDPI, _ = strconv.Atoi(bc["SCANNED_PDF_DPI"])
 	if c.ScannedPDFDPI < 72 {
 		errors = append(errors, "invalid DPI: must be numeric and at least 72")
 	}
