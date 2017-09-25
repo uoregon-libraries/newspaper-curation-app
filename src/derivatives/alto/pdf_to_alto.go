@@ -2,6 +2,7 @@ package alto
 
 import (
 	"bytes"
+	"fileutil"
 	"fmt"
 	"io/ioutil"
 	"logger"
@@ -46,6 +47,12 @@ func New(pdfFile, altoFile string, pdfDPI float64, imgNo int) *Transformer {
 // ALTO-like XML file to ALTOOutputFilename.  If the return is anything but
 // nil, the ALTO XML will not have been created.
 func (t *Transformer) Transform() error {
+	// File existence is not a failure; just means we don't regenerate the file
+	if fileutil.Exists(t.ALTOOutputFilename) {
+		t.Logger.Info("Not generating ALTO XML file %q; file already exists", t.ALTOOutputFilename)
+		return nil
+	}
+
 	t.pdfToText()
 	t.extractDoc()
 	t.transform()
