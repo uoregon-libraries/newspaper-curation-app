@@ -163,28 +163,22 @@ func (md *MakeDerivatives) validateSourceFiles() (ok bool) {
 
 func (md *MakeDerivatives) generateDerivatives() (ok bool) {
 	// Try to build all derivatives regardless of individual failures
-	var derivativeSuccess = true
+	ok = true
 	for i, file := range md.AltoDerivativeSources {
-		if !md.createAltoXML(file, i+1) {
-			derivativeSuccess = false
-		}
+		ok = ok && md.createAltoXML(file, i+1)
 	}
 
 	for _, file := range md.JP2DerivativeSources {
-		if !md.createJP2(file) {
-			derivativeSuccess = false
-		}
+		ok = ok && md.createJP2(file)
 	}
 
 	// TODO: Consider if we want to keep this long-term.  It's useful for
 	// archival purposes since it holds manually-entered metadata, but a database
 	// dump may be the proper source.
-	if !md.generateMetaJSON() {
-		derivativeSuccess = false
-	}
+	ok = ok && md.generateMetaJSON()
 
 	// If a single derivative failed, the operation failed
-	return derivativeSuccess
+	return ok
 }
 
 // createAltoXML produces ALTO XML from the given PDF file
