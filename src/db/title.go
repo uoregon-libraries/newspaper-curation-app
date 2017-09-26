@@ -63,6 +63,9 @@ func FindTitleByDirectory(dir string) (*Title, error) {
 }
 
 // LoadTitles reads and stores all title data in memory
+//
+// TODO: Set up some way to purge this!  Long-running processes will need to
+// force-reload titles when they change!
 func LoadTitles() error {
 	if DB == nil {
 		return fmt.Errorf("DB is not initialized")
