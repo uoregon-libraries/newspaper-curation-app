@@ -4,7 +4,6 @@ import (
 	"encoding/gob"
 	"fileutil"
 	"fmt"
-	"io/ioutil"
 	"os"
 	"schema"
 )
@@ -116,7 +115,7 @@ func (f *Finder) cachedFinder() cachedFinder {
 func (f *Finder) Serialize(outFilename string) error {
 	// Set up a temp file to store the serialization so we aren't writing to a
 	// file which may have valid data in it already
-	var tmpfile, err = ioutil.TempFile("", "finder-serialize-")
+	var tmpfile, err = fileutil.TempFile("", "finder-serialize-", "")
 	if err != nil {
 		return err
 	}

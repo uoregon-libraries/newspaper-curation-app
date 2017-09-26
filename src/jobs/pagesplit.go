@@ -61,13 +61,12 @@ func (ps *PageSplit) Process(config *config.Config) bool {
 }
 
 func (ps *PageSplit) makeTempFiles() (ok bool) {
-	var f, err = ioutil.TempFile("", "splitter-master-")
+	var err error
+	ps.FakeMasterFile, err = fileutil.TempNamedFile("", "splitter-master-", ".pdf")
 	if err != nil {
 		ps.Logger.Error("Unable to create temp file for combining PDFs: %s", err)
 		return false
 	}
-	ps.FakeMasterFile = f.Name()
-	f.Close()
 
 	ps.TempDir, err = ioutil.TempDir("", "splitter-pages-")
 	if err != nil {

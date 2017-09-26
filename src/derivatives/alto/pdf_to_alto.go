@@ -70,13 +70,11 @@ func (t *Transformer) pdfToText() {
 
 	t.Logger.Info("Running pdftotext on %q", t.PDFFilename)
 
-	var f, err = ioutil.TempFile("", "")
+	var tmpfile, err = fileutil.TempNamedFile("", "", ".html")
 	if err != nil {
 		t.err = fmt.Errorf("unable to create tempfile for HTML output: %s", err)
 		return
 	}
-	var tmpfile = f.Name()
-	f.Close()
 	defer os.Remove(tmpfile)
 
 	if !shell.Exec("pdftotext", t.PDFFilename, "-bbox-layout", tmpfile) {
@@ -84,6 +82,7 @@ func (t *Transformer) pdfToText() {
 		return
 	}
 
+	var f *os.File
 	f, err = os.Open(tmpfile)
 	if err != nil {
 		t.err = fmt.Errorf("error opening HTML file: %s", err)
