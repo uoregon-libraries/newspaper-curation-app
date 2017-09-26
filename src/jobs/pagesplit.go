@@ -89,24 +89,14 @@ func (ps *PageSplit) removeTempFiles() {
 }
 
 func (ps *PageSplit) process() (ok bool) {
-	if !ps.createMasterPDF() {
-		return false
-	}
-	if !ps.splitPages() {
-		return false
-	}
-	if !ps.fixPageNames() {
-		return false
-	}
-	if !ps.convertToPDFA() {
-		return false
-	}
-	if !ps.backupOriginals() {
-		return false
-	}
-	if !ps.moveToPageReview() {
-		return false
-	}
+	ps.RunWhileTrue(
+		ps.createMasterPDF,
+		ps.splitPages,
+		ps.fixPageNames,
+		ps.convertToPDFA,
+		ps.backupOriginals,
+		ps.moveToPageReview,
+	)
 
 	// The move above is done, so failing to update the workflow doesn't actually
 	// mean the operation failed; it just means we have to loudly log things
