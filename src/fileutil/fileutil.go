@@ -14,6 +14,14 @@ func IsDir(path string) bool {
 	if err != nil && os.IsNotExist(err) {
 		return false
 	}
+
+	// This means something weird happened that we probably want to report (often
+	// a permissions issue), but the function's purpose is simplicity, so we
+	// consider this a non-file.
+	if err != nil {
+		return false
+	}
+
 	return info.IsDir()
 }
 
@@ -23,6 +31,14 @@ func IsFile(path string) bool {
 	if err != nil && os.IsNotExist(err) {
 		return false
 	}
+
+	// This means something weird happened that we probably want to report (often
+	// a permissions issue), but the function's purpose is simplicity, so we
+	// consider this a non-file.
+	if err != nil {
+		return false
+	}
+
 	return info.Mode().IsRegular()
 }
 
