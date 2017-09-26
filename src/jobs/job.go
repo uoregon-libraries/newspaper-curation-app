@@ -27,6 +27,17 @@ type Job struct {
 	Logger logger.Logger
 }
 
+// NewJob wraps the given db.Job and sets up a logger
+func NewJob(dbj *db.Job) *Job {
+	var j = &Job{Job: dbj}
+	j.Logger = logger.Logger{
+		TimeFormat: "2006/01/02 15:04:05.000",
+		AppName:    filepath.Base(os.Args[0]),
+		Output:     jobLogWriter{j},
+	}
+	return j
+}
+
 // Find looks up the job in the database and wraps it
 func Find(id int) *Job {
 	var dbJob, err = db.FindJob(id)
@@ -150,15 +161,4 @@ func (jlw jobLogWriter) Write(msg []byte) (n int, err error) {
 	}
 
 	return len(msg), nil
-}
-
-// NewJob wraps the given db.Job and sets up a logger
-func NewJob(dbj *db.Job) *Job {
-	var j = &Job{Job: dbj}
-	j.Logger = logger.Logger{
-		TimeFormat: "2006/01/02 15:04:05.000",
-		AppName:    filepath.Base(os.Args[0]),
-		Output:     jobLogWriter{j},
-	}
-	return j
 }
