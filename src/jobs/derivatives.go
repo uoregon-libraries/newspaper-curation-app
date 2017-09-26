@@ -180,11 +180,6 @@ func (md *MakeDerivatives) generateDerivatives() (ok bool) {
 		ok = ok && md.createJP2(file)
 	}
 
-	// TODO: Consider if we want to keep this long-term.  It's useful for
-	// archival purposes since it holds manually-entered metadata, but a database
-	// dump may be the proper source.
-	ok = ok && md.generateMetaJSON()
-
 	// If a single derivative failed, the operation failed
 	return ok
 }
@@ -219,10 +214,6 @@ func (md *MakeDerivatives) createJP2(file string) (ok bool) {
 	}
 
 	return true
-}
-
-func (md *MakeDerivatives) generateMetaJSON() (ok bool) {
-	return false
 }
 
 func (md *MakeDerivatives) updateIssueWorkflow() error {
