@@ -2,7 +2,9 @@ package jobs
 
 import (
 	"db"
+	"fmt"
 	"logger"
+	"strings"
 )
 
 // JobType represents all possible jobs the system queues and processes
@@ -22,6 +24,7 @@ type JobStatus string
 // The full list of job statuses
 const (
 	JobStatusPending    JobStatus = "pending"     // Jobs needing to be processed
+	JobStatusInProcess  JobStatus = "in_process"  // Jobs which have been taken by a worker but aren't done
 	JobStatusSuccessful JobStatus = "success"     // Jobs which were successful
 	JobStatusFailed     JobStatus = "failed"      // Jobs which are complete, but did not succeed
 	JobStatusFailedDone JobStatus = "failed_done" // Jobs we ignore - e.g., failed jobs which were rerun
@@ -43,6 +46,52 @@ func DBJobToProcessor(dbJob *db.Job) Processor {
 		logger.Error("Unknown job type %q for job id %d", dbJob.Type, dbJob.ID)
 		return nil
 	}
+}
+
+// NextJobProcessor gets the oldest job with any of the given job types, sets
+// it as in-process, and returns its Processor
+func NextJobProcessor(types []string) Processor {
+	var dbJob, err = popFirstPendingJob(types)
+
+	if err != nil {
+		logger.Error("Unable to pull next pending job: %s", err)
+		return nil
+	}
+	if dbJob == nil {
+		return nil
+	}
+
+	return DBJobToProcessor(dbJob)
+}
+
+// popFirstPendingJob is a helper for locking the database to pull the next pending job of
+// the given type and setting it as being in-process
+func popFirstPendingJob(types []string) (*db.Job, error) {
+	var op = db.DB.Operation()
+	op.Dbg = db.Debug
+
+	op.BeginTransaction()
+	defer op.EndTransaction()
+
+	// Wrangle the IN pain...
+	var j = &db.Job{}
+	var args []interface{}
+	var placeholders []string
+	args = append(args, string(JobStatusPending))
+	for _, t := range types {
+		args = append(args, t)
+		placeholders = append(placeholders, "?")
+	}
+
+	var clause = fmt.Sprintf("status = ? AND job_type IN (%s)", strings.Join(placeholders, ","))
+	if !op.Select("jobs", &db.Job{}).Where(clause, args...).Order("created_at").First(j) {
+		return nil, op.Err()
+	}
+
+	j.Status = string(JobStatusInProcess)
+	j.Save()
+
+	return j, op.Err()
 }
 
 // FindAllFailedJobs returns a list of all jobs which failed; these are not
