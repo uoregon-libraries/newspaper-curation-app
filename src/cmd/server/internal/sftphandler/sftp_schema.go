@@ -221,20 +221,21 @@ func (i *Issue) decoratePriorJobLogs() {
 		return
 	}
 
-	var issueJobs = jobs.FindJobsForIssue(dbi)
+	var dbJobs []*db.Job
+	dbJobs, err = db.FindJobsForIssueID(dbi.ID)
 	if err != nil {
 		logger.Error("Unable to look up jobs for issue id %d (%q): %s", dbi.ID, i.Key(), err)
 		return
 	}
 
 	var subErrors []string
-	for _, ij := range issueJobs {
+	for _, j := range dbJobs {
 		// We only care to report on the failed jobs, as those haven't been requeued
-		if ij.Status != string(jobs.JobStatusFailed) {
+		if j.Status != string(jobs.JobStatusFailed) {
 			continue
 		}
 
-		for _, log := range ij.Logs() {
+		for _, log := range j.Logs() {
 			switch log.LogLevel {
 			case "DEBUG", "INFO", "WARN":
 				continue

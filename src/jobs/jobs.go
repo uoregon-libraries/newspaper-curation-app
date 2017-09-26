@@ -30,16 +30,6 @@ const (
 	JobStatusFailedDone JobStatus = "failed_done" // Jobs we ignore - e.g., failed jobs which were rerun
 )
 
-// FindJobsForIssue looks for and returns all jobs which are tied to the given issue's id
-//
-// TODO: If we have another use of ObjectID someday, we should put an
-// ObjectType field in or something so we can differentiate issue jobs from
-// other jobs tied to tables
-func FindJobsForIssue(dbi *db.Issue) []*IssueJob {
-	var dbJobs, err = db.FindJobsForIssueID(dbi.ID)
-	return issueJobFindWrapper(dbJobs, err, fmt.Sprintf("find jobs for issue id %d", dbi.ID))
-}
-
 // FindPendingSFTPIssueMoverJobs returns all sftp issue move jobs that are currently
 // waiting for processing
 func FindPendingSFTPIssueMoverJobs() (jobs []*SFTPIssueMover) {
