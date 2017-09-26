@@ -9,6 +9,7 @@ import (
 	"path/filepath"
 	"schema"
 	"strings"
+	"time"
 )
 
 // A Processor is a general interface for all database-driven jobs that process something
@@ -55,6 +56,7 @@ func (j *Job) SetProcessSuccess(success bool) {
 	case false:
 		j.Status = string(JobStatusFailed)
 	}
+	j.CompletedAt = time.Now()
 	var err = j.Save()
 	if err != nil {
 		j.Logger.Critical("Unable to update job status after completion (job: %d; success: %q): %s", j.ID, err)

@@ -15,7 +15,7 @@ type JobLog struct {
 type Job struct {
 	ID            int       `sql:",primary"`
 	CreatedAt     time.Time `sql:",readonly"`
-	NextAttemptAt time.Time `sql:",noinsert"`
+	CompletedAt   time.Time `sql:",noinsert"`
 	Type          string    `sql:"job_type"`
 	ObjectID      int
 	Location      string
