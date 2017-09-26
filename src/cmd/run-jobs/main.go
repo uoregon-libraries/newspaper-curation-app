@@ -1,4 +1,6 @@
-// This script finds and runs pending jobs
+// This script finds and runs pending jobs, scans for page review issues which
+// have been renamed and are ready for derivatives, and will eventually perform
+// all automated processes Batch Maker has to offer.
 
 package main
 
@@ -18,7 +20,7 @@ import (
 // Command-line options
 var opts struct {
 	ConfigFile string `short:"c" long:"config" description:"path to P2C config file" required:"true"`
-	RetryJobID      int    `long:"retry-job-id" description:"if set, queues a copy of the given failed job id"`
+	RetryJobID int    `long:"retry-job-id" description:"if set, queues a copy of the given failed job id"`
 }
 
 var p *flags.Parser
@@ -70,6 +72,7 @@ func main() {
 	if opts.RetryJobID > 0 {
 		retry(opts.RetryJobID)
 	}
+	scanPageReviewIssues(c)
 	runPendingJobs(c)
 }
 

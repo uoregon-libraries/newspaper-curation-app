@@ -55,7 +55,7 @@ func (im *SFTPIssueMover) Process(config *config.Config) bool {
 		// NOTE: This is *not* attached to the sftp mover because the ability to
 		// queue a new job isn't relevant to the completed job
 		// TODO: Maybe critical logging should also be emailed somewhere
-		logger.Critical("Unable to queue new page-split job!")
+		logger.Critical("Unable to queue new page-split job for issue id %d: %s", im.DBIssue.ID, err)
 	}
 
 	// Updating the issue location has the same problem as queueing a page-split
@@ -63,7 +63,7 @@ func (im *SFTPIssueMover) Process(config *config.Config) bool {
 	im.DBIssue.Location = newLocation
 	err = im.DBIssue.Save()
 	if err != nil {
-		im.Logger.Critical("Unable to update Issue's location!")
+		im.Logger.Critical("Unable to update Issue's location for id %d: %s", im.DBIssue.ID, err)
 	}
 
 	return true

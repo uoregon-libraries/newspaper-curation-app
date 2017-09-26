@@ -21,3 +21,15 @@ func QueuePageSplit(issue *db.Issue, path string) error {
 func QueueSFTPIssueMove(issue *db.Issue, path string) error {
 	return queueIssueJob(JobTypeSFTPIssueMove, issue, path)
 }
+
+// QueueMoveIssueForDerivatives creates and queues a job to move an issue dir
+// into the workflow area so a derivative job can be created
+func QueueMoveIssueForDerivatives(issue *db.Issue, path string) error {
+	return queueIssueJob(JobTypeMoveIssueForDerivatives, issue, path)
+}
+
+// QueueMakeDerivatives creates and queues a job to generate ALTO XML, JP2s,
+// and .meta.json for an issue
+func QueueMakeDerivatives(issue *db.Issue, path string) error {
+	return queueIssueJob(JobTypeMakeDerivatives, issue, path)
+}

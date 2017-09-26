@@ -34,6 +34,7 @@ type Issue struct {
 	/* Workflow information to keep track of the issue and what it needs */
 
 	Location               string // Where is this issue on disk?
+	IsFromScanner          bool   // Is the issue scanned in-house?  (Born-digital == false)
 	AwaitingPageReview     bool   // Is the issue ready for page review?  (page sort / other manual intervention)
 	HasDerivatives         bool   // Does the issue have derivatives done?
 	ReadyForMetadataEntry  bool   // Is the issue ready for metadata entry?
@@ -87,6 +88,16 @@ func FindIssueByKey(key string) (*Issue, error) {
 	}
 	i.deserialize()
 	return i, op.Err()
+}
+
+// FindIssuesInPageReview looks for all issues currently awaiting page review
+// and returns them
+func FindIssuesInPageReview() ([]*Issue, error) {
+	var op = DB.Operation()
+	op.Dbg = Debug
+	var list []*Issue
+	op.Select("issues", &Issue{}).Where("awaiting_page_review = ?", true).AllObjects(&list)
+	return list, op.Err()
 }
 
 // Save creates or updates the Issue in the issues table

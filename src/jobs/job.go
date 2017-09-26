@@ -23,7 +23,7 @@ type Processor interface {
 // logging to the database
 type Job struct {
 	*db.Job
-	Logger *logger.Logger
+	Logger logger.Logger
 }
 
 // Find looks up the job in the database and wraps it
@@ -59,6 +59,19 @@ func (j *Job) SetProcessSuccess(success bool) {
 	if err != nil {
 		j.Logger.Critical("Unable to update job status after completion (job: %d; success: %q): %s", j.ID, err)
 	}
+}
+
+// RunWhileTrue simplifies the common operation processors deal with when
+// running a bunch of related operations, where the first failure needs to end
+// the process entirely
+func (j *Job) RunWhileTrue(subProcessors ...func() bool) (ok bool) {
+	for _, subProc := range subProcessors {
+		if !subProc() {
+			return false
+		}
+	}
+
+	return true
 }
 
 // Requeue closes out this job and queues a new, duplicate job
@@ -140,7 +153,7 @@ func (jlw jobLogWriter) Write(msg []byte) (n int, err error) {
 // NewJob wraps the given db.Job and sets up a logger
 func NewJob(dbj *db.Job) *Job {
 	var j = &Job{Job: dbj}
-	j.Logger = &logger.Logger{
+	j.Logger = logger.Logger{
 		TimeFormat: "2006/01/02 15:04:05.000",
 		AppName:    filepath.Base(os.Args[0]),
 		Output:     jobLogWriter{j},
