@@ -2,10 +2,8 @@ package jobs
 
 import (
 	"db"
-	"fmt"
 	"logger"
 	"schema"
-	"time"
 )
 
 // JobType represents all possible jobs the system queues and processes
@@ -29,17 +27,6 @@ const (
 	JobStatusFailed     JobStatus = "failed"      // Jobs which are complete, but did not succeed
 	JobStatusFailedDone JobStatus = "failed_done" // Jobs we ignore - e.g., failed jobs which were rerun
 )
-
-// FindPendingSFTPIssueMoverJobs returns all sftp issue move jobs that are currently
-// waiting for processing
-func FindPendingSFTPIssueMoverJobs() (jobs []*SFTPIssueMover) {
-	var dbJobs, err = db.FindJobsByStatusAndType(string(JobStatusPending), string(JobTypeSFTPIssueMove))
-	for _, ij := range issueJobFindWrapper(dbJobs, err, "find sftp issues needing to be moved") {
-		jobs = append(jobs, &SFTPIssueMover{IssueJob: ij})
-	}
-
-	return
-}
 
 // FindAllPendingJobs returns a list of all jobs needing processing
 func FindAllPendingJobs() (processors []Processor) {
@@ -111,7 +98,7 @@ func dbJobToIssueJob(dbJob *db.Job) *IssueJob {
 	}
 
 	var si *schema.Issue
-	si, err = dbToSchemaIssue(dbi)
+	si, err = dbi.SchemaIssue()
 	if err != nil {
 		logger.Critical("Unable to prepare a schema.Issue for database issue %d: %s", dbi.ID, err)
 		return nil
@@ -122,25 +109,4 @@ func dbJobToIssueJob(dbJob *db.Job) *IssueJob {
 		DBIssue: dbi,
 		Issue:   si,
 	}
-}
-
-// dbToSchemaIssue is a simple helper to make a job-friendly schema.Issue out
-// of a database Issue
-func dbToSchemaIssue(dbi *db.Issue) (*schema.Issue, error) {
-	var dt, err = time.Parse("2006-01-02", dbi.Date)
-	if err != nil {
-		return nil, fmt.Errorf("invalid time format (%s) in database issue", dbi.Date)
-	}
-
-	db.LoadTitles()
-	var t = db.LookupTitle(dbi.LCCN).SchemaTitle()
-	if t == nil {
-		return nil, fmt.Errorf("missing title for issue ID %d", dbi.ID)
-	}
-	var si = &schema.Issue{
-		Date:    dt,
-		Edition: dbi.Edition,
-		Title:   t,
-	}
-	return si, nil
 }
