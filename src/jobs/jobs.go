@@ -18,6 +18,15 @@ const (
 	JobTypeMakeDerivatives         JobType = "make_derivatives"
 )
 
+// ValidJobTypes is the full list of job types which can exist in the jobs
+// table, for use in validating command-line job queue processing
+var ValidJobTypes = []JobType{
+	JobTypePageSplit,
+	JobTypeSFTPIssueMove,
+	JobTypeMoveIssueForDerivatives,
+	JobTypeMakeDerivatives,
+}
+
 // JobStatus represents the different states in which a job can exist
 type JobStatus string
 
