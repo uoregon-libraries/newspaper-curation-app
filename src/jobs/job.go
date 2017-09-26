@@ -42,7 +42,10 @@ func NewJob(dbj *db.Job) *Job {
 func Find(id int) *Job {
 	var dbJob, err = db.FindJob(id)
 	if err != nil {
-		logger.Error("Unable to find job id %d", id)
+		logger.Error("Unable to look up job id %d: %s", id, err)
+		return nil
+	}
+	if dbJob == nil {
 		return nil
 	}
 	return NewJob(dbJob)
