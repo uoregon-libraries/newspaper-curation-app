@@ -72,6 +72,9 @@ func (s *Searcher) FindStandardIssues() error {
 // format is only allowed if strict is false (SFTP issues, for instance, don't
 // allow an edition).  As the path is expected to be "standard", the last
 // directory element in the path must be an SFTP title name or an LCCN.
+//
+// TODO: Add a way to handle the flat workflow dirs (lccn-yyyymmdd), and
+// deprecate this as it is no longer going to be our standard.
 func (s *Searcher) findStandardIssuesForTitlePath(titlePath string, strict bool) error {
 	// Make sure we have a legitimate title - we have to check titles by
 	// directory and LCCN
@@ -110,10 +113,25 @@ func (s *Searcher) findStandardIssuesForTitlePath(titlePath string, strict bool)
 			base = base[:len(base)-6]
 		}
 
+		// Strip off any "==" nonsense if it starts exactly 6 characters from the
+		// end of the string
+		var idx = strings.Index(base, "==")
+		var l = len(base)
+		if idx == l-6 {
+			base = base[:idx]
+		}
+
+		// Strip hyphens to make things more standard since the new setup has
+		// YYYYMMDDEE once sftp issues are queued
+		base = strings.Replace(base, "-", "", 2)
+
+		// Strip the underscore as well, again for consistency
+		base = strings.Replace(base, "_", "", 1)
+
 		// Check for an edition suffix
 		var edition = 1
-		if len(base) >= 13 && base[10] == '_' {
-			var edstr = base[11:13]
+		if len(base) == 10 {
+			var edstr = base[8:10]
 			edition, err = strconv.Atoi(edstr)
 			if edition < 1 {
 				addErr(fmt.Errorf("invalid issue directory edition suffix (%s)", edstr))
@@ -123,20 +141,15 @@ func (s *Searcher) findStandardIssuesForTitlePath(titlePath string, strict bool)
 			if strict {
 				addErr(fmt.Errorf("edition suffix isn't allowed here"))
 			}
-			base = base[:10] + base[13:]
+
+			base = base[:8]
 		}
 
-		// And of course we have to remove our wonderful path hack that was built
-		// to avoid dupes....
-		if len(base) == 16 && base[10:12] == "==" {
-			base = base[:10]
-		}
-
-		var dt, err = time.Parse("2006-01-02", base)
+		var dt, err = time.Parse("20060102", base)
 		// Invalid issue directory names can't have an issue, so we can continue
 		// without fixing up the errors
 		if err != nil {
-			addErr(fmt.Errorf("invalid issue directory name: must be formatted YYYY-MM-DD"))
+			addErr(fmt.Errorf("invalid issue directory name: must be formatted YYYY-MM-DD or YYYYMMDD"))
 			continue
 		}
 
