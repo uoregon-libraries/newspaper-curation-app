@@ -27,6 +27,24 @@ const (
 	JobStatusFailedDone JobStatus = "failed_done" // Jobs we ignore - e.g., failed jobs which were rerun
 )
 
+// DBJobToProcessor creates the appropriate structure or structures to get a
+// database job's processor set up
+func DBJobToProcessor(dbJob *db.Job) Processor {
+	switch JobType(dbJob.Type) {
+	case JobTypeSFTPIssueMove:
+		return &SFTPIssueMover{IssueJob: NewIssueJob(dbJob)}
+	case JobTypePageSplit:
+		return &PageSplit{IssueJob: NewIssueJob(dbJob)}
+	case JobTypeMoveIssueForDerivatives:
+		return &MoveIssueForDerivatives{IssueJob: NewIssueJob(dbJob)}
+	case JobTypeMakeDerivatives:
+		return &MakeDerivatives{IssueJob: NewIssueJob(dbJob)}
+	default:
+		logger.Error("Unknown job type %q for job id %d", dbJob.Type, dbJob.ID)
+		return nil
+	}
+}
+
 // FindAllFailedJobs returns a list of all jobs which failed; these are not
 // wrapped into IssueJobs or Processors, as failed jobs aren't meant to be
 // reprocessed (though they can be requeued by creating new jobs)
