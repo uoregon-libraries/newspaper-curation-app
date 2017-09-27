@@ -14,6 +14,7 @@ import (
 	"schema"
 	"strconv"
 	"strings"
+	"sync"
 	"time"
 	"wordutils"
 
@@ -58,6 +59,9 @@ func usageFail(format string, args ...interface{}) {
 	fmt.Fprintln(os.Stderr)
 	wrapBullet("* requeue <job id> [<job id>...]: Creates new jobs by cloning and " +
 		`closing the given failed jobs.  Only jobs with a status of "failed" can be requeued.`)
+	wrapBullet("* watchall: Runs watchers for all queues and the page review " +
+		"issues in a relatively sane configuration.  Use this unless you need the " +
+		`more complex granularity offered by "watch" and "watch-page-review"`)
 	wrapBullet("* watch <queue name> [<queue name>...]: Watches for jobs in the " +
 		"given queue(s), processing them in a loop until CTRL+C is pressed")
 	wrapBullet("* watch-page-review: Watches for issues awaiting page review " +
@@ -126,6 +130,8 @@ func main() {
 		watch(c, args)
 	case "watch-page-review":
 		watchPageReview(c)
+	case "watchall":
+		runAllQueues(c)
 	default:
 		usageFail("Error: invalid action")
 	}
@@ -219,4 +225,31 @@ func watchPageReview(c *config.Config) {
 		// Try not to eat all the CPU
 		time.Sleep(time.Second)
 	}
+}
+
+// runAllQueues fires up multiple goroutines to watch all the queues in a
+// fairly sane way so that important processes like moving SFTP issues can
+// happen quickly, while CPU-bound processes won't fight each other.
+func runAllQueues(c *config.Config) {
+	waitFor(
+		func() { watchPageReview(c) },
+		func() { watch(c, []string{"sftp_issue_move", "move_issue_for_derivatives"}) },
+		func() { watch(c, []string{"page_split", "make_derivatives"}) },
+	)
+}
+
+// waitFor runs all the passed-in functions concurrently and returns when
+// they're all complete
+func waitFor(fns ...func()) {
+	var wg sync.WaitGroup
+
+	for _, fn1 := range fns {
+		wg.Add(1)
+		go func(fn2 func()) {
+			fn2()
+			wg.Done()
+		}(fn1)
+	}
+
+	wg.Wait()
 }
