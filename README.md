@@ -53,8 +53,13 @@ Job Runner
 Queued jobs (such as SFTP issues manually reviewed and queued) will not be
 processed until the job runner is executed.  You will want to ensure at least
 one process is watching each type of job, and one process is watching the page
-review folder for issues ready to be queued up for derivatives.  A sane setup
-might look like this:
+review folder for issues ready to be queued up for derivatives.
+
+A simple approach to run everything needed is as follows:
+
+    ./bin/run-jobs -c ./settings.py watchall
+
+You can also run the various watchers in their own processes if you need more granularity:
 
     # One worker just watches the file-move jobs since these are heavy on IO but not CPU
     ./bin/run-jobs -c ./settings.py watch sftp_issue_move move_issue_for_derivatives
