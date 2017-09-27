@@ -195,7 +195,6 @@ func watch(c *config.Config, queues []string) {
 		if time.Now().After(nextAttempt) {
 			var pr = jobs.NextJobProcessor(queues)
 			if pr == nil {
-				logger.Info("No more jobs; sleeping for 1 minute")
 				nextAttempt = time.Now().Add(time.Minute)
 				continue
 			}
@@ -216,10 +215,8 @@ func watchPageReview(c *config.Config) {
 	var nextAttempt time.Time
 	for !done() {
 		if time.Now().After(nextAttempt) {
-			logger.Info("Scanning for page review issues to move")
 			scanPageReviewIssues(c)
 			nextAttempt = time.Now().Add(time.Minute * 10)
-			logger.Info("Waiting 10 minutes")
 		}
 
 		// Try not to eat all the CPU
