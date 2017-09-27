@@ -4,8 +4,7 @@ import (
 	"db"
 	"fmt"
 	"logger"
-	"schema"
-	"time"
+	"strings"
 )
 
 // JobType represents all possible jobs the system queues and processes
@@ -19,57 +18,89 @@ const (
 	JobTypeMakeDerivatives         JobType = "make_derivatives"
 )
 
+// ValidJobTypes is the full list of job types which can exist in the jobs
+// table, for use in validating command-line job queue processing
+var ValidJobTypes = []JobType{
+	JobTypePageSplit,
+	JobTypeSFTPIssueMove,
+	JobTypeMoveIssueForDerivatives,
+	JobTypeMakeDerivatives,
+}
+
 // JobStatus represents the different states in which a job can exist
 type JobStatus string
 
 // The full list of job statuses
 const (
 	JobStatusPending    JobStatus = "pending"     // Jobs needing to be processed
+	JobStatusInProcess  JobStatus = "in_process"  // Jobs which have been taken by a worker but aren't done
 	JobStatusSuccessful JobStatus = "success"     // Jobs which were successful
 	JobStatusFailed     JobStatus = "failed"      // Jobs which are complete, but did not succeed
 	JobStatusFailedDone JobStatus = "failed_done" // Jobs we ignore - e.g., failed jobs which were rerun
 )
 
-// FindJobsForIssue looks for and returns all jobs which are tied to the given issue's id
-//
-// TODO: If we have another use of ObjectID someday, we should put an
-// ObjectType field in or something so we can differentiate issue jobs from
-// other jobs tied to tables
-func FindJobsForIssue(dbi *db.Issue) []*IssueJob {
-	var dbJobs, err = db.FindJobsForIssueID(dbi.ID)
-	return issueJobFindWrapper(dbJobs, err, fmt.Sprintf("find jobs for issue id %d", dbi.ID))
+// DBJobToProcessor creates the appropriate structure or structures to get a
+// database job's processor set up
+func DBJobToProcessor(dbJob *db.Job) Processor {
+	switch JobType(dbJob.Type) {
+	case JobTypeSFTPIssueMove:
+		return &SFTPIssueMover{IssueJob: NewIssueJob(dbJob)}
+	case JobTypePageSplit:
+		return &PageSplit{IssueJob: NewIssueJob(dbJob)}
+	case JobTypeMoveIssueForDerivatives:
+		return &MoveIssueForDerivatives{IssueJob: NewIssueJob(dbJob)}
+	case JobTypeMakeDerivatives:
+		return &MakeDerivatives{IssueJob: NewIssueJob(dbJob)}
+	default:
+		logger.Error("Unknown job type %q for job id %d", dbJob.Type, dbJob.ID)
+		return nil
+	}
 }
 
-// FindPendingSFTPIssueMoverJobs returns all sftp issue move jobs that are currently
-// waiting for processing
-func FindPendingSFTPIssueMoverJobs() (jobs []*SFTPIssueMover) {
-	var dbJobs, err = db.FindJobsByStatusAndType(string(JobStatusPending), string(JobTypeSFTPIssueMove))
-	for _, ij := range issueJobFindWrapper(dbJobs, err, "find sftp issues needing to be moved") {
-		jobs = append(jobs, &SFTPIssueMover{IssueJob: ij})
+// NextJobProcessor gets the oldest job with any of the given job types, sets
+// it as in-process, and returns its Processor
+func NextJobProcessor(types []string) Processor {
+	var dbJob, err = popFirstPendingJob(types)
+
+	if err != nil {
+		logger.Error("Unable to pull next pending job: %s", err)
+		return nil
+	}
+	if dbJob == nil {
+		return nil
 	}
 
-	return
+	return DBJobToProcessor(dbJob)
 }
 
-// FindAllPendingJobs returns a list of all jobs needing processing
-func FindAllPendingJobs() (processors []Processor) {
-	var dbJobs, err = db.FindJobsByStatus(string(JobStatusPending))
-	for _, ij := range issueJobFindWrapper(dbJobs, err, "find pending jobs") {
-		switch JobType(ij.Type) {
-		case JobTypeSFTPIssueMove:
-			processors = append(processors, &SFTPIssueMover{IssueJob: ij})
-		case JobTypePageSplit:
-			processors = append(processors, &PageSplit{IssueJob: ij})
-		case JobTypeMoveIssueForDerivatives:
-			processors = append(processors, &MoveIssueForDerivatives{IssueJob: ij})
-		case JobTypeMakeDerivatives:
-			processors = append(processors, &MakeDerivatives{IssueJob: ij})
-		default:
-			logger.Error("Unknown job type %q for job id %d", ij.Type, ij.ID)
-		}
+// popFirstPendingJob is a helper for locking the database to pull the next pending job of
+// the given type and setting it as being in-process
+func popFirstPendingJob(types []string) (*db.Job, error) {
+	var op = db.DB.Operation()
+	op.Dbg = db.Debug
+
+	op.BeginTransaction()
+	defer op.EndTransaction()
+
+	// Wrangle the IN pain...
+	var j = &db.Job{}
+	var args []interface{}
+	var placeholders []string
+	args = append(args, string(JobStatusPending))
+	for _, t := range types {
+		args = append(args, t)
+		placeholders = append(placeholders, "?")
 	}
 
-	return
+	var clause = fmt.Sprintf("status = ? AND job_type IN (%s)", strings.Join(placeholders, ","))
+	if !op.Select("jobs", &db.Job{}).Where(clause, args...).Order("created_at").First(j) {
+		return nil, op.Err()
+	}
+
+	j.Status = string(JobStatusInProcess)
+	j.Save()
+
+	return j, op.Err()
 }
 
 // FindAllFailedJobs returns a list of all jobs which failed; these are not
@@ -86,71 +117,4 @@ func FindAllFailedJobs() (jobs []*Job) {
 		jobs = append(jobs, NewJob(dbj))
 	}
 	return
-}
-
-// issueJobFindWrapper takes the response from most job-finding db functions
-// and returns a list of IssueJobs, validating everything as needed and logging
-// Critical errors when any DB operation failed
-//
-// TODO: Remove this and build a db Job converter than switches on the job type
-// to determine exactly what needs to be created, then returns a Processor with
-// all the information set up as needed.
-func issueJobFindWrapper(dbJobs []*db.Job, err error, onErrorMessage string) (issueJobs []*IssueJob) {
-	if err != nil {
-		logger.Critical("Unable to %s: %s", onErrorMessage, err)
-		return
-	}
-
-	for _, dbJob := range dbJobs {
-		var j = dbJobToIssueJob(dbJob)
-		if j == nil {
-			continue
-		}
-		issueJobs = append(issueJobs, j)
-	}
-	return
-}
-
-// dbJobToIssueJob setups up an IssueJob from a database Job, centralizing the
-// common validations and data manipulation
-func dbJobToIssueJob(dbJob *db.Job) *IssueJob {
-	var dbi, err = db.FindIssue(dbJob.ObjectID)
-	if err != nil {
-		logger.Critical("Unable to find issue for job %d: %s", dbJob.ID, err)
-		return nil
-	}
-
-	var si *schema.Issue
-	si, err = dbToSchemaIssue(dbi)
-	if err != nil {
-		logger.Critical("Unable to prepare a schema.Issue for database issue %d: %s", dbi.ID, err)
-		return nil
-	}
-
-	return &IssueJob{
-		Job:     NewJob(dbJob),
-		DBIssue: dbi,
-		Issue:   si,
-	}
-}
-
-// dbToSchemaIssue is a simple helper to make a job-friendly schema.Issue out
-// of a database Issue
-func dbToSchemaIssue(dbi *db.Issue) (*schema.Issue, error) {
-	var dt, err = time.Parse("2006-01-02", dbi.Date)
-	if err != nil {
-		return nil, fmt.Errorf("invalid time format (%s) in database issue", dbi.Date)
-	}
-
-	db.LoadTitles()
-	var t = db.LookupTitle(dbi.LCCN).SchemaTitle()
-	if t == nil {
-		return nil, fmt.Errorf("missing title for issue ID %d", dbi.ID)
-	}
-	var si = &schema.Issue{
-		Date:    dt,
-		Edition: dbi.Edition,
-		Title:   t,
-	}
-	return si, nil
 }

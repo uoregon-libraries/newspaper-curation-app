@@ -6,12 +6,10 @@ import (
 	"logger"
 	"os/exec"
 	"strings"
+	"syscall"
 )
 
-// Exec attempts to run the given command, using logger to give consistent
-// formatting to whatever the command spits out if an error occurs
-func Exec(binary string, args ...string) (ok bool) {
-	var cmd = exec.Command(binary, args...)
+func _exec(cmd *exec.Cmd, binary string, args ...string) (ok bool) {
 	logger.Debug(`Running "%s %s"`, binary, strings.Replace(strings.Join(args, " "), "%", "%%", -1))
 	var output, err = cmd.CombinedOutput()
 	if err != nil {
@@ -24,4 +22,19 @@ func Exec(binary string, args ...string) (ok bool) {
 	}
 
 	return true
+}
+
+// Exec attempts to run the given command, using logger to give consistent
+// formatting to whatever the command spits out if an error occurs
+func Exec(binary string, args ...string) (ok bool) {
+	var cmd = exec.Command(binary, args...)
+	return _exec(cmd, binary, args...)
+}
+
+// ExecSubgroup is just like Exec, but sets the process to run in its own group
+// so it doesn't get killed on CTRL+C
+func ExecSubgroup(binary string, args ...string) (ok bool) {
+	var cmd = exec.Command(binary, args...)
+	cmd.SysProcAttr = &syscall.SysProcAttr{Setpgid: true}
+	return _exec(cmd, binary, args...)
 }

@@ -1,8 +1,11 @@
 package sftphandler
 
 import (
+	"db"
+	"fmt"
 	"issuefinder"
 	"jobs"
+	"schema"
 	"sync"
 	"time"
 )
@@ -66,9 +69,28 @@ func (s *SFTPSearcher) load() error {
 // The searcher must be locked here, as it completely replaces inProcessIssues.
 func (s *SFTPSearcher) buildInProcessList() error {
 	s.inProcessIssues = sync.Map{}
-	var list = jobs.FindPendingSFTPIssueMoverJobs()
-	for _, job := range list {
-		s.inProcessIssues.Store(job.Issue.Key(), true)
+
+	var dbJobs, err = db.FindJobsByStatusAndType(string(jobs.JobStatusPending), string(jobs.JobTypeSFTPIssueMove))
+	if err != nil {
+		return fmt.Errorf("unable to find pending sftp issue move jobs: %s", err)
+		return nil
+	}
+
+	for _, dbJob := range dbJobs {
+		var dbi, err = db.FindIssue(dbJob.ObjectID)
+		if err != nil {
+			return fmt.Errorf("unable to get issue for job id %d: %s", dbJob.ID, err)
+		}
+		if dbi == nil {
+			return fmt.Errorf("no issue with id %d exists", dbJob.ObjectID)
+		}
+
+		var si *schema.Issue
+		si, err = dbi.SchemaIssue()
+		if err != nil {
+			return err
+		}
+		s.inProcessIssues.Store(si.Key(), true)
 	}
 
 	return nil

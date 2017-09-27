@@ -27,11 +27,25 @@ type Job struct {
 	Logger logger.Logger
 }
 
+// NewJob wraps the given db.Job and sets up a logger
+func NewJob(dbj *db.Job) *Job {
+	var j = &Job{Job: dbj}
+	j.Logger = logger.Logger{
+		TimeFormat: "2006/01/02 15:04:05.000",
+		AppName:    filepath.Base(os.Args[0]),
+		Output:     jobLogWriter{j},
+	}
+	return j
+}
+
 // Find looks up the job in the database and wraps it
 func Find(id int) *Job {
 	var dbJob, err = db.FindJob(id)
 	if err != nil {
-		logger.Error("Unable to find job id %d", id)
+		logger.Error("Unable to look up job id %d: %s", id, err)
+		return nil
+	}
+	if dbJob == nil {
 		return nil
 	}
 	return NewJob(dbJob)
@@ -104,6 +118,29 @@ type IssueJob struct {
 	DBIssue *db.Issue
 }
 
+// NewIssueJob setups up an IssueJob from a database Job, centralizing the
+// common validations and data manipulation
+func NewIssueJob(dbJob *db.Job) *IssueJob {
+	var dbi, err = db.FindIssue(dbJob.ObjectID)
+	if err != nil {
+		logger.Critical("Unable to find issue for job %d: %s", dbJob.ID, err)
+		return nil
+	}
+
+	var si *schema.Issue
+	si, err = dbi.SchemaIssue()
+	if err != nil {
+		logger.Critical("Unable to prepare a schema.Issue for database issue %d: %s", dbi.ID, err)
+		return nil
+	}
+
+	return &IssueJob{
+		Job:     NewJob(dbJob),
+		DBIssue: dbi,
+		Issue:   si,
+	}
+}
+
 // Subdir returns a subpath to the job issue's directory for consistent
 // directory naming and single-level paths
 func (ij *IssueJob) Subdir() string {
@@ -150,15 +187,4 @@ func (jlw jobLogWriter) Write(msg []byte) (n int, err error) {
 	}
 
 	return len(msg), nil
-}
-
-// NewJob wraps the given db.Job and sets up a logger
-func NewJob(dbj *db.Job) *Job {
-	var j = &Job{Job: dbj}
-	j.Logger = logger.Logger{
-		TimeFormat: "2006/01/02 15:04:05.000",
-		AppName:    filepath.Base(os.Args[0]),
-		Output:     jobLogWriter{j},
-	}
-	return j
 }

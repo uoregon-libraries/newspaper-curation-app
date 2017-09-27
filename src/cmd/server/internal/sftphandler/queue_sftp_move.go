@@ -31,8 +31,8 @@ func queueSFTPIssueMove(i *Issue) (ok bool, status string) {
 	// Look for an existing job for this issue.  If anything exists, we have to
 	// make sure they're all failed move jobs.  We're okay closing and retrying a
 	// failed move, but anything else is a problem.
-	var jobList []*jobs.IssueJob
-	jobList = jobs.FindJobsForIssue(dbi)
+	var jobList []*db.Job
+	jobList, err = db.FindJobsForIssueID(dbi.ID)
 	if err != nil {
 		logger.Critical("Unable to query jobs associated with issue %q: %s", i.Key(), err)
 		return false, "Error verifying issue status.  Try again or contact the system administrator."

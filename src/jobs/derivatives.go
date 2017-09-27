@@ -218,5 +218,6 @@ func (md *MakeDerivatives) createJP2(file string) (ok bool) {
 
 func (md *MakeDerivatives) updateIssueWorkflow() error {
 	md.DBIssue.HasDerivatives = true
+	md.DBIssue.ReadyForMetadataEntry = true
 	return md.DBIssue.Save()
 }

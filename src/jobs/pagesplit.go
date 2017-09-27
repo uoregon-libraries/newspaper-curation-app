@@ -126,13 +126,13 @@ func (ps *PageSplit) createMasterPDF() (ok bool) {
 	for _, fi := range fileinfos {
 		args = append(args, filepath.Join(ps.Location, fi.Name()))
 	}
-	return shell.Exec(ps.GhostScript, args...)
+	return shell.ExecSubgroup(ps.GhostScript, args...)
 }
 
 // splitPages ensures we end up with exactly one PDF per page
 func (ps *PageSplit) splitPages() (ok bool) {
 	ps.Logger.Info("Splitting PDF(s)")
-	return shell.Exec("pdfseparate", ps.FakeMasterFile, filepath.Join(ps.TempDir, "seq-%d.pdf"))
+	return shell.ExecSubgroup("pdfseparate", ps.FakeMasterFile, filepath.Join(ps.TempDir, "seq-%d.pdf"))
 }
 
 // fixPageNames converts sequenced PDFs to have 4-digit page numbers
@@ -189,7 +189,7 @@ func (ps *PageSplit) convertToPDFA() (ok bool) {
 		var fullPath = filepath.Join(ps.TempDir, fi.Name())
 		ps.Logger.Debug("Converting %q to PDF/a", fullPath)
 		var dotA = fullPath + ".a"
-		var ok = shell.Exec(ps.GhostScript, "-dPDFA=2", "-dBATCH", "-dNOPAUSE",
+		var ok = shell.ExecSubgroup(ps.GhostScript, "-dPDFA=2", "-dBATCH", "-dNOPAUSE",
 			"-sProcessColorModel=DeviceCMYK", "-sDEVICE=pdfwrite",
 			"-sPDFACompatibilityPolicy=1", "-sOutputFile="+dotA, fullPath)
 		if !ok {

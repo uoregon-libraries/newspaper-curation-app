@@ -51,14 +51,22 @@ Job Runner
 ---
 
 Queued jobs (such as SFTP issues manually reviewed and queued) will not be
-processed until the job runner is executed.  This can be as simple as:
+processed until the job runner is executed.  You will want to ensure at least
+one process is watching each type of job, and one process is watching the page
+review folder for issues ready to be queued up for derivatives.  A sane setup
+might look like this:
 
-    ./bin/run-jobs -c ./settings.py
+    # One worker just watches the file-move jobs since these are heavy on IO but not CPU
+    ./bin/run-jobs -c ./settings.py watch sftp_issue_move move_issue_for_derivatives
 
-If you wish to re-queue all failed jobs before running pending jobs, simply add
-`--retry-failed-jobs` to the command:
+    # One worker for page-split jobs and derivative generation since they're both going to fight for CPU
+    ./bin/run-jobs -c ./settings.py watch page_split make_derivatives
 
-    ./bin/run-jobs -c ./settings.py --retry-failed-jobs
+    # You MUST have *exactly one* worker watching the page-review folder
+    ./bin/run-jobs -c ./settings.py watch-page-review
+
+Eventually I hope to just decide on a sane setup and run all the workers inside
+a single binary without requiring all the jobs to be watched manually.
 
 Cache builder
 ---

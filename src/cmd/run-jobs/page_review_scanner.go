@@ -15,7 +15,6 @@ import (
 var pdfFilenameRegex = regexp.MustCompile(`(?i:^[0-9]{4}.pdf)`)
 
 func scanPageReviewIssues(c *config.Config) {
-	logger.Debug("Looking for page-review issues ready to queue for derivative processing")
 	var list, err = db.FindIssuesInPageReview()
 	if err != nil {
 		logger.Error("Unable to query issues in page review: %s", err)
