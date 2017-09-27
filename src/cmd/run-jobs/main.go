@@ -11,11 +11,9 @@ import (
 	"jobs"
 	"logger"
 	"os"
-	"os/signal"
 	"schema"
 	"strconv"
 	"strings"
-	"syscall"
 	"time"
 	"wordutils"
 
@@ -116,6 +114,9 @@ func main() {
 		logger.Fatal("Cannot load titles: %s", err)
 	}
 
+	// On CTRL-C / kill, try to finish the current task before exiting
+	catchInterrupts()
+
 	var action string
 	action, args = args[0], args[1:]
 	switch action {
@@ -183,11 +184,8 @@ func watch(c *config.Config, queues []string) {
 	}
 
 	// On CTRL-C try to finish the current task before exiting
-	var done = false
-	catchInterrupts(&done)
-
 	var nextAttempt time.Time
-	for !done {
+	for !done() {
 		if time.Now().After(nextAttempt) {
 			var pr = jobs.NextJobProcessor(queues)
 			if pr == nil {
@@ -209,12 +207,8 @@ func watch(c *config.Config, queues []string) {
 func watchPageReview(c *config.Config) {
 	logger.Info("Watching page review folders")
 
-	// On CTRL-C / kill, try to finish the current task before exiting
-	var done = false
-	catchInterrupts(&done)
-
 	var nextAttempt time.Time
-	for !done {
+	for !done() {
 		if time.Now().After(nextAttempt) {
 			logger.Info("Scanning for page review issues to move")
 			scanPageReviewIssues(c)
@@ -225,21 +219,4 @@ func watchPageReview(c *config.Config) {
 		// Try not to eat all the CPU
 		time.Sleep(time.Second)
 	}
-}
-
-func catchInterrupts(done *bool) {
-	var sigInt = make(chan os.Signal, 1)
-	signal.Notify(sigInt, syscall.SIGINT)
-	signal.Notify(sigInt, syscall.SIGTERM)
-	go func() {
-		for _ = range sigInt {
-			if *done {
-				logger.Error("Force-interrupt detected; some jobs may need to be manually cleaned up")
-				os.Exit(1)
-			}
-
-			logger.Warn("Interrupt detected; attempting to clean up.  Another signal will immediately end the process.")
-			*done = true
-		}
-	}()
 }
