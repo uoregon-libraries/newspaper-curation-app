@@ -70,9 +70,6 @@ You can also run the various watchers in their own processes if you need more gr
     # You MUST have *exactly one* worker watching the page-review folder
     ./bin/run-jobs -c ./settings.py watch-page-review
 
-Eventually I hope to just decide on a sane setup and run all the workers inside
-a single binary without requiring all the jobs to be watched manually.
-
 Cache builder
 ---
 
