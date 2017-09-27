@@ -11,9 +11,11 @@ import (
 	"jobs"
 	"logger"
 	"os"
+	"os/signal"
 	"schema"
 	"strconv"
 	"strings"
+	"syscall"
 	"time"
 	"wordutils"
 
@@ -176,37 +178,68 @@ func watch(c *config.Config, queues []string) {
 
 	logger.Info("Watching queues: %s", strings.Join(queues, " / "))
 
-	// TODO: Handle CTRL+C
-
 	for _, queue := range queues {
 		validateJobQueue(queue)
 	}
 
+	// On CTRL-C try to finish the current task before exiting
 	var done = false
+	catchInterrupts(&done)
+
+	var nextAttempt time.Time
 	for !done {
-		var pr = jobs.NextJobProcessor(queues)
-		if pr == nil {
-			logger.Info("No more jobs; sleeping for 1 minute")
-			time.Sleep(time.Minute)
-			continue
+		if time.Now().After(nextAttempt) {
+			var pr = jobs.NextJobProcessor(queues)
+			if pr == nil {
+				logger.Info("No more jobs; sleeping for 1 minute")
+				nextAttempt = time.Now().Add(time.Minute)
+				continue
+			}
+
+			logger.Debug("Starting job id %d: %q", pr.JobID(), pr.JobType())
+			pr.SetProcessSuccess(pr.Process(c))
+			logger.Debug("Finished job id %d", pr.JobID())
 		}
 
-		logger.Debug("Starting job id %d: %q", pr.JobID(), pr.JobType())
-		pr.SetProcessSuccess(pr.Process(c))
-		logger.Debug("Finished job id %d", pr.JobID())
+		// Try not to eat all the CPU
+		time.Sleep(time.Second)
 	}
 }
 
 func watchPageReview(c *config.Config) {
 	logger.Info("Watching page review folders")
 
-	// TODO: Handle CTRL+C
-
+	// On CTRL-C / kill, try to finish the current task before exiting
 	var done = false
+	catchInterrupts(&done)
+
+	var nextAttempt time.Time
 	for !done {
-		logger.Info("Scanning for page review issues to move")
-		scanPageReviewIssues(c)
-		logger.Info("Waiting 10 minutes")
-		time.Sleep(time.Minute * 10)
+		if time.Now().After(nextAttempt) {
+			logger.Info("Scanning for page review issues to move")
+			scanPageReviewIssues(c)
+			nextAttempt = time.Now().Add(time.Minute * 10)
+			logger.Info("Waiting 10 minutes")
+		}
+
+		// Try not to eat all the CPU
+		time.Sleep(time.Second)
 	}
+}
+
+func catchInterrupts(done *bool) {
+	var sigInt = make(chan os.Signal, 1)
+	signal.Notify(sigInt, syscall.SIGINT)
+	signal.Notify(sigInt, syscall.SIGTERM)
+	go func() {
+		for _ = range sigInt {
+			if *done {
+				logger.Error("Force-interrupt detected; some jobs may need to be manually cleaned up")
+				os.Exit(1)
+			}
+
+			logger.Warn("Interrupt detected; attempting to clean up.  Another signal will immediately end the process.")
+			*done = true
+		}
+	}()
 }
