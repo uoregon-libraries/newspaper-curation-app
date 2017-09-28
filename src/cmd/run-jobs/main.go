@@ -64,6 +64,10 @@ func usageFail(format string, args ...interface{}) {
 		`more complex granularity offered by "watch" and "watch-page-review"`)
 	wrapBullet("* watch <queue name> [<queue name>...]: Watches for jobs in the " +
 		"given queue(s), processing them in a loop until CTRL+C is pressed")
+	wrapBullet("* watch-scans: Watches for issues in the scan source folder " +
+		"which are ready to be moved for metadata entry.  No job is associated " +
+		"with this action, hence it must run on its own, and should only have " +
+		"one copy running at a time.")
 	wrapBullet("* watch-page-review: Watches for issues awaiting page review " +
 		"(reordering or other manual processing) which are ready to be moved for " +
 		"metadata entry.  No job is associated with this action, hence it must run on " +
@@ -128,6 +132,8 @@ func main() {
 		requeue(args)
 	case "watch":
 		watch(c, args)
+	case "watch-scans":
+		watchScans(c)
 	case "watch-page-review":
 		watchPageReview(c)
 	case "watchall":
@@ -209,6 +215,21 @@ func watch(c *config.Config, queues []string) {
 	}
 }
 
+func watchScans(c *config.Config) {
+	logger.Info("Watching scan source folders")
+
+	var nextAttempt time.Time
+	for !done() {
+		if time.Now().After(nextAttempt) {
+			scanScannedIssues(c)
+			nextAttempt = time.Now().Add(time.Hour)
+		}
+
+		// Try not to eat all the CPU
+		time.Sleep(time.Second)
+	}
+}
+
 func watchPageReview(c *config.Config) {
 	logger.Info("Watching page review folders")
 
@@ -230,6 +251,7 @@ func watchPageReview(c *config.Config) {
 func runAllQueues(c *config.Config) {
 	waitFor(
 		func() { watchPageReview(c) },
+		func() { watchScans(c) },
 		func() { watch(c, []string{"sftp_issue_move", "move_issue_for_derivatives"}) },
 		func() { watch(c, []string{"page_split", "make_derivatives"}) },
 	)
