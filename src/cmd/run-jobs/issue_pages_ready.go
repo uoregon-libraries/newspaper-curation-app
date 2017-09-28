@@ -47,13 +47,18 @@ func issuePagesReady(path string, minAge time.Duration, validFileRegexes ...*reg
 			continue
 		}
 
-		// Failure to match regex isn't an error; it just means people may not be
+		// Failure to match one of the regexes isn't an error; it just means people may not be
 		// done working on the issue files
+		var matchesOneRegex = false
 		for _, validFileRegex := range validFileRegexes {
-			if !validFileRegex.MatchString(fName) {
-				logger.Debug("Not processing %q (%q doesn't match rename regex)", path, fName)
-				return false
+			if validFileRegex.MatchString(fName) {
+				matchesOneRegex = true
+				continue
 			}
+		}
+		if !matchesOneRegex {
+			logger.Debug("Not processing %q (%q doesn't match valid file regex)", path, fName)
+			return false
 		}
 
 		// If any file was touched less than an hour ago, we don't consider it safe
