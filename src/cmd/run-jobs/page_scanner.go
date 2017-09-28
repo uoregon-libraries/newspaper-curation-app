@@ -3,7 +3,6 @@ package main
 import (
 	"config"
 	"db"
-	"fileutil"
 	"jobs"
 	"logger"
 	"os"
@@ -22,47 +21,10 @@ func scanPageReviewIssues(c *config.Config) {
 	}
 
 	for _, dbIssue := range list {
-		if pagesReady(dbIssue.Location) {
+		if issuePagesReady(dbIssue.Location, time.Hour, pdfFilenameRegex) {
 			queueIssueForDerivatives(dbIssue)
 		}
 	}
-}
-
-// pagesReady returns true if all pdf files are in the format of 0000.pdf,
-// nothing has been touched in the past hour, and no files exist that aren't
-// either PDFs or hidden files.
-func pagesReady(location string) bool {
-	var infos, err = fileutil.ReaddirSorted(location)
-	if err != nil {
-		logger.Error("Unable to scan %q for renamed PDFs: %s", location, err)
-		return false
-	}
-
-	for _, info := range infos {
-		var fName = info.Name()
-
-		// Ignore hidden files
-		if filepath.Base(fName)[0] == '.' {
-			logger.Debug("Ignoring hidden file %q", fName)
-			continue
-		}
-
-		// Failure to match regex isn't worth logging; it just means the page
-		// reviewers may not be done renaming
-		if !pdfFilenameRegex.MatchString(fName) {
-			logger.Debug("Not processing %q (%q doesn't match rename regex)", location, fName)
-			return false
-		}
-
-		// If any PDF was touched less than an hour ago, we don't consider it safe
-		// to process yet
-		if time.Since(info.ModTime()) < time.Hour {
-			logger.Debug("Not processing %q (%q was touched too recently)", location, fName)
-			return false
-		}
-	}
-
-	return true
 }
 
 // queueIssueForDerivatives first renames the directory so no more
