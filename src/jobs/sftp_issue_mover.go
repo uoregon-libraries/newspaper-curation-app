@@ -2,10 +2,7 @@ package jobs
 
 import (
 	"config"
-	"fileutil"
 	"logger"
-	"os"
-	"path/filepath"
 )
 
 // SFTPIssueMover is a job that gets queued up when an SFTP issue is considered
@@ -17,53 +14,19 @@ type SFTPIssueMover struct {
 
 // Process moves the SFTP issue directory to the workflow area
 func (im *SFTPIssueMover) Process(config *config.Config) bool {
-	var iKey = im.Issue.Key()
-
-	// Verify new path will work
-	var oldLocation = im.Location
-	var newLocation = filepath.Join(config.WorkflowPath, im.Subdir())
-	if !fileutil.MustNotExist(newLocation) {
-		im.Logger.Error("Destination %q already exists for issue %q", newLocation, iKey)
+	if !moveIssue(im.IssueJob, config.WorkflowPath) {
 		return false
 	}
-
-	// Move the issue directory to the workflow path
-	var wipLocation = filepath.Join(config.WorkflowPath, im.WIPDir())
-	im.Logger.Info("Copying %q to %q", oldLocation, wipLocation)
-	var err = fileutil.CopyDirectory(oldLocation, wipLocation)
-	if err != nil {
-		im.Logger.Error("Unable to copy issue %q directory: %s", iKey, err)
-		return false
-	}
-	err = os.RemoveAll(oldLocation)
-	if err != nil {
-		im.Logger.Error("Unable to clean up issue %q after copying to WIP directory: %s", iKey, err)
-		return false
-	}
-	err = os.Rename(wipLocation, newLocation)
-	if err != nil {
-		im.Logger.Error("Unable to rename WIP issue directory (%q -> %q) post-copy: %s", wipLocation, newLocation, err)
-		return false
-	}
-	im.Issue.Location = newLocation
 
 	// Queue a new page-split job.  The SFTPIssueMover process is considered a
 	// success at this point, as the move is complete, so failure to queue the
 	// new job just has to be logged loudly.
-	err = QueuePageSplit(im.DBIssue, im.Issue.Location)
+	var err = QueuePageSplit(im.DBIssue, im.Issue.Location)
 	if err != nil {
 		// NOTE: This is *not* attached to the sftp mover because the ability to
 		// queue a new job isn't relevant to the completed job
 		// TODO: Maybe critical logging should also be emailed somewhere
 		logger.Critical("Unable to queue new page-split job for issue id %d: %s", im.DBIssue.ID, err)
-	}
-
-	// Updating the issue location has the same problem as queueing a page-split
-	// job; we can log something, and log it loudly, but we already moved the issue
-	im.DBIssue.Location = newLocation
-	err = im.DBIssue.Save()
-	if err != nil {
-		im.Logger.Critical("Unable to update Issue's location for id %d: %s", im.DBIssue.ID, err)
 	}
 
 	return true
