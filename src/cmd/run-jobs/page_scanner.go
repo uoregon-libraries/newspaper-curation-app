@@ -58,7 +58,7 @@ func scanScannedIssues(c *config.Config) {
 		}
 
 		// Make sure the PDFs' images are at the right DPI
-		if !validScanPDFDPI(dbIssue.Location) {
+		if !validScanPDFDPI(dbIssue.Location, c.ScannedPDFDPI) {
 			continue
 		}
 
@@ -227,7 +227,32 @@ func validScanFiles(path string) bool {
 	return true
 }
 
-func validScanPDFDPI(path string) bool {
-	logger.Warn("Not implemented")
-	return false
+// validScanPDFDPI returns true if all the images in all PDFs are within a
+// valid DPI range
+func validScanPDFDPI(path string, expectedDPI int) bool {
+  var maxDPI = float64(expectedDPI) * 1.15
+
+	var pdfFiles, err = fileutil.FindIf(path, func(i os.FileInfo) bool {
+		return pdfFilenameRegex.MatchString(i.Name())
+	})
+	if err != nil {
+		logger.Error("Unable to find PDF files in %q: %s", path, err)
+	}
+
+	for _, filename := range pdfFiles {
+		var dpis = getPDFDPIs(filename)
+		if len(dpis) == 0 {
+			logger.Error("%q has no images or is invalid", filename)
+			return false
+		}
+
+		for _, dpi := range dpis {
+			if dpi.xDPI > maxDPI || dpi.yDPI > maxDPI {
+				logger.Error("%q has an image with a bad DPI (%d x %d)", filename, dpi.xDPI, dpi.yDPI)
+				return false
+			}
+		}
+	}
+
+	return true
 }
