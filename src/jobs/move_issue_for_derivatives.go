@@ -16,7 +16,9 @@ type MoveIssueForDerivatives struct {
 // Process moves the issue directory to the workflow area, deletes all hidden
 // files (such as Adobe Bridge stuff), and queues up a derivative job
 func (mifd *MoveIssueForDerivatives) Process(config *config.Config) bool {
-	moveIssue(mifd.IssueJob, config.WorkflowPath)
+	if !moveIssue(mifd.IssueJob, config.WorkflowPath) {
+		return false
+	}
 
 	// Queue a new derivative job; failure here must be logged loudly, but
 	// doesn't change the fact that the move process already happened
