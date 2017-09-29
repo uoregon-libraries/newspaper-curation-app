@@ -107,7 +107,6 @@ func getScannedMOCDirList(path string) []string {
 		var code = filepath.Base(info.Name())
 
 		// We shouldn't have directories that aren't in the system
-		db.Debug = true
 		if !db.ValidMOC(code) {
 			logger.Error("Invalid MARC Org Code directory: %q", info.Name())
 			continue
