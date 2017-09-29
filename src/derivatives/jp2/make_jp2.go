@@ -108,7 +108,7 @@ func (t *Transformer) makePNG() {
 	switch inType {
 	case ".pdf":
 		success = t.makePNGFromPDF()
-	case ".tiff":
+	case ".tiff", ".tif":
 		success = t.makePNGFromTIFF()
 	default:
 		t.err = fmt.Errorf("cannot process %q (input file must be *.pdf or *.tiff)", t.SourceFile)
