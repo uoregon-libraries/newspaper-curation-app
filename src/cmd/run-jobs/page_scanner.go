@@ -163,6 +163,11 @@ func makeScannedDBIssuesFromLCCNDir(path string) []*db.Issue {
 			continue
 		}
 
+		// Ignore scan dirs already prepped
+		if strings.HasPrefix(info.Name(), ".notouchie-") {
+			continue
+		}
+
 		var issueDir = filepath.Join(path, info.Name())
 		var dbIssue, err = db.NewIssueFromScanDir(issueDir)
 		if err != nil {
