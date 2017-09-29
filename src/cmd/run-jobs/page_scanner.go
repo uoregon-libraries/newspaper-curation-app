@@ -178,8 +178,53 @@ func makeScannedDBIssuesFromLCCNDir(path string) []*db.Issue {
 
 // validScanFiles ensures the PDF and TIFF files match
 func validScanFiles(path string) bool {
-	logger.Warn("Not implemented")
-	return false
+	var dirs, tiffFiles, pdfFiles []string
+	var err error
+
+	dirs, err = fileutil.FindDirectories(path)
+	if len(dirs) > 0 {
+		logger.Error("Found one or more subdirectories in %q", path)
+		return false
+	}
+
+	tiffFiles, err = fileutil.FindIf(path, func(i os.FileInfo) bool {
+		return tiffFilenameRegex.MatchString(i.Name())
+	})
+	if err == nil {
+		pdfFiles, err = fileutil.FindIf(path, func(i os.FileInfo) bool {
+			return pdfFilenameRegex.MatchString(i.Name())
+		})
+	}
+
+	if err != nil {
+		logger.Error("Unable to scan %q for PDF / TIFF files: %s", path, err)
+		return false
+	}
+
+	if len(tiffFiles) == 0 {
+		logger.Error("There are no TIFF files in %q", path)
+		return false
+	}
+
+	if len(tiffFiles) != len(pdfFiles) {
+		logger.Error("PDF/TIFF files don't match in %q", path)
+		return false
+	}
+
+	sort.Strings(tiffFiles)
+	sort.Strings(pdfFiles)
+
+	for i, pdf := range pdfFiles {
+		var tiff = tiffFiles[i]
+		var pdfParts = strings.Split(pdf, ".")
+		var tiffParts = strings.Split(tiff, ".")
+		if pdfParts[0] != tiffParts[0] {
+			logger.Error("PDF/TIFF files don't match (index %d / pdf %q / tiff %q) in %q", i, pdf, tiff, path)
+			return false
+		}
+	}
+
+	return true
 }
 
 func validScanPDFDPI(path string) bool {
