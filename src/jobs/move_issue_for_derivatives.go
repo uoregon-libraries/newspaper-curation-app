@@ -5,10 +5,10 @@ import (
 	"logger"
 )
 
-// MoveIssueForDerivatives is a job that gets queued up when an SFTP issue has
-// had pages renamed manually, and is considered ready for derivatives.  It
-// moves the issue to the workflow area and, upon success, queues up a
-// derivative job.
+// MoveIssueForDerivatives is a job that gets queued up when an issue is ready
+// for derivatives: an SFTP issue has had pages renamed manually, or a scanned
+// issue has been assembled.  It moves the issue to the workflow area and, upon
+// success, queues up a derivative job.
 type MoveIssueForDerivatives struct {
 	*IssueJob
 }
