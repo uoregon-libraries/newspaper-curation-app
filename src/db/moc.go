@@ -2,7 +2,7 @@ package db
 
 // MOC contains MARC org codes
 type MOC struct {
-	ID int
+	ID   int
 	Code string
 }
 

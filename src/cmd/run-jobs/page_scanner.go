@@ -234,7 +234,7 @@ func validScanFiles(path string) bool {
 // validScanPDFDPI returns true if all the images in all PDFs are within a
 // valid DPI range
 func validScanPDFDPI(path string, expectedDPI int) bool {
-  var maxDPI = float64(expectedDPI) * 1.15
+	var maxDPI = float64(expectedDPI) * 1.15
 
 	var pdfFiles, err = fileutil.FindIf(path, func(i os.FileInfo) bool {
 		return pdfFilenameRegex.MatchString(i.Name())

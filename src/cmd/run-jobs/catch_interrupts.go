@@ -15,7 +15,7 @@ func catchInterrupts() {
 	signal.Notify(sigInt, syscall.SIGINT)
 	signal.Notify(sigInt, syscall.SIGTERM)
 	go func() {
-		for _ = range sigInt {
+		for range sigInt {
 			if done() {
 				logger.Error("Force-interrupt detected; some jobs may need to be manually cleaned up")
 				os.Exit(1)

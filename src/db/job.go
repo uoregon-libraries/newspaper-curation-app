@@ -13,14 +13,14 @@ type JobLog struct {
 
 // A Job is anything the app needs to process and track in the background
 type Job struct {
-	ID            int       `sql:",primary"`
-	CreatedAt     time.Time `sql:",readonly"`
-	CompletedAt   time.Time `sql:",noinsert"`
-	Type          string    `sql:"job_type"`
-	ObjectID      int
-	Location      string
-	Status        string
-	logs          []*JobLog
+	ID          int       `sql:",primary"`
+	CreatedAt   time.Time `sql:",readonly"`
+	CompletedAt time.Time `sql:",noinsert"`
+	Type        string    `sql:"job_type"`
+	ObjectID    int
+	Location    string
+	Status      string
+	logs        []*JobLog
 }
 
 // FindJob gets a job by its id
