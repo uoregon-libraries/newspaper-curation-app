@@ -2,7 +2,6 @@ package jobs
 
 import (
 	"config"
-	"logger"
 )
 
 // ScanIssueMover is a job that gets queued up when a scanned issue is
@@ -23,9 +22,7 @@ func (im *ScanIssueMover) Process(config *config.Config) bool {
 	// queue the new job just has to be logged loudly.
 	var err = QueueMakeDerivatives(im.DBIssue, im.Issue.Location)
 	if err != nil {
-		// NOTE: This log message is *not* attached to the job because the ability
-		// to queue a new job isn't relevant to the completed job
-		logger.Critical("Unable to queue new derivatives job for issue id %d: %s", im.DBIssue.ID, err)
+		im.Logger.Critical("Unable to queue new derivatives job for issue id %d: %s", im.DBIssue.ID, err)
 	}
 
 	return true

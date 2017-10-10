@@ -2,7 +2,6 @@ package jobs
 
 import (
 	"config"
-	"logger"
 )
 
 // SFTPIssueMover is a job that gets queued up when an SFTP issue is considered
@@ -23,10 +22,7 @@ func (im *SFTPIssueMover) Process(config *config.Config) bool {
 	// new job just has to be logged loudly.
 	var err = QueuePageSplit(im.DBIssue, im.Issue.Location)
 	if err != nil {
-		// NOTE: This is *not* attached to the sftp mover because the ability to
-		// queue a new job isn't relevant to the completed job
-		// TODO: Maybe critical logging should also be emailed somewhere
-		logger.Critical("Unable to queue new page-split job for issue id %d: %s", im.DBIssue.ID, err)
+		im.Logger.Critical("Unable to queue new page-split job for issue id %d: %s", im.DBIssue.ID, err)
 	}
 
 	return true

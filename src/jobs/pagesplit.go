@@ -5,7 +5,6 @@ import (
 	"fileutil"
 	"fmt"
 	"io/ioutil"
-	"logger"
 	"os"
 	"path/filepath"
 	"regexp"
@@ -102,7 +101,7 @@ func (ps *PageSplit) process() (ok bool) {
 	// mean the operation failed; it just means we have to loudly log things
 	var err = ps.updateIssueWorkflow()
 	if err != nil {
-		logger.Critical("Unable to update issue (dbid %d) workflow post-split: %s", ps.DBIssue.ID, err)
+		ps.Logger.Critical("Unable to update issue (dbid %d) workflow post-split: %s", ps.DBIssue.ID, err)
 	}
 	return true
 }

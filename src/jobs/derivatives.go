@@ -5,7 +5,6 @@ import (
 	"derivatives/alto"
 	"derivatives/jp2"
 	"fileutil"
-	"logger"
 	"os"
 	"path/filepath"
 	"regexp"
@@ -70,7 +69,7 @@ func (md *MakeDerivatives) Process(c *config.Config) bool {
 	// the problem
 	var err = md.updateIssueWorkflow()
 	if err != nil {
-		logger.Critical("Unable to update issue (dbid %d) workflow post-derivative-generate: %s", md.DBIssue.ID, err)
+		md.Logger.Critical("Unable to update issue (dbid %d) workflow post-derivative-generate: %s", md.DBIssue.ID, err)
 	}
 	return true
 }

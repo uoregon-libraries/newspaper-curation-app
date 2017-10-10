@@ -2,7 +2,6 @@ package jobs
 
 import (
 	"fileutil"
-	"logger"
 	"os"
 	"path/filepath"
 )
@@ -45,9 +44,7 @@ func moveIssue(ij *IssueJob, path string) bool {
 	ij.DBIssue.Location = ij.Issue.Location
 	err = ij.DBIssue.Save()
 	if err != nil {
-		// NOTE: This log message is deliberately not tied to the job: updating the
-		// issue location isn't tied to the actual issue having been moved
-		logger.Critical("Unable to update Issue's location for id %d: %s", ij.DBIssue.ID, err)
+		ij.Logger.Critical("Unable to update Issue's location for id %d: %s", ij.DBIssue.ID, err)
 	}
 
 	return true
