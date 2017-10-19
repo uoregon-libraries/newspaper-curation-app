@@ -10,11 +10,6 @@ import (
 )
 
 // Issue contains metadata about an issue for the various workflow tools' use
-//
-// TODO: Right now this is only used by the Go tools, but eventually the PHP
-// and Python scripts need to use this (or be rewritten) so we are managing
-// more of the workflow via data, not JSON files.  Hence all the extra data
-// which these tools currently don't use.
 type Issue struct {
 	ID int `sql:",primary"`
 
@@ -36,13 +31,16 @@ type Issue struct {
 
 	/* Workflow information to keep track of the issue and what it needs */
 
-	Location               string // Where is this issue on disk?
-	IsFromScanner          bool   // Is the issue scanned in-house?  (Born-digital == false)
-	AwaitingPageReview     bool   // Is the issue ready for page review?  (page sort / other manual intervention)
-	HasDerivatives         bool   // Does the issue have derivatives done?
-	ReadyForMetadataEntry  bool   // Is the issue ready for metadata entry?
-	AwaitingMetadataReview bool   // Is the issue awaiting metadata review?
-	ReviewedBy             string // Has the issue's metadata been reviewed by somebody?  Who?
+	Location               string    // Where is this issue on disk?
+	IsFromScanner          bool      // Is the issue scanned in-house?  (Born-digital == false)
+	AwaitingPageReview     bool      // Is the issue ready for page review?  (page sort / other manual intervention)
+	HasDerivatives         bool      // Does the issue have derivatives done?
+	ReadyForMetadataEntry  bool      // Is the issue ready for metadata entry?
+	AwaitingMetadataReview bool      // Is the issue awaiting metadata review?
+	WorkflowOwnerID        int       // Whose "desk" is this currently on?
+	WorkflowOwnerExpiresAt time.Time // When does the workflow owner lose ownership?
+	MetadataEntryUserID    int       // Who entered metadata?
+	ReviewedByUserID       int       // Who reviewed metadata?
 }
 
 // NewIssue creates an issue ready for saving to the issues table
