@@ -14,11 +14,12 @@ func init() {
 	newPrivilege("modify titles", RoleTitleManager)
 	newPrivilege("manage mocs", RoleMOCManager)
 	newPrivilege("modify validated lccns")
-	newPrivilege("list issues", RoleIssueCurator, RoleIssueReviewer)
-	newPrivilege("modify issues", RoleIssueCurator, RoleIssueReviewer)
-	newPrivilege("list issue queues", RoleIssueCurator, RoleIssueReviewer)
-	newPrivilege("modify review queue", RoleIssueCurator, RoleIssueReviewer)
-	newPrivilege("review issues", RoleIssueReviewer)
+
+	// Issue metadata entry / review
+	newPrivilege("view metadata workflow", RoleIssueCurator, RoleIssueReviewer) // View / have a workflow "desk"
+	newPrivilege("enter issue metadata", RoleIssueCurator)
+	newPrivilege("review issue metadata", RoleIssueReviewer)
+
 	newPrivilege("list users", RoleUserManager)
 	newPrivilege("modify users", RoleUserManager)
 	newPrivilege("view title sftp", RoleTitleManager)
