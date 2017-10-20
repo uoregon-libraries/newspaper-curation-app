@@ -29,12 +29,12 @@
           <div class="collapse navbar-collapse" id="navbar-collapse">
             <ul class="nav navbar-nav">
               {{if .User.PermittedTo ListTitles}}
-                <li><a href="{{ParentURL "title-list.php"}}">Newspaper Titles</a></li>
+                <li><a href="{{ParentURL "title-list.php"}}">Titles</a></li>
               {{end}}
 
               {{if .User.PermittedTo ViewSFTPReport}}
               <!-- This URL needs to match the router path in the server's main.go -->
-              <li><a href="{{.Webroot}}/sftp">SFTP Reports</a></li>
+              <li><a href="{{.Webroot}}/sftp">SFTP</a></li>
               {{end}}
 
               {{if .User.PermittedTo SearchWorkflowIssues}}
@@ -47,7 +47,7 @@
               {{end}}
 
               {{if .User.PermittedTo ViewMetadataWorkflow}}
-                <li><a href="{{.Webroot}}/workflow}}">Metadata Workflow</a></li>
+                <li><a href="{{.Webroot}}/workflow}}">Workflow</a></li>
               {{end}}
 
               {{if .User.PermittedTo ListUsers}}
