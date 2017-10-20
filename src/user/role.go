@@ -35,7 +35,7 @@ func FindRole(name string) *Role {
 // Privileges returns which privileges this role has based on our hard-coded lists
 func (r *Role) Privileges() []*Privilege {
 	var privs []*Privilege
-	for _, priv := range privileges {
+	for _, priv := range Privileges {
 		if priv.AllowedBy(r) {
 			privs = append(privs, priv)
 		}

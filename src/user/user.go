@@ -71,13 +71,7 @@ func (u *User) buildRoles() {
 	}
 }
 
-// PermittedTo returns true if this user has pName in his privilege list
-func (u *User) PermittedTo(pName string) bool {
-	var priv = FindPrivilege(pName)
-	if priv == nil {
-		logger.Warnf("Invalid privilege checked: %s", pName)
-		return false
-	}
-
+// PermittedTo returns true if this user has priv in his privilege list
+func (u *User) PermittedTo(priv *Privilege) bool {
 	return priv.AllowedByAny(u.Roles())
 }
