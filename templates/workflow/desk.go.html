@@ -1,0 +1,36 @@
+{{block "content" .}}
+
+<h2>Desk</h2>
+<p>
+  Tasks on your desk are assigned to you and need attention.  If items aren't
+  processed by their expiration, they'll be returned to the appropriate pool
+  and any work you've done will be lost.
+</p>
+
+<!-- TODO -->
+<em>There are no tasks awaiting your attention</em>
+
+{{if .User.PermittedTo EnterIssueMetadata}}
+  <h2>Pending Issues</h2>
+  <p>
+    Pending issues are issues which have been uploaded, split into pages, and
+    converted to PDF/a format.  They still need manual metadata entered before
+    they will be ready to convert to a batch and ingest.
+  </p>
+
+  <!-- TODO -->
+  <em>There are no issues needing metadata entry</em>
+{{end}}
+
+{{if .User.PermittedTo ReviewIssueMetadata}}
+  <h2>Awaiting Review</h2>
+  <p>
+    Issues awaiting review have had all metadata entered and need an issue
+    reviewer to flag them as ready for processing.
+  </p>
+
+  <!-- TODO -->
+  <em>There are no issues needing metadata review</em>
+{{end}}
+
+{{end}}

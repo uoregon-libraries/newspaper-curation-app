@@ -5,6 +5,7 @@ import (
 	"cmd/server/internal/responder"
 	"cmd/server/internal/settings"
 	"cmd/server/internal/sftphandler"
+	"cmd/server/internal/workflowhandler"
 	"config"
 	"db"
 	"fileutil"
@@ -109,6 +110,7 @@ func startServer() {
 	var watcher = legacyfinder.NewWatcher(Conf, opts.ChronamRoot, opts.CachePath)
 	go watcher.Watch(5 * time.Minute)
 	sftphandler.Setup(r, path.Join(hp, "sftp"), Conf, watcher)
+	workflowhandler.Setup(r, path.Join(hp, "workflow"), Conf)
 	findhandler.Setup(r, path.Join(hp, "search-issues"), watcher)
 
 	var waited, lastWaited int
