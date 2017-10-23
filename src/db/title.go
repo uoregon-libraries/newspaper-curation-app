@@ -4,6 +4,7 @@ import (
 	"fmt"
 	"schema"
 	"sync"
+	"time"
 )
 
 // Title holds records from the titles table
@@ -23,6 +24,7 @@ type Title struct {
 // allTitles is a cache of every title read from the database the first time
 // any title operations are requested, since the titles table is fairly small
 var allTitles []*Title
+var lastTitleLoad time.Time
 var atMutex sync.RWMutex
 
 // FindTitleByLCCN returns the title matching the given LCCN or nil
@@ -63,9 +65,6 @@ func FindTitleByDirectory(dir string) (*Title, error) {
 }
 
 // LoadTitles reads and stores all title data in memory
-//
-// TODO: Set up some way to purge this!  Long-running processes will need to
-// force-reload titles when they change!
 func LoadTitles() error {
 	if DB == nil {
 		return fmt.Errorf("DB is not initialized")
@@ -74,13 +73,14 @@ func LoadTitles() error {
 	atMutex.Lock()
 	defer atMutex.Unlock()
 
-	if len(allTitles) != 0 {
+	if len(allTitles) != 0 && time.Since(lastTitleLoad) < time.Minute * 15 {
 		return nil
 	}
 
 	var op = DB.Operation()
 	op.Dbg = Debug
 	op.Select("titles", &Title{}).AllObjects(&allTitles)
+	lastTitleLoad = time.Now()
 	return op.Err()
 }
 
