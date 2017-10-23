@@ -94,6 +94,7 @@ func Setup(r *mux.Router, webPath string, c *config.Config) {
 
 	Layout = responder.Layout.Clone()
 	Layout.Path = path.Join(Layout.Path, "workflow")
+	Layout.MustReadPartials("_mydeskissues.go.html")
 	DeskTmpl = Layout.MustBuild("desk.go.html")
 }
 
@@ -131,6 +132,18 @@ func findIssue(r *responder.Responder) *db.Issue {
 func homeHandler(w http.ResponseWriter, req *http.Request) {
 	var r = responder.Response(w, req)
 	r.Vars.Title = "Workflow"
+
+	// Get issues currently on user's desk
+	var uid = r.Vars.User.ID
+	var issues, err = db.FindIssuesOnDesk(uid)
+	if err != nil {
+		logger.Errorf("Unable to find issues on user %d's desk: %s", uid, err)
+		r.Vars.Alert = fmt.Sprintf("Unable to search for issues; contact support or try again later.")
+		r.Render(responder.Empty)
+		return
+	}
+	r.Vars.Data["MyDeskIssues"] = wrapDBIssues(issues)
+
 	r.Render(DeskTmpl)
 }
 

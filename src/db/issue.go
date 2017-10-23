@@ -162,6 +162,20 @@ func NewIssueFromScanDir(path string) (*Issue, error) {
 	return i, err
 }
 
+// FindIssuesOnDesk returns all issues "owned" by a given user id
+func FindIssuesOnDesk(userID int) ([]*Issue, error) {
+	var op = DB.Operation()
+	op.Dbg = Debug
+	var list []*Issue
+	var sel = op.Select("issues", &Issue{})
+	sel = sel.Where(`
+		workflow_owner_id = ? AND
+		workflow_owner_expires_at IS NOT NULL AND
+		workflow_owner_expires_at > ?`, userID, time.Now())
+	sel.AllObjects(&list)
+	return list, op.Err()
+}
+
 // FindIssuesInPageReview looks for all issues currently awaiting page review
 // and returns them
 func FindIssuesInPageReview() ([]*Issue, error) {

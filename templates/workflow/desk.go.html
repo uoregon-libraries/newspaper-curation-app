@@ -8,7 +8,26 @@
 </p>
 
 <!-- TODO -->
-<em>There are no tasks awaiting your attention</em>
+{{if .Data.MyDeskIssues}}
+  <table class="table">
+    <thead>
+      <caption>Tasks</caption>
+    </thead>
+
+    <tbody>
+    <tr>
+      <th scope="col">Issue</th>
+      <th scope="col">Task / Expiration</th>
+      <th scope="col">Actions</th>
+    </tr>
+  {{range .Data.MyDeskIssues}}
+    {{template "MyDeskIssue" .}}
+  {{end}}
+    </tbody>
+  </table>
+{{else}}
+  <em>There are no tasks awaiting your attention</em>
+{{end}}
 
 {{if .User.PermittedTo EnterIssueMetadata}}
   <h2>Pending Issues</h2>

@@ -1,0 +1,20 @@
+{{define "MyDeskIssue"}}
+  <tr>
+    <!-- Issue name -->
+    <th scope="row">{{.Name}}</td>
+
+    <!-- Task / Expiration -->
+    <td>
+      {{.TaskDescription}}
+      <br />
+      Expires on {{.WorkflowExpiration}}
+    </td>
+
+    <!-- Actions -->
+    <td>
+      {{range .Actions}}
+        {{.}}
+      {{end}}
+    </td>
+  </tr>
+{{end}}
