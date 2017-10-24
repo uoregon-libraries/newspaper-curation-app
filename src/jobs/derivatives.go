@@ -35,7 +35,7 @@ type MakeDerivatives struct {
 
 // Process generates the derivatives for the job's issue
 func (md *MakeDerivatives) Process(c *config.Config) bool {
-	md.Logger.Debug("Starting make-derivatives job for issue id %d", md.DBIssue.ID)
+	md.Logger.Debugf("Starting make-derivatives job for issue id %d", md.DBIssue.ID)
 
 	md.OPJCompress = c.OPJCompress
 	md.OPJDecompress = c.OPJDecompress
@@ -70,7 +70,7 @@ func (md *MakeDerivatives) Process(c *config.Config) bool {
 	// the problem
 	var err = md.updateIssueWorkflow()
 	if err != nil {
-		md.Logger.Critical("Unable to update issue (dbid %d) workflow post-derivative-generate: %s", md.DBIssue.ID, err)
+		md.Logger.Criticalf("Unable to update issue (dbid %d) workflow post-derivative-generate: %s", md.DBIssue.ID, err)
 	}
 	return true
 }
@@ -82,15 +82,15 @@ func (md *MakeDerivatives) findPDFs() (ok bool) {
 	})
 
 	if err != nil {
-		md.Logger.Error("Unable to scan for PDFs: %s", err)
+		md.Logger.Errorf("Unable to scan for PDFs: %s", err)
 		return false
 	}
 
 	if len(pdfs) < 1 {
-		md.Logger.Error("No valid PDFs found")
+		md.Logger.Errorf("No valid PDFs found")
 		return false
 	}
-	md.Logger.Debug("Found PDFs: %#v", pdfs)
+	md.Logger.Debugf("Found PDFs: %#v", pdfs)
 
 	for _, pdf := range pdfs {
 		md.AltoDerivativeSources = append(md.AltoDerivativeSources, pdf)
@@ -108,15 +108,15 @@ func (md *MakeDerivatives) _findTIFFs() (ok bool) {
 	})
 
 	if err != nil {
-		md.Logger.Error("Unable to scan for TIFFs: %s", err)
+		md.Logger.Errorf("Unable to scan for TIFFs: %s", err)
 		return false
 	}
 
 	if len(tiffs) < 1 {
-		md.Logger.Error("No TIFFs present")
+		md.Logger.Errorf("No TIFFs present")
 		return false
 	}
-	md.Logger.Debug("Found TIFFs: %#v", tiffs)
+	md.Logger.Debugf("Found TIFFs: %#v", tiffs)
 
 	md.JP2DerivativeSources = make([]string, len(tiffs))
 	for i, tiff := range tiffs {
@@ -132,14 +132,14 @@ func (md *MakeDerivatives) _findTIFFs() (ok bool) {
 func (md *MakeDerivatives) validateSourceFiles() (ok bool) {
 	var infos, err = fileutil.ReaddirSorted(md.Location)
 	if err != nil {
-		md.Logger.Error("Unable to scan all files: %s", err)
+		md.Logger.Errorf("Unable to scan all files: %s", err)
 		return false
 	}
 
 	for _, info := range infos {
 		var n = info.Name()
 		if !allowedFilesRegex.MatchString(n) {
-			md.Logger.Error("Unexpected file found: %q", n)
+			md.Logger.Errorf("Unexpected file found: %q", n)
 			return false
 		}
 	}
@@ -147,7 +147,7 @@ func (md *MakeDerivatives) validateSourceFiles() (ok bool) {
 	var alen = len(md.AltoDerivativeSources)
 	var jlen = len(md.JP2DerivativeSources)
 	if alen != jlen {
-		md.Logger.Error("Derivative mismatch: there are %d ALTO sources, but %d JP2 sources", alen, jlen)
+		md.Logger.Errorf("Derivative mismatch: there are %d ALTO sources, but %d JP2 sources", alen, jlen)
 		return false
 	}
 
@@ -160,7 +160,7 @@ func (md *MakeDerivatives) validateSourceFiles() (ok bool) {
 		var jp2Parts = strings.Split(jp2Base, ".")
 		var jp2NoExt = jp2Parts[0]
 		if altoNoExt != jp2NoExt {
-			md.Logger.Error("Derivative mismatch: At index %d, ALTO source (%q) doesn't match JP2 source (%q)",
+			md.Logger.Errorf("Derivative mismatch: At index %d, ALTO source (%q) doesn't match JP2 source (%q)",
 				i, altoSource, jp2Source)
 			return false
 		}
@@ -192,7 +192,7 @@ func (md *MakeDerivatives) createAltoXML(file string, pageno int) (ok bool) {
 	var err = transformer.Transform()
 
 	if err != nil {
-		md.Logger.Error("Couldn't convert %q to ALTO: %s", file, err)
+		md.Logger.Errorf("Couldn't convert %q to ALTO: %s", file, err)
 		return false
 	}
 
@@ -209,7 +209,7 @@ func (md *MakeDerivatives) createJP2(file string) (ok bool) {
 
 	var err = transformer.Transform()
 	if err != nil {
-		md.Logger.Error("Couldn't convert %q to JP2: %s", file, err)
+		md.Logger.Errorf("Couldn't convert %q to JP2: %s", file, err)
 		return false
 	}
 

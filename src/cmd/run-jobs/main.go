@@ -90,12 +90,12 @@ func getOpts() (*config.Config, []string) {
 	var c *config.Config
 	c, err = config.Parse(opts.ConfigFile)
 	if err != nil {
-		logger.Fatal("Invalid configuration: %s", err)
+		logger.Fatalf("Invalid configuration: %s", err)
 	}
 
 	err = db.Connect(c.DatabaseConnect)
 	if err != nil {
-		logger.Fatal("Unable to connect to the database: %s", err)
+		logger.Fatalf("Unable to connect to the database: %s", err)
 	}
 
 	return c, args
@@ -119,7 +119,7 @@ func main() {
 
 	var err = db.LoadTitles()
 	if err != nil {
-		logger.Fatal("Cannot load titles: %s", err)
+		logger.Fatalf("Cannot load titles: %s", err)
 	}
 
 	// On CTRL-C / kill, try to finish the current task before exiting
@@ -156,25 +156,25 @@ func requeue(ids []string) {
 func retryJob(idString string) {
 	var id, _ = strconv.Atoi(idString)
 	if id == 0 {
-		logger.Error("Invalid job id %q", idString)
+		logger.Errorf("Invalid job id %q", idString)
 		return
 	}
 
 	var j = jobs.Find(id)
 	if j == nil {
-		logger.Error("Cannot requeue job id %d: no such job", id)
+		logger.Errorf("Cannot requeue job id %d: no such job", id)
 		return
 	}
 	var failStatus = jobs.JobStatusFailed
 	if j.Status != string(failStatus) {
-		logger.Error("Cannot requeue job id %d: status is %s (it must be %s to requeue)", id, j.Status, failStatus)
+		logger.Errorf("Cannot requeue job id %d: status is %s (it must be %s to requeue)", id, j.Status, failStatus)
 		return
 	}
 
-	logger.Debug("Requeuing job %d", j.ID)
+	logger.Debugf("Requeuing job %d", j.ID)
 	var err = j.Requeue()
 	if err != nil {
-		logger.Error("Unable to requeue job %d: %s", j.ID, err)
+		logger.Errorf("Unable to requeue job %d: %s", j.ID, err)
 	}
 }
 
@@ -189,7 +189,7 @@ func watch(c *config.Config, queues []string) {
 		usageFail("Error: you must specify one or more queues to watch")
 	}
 
-	logger.Info("Watching queues: %s", strings.Join(queues, " / "))
+	logger.Infof("Watching queues: %s", strings.Join(queues, " / "))
 
 	for _, queue := range queues {
 		validateJobQueue(queue)
@@ -205,9 +205,9 @@ func watch(c *config.Config, queues []string) {
 				continue
 			}
 
-			logger.Debug("Starting job id %d: %q", pr.JobID(), pr.JobType())
+			logger.Debugf("Starting job id %d: %q", pr.JobID(), pr.JobType())
 			pr.SetProcessSuccess(pr.Process(c))
-			logger.Debug("Finished job id %d", pr.JobID())
+			logger.Debugf("Finished job id %d", pr.JobID())
 		}
 
 		// Try not to eat all the CPU
@@ -216,7 +216,7 @@ func watch(c *config.Config, queues []string) {
 }
 
 func watchScans(c *config.Config) {
-	logger.Info("Watching scan source folders")
+	logger.Infof("Watching scan source folders")
 
 	var nextAttempt time.Time
 	for !done() {
@@ -231,7 +231,7 @@ func watchScans(c *config.Config) {
 }
 
 func watchPageReview(c *config.Config) {
-	logger.Info("Watching page review folders")
+	logger.Infof("Watching page review folders")
 
 	var nextAttempt time.Time
 	for !done() {

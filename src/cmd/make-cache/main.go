@@ -64,12 +64,12 @@ func getConf() {
 
 	Conf, err = config.Parse(opts.ConfigFile)
 	if err != nil {
-		logger.Fatal("Config error: %s", err)
+		logger.Fatalf("Config error: %s", err)
 	}
 
 	err = db.Connect(Conf.DatabaseConnect)
 	if err != nil {
-		logger.Fatal("Error trying to connect to database: %s", err)
+		logger.Fatalf("Error trying to connect to database: %s", err)
 	}
 
 	if !fileutil.IsDir(opts.CachePath) {
@@ -81,17 +81,17 @@ func main() {
 	getConf()
 	var finder = legacyfinder.NewScanner(Conf, opts.Siteroot, opts.CachePath)
 
-	logger.Info("Running scan")
+	logger.Infof("Running scan")
 	var realFinder, err = finder.FindIssues()
 	if err != nil {
-		logger.Fatal("Error trying to find issues: %s", err)
+		logger.Fatalf("Error trying to find issues: %s", err)
 	}
 
 	var cacheFile = filepath.Join(opts.CachePath, "finder.cache")
-	logger.Debug("Serializing to disk")
+	logger.Debugf("Serializing to disk")
 	err = realFinder.Serialize(cacheFile)
 	if err != nil {
-		logger.Fatal("Error trying to serialize: %s", err)
+		logger.Fatalf("Error trying to serialize: %s", err)
 	}
 	testIntegrity(realFinder, cacheFile)
 }

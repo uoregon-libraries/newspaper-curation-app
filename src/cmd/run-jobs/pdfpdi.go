@@ -20,9 +20,9 @@ func getPDFDPIs(path string) []pdfImageDPI {
 	var cmd = exec.Command(cmdParts[0], cmdParts[1:]...)
 	var output, err = cmd.CombinedOutput()
 	if err != nil {
-		logger.Error(`Failed to run "%s": %s`, strings.Join(cmdParts, " "), err)
+		logger.Errorf(`Failed to run "%s": %s`, strings.Join(cmdParts, " "), err)
 		for _, line := range bytes.Split(output, []byte("\n")) {
-			logger.Debug("--> %s", line)
+			logger.Debugf("--> %s", line)
 		}
 
 		return nil
@@ -42,7 +42,7 @@ func getPDFDPIs(path string) []pdfImageDPI {
 
 		var parts = bytes.Fields(line)
 		if len(parts) < 14 {
-			logger.Error("Too few fields in line %d of %q output: %q", i+1, strings.Join(cmdParts, " "), line)
+			logger.Errorf("Too few fields in line %d of %q output: %q", i+1, strings.Join(cmdParts, " "), line)
 			return nil
 		}
 
@@ -58,7 +58,7 @@ func getPDFDPIs(path string) []pdfImageDPI {
 		var ydpi, _ = strconv.ParseFloat(ydpiString, 64)
 
 		if xdpi == 0 || ydpi == 0 {
-			logger.Error("Invalid DPI information in line %d of %q output: %q", i+1, strings.Join(cmdParts, " "), line)
+			logger.Errorf("Invalid DPI information in line %d of %q output: %q", i+1, strings.Join(cmdParts, " "), line)
 			return nil
 		}
 

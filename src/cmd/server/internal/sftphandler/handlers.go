@@ -62,7 +62,7 @@ func Setup(r *mux.Router, sftpWebPath string, c *config.Config, w *legacyfinder.
 func LoadTitles(r *responder.Responder) bool {
 	var titles, err = sftpSearcher.Titles()
 	if err != nil {
-		logger.Error("Couldn't load titles in %s: %s", sftpSearcher.searcher.Location, err)
+		logger.Errorf("Couldn't load titles in %s: %s", sftpSearcher.searcher.Location, err)
 		http.Error(r.Writer, "Unable to load title list!", 500)
 		return false
 	}

@@ -28,7 +28,7 @@ func (t *Transformer) transform() {
 		return
 	}
 
-	t.Logger.Info("Converting pdftotext HTML to ALTO XML")
+	t.Logger.Infof("Converting pdftotext HTML to ALTO XML")
 
 	// Parse XML to get at page attributes
 	var html Doc

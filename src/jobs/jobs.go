@@ -52,7 +52,7 @@ func DBJobToProcessor(dbJob *db.Job) Processor {
 	case JobTypeMakeDerivatives:
 		return &MakeDerivatives{IssueJob: NewIssueJob(dbJob)}
 	default:
-		logger.Error("Unknown job type %q for job id %d", dbJob.Type, dbJob.ID)
+		logger.Errorf("Unknown job type %q for job id %d", dbJob.Type, dbJob.ID)
 		return nil
 	}
 }
@@ -63,7 +63,7 @@ func NextJobProcessor(types []string) Processor {
 	var dbJob, err = popFirstPendingJob(types)
 
 	if err != nil {
-		logger.Error("Unable to pull next pending job: %s", err)
+		logger.Errorf("Unable to pull next pending job: %s", err)
 		return nil
 	}
 	if dbJob == nil {
@@ -109,7 +109,7 @@ func popFirstPendingJob(types []string) (*db.Job, error) {
 func FindAllFailedJobs() (jobs []*Job) {
 	var dbJobs, err = db.FindJobsByStatus(string(JobStatusFailed))
 	if err != nil {
-		logger.Critical("Unable to look up failed jobs: %s", err)
+		logger.Criticalf("Unable to look up failed jobs: %s", err)
 		return
 	}
 

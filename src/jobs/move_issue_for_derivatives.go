@@ -27,7 +27,7 @@ func (mifd *MoveIssueForDerivatives) Process(config *config.Config) bool {
 	// doesn't change the fact that the move process already happened
 	var err = QueueMakeDerivatives(mifd.DBIssue, mifd.Issue.Location)
 	if err != nil {
-		mifd.Logger.Critical("Unable to queue new derivative job for issue id %d: %s", mifd.DBIssue.ID, err)
+		mifd.Logger.Criticalf("Unable to queue new derivative job for issue id %d: %s", mifd.DBIssue.ID, err)
 	}
 
 	return true
@@ -40,14 +40,14 @@ func (mifd *MoveIssueForDerivatives) removeDotfiles() {
 		return !i.IsDir() && i.Name() != "" && i.Name()[0] == '.'
 	})
 	if err != nil {
-		mifd.Logger.Error("Unable to scan for files to delete: %s", err)
+		mifd.Logger.Errorf("Unable to scan for files to delete: %s", err)
 		return
 	}
 
 	for _, f := range dotfiles {
 		err = os.Remove(f)
 		if err != nil {
-			mifd.Logger.Error("Unable to remove file %q: %s", f, err)
+			mifd.Logger.Errorf("Unable to remove file %q: %s", f, err)
 		}
 	}
 }

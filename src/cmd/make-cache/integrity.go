@@ -10,7 +10,7 @@ var fails int
 
 func integrityFail(s string) {
 	fails++
-	logger.Error("Integrity check failed!  %s", s)
+	logger.Errorf("Integrity check failed!  %s", s)
 }
 
 func validateLen(thing string, a, b int) {
@@ -22,14 +22,14 @@ func validateLen(thing string, a, b int) {
 
 func testIntegrity(finderA *issuefinder.Finder, cacheFile string) {
 	fails = 0
-	logger.Info("Reading cached file to verify integrity")
+	logger.Infof("Reading cached file to verify integrity")
 	var finderB, err = issuefinder.Deserialize(cacheFile)
 	if err != nil {
 		integrityFail(fmt.Sprintf("Unable to deserialize the cached file: %s", err))
 		return
 	}
 
-	logger.Debug("Testing deserialized finder against live finder")
+	logger.Debugf("Testing deserialized finder against live finder")
 	validateLen("issue", len(finderA.Issues), len(finderB.Issues))
 	validateLen("title", len(finderA.Titles), len(finderB.Titles))
 	validateLen("batch", len(finderA.Batches), len(finderB.Batches))
@@ -69,6 +69,6 @@ func testIntegrity(finderA *issuefinder.Finder, cacheFile string) {
 	}
 
 	if fails == 0 {
-		logger.Info("Cache verified")
+		logger.Infof("Cache verified")
 	}
 }

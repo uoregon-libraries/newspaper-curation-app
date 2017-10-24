@@ -17,11 +17,11 @@ func catchInterrupts() {
 	go func() {
 		for range sigInt {
 			if done() {
-				logger.Error("Force-interrupt detected; some jobs may need to be manually cleaned up")
+				logger.Errorf("Force-interrupt detected; some jobs may need to be manually cleaned up")
 				os.Exit(1)
 			}
 
-			logger.Warn("Interrupt detected; attempting to clean up.  Another signal will immediately end the process.")
+			logger.Warnf("Interrupt detected; attempting to clean up.  Another signal will immediately end the process.")
 			quit()
 		}
 	}()

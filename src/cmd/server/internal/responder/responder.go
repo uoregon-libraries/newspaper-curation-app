@@ -69,7 +69,7 @@ func (r *Responder) Render(t *tmpl.Template) {
 
 	err = t.Execute(r.Writer, r.Vars)
 	if err != nil {
-		logger.Error("Unable to render template %#v: %s", t.Name, err)
+		logger.Errorf("Unable to render template %#v: %s", t.Name, err)
 	}
 }
 
@@ -79,6 +79,6 @@ func (r *Responder) Audit(action, msg string) {
 	var u = r.Vars.User
 	var err = db.CreateAuditLog(u.IP, u.Login, action, msg)
 	if err != nil {
-		logger.Critical("Unable to write AuditLog{%s (%s), %q, %s}: %s", u.Login, u.IP, action, msg, err)
+		logger.Criticalf("Unable to write AuditLog{%s (%s), %q, %s}: %s", u.Login, u.IP, action, msg, err)
 	}
 }
