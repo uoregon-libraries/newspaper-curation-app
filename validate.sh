@@ -7,7 +7,7 @@ set -eu
 IFS=''
 unformatted=$(find src/ -name "*.go" | xargs gofmt -l -s)
 linter=$(golint src/...)
-vet=$(go vet ./src/...  2>&1 || true)
+vet=$(go vet -printfuncs Debugf,Infof,Warnf,Errorf,Criticalf,Fatalf ./src/...  2>&1 || true)
 
 result=0
 
