@@ -229,7 +229,7 @@ func (t *Transformer) testRate(rate int) bool {
 
 	var rateFloat = float64(rate) / RateFactor
 	if t.testedRates[rate] {
-		t.Logger.Debugf("Skipping already-tested rate %g", rate)
+		t.Logger.Debugf("Skipping already-tested rate %d", rate)
 		return false
 	}
 	t.testedRates[rate] = true
@@ -241,10 +241,10 @@ func (t *Transformer) testRate(rate int) bool {
 	}
 	t.makeJP2FromPNGDashI(rateFloat)
 	if t.testJP2Decompress() {
-		t.Logger.Debugf("Success with rate %g and -I", rate)
+		t.Logger.Debugf("Success with rate %d and -I", rate)
 		return true
 	}
 
-	t.Logger.Debugf("Failure with rate %g", rate)
+	t.Logger.Debugf("Failure with rate %d", rate)
 	return false
 }

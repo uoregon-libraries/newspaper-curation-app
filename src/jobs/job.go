@@ -73,7 +73,7 @@ func (j *Job) SetProcessSuccess(success bool) {
 	j.CompletedAt = time.Now()
 	var err = j.Save()
 	if err != nil {
-		j.Logger.Criticalf("Unable to update job status after completion (job: %d; success: %q): %s", j.ID, err)
+		j.Logger.Criticalf("Unable to update job status after completion (job: %d; success: %#v): %s", j.ID, success, err)
 	}
 }
 

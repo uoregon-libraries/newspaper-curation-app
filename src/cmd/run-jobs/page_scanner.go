@@ -252,7 +252,7 @@ func validScanPDFDPI(path string, expectedDPI int) bool {
 
 		for _, dpi := range dpis {
 			if dpi.xDPI > maxDPI || dpi.yDPI > maxDPI {
-				logger.Errorf("%q has an image with a bad DPI (%d x %d)", filename, dpi.xDPI, dpi.yDPI)
+				logger.Errorf("%q has an image with a bad DPI (%g x %g)", filename, dpi.xDPI, dpi.yDPI)
 				return false
 			}
 		}
