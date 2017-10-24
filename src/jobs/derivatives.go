@@ -33,6 +33,7 @@ type MakeDerivatives struct {
 	GhostScript           string
 }
 
+// Process generates the derivatives for the job's issue
 func (md *MakeDerivatives) Process(c *config.Config) bool {
 	md.Logger.Debug("Starting make-derivatives job for issue id %d", md.DBIssue.ID)
 

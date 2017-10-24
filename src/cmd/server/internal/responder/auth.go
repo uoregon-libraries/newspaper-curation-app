@@ -37,6 +37,8 @@ func GetUserLogin(w http.ResponseWriter, req *http.Request) string {
 	return l
 }
 
+// GetUserIP returns the IP address from Apache.  NOTE: This definitely won't
+// work when the app is exposed directly!
 func GetUserIP(req *http.Request) string {
 	return req.Header.Get("X-Forwarded-For")
 }

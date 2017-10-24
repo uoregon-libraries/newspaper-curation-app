@@ -73,7 +73,7 @@ func LoadTitles() error {
 	atMutex.Lock()
 	defer atMutex.Unlock()
 
-	if len(allTitles) != 0 && time.Since(lastTitleLoad) < time.Minute * 15 {
+	if len(allTitles) != 0 && time.Since(lastTitleLoad) < time.Minute*15 {
 		return nil
 	}
 

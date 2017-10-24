@@ -271,7 +271,7 @@ func (i *Issue) IsNew() bool {
 	return time.Since(i.Modified) < time.Hour*24*14
 }
 
-// IsDangerouslyNew, on the other hand, tells us if the issue is so new that
+// IsDangerouslyNew on the other hand tells us if the issue is so new that
 // we're not okay with manual queueing even with a warning, because it's just
 // not safe!
 func (i *Issue) IsDangerouslyNew() bool {
