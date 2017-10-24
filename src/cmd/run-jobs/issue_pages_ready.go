@@ -22,11 +22,11 @@ func issuePagesReady(path string, minAge time.Duration, validFileRegexes ...*reg
 	// in at least an hour
 	var info, err = os.Stat(path)
 	if err != nil {
-		logger.Error("Unable to read %q: %s", path, err)
+		logger.Errorf("Unable to read %q: %s", path, err)
 		return false
 	}
 	if time.Since(info.ModTime()) < minAge {
-		logger.Debug("Not processing %q (directory was touched too recently)", path)
+		logger.Debugf("Not processing %q (directory was touched too recently)", path)
 		return false
 	}
 
@@ -34,7 +34,7 @@ func issuePagesReady(path string, minAge time.Duration, validFileRegexes ...*reg
 	var infos []os.FileInfo
 	infos, err = fileutil.ReaddirSorted(path)
 	if err != nil {
-		logger.Error("Unable to scan %q for renamed PDFs: %s", path, err)
+		logger.Errorf("Unable to scan %q for renamed PDFs: %s", path, err)
 		return false
 	}
 
@@ -43,7 +43,7 @@ func issuePagesReady(path string, minAge time.Duration, validFileRegexes ...*reg
 
 		// Ignore hidden files
 		if filepath.Base(fName)[0] == '.' {
-			logger.Debug("Ignoring hidden file %q", fName)
+			logger.Debugf("Ignoring hidden file %q", fName)
 			continue
 		}
 
@@ -57,14 +57,14 @@ func issuePagesReady(path string, minAge time.Duration, validFileRegexes ...*reg
 			}
 		}
 		if !matchesOneRegex {
-			logger.Debug("Not processing %q (%q doesn't match valid file regex)", path, fName)
+			logger.Debugf("Not processing %q (%q doesn't match valid file regex)", path, fName)
 			return false
 		}
 
 		// If any file was touched less than an hour ago, we don't consider it safe
 		// to process yet
 		if time.Since(info.ModTime()) < minAge {
-			logger.Debug("Not processing %q (%q was touched too recently)", path, fName)
+			logger.Debugf("Not processing %q (%q was touched too recently)", path, fName)
 			return false
 		}
 	}

@@ -69,7 +69,7 @@ func (s *Searcher) cacheLiveIssue(batch *schema.Batch, title *schema.Title, meta
 	var edition int
 	edition, err = strconv.Atoi(editionString)
 	if err != nil {
-		s.newError(batch.Location, fmt.Errorf("invalid edition for issue %#v", editionString, meta)).SetBatch(batch)
+		s.newError(batch.Location, fmt.Errorf("invalid edition (%#v) for issue %#v", editionString, meta)).SetBatch(batch)
 		return
 	}
 

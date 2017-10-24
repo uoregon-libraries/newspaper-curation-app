@@ -10,20 +10,20 @@ func queueSFTPIssueMove(i *Issue) (ok bool, status string) {
 	// Find a DB issue or create one
 	var dbi, err = db.FindIssueByKey(i.Key())
 	if err != nil {
-		logger.Critical("Unable to search for database issue %q: %s", i.Key(), err)
+		logger.Criticalf("Unable to search for database issue %q: %s", i.Key(), err)
 		return false, "Unable to connect to the database.  Try again or contact the system administrator."
 	}
 
 	// If an issue exists, but isn't new, we have something broken going on
 	if dbi != nil && dbi.Location != i.Location {
-		logger.Error("Broken / duplicate issue %q: DB id %d; location %q", i.Key(), dbi.ID, dbi.Location)
+		logger.Errorf("Broken / duplicate issue %q: DB id %d; location %q", i.Key(), dbi.ID, dbi.Location)
 		return false, "Broken / duplicate issue detected.  Please contact the system administrator."
 	}
 
 	if dbi == nil {
 		dbi, err = createDatabaseIssue(i)
 		if err != nil {
-			logger.Critical("Unable to save a new database issue: %s", err)
+			logger.Criticalf("Unable to save a new database issue: %s", err)
 			return false, "Unable to connect to the database.  Try again or contact the system administrator."
 		}
 	}
@@ -34,7 +34,7 @@ func queueSFTPIssueMove(i *Issue) (ok bool, status string) {
 	var jobList []*db.Job
 	jobList, err = db.FindJobsForIssueID(dbi.ID)
 	if err != nil {
-		logger.Critical("Unable to query jobs associated with issue %q: %s", i.Key(), err)
+		logger.Criticalf("Unable to query jobs associated with issue %q: %s", i.Key(), err)
 		return false, "Error verifying issue status.  Try again or contact the system administrator."
 	}
 	for _, job := range jobList {
@@ -49,12 +49,12 @@ func queueSFTPIssueMove(i *Issue) (ok bool, status string) {
 			job.Status = string(jobs.JobStatusFailedDone)
 			err = job.Save()
 			if err != nil {
-				logger.Critical("Unable to close failed job!  Manually fix this!  Job id %d; error: %s", job.ID, err)
+				logger.Criticalf("Unable to close failed job!  Manually fix this!  Job id %d; error: %s", job.ID, err)
 			}
 		case jobs.JobStatusFailedDone:
 			continue
 		default:
-			logger.Critical("Unexpected job detected for issue %q (db id %d): job id %d, status %q",
+			logger.Criticalf("Unexpected job detected for issue %q (db id %d): job id %d, status %q",
 				i.Key(), dbi.ID, job.ID, job.Status)
 			return false, "Previous / broken job detected.  Contact the system administrator for help."
 		}
@@ -63,7 +63,7 @@ func queueSFTPIssueMove(i *Issue) (ok bool, status string) {
 	// All's well - queue up the job
 	err = jobs.QueueSFTPIssueMove(dbi, i.Location)
 	if err != nil {
-		logger.Critical("Unable to queue issue %q for sftp move: %s", i.Key(), err)
+		logger.Criticalf("Unable to queue issue %q for sftp move: %s", i.Key(), err)
 		return false, "Error trying to queue issue.  Try again or contact the system administrator."
 	}
 

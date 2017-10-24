@@ -1,0 +1,10 @@
+# Use this (via `source`) to set up your go path since gb is ... unique
+gb env > /tmp/gbvars
+source /tmp/gbvars
+export GOPATH=$GB_PROJECT_DIR:$GB_PROJECT_DIR/vendor
+
+for dir in $(find $HOME/.gb/cache -maxdepth 1 -type d); do
+  export GOPATH=$GOPATH:$dir
+done
+
+rm /tmp/gbvars

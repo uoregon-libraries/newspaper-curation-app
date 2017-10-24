@@ -44,63 +44,63 @@ func (l *Logger) log(level logLevel, message string) {
 	fmt.Fprintf(l.Output, output)
 }
 
-// Debug logs a debug-level message using the default logger
-func Debug(format string, args ...interface{}) {
-	DefaultLogger.Debug(format, args...)
+// Debugf logs a debug-level message using the default logger
+func Debugf(format string, args ...interface{}) {
+	DefaultLogger.Debugf(format, args...)
 }
 
-// Debug logs a debug-level message
-func (l *Logger) Debug(format string, args ...interface{}) {
+// Debugf logs a debug-level message
+func (l *Logger) Debugf(format string, args ...interface{}) {
 	l.log(debug, fmt.Sprintf(format, args...))
 }
 
-// Info logs an info-level message using the default logger
-func Info(format string, args ...interface{}) {
-	DefaultLogger.Info(format, args...)
+// Infof logs an info-level message using the default logger
+func Infof(format string, args ...interface{}) {
+	DefaultLogger.Infof(format, args...)
 }
 
-// Info logs an info-level message
-func (l *Logger) Info(format string, args ...interface{}) {
+// Infof logs an info-level message
+func (l *Logger) Infof(format string, args ...interface{}) {
 	l.log(info, fmt.Sprintf(format, args...))
 }
 
-// Warn logs a warn-level message using the default logger
-func Warn(format string, args ...interface{}) {
-	DefaultLogger.Warn(format, args...)
+// Warnf logs a warn-level message using the default logger
+func Warnf(format string, args ...interface{}) {
+	DefaultLogger.Warnf(format, args...)
 }
 
-// Warn logs a warn-level message
-func (l *Logger) Warn(format string, args ...interface{}) {
+// Warnf logs a warn-level message
+func (l *Logger) Warnf(format string, args ...interface{}) {
 	l.log(warn, fmt.Sprintf(format, args...))
 }
 
-// Error logs an error-level message using the default logger
-func Error(format string, args ...interface{}) {
-	DefaultLogger.Error(format, args...)
+// Errorf logs an error-level message using the default logger
+func Errorf(format string, args ...interface{}) {
+	DefaultLogger.Errorf(format, args...)
 }
 
-// Error logs an error-level message
-func (l *Logger) Error(format string, args ...interface{}) {
+// Errorf logs an error-level message
+func (l *Logger) Errorf(format string, args ...interface{}) {
 	l.log(err, fmt.Sprintf(format, args...))
 }
 
-// Critical logs a critical-level message using the default logger
-func Critical(format string, args ...interface{}) {
-	DefaultLogger.Critical(format, args...)
+// Criticalf logs a critical-level message using the default logger
+func Criticalf(format string, args ...interface{}) {
+	DefaultLogger.Criticalf(format, args...)
 }
 
-// Critical logs a critical-level message
-func (l *Logger) Critical(format string, args ...interface{}) {
+// Criticalf logs a critical-level message
+func (l *Logger) Criticalf(format string, args ...interface{}) {
 	l.log(crit, fmt.Sprintf(format, args...))
 }
 
-// Fatal logs a critical-level message using the default logger, then exits
-func Fatal(format string, args ...interface{}) {
-	DefaultLogger.Fatal(format, args...)
+// Fatalf logs a critical-level message using the default logger, then exits
+func Fatalf(format string, args ...interface{}) {
+	DefaultLogger.Fatalf(format, args...)
 }
 
-// Fatal logs a critical-level message, then exits
-func (l *Logger) Fatal(format string, args ...interface{}) {
+// Fatalf logs a critical-level message, then exits
+func (l *Logger) Fatalf(format string, args ...interface{}) {
 	l.log(crit, fmt.Sprintf(format, args...))
 	os.Exit(1)
 }

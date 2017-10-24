@@ -22,7 +22,7 @@ func (im *ScanIssueMover) Process(config *config.Config) bool {
 	// queue the new job just has to be logged loudly.
 	var err = QueueMakeDerivatives(im.DBIssue, im.Issue.Location)
 	if err != nil {
-		im.Logger.Critical("Unable to queue new derivatives job for issue id %d: %s", im.DBIssue.ID, err)
+		im.Logger.Criticalf("Unable to queue new derivatives job for issue id %d: %s", im.DBIssue.ID, err)
 	}
 
 	return true

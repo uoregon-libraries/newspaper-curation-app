@@ -10,12 +10,12 @@ import (
 )
 
 func _exec(cmd *exec.Cmd, binary string, args ...string) (ok bool) {
-	logger.Debug(`Running "%s %s"`, binary, strings.Replace(strings.Join(args, " "), "%", "%%", -1))
+	logger.Debugf(`Running "%s %s"`, binary, strings.Replace(strings.Join(args, " "), "%", "%%", -1))
 	var output, err = cmd.CombinedOutput()
 	if err != nil {
-		logger.Error(`Failed to run "%s %s": %s`, binary, strings.Join(args, " "), err)
+		logger.Errorf(`Failed to run "%s %s": %s`, binary, strings.Join(args, " "), err)
 		for _, line := range bytes.Split(output, []byte("\n")) {
-			logger.Debug("--> %s", line)
+			logger.Debugf("--> %s", line)
 		}
 
 		return false

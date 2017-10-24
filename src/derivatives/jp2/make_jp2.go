@@ -69,7 +69,7 @@ func (t *Transformer) getRate() float64 {
 // using a different quality)
 func (t *Transformer) Transform() error {
 	if fileutil.Exists(t.OutputJP2) {
-		t.Logger.Info("Not generating JP2 file %q; file already exists", t.OutputJP2)
+		t.Logger.Infof("Not generating JP2 file %q; file already exists", t.OutputJP2)
 		return nil
 	}
 
@@ -77,11 +77,11 @@ func (t *Transformer) Transform() error {
 	t.makeJP2()
 	t.moveTempJP2()
 
-	t.Logger.Debug("Removing tmpPNG %q", t.tmpPNG)
+	t.Logger.Debugf("Removing tmpPNG %q", t.tmpPNG)
 	os.Remove(t.tmpPNG)
-	t.Logger.Debug("Removing tmpJP2 %q", t.tmpJP2)
+	t.Logger.Debugf("Removing tmpJP2 %q", t.tmpJP2)
 	os.Remove(t.tmpJP2)
-	t.Logger.Debug("Removing tmpPNGTest %q", t.tmpPNGTest)
+	t.Logger.Debugf("Removing tmpPNGTest %q", t.tmpPNGTest)
 	os.Remove(t.tmpPNGTest)
 
 	return t.err
@@ -95,7 +95,7 @@ func (t *Transformer) makePNG() {
 	}
 	var err error
 
-	t.Logger.Info("Creating PNG from %q", t.SourceFile)
+	t.Logger.Infof("Creating PNG from %q", t.SourceFile)
 
 	t.tmpPNG, err = fileutil.TempNamedFile("", "", ".png")
 	if err != nil {
@@ -133,7 +133,7 @@ func (t *Transformer) makeJP2() {
 	}
 	var err error
 
-	t.Logger.Info("Creating JP2 from PNG")
+	t.Logger.Infof("Creating JP2 from PNG")
 
 	// Create a temp file for holding our JP2
 	t.tmpJP2, err = fileutil.TempNamedFile("", "", ".jp2")
@@ -209,7 +209,7 @@ func (t *Transformer) moveTempJP2() {
 		return
 	}
 
-	t.Logger.Info("Copying temp JP2 to %s", t.OutputJP2)
+	t.Logger.Infof("Copying temp JP2 to %s", t.OutputJP2)
 	var err = os.Link(t.tmpJP2, t.OutputJP2)
 	if err != nil {
 		var copyErr = fileutil.CopyFile(t.tmpJP2, t.OutputJP2)
@@ -229,22 +229,22 @@ func (t *Transformer) testRate(rate int) bool {
 
 	var rateFloat = float64(rate) / RateFactor
 	if t.testedRates[rate] {
-		t.Logger.Debug("Skipping already-tested rate %g", rate)
+		t.Logger.Debugf("Skipping already-tested rate %d", rate)
 		return false
 	}
 	t.testedRates[rate] = true
 
 	t.makeJP2FromPNG(rateFloat)
 	if t.testJP2Decompress() {
-		t.Logger.Debug("Success with rate %g", rateFloat)
+		t.Logger.Debugf("Success with rate %g", rateFloat)
 		return true
 	}
 	t.makeJP2FromPNGDashI(rateFloat)
 	if t.testJP2Decompress() {
-		t.Logger.Debug("Success with rate %g and -I", rate)
+		t.Logger.Debugf("Success with rate %d and -I", rate)
 		return true
 	}
 
-	t.Logger.Debug("Failure with rate %g", rate)
+	t.Logger.Debugf("Failure with rate %d", rate)
 	return false
 }

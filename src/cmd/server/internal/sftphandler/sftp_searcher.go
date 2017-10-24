@@ -73,7 +73,6 @@ func (s *SFTPSearcher) buildInProcessList() error {
 	var dbJobs, err = db.FindJobsByStatusAndType(string(jobs.JobStatusPending), string(jobs.JobTypeSFTPIssueMove))
 	if err != nil {
 		return fmt.Errorf("unable to find pending sftp issue move jobs: %s", err)
-		return nil
 	}
 
 	for _, dbJob := range dbJobs {

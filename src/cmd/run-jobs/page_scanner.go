@@ -20,7 +20,7 @@ var tiffFilenameRegex = regexp.MustCompile(`(?i:^[0-9]{4}.tiff?)`)
 func scanPageReviewIssues(c *config.Config) {
 	var list, err = db.FindIssuesInPageReview()
 	if err != nil {
-		logger.Error("Unable to query issues in page review: %s", err)
+		logger.Errorf("Unable to query issues in page review: %s", err)
 		return
 	}
 
@@ -72,17 +72,17 @@ func scanScannedIssues(c *config.Config) {
 func queueIssueForDerivatives(dbIssue *db.Issue) {
 	var oldDir = dbIssue.Location
 	var newDir = filepath.Join(filepath.Dir(oldDir), ".notouchie-"+filepath.Base(oldDir))
-	logger.Info("Renaming %q to %q to prepare for derivative processing", oldDir, newDir)
+	logger.Infof("Renaming %q to %q to prepare for derivative processing", oldDir, newDir)
 	var err = os.Rename(oldDir, newDir)
 	if err != nil {
-		logger.Error("Unable to rename %q for derivative processing: %s", oldDir, err)
+		logger.Errorf("Unable to rename %q for derivative processing: %s", oldDir, err)
 		return
 	}
 	dbIssue.Location = newDir
 	dbIssue.AwaitingPageReview = false
 	err = dbIssue.Save()
 	if err != nil {
-		logger.Critical("Unable to update db Issue (location and awaiting page review status): %s", err)
+		logger.Criticalf("Unable to update db Issue (location and awaiting page review status): %s", err)
 		return
 	}
 
@@ -93,7 +93,7 @@ func queueIssueForDerivatives(dbIssue *db.Issue) {
 func getScannedMOCDirList(path string) []string {
 	var infos, err = fileutil.ReaddirSorted(path)
 	if err != nil {
-		logger.Error("Unable to read scan directory %q: %s", path, err)
+		logger.Errorf("Unable to read scan directory %q: %s", path, err)
 		return nil
 	}
 
@@ -108,7 +108,7 @@ func getScannedMOCDirList(path string) []string {
 
 		// We shouldn't have directories that aren't in the system
 		if !db.ValidMOC(code) {
-			logger.Error("Invalid MARC Org Code directory: %q", info.Name())
+			logger.Errorf("Invalid MARC Org Code directory: %q", info.Name())
 			continue
 		}
 
@@ -122,7 +122,7 @@ func getScannedMOCDirList(path string) []string {
 func getLCCNDirs(path string) []string {
 	var infos, err = fileutil.ReaddirSorted(path)
 	if err != nil {
-		logger.Error("Unable to scan %q for LCCN dirs: %s", path, err)
+		logger.Errorf("Unable to scan %q for LCCN dirs: %s", path, err)
 		return nil
 	}
 
@@ -130,14 +130,14 @@ func getLCCNDirs(path string) []string {
 	for _, info := range infos {
 		// We skip top-level files with a warning
 		if !info.IsDir() {
-			logger.Warn("Unexpected file found in LCCN dir scan: %q", info.Name())
+			logger.Warnf("Unexpected file found in LCCN dir scan: %q", info.Name())
 			continue
 		}
 		var lccn = filepath.Base(info.Name())
 
 		// We shouldn't have LCCN directories that aren't in the system
 		if db.LookupTitle(lccn) == nil {
-			logger.Error("Invalid LCCN directory: %q", info.Name())
+			logger.Errorf("Invalid LCCN directory: %q", info.Name())
 			continue
 		}
 
@@ -150,7 +150,7 @@ func getLCCNDirs(path string) []string {
 func makeScannedDBIssuesFromLCCNDir(path string) []*db.Issue {
 	var infos, err = fileutil.ReaddirSorted(path)
 	if err != nil {
-		logger.Error("Unable to read directory %q: %s", path, err)
+		logger.Errorf("Unable to read directory %q: %s", path, err)
 		return nil
 	}
 
@@ -158,7 +158,7 @@ func makeScannedDBIssuesFromLCCNDir(path string) []*db.Issue {
 	for _, info := range infos {
 		if !info.IsDir() {
 			// We don't abort, but this situation really shouldn't be happening
-			logger.Error("Unexpected file found in LCCN dir %q while scanning for issues", info.Name())
+			logger.Errorf("Unexpected file found in LCCN dir %q while scanning for issues", info.Name())
 			continue
 		}
 
@@ -170,7 +170,7 @@ func makeScannedDBIssuesFromLCCNDir(path string) []*db.Issue {
 		var issueDir = filepath.Join(path, info.Name())
 		var dbIssue, err = db.NewIssueFromScanDir(issueDir)
 		if err != nil {
-			logger.Error("Unable to make DB Issue for %q: %s", issueDir, err)
+			logger.Errorf("Unable to make DB Issue for %q: %s", issueDir, err)
 			continue
 		}
 
@@ -187,7 +187,7 @@ func validScanFiles(path string) bool {
 
 	dirs, err = fileutil.FindDirectories(path)
 	if len(dirs) > 0 {
-		logger.Error("Found one or more subdirectories in %q", path)
+		logger.Errorf("Found one or more subdirectories in %q", path)
 		return false
 	}
 
@@ -201,17 +201,17 @@ func validScanFiles(path string) bool {
 	}
 
 	if err != nil {
-		logger.Error("Unable to scan %q for PDF / TIFF files: %s", path, err)
+		logger.Errorf("Unable to scan %q for PDF / TIFF files: %s", path, err)
 		return false
 	}
 
 	if len(tiffFiles) == 0 {
-		logger.Error("There are no TIFF files in %q", path)
+		logger.Errorf("There are no TIFF files in %q", path)
 		return false
 	}
 
 	if len(tiffFiles) != len(pdfFiles) {
-		logger.Error("PDF/TIFF files don't match in %q", path)
+		logger.Errorf("PDF/TIFF files don't match in %q", path)
 		return false
 	}
 
@@ -223,7 +223,7 @@ func validScanFiles(path string) bool {
 		var pdfParts = strings.Split(pdf, ".")
 		var tiffParts = strings.Split(tiff, ".")
 		if pdfParts[0] != tiffParts[0] {
-			logger.Error("PDF/TIFF files don't match (index %d / pdf %q / tiff %q) in %q", i, pdf, tiff, path)
+			logger.Errorf("PDF/TIFF files don't match (index %d / pdf %q / tiff %q) in %q", i, pdf, tiff, path)
 			return false
 		}
 	}
@@ -240,19 +240,19 @@ func validScanPDFDPI(path string, expectedDPI int) bool {
 		return pdfFilenameRegex.MatchString(i.Name())
 	})
 	if err != nil {
-		logger.Error("Unable to find PDF files in %q: %s", path, err)
+		logger.Errorf("Unable to find PDF files in %q: %s", path, err)
 	}
 
 	for _, filename := range pdfFiles {
 		var dpis = getPDFDPIs(filename)
 		if len(dpis) == 0 {
-			logger.Error("%q has no images or is invalid", filename)
+			logger.Errorf("%q has no images or is invalid", filename)
 			return false
 		}
 
 		for _, dpi := range dpis {
 			if dpi.xDPI > maxDPI || dpi.yDPI > maxDPI {
-				logger.Error("%q has an image with a bad DPI (%d x %d)", filename, dpi.xDPI, dpi.yDPI)
+				logger.Errorf("%q has an image with a bad DPI (%g x %g)", filename, dpi.xDPI, dpi.yDPI)
 				return false
 			}
 		}

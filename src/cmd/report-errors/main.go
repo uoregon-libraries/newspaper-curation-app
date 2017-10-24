@@ -51,13 +51,13 @@ func main() {
 	getOpts()
 	var finder, err = issuefinder.Deserialize(opts.CacheFile)
 	if err != nil {
-		logger.Fatal("Unable to deserialize the cache file %#v: %s", opts.CacheFile, err)
+		logger.Fatalf("Unable to deserialize the cache file %#v: %s", opts.CacheFile, err)
 	}
 
 	finder.Errors.Index()
 
 	// Report all errors
 	for _, e := range finder.Errors.Errors {
-		logger.Error(e.Message())
+		logger.Errorf(e.Message())
 	}
 }

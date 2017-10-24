@@ -22,7 +22,7 @@ func (im *SFTPIssueMover) Process(config *config.Config) bool {
 	// new job just has to be logged loudly.
 	var err = QueuePageSplit(im.DBIssue, im.Issue.Location)
 	if err != nil {
-		im.Logger.Critical("Unable to queue new page-split job for issue id %d: %s", im.DBIssue.ID, err)
+		im.Logger.Criticalf("Unable to queue new page-split job for issue id %d: %s", im.DBIssue.ID, err)
 	}
 
 	return true

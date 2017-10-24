@@ -1,7 +1,7 @@
 .PHONY: all lint format clean
 
 all: vendor/src
-	gb build
+	@./validate.sh && gb build
 
 vendor/src:
 	gb vendor restore

@@ -6,6 +6,7 @@ type MOC struct {
 	Code string
 }
 
+// ValidMOC returns true if the given code is in the database
 func ValidMOC(code string) bool {
 	var op = DB.Operation()
 	op.Dbg = Debug

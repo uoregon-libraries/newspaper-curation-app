@@ -49,7 +49,7 @@ func New(pdfFile, altoFile string, pdfDPI int, imgNo int) *Transformer {
 func (t *Transformer) Transform() error {
 	// File existence is not a failure; just means we don't regenerate the file
 	if fileutil.Exists(t.ALTOOutputFilename) {
-		t.Logger.Info("Not generating ALTO XML file %q; file already exists", t.ALTOOutputFilename)
+		t.Logger.Infof("Not generating ALTO XML file %q; file already exists", t.ALTOOutputFilename)
 		return nil
 	}
 
@@ -68,7 +68,7 @@ func (t *Transformer) pdfToText() {
 		return
 	}
 
-	t.Logger.Info("Running pdftotext on %q", t.PDFFilename)
+	t.Logger.Infof("Running pdftotext on %q", t.PDFFilename)
 
 	var tmpfile, err = fileutil.TempNamedFile("", "", ".html")
 	if err != nil {
@@ -104,7 +104,7 @@ func (t *Transformer) extractDoc() {
 		return
 	}
 
-	t.Logger.Info("Extracting XML")
+	t.Logger.Infof("Extracting XML")
 
 	var start = bytes.Index(t.html, []byte("<doc>"))
 	var end = bytes.Index(t.html, []byte("</doc>"))
@@ -118,7 +118,7 @@ func (t *Transformer) writeALTOFile() {
 		return
 	}
 
-	t.Logger.Info("Writing out ALTO XML to %q", t.ALTOOutputFilename)
+	t.Logger.Infof("Writing out ALTO XML to %q", t.ALTOOutputFilename)
 
 	var f, err = os.Create(t.ALTOOutputFilename)
 	if err != nil {

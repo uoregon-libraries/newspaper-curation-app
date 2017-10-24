@@ -41,7 +41,7 @@ func PDFFileHandler(w http.ResponseWriter, req *http.Request) {
 
 	var f, err = os.Open(path)
 	if err != nil {
-		logger.Error("Unable to read %#v", path)
+		logger.Errorf("Unable to read %#v", path)
 		r.Vars.Alert = fmt.Sprintf("Unable to read %#v!", path)
 		r.Render(responder.Empty)
 		return

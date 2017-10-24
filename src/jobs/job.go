@@ -42,7 +42,7 @@ func NewJob(dbj *db.Job) *Job {
 func Find(id int) *Job {
 	var dbJob, err = db.FindJob(id)
 	if err != nil {
-		logger.Error("Unable to look up job id %d: %s", id, err)
+		logger.Errorf("Unable to look up job id %d: %s", id, err)
 		return nil
 	}
 	if dbJob == nil {
@@ -73,7 +73,7 @@ func (j *Job) SetProcessSuccess(success bool) {
 	j.CompletedAt = time.Now()
 	var err = j.Save()
 	if err != nil {
-		j.Logger.Critical("Unable to update job status after completion (job: %d; success: %q): %s", j.ID, err)
+		j.Logger.Criticalf("Unable to update job status after completion (job: %d; success: %#v): %s", j.ID, success, err)
 	}
 }
 
@@ -123,14 +123,14 @@ type IssueJob struct {
 func NewIssueJob(dbJob *db.Job) *IssueJob {
 	var dbi, err = db.FindIssue(dbJob.ObjectID)
 	if err != nil {
-		logger.Critical("Unable to find issue for job %d: %s", dbJob.ID, err)
+		logger.Criticalf("Unable to find issue for job %d: %s", dbJob.ID, err)
 		return nil
 	}
 
 	var si *schema.Issue
 	si, err = dbi.SchemaIssue()
 	if err != nil {
-		logger.Critical("Unable to prepare a schema.Issue for database issue %d: %s", dbi.ID, err)
+		logger.Criticalf("Unable to prepare a schema.Issue for database issue %d: %s", dbi.ID, err)
 		return nil
 	}
 
@@ -174,7 +174,7 @@ func (jlw jobLogWriter) Write(msg []byte) (n int, err error) {
 	// Split the log message into its relevant parts
 	var parts = strings.Split(line, " - ")
 	if len(parts) < 4 {
-		logger.Critical("Invalid logger message format")
+		logger.Criticalf("Invalid logger message format")
 		return 0, fmt.Errorf("invalid logger message format")
 	}
 	var level = parts[2]
@@ -182,7 +182,7 @@ func (jlw jobLogWriter) Write(msg []byte) (n int, err error) {
 
 	err = jlw.Job.WriteLog(level, message)
 	if err != nil {
-		logger.Critical("Unable to write log message: %s", err)
+		logger.Criticalf("Unable to write log message: %s", err)
 		return 0, err
 	}
 

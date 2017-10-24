@@ -174,7 +174,7 @@ func (i *Issue) decorateDupeErrors() {
 	// This shouldn't be able to happen, but if it does the best we can do is log
 	// it and skip dupe checking; better than panicking in the lookup below
 	if err != nil {
-		logger.Error("Invalid issue key %q", i.Key())
+		logger.Errorf("Invalid issue key %q", i.Key())
 		return
 	}
 
@@ -214,7 +214,7 @@ func (i *Issue) decorateDupeErrors() {
 func (i *Issue) decoratePriorJobLogs() {
 	var dbi, err = db.FindIssueByKey(i.Key())
 	if err != nil {
-		logger.Error("Unable to look up issue for decorating queue messages: %s", err)
+		logger.Errorf("Unable to look up issue for decorating queue messages: %s", err)
 		return
 	}
 	if dbi == nil {
@@ -224,7 +224,7 @@ func (i *Issue) decoratePriorJobLogs() {
 	var dbJobs []*db.Job
 	dbJobs, err = db.FindJobsForIssueID(dbi.ID)
 	if err != nil {
-		logger.Error("Unable to look up jobs for issue id %d (%q): %s", dbi.ID, i.Key(), err)
+		logger.Errorf("Unable to look up jobs for issue id %d (%q): %s", dbi.ID, i.Key(), err)
 		return
 	}
 
@@ -242,7 +242,7 @@ func (i *Issue) decoratePriorJobLogs() {
 			case "ERROR", "CRIT":
 				subErrors = append(subErrors, log.Message)
 			default:
-				logger.Error("Unknown job log level: %q", log.LogLevel)
+				logger.Errorf("Unknown job log level: %q", log.LogLevel)
 			}
 		}
 	}
@@ -271,7 +271,7 @@ func (i *Issue) IsNew() bool {
 	return time.Since(i.Modified) < time.Hour*24*14
 }
 
-// IsDangerouslyNew, on the other hand, tells us if the issue is so new that
+// IsDangerouslyNew on the other hand tells us if the issue is so new that
 // we're not okay with manual queueing even with a warning, because it's just
 // not safe!
 func (i *Issue) IsDangerouslyNew() bool {

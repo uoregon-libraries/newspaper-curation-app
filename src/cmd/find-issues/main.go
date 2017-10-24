@@ -69,12 +69,12 @@ func getOpts() {
 
 	Conf, err = config.Parse(opts.ConfigFile)
 	if err != nil {
-		logger.Fatal("Config error: %s", err)
+		logger.Fatalf("Config error: %s", err)
 	}
 
 	err = db.Connect(Conf.DatabaseConnect)
 	if err != nil {
-		logger.Fatal("Error trying to connect to database: %s", err)
+		logger.Fatalf("Error trying to connect to database: %s", err)
 	}
 
 	if len(opts.IssueKeys) == 0 && opts.IssueList == "" {
@@ -119,7 +119,7 @@ func main() {
 	getOpts()
 	var finder, err = issuefinder.Deserialize(opts.CacheFile)
 	if err != nil {
-		logger.Fatal("Unable to deserialize the cache file %#v: %s", opts.CacheFile, err)
+		logger.Fatalf("Unable to deserialize the cache file %#v: %s", opts.CacheFile, err)
 	}
 
 	var lookup = issuesearch.NewLookup()

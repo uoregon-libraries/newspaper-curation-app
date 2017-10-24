@@ -55,17 +55,17 @@ func getConf() {
 	}
 
 	if !fileutil.IsDir(opts.CachePath) {
-		logger.Fatal("--cache-path %#v is not a valid directory", opts.CachePath)
+		logger.Fatalf("--cache-path %#v is not a valid directory", opts.CachePath)
 	}
 
 	Conf, err = config.Parse(opts.ConfigFile)
 	if err != nil {
-		logger.Fatal("Config error: %s", err)
+		logger.Fatalf("Config error: %s", err)
 	}
 
 	err = db.Connect(Conf.DatabaseConnect)
 	if err != nil {
-		logger.Fatal("Error trying to connect to database: %s", err)
+		logger.Fatalf("Error trying to connect to database: %s", err)
 	}
 	user.DB = db.DB
 
@@ -78,7 +78,7 @@ func getConf() {
 	webutil.ParentWebroot = opts.ParentWebroot
 
 	if opts.Debug == true {
-		logger.Warn("Debug mode has been enabled")
+		logger.Warnf("Debug mode has been enabled")
 		settings.DEBUG = true
 		db.Debug = true
 	}
@@ -114,12 +114,12 @@ func startServer() {
 	var waited, lastWaited int
 	for watcher.IssueFinder().Issues == nil {
 		if waited == 5 {
-			logger.Info("Waiting for initial issue scan to complete.  This can take " +
+			logger.Infof("Waiting for initial issue scan to complete.  This can take " +
 				"several minutes if the issues haven't been scanned in a while.  If this " +
 				"is the first time scanning the live site, expect 10 minutes or more to " +
 				"build the web JSON cache.")
 		} else if waited/30 > lastWaited {
-			logger.Info("Still waiting...")
+			logger.Infof("Still waiting...")
 			lastWaited = waited / 30
 		}
 		waited++
@@ -129,9 +129,9 @@ func startServer() {
 	http.Handle("/", nocache(logMiddleware(r)))
 
 	var addr = fmt.Sprintf("%s:%d", opts.Bind, opts.Port)
-	logger.Info("Listening on %s", addr)
+	logger.Infof("Listening on %s", addr)
 	if err := http.ListenAndServe(addr, nil); err != nil {
-		logger.Fatal("Error starting listener: %s", err)
+		logger.Fatalf("Error starting listener: %s", err)
 	}
 }
 

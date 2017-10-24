@@ -55,7 +55,7 @@ func main() {
 	getOpts()
 	var finder, err = issuefinder.Deserialize(opts.CacheFile)
 	if err != nil {
-		logger.Fatal("Unable to deserialize the cache file %#v: %s", opts.CacheFile, err)
+		logger.Fatalf("Unable to deserialize the cache file %#v: %s", opts.CacheFile, err)
 	}
 
 	// We have to look at searchers individually so we can skip backups (duped
