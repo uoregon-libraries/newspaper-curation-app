@@ -40,22 +40,22 @@ while true; do
 
     echo "Rebuilding..."
 
-    last_make_md5=""
+    last_build_md5=""
     while true; do
       oldifs=$IFS
       IFS=''
-      make >/dev/null 2>.make.txt && break || true
-      make_md5=$(md5sum .make.txt)
-      if [[ $last_make_md5 != "$make_md5" ]]; then
-        last_make_md5=$make_md5
+      gb build >/dev/null 2>.build.txt && break || true
+      build_md5=$(md5sum .build.txt)
+      if [[ $last_build_md5 != "$build_md5" ]]; then
+        last_build_md5=$build_md5
         echo
-        cat .make.txt
+        cat .build.txt
       fi
       IFS=$oldifs
       sleep 5
     done
 
-    # In case we were in a make loop for a while and lots of things changed,
+    # In case we were in a build loop for a while and lots of things changed,
     # recalculate the checksums and store them
     srcs_md5=$(find src/ -type f -name "*.go" | xargs cat | md5sum)
     tmpl_md5=$(find templates/ -type f -name "*.html" | xargs cat | md5sum)
