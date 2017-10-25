@@ -9,6 +9,16 @@ import (
 	"time"
 )
 
+// workflowStep semi-restricts values allowed in the Issue.WorkflowStep field
+type workflowStep string
+
+// Human workflow steps - these match the allowed values in the database
+const (
+	WSAwaitingPageReview     workflowStep = "AwaitingPageReview"
+	WSReadyForMetadataEntry               = "ReadyForMetadataEntry"
+	WSAwaitingMetadataReview              = "AwaitingMetadataReview"
+)
+
 // Issue contains metadata about an issue for the various workflow tools' use
 type Issue struct {
 	ID int `sql:",primary"`
@@ -31,16 +41,15 @@ type Issue struct {
 
 	/* Workflow information to keep track of the issue and what it needs */
 
-	Location               string    // Where is this issue on disk?
-	IsFromScanner          bool      // Is the issue scanned in-house?  (Born-digital == false)
-	AwaitingPageReview     bool      // Is the issue ready for page review?  (page sort / other manual intervention)
-	HasDerivatives         bool      // Does the issue have derivatives done?
-	ReadyForMetadataEntry  bool      // Is the issue ready for metadata entry?
-	AwaitingMetadataReview bool      // Is the issue awaiting metadata review?
-	WorkflowOwnerID        int       // Whose "desk" is this currently on?
-	WorkflowOwnerExpiresAt time.Time // When does the workflow owner lose ownership?
-	MetadataEntryUserID    int       // Who entered metadata?
-	ReviewedByUserID       int       // Who reviewed metadata?
+	Location               string       // Where is this issue on disk?
+	IsFromScanner          bool         // Is the issue scanned in-house?  (Born-digital == false)
+	HasDerivatives         bool         // Does the issue have derivatives done?
+	WorkflowStepString     string       `sql:"workflow_step"` // If set, tells us what "human workflow" step we're on
+	WorkflowStep           workflowStep `sql:"-"`
+	WorkflowOwnerID        int          // Whose "desk" is this currently on?
+	WorkflowOwnerExpiresAt time.Time    // When does the workflow owner lose ownership?
+	MetadataEntryUserID    int          // Who entered metadata?
+	ReviewedByUserID       int          // Who reviewed metadata?
 }
 
 // NewIssue creates an issue ready for saving to the issues table
@@ -159,7 +168,7 @@ func FindIssuesInPageReview() ([]*Issue, error) {
 	var op = DB.Operation()
 	op.Dbg = Debug
 	var list []*Issue
-	op.Select("issues", &Issue{}).Where("awaiting_page_review = ?", true).AllObjects(&list)
+	op.Select("issues", &Issue{}).Where("workflow_step = ?", string(WSAwaitingPageReview)).AllObjects(&list)
 	return list, op.Err()
 }
 
@@ -175,12 +184,14 @@ func (i *Issue) Save() error {
 // serialize prepares struct data to work with the database fields better
 func (i *Issue) serialize() {
 	i.PageLabelsCSV = strings.Join(i.PageLabels, ",")
+	i.WorkflowStepString = string(i.WorkflowStep)
 }
 
 // deserialize performs operations necessary to get the database data into a more
 // useful Go structure
 func (i *Issue) deserialize() {
 	i.PageLabels = strings.Split(i.PageLabelsCSV, ",")
+	i.WorkflowStep = workflowStep(i.WorkflowStepString)
 }
 
 // SchemaIssue returns an extremely over-simplified representation of this
