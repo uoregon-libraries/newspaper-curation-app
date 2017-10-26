@@ -5,7 +5,9 @@ import (
 	"fmt"
 	"html/template"
 	"logger"
+	"path"
 	"schema"
+	"strconv"
 )
 
 // Issue wraps the DB issue, and decorates them with display-friendly functions
@@ -73,8 +75,8 @@ func (i *Issue) WorkflowExpiration() string {
 // related to a single issue
 func (i *Issue) actionButton(label, actionPath, classes string) template.HTML {
 	return template.HTML(fmt.Sprintf(
-		`<form action="/%d/%s" method="POST"><button type="submit" class="btn %s">"%s"</button></form>`,
-		i.ID, actionPath, classes, label))
+		`<form action="%s" method="POST"><button type="submit" class="btn %s">%s</button></form>`,
+		path.Join(basePath, strconv.Itoa(i.ID), actionPath), classes, label))
 }
 
 // Actions returns the action link HTML for each possible action the owner can
