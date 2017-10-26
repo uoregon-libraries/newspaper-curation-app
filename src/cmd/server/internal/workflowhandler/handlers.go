@@ -119,6 +119,16 @@ func homeHandler(resp *responder.Responder, i *Issue) {
 	}
 	resp.Vars.Data["MyDeskIssues"] = wrapDBIssues(issues)
 
+	// Get issues needing metadata
+	issues, err = db.FindAvailableIssuesByWorkflowStep(db.WSReadyForMetadataEntry)
+	if err != nil {
+		logger.Errorf("Unable to find issues needing metadata entry: %s", err)
+		resp.Vars.Alert = fmt.Sprintf("Unable to search for issues; contact support or try again later.")
+		resp.Render(responder.Empty)
+		return
+	}
+	resp.Vars.Data["PendingMetadataIssues"] = wrapDBIssues(issues)
+
 	resp.Render(DeskTmpl)
 }
 

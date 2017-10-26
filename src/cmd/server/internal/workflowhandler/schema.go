@@ -101,17 +101,21 @@ func (i *Issue) IsOwned() bool {
 func (i *Issue) Actions() []template.HTML {
 	var actions []template.HTML
 
-	switch i.WorkflowStep {
-	case db.WSReadyForMetadataEntry:
-		actions = append(actions, i.actionButton("Metadata", "metadata", "btn-default"))
-		actions = append(actions, i.actionButton("Page Numbering", "page-numbering", "btn-default"))
+	if i.IsOwned() {
+		switch i.WorkflowStep {
+		case db.WSReadyForMetadataEntry:
+			actions = append(actions, i.actionButton("Metadata", "metadata", "btn-default"))
+			actions = append(actions, i.actionButton("Page Numbering", "page-numbering", "btn-default"))
 
-	case db.WSAwaitingMetadataReview:
-		actions = append(actions, i.actionButton("Metadata", "review/metadata", "btn-default"))
-		actions = append(actions, i.actionButton("Page Numbering", "review/page-numbering", "btn-default"))
+		case db.WSAwaitingMetadataReview:
+			actions = append(actions, i.actionButton("Metadata", "review/metadata", "btn-default"))
+			actions = append(actions, i.actionButton("Page Numbering", "review/page-numbering", "btn-default"))
+		}
+
+		actions = append(actions, i.actionButton("Unclaim", "/unclaim", "btn-danger"))
+	} else {
+		actions = append(actions, i.actionButton("Claim", "/claim", "btn-primary"))
 	}
-
-	actions = append(actions, i.actionButton("Unclaim", "/unclaim", "btn-danger"))
 
 	return actions
 }

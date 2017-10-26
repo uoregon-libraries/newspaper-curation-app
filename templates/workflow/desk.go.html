@@ -39,7 +39,26 @@
   </p>
 
   <!-- TODO -->
-  <em>There are no issues needing metadata entry</em>
+  {{if .Data.PendingMetadataIssues}}
+    <table class="table">
+      <thead>
+        <caption>Issues Needing Metadata</caption>
+      </thead>
+
+      <tbody>
+      <tr>
+        <th scope="col">Title</th>
+        <th scope="col">Date</th>
+        <th scope="col">Actions</th>
+      </tr>
+    {{range .Data.PendingMetadataIssues}}
+      {{template "PendingMetadataIssues" .}}
+    {{end}}
+      </tbody>
+    </table>
+  {{else}}
+    <em>There are no issues needing metadata entry</em>
+  {{end}}
 {{end}}
 
 {{if .User.PermittedTo ReviewIssueMetadata}}

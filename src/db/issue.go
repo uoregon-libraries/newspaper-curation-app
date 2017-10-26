@@ -188,6 +188,19 @@ func FindIssuesInPageReview() ([]*Issue, error) {
 	return list, op.Err()
 }
 
+// FindAvailableIssuesByWorkflowStep looks for all issues nobody owns and which
+// are set to the given workflow step and returns them
+func FindAvailableIssuesByWorkflowStep(ws workflowStep) ([]*Issue, error) {
+	var op = DB.Operation()
+	op.Dbg = Debug
+	var list []*Issue
+	op.Select("issues", &Issue{}).Where(
+		"workflow_step = ? AND (workflow_owner_id = 0 OR workflow_owner_expires_at < ?)",
+		string(ws), time.Now().Format("2006-01-02 15:04:05")).AllObjects(&list)
+	deserializeIssues(list)
+	return list, op.Err()
+}
+
 // Save creates or updates the Issue in the issues table
 func (i *Issue) Save() error {
 	i.serialize()
