@@ -6,6 +6,7 @@ import (
 	"logger"
 	"net/http"
 	"strconv"
+	"time"
 	"user"
 
 	"github.com/gorilla/mux"
@@ -99,4 +100,87 @@ func canWrite(h HandlerFunc) HandlerFunc {
 // canReview verifies user can review metadata for an issue
 func canReview(h HandlerFunc) HandlerFunc {
 	return MustHavePrivilege(user.ReviewIssueMetadata, h)
+}
+
+// _canPerformWorkflow verifies the issue's workflow is of a type on which the
+// user can take action
+func _canPerformWorkflow(u *user.User, i *Issue) bool {
+	switch i.WorkflowStep {
+	case db.WSReadyForMetadataEntry:
+		return u.PermittedTo(user.EnterIssueMetadata)
+
+	case db.WSAwaitingMetadataReview:
+		return u.PermittedTo(user.ReviewIssueMetadata)
+	}
+
+	return false
+}
+
+// canClaim makes sure the issue can be claimed via _canClaim
+func canClaim(h HandlerFunc) HandlerFunc {
+	return HandlerFunc(func(resp *responder.Responder, i *Issue) {
+		var u = resp.Vars.User
+		if i.WorkflowOwnerID != 0 && time.Now().After(i.WorkflowOwnerExpiresAt) {
+			logger.Warnf("User %s trying to perform an action on issue %d which is owned by user %d",
+				u.Login, i.ID, i.WorkflowOwnerID)
+			resp.Vars.Title = "You cannot take action on this issue; it's been claimed by another user"
+			resp.Writer.WriteHeader(http.StatusForbidden)
+			resp.Render(responder.Empty)
+			return
+		}
+
+		h(resp, i)
+	})
+}
+
+// issueNeedsMetadataEntry verifies that the issue's workflow step is valid for
+// entering metadata
+func issueNeedsMetadataEntry(h HandlerFunc) HandlerFunc {
+	return HandlerFunc(func(resp *responder.Responder, i *Issue) {
+		if i.WorkflowStep != db.WSReadyForMetadataEntry {
+			logger.Warnf("User %s trying to perform a metadata entry action on issue %d which has workflow step %s",
+				resp.Vars.User.Login, i.ID, i.WorkflowStepString)
+			resp.Vars.Title = "Error: invalid action for this issue"
+			resp.Writer.WriteHeader(http.StatusBadRequest)
+			resp.Render(responder.Empty)
+			return
+		}
+
+		h(resp, i)
+	})
+}
+
+// issueAwaitingMetadataReview verifies that the issue's workflow step is valid
+// for reviewing metadata
+func issueAwaitingMetadataReview(h HandlerFunc) HandlerFunc {
+	return HandlerFunc(func(resp *responder.Responder, i *Issue) {
+		if i.WorkflowStep != db.WSAwaitingMetadataReview {
+			logger.Warnf("User %s trying to perform a metadata review action on issue %d which has workflow step %s",
+				resp.Vars.User.Login, i.ID, i.WorkflowStepString)
+			resp.Vars.Title = "Error: invalid action for this issue"
+			resp.Writer.WriteHeader(http.StatusBadRequest)
+			resp.Render(responder.Empty)
+			return
+		}
+
+		h(resp, i)
+	})
+}
+
+// ownsIssue doesn't allow a page hit unless the authenticated user is also the
+// user who claimed the issue
+func ownsIssue(h HandlerFunc) HandlerFunc {
+	return HandlerFunc(func(resp *responder.Responder, i *Issue) {
+		var u = resp.Vars.User
+		if i.WorkflowOwnerID != u.ID {
+			logger.Warnf("User %s trying to perform an action on issue %d which is owned by user %d",
+				u.Login, i.ID, i.WorkflowOwnerID)
+			resp.Vars.Title = "You cannot take action on this issue; it's been claimed by another user"
+			resp.Writer.WriteHeader(http.StatusForbidden)
+			resp.Render(responder.Empty)
+			return
+		}
+
+		h(resp, i)
+	})
 }

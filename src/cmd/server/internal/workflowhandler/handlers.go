@@ -6,7 +6,9 @@ import (
 	"db"
 	"fmt"
 	"logger"
+	"net/http"
 	"path"
+	"time"
 	"web/tmpl"
 
 	"github.com/gorilla/mux"
@@ -57,26 +59,46 @@ func Setup(r *mux.Router, webPath string, c *config.Config) {
 	var s = r.PathPrefix(basePath).Subrouter()
 	s.Path("").Handler(handle(canView(homeHandler)))
 
-	// Issue metadata paths
+	// All other paths are centered around a specific issue
 	var s2 = s.PathPrefix("/{issue_id}").Subrouter()
-	s2.Path("/claim").Methods("POST").Handler(handle(canWrite(claimIssueHandler)))
-	s2.Path("/unclaim").Methods("POST").Handler(handle(canWrite(unclaimIssueHandler)))
-	s2.Path("/metadata").Handler(handle(canWrite(enterMetadataHandler)))
-	s2.Path("/metadata/save").Methods("POST").Handler(handle(canWrite(saveMetadataHandler)))
-	s2.Path("/page-numbering").Handler(handle(canWrite(enterPageNumberHandler)))
-	s2.Path("/page-numbering/save").Methods("POST").Handler(handle(canWrite(savePageNumberHandler)))
-	s2.Path("/queue").Methods("POST").Handler(handle(canWrite(queuePageForReviewHandler)))
-	s2.Path("/unqueue").Methods("POST").Handler(handle(canWrite(unqueuePageForReviewHandler)))
-	s2.Path("/report-error").Handler(handle(canWrite(enterErrorHandler)))
-	s2.Path("/report-error/save").Methods("POST").Handler(handle(canWrite(saveErrorHandler)))
+
+	// Claim / unclaim handlers are for both metadata and review
+	s2.Path("/claim").Methods("POST").Handler(handle(canClaim(claimIssueHandler)))
+	s2.Path("/unclaim").Methods("POST").Handler(handle(ownsIssue(unclaimIssueHandler)))
+
+	// Alias for all the middleware we call to validate issue metadata entry:
+	// - User has a role which allows entering metadata
+	// - User owns the issue
+	// - The issue is in the right workflow step
+	var canEnterMetadata = func(f HandlerFunc) http.Handler {
+		return handle(canWrite(ownsIssue(issueNeedsMetadataEntry(f))))
+	}
+
+	// Issue metadata paths
+	s2.Path("/metadata").Handler(canEnterMetadata(enterMetadataHandler))
+	s2.Path("/metadata/save").Methods("POST").Handler(canEnterMetadata(saveMetadataHandler))
+	s2.Path("/page-numbering").Handler(canEnterMetadata(enterPageNumberHandler))
+	s2.Path("/page-numbering/save").Methods("POST").Handler(canEnterMetadata(savePageNumberHandler))
+	s2.Path("/queue").Methods("POST").Handler(canEnterMetadata(queuePageForReviewHandler))
+	s2.Path("/unqueue").Methods("POST").Handler(canEnterMetadata(unqueuePageForReviewHandler))
+	s2.Path("/report-error").Handler(canEnterMetadata(enterErrorHandler))
+	s2.Path("/report-error/save").Methods("POST").Handler(canEnterMetadata(saveErrorHandler))
+
+	// Alias for all the middleware we call to validate issue metadata review:
+	// - User has a role which allows reviewing metadata
+	// - User owns the issue
+	// - The issue is in the right workflow step
+	var canReviewMetadata = func(f HandlerFunc) http.Handler {
+		return handle(canReview(ownsIssue(issueAwaitingMetadataReview(f))))
+	}
 
 	// Review paths
 	var s3 = s2.PathPrefix("/review").Subrouter()
-	s3.Path("/metadata").Handler(handle(canReview(reviewMetadataHandler)))
-	s3.Path("/page-numbering").Handler(handle(canReview(reviewPageNumbersHandler)))
-	s3.Path("/reject-form").Handler(handle(canReview(rejectIssueMetadataFormHandler)))
-	s3.Path("/reject").Methods("POST").Handler(handle(canReview(rejectIssueMetadataHandler)))
-	s3.Path("/approve").Methods("POST").Handler(handle(canReview(approveIssueMetadataHandler)))
+	s3.Path("/metadata").Handler(canReviewMetadata(reviewMetadataHandler))
+	s3.Path("/page-numbering").Handler(canReviewMetadata(reviewPageNumbersHandler))
+	s3.Path("/reject-form").Handler(canReviewMetadata(rejectIssueMetadataFormHandler))
+	s3.Path("/reject").Methods("POST").Handler(canReviewMetadata(rejectIssueMetadataHandler))
+	s3.Path("/approve").Methods("POST").Handler(canReviewMetadata(approveIssueMetadataHandler))
 
 	Layout = responder.Layout.Clone()
 	Layout.Path = path.Join(Layout.Path, "workflow")
