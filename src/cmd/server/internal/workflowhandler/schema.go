@@ -8,6 +8,7 @@ import (
 	"path"
 	"schema"
 	"strconv"
+	"time"
 )
 
 // Issue wraps the DB issue, and decorates them with display-friendly functions
@@ -87,6 +88,12 @@ func (i *Issue) actionButton(label, actionPath, classes string) template.HTML {
 	return template.HTML(fmt.Sprintf(
 		`<form action="%s" method="POST"><button type="submit" class="btn %s">%s</button></form>`,
 		path.Join(basePath, strconv.Itoa(i.ID), actionPath), classes, label))
+}
+
+// IsOwned returns true if the owner ID is nonzero *and* the workflow owner
+// expiration time has not passed
+func (i *Issue) IsOwned() bool {
+	return i.WorkflowOwnerID != 0 && time.Now().Before(i.WorkflowOwnerExpiresAt)
 }
 
 // Actions returns the action link HTML for each possible action the owner can

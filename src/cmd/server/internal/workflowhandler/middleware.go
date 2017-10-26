@@ -6,7 +6,6 @@ import (
 	"logger"
 	"net/http"
 	"strconv"
-	"time"
 	"user"
 
 	"github.com/gorilla/mux"
@@ -120,7 +119,7 @@ func _canPerformWorkflow(u *user.User, i *Issue) bool {
 func canClaim(h HandlerFunc) HandlerFunc {
 	return HandlerFunc(func(resp *responder.Responder, i *Issue) {
 		var u = resp.Vars.User
-		if i.WorkflowOwnerID != 0 && time.Now().After(i.WorkflowOwnerExpiresAt) {
+		if i.IsOwned() {
 			logger.Warnf("User %s trying to perform an action on issue %d which is owned by user %d",
 				u.Login, i.ID, i.WorkflowOwnerID)
 			resp.Vars.Title = "You cannot take action on this issue; it's been claimed by another user"
