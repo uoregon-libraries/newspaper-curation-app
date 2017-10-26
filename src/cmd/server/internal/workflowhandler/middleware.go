@@ -172,9 +172,8 @@ func ownsIssue(h HandlerFunc) HandlerFunc {
 	return HandlerFunc(func(resp *responder.Responder, i *Issue) {
 		var u = resp.Vars.User
 		if i.WorkflowOwnerID != u.ID {
-			logger.Warnf("User %s trying to perform an action on issue %d which is owned by user %d",
-				u.Login, i.ID, i.WorkflowOwnerID)
-			resp.Vars.Title = "You cannot take action on this issue; it's been claimed by another user"
+			logger.Warnf("User %s trying to perform an action on unowned issue %d", u.Login, i.ID)
+			resp.Vars.Title = "You cannot take action on this issue; it is not claimed by you"
 			resp.Writer.WriteHeader(http.StatusForbidden)
 			resp.Render(responder.Empty)
 			return
