@@ -125,8 +125,50 @@ func homeHandler(resp *responder.Responder, i *Issue) {
 	resp.Render(DeskTmpl)
 }
 
-func claimIssueHandler(resp *responder.Responder, i *Issue)              {}
-func unclaimIssueHandler(resp *responder.Responder, i *Issue)            {}
+// claimIssueHandler just assigns the given issue to the logged-in user and
+// sets a one-week expiration
+func claimIssueHandler(resp *responder.Responder, i *Issue) {
+	i.WorkflowOwnerID = resp.Vars.User.ID
+	i.WorkflowOwnerExpiresAt = time.Now().Add(time.Hour * 24 * 7)
+	var err = i.Save()
+	if err != nil {
+		logger.Errorf("Unable to claim issue id %s by user %s: %s", i.ID, resp.Vars.User.Login, err)
+		http.SetCookie(resp.Writer, &http.Cookie{
+			Name:  "Alert",
+			Value: "Unable to claim issue; contact support or try again later.",
+			Path:  "/",
+		})
+		http.Redirect(resp.Writer, resp.Request, basePath, http.StatusFound)
+		return
+	}
+
+	resp.Audit("claim", fmt.Sprintf("issue id %d", i.ID))
+	http.SetCookie(resp.Writer, &http.Cookie{Name: "Info", Value: "Issue claimed successfully", Path: "/"})
+	http.Redirect(resp.Writer, resp.Request, basePath, http.StatusFound)
+}
+
+// unclaimIssueHandler clears the issue's workflow data
+func unclaimIssueHandler(resp *responder.Responder, i *Issue) {
+	i.WorkflowOwnerID = 0
+	i.WorkflowOwnerExpiresAt = time.Time{}
+
+	var err = i.Save()
+	if err != nil {
+		logger.Errorf("Unable to unclaim issue id %s for user %s: %s", i.ID, resp.Vars.User.Login, err)
+		http.SetCookie(resp.Writer, &http.Cookie{
+			Name:  "Alert",
+			Value: "Unable to unclaim issue; contact support or try again later.",
+			Path:  "/",
+		})
+		http.Redirect(resp.Writer, resp.Request, basePath, http.StatusFound)
+		return
+	}
+
+	resp.Audit("unclaim", fmt.Sprintf("issue id %d", i.ID))
+	http.SetCookie(resp.Writer, &http.Cookie{Name: "Info", Value: "Issue removed from your task list", Path: "/"})
+	http.Redirect(resp.Writer, resp.Request, basePath, http.StatusFound)
+}
+
 func enterMetadataHandler(resp *responder.Responder, i *Issue)           {}
 func saveMetadataHandler(resp *responder.Responder, i *Issue)            {}
 func enterPageNumberHandler(resp *responder.Responder, i *Issue)         {}
