@@ -11,24 +11,24 @@ import (
 	"github.com/gorilla/mux"
 )
 
-// WorkflowHandler is our version of http.Handler for sending extra context to
+// Handler is our version of http.Handler for sending extra context to
 // workflow handlers
-type WorkflowHandler interface {
+type Handler interface {
 	ServeHTTP(*responder.Responder, *Issue)
 }
 
-// WorkflowHandlerFunc represents workflow handlers with workflow-specific context
-type WorkflowHandlerFunc func(resp *responder.Responder, i *Issue)
+// HandlerFunc represents workflow handlers with workflow-specific context
+type HandlerFunc func(resp *responder.Responder, i *Issue)
 
 // ServeHTTP calls f(resp, i)
-func (f WorkflowHandlerFunc) ServeHTTP(resp *responder.Responder, i *Issue) {
+func (f HandlerFunc) ServeHTTP(resp *responder.Responder, i *Issue) {
 	f(resp, i)
 }
 
 // handle wraps the http package's middleware magic to let us send the
-// responder and issue (if any) to the WorkflowHandlers so we know all the
+// responder and issue (if any) to the Handlers so we know all the
 // database hits are out of the way
-func handle(h WorkflowHandlerFunc) http.Handler {
+func handle(h HandlerFunc) http.Handler {
 	return http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
 		var resp = responder.Response(w, r)
 		var u = resp.Vars.User
@@ -73,8 +73,8 @@ func handle(h WorkflowHandlerFunc) http.Handler {
 
 // MustHavePrivilege replicates responder.MustHavePrivilege, but supports the
 // workflow handler structure's needs
-func MustHavePrivilege(priv *user.Privilege, f WorkflowHandlerFunc) WorkflowHandlerFunc {
-	return WorkflowHandlerFunc(func(resp *responder.Responder, i *Issue) {
+func MustHavePrivilege(priv *user.Privilege, f HandlerFunc) HandlerFunc {
+	return HandlerFunc(func(resp *responder.Responder, i *Issue) {
 		if resp.Vars.User.PermittedTo(priv) {
 			f(resp, i)
 			return
@@ -87,16 +87,16 @@ func MustHavePrivilege(priv *user.Privilege, f WorkflowHandlerFunc) WorkflowHand
 }
 
 // canView verifies user can view metadata workflow information
-func canView(h WorkflowHandlerFunc) WorkflowHandlerFunc {
+func canView(h HandlerFunc) HandlerFunc {
 	return MustHavePrivilege(user.ViewMetadataWorkflow, h)
 }
 
 // canWrite verifies user can enter metadata for an issue
-func canWrite(h WorkflowHandlerFunc) WorkflowHandlerFunc {
+func canWrite(h HandlerFunc) HandlerFunc {
 	return MustHavePrivilege(user.EnterIssueMetadata, h)
 }
 
 // canReview verifies user can review metadata for an issue
-func canReview(h WorkflowHandlerFunc) WorkflowHandlerFunc {
+func canReview(h HandlerFunc) HandlerFunc {
 	return MustHavePrivilege(user.ReviewIssueMetadata, h)
 }
