@@ -27,9 +27,6 @@ var (
 	// DeskTmpl renders the main "workflow desk" page
 	DeskTmpl *tmpl.Template
 
-	// PendingTmpl renders the list of issues which need metadata entry or metadata review and aren't yet owned
-	PendingTmpl *tmpl.Template
-
 	// MetadataFormTmpl renders the form for entering metadata for an issue
 	MetadataFormTmpl *tmpl.Template
 
