@@ -94,7 +94,7 @@ func (i *Issue) Actions() []template.HTML {
 		actions = append(actions, i.actionButton("Page Numbering", "review/page-numbering", "btn-default"))
 	}
 
-	actions = append(actions, i.actionButton("Unclaim", "/unclaim", ""))
+	actions = append(actions, i.actionButton("Unclaim", "/unclaim", "btn-danger"))
 
 	return actions
 }
