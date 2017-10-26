@@ -2,17 +2,107 @@ package workflowhandler
 
 import (
 	"cmd/server/internal/responder"
+	"db"
+	"logger"
 	"net/http"
+	"strconv"
 	"user"
+
+	"github.com/gorilla/mux"
 )
 
-// Alias the permission checks
-func canView(h http.HandlerFunc) http.Handler {
-	return responder.MustHavePrivilege(user.ViewMetadataWorkflow, h)
+// WorkflowHandler is our version of http.Handler for sending extra context to
+// workflow handlers
+type WorkflowHandler interface {
+	ServeHTTP(*responder.Responder, *Issue)
 }
-func canWrite(h http.HandlerFunc) http.Handler {
-	return responder.MustHavePrivilege(user.EnterIssueMetadata, h)
+
+// WorkflowHandlerFunc represents workflow handlers with workflow-specific context
+type WorkflowHandlerFunc func(resp *responder.Responder, i *Issue)
+
+// ServeHTTP calls f(resp, i)
+func (f WorkflowHandlerFunc) ServeHTTP(resp *responder.Responder, i *Issue) {
+	f(resp, i)
 }
-func canReview(h http.HandlerFunc) http.Handler {
-	return responder.MustHavePrivilege(user.ReviewIssueMetadata, h)
+
+// handle wraps the http package's middleware magic to let us send the
+// responder and issue (if any) to the WorkflowHandlers so we know all the
+// database hits are out of the way
+func handle(h WorkflowHandler) http.Handler {
+	return http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
+		var resp = responder.Response(w, r)
+		var u = resp.Vars.User
+		var idStr = mux.Vars(r)["issue_id"]
+		var issue *Issue
+
+		// If there's an issue_id parameter, we validate it - unless somebody
+		// deliberately hacks a URL, none of these errors should be very likely
+		if idStr != "" {
+			var id, _ = strconv.Atoi(idStr)
+			if id == 0 {
+				logger.Warnf("Invalid issue id requested by %s: %s", u.Login, idStr)
+				resp.Vars.Title = "Invalid issue"
+				w.WriteHeader(http.StatusBadRequest)
+				resp.Render(responder.Empty)
+				return
+			}
+
+			var i, err = db.FindIssue(id)
+			if err != nil {
+				logger.Errorf("Error trying to look up issue id %d: %s", id, err)
+				resp.Vars.Title = "Database error; try again or contact the system administrator"
+				w.WriteHeader(http.StatusInternalServerError)
+				resp.Render(responder.Empty)
+				return
+			}
+
+			if i == nil {
+				logger.Warnf("User %s trying to find nonexistent issue id %d", u.Login, id)
+				resp.Vars.Title = "Issue not found; try again or contact the system administrator"
+				w.WriteHeader(http.StatusNotFound)
+				resp.Render(responder.Empty)
+				return
+			}
+
+			issue = wrapDBIssue(i)
+		}
+
+		h.ServeHTTP(resp, issue)
+	})
+}
+
+// MustHavePrivilege replicates responder.MustHavePrivilege, but supports the
+// workflow handler structure's needs
+func MustHavePrivilege(priv *user.Privilege, f WorkflowHandlerFunc) WorkflowHandler {
+	return WorkflowHandlerFunc(func(resp *responder.Responder, i *Issue) {
+		var u = resp.Vars.User
+		var roles []*user.Role
+		if u != nil {
+			roles = u.Roles()
+		}
+
+		if priv.AllowedByAny(roles) {
+			f(resp, i)
+			return
+		}
+
+		resp.Vars.Title = "Insufficient Privileges"
+		resp.Writer.WriteHeader(http.StatusForbidden)
+		resp.Render(responder.InsufficientPrivileges)
+	})
+}
+
+// canView verifies user can view metadata workflow information
+func canView(h WorkflowHandlerFunc) WorkflowHandler {
+	return MustHavePrivilege(user.ViewMetadataWorkflow, h)
+}
+
+// canWrite verifies user can enter metadata for an issue
+func canWrite(h WorkflowHandlerFunc) WorkflowHandler {
+	return MustHavePrivilege(user.EnterIssueMetadata, h)
+}
+
+// canReview verifies user can review metadata for an issue
+func canReview(h WorkflowHandlerFunc) WorkflowHandler {
+	return MustHavePrivilege(user.ReviewIssueMetadata, h)
 }

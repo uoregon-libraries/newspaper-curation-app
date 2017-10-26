@@ -14,18 +14,26 @@ type Issue struct {
 	si *schema.Issue
 }
 
+func wrapDBIssue(dbIssue *db.Issue) *Issue {
+	var si, err = dbIssue.SchemaIssue()
+
+	// This shouldn't realistically happen, so we log and return nothing
+	if err != nil {
+		logger.Errorf("Unable to get schema.Issue for issue id %d: %s", dbIssue.ID, err)
+		return nil
+	}
+
+	return &Issue{Issue: dbIssue, si: si}
+}
+
 func wrapDBIssues(dbIssues []*db.Issue) []*Issue {
 	var list []*Issue
 	for _, dbIssue := range dbIssues {
-		var si, err = dbIssue.SchemaIssue()
-
-		// This shouldn't realistically happen, so we log and return nothing
-		if err != nil {
-			logger.Errorf("Unable to get schema.Issue for issue id %d: %s", dbIssue.ID, err)
+		var i = wrapDBIssue(dbIssue)
+		if i == nil {
 			return nil
 		}
-
-		list = append(list, &Issue{Issue: dbIssue, si: si})
+		list = append(list, i)
 	}
 
 	return list

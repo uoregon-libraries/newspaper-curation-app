@@ -6,9 +6,7 @@ import (
 	"db"
 	"fmt"
 	"logger"
-	"net/http"
 	"path"
-	"strconv"
 	"web/tmpl"
 
 	"github.com/gorilla/mux"
@@ -57,28 +55,28 @@ func Setup(r *mux.Router, webPath string, c *config.Config) {
 
 	// Base path (desk view)
 	var s = r.PathPrefix(basePath).Subrouter()
-	s.Path("").Handler(canView(homeHandler))
+	s.Path("").Handler(handle(canView(homeHandler)))
 
 	// Issue metadata paths
 	var s2 = s.PathPrefix("/{issue_id}").Subrouter()
-	s2.Path("/claim").Methods("POST").Handler(canWrite(claimIssueHandler))
-	s2.Path("/unclaim").Methods("POST").Handler(canWrite(unclaimIssueHandler))
-	s2.Path("/metadata").Handler(canWrite(enterMetadataHandler))
-	s2.Path("/metadata/save").Methods("POST").Handler(canWrite(saveMetadataHandler))
-	s2.Path("/page-numbering").Handler(canWrite(enterPageNumberHandler))
-	s2.Path("/page-numbering/save").Methods("POST").Handler(canWrite(savePageNumberHandler))
-	s2.Path("/queue").Methods("POST").Handler(canWrite(queuePageForReviewHandler))
-	s2.Path("/unqueue").Methods("POST").Handler(canWrite(unqueuePageForReviewHandler))
-	s2.Path("/report-error").Handler(canWrite(enterErrorHandler))
-	s2.Path("/report-error/save").Methods("POST").Handler(canWrite(saveErrorHandler))
+	s2.Path("/claim").Methods("POST").Handler(handle(canWrite(claimIssueHandler)))
+	s2.Path("/unclaim").Methods("POST").Handler(handle(canWrite(unclaimIssueHandler)))
+	s2.Path("/metadata").Handler(handle(canWrite(enterMetadataHandler)))
+	s2.Path("/metadata/save").Methods("POST").Handler(handle(canWrite(saveMetadataHandler)))
+	s2.Path("/page-numbering").Handler(handle(canWrite(enterPageNumberHandler)))
+	s2.Path("/page-numbering/save").Methods("POST").Handler(handle(canWrite(savePageNumberHandler)))
+	s2.Path("/queue").Methods("POST").Handler(handle(canWrite(queuePageForReviewHandler)))
+	s2.Path("/unqueue").Methods("POST").Handler(handle(canWrite(unqueuePageForReviewHandler)))
+	s2.Path("/report-error").Handler(handle(canWrite(enterErrorHandler)))
+	s2.Path("/report-error/save").Methods("POST").Handler(handle(canWrite(saveErrorHandler)))
 
 	// Review paths
 	var s3 = s2.PathPrefix("/review").Subrouter()
-	s3.Path("/metadata").Handler(canReview(reviewMetadataHandler))
-	s3.Path("/page-numbering").Handler(canReview(reviewPageNumbersHandler))
-	s3.Path("/reject-form").Handler(canReview(rejectIssueMetadataFormHandler))
-	s3.Path("/reject").Methods("POST").Handler(canReview(rejectIssueMetadataHandler))
-	s3.Path("/approve").Methods("POST").Handler(canReview(approveIssueMetadataHandler))
+	s3.Path("/metadata").Handler(handle(canReview(reviewMetadataHandler)))
+	s3.Path("/page-numbering").Handler(handle(canReview(reviewPageNumbersHandler)))
+	s3.Path("/reject-form").Handler(handle(canReview(rejectIssueMetadataFormHandler)))
+	s3.Path("/reject").Methods("POST").Handler(handle(canReview(rejectIssueMetadataHandler)))
+	s3.Path("/approve").Methods("POST").Handler(handle(canReview(approveIssueMetadataHandler)))
 
 	Layout = responder.Layout.Clone()
 	Layout.Path = path.Join(Layout.Path, "workflow")
@@ -86,67 +84,37 @@ func Setup(r *mux.Router, webPath string, c *config.Config) {
 	DeskTmpl = Layout.MustBuild("desk.go.html")
 }
 
-// findIssue attempts to load the issue specified in the request's issue id
-// parameter, and returns it.  If there is no issue for the given id, nil is
-// returned and the caller should do nothing, as http headers / rendering is
-// already done.
-func findIssue(r *responder.Responder) *db.Issue {
-	var idStr = mux.Vars(r.Request)["issue_id"]
-	var id, _ = strconv.Atoi(idStr)
-	if id == 0 {
-		r.Vars.Alert = fmt.Sprintf("Invalid issue id %#v", idStr)
-		r.Render(responder.Empty)
-		return nil
-	}
-
-	var i, err = db.FindIssue(id)
-	if err != nil {
-		logger.Errorf("Error trying to find issue id %d: %s", id, err)
-		r.Vars.Alert = fmt.Sprintf("Unable to find issue id %d", id)
-		r.Render(responder.Empty)
-		return nil
-	}
-	if i == nil {
-		r.Vars.Alert = fmt.Sprintf("Unable to find issue id %d", id)
-		r.Render(responder.Empty)
-		return nil
-	}
-
-	return i
-}
-
 // homeHandler shows claimed workflow items that need to be finished as well as
 // pending items which can be claimed
-func homeHandler(w http.ResponseWriter, req *http.Request) {
-	var r = responder.Response(w, req)
-	r.Vars.Title = "Workflow"
+func homeHandler(resp *responder.Responder, i *Issue) {
+	resp.Vars.Title = "Workflow"
 
 	// Get issues currently on user's desk
-	var uid = r.Vars.User.ID
+	var uid = resp.Vars.User.ID
 	var issues, err = db.FindIssuesOnDesk(uid)
 	if err != nil {
 		logger.Errorf("Unable to find issues on user %d's desk: %s", uid, err)
-		r.Vars.Alert = fmt.Sprintf("Unable to search for issues; contact support or try again later.")
-		r.Render(responder.Empty)
+		resp.Vars.Alert = fmt.Sprintf("Unable to search for issues; contact support or try again later.")
+		resp.Render(responder.Empty)
 		return
 	}
-	r.Vars.Data["MyDeskIssues"] = wrapDBIssues(issues)
+	resp.Vars.Data["MyDeskIssues"] = wrapDBIssues(issues)
 
-	r.Render(DeskTmpl)
+	resp.Render(DeskTmpl)
 }
 
-func claimIssueHandler(w http.ResponseWriter, req *http.Request)              {}
-func unclaimIssueHandler(w http.ResponseWriter, req *http.Request)            {}
-func enterMetadataHandler(w http.ResponseWriter, req *http.Request)           {}
-func saveMetadataHandler(w http.ResponseWriter, req *http.Request)            {}
-func enterPageNumberHandler(w http.ResponseWriter, req *http.Request)         {}
-func savePageNumberHandler(w http.ResponseWriter, req *http.Request)          {}
-func queuePageForReviewHandler(w http.ResponseWriter, req *http.Request)      {}
-func unqueuePageForReviewHandler(w http.ResponseWriter, req *http.Request)    {}
-func reviewMetadataHandler(w http.ResponseWriter, req *http.Request)          {}
-func reviewPageNumbersHandler(w http.ResponseWriter, req *http.Request)       {}
-func rejectIssueMetadataFormHandler(w http.ResponseWriter, req *http.Request) {}
-func rejectIssueMetadataHandler(w http.ResponseWriter, req *http.Request)     {}
-func approveIssueMetadataHandler(w http.ResponseWriter, req *http.Request)    {}
-func enterErrorHandler(w http.ResponseWriter, req *http.Request)              {}
-func saveErrorHandler(w http.ResponseWriter, req *http.Request)               {}
+func claimIssueHandler(resp *responder.Responder, i *Issue)              {}
+func unclaimIssueHandler(resp *responder.Responder, i *Issue)            {}
+func enterMetadataHandler(resp *responder.Responder, i *Issue)           {}
+func saveMetadataHandler(resp *responder.Responder, i *Issue)            {}
+func enterPageNumberHandler(resp *responder.Responder, i *Issue)         {}
+func savePageNumberHandler(resp *responder.Responder, i *Issue)          {}
+func queuePageForReviewHandler(resp *responder.Responder, i *Issue)      {}
+func unqueuePageForReviewHandler(resp *responder.Responder, i *Issue)    {}
+func reviewMetadataHandler(resp *responder.Responder, i *Issue)          {}
+func reviewPageNumbersHandler(resp *responder.Responder, i *Issue)       {}
+func rejectIssueMetadataFormHandler(resp *responder.Responder, i *Issue) {}
+func rejectIssueMetadataHandler(resp *responder.Responder, i *Issue)     {}
+func approveIssueMetadataHandler(resp *responder.Responder, i *Issue)    {}
+func enterErrorHandler(resp *responder.Responder, i *Issue)              {}
+func saveErrorHandler(resp *responder.Responder, i *Issue)               {}
