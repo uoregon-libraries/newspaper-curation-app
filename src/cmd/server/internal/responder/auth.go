@@ -68,13 +68,7 @@ func CanSearchIssues(h http.HandlerFunc) http.Handler {
 // there is a user but the user isn't allowed to perform a particular action
 func MustHavePrivilege(priv *user.Privilege, f http.HandlerFunc) http.Handler {
 	return http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
-		var u = user.FindByLogin(GetUserLogin(w, r))
-		var roles []*user.Role
-		if u != nil {
-			roles = u.Roles()
-		}
-
-		if priv.AllowedByAny(roles) {
+		if user.FindByLogin(GetUserLogin(w, r)).PermittedTo(priv) {
 			f(w, r)
 			return
 		}

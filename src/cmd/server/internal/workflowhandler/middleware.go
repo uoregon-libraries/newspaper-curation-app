@@ -75,13 +75,7 @@ func handle(h WorkflowHandler) http.Handler {
 // workflow handler structure's needs
 func MustHavePrivilege(priv *user.Privilege, f WorkflowHandlerFunc) WorkflowHandler {
 	return WorkflowHandlerFunc(func(resp *responder.Responder, i *Issue) {
-		var u = resp.Vars.User
-		var roles []*user.Role
-		if u != nil {
-			roles = u.Roles()
-		}
-
-		if priv.AllowedByAny(roles) {
+		if resp.Vars.User.PermittedTo(priv) {
 			f(resp, i)
 			return
 		}
