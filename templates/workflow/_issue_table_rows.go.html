@@ -1,7 +1,10 @@
 {{define "MyDeskIssue"}}
   <tr>
-    <!-- Issue name -->
-    <th scope="row">{{.Name}}</td>
+    <!-- Issue title -->
+    <th scope="row">{{.Title}} ({{.LCCN}})</td>
+
+    <!-- Issue date -->
+    <th scope="row">{{.Date}}</td>
 
     <!-- Task / Expiration -->
     <td>

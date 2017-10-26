@@ -41,9 +41,19 @@ func wrapDBIssues(dbIssues []*db.Issue) []*Issue {
 	return list
 }
 
-// Name returns a human-friendly representation of the issue
-func (i *Issue) Name() string {
-	return fmt.Sprintf("%s, %s", i.si.Title.Name, i.si.DateStringReadable())
+// Name returns the issue's title's name
+func (i *Issue) Title() string {
+	return i.si.Title.Name
+}
+
+// LCCN returns the issue's title's LCCN
+func (i *Issue) LCCN() string {
+	return i.si.Title.LCCN
+}
+
+// Date returns the human-friendly date string
+func (i *Issue) Date() string {
+	return i.si.DateStringReadable()
 }
 
 // TaskDescription returns a human-friendly explanation of the current place
