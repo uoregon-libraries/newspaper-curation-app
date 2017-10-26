@@ -102,7 +102,7 @@ func Setup(r *mux.Router, webPath string, c *config.Config) {
 
 	Layout = responder.Layout.Clone()
 	Layout.Path = path.Join(Layout.Path, "workflow")
-	Layout.MustReadPartials("_mydeskissues.go.html")
+	Layout.MustReadPartials("_issue_table_rows.go.html")
 	DeskTmpl = Layout.MustBuild("desk.go.html")
 }
 
