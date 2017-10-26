@@ -29,3 +29,7 @@ body {
 .alert-success  { color: #103210; }
 .alert-info     { color: #002443; }
 caption         { color: #333; }
+
+form.actions {
+  display: inline-block;
+}
