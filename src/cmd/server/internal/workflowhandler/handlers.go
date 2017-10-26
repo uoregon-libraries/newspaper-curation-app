@@ -9,7 +9,6 @@ import (
 	"net/http"
 	"path"
 	"strconv"
-	"user"
 	"web/tmpl"
 
 	"github.com/gorilla/mux"
@@ -55,17 +54,6 @@ var (
 func Setup(r *mux.Router, webPath string, c *config.Config) {
 	conf = c
 	basePath = webPath
-
-	// Alias the permission checks
-	var canView = func(h http.HandlerFunc) http.Handler {
-		return responder.MustHavePrivilege(user.ViewMetadataWorkflow, h)
-	}
-	var canWrite = func(h http.HandlerFunc) http.Handler {
-		return responder.MustHavePrivilege(user.EnterIssueMetadata, h)
-	}
-	var canReview = func(h http.HandlerFunc) http.Handler {
-		return responder.MustHavePrivilege(user.ReviewIssueMetadata, h)
-	}
 
 	// Base path (desk view)
 	var s = r.PathPrefix(basePath).Subrouter()
