@@ -173,6 +173,7 @@ func FindIssuesOnDesk(userID int) ([]*Issue, error) {
 		workflow_owner_expires_at IS NOT NULL AND
 		workflow_owner_expires_at > ?`, userID, time.Now())
 	sel.AllObjects(&list)
+	deserializeIssues(list)
 	return list, op.Err()
 }
 
@@ -183,6 +184,7 @@ func FindIssuesInPageReview() ([]*Issue, error) {
 	op.Dbg = Debug
 	var list []*Issue
 	op.Select("issues", &Issue{}).Where("workflow_step = ?", string(WSAwaitingPageReview)).AllObjects(&list)
+	deserializeIssues(list)
 	return list, op.Err()
 }
 
@@ -206,6 +208,13 @@ func (i *Issue) serialize() {
 func (i *Issue) deserialize() {
 	i.PageLabels = strings.Split(i.PageLabelsCSV, ",")
 	i.WorkflowStep = workflowStep(i.WorkflowStepString)
+}
+
+// deserializeIssues runs deserialize() against all issues in the list
+func deserializeIssues(list []*Issue) {
+	for _, i := range list {
+		i.deserialize()
+	}
 }
 
 // SchemaIssue returns an extremely over-simplified representation of this
