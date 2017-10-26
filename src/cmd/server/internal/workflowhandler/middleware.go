@@ -28,7 +28,7 @@ func (f WorkflowHandlerFunc) ServeHTTP(resp *responder.Responder, i *Issue) {
 // handle wraps the http package's middleware magic to let us send the
 // responder and issue (if any) to the WorkflowHandlers so we know all the
 // database hits are out of the way
-func handle(h WorkflowHandler) http.Handler {
+func handle(h WorkflowHandlerFunc) http.Handler {
 	return http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
 		var resp = responder.Response(w, r)
 		var u = resp.Vars.User
@@ -73,7 +73,7 @@ func handle(h WorkflowHandler) http.Handler {
 
 // MustHavePrivilege replicates responder.MustHavePrivilege, but supports the
 // workflow handler structure's needs
-func MustHavePrivilege(priv *user.Privilege, f WorkflowHandlerFunc) WorkflowHandler {
+func MustHavePrivilege(priv *user.Privilege, f WorkflowHandlerFunc) WorkflowHandlerFunc {
 	return WorkflowHandlerFunc(func(resp *responder.Responder, i *Issue) {
 		if resp.Vars.User.PermittedTo(priv) {
 			f(resp, i)
@@ -87,16 +87,16 @@ func MustHavePrivilege(priv *user.Privilege, f WorkflowHandlerFunc) WorkflowHand
 }
 
 // canView verifies user can view metadata workflow information
-func canView(h WorkflowHandlerFunc) WorkflowHandler {
+func canView(h WorkflowHandlerFunc) WorkflowHandlerFunc {
 	return MustHavePrivilege(user.ViewMetadataWorkflow, h)
 }
 
 // canWrite verifies user can enter metadata for an issue
-func canWrite(h WorkflowHandlerFunc) WorkflowHandler {
+func canWrite(h WorkflowHandlerFunc) WorkflowHandlerFunc {
 	return MustHavePrivilege(user.EnterIssueMetadata, h)
 }
 
 // canReview verifies user can review metadata for an issue
-func canReview(h WorkflowHandlerFunc) WorkflowHandler {
+func canReview(h WorkflowHandlerFunc) WorkflowHandlerFunc {
 	return MustHavePrivilege(user.ReviewIssueMetadata, h)
 }
