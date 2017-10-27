@@ -30,6 +30,10 @@ body {
 .alert-info     { color: #002443; }
 caption         { color: #333; }
 
+/* Make all non-nav <a> tags underlined */
+a     { text-decoration: underline; }
+nav a { text-decoration: none; }
+
 form.actions {
   display: inline-block;
 }

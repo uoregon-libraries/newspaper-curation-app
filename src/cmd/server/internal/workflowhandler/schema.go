@@ -90,6 +90,13 @@ func (i *Issue) actionButton(label, actionPath, classes string) template.HTML {
 		path.Join(basePath, strconv.Itoa(i.ID), actionPath), classes, label))
 }
 
+// actionLink creates a link to the given action; for non-destructive actions
+// like visiting a form page
+func (i *Issue) actionLink(label, actionPath, classes string) template.HTML {
+	return template.HTML(fmt.Sprintf(`<a href="%s" class="%s">%s</a>`,
+		path.Join(basePath, strconv.Itoa(i.ID), actionPath), classes, label))
+}
+
 // IsOwned returns true if the owner ID is nonzero *and* the workflow owner
 // expiration time has not passed
 func (i *Issue) IsOwned() bool {
@@ -104,12 +111,12 @@ func (i *Issue) Actions() []template.HTML {
 	if i.IsOwned() {
 		switch i.WorkflowStep {
 		case db.WSReadyForMetadataEntry:
-			actions = append(actions, i.actionButton("Metadata", "metadata", "btn-default"))
-			actions = append(actions, i.actionButton("Page Numbering", "page-numbering", "btn-default"))
+			actions = append(actions, i.actionLink("Metadata", "metadata", ""))
+			actions = append(actions, i.actionLink("Page Numbering", "page-numbering", ""))
 
 		case db.WSAwaitingMetadataReview:
-			actions = append(actions, i.actionButton("Metadata", "review/metadata", "btn-default"))
-			actions = append(actions, i.actionButton("Page Numbering", "review/page-numbering", "btn-default"))
+			actions = append(actions, i.actionLink("Metadata", "review/metadata", ""))
+			actions = append(actions, i.actionLink("Page Numbering", "review/page-numbering", ""))
 		}
 
 		actions = append(actions, i.actionButton("Unclaim", "/unclaim", "btn-danger"))
