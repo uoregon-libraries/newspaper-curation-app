@@ -87,14 +87,13 @@ func (i *Issue) WorkflowExpiration() string {
 func (i *Issue) actionButton(label, actionPath, classes string) template.HTML {
 	return template.HTML(fmt.Sprintf(
 		`<form action="%s" method="POST" class="actions"><button type="submit" class="btn %s">%s</button></form>`,
-		path.Join(basePath, strconv.Itoa(i.ID), actionPath), classes, label))
+		i.Path(actionPath), classes, label))
 }
 
 // actionLink creates a link to the given action; for non-destructive actions
 // like visiting a form page
 func (i *Issue) actionLink(label, actionPath, classes string) template.HTML {
-	return template.HTML(fmt.Sprintf(`<a href="%s" class="%s">%s</a>`,
-		path.Join(basePath, strconv.Itoa(i.ID), actionPath), classes, label))
+	return template.HTML(fmt.Sprintf(`<a href="%s" class="%s">%s</a>`, i.Path(actionPath), classes, label))
 }
 
 // IsOwned returns true if the owner ID is nonzero *and* the workflow owner
@@ -125,4 +124,9 @@ func (i *Issue) Actions() []template.HTML {
 	}
 
 	return actions
+}
+
+// Path returns the path for any basic actions on this issue
+func (i *Issue) Path(actionPath string) string {
+	return path.Join(basePath, strconv.Itoa(i.ID), actionPath)
 }
