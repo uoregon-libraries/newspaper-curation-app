@@ -248,9 +248,10 @@ func (i *Issue) SchemaIssue() (*schema.Issue, error) {
 		return nil, fmt.Errorf("missing title for issue ID %d", i.ID)
 	}
 	var si = &schema.Issue{
-		Date:    dt,
-		Edition: i.Edition,
-		Title:   t,
+		Date:     dt,
+		Edition:  i.Edition,
+		Title:    t,
+		Location: i.Location,
 	}
 	return si, nil
 }
