@@ -50,6 +50,8 @@ type Issue struct {
 	WorkflowOwnerExpiresAt time.Time    // When does the workflow owner lose ownership?
 	MetadataEntryUserID    int          // Who entered metadata?
 	ReviewedByUserID       int          // Who reviewed metadata?
+	RejectionNotes         string       // If rejected (during metadata review), this tells us why
+	RejectedByUserID       int          // Who did the rejection?
 }
 
 // NewIssue creates an issue ready for saving to the issues table
