@@ -3,6 +3,7 @@ package responder
 import (
 	"fmt"
 	"html/template"
+	"strings"
 	"time"
 	"user"
 	"web/tmpl"
@@ -39,6 +40,11 @@ func InitRootTemplate(templatePath string) {
 		"ParentURL":  webutil.ParentURL,
 		"Comment":    HTMLComment,
 		"TimeString": func(t time.Time) string { return t.Format("2006-01-02 15:04") },
+		"nl2br": func(s string) template.HTML {
+			var escaped = template.HTMLEscaper(s)
+			var replaced = strings.Replace(escaped, "\n", "<br />", -1)
+			return template.HTML(replaced)
+		},
 
 		// We have functions for our privileges since they need to be "global" and
 		// easily verified at template compile time
