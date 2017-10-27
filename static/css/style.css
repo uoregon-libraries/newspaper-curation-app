@@ -23,7 +23,9 @@ body {
   font-style: italic;
 }
 
-/* Make alerts more readable */
+/* Make bootstrap's contrast problems slightly better */
 .alert-warning  { color: #3E2100; }
 .alert-danger   { color: #4d0200; }
 .alert-success  { color: #103210; }
+.alert-info     { color: #002443; }
+caption         { color: #333; }
