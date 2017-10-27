@@ -127,6 +127,14 @@ func canClaim(h HandlerFunc) HandlerFunc {
 			resp.Render(responder.Empty)
 			return
 		}
+		if i.WorkflowStep != db.WSReadyForMetadataEntry && i.WorkflowStep != db.WSAwaitingMetadataReview {
+			logger.Warnf("User %s trying to claim issue %d which has workflow step %s",
+				resp.Vars.User.Login, i.ID, i.WorkflowStepString)
+			resp.Vars.Alert = "Error: invalid action for this issue"
+			resp.Writer.WriteHeader(http.StatusBadRequest)
+			resp.Render(responder.Empty)
+			return
+		}
 
 		h(resp, i)
 	})
