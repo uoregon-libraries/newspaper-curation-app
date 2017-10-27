@@ -3,5 +3,5 @@
 /vendor/src
 /tmp
 /*settings.py
-/.make.txt
+/.build.txt
 /db/dbconf.yml
