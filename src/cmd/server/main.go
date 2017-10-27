@@ -77,6 +77,8 @@ func getConf() {
 	}
 	webutil.Webroot = opts.Webroot
 	webutil.ParentWebroot = opts.ParentWebroot
+	webutil.WorkflowPath = Conf.WorkflowPath
+	webutil.IIIFBaseURL = Conf.IIIFBaseURL
 
 	if opts.Debug == true {
 		logger.Warnf("Debug mode has been enabled")

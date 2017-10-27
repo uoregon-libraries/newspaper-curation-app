@@ -45,6 +45,7 @@ func InitRootTemplate(templatePath string) {
 			var replaced = strings.Replace(escaped, "\n", "<br />", -1)
 			return template.HTML(replaced)
 		},
+		"IIIFInfoURL": webutil.IIIFInfoURL,
 
 		// We have functions for our privileges since they need to be "global" and
 		// easily verified at template compile time
