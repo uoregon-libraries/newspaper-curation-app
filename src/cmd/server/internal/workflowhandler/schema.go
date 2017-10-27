@@ -44,7 +44,7 @@ func wrapDBIssues(dbIssues []*db.Issue) []*Issue {
 	return list
 }
 
-// Name returns the issue's title's name
+// Title returns the issue's title's name
 func (i *Issue) Title() string {
 	return i.si.Title.Name
 }
