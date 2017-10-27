@@ -1,0 +1,148 @@
+# Variables needed for the PDF batching scripts
+
+# How many pages must an issue have?  Setting this to 2 can avoid processing
+# obviously unfinished uploads.
+MINIMUM_ISSUE_PAGES=2
+
+# What is the path to the ghostscript binary?  Usually you can just leave this
+# set to "gs", but may need to be tweaked on some systems.
+GHOSTSCRIPT="gs"
+
+# What is the path to the opj binaries?  This may be opj_compress /
+# opj_decompress, opj2_*, or a full path, depending on a variety of factors....
+# The settings below work with the docker container:
+OPJ_COMPRESS="opj_compress"
+OPJ_DECOMPRESS="opj_decompress"
+
+###
+# Database settings
+###
+
+DB_HOST="127.0.0.1"
+DB_PORT=3306
+DB_USER="batchadmin"
+DB_PASSWORD="batchadmin"
+DB_DATABASE="batchadmin"
+
+###
+# Paths for PDFs, derivatives, etc., in order of our expected workflow
+###
+
+# Master PDFs are deposited here - these should be exactly what the publisher
+# gives us.  There must be one subdirectory per title, named after the title's
+# "SFTP Directory" value in the admin app, and each title must contain one
+# subdirectory per issue, named by the issue's date, in YYYY-MM-DD format.
+MASTER_PDF_UPLOAD_PATH="/mnt/news/sftp"
+
+# When a master PDF has been split, this is where we back it up.  Master files
+# are stored in the batches, so if you back up the batch, this can be a short-
+# term backup location.
+MASTER_PDF_BACKUP_PATH="/mnt/news/backup/master"
+
+# This is where the PDFs live after being split, but before derivatives are
+# run.  Derivatives need to be created prior to the rest of the workflow
+# happening to ease some of the admin tool's work as well as (hopefully)
+# keeping the process reusable for scanned newspapers.
+PDF_ISSUES_AWAITING_DERIVATIVES="/mnt/news/awaiting-derivatives"
+
+# This is where split PDFs are moved after derivatives are built.  Pages should
+# be reordered and renamed externally (e.g., using Adobe Bridge).  Derivatives
+# will be placed in ".derivatives" under the issue's directory.  When renaming
+# files, do not modify PDFs, or derivatives will lose their mapping (they use
+# a sha256 sum of their source PDF page).
+PDF_PAGE_REVIEW_PATH="/mnt/news/page-review"
+
+# Issues which have metadata entered, but need somebody to review that the
+# metadata is correct.  This is used only by the admin app, and is listed here
+# for the sake of completeness and for any one-off bash/python scripts which
+# need a single settings file to reference all paths.
+PDF_PAGES_AWAITING_METADATA_REVIEW="/mnt/news/metadata-review"
+
+# After users enter metadata in the admin tool, pages and their derivatives are
+# moved here to be queued up for processing to create a batch.
+PDF_PAGE_SOURCE_PATH="/mnt/news/incoming"
+
+# Once processing happens, batches are put here
+BATCH_OUTPUT_PATH="/mnt/news/outgoing"
+
+# Short-term backup for split pages in case a batch needs to be reprocessed.
+# Holds onto the issues just prior to ingest so fixes to a batch can reuse the
+# admin tool rather than having to edit the XML metadata.
+PDF_PAGE_BACKUP_PATH="/mnt/news/backup/pages"
+
+# For in-house scanning only, this setting tells the tiff processing job where
+# to find TIFF+PDF subdirectories.
+#
+# These subdirectories must look similar to the sftp subdirectories, where each
+# title has its own root, with date-based issue directories.  The TIFF
+# files should be at least 300dpi, and the PDFs should contain a 150dpi JPEG
+# image encoded at about a quality of 40 (or "medium"), per the NDNP spec.  The
+# PDF also needs to have the OCR text embedded for the derivative processing to
+# create the proper page XML.
+SCANS_AWAITING_DERIVATIVES="/mnt/news/scans"
+
+# Eventually many of the paths above will be removed and this will be the
+# main location for all issues.  We'll have metadata in the database to tell
+# us workflow steps, rather relying on the filesystem paths.
+WORKFLOW_PATH="/mnt/news/workflow"
+
+###
+# Batch creation settings
+###
+
+# MARC organization code you want to use in chronam to represent batches from
+# PDF sources.  e.g., "oru" results in batch names like
+# "batch_oru_20150101120000", attributed to the UO Knight Library.  It is best
+# to choose a code that chronam already knows about.
+PDF_BATCH_MARC_ORG_CODE="oru"
+
+# How many PDFs do we allow in a single batch?
+#
+# NOTE: If there are more than this in the PDF source path, you'll have to run
+# the process multiple times, but you will ensure smaller batches
+#
+# NOTE: this limit will *not* split an issue.  i.e., this is the maximum number
+# of PDFs, not necessarily the precise number a batch will contain.
+#
+# TODO: Use this if/when batch creation gets into this app
+MAX_BATCH_SIZE=1200
+
+# What is the minimum size of a batch?  Issues will not be batched until there
+# are at least this many pages.  Use this setting with care!  If it's set too
+# high, issues could sit around indefinitely waiting to be batched, especially
+# if you get PDFs infrequently and/or have a lot of small scanned batches with
+# various MARC Org Codes.
+#
+# TODO: Use this if/when batch creation gets into this app
+MIN_BATCH_SIZE=200
+
+# How many days does an issue have to wait after its publish date if it's
+# listed as an embargoed publication?
+#
+# TODO: Use this if/when batch creation gets into this app
+EMBARGO_DAYS=92
+
+###
+# Derivative settings
+###
+
+# Where are the XML templates for building issue XML?  You can point this to
+# the XML in the repo (src/xml) for ease, but some XML values may be wrong.
+#
+# TODO: Use this if/when batch creation gets into this app
+XML_TEMPLATE_PATH="/usr/local/pdf-to-chronam/xml"
+
+# DPI for ghostscript to use on the PDF-to-PNG conversion
+DPI=200
+
+# JP2 quality value for graphicsmagick
+QUALITY=62.5
+
+###
+# Scanned image settings
+###
+
+# Set this to the value your scanned images use to embed JPGs.  This should be
+# 150 per the NDNP spec, but could be changed if scanned images aren't under
+# your control.
+SCANNED_PDF_DPI=150

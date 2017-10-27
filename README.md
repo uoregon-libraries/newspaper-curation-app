@@ -57,25 +57,25 @@ review folder for issues ready to be queued up for derivatives.
 
 A simple approach to run everything needed is as follows:
 
-    ./bin/run-jobs -c ./settings.py watchall
+    ./bin/run-jobs -c ./settings watchall
 
 You can also run the various watchers in their own processes if you need more granularity:
 
     # One worker just watches the file-move jobs since these are heavy on IO but not CPU
-    ./bin/run-jobs -c ./settings.py watch sftp_issue_move move_issue_for_derivatives
+    ./bin/run-jobs -c ./settings watch sftp_issue_move move_issue_for_derivatives
 
     # One worker for page-split jobs and derivative generation since they're both going to fight for CPU
-    ./bin/run-jobs -c ./settings.py watch page_split make_derivatives
+    ./bin/run-jobs -c ./settings watch page_split make_derivatives
 
     # You MUST have *exactly one* worker watching the page-review folder
-    ./bin/run-jobs -c ./settings.py watch-page-review
+    ./bin/run-jobs -c ./settings watch-page-review
 
 Cache builder
 ---
 
 For various standalone tools to work, a cache of all known issues must be built:
 
-    ./bin/make-cache -c ./settings.py \
+    ./bin/make-cache -c ./settings \
         --siteroot https://oregonnews.uoregon.edu
         --cache-path ./tmp/
 
@@ -94,7 +94,7 @@ slightly more information which should be suitable for developers / debugging.
 The usage should suffice for explaining how it works, but an invokation might
 look like:
 
-    ./bin/find-issues -c ./settings.py \
+    ./bin/find-issues -c ./settings \
         --cache-file ./tmp/finder.cache \
         --issue-key=sn12345678/189601
 

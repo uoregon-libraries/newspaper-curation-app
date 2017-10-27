@@ -2,6 +2,6 @@
 /pkg
 /vendor/src
 /tmp
-/*settings.py
+/settings
 /.build.txt
 /db/dbconf.yml
