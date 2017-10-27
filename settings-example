@@ -14,6 +14,9 @@ GHOSTSCRIPT="gs"
 OPJ_COMPRESS="opj_compress"
 OPJ_DECOMPRESS="opj_decompress"
 
+# Full URL to the IIIF server's base path
+IIIF_BASE_URL="https://my.server.com/iiif"
+
 ###
 # Database settings
 ###
