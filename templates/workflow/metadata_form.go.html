@@ -44,8 +44,13 @@
     <form class="form-horizontal" role="form" method="POST" action="{{"metadata/save"|.Data.Issue.Path}}">
       <div class="form-group">
         <label class="col-md-2 control-label">Title</label>
-        <div class="col-md-10">
+        <div class="col-md-4">
           <p class="form-control-static">{{.Data.Issue.Title}}</p>
+        </div>
+
+        <label class="col-md-2 control-label">MARC Org Code</label>
+        <div class="col-md-4">
+          <p class="form-control-static">{{.Data.Issue.MARCOrgCode}}</p>
         </div>
       </div>
 
