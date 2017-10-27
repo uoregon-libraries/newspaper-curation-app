@@ -41,7 +41,7 @@ func handle(h HandlerFunc) http.Handler {
 			var id, _ = strconv.Atoi(idStr)
 			if id == 0 {
 				logger.Warnf("Invalid issue id requested by %s: %s", u.Login, idStr)
-				resp.Vars.Title = "Invalid issue"
+				resp.Vars.Alert = "Invalid issue"
 				w.WriteHeader(http.StatusBadRequest)
 				resp.Render(responder.Empty)
 				return
@@ -50,7 +50,7 @@ func handle(h HandlerFunc) http.Handler {
 			var i, err = db.FindIssue(id)
 			if err != nil {
 				logger.Errorf("Error trying to look up issue id %d: %s", id, err)
-				resp.Vars.Title = "Database error; try again or contact the system administrator"
+				resp.Vars.Alert = "Database error; try again or contact the system administrator"
 				w.WriteHeader(http.StatusInternalServerError)
 				resp.Render(responder.Empty)
 				return
@@ -58,7 +58,7 @@ func handle(h HandlerFunc) http.Handler {
 
 			if i == nil {
 				logger.Warnf("User %s trying to find nonexistent issue id %d", u.Login, id)
-				resp.Vars.Title = "Issue not found; try again or contact the system administrator"
+				resp.Vars.Alert = "Issue not found; try again or contact the system administrator"
 				w.WriteHeader(http.StatusNotFound)
 				resp.Render(responder.Empty)
 				return
@@ -80,7 +80,7 @@ func MustHavePrivilege(priv *user.Privilege, f HandlerFunc) HandlerFunc {
 			return
 		}
 
-		resp.Vars.Title = "Insufficient Privileges"
+		resp.Vars.Alert = "Insufficient Privileges"
 		resp.Writer.WriteHeader(http.StatusForbidden)
 		resp.Render(responder.InsufficientPrivileges)
 	})
@@ -122,7 +122,7 @@ func canClaim(h HandlerFunc) HandlerFunc {
 		if i.IsOwned() {
 			logger.Warnf("User %s trying to perform an action on issue %d which is owned by user %d",
 				u.Login, i.ID, i.WorkflowOwnerID)
-			resp.Vars.Title = "You cannot take action on this issue; it's been claimed by another user"
+			resp.Vars.Alert = "You cannot take action on this issue; it's been claimed by another user"
 			resp.Writer.WriteHeader(http.StatusForbidden)
 			resp.Render(responder.Empty)
 			return
@@ -139,7 +139,7 @@ func issueNeedsMetadataEntry(h HandlerFunc) HandlerFunc {
 		if i.WorkflowStep != db.WSReadyForMetadataEntry {
 			logger.Warnf("User %s trying to perform a metadata entry action on issue %d which has workflow step %s",
 				resp.Vars.User.Login, i.ID, i.WorkflowStepString)
-			resp.Vars.Title = "Error: invalid action for this issue"
+			resp.Vars.Alert = "Error: invalid action for this issue"
 			resp.Writer.WriteHeader(http.StatusBadRequest)
 			resp.Render(responder.Empty)
 			return
@@ -156,7 +156,7 @@ func issueAwaitingMetadataReview(h HandlerFunc) HandlerFunc {
 		if i.WorkflowStep != db.WSAwaitingMetadataReview {
 			logger.Warnf("User %s trying to perform a metadata review action on issue %d which has workflow step %s",
 				resp.Vars.User.Login, i.ID, i.WorkflowStepString)
-			resp.Vars.Title = "Error: invalid action for this issue"
+			resp.Vars.Alert = "Error: invalid action for this issue"
 			resp.Writer.WriteHeader(http.StatusBadRequest)
 			resp.Render(responder.Empty)
 			return
@@ -173,7 +173,7 @@ func ownsIssue(h HandlerFunc) HandlerFunc {
 		var u = resp.Vars.User
 		if i.WorkflowOwnerID != u.ID {
 			logger.Warnf("User %s trying to perform an action on unowned issue %d", u.Login, i.ID)
-			resp.Vars.Title = "You cannot take action on this issue; it is not claimed by you"
+			resp.Vars.Alert = "You cannot take action on this issue; it is not claimed by you"
 			resp.Writer.WriteHeader(http.StatusForbidden)
 			resp.Render(responder.Empty)
 			return
