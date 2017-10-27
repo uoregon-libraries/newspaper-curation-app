@@ -110,12 +110,11 @@ func (i *Issue) Actions() []template.HTML {
 	if i.IsOwned() {
 		switch i.WorkflowStep {
 		case db.WSReadyForMetadataEntry:
-			actions = append(actions, i.actionLink("Metadata", "metadata", ""))
-			actions = append(actions, i.actionLink("Page Numbering", "page-numbering", ""))
+			actions = append(actions, i.actionLink("Edit", "metadata", ""))
 
 		case db.WSAwaitingMetadataReview:
 			actions = append(actions, i.actionLink("Metadata", "review/metadata", ""))
-			actions = append(actions, i.actionLink("Page Numbering", "review/page-numbering", ""))
+			actions = append(actions, i.actionLink("Pages", "review/page-numbering", ""))
 		}
 
 		actions = append(actions, i.actionButton("Unclaim", "/unclaim", "btn-danger"))
