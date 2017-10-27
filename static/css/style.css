@@ -37,3 +37,13 @@ nav a { text-decoration: none; }
 form.actions {
   display: inline-block;
 }
+
+.osd-container {
+  border: 1px solid black;
+  padding: 8px;
+}
+
+.osd-toolbar {
+  width: 400px;
+  height: 35px;
+}

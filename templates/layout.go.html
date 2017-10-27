@@ -97,6 +97,7 @@
     {{IncludeJS "jquery-1.12.1.min"}}
     {{IncludeJS "prevent_double_submit"}}
     {{RawJS "bootstrap/js/bootstrap.min.js"}}
+    {{block "extrajs" .}}{{end}}
   </body>
 </html>
 {{Comment (printf "v%s" .Version)}}

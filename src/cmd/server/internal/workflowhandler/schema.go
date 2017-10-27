@@ -6,8 +6,10 @@ import (
 	"html/template"
 	"logger"
 	"path"
+	"path/filepath"
 	"schema"
 	"strconv"
+	"strings"
 	"time"
 )
 
@@ -55,6 +57,23 @@ func (i *Issue) LCCN() string {
 // Date returns the human-friendly date string
 func (i *Issue) Date() string {
 	return i.si.DateStringReadable()
+}
+
+// JP2Files aggregates all the JP2s that exist in this issue's directory
+func (i *Issue) JP2Files() []string {
+	var list []string
+
+	if len(i.si.Files) == 0 {
+		i.si.FindFiles()
+	}
+
+	for _, f := range i.si.Files {
+		if strings.ToUpper(filepath.Ext(f.Location)) == ".JP2" {
+			list = append(list, f.Location)
+		}
+	}
+
+	return list
 }
 
 // TaskDescription returns a human-friendly explanation of the current place

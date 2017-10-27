@@ -101,6 +101,7 @@ func Setup(r *mux.Router, webPath string, c *config.Config) {
 	Layout.Path = path.Join(Layout.Path, "workflow")
 	Layout.MustReadPartials("_issue_table_rows.go.html")
 	DeskTmpl = Layout.MustBuild("desk.go.html")
+	MetadataFormTmpl = Layout.MustBuild("metadata_form.go.html")
 }
 
 // homeHandler shows claimed workflow items that need to be finished as well as
@@ -176,7 +177,13 @@ func unclaimIssueHandler(resp *responder.Responder, i *Issue) {
 	http.Redirect(resp.Writer, resp.Request, basePath, http.StatusFound)
 }
 
-func enterMetadataHandler(resp *responder.Responder, i *Issue)           {}
+// enterMetadataHandler shows the metadata entry form for the issue
+func enterMetadataHandler(resp *responder.Responder, i *Issue) {
+	resp.Vars.Title = fmt.Sprintf("Entering metadata for %s (%s), %s", i.Title(), i.LCCN(), i.Date())
+	resp.Vars.Data["Issue"] = i
+	resp.Render(MetadataFormTmpl)
+}
+
 func saveMetadataHandler(resp *responder.Responder, i *Issue)            {}
 func enterPageNumberHandler(resp *responder.Responder, i *Issue)         {}
 func savePageNumberHandler(resp *responder.Responder, i *Issue)          {}

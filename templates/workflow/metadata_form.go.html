@@ -1,0 +1,142 @@
+{{block "content" .}}
+
+<div class="btn-toolbar">
+  <div class="btn-group">
+    <a href="{{.Webroot}}/workflow">
+      Return to Workflow
+    </a>
+  </div>
+
+  <div class="btn-group pull-right">
+    <a href="{{"page-numbering"|.Data.Issue.Path}}">
+      Label Pages
+    </a>
+  </div>
+</div>
+
+<hr />
+
+{{if .Data.Issue.RejectionNotes}}
+<div class="alert alert-warning">
+  <p>This issue was rejected from the review queue:</p>
+  <blockquote>{{.Data.Issue.RejectionNotes|nl2br}}</blockquote>
+</div>
+{{end}}
+
+<div class="osd-container">
+  <div>
+    Image <span id="osd-image-number">1</span> of {{.Data.Issue.PageLabels|len}}
+    <button id="osd-jump-top" class="btn btn-default">Jump to top</button>
+    <button id="osd-jump-bottom" class="btn btn-default">Jump to bottom</button>
+  </div>
+  <div id="osd-toolbar" class="osd-toolbar">
+  </div>
+  <div id="osd-body" style="height: 300px;">
+  </div>
+</div>
+
+<div class="row">
+  <div class="col-md-12">
+    <hr />
+  </div>
+
+  <div class="col-md-12">
+    <form class="form-horizontal" role="form" method="POST" action="{{"metadata/save"|.Data.Issue.Path}}">
+      <div class="form-group">
+        <label class="col-md-2 control-label">Title</label>
+        <div class="col-md-10">
+          <p class="form-control-static">{{.Data.Issue.Title}}</p>
+        </div>
+      </div>
+
+      <div class="form-group">
+        <label class="col-md-2 control-label" for="date_as_labeled">Issue Date as labeled</label>
+        <div class="col-md-4">
+          <input type="text" id="date_as_labeled" name="date_as_labeled" value="{{.Data.Issue.DateAsLabeled}}"
+            class="form-control" pattern="\d\d\d\d-\d\d-\d\d" required="required" />
+          <p class="help-block">
+            Enter the issue's date as it appears in the publication in YYYY-MM-DD format.
+          </p>
+        </div>
+        <label class="col-md-2 control-label" for="date">Issue Date</label>
+        <div class="col-md-4">
+          <input type="text" id="date" name="date" value="{{.Data.Issue.Date}}"
+            class="form-control" pattern="\d\d\d\d-\d\d-\d\d" required="required" />
+          <p class="help-block">
+            Enter the issue's date in YYYY-MM-DD format.
+            <strong>Carefully</strong> check that this is valid, not just
+            what's printed on the paper!
+          </p>
+        </div>
+      </div>
+
+      <div class="form-group">
+        <label class="col-md-2 control-label" for="volume_number">Volume number</label>
+        <div class="col-md-4">
+          <input type="text" id="volume_number" name="volume_number" value="{{.Data.Issue.Volume}}"
+            class="form-control" required="required" />
+          <p class="help-block">
+            Enter the volume number, or "0" if no volume number is present.
+            All numeric information must be converted to Arabic numerals.
+            Alphabetic data used as enumeration designations shall be
+            transcribed as they appear on the piece, and converted to
+            uppercase.  e.g., "Volume XLIV" would be "VOLUME 44".
+          </p>
+        </div>
+        <label class="col-md-2 control-label" for="issue_number">Issue number</label>
+        <div class="col-md-4">
+          <input type="text" id="issue_number" name="issue_number" value="{{.Data.Issue.Issue.Issue}}"
+            class="form-control" required="required" />
+          <p class="help-block">
+            Enter the issue number, or "0" if no issue number is present.
+            All numeric information must be converted to Arabic numerals.
+            Alphabetic data used as enumeration designations shall be
+            transcribed as they appear on the piece, and converted to
+            uppercase.  e.g., "Number 10" would be "NUMBER 10".
+          </p>
+        </div>
+      </div>
+
+      <div class="form-group">
+        <label class="col-md-2 control-label" for="edition_number">Edition number</label>
+        <div class="col-md-4">
+          <input type="text" id="edition_number" name="edition_number" value="{{.Data.Issue.Edition}}"
+            size="2"
+            class="form-control" pattern="[1-9][0-9]{0,1}" required="required" />
+          <p class="help-block">
+            Enter the edition number.  This is usually 1 unless another edition
+            of the same title was published on the same date.  This must be
+            numeric and cannot have leading zeroes (e.g., "1", not "01").
+          </p>
+        </div>
+        <label class="col-md-2 control-label" for="edition_label">Edition label</label>
+        <div class="col-md-4">
+          <input type="text" id="edition_label" name="edition_label" value="{{.Data.Issue.EditionLabel}}"
+            class="form-control" />
+        </div>
+      </div>
+
+      <div class="form-group">
+        <div class="col-md-9 col-md-offset-2">
+          <input class="btn btn-default" type="Submit" value="Save" />
+        </div>
+      </div>
+    </form>
+  </div>
+</div>
+
+{{end}}
+
+{{block "extrajs" .}}
+{{RawJS "openseadragon/openseadragon.min.js"}}
+{{IncludeJS "osd"}}
+<script>
+var tileSources = [
+{{range $jp2 := .Data.Issue.JP2Files}}
+  "{{IIIFInfoURL $jp2}}",
+{{end}}
+]
+buildOSD("{{.Webroot}}/static");
+osd.goToPage(0);
+</script>
+{{end}}
