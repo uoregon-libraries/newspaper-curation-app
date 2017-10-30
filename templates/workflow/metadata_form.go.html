@@ -31,10 +31,33 @@
 {{end}}
 
 <hr />
+<h2>Page Numbering</h2>
+<p>
+  Type a page label <strong>exactly as it's printed</strong>, or type zero
+  ("0") if a page has no printed label.  Press [ENTER] or click "Next" to
+  move to the next unlabeled page.
+</p>
+
+<div class="row">
+  <div class="col-md-12">
+    <form id="page-label-form">
+      <label class="col-md-4 control-label" for="label">Page Label</label>
+      <div class="col-md-4">
+        <input type="text" id="page-label" name="label" class="form-control" />
+      </div>
+      <div class="col-md-4">
+        <button type="submit" id="page-label-button">Next</button>
+      </div>
+    </form>
+  </div>
+</div>
+
+<hr />
 <h2>Metadata</h2>
 <div class="row">
   <div class="col-md-12">
-    <form class="form-horizontal" role="form" method="POST" action="{{"metadata/save"|.Data.Issue.Path}}">
+    <form id="metadata-form" class="form-horizontal" role="form" method="POST" action="{{"metadata/save"|.Data.Issue.Path}}">
+      <input type="hidden" id="page-labels-csv" name="page_labels_csv" value="{{.Data.Issue.PageLabelsCSV}}" />
       <div class="form-group">
         <label class="col-md-2 control-label">Title</label>
         <div class="col-md-4">
@@ -116,8 +139,8 @@
 
       <div class="form-group">
         <div class="col-md-9 col-md-offset-2">
-          <button type="Submit" name="action" value="savedraft">Save Draft</button>
-          <button type="Submit" name="action" value="savequeue">Save and Queue</button>
+          <button id="savedraft" type="Submit" name="action" value="savedraft">Save Draft</button>
+          <button id="savequeue" type="Submit" name="action" value="savequeue">Save and Queue</button>
         </div>
       </div>
     </form>
@@ -129,13 +152,16 @@
 {{block "extrajs" .}}
 {{RawJS "openseadragon/openseadragon.min.js"}}
 {{IncludeJS "osd"}}
+{{IncludeJS "metadata"}}
 <script>
+var pageLabels = {{.Data.Issue.PageLabels}};
+var totalPages = {{.Data.Issue.JP2Files|len}};
+
 var tileSources = [
 {{range $jp2 := .Data.Issue.JP2Files}}
   "{{IIIFInfoURL $jp2}}",
 {{end}}
 ]
 buildOSD("{{.Webroot}}/static");
-osd.goToPage(0);
 </script>
 {{end}}

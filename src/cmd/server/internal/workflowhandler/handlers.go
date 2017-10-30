@@ -9,6 +9,7 @@ import (
 	"net/http"
 	"path"
 	"strconv"
+	"strings"
 	"time"
 	"web/tmpl"
 
@@ -194,6 +195,7 @@ func saveMetadataHandler(resp *responder.Responder, i *Issue) {
 	save("date_as_labeled", &i.DateAsLabeled)
 	save("date", &i.Issue.Date)
 	save("volume_number", &i.Volume)
+	save("page_labels_csv", &i.PageLabelsCSV)
 
 	var key = "edition_number"
 	var val = post(key)
@@ -202,6 +204,10 @@ func saveMetadataHandler(resp *responder.Responder, i *Issue) {
 		i.Edition = valNum
 		changes[key] = val
 	}
+
+	// This one's funny - we have to "deserialize" the label csv since the real
+	// structure isn't what we get from the web
+	i.PageLabels = strings.Split(i.PageLabelsCSV, ",")
 
 	// Save the issue to the database - we want to preserve the user's data even
 	// if the data is invalid; invalid just means it can't be queued yet
