@@ -74,12 +74,12 @@
 
         {{- if .Alert}}
           <div class="alert alert-danger">
-            <p>{{.Alert}}</p>
+            <p>{{.Alert|raw}}</p>
           </div>
         {{- end}}
         {{- if .Info}}
           <div class="alert alert-info">
-            <p>{{.Info}}</p>
+            <p>{{.Info|raw}}</p>
           </div>
         {{- end}}
 
