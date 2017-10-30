@@ -16,7 +16,8 @@ import (
 // Issue wraps the DB issue, and decorates them with display-friendly functions
 type Issue struct {
 	*db.Issue
-	si *schema.Issue
+	si     *schema.Issue
+	errors []string
 }
 
 func wrapDBIssue(dbIssue *db.Issue) *Issue {
@@ -147,4 +148,48 @@ func (i *Issue) Actions() []template.HTML {
 // Path returns the path for any basic actions on this issue
 func (i *Issue) Path(actionPath string) string {
 	return path.Join(basePath, strconv.Itoa(i.ID), actionPath)
+}
+
+// ValidateMetadata checks all fields for validity and sets up i.Errors to
+// describe anything wrong
+//
+// TODO: Verify the issue isn't a dupe of a live issue or one in the database
+func (i *Issue) ValidateMetadata() {
+	i.errors = nil
+	var addError = func(msg string) { i.errors = append(i.errors, msg) }
+	var validDate = func(dtString, fieldName string) {
+		var dtLayout = "2006-01-02"
+		var dt, err = time.Parse(dtLayout, dtString)
+		if err != nil || dt.Format(dtLayout) != dtString {
+			addError(fmt.Sprintf("%q is not a valid date", fieldName))
+		}
+	}
+	var notBlank = func(val, fieldName string) {
+		if val == "" {
+			addError(fmt.Sprintf("%q cannot be blank", fieldName))
+		}
+	}
+
+	validDate(i.Issue.Date, "Issue Date")
+	validDate(i.DateAsLabeled, "Date As Labeled")
+	notBlank(i.Volume, "Volume Number")
+	notBlank(i.Issue.Issue, "Issue Number")
+	if i.Edition == 0 {
+		addError(`"Edition Number" cannot be zero`)
+	}
+
+	var numLabels = len(i.PageLabels)
+	var numFiles = len(i.JP2Files())
+	if numLabels < numFiles {
+		addError("Page labeling isn't completed")
+	}
+	if numLabels > numFiles {
+		logger.Errorf("There are %d page labels (%#v), but only %d JP2 files!", numLabels, i.JP2Files(), numFiles)
+		addError("Unknown error in page labeling; contact support or try again")
+	}
+}
+
+// Errors returns validation errors
+func (i *Issue) Errors() []string {
+	return i.errors
 }
