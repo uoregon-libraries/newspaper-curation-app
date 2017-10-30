@@ -41,6 +41,7 @@ type Issue struct {
 
 	/* Workflow information to keep track of the issue and what it needs */
 
+	Error                  string       // If set, a metadata curator reported a problem
 	Location               string       // Where is this issue on disk?
 	IsFromScanner          bool         // Is the issue scanned in-house?  (Born-digital == false)
 	HasDerivatives         bool         // Does the issue have derivatives done?
@@ -190,14 +191,17 @@ func FindIssuesInPageReview() ([]*Issue, error) {
 	return list, op.Err()
 }
 
-// FindAvailableIssuesByWorkflowStep looks for all issues nobody owns and which
-// are set to the given workflow step and returns them
+// FindAvailableIssuesByWorkflowStep looks for all "available" issues with the
+// requested workflow step and returns them.  We define "available" as:
+//
+// - No owner (or owner expired)
+// - Have not been reported as having errors
 func FindAvailableIssuesByWorkflowStep(ws workflowStep) ([]*Issue, error) {
 	var op = DB.Operation()
 	op.Dbg = Debug
 	var list []*Issue
 	op.Select("issues", &Issue{}).Where(
-		"workflow_step = ? AND (workflow_owner_id = 0 OR workflow_owner_expires_at < ?)",
+		"workflow_step = ? AND (workflow_owner_id = 0 OR workflow_owner_expires_at < ?) AND error = ''",
 		string(ws), time.Now().Format("2006-01-02 15:04:05")).AllObjects(&list)
 	deserializeIssues(list)
 	return list, op.Err()

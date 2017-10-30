@@ -92,6 +92,7 @@ func Setup(r *mux.Router, webPath string, c *config.Config) {
 	Layout.MustReadPartials("_issue_table_rows.go.html")
 	DeskTmpl = Layout.MustBuild("desk.go.html")
 	MetadataFormTmpl = Layout.MustBuild("metadata_form.go.html")
+	ReportErrorTmpl = Layout.MustBuild("report_error.go.html")
 }
 
 // homeHandler shows claimed workflow items that need to be finished as well as
@@ -241,9 +242,43 @@ func saveMetadataHandler(resp *responder.Responder, i *Issue) {
 	http.Redirect(resp.Writer, resp.Request, basePath, http.StatusFound)
 }
 
+// enterErrorHandler displays the form to enter an error for the given issue
+func enterErrorHandler(resp *responder.Responder, i *Issue) {
+	resp.Vars.Title = "Report Issue Error"
+	resp.Vars.Data["Issue"] = i
+	resp.Render(ReportErrorTmpl)
+}
+
+// saveErrorHandler records the error in the database, unclaims the issue, and
+// flags it as needing admin attention
+func saveErrorHandler(resp *responder.Responder, i *Issue) {
+	i.Error = resp.Request.FormValue("error")
+	if i.Error == "" {
+		http.SetCookie(resp.Writer, &http.Cookie{Name: "Info", Value: "Error report empty; no action taken", Path: "/"})
+		http.Redirect(resp.Writer, resp.Request, i.Path("metadata"), http.StatusFound)
+		return
+	}
+
+	i.WorkflowOwnerID = 0
+	i.WorkflowOwnerExpiresAt = time.Time{}
+	var err = i.Save()
+	if err != nil {
+		logger.Errorf("Unable to save issue id %d's error (POST: %#v): %s", i.ID, resp.Request.Form, err)
+		http.SetCookie(resp.Writer, &http.Cookie{
+			Name:  "Alert",
+			Value: "Error trying to save error report (no, the irony is not lost on us); try again or contact support",
+			Path:  "/",
+		})
+		http.Redirect(resp.Writer, resp.Request, i.Path("report-error"), http.StatusFound)
+		return
+	}
+
+	resp.Audit("report-error", fmt.Sprintf("issue id %d", i.ID))
+	http.SetCookie(resp.Writer, &http.Cookie{Name: "Info", Value: "Issue error reported", Path: "/"})
+	http.Redirect(resp.Writer, resp.Request, basePath, http.StatusFound)
+}
+
 func reviewMetadataHandler(resp *responder.Responder, i *Issue)          {}
 func rejectIssueMetadataFormHandler(resp *responder.Responder, i *Issue) {}
 func rejectIssueMetadataHandler(resp *responder.Responder, i *Issue)     {}
 func approveIssueMetadataHandler(resp *responder.Responder, i *Issue)    {}
-func enterErrorHandler(resp *responder.Responder, i *Issue)              {}
-func saveErrorHandler(resp *responder.Responder, i *Issue)               {}
