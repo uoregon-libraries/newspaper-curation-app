@@ -1,27 +1,14 @@
 {{block "content" .}}
 
-<div class="btn-toolbar">
-  <div class="btn-group">
-    <a href="{{.Webroot}}/workflow">
-      Return to Workflow
-    </a>
-  </div>
-
-  <div class="btn-group pull-right">
-    <a href="{{"page-numbering"|.Data.Issue.Path}}">
-      Label Pages
-    </a>
-  </div>
-</div>
-
-<hr />
-
-{{if .Data.Issue.RejectionNotes}}
-<div class="alert alert-warning">
-  <p>This issue was rejected from the review queue:</p>
-  <blockquote>{{.Data.Issue.RejectionNotes|nl2br}}</blockquote>
-</div>
-{{end}}
+<h2>Report problems</h2>
+<p>
+  Report an error if any of the following are not true:
+  <ul>
+    <li>The issue below is part of the title <strong>{{.Data.Issue.Title}} ({{.Data.Issue.LCCN}})</strong></li>
+    <li>All pages are in order, there are no dupes, and there are no pages for a different issue or date</li>
+    <li>The title's MARC organization code is "{{.Data.Issue.MARCOrgCode}}"</li>
+  </ul>
+</p>
 
 <div class="osd-container">
   <div>
@@ -35,11 +22,17 @@
   </div>
 </div>
 
-<div class="row">
-  <div class="col-md-12">
-    <hr />
-  </div>
+{{if .Data.Issue.RejectionNotes}}
+<hr />
+<div class="alert alert-warning">
+  <p>This issue was rejected from the review queue:</p>
+  <blockquote>{{.Data.Issue.RejectionNotes|nl2br}}</blockquote>
+</div>
+{{end}}
 
+<hr />
+<h2>Metadata</h2>
+<div class="row">
   <div class="col-md-12">
     <form class="form-horizontal" role="form" method="POST" action="{{"metadata/save"|.Data.Issue.Path}}">
       <div class="form-group">

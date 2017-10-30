@@ -180,7 +180,7 @@ func unclaimIssueHandler(resp *responder.Responder, i *Issue) {
 
 // enterMetadataHandler shows the metadata entry form for the issue
 func enterMetadataHandler(resp *responder.Responder, i *Issue) {
-	resp.Vars.Title = fmt.Sprintf("Entering metadata for %s (%s), %s", i.Title(), i.LCCN(), i.Date())
+	resp.Vars.Title = "Issue Metadata / Page Numbers"
 	resp.Vars.Data["Issue"] = i
 	resp.Render(MetadataFormTmpl)
 }
