@@ -31,17 +31,11 @@ var (
 	// MetadataFormTmpl renders the form for entering metadata for an issue
 	MetadataFormTmpl *tmpl.Template
 
-	// PageLabelFormTmpl renders the form for entering page numbers for an issue
-	PageLabelFormTmpl *tmpl.Template
-
 	// ReportErrorTmpl renders the form for reporting errors on an issue
 	ReportErrorTmpl *tmpl.Template
 
 	// ReviewMetadataTmpl renders the view for reviewing metadata
 	ReviewMetadataTmpl *tmpl.Template
-
-	// ReviewPageLabelsTmpl renders the view for reviewing page labels
-	ReviewPageLabelsTmpl *tmpl.Template
 
 	// RejectIssueTmpl renders the view for reporting an issue which is rejected by the reviewer
 	RejectIssueTmpl *tmpl.Template
@@ -75,10 +69,6 @@ func Setup(r *mux.Router, webPath string, c *config.Config) {
 	// Issue metadata paths
 	s2.Path("/metadata").Handler(canEnterMetadata(enterMetadataHandler))
 	s2.Path("/metadata/save").Methods("POST").Handler(canEnterMetadata(saveMetadataHandler))
-	s2.Path("/page-numbering").Handler(canEnterMetadata(enterPageNumberHandler))
-	s2.Path("/page-numbering/save").Methods("POST").Handler(canEnterMetadata(savePageNumberHandler))
-	s2.Path("/queue").Methods("POST").Handler(canEnterMetadata(queuePageForReviewHandler))
-	s2.Path("/unqueue").Methods("POST").Handler(canEnterMetadata(unqueuePageForReviewHandler))
 	s2.Path("/report-error").Handler(canEnterMetadata(enterErrorHandler))
 	s2.Path("/report-error/save").Methods("POST").Handler(canEnterMetadata(saveErrorHandler))
 
@@ -93,7 +83,6 @@ func Setup(r *mux.Router, webPath string, c *config.Config) {
 	// Review paths
 	var s3 = s2.PathPrefix("/review").Subrouter()
 	s3.Path("/metadata").Handler(canReviewMetadata(reviewMetadataHandler))
-	s3.Path("/page-numbering").Handler(canReviewMetadata(reviewPageNumbersHandler))
 	s3.Path("/reject-form").Handler(canReviewMetadata(rejectIssueMetadataFormHandler))
 	s3.Path("/reject").Methods("POST").Handler(canReviewMetadata(rejectIssueMetadataHandler))
 	s3.Path("/approve").Methods("POST").Handler(canReviewMetadata(approveIssueMetadataHandler))
@@ -252,12 +241,7 @@ func saveMetadataHandler(resp *responder.Responder, i *Issue) {
 	http.Redirect(resp.Writer, resp.Request, basePath, http.StatusFound)
 }
 
-func enterPageNumberHandler(resp *responder.Responder, i *Issue)         {}
-func savePageNumberHandler(resp *responder.Responder, i *Issue)          {}
-func queuePageForReviewHandler(resp *responder.Responder, i *Issue)      {}
-func unqueuePageForReviewHandler(resp *responder.Responder, i *Issue)    {}
 func reviewMetadataHandler(resp *responder.Responder, i *Issue)          {}
-func reviewPageNumbersHandler(resp *responder.Responder, i *Issue)       {}
 func rejectIssueMetadataFormHandler(resp *responder.Responder, i *Issue) {}
 func rejectIssueMetadataHandler(resp *responder.Responder, i *Issue)     {}
 func approveIssueMetadataHandler(resp *responder.Responder, i *Issue)    {}
