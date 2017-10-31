@@ -73,8 +73,11 @@ func FindIssue(id int) (*Issue, error) {
 	return i, op.Err()
 }
 
-// FindIssueByKey looks for an issue in the database that has the given issue key
-func FindIssueByKey(key string) (*Issue, error) {
+// FindIssuesByKey looks for all issues in the database that have the given
+// issue key.  Having more than one is an error, but we allow users to save
+// metadata in "draft" form, so we have to be able to test for dupes later in
+// the process
+func FindIssuesByKey(key string) ([]*Issue, error) {
 	var parts = strings.Split(key, "/")
 	if len(parts) != 2 {
 		return nil, fmt.Errorf("invalid issue key %q", key)
@@ -94,13 +97,23 @@ func FindIssueByKey(key string) (*Issue, error) {
 
 	var op = DB.Operation()
 	op.Dbg = Debug
-	var i = &Issue{}
-	var ok = op.Select("issues", &Issue{}).Where("lccn = ? AND date = ? AND edition = ?", lccn, date, ed).First(i)
-	if !ok {
-		return nil, op.Err()
+
+	var list []*Issue
+	op.Select("issues", &Issue{}).Where("lccn = ? AND date = ? AND edition = ?", lccn, date, ed).AllObjects(&list)
+	deserializeIssues(list)
+	return list, op.Err()
+}
+
+// FindIssueByKey returns the first issue with the given key
+func FindIssueByKey(key string) (*Issue, error) {
+	var list, err = FindIssuesByKey(key)
+	if err != nil {
+		return nil, err
 	}
-	i.deserialize()
-	return i, op.Err()
+	if len(list) == 0 {
+		return nil, nil
+	}
+	return list[0], nil
 }
 
 // NewIssueFromScanDir attempts to take a path and create a DB Issue from it,

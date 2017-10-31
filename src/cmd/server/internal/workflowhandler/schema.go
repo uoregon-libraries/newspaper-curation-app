@@ -187,6 +187,29 @@ func (i *Issue) ValidateMetadata() {
 		logger.Errorf("There are %d page labels (%#v), but only %d JP2 files!", numLabels, i.JP2Files(), numFiles)
 		addError("Unknown error in page labeling; contact support or try again")
 	}
+
+	// Generate a new schema issue to test for dupes - database errors can be
+	// logged, but not reported back to the user, so there's a lot of "log +
+	// return" sadness below
+	var err error
+	i.si, err = i.Issue.SchemaIssue()
+	if err != nil {
+		logger.Criticalf("Unable to recreate schema.Issue for issue id %d: %s", i.ID, err)
+		return
+	}
+
+	var list []*db.Issue
+	list, err = db.FindIssuesByKey(i.si.Key())
+	if err != nil {
+		logger.Criticalf("Unable to search for database issue %q: %s", i.si.Key(), err)
+		return
+	}
+	for _, issue := range list {
+		if issue.ID != i.ID {
+			logger.Errorf("Found dupe: user trying to queue issue id %d; dupe issue is %d", i.ID, issue.ID)
+			addError("This is a duplicate of another issue; double-check the date and edition number, or contact support")
+		}
+	}
 }
 
 // Errors returns validation errors
