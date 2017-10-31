@@ -46,7 +46,7 @@ func InitRootTemplate(templatePath string) {
 			return template.HTML(replaced)
 		},
 		"IIIFInfoURL": webutil.IIIFInfoURL,
-		"raw": func(s string) template.HTML { return template.HTML(s) },
+		"raw":         func(s string) template.HTML { return template.HTML(s) },
 
 		// We have functions for our privileges since they need to be "global" and
 		// easily verified at template compile time
