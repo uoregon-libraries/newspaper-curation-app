@@ -8,8 +8,6 @@ import (
 	"logger"
 	"net/http"
 	"path"
-	"strconv"
-	"strings"
 	"time"
 	"web/tmpl"
 
@@ -174,88 +172,21 @@ func enterMetadataHandler(resp *responder.Responder, i *Issue) {
 // saveMetadataHandler takes the form data, validates it, and on success
 // updates the issue in the database
 func saveMetadataHandler(resp *responder.Responder, i *Issue) {
-	// Set all fields and record changes for auditing / error logging
-	var changes = make(map[string]string)
-	var post = func(key string) string { return resp.Request.FormValue(key) }
-	var save = func(key string, store *string) {
-		var val = post(key)
-		if val != *store {
-			*store = val
-			changes[key] = val
-		}
+	var changes = storeIssueMetadata(resp, i)
+	var action = resp.Request.FormValue("action")
+
+	switch action {
+	case "autosave":
+		autosave(resp, i, changes)
+	case "savedraft":
+		saveDraft(resp, i, changes)
+	case "savequeue":
+		saveQueue(resp, i, changes)
+	default:
+		logger.Warnf("Invalid action %q for saveMetadataHandler", action)
+		resp.Writer.WriteHeader(http.StatusBadRequest)
+		resp.Writer.Write([]byte("Bad Request"))
 	}
-
-	var isAuto = post("action") == "autosave"
-
-	save("issue_number", &i.Issue.Issue)
-	save("edition_label", &i.EditionLabel)
-	save("date_as_labeled", &i.DateAsLabeled)
-	save("date", &i.Issue.Date)
-	save("volume_number", &i.Volume)
-	save("page_labels_csv", &i.PageLabelsCSV)
-
-	var key = "edition_number"
-	var val = post(key)
-	var valNum, _ = strconv.Atoi(val)
-	if i.Edition != valNum {
-		i.Edition = valNum
-		changes[key] = val
-	}
-
-	// This one's funny - we have to "deserialize" the label csv since the real
-	// structure isn't what we get from the web
-	i.PageLabels = strings.Split(i.PageLabelsCSV, ",")
-
-	// Don't bother saving to the database if nothing has changed
-	if len(changes) > 0 {
-		// Save the issue to the database - we want to preserve the user's data even
-		// if the data is invalid; invalid just means it can't be queued yet
-		var err = i.Save()
-		if err != nil {
-			logger.Errorf("Unable to save issue id %d's metadata (POST: %#v; Changes: %#v): %s",
-				i.ID, resp.Request.Form, changes, err)
-			resp.Vars.Alert = "Unable to save issue; try again or contact support"
-			resp.Writer.WriteHeader(http.StatusInternalServerError)
-			if isAuto {
-				resp.Writer.Write([]byte("ERROR"))
-			} else {
-				enterMetadataHandler(resp, i)
-			}
-			return
-		}
-
-		resp.Audit(post("action"),
-			fmt.Sprintf("issue id %d (POST: %#v; Changes: %#v)", i.ID, resp.Request.Form, changes))
-	}
-
-	if isAuto {
-		resp.Writer.Write([]byte("OK"))
-		return
-	}
-
-	// If the user is just saving as a draft, we don't bother validating anything
-	if post("action") != "savequeue" {
-		http.SetCookie(resp.Writer, &http.Cookie{Name: "Info", Value: "Saved Metadata", Path: "/"})
-		http.Redirect(resp.Writer, resp.Request, i.Path("metadata"), http.StatusFound)
-		return
-	}
-
-	// If there are errors, let the user know and redisplay the form
-	i.ValidateMetadata()
-	if len(i.Errors()) > 0 {
-		var alertFormat = "Cannot queue this issue:<ul>%s</ul>"
-		var errors string
-		for _, err := range i.Errors() {
-			errors += fmt.Sprintf("<li>%s</li>", err)
-		}
-		http.SetCookie(resp.Writer, &http.Cookie{Name: "Alert", Value: fmt.Sprintf(alertFormat, errors), Path: "/"})
-		http.Redirect(resp.Writer, resp.Request, i.Path("metadata"), http.StatusFound)
-		return
-	}
-
-	resp.Audit("queue-for-review", fmt.Sprintf("issue id %d", i.ID))
-	http.SetCookie(resp.Writer, &http.Cookie{Name: "Info", Value: "Issue queued for review", Path: "/"})
-	http.Redirect(resp.Writer, resp.Request, basePath, http.StatusFound)
 }
 
 // enterErrorHandler displays the form to enter an error for the given issue
