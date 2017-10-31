@@ -117,6 +117,7 @@ func homeHandler(resp *responder.Responder, i *Issue) {
 	if err != nil {
 		logger.Errorf("Unable to find issues needing metadata entry: %s", err)
 		resp.Vars.Alert = fmt.Sprintf("Unable to search for issues; contact support or try again later.")
+		resp.Writer.WriteHeader(http.StatusInternalServerError)
 		resp.Render(responder.Empty)
 		return
 	}
@@ -133,12 +134,9 @@ func claimIssueHandler(resp *responder.Responder, i *Issue) {
 	var err = i.Save()
 	if err != nil {
 		logger.Errorf("Unable to claim issue id %s by user %s: %s", i.ID, resp.Vars.User.Login, err)
-		http.SetCookie(resp.Writer, &http.Cookie{
-			Name:  "Alert",
-			Value: "Unable to claim issue; contact support or try again later.",
-			Path:  "/",
-		})
-		http.Redirect(resp.Writer, resp.Request, basePath, http.StatusFound)
+		resp.Vars.Alert = "Unable to claim issue; contact support or try again later."
+		resp.Writer.WriteHeader(http.StatusInternalServerError)
+		resp.Render(responder.Empty)
 		return
 	}
 
@@ -155,12 +153,9 @@ func unclaimIssueHandler(resp *responder.Responder, i *Issue) {
 	var err = i.Save()
 	if err != nil {
 		logger.Errorf("Unable to unclaim issue id %s for user %s: %s", i.ID, resp.Vars.User.Login, err)
-		http.SetCookie(resp.Writer, &http.Cookie{
-			Name:  "Alert",
-			Value: "Unable to unclaim issue; contact support or try again later.",
-			Path:  "/",
-		})
-		http.Redirect(resp.Writer, resp.Request, basePath, http.StatusFound)
+		resp.Vars.Alert = "Unable to unclaim issue; contact support or try again later."
+		resp.Writer.WriteHeader(http.StatusInternalServerError)
+		resp.Render(responder.Empty)
 		return
 	}
 
@@ -220,6 +215,7 @@ func saveMetadataHandler(resp *responder.Responder, i *Issue) {
 			logger.Errorf("Unable to save issue id %d's metadata (POST: %#v; Changes: %#v): %s",
 				i.ID, resp.Request.Form, changes, err)
 			resp.Vars.Alert = "Unable to save issue; try again or contact support"
+			resp.Writer.WriteHeader(http.StatusInternalServerError)
 			if isAuto {
 				resp.Writer.Write([]byte("ERROR"))
 			} else {
@@ -284,12 +280,9 @@ func saveErrorHandler(resp *responder.Responder, i *Issue) {
 	var err = i.Save()
 	if err != nil {
 		logger.Errorf("Unable to save issue id %d's error (POST: %#v): %s", i.ID, resp.Request.Form, err)
-		http.SetCookie(resp.Writer, &http.Cookie{
-			Name:  "Alert",
-			Value: "Error trying to save error report (no, the irony is not lost on us); try again or contact support",
-			Path:  "/",
-		})
-		http.Redirect(resp.Writer, resp.Request, i.Path("report-error"), http.StatusFound)
+		resp.Vars.Alert = "Error trying to save error report (no, the irony is not lost on us); try again or contact support"
+		resp.Writer.WriteHeader(http.StatusInternalServerError)
+		resp.Render(responder.Empty)
 		return
 	}
 
