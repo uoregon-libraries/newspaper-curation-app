@@ -209,19 +209,22 @@ func saveMetadataHandler(resp *responder.Responder, i *Issue) {
 	// structure isn't what we get from the web
 	i.PageLabels = strings.Split(i.PageLabelsCSV, ",")
 
-	// Save the issue to the database - we want to preserve the user's data even
-	// if the data is invalid; invalid just means it can't be queued yet
-	var err = i.Save()
-	if err != nil {
-		logger.Errorf("Unable to save issue id %d's metadata (POST: %#v; Changes: %#v): %s",
-			i.ID, resp.Request.Form, changes, err)
-		resp.Vars.Alert = "Unable to save issue; try again or contact support"
-		enterMetadataHandler(resp, i)
-		return
-	}
+	// Don't bother saving to the database if nothing has changed
+	if len(changes) > 0 {
+		// Save the issue to the database - we want to preserve the user's data even
+		// if the data is invalid; invalid just means it can't be queued yet
+		var err = i.Save()
+		if err != nil {
+			logger.Errorf("Unable to save issue id %d's metadata (POST: %#v; Changes: %#v): %s",
+				i.ID, resp.Request.Form, changes, err)
+			resp.Vars.Alert = "Unable to save issue; try again or contact support"
+			enterMetadataHandler(resp, i)
+			return
+		}
 
-	resp.Audit("save-metadata",
-		fmt.Sprintf("issue id %d (POST: %#v; Changes: %#v)", i.ID, resp.Request.Form, changes))
+		resp.Audit("save-metadata",
+			fmt.Sprintf("issue id %d (POST: %#v; Changes: %#v)", i.ID, resp.Request.Form, changes))
+	}
 
 	// If the user is just saving as a draft, we don't bother validating anything
 	if post("action") != "savequeue" {
