@@ -20,6 +20,13 @@ $(document).ready(function() {
 
     goToNextUnlabeledPage();
 
+    // Try to do an auto-save in the background so users don't lose data if
+    // they close the browser or something
+    var form = $("#metadata-form")
+    var data = form.serialize();
+    data += "&action=autosave";
+    $.post(form.attr("action"), data);
+
     // Don't actually submit the page-label form
     e.preventDefault();
     return false;

@@ -190,6 +190,8 @@ func saveMetadataHandler(resp *responder.Responder, i *Issue) {
 		}
 	}
 
+	var isAuto = post("action") == "autosave"
+
 	save("issue_number", &i.Issue.Issue)
 	save("edition_label", &i.EditionLabel)
 	save("date_as_labeled", &i.DateAsLabeled)
@@ -218,12 +220,21 @@ func saveMetadataHandler(resp *responder.Responder, i *Issue) {
 			logger.Errorf("Unable to save issue id %d's metadata (POST: %#v; Changes: %#v): %s",
 				i.ID, resp.Request.Form, changes, err)
 			resp.Vars.Alert = "Unable to save issue; try again or contact support"
-			enterMetadataHandler(resp, i)
+			if isAuto {
+				resp.Writer.Write([]byte("ERROR"))
+			} else {
+				enterMetadataHandler(resp, i)
+			}
 			return
 		}
 
-		resp.Audit("save-metadata",
+		resp.Audit(post("action"),
 			fmt.Sprintf("issue id %d (POST: %#v; Changes: %#v)", i.ID, resp.Request.Form, changes))
+	}
+
+	if isAuto {
+		resp.Writer.Write([]byte("OK"))
+		return
 	}
 
 	// If the user is just saving as a draft, we don't bother validating anything
