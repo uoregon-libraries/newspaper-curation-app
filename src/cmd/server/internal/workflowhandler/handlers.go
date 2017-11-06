@@ -8,6 +8,7 @@ import (
 	"logger"
 	"net/http"
 	"path"
+	"user"
 	"web/tmpl"
 
 	"github.com/gorilla/mux"
@@ -119,6 +120,24 @@ func homeHandler(resp *responder.Responder, i *Issue) {
 		return
 	}
 	resp.Vars.Data["PendingMetadataIssues"] = wrapDBIssues(issues)
+
+	// Get issues needing review which *weren't* queued by this user (unless the
+	// user is allowed to self-review)
+	issues, err = db.FindAvailableIssuesByWorkflowStep(db.WSAwaitingMetadataReview)
+	if err != nil {
+		logger.Errorf("Unable to find issues needing metadata review: %s", err)
+		resp.Vars.Alert = fmt.Sprintf("Unable to search for issues; contact support or try again later.")
+		resp.Writer.WriteHeader(http.StatusInternalServerError)
+		resp.Render(responder.Empty)
+		return
+	}
+	var issuesTwo []*db.Issue
+	for _, i := range issues {
+		if i.MetadataEntryUserID != resp.Vars.User.ID || resp.Vars.User.PermittedTo(user.ReviewOwnMetadata) {
+			issuesTwo = append(issuesTwo, i)
+		}
+	}
+	resp.Vars.Data["PendingReviewIssues"] = wrapDBIssues(issuesTwo)
 
 	resp.Render(DeskTmpl)
 }

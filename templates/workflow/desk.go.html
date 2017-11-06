@@ -66,8 +66,26 @@
     reviewer to flag them as ready for processing.
   </p>
 
-  <!-- TODO -->
-  <em>There are no issues needing metadata review</em>
+  {{if .Data.PendingReviewIssues}}
+    <table class="table">
+      <thead>
+        <caption>Issues Needing Metadata</caption>
+      </thead>
+
+      <tbody>
+      <tr>
+        <th scope="col">Title</th>
+        <th scope="col">Date</th>
+        <th scope="col">Actions</th>
+      </tr>
+    {{range .Data.PendingReviewIssues}}
+      {{template "PendingReviewIssues" .}}
+    {{end}}
+      </tbody>
+    </table>
+  {{else}}
+    <em>There are no issues needing metadata review</em>
+  {{end}}
 {{end}}
 
 {{end}}

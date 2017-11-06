@@ -13,6 +13,7 @@ var (
 	ViewMetadataWorkflow = newPrivilege(RoleIssueCurator, RoleIssueReviewer)
 	EnterIssueMetadata   = newPrivilege(RoleIssueCurator)
 	ReviewIssueMetadata  = newPrivilege(RoleIssueReviewer)
+	ReviewOwnMetadata    = newPrivilege()
 
 	// User management
 	ListUsers   = newPrivilege(RoleUserManager)

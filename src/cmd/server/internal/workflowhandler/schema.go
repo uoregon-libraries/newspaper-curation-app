@@ -133,8 +133,7 @@ func (i *Issue) Actions() []template.HTML {
 			actions = append(actions, i.actionLink("Edit", "metadata", ""))
 
 		case db.WSAwaitingMetadataReview:
-			actions = append(actions, i.actionLink("Metadata", "review/metadata", ""))
-			actions = append(actions, i.actionLink("Pages", "review/page-numbering", ""))
+			actions = append(actions, i.actionLink("Review", "review/metadata", ""))
 		}
 
 		actions = append(actions, i.actionButton("Unclaim", "/unclaim", "btn-danger"))

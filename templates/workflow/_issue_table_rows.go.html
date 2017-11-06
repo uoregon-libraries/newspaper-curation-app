@@ -38,3 +38,20 @@
     </td>
   </tr>
 {{end}}
+
+{{define "PendingReviewIssues"}}
+  <tr>
+    <!-- Issue title -->
+    <th scope="row">{{.Title}} ({{.LCCN}})</td>
+
+    <!-- Issue date -->
+    <th scope="row">{{.Date}}</td>
+
+    <!-- Actions -->
+    <td>
+      {{range .Actions}}
+        {{.}}
+      {{end}}
+    </td>
+  </tr>
+{{end}}
