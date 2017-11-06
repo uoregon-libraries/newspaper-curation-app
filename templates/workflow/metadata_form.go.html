@@ -10,18 +10,6 @@
   </ul>
 </p>
 
-<div class="osd-container">
-  <div>
-    Image <span id="osd-image-number">1</span> of {{.Data.Issue.JP2Files|len}}
-    <button id="osd-jump-top" class="btn btn-default">Jump to top</button>
-    <button id="osd-jump-bottom" class="btn btn-default">Jump to bottom</button>
-  </div>
-  <div id="osd-toolbar" class="osd-toolbar">
-  </div>
-  <div id="osd-body" style="height: 300px;">
-  </div>
-</div>
-
 {{if .Data.Issue.RejectionNotes}}
 <hr />
 <div class="alert alert-warning">
@@ -49,6 +37,18 @@
         <button type="submit" id="page-label-button">Next</button>
       </div>
     </form>
+  </div>
+</div>
+
+<div class="osd-container">
+  <div>
+    Image <span id="osd-image-number">1</span> of {{.Data.Issue.JP2Files|len}}
+    <button id="osd-jump-top" class="btn btn-default">Jump to top</button>
+    <button id="osd-jump-bottom" class="btn btn-default">Jump to bottom</button>
+  </div>
+  <div id="osd-toolbar" class="osd-toolbar">
+  </div>
+  <div id="osd-body" style="height: 300px;">
   </div>
 </div>
 
