@@ -17,6 +17,7 @@ const (
 	WSAwaitingPageReview     workflowStep = "AwaitingPageReview"
 	WSReadyForMetadataEntry               = "ReadyForMetadataEntry"
 	WSAwaitingMetadataReview              = "AwaitingMetadataReview"
+	WSReadyForBatching                    = "ReadyForBatching"
 )
 
 // Issue contains metadata about an issue for the various workflow tools' use
@@ -231,6 +232,14 @@ func (i *Issue) Claim(byUserID int) {
 func (i *Issue) Unclaim() {
 	i.WorkflowOwnerID = 0
 	i.WorkflowOwnerExpiresAt = time.Time{}
+}
+
+// ApproveMetadata moves the issue to the final workflow step (e.g., no more
+// manual steps) and sets the reviewer id to that which was passed in
+func (i *Issue) ApproveMetadata(reviewerID int) {
+	i.Unclaim()
+	i.ReviewedByUserID = reviewerID
+	i.WorkflowStep = WSReadyForBatching
 }
 
 // Save creates or updates the Issue in the issues table

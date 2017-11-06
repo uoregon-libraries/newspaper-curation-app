@@ -243,6 +243,22 @@ func reviewMetadataHandler(resp *responder.Responder, i *Issue) {
 	resp.Render(ReviewMetadataTmpl)
 }
 
+func approveIssueMetadataHandler(resp *responder.Responder, i *Issue) {
+	i.ApproveMetadata(resp.Vars.User.ID)
+	var err = i.Save()
+	if err != nil {
+		logger.Errorf("Unable to save issue id %d's workflow approval by user %d (POST: %#v): %s",
+			i.ID, resp.Vars.User.ID, resp.Request.Form, err)
+		resp.Vars.Alert = "Error trying to approve the issue; try again or contact support"
+		resp.Writer.WriteHeader(http.StatusInternalServerError)
+		resp.Render(responder.Empty)
+		return
+	}
+
+	resp.Audit("approve-metadata", fmt.Sprintf("issue id %d", i.ID))
+	http.SetCookie(resp.Writer, &http.Cookie{Name: "Info", Value: "Issue approved", Path: "/"})
+	http.Redirect(resp.Writer, resp.Request, basePath, http.StatusFound)
+}
+
 func rejectIssueMetadataFormHandler(resp *responder.Responder, i *Issue) {}
 func rejectIssueMetadataHandler(resp *responder.Responder, i *Issue)     {}
-func approveIssueMetadataHandler(resp *responder.Responder, i *Issue)    {}

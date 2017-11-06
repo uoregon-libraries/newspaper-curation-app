@@ -15,7 +15,8 @@ ALTER TABLE `issues` DROP COLUMN `awaiting_metadata_review`;
 ALTER TABLE `issues` ADD `workflow_step` ENUM(
   'AwaitingPageReview',
   'ReadyForMetadataEntry',
-  'AwaitingMetadataReview'
+  'AwaitingMetadataReview',
+  'ReadyForBatching'
 );
 
 -- +goose Down
