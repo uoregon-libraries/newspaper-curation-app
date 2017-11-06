@@ -2,6 +2,7 @@ package workflowhandler
 
 import (
 	"cmd/server/internal/responder"
+	"db"
 	"fmt"
 	"logger"
 	"net/http"
@@ -85,12 +86,15 @@ func saveDraft(resp *responder.Responder, i *Issue, changes map[string]string) {
 }
 
 func saveQueue(resp *responder.Responder, i *Issue, changes map[string]string) {
+	// Save the metadata changes, if any; we want this stuff preserved regardless
+	// of queueing errors from invalid metadata
 	if ok := saveIssue(resp, i, changes); !ok {
 		resp.Vars.Alert = "Unable to save issue; try again or contact support"
 		enterMetadataHandler(resp, i)
 		return
 	}
 
+	// Validate the metadata
 	i.ValidateMetadata()
 
 	// If there are errors, let the user know and redisplay the form; we still
@@ -103,6 +107,26 @@ func saveQueue(resp *responder.Responder, i *Issue, changes map[string]string) {
 		}
 		http.SetCookie(resp.Writer, &http.Cookie{Name: "Alert", Value: fmt.Sprintf(alertFormat, errors), Path: "/"})
 		http.Redirect(resp.Writer, resp.Request, i.Path("metadata"), http.StatusFound)
+		return
+	}
+
+	// If metadata is good, *now* we can actually update the workflow steps
+	i.WorkflowStep = db.WSAwaitingMetadataReview
+	i.MetadataEntryUserID = resp.Vars.User.ID
+	i.Unclaim()
+
+	// If this was previously rejected, put it back on the reviewer's desk
+	if i.RejectedByUserID != 0 {
+		i.Claim(i.RejectedByUserID)
+	}
+
+	// Mark the two changes which really matter
+	changes["workflow_owner_id"] = strconv.Itoa(i.WorkflowOwnerID)
+	changes["workflow_step"] = string(i.WorkflowStep)
+
+	if ok := saveIssue(resp, i, changes); !ok {
+		resp.Vars.Alert = "Unable to save issue; try again or contact support"
+		enterMetadataHandler(resp, i)
 		return
 	}
 

@@ -8,7 +8,6 @@ import (
 	"logger"
 	"net/http"
 	"path"
-	"time"
 	"web/tmpl"
 
 	"github.com/gorilla/mux"
@@ -127,8 +126,7 @@ func homeHandler(resp *responder.Responder, i *Issue) {
 // claimIssueHandler just assigns the given issue to the logged-in user and
 // sets a one-week expiration
 func claimIssueHandler(resp *responder.Responder, i *Issue) {
-	i.WorkflowOwnerID = resp.Vars.User.ID
-	i.WorkflowOwnerExpiresAt = time.Now().Add(time.Hour * 24 * 7)
+	i.Claim(resp.Vars.User.ID)
 	var err = i.Save()
 	if err != nil {
 		logger.Errorf("Unable to claim issue id %s by user %s: %s", i.ID, resp.Vars.User.Login, err)
@@ -145,9 +143,7 @@ func claimIssueHandler(resp *responder.Responder, i *Issue) {
 
 // unclaimIssueHandler clears the issue's workflow data
 func unclaimIssueHandler(resp *responder.Responder, i *Issue) {
-	i.WorkflowOwnerID = 0
-	i.WorkflowOwnerExpiresAt = time.Time{}
-
+	i.Unclaim()
 	var err = i.Save()
 	if err != nil {
 		logger.Errorf("Unable to unclaim issue id %s for user %s: %s", i.ID, resp.Vars.User.Login, err)
@@ -206,8 +202,7 @@ func saveErrorHandler(resp *responder.Responder, i *Issue) {
 		return
 	}
 
-	i.WorkflowOwnerID = 0
-	i.WorkflowOwnerExpiresAt = time.Time{}
+	i.Unclaim()
 	var err = i.Save()
 	if err != nil {
 		logger.Errorf("Unable to save issue id %d's error (POST: %#v): %s", i.ID, resp.Request.Form, err)

@@ -220,6 +220,19 @@ func FindAvailableIssuesByWorkflowStep(ws workflowStep) ([]*Issue, error) {
 	return list, op.Err()
 }
 
+// Claim sets the workflow owner to the given user id, and sets the expiration
+// time to a week from now
+func (i *Issue) Claim(byUserID int) {
+	i.WorkflowOwnerID = byUserID
+	i.WorkflowOwnerExpiresAt = time.Now().Add(time.Hour * 24 * 7)
+}
+
+// Unclaim removes the workflow owner and resets the workflow expiration time
+func (i *Issue) Unclaim() {
+	i.WorkflowOwnerID = 0
+	i.WorkflowOwnerExpiresAt = time.Time{}
+}
+
 // Save creates or updates the Issue in the issues table
 func (i *Issue) Save() error {
 	i.serialize()
