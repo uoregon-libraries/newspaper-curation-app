@@ -152,7 +152,7 @@ func (i *Issue) Path(actionPath string) string {
 // ValidateMetadata checks all fields for validity and sets up i.Errors to
 // describe anything wrong
 //
-// TODO: Verify the issue isn't a dupe of a live issue or one in the database
+// TODO: Verify the issue isn't a dupe of a live issue
 func (i *Issue) ValidateMetadata() {
 	i.errors = nil
 	var addError = func(msg string) { i.errors = append(i.errors, msg) }
@@ -205,7 +205,6 @@ func (i *Issue) ValidateMetadata() {
 	}
 	for _, issue := range list {
 		if issue.ID != i.ID {
-			logger.Errorf("Found dupe: user trying to queue issue id %d; dupe issue is %d", i.ID, issue.ID)
 			addError("This is a duplicate of another issue; double-check the date and edition number, or contact support")
 		}
 	}
