@@ -47,3 +47,11 @@ form.actions {
   width: 400px;
   height: 35px;
 }
+
+.dl-horizontal dt {
+  width: 200px;
+}
+
+.dl-horizontal dd {
+  margin-left: 220px;
+}

@@ -44,6 +44,7 @@ $(document).ready(function() {
 
   osd.addHandler("page", function(data) {
     $('#page-label').val(pageLabels[data.page]);
+    $('#page-label-text').text(pageLabels[data.page]);
   });
 
   osd.goToPage(0);

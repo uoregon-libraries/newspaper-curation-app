@@ -92,6 +92,7 @@ func Setup(r *mux.Router, webPath string, c *config.Config) {
 	DeskTmpl = Layout.MustBuild("desk.go.html")
 	MetadataFormTmpl = Layout.MustBuild("metadata_form.go.html")
 	ReportErrorTmpl = Layout.MustBuild("report_error.go.html")
+	ReviewMetadataTmpl = Layout.MustBuild("metadata_review.go.html")
 }
 
 // homeHandler shows claimed workflow items that need to be finished as well as
@@ -236,7 +237,12 @@ func saveErrorHandler(resp *responder.Responder, i *Issue) {
 	http.Redirect(resp.Writer, resp.Request, basePath, http.StatusFound)
 }
 
-func reviewMetadataHandler(resp *responder.Responder, i *Issue)          {}
+func reviewMetadataHandler(resp *responder.Responder, i *Issue) {
+	resp.Vars.Title = "Reviewing Issue Metadata"
+	resp.Vars.Data["Issue"] = i
+	resp.Render(ReviewMetadataTmpl)
+}
+
 func rejectIssueMetadataFormHandler(resp *responder.Responder, i *Issue) {}
 func rejectIssueMetadataHandler(resp *responder.Responder, i *Issue)     {}
 func approveIssueMetadataHandler(resp *responder.Responder, i *Issue)    {}
