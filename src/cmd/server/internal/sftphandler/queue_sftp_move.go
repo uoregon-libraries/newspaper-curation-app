@@ -17,7 +17,7 @@ func queueSFTPIssueMove(i *Issue) (ok bool, status string) {
 	// If an issue exists, but isn't new, we have something broken going on
 	if dbi != nil && dbi.Location != i.Location {
 		logger.Errorf("Broken / duplicate issue %q: DB id %d; location %q", i.Key(), dbi.ID, dbi.Location)
-		return false, "Broken / duplicate issue detected.  Please contact the system administrator."
+		return false, "Broken / duplicate issue detected.  Double-check the issue date (this can cause false dupe flags) or else contact the system administrator."
 	}
 
 	if dbi == nil {
