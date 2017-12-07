@@ -1,49 +1,58 @@
 package user
 
+// This is our full, hard-coded list of valid privileges
+var (
+	// Titles
+	ListTitles   = newPrivilege(RoleAny)
+	ModifyTitles = newPrivilege(RoleTitleManager)
+
+	// Add or delete MARC org codes
+	ManageMOCs = newPrivilege(RoleMOCManager)
+
+	// Workflow
+	ViewMetadataWorkflow = newPrivilege(RoleIssueCurator, RoleIssueReviewer)
+	EnterIssueMetadata   = newPrivilege(RoleIssueCurator)
+	ReviewIssueMetadata  = newPrivilege(RoleIssueReviewer)
+	ReviewOwnMetadata    = newPrivilege()
+
+	// User management
+	ListUsers   = newPrivilege(RoleUserManager)
+	ModifyUsers = newPrivilege(RoleUserManager)
+
+	// SFTP reporting / queueing
+	ViewSFTPReport     = newPrivilege(RoleSFTPWorkflowManager)
+	ModifySFTPWorkflow = newPrivilege(RoleSFTPWorkflowManager)
+
+	// View the SFTP credentials for a title
+	ViewTitleSFTPCredentials = newPrivilege(RoleTitleManager)
+
+	// See and use the workflow issue search
+	SearchWorkflowIssues = newPrivilege(RoleTitleManager)
+
+	// Admins only
+	ModifyValidatedLCCNs = newPrivilege()
+	ModifyTitleSFTP      = newPrivilege()
+	ListAuditLogs        = newPrivilege()
+)
+
 // A Privilege is a single action a user may be able to take
 type Privilege struct {
-	Name  string
 	roles map[*Role]bool
 }
 
-var privileges = make(map[string]*Privilege)
-
-// init builds our giant, horrible list of hard-coded privileges
-func init() {
-	newPrivilege("list titles", RoleAny)
-	newPrivilege("modify titles", RoleTitleManager)
-	newPrivilege("manage mocs", RoleMOCManager)
-	newPrivilege("modify validated lccns")
-	newPrivilege("list issues", RoleIssueCurator, RoleIssueReviewer)
-	newPrivilege("modify issues", RoleIssueCurator, RoleIssueReviewer)
-	newPrivilege("list issue queues", RoleIssueCurator, RoleIssueReviewer)
-	newPrivilege("modify review queue", RoleIssueCurator, RoleIssueReviewer)
-	newPrivilege("review issues", RoleIssueReviewer)
-	newPrivilege("list users", RoleUserManager)
-	newPrivilege("modify users", RoleUserManager)
-	newPrivilege("view title sftp", RoleTitleManager)
-	newPrivilege("sftp report", RoleSFTPWorkflowManager)
-	newPrivilege("search workflow issues", RoleTitleManager)
-	newPrivilege("sftp workflow", RoleSFTPWorkflowManager)
-	newPrivilege("modify title sftp")
-	newPrivilege("list audit logs")
-}
+// Privileges holds the full list of valid privileges for enumeration
+var Privileges []*Privilege
 
 // newPrivilege sets up a Privilege by name, adds the given roles to its list
 // of roles allowed to use it, and keys the privilege lookup so it can be
 // discovered by name
-func newPrivilege(name string, roles ...*Role) *Privilege {
-	var priv = &Privilege{Name: name, roles: make(map[*Role]bool)}
+func newPrivilege(roles ...*Role) *Privilege {
+	var priv = &Privilege{roles: make(map[*Role]bool)}
 	for _, r := range roles {
 		priv.roles[r] = true
 	}
-	privileges[name] = priv
+	Privileges = append(Privileges, priv)
 	return priv
-}
-
-// FindPrivilege returns a Privilege by its name, or nil if none exists
-func FindPrivilege(name string) *Privilege {
-	return privileges[name]
 }
 
 // AllowedBy returns whether the privilege is allowed by the given role

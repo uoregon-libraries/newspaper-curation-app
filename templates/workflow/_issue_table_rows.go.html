@@ -1,0 +1,57 @@
+{{define "MyDeskIssue"}}
+  <tr>
+    <!-- Issue title -->
+    <th scope="row">{{.Title}} ({{.LCCN}})</td>
+
+    <!-- Issue date -->
+    <th scope="row">{{.Date}}</td>
+
+    <!-- Task / Expiration -->
+    <td>
+      {{.TaskDescription}}
+      <br />
+      Expires on {{.WorkflowExpiration}}
+    </td>
+
+    <!-- Actions -->
+    <td>
+      {{range .Actions}}
+        {{.}}
+      {{end}}
+    </td>
+  </tr>
+{{end}}
+
+{{define "PendingMetadataIssues"}}
+  <tr>
+    <!-- Issue title -->
+    <th scope="row">{{.Title}} ({{.LCCN}})</td>
+
+    <!-- Issue date -->
+    <th scope="row">{{.Date}}</td>
+
+    <!-- Actions -->
+    <td>
+      {{range .Actions}}
+        {{.}}
+      {{end}}
+    </td>
+  </tr>
+{{end}}
+
+{{define "PendingReviewIssues"}}
+  <tr>
+    <!-- Issue title -->
+    <th scope="row">{{.Title}} ({{.LCCN}})</td>
+
+    <!-- Issue date -->
+    <th scope="row">{{.Date}}</td>
+
+    <!-- Actions -->
+    <td>
+      {{range .Actions}}
+        {{.}}
+      {{end}}
+    </td>
+  </tr>
+{{end}}

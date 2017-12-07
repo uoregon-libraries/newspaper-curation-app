@@ -9,12 +9,18 @@ import (
 	"time"
 )
 
+// workflowStep semi-restricts values allowed in the Issue.WorkflowStep field
+type workflowStep string
+
+// Human workflow steps - these match the allowed values in the database
+const (
+	WSAwaitingPageReview     workflowStep = "AwaitingPageReview"
+	WSReadyForMetadataEntry               = "ReadyForMetadataEntry"
+	WSAwaitingMetadataReview              = "AwaitingMetadataReview"
+	WSReadyForBatching                    = "ReadyForBatching"
+)
+
 // Issue contains metadata about an issue for the various workflow tools' use
-//
-// TODO: Right now this is only used by the Go tools, but eventually the PHP
-// and Python scripts need to use this (or be rewritten) so we are managing
-// more of the workflow via data, not JSON files.  Hence all the extra data
-// which these tools currently don't use.
 type Issue struct {
 	ID int `sql:",primary"`
 
@@ -36,13 +42,18 @@ type Issue struct {
 
 	/* Workflow information to keep track of the issue and what it needs */
 
-	Location               string // Where is this issue on disk?
-	IsFromScanner          bool   // Is the issue scanned in-house?  (Born-digital == false)
-	AwaitingPageReview     bool   // Is the issue ready for page review?  (page sort / other manual intervention)
-	HasDerivatives         bool   // Does the issue have derivatives done?
-	ReadyForMetadataEntry  bool   // Is the issue ready for metadata entry?
-	AwaitingMetadataReview bool   // Is the issue awaiting metadata review?
-	ReviewedBy             string // Has the issue's metadata been reviewed by somebody?  Who?
+	Error                  string       // If set, a metadata curator reported a problem
+	Location               string       // Where is this issue on disk?
+	IsFromScanner          bool         // Is the issue scanned in-house?  (Born-digital == false)
+	HasDerivatives         bool         // Does the issue have derivatives done?
+	WorkflowStepString     string       `sql:"workflow_step"` // If set, tells us what "human workflow" step we're on
+	WorkflowStep           workflowStep `sql:"-"`
+	WorkflowOwnerID        int          // Whose "desk" is this currently on?
+	WorkflowOwnerExpiresAt time.Time    // When does the workflow owner lose ownership?
+	MetadataEntryUserID    int          // Who entered metadata?
+	ReviewedByUserID       int          // Who reviewed metadata?
+	RejectionNotes         string       // If rejected (during metadata review), this tells us why
+	RejectedByUserID       int          // Who did the rejection?
 }
 
 // NewIssue creates an issue ready for saving to the issues table
@@ -63,8 +74,11 @@ func FindIssue(id int) (*Issue, error) {
 	return i, op.Err()
 }
 
-// FindIssueByKey looks for an issue in the database that has the given issue key
-func FindIssueByKey(key string) (*Issue, error) {
+// FindIssuesByKey looks for all issues in the database that have the given
+// issue key.  Having more than one is an error, but we allow users to save
+// metadata in "draft" form, so we have to be able to test for dupes later in
+// the process
+func FindIssuesByKey(key string) ([]*Issue, error) {
 	var parts = strings.Split(key, "/")
 	if len(parts) != 2 {
 		return nil, fmt.Errorf("invalid issue key %q", key)
@@ -84,13 +98,23 @@ func FindIssueByKey(key string) (*Issue, error) {
 
 	var op = DB.Operation()
 	op.Dbg = Debug
-	var i = &Issue{}
-	var ok = op.Select("issues", &Issue{}).Where("lccn = ? AND date = ? AND edition = ?", lccn, date, ed).First(i)
-	if !ok {
-		return nil, op.Err()
+
+	var list []*Issue
+	op.Select("issues", &Issue{}).Where("lccn = ? AND date = ? AND edition = ?", lccn, date, ed).AllObjects(&list)
+	deserializeIssues(list)
+	return list, op.Err()
+}
+
+// FindIssueByKey returns the first issue with the given key
+func FindIssueByKey(key string) (*Issue, error) {
+	var list, err = FindIssuesByKey(key)
+	if err != nil {
+		return nil, err
 	}
-	i.deserialize()
-	return i, op.Err()
+	if len(list) == 0 {
+		return nil, nil
+	}
+	return list[0], nil
 }
 
 // NewIssueFromScanDir attempts to take a path and create a DB Issue from it,
@@ -155,14 +179,74 @@ func NewIssueFromScanDir(path string) (*Issue, error) {
 	return i, err
 }
 
+// FindIssuesOnDesk returns all issues "owned" by a given user id
+func FindIssuesOnDesk(userID int) ([]*Issue, error) {
+	var op = DB.Operation()
+	op.Dbg = Debug
+	var list []*Issue
+	var sel = op.Select("issues", &Issue{})
+	sel = sel.Where(`
+		workflow_owner_id = ? AND
+		workflow_owner_expires_at IS NOT NULL AND
+		workflow_owner_expires_at > ?`, userID, time.Now())
+	sel.AllObjects(&list)
+	deserializeIssues(list)
+	return list, op.Err()
+}
+
 // FindIssuesInPageReview looks for all issues currently awaiting page review
 // and returns them
 func FindIssuesInPageReview() ([]*Issue, error) {
 	var op = DB.Operation()
 	op.Dbg = Debug
 	var list []*Issue
-	op.Select("issues", &Issue{}).Where("awaiting_page_review = ?", true).AllObjects(&list)
+	op.Select("issues", &Issue{}).Where("workflow_step = ?", string(WSAwaitingPageReview)).AllObjects(&list)
+	deserializeIssues(list)
 	return list, op.Err()
+}
+
+// FindAvailableIssuesByWorkflowStep looks for all "available" issues with the
+// requested workflow step and returns them.  We define "available" as:
+//
+// - No owner (or owner expired)
+// - Have not been reported as having errors
+func FindAvailableIssuesByWorkflowStep(ws workflowStep) ([]*Issue, error) {
+	var op = DB.Operation()
+	op.Dbg = Debug
+	var list []*Issue
+	op.Select("issues", &Issue{}).Where(
+		"workflow_step = ? AND (workflow_owner_id = 0 OR workflow_owner_expires_at < ?) AND error = ''",
+		string(ws), time.Now().Format("2006-01-02 15:04:05")).AllObjects(&list)
+	deserializeIssues(list)
+	return list, op.Err()
+}
+
+// Claim sets the workflow owner to the given user id, and sets the expiration
+// time to a week from now
+func (i *Issue) Claim(byUserID int) {
+	i.WorkflowOwnerID = byUserID
+	i.WorkflowOwnerExpiresAt = time.Now().Add(time.Hour * 24 * 7)
+}
+
+// Unclaim removes the workflow owner and resets the workflow expiration time
+func (i *Issue) Unclaim() {
+	i.WorkflowOwnerID = 0
+	i.WorkflowOwnerExpiresAt = time.Time{}
+}
+
+// ApproveMetadata moves the issue to the final workflow step (e.g., no more
+// manual steps) and sets the reviewer id to that which was passed in
+func (i *Issue) ApproveMetadata(reviewerID int) {
+	i.Unclaim()
+	i.ReviewedByUserID = reviewerID
+	i.WorkflowStep = WSReadyForBatching
+}
+
+func (i *Issue) RejectMetadata(reviewerID int, notes string) {
+	i.Claim(i.MetadataEntryUserID)
+	i.WorkflowStep = WSReadyForMetadataEntry
+	i.RejectionNotes = notes
+	i.RejectedByUserID = reviewerID
 }
 
 // Save creates or updates the Issue in the issues table
@@ -177,12 +261,21 @@ func (i *Issue) Save() error {
 // serialize prepares struct data to work with the database fields better
 func (i *Issue) serialize() {
 	i.PageLabelsCSV = strings.Join(i.PageLabels, ",")
+	i.WorkflowStepString = string(i.WorkflowStep)
 }
 
 // deserialize performs operations necessary to get the database data into a more
 // useful Go structure
 func (i *Issue) deserialize() {
 	i.PageLabels = strings.Split(i.PageLabelsCSV, ",")
+	i.WorkflowStep = workflowStep(i.WorkflowStepString)
+}
+
+// deserializeIssues runs deserialize() against all issues in the list
+func deserializeIssues(list []*Issue) {
+	for _, i := range list {
+		i.deserialize()
+	}
 }
 
 // SchemaIssue returns an extremely over-simplified representation of this
@@ -201,9 +294,10 @@ func (i *Issue) SchemaIssue() (*schema.Issue, error) {
 		return nil, fmt.Errorf("missing title for issue ID %d", i.ID)
 	}
 	var si = &schema.Issue{
-		Date:    dt,
-		Edition: i.Edition,
-		Title:   t,
+		Date:     dt,
+		Edition:  i.Edition,
+		Title:    t,
+		Location: i.Location,
 	}
 	return si, nil
 }

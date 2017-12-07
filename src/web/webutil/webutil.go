@@ -5,7 +5,9 @@ package webutil
 import (
 	"fmt"
 	"html/template"
+	"net/url"
 	"path"
+	"strings"
 )
 
 // Webroot must be set by main to tell us where we are within the main website,
@@ -15,6 +17,12 @@ var Webroot string
 
 // ParentWebroot is a hack to deal with our horrific painful legacy PHP
 var ParentWebroot string
+
+// WorkflowPath is the path to the workflow directory for serving IIIF images
+var WorkflowPath string
+
+// IIIFBaseURL is the IIIF server URL
+var IIIFBaseURL string
 
 // FullPath uses the webroot, if not empty, to join together all the path parts
 // with a slash, returning an absolute path to something
@@ -75,4 +83,12 @@ func IncludeJS(file string) template.HTML {
 func RawJS(file string) template.HTML {
 	var path = StaticPath("", file)
 	return template.HTML(fmt.Sprintf(`<script src="%s"></script>`, path))
+}
+
+// IIIFInfoURL returns what a IIIF viewer needs to find a JP2
+func IIIFInfoURL(jp2Path string) string {
+	var relPath = strings.Replace(jp2Path, WorkflowPath, "", 1)
+	relPath = path.Clean(path.Join("workflow", relPath))
+	var identifier = url.PathEscape(relPath)
+	return fmt.Sprintf("%s/%s", IIIFBaseURL, path.Join(identifier, "info.json"))
 }

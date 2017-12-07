@@ -28,33 +28,33 @@
 
           <div class="collapse navbar-collapse" id="navbar-collapse">
             <ul class="nav navbar-nav">
-              {{if .User.PermittedTo "list titles"}}
-                <li><a href="{{ParentURL "title-list.php"}}">Newspaper Titles</a></li>
+              {{if .User.PermittedTo ListTitles}}
+                <li><a href="{{ParentURL "title-list.php"}}">Titles</a></li>
               {{end}}
 
-              {{if .User.PermittedTo "sftp report"}}
+              {{if .User.PermittedTo ViewSFTPReport}}
               <!-- This URL needs to match the router path in the server's main.go -->
-              <li><a href="{{.Webroot}}/sftp">SFTP Reports</a></li>
+              <li><a href="{{.Webroot}}/sftp">SFTP</a></li>
               {{end}}
 
-              {{if .User.PermittedTo "search workflow issues"}}
+              {{if .User.PermittedTo SearchWorkflowIssues}}
               <!-- This URL needs to match the router path in the server's main.go -->
               <li><a href="{{.Webroot}}/search-issues">Issue Finder</a></li>
               {{end}}
 
-              {{if .User.PermittedTo "manage mocs"}}
+              {{if .User.PermittedTo ManageMOCs}}
                 <li><a href="{{ParentURL "mocs-list.php"}}">MARC Org Codes</a></li>
               {{end}}
 
-              {{if .User.PermittedTo "list issues"}}
-                <li><a href="{{ParentURL "issues-list.php"}}">Issues</a></li>
+              {{if .User.PermittedTo ViewMetadataWorkflow}}
+                <li><a href="{{.Webroot}}/workflow">Workflow</a></li>
               {{end}}
 
-              {{if .User.PermittedTo "list users"}}
+              {{if .User.PermittedTo ListUsers}}
                 <li><a href="{{ParentURL "user-list.php"}}">Users</a></li>
               {{end}}
 
-              {{if .User.PermittedTo "list audit logs"}}
+              {{if .User.PermittedTo ListAuditLogs}}
                 <li><a href="{{ParentURL "audit-logs-list.php"}}">Logs</a></li>
               {{end}}
             </ul>
@@ -74,12 +74,12 @@
 
         {{- if .Alert}}
           <div class="alert alert-danger">
-            <p>{{.Alert}}</p>
+            <p>{{.Alert|raw}}</p>
           </div>
         {{- end}}
         {{- if .Info}}
           <div class="alert alert-info">
-            <p>{{.Info}}</p>
+            <p>{{.Info|raw}}</p>
           </div>
         {{- end}}
 
@@ -97,6 +97,7 @@
     {{IncludeJS "jquery-1.12.1.min"}}
     {{IncludeJS "prevent_double_submit"}}
     {{RawJS "bootstrap/js/bootstrap.min.js"}}
+    {{block "extrajs" .}}{{end}}
   </body>
 </html>
 {{Comment (printf "v%s" .Version)}}

@@ -7,6 +7,7 @@ import (
 	"bashconf"
 	"fileutil"
 	"fmt"
+	"net/url"
 	"reflect"
 	"strconv"
 	"strings"
@@ -31,6 +32,9 @@ type Config struct {
 
 	// Org code used for sftp-uploaded batches
 	PDFBatchMARCOrgCode string `setting:"PDF_BATCH_MARC_ORG_CODE"`
+
+	// IIIF Server URL
+	IIIFBaseURL string `setting:"IIIF_BASE_URL" type:"url"`
 
 	// Minimum number of pages an SFTPed issue must contain to be processed
 	MinimumIssuePages int
@@ -137,6 +141,18 @@ func (c *Config) readTaggedFields(bc bashconf.Config) (errors []string) {
 		var sType = sf.Tag.Get("type")
 		switch sType {
 		case "":
+			rVal.Field(i).SetString(val)
+		case "url":
+			var u, err = url.Parse(val)
+			if err != nil {
+				errors = append(errors, fmt.Sprintf("%#v (%#v) is not a valid URL: %s", sKey, val, err))
+			}
+			if u.Host == "" {
+				errors = append(errors, fmt.Sprintf("%#v (%#v) is not a valid URL: missing host", sKey, val))
+			}
+			if !strings.HasPrefix(u.Scheme, "http") {
+				errors = append(errors, fmt.Sprintf("%#v (%#v) is not a valid URL: must be http(s)", sKey, val))
+			}
 			rVal.Field(i).SetString(val)
 		case "path":
 			rVal.Field(i).SetString(val)

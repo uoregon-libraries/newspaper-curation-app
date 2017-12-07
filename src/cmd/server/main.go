@@ -5,6 +5,7 @@ import (
 	"cmd/server/internal/responder"
 	"cmd/server/internal/settings"
 	"cmd/server/internal/sftphandler"
+	"cmd/server/internal/workflowhandler"
 	"config"
 	"db"
 	"fileutil"
@@ -76,6 +77,8 @@ func getConf() {
 	}
 	webutil.Webroot = opts.Webroot
 	webutil.ParentWebroot = opts.ParentWebroot
+	webutil.WorkflowPath = Conf.WorkflowPath
+	webutil.IIIFBaseURL = Conf.IIIFBaseURL
 
 	if opts.Debug == true {
 		logger.Warnf("Debug mode has been enabled")
@@ -109,6 +112,7 @@ func startServer() {
 	var watcher = legacyfinder.NewWatcher(Conf, opts.ChronamRoot, opts.CachePath)
 	go watcher.Watch(5 * time.Minute)
 	sftphandler.Setup(r, path.Join(hp, "sftp"), Conf, watcher)
+	workflowhandler.Setup(r, path.Join(hp, "workflow"), Conf)
 	findhandler.Setup(r, path.Join(hp, "search-issues"), watcher)
 
 	var waited, lastWaited int

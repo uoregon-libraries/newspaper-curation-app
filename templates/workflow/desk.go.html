@@ -1,0 +1,91 @@
+{{block "content" .}}
+
+<h2>Desk</h2>
+<p>
+  Tasks on your desk are assigned to you and need attention.  If items aren't
+  processed by their expiration, they'll be returned to the appropriate pool
+  and any work you've done will be lost.
+</p>
+
+{{if .Data.MyDeskIssues}}
+  <table class="table">
+    <thead>
+      <caption>Tasks</caption>
+    </thead>
+
+    <tbody>
+    <tr>
+      <th scope="col">Title</th>
+      <th scope="col">Date</th>
+      <th scope="col">Task / Expiration</th>
+      <th scope="col">Actions</th>
+    </tr>
+  {{range .Data.MyDeskIssues}}
+    {{template "MyDeskIssue" .}}
+  {{end}}
+    </tbody>
+  </table>
+{{else}}
+  <em>There are no tasks awaiting your attention</em>
+{{end}}
+
+{{if .User.PermittedTo EnterIssueMetadata}}
+  <h2>Pending Issues</h2>
+  <p>
+    Pending issues are issues which have been uploaded, split into pages, and
+    converted to PDF/a format.  They still need manual metadata entered before
+    they will be ready to convert to a batch and ingest.
+  </p>
+
+  {{if .Data.PendingMetadataIssues}}
+    <table class="table">
+      <thead>
+        <caption>Issues Needing Metadata</caption>
+      </thead>
+
+      <tbody>
+      <tr>
+        <th scope="col">Title</th>
+        <th scope="col">Date</th>
+        <th scope="col">Actions</th>
+      </tr>
+    {{range .Data.PendingMetadataIssues}}
+      {{template "PendingMetadataIssues" .}}
+    {{end}}
+      </tbody>
+    </table>
+  {{else}}
+    <em>There are no issues needing metadata entry</em>
+  {{end}}
+{{end}}
+
+{{if .User.PermittedTo ReviewIssueMetadata}}
+  <h2>Awaiting Review</h2>
+  <p>
+    Issues awaiting review have had all metadata entered and need an issue
+    reviewer to flag them as ready for processing.
+  </p>
+
+  {{if .Data.PendingReviewIssues}}
+    <table class="table">
+      <thead>
+        <caption>Issues Needing Metadata</caption>
+      </thead>
+
+      <tbody>
+      <tr>
+        <th scope="col">Title</th>
+        <th scope="col">Date</th>
+        <th scope="col">Actions</th>
+      </tr>
+    {{range .Data.PendingReviewIssues}}
+      {{template "PendingReviewIssues" .}}
+    {{end}}
+      </tbody>
+    </table>
+  {{else}}
+    <em>There are no issues needing metadata review</em>
+  {{end}}
+{{end}}
+
+{{end}}

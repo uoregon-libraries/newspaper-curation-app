@@ -43,35 +43,32 @@ func GetUserIP(req *http.Request) string {
 	return req.Header.Get("X-Forwarded-For")
 }
 
+// TODO: Remove these CanXXX functions so the places that need this can just
+// use (or wrap) MustHavePrivilege, rather than having every privilege
+// middleware check here
+
 // CanViewSFTPIssues is an alias for the privilege-checking handlerfunc wrapper
 func CanViewSFTPIssues(h http.HandlerFunc) http.Handler {
-	return MustHavePrivilege("sftp report", h)
+	return MustHavePrivilege(user.ViewSFTPReport, h)
 }
 
 // CanWorkflowSFTPIssues is an alias for the privilege-checking handlerfunc
 // wrapper, and tells us if a user is allowed to move SFTP issues forward,
 // reject them, etc.
 func CanWorkflowSFTPIssues(h http.HandlerFunc) http.Handler {
-	return MustHavePrivilege("sftp workflow", h)
+	return MustHavePrivilege(user.ModifySFTPWorkflow, h)
 }
 
 // CanSearchIssues is an alias for the privilege-checking handlerfunc wrapper
 func CanSearchIssues(h http.HandlerFunc) http.Handler {
-	return MustHavePrivilege("search workflow issues", h)
+	return MustHavePrivilege(user.SearchWorkflowIssues, h)
 }
 
 // MustHavePrivilege denies access to pages if there's no logged-in user, or
 // there is a user but the user isn't allowed to perform a particular action
-func MustHavePrivilege(privName string, f http.HandlerFunc) http.Handler {
-	var priv = user.FindPrivilege(privName)
+func MustHavePrivilege(priv *user.Privilege, f http.HandlerFunc) http.Handler {
 	return http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
-		var u = user.FindByLogin(GetUserLogin(w, r))
-		var roles []*user.Role
-		if u != nil {
-			roles = u.Roles()
-		}
-
-		if priv.AllowedByAny(roles) {
+		if user.FindByLogin(GetUserLogin(w, r)).PermittedTo(priv) {
 			f(w, r)
 			return
 		}

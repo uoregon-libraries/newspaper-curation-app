@@ -3,7 +3,9 @@ package responder
 import (
 	"fmt"
 	"html/template"
+	"strings"
 	"time"
+	"user"
 	"web/tmpl"
 	"web/webutil"
 )
@@ -38,6 +40,31 @@ func InitRootTemplate(templatePath string) {
 		"ParentURL":  webutil.ParentURL,
 		"Comment":    HTMLComment,
 		"TimeString": func(t time.Time) string { return t.Format("2006-01-02 15:04") },
+		"nl2br": func(s string) template.HTML {
+			var escaped = template.HTMLEscaper(s)
+			var replaced = strings.Replace(escaped, "\n", "<br />", -1)
+			return template.HTML(replaced)
+		},
+		"IIIFInfoURL": webutil.IIIFInfoURL,
+		"raw":         func(s string) template.HTML { return template.HTML(s) },
+
+		// We have functions for our privileges since they need to be "global" and
+		// easily verified at template compile time
+		"ListTitles":               func() *user.Privilege { return user.ListTitles },
+		"ModifyTitles":             func() *user.Privilege { return user.ModifyTitles },
+		"ManageMOCs":               func() *user.Privilege { return user.ManageMOCs },
+		"ViewMetadataWorkflow":     func() *user.Privilege { return user.ViewMetadataWorkflow },
+		"EnterIssueMetadata":       func() *user.Privilege { return user.EnterIssueMetadata },
+		"ReviewIssueMetadata":      func() *user.Privilege { return user.ReviewIssueMetadata },
+		"ListUsers":                func() *user.Privilege { return user.ListUsers },
+		"ModifyUsers":              func() *user.Privilege { return user.ModifyUsers },
+		"ViewSFTPReport":           func() *user.Privilege { return user.ViewSFTPReport },
+		"ModifySFTPWorkflow":       func() *user.Privilege { return user.ModifySFTPWorkflow },
+		"ViewTitleSFTPCredentials": func() *user.Privilege { return user.ViewTitleSFTPCredentials },
+		"SearchWorkflowIssues":     func() *user.Privilege { return user.SearchWorkflowIssues },
+		"ModifyValidatedLCCNs":     func() *user.Privilege { return user.ModifyValidatedLCCNs },
+		"ModifyTitleSFTP":          func() *user.Privilege { return user.ModifyTitleSFTP },
+		"ListAuditLogs":            func() *user.Privilege { return user.ListAuditLogs },
 	}
 
 	// Set up the layout and then our global templates
