@@ -93,6 +93,7 @@ func Setup(r *mux.Router, webPath string, c *config.Config) {
 	MetadataFormTmpl = Layout.MustBuild("metadata_form.go.html")
 	ReportErrorTmpl = Layout.MustBuild("report_error.go.html")
 	ReviewMetadataTmpl = Layout.MustBuild("metadata_review.go.html")
+	RejectIssueTmpl = Layout.MustBuild("reject_issue.go.html")
 }
 
 // homeHandler shows claimed workflow items that need to be finished as well as
@@ -260,5 +261,31 @@ func approveIssueMetadataHandler(resp *responder.Responder, i *Issue) {
 	http.Redirect(resp.Writer, resp.Request, basePath, http.StatusFound)
 }
 
-func rejectIssueMetadataFormHandler(resp *responder.Responder, i *Issue) {}
-func rejectIssueMetadataHandler(resp *responder.Responder, i *Issue)     {}
+func rejectIssueMetadataFormHandler(resp *responder.Responder, i *Issue) {
+	resp.Vars.Title = "Reject Issue"
+	resp.Vars.Data["Issue"] = i
+	resp.Render(RejectIssueTmpl)
+}
+
+func rejectIssueMetadataHandler(resp *responder.Responder, i *Issue) {
+	var notes = resp.Request.FormValue("notes")
+	if notes == "" {
+		http.SetCookie(resp.Writer, &http.Cookie{Name: "Info", Value: "Rejection notes empty; no action taken", Path: "/"})
+		http.Redirect(resp.Writer, resp.Request, i.Path("review/metadata"), http.StatusFound)
+		return
+	}
+
+	i.RejectMetadata(resp.Vars.User.ID, notes)
+	var err = i.Save()
+	if err != nil {
+		logger.Errorf("Unable to save issue id %d's error (POST: %#v): %s", i.ID, resp.Request.Form, err)
+		resp.Vars.Alert = "Error trying to save error report (no, the irony is not lost on us); try again or contact support"
+		resp.Writer.WriteHeader(http.StatusInternalServerError)
+		resp.Render(responder.Empty)
+		return
+	}
+
+	resp.Audit("report-error", fmt.Sprintf("issue id %d", i.ID))
+	http.SetCookie(resp.Writer, &http.Cookie{Name: "Info", Value: "Issue error reported", Path: "/"})
+	http.Redirect(resp.Writer, resp.Request, basePath, http.StatusFound)
+}

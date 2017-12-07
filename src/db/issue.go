@@ -242,6 +242,12 @@ func (i *Issue) ApproveMetadata(reviewerID int) {
 	i.WorkflowStep = WSReadyForBatching
 }
 
+func (i *Issue) RejectMetadata(reviewerID int, notes string) {
+	i.Claim(i.MetadataEntryUserID)
+	i.RejectionNotes = notes
+	i.RejectedByUserID = reviewerID
+}
+
 // Save creates or updates the Issue in the issues table
 func (i *Issue) Save() error {
 	i.serialize()
