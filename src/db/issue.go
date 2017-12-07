@@ -244,6 +244,7 @@ func (i *Issue) ApproveMetadata(reviewerID int) {
 
 func (i *Issue) RejectMetadata(reviewerID int, notes string) {
 	i.Claim(i.MetadataEntryUserID)
+	i.WorkflowStep = WSReadyForMetadataEntry
 	i.RejectionNotes = notes
 	i.RejectedByUserID = reviewerID
 }
