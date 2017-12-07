@@ -283,8 +283,8 @@ func rejectIssueMetadataHandler(resp *responder.Responder, i *Issue) {
 	i.RejectMetadata(resp.Vars.User.ID, notes)
 	var err = i.Save()
 	if err != nil {
-		logger.Errorf("Unable to save issue id %d's error (POST: %#v): %s", i.ID, resp.Request.Form, err)
-		resp.Vars.Alert = "Error trying to save error report (no, the irony is not lost on us); try again or contact support"
+		logger.Errorf("Unable to save issue id %d's rejection notes (POST: %#v): %s", i.ID, resp.Request.Form, err)
+		resp.Vars.Alert = "Error trying to save rejection notes; try again or contact support"
 		resp.Writer.WriteHeader(http.StatusInternalServerError)
 		resp.Render(responder.Empty)
 		return
