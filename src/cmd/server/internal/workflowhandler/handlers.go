@@ -5,6 +5,7 @@ import (
 	"config"
 	"db"
 	"fmt"
+	"legacyfinder"
 	"logger"
 	"net/http"
 	"path"
@@ -19,6 +20,9 @@ var (
 
 	// basePath is the path to the main workflow page.  Subpages all start with this path.
 	basePath string
+
+	// watcher is used to look for dupes when queueing an issue for review
+	watcher *legacyfinder.Watcher
 
 	// Layout is the base template, cloned from the responder's layout, from
 	// which all workflow pages are built
@@ -42,9 +46,10 @@ var (
 
 // Setup sets up all the workflow-specific routing rules and does any other
 // init necessary for workflow handling
-func Setup(r *mux.Router, webPath string, c *config.Config) {
+func Setup(r *mux.Router, webPath string, c *config.Config, w *legacyfinder.Watcher) {
 	conf = c
 	basePath = webPath
+	watcher = w
 
 	// Base path (desk view)
 	var s = r.PathPrefix(basePath).Subrouter()

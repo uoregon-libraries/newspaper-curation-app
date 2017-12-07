@@ -4,6 +4,8 @@ import (
 	"db"
 	"fmt"
 	"html/template"
+	"issuefinder"
+	"issuesearch"
 	"logger"
 	"path"
 	"path/filepath"
@@ -206,6 +208,18 @@ func (i *Issue) ValidateMetadata() {
 	for _, issue := range list {
 		if issue.ID != i.ID {
 			addError("This is a duplicate of another issue; double-check the date and edition number, or contact support")
+		}
+	}
+
+	// Now check for live dupes - given we're generating a search key from a real
+	// issue, we can safely ignore the ParseSearchKey error
+	var key, _ = issuesearch.ParseSearchKey(i.si.Key())
+	var schemaIssues = watcher.LookupIssues(key)
+	for _, issue := range schemaIssues {
+		if watcher.IssueFinder().IssueNamespace[issue] == issuefinder.Website {
+			addError(fmt.Sprintf("This is a duplicate of a live issue (in %q); "+
+				"double-check the date and edition number, or contact support",
+				issue.Batch.Fullname()))
 		}
 	}
 }
