@@ -242,6 +242,8 @@ func (i *Issue) ApproveMetadata(reviewerID int) {
 	i.WorkflowStep = WSReadyForBatching
 }
 
+// RejectMetadata sends the issue back to the metadata entry user and saves the
+// reviewer's notes
 func (i *Issue) RejectMetadata(reviewerID int, notes string) {
 	i.Claim(i.MetadataEntryUserID)
 	i.WorkflowStep = WSReadyForMetadataEntry
