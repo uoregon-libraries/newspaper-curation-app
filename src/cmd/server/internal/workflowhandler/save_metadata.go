@@ -103,7 +103,7 @@ func saveQueue(resp *responder.Responder, i *Issue, changes map[string]string) {
 		var alertFormat = "Cannot queue this issue:<ul>%s</ul>"
 		var errors string
 		for _, err := range i.Errors() {
-			errors += fmt.Sprintf("<li>%s</li>", err)
+			errors += "<li>" + err + "</li>"
 		}
 		http.SetCookie(resp.Writer, &http.Cookie{Name: "Alert", Value: fmt.Sprintf(alertFormat, errors), Path: "/"})
 		http.Redirect(resp.Writer, resp.Request, i.Path("metadata"), http.StatusFound)
