@@ -5,6 +5,7 @@ import (
 	"fmt"
 	"logger"
 	"strings"
+	"time"
 )
 
 // JobType represents all possible jobs the system queues and processes
@@ -98,6 +99,7 @@ func popFirstPendingJob(types []string) (*db.Job, error) {
 	}
 
 	j.Status = string(JobStatusInProcess)
+	j.StartedAt = time.Now()
 	j.Save()
 
 	return j, op.Err()
