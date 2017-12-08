@@ -4,9 +4,10 @@
 package main
 
 import (
-	"fileutil"
 	"fmt"
 	"os"
+
+	"github.com/uoregon-libraries/gopkg/fileutil"
 )
 
 func main() {

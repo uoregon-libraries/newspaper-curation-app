@@ -3,15 +3,18 @@ package main
 import (
 	"config"
 	"db"
-	"fileutil"
+
 	"jobs"
-	"logger"
+
 	"os"
 	"path/filepath"
 	"regexp"
 	"sort"
 	"strings"
 	"time"
+
+	"github.com/uoregon-libraries/gopkg/fileutil"
+	"github.com/uoregon-libraries/gopkg/logger"
 )
 
 var pdfFilenameRegex = regexp.MustCompile(`(?i:^[0-9]{4}.pdf)`)

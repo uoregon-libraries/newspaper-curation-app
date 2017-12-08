@@ -2,13 +2,15 @@ package issuefinder
 
 import (
 	"chronam"
-	"fileutil"
+
 	"fmt"
 	"path/filepath"
 	"schema"
 	"strconv"
 	"strings"
 	"time"
+
+	"github.com/uoregon-libraries/gopkg/fileutil"
 )
 
 // FindSFTPIssues is just barely its own special case because unlike the

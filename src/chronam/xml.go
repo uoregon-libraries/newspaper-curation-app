@@ -2,10 +2,12 @@ package chronam
 
 import (
 	"encoding/xml"
-	"fileutil"
+
 	"fmt"
 	"io/ioutil"
 	"path/filepath"
+
+	"github.com/uoregon-libraries/gopkg/fileutil"
 )
 
 // BatchXML is used to deserialize batch.xml files to get at their issues list

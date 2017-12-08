@@ -3,9 +3,11 @@ package jobs
 import (
 	"db"
 	"fmt"
-	"logger"
+
 	"strings"
 	"time"
+
+	"github.com/uoregon-libraries/gopkg/logger"
 )
 
 // JobType represents all possible jobs the system queues and processes

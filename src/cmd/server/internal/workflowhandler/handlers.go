@@ -6,13 +6,14 @@ import (
 	"db"
 	"fmt"
 	"legacyfinder"
-	"logger"
+
 	"net/http"
 	"path"
 	"user"
 	"web/tmpl"
 
 	"github.com/gorilla/mux"
+	"github.com/uoregon-libraries/gopkg/logger"
 )
 
 var (

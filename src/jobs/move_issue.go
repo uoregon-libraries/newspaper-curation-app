@@ -1,9 +1,10 @@
 package jobs
 
 import (
-	"fileutil"
 	"os"
 	"path/filepath"
+
+	"github.com/uoregon-libraries/gopkg/fileutil"
 )
 
 // moveIssue is used by both the sftp and scan issue movers to consistently

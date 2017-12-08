@@ -1,9 +1,10 @@
 package user
 
 import (
-	"github.com/Nerdmaster/magicsql"
-	"logger"
 	"strings"
+
+	"github.com/Nerdmaster/magicsql"
+	"github.com/uoregon-libraries/gopkg/logger"
 )
 
 // DB holds the persistent magicsql.DB object, and must be set externally in

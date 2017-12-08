@@ -6,13 +6,15 @@ package responder
 import (
 	"db"
 	"encoding/base64"
-	"logger"
+
 	"net/http"
 	"time"
 	"user"
 	"version"
 	"web/tmpl"
 	"web/webutil"
+
+	"github.com/uoregon-libraries/gopkg/logger"
 )
 
 // GenericVars holds anything specialized that doesn't make sense to have in PageVars

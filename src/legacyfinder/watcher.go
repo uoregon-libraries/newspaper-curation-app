@@ -2,16 +2,19 @@ package legacyfinder
 
 import (
 	"config"
-	"fileutil"
+
 	"issuefinder"
 	"issuesearch"
-	"logger"
+
 	"os"
 	"path/filepath"
 	"schema"
 	"strings"
 	"sync"
 	"time"
+
+	"github.com/uoregon-libraries/gopkg/fileutil"
+	"github.com/uoregon-libraries/gopkg/logger"
 )
 
 // A Watcher wraps the local Finder to provide a long-running issue watcher

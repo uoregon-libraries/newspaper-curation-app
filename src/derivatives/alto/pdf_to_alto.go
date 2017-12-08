@@ -2,13 +2,16 @@ package alto
 
 import (
 	"bytes"
-	"fileutil"
+
 	"fmt"
 	"io/ioutil"
-	"logger"
+
 	"os"
 	"regexp"
 	"shell"
+
+	"github.com/uoregon-libraries/gopkg/fileutil"
+	"github.com/uoregon-libraries/gopkg/logger"
 )
 
 // lowASCIIRegex strips all low-ASCII that isn't printable
@@ -24,7 +27,7 @@ type Transformer struct {
 
 	// Logger can be set up manually for customized logging, otherwise it just
 	// gets set to the default logger
-	Logger logger.Logger
+	Logger *logger.Logger
 
 	err  error
 	html []byte

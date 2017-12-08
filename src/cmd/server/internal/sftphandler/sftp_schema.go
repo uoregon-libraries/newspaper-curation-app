@@ -7,12 +7,14 @@ import (
 	"issuefinder"
 	"issuesearch"
 	"jobs"
-	"logger"
+
 	"path/filepath"
 	"schema"
 	"sort"
 	"strings"
 	"time"
+
+	"github.com/uoregon-libraries/gopkg/logger"
 )
 
 // Errors wraps an array of error strings for nicer display

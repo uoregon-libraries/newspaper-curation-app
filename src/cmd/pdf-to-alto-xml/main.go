@@ -4,10 +4,12 @@ package main
 
 import (
 	"derivatives/alto"
-	"fileutil"
+
 	"fmt"
 	"os"
 	"strconv"
+
+	"github.com/uoregon-libraries/gopkg/fileutil"
 )
 
 func usageFail(format string, args ...interface{}) {

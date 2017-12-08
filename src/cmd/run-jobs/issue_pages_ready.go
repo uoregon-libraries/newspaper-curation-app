@@ -1,12 +1,13 @@
 package main
 
 import (
-	"fileutil"
-	"logger"
 	"os"
 	"path/filepath"
 	"regexp"
 	"time"
+
+	"github.com/uoregon-libraries/gopkg/fileutil"
+	"github.com/uoregon-libraries/gopkg/logger"
 )
 
 // issuePagesReady tells us if issues being manually modified are ready to be

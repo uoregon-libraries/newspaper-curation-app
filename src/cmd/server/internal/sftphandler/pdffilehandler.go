@@ -2,16 +2,18 @@ package sftphandler
 
 import (
 	"cmd/server/internal/responder"
-	"fileutil"
+
 	"fmt"
 	"io"
-	"logger"
+
 	"net/http"
 	"os"
 	"path/filepath"
 	"strings"
 
 	"github.com/gorilla/mux"
+	"github.com/uoregon-libraries/gopkg/fileutil"
+	"github.com/uoregon-libraries/gopkg/logger"
 )
 
 // PDFFileHandler attempts to find and display a PDF file to the browser

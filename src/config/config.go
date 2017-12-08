@@ -5,12 +5,14 @@ package config
 
 import (
 	"bashconf"
-	"fileutil"
+
 	"fmt"
 	"net/url"
 	"reflect"
 	"strconv"
 	"strings"
+
+	"github.com/uoregon-libraries/gopkg/fileutil"
 )
 
 // Config holds the configuration needed for this application to work.  Note

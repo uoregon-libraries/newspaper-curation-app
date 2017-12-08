@@ -5,15 +5,16 @@
 package main
 
 import (
-	"fileutil"
 	"fmt"
 	"issuefinder"
-	"logger"
+
 	"os"
 	"path/filepath"
-	"wordutils"
 
 	"github.com/jessevdk/go-flags"
+	"github.com/uoregon-libraries/gopkg/fileutil"
+	"github.com/uoregon-libraries/gopkg/logger"
+	"github.com/uoregon-libraries/gopkg/wordutils"
 )
 
 // Command-line options

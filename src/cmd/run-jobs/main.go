@@ -9,16 +9,17 @@ import (
 	"db"
 	"fmt"
 	"jobs"
-	"logger"
+
 	"os"
 	"schema"
 	"strconv"
 	"strings"
 	"sync"
 	"time"
-	"wordutils"
 
 	"github.com/jessevdk/go-flags"
+	"github.com/uoregon-libraries/gopkg/logger"
+	"github.com/uoregon-libraries/gopkg/wordutils"
 )
 
 // Command-line options

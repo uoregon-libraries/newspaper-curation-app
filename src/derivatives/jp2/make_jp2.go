@@ -5,11 +5,13 @@
 package jp2
 
 import (
-	"fileutil"
 	"fmt"
-	"logger"
+
 	"os"
 	"path/filepath"
+
+	"github.com/uoregon-libraries/gopkg/fileutil"
+	"github.com/uoregon-libraries/gopkg/logger"
 )
 
 // RateFactor is our constant divisor / multiplier for rates.  We store
@@ -37,7 +39,7 @@ type Transformer struct {
 
 	err         error
 	testedRates map[int]bool
-	Logger      logger.Logger
+	Logger      *logger.Logger
 }
 
 // New creates a new PDF/TIFF-to-JP2 transformer with default values for the

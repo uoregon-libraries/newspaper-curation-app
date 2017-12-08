@@ -8,10 +8,10 @@ import (
 	"cmd/server/internal/workflowhandler"
 	"config"
 	"db"
-	"fileutil"
+
 	"fmt"
 	"legacyfinder"
-	"logger"
+
 	"net/http"
 	"os"
 	"path"
@@ -21,6 +21,8 @@ import (
 
 	"github.com/gorilla/mux"
 	"github.com/jessevdk/go-flags"
+	"github.com/uoregon-libraries/gopkg/fileutil"
+	"github.com/uoregon-libraries/gopkg/logger"
 )
 
 // Various command-line options live here, and yes, they're awful
