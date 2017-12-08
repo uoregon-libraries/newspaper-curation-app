@@ -4,12 +4,14 @@ import (
 	"config"
 	"db"
 	"fmt"
-	"logger"
+
 	"os"
 	"path/filepath"
 	"schema"
 	"strings"
 	"time"
+
+	"github.com/uoregon-libraries/gopkg/logger"
 )
 
 // A Processor is a general interface for all database-driven jobs that process something

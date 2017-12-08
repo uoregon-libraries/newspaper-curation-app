@@ -8,17 +8,19 @@ package main
 import (
 	"config"
 	"db"
-	"fileutil"
+
 	"fmt"
 	"io/ioutil"
 	"issuefinder"
 	"issuesearch"
-	"logger"
+
 	"os"
 	"strings"
-	"wordutils"
 
 	"github.com/jessevdk/go-flags"
+	"github.com/uoregon-libraries/gopkg/fileutil"
+	"github.com/uoregon-libraries/gopkg/logger"
+	"github.com/uoregon-libraries/gopkg/wordutils"
 )
 
 var issueSearchKeys []*issuesearch.Key

@@ -3,7 +3,8 @@ package main
 import (
 	"fmt"
 	"issuefinder"
-	"logger"
+
+	"github.com/uoregon-libraries/gopkg/logger"
 )
 
 var fails int

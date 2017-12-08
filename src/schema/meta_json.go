@@ -4,11 +4,13 @@ package schema
 
 import (
 	"encoding/json"
-	"fileutil"
+
 	"fmt"
 	"os"
 	"path/filepath"
 	"time"
+
+	"github.com/uoregon-libraries/gopkg/fileutil"
 )
 
 // IssueMeta defines the structure we use in the JSON metadata.  We don't use

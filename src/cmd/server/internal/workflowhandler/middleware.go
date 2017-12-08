@@ -3,12 +3,13 @@ package workflowhandler
 import (
 	"cmd/server/internal/responder"
 	"db"
-	"logger"
+
 	"net/http"
 	"strconv"
 	"user"
 
 	"github.com/gorilla/mux"
+	"github.com/uoregon-libraries/gopkg/logger"
 )
 
 // Handler is our version of http.Handler for sending extra context to

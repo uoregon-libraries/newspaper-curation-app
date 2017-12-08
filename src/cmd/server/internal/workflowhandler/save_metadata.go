@@ -5,10 +5,12 @@ import (
 	"db"
 	"encoding/base64"
 	"fmt"
-	"logger"
+
 	"net/http"
 	"strconv"
 	"strings"
+
+	"github.com/uoregon-libraries/gopkg/logger"
 )
 
 // storeIssueMetadata centralizes the logic for storing a metadata form's data

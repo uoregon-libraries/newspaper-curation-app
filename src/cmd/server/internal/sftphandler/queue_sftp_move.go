@@ -3,7 +3,8 @@ package sftphandler
 import (
 	"db"
 	"jobs"
-	"logger"
+
+	"github.com/uoregon-libraries/gopkg/logger"
 )
 
 func queueSFTPIssueMove(i *Issue) (ok bool, status string) {

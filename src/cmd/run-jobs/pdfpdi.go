@@ -2,10 +2,12 @@ package main
 
 import (
 	"bytes"
-	"logger"
+
 	"os/exec"
 	"strconv"
 	"strings"
+
+	"github.com/uoregon-libraries/gopkg/logger"
 )
 
 // pdfImageDPI holds x and y dpis gathered from PDF images

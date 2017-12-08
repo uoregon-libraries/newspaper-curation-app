@@ -2,10 +2,12 @@ package issuefinder
 
 import (
 	"encoding/gob"
-	"fileutil"
+
 	"fmt"
 	"os"
 	"schema"
+
+	"github.com/uoregon-libraries/gopkg/fileutil"
 )
 
 // cachedSearcher internally converts a Searcher into a cachedSearcher for serialization

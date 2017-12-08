@@ -5,9 +5,11 @@ package main
 import (
 	"config"
 	"derivatives/jp2"
-	"fileutil"
+
 	"fmt"
 	"os"
+
+	"github.com/uoregon-libraries/gopkg/fileutil"
 )
 
 func usageFail(format string, args ...interface{}) {

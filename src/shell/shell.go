@@ -3,10 +3,12 @@ package shell
 
 import (
 	"bytes"
-	"logger"
+
 	"os/exec"
 	"strings"
 	"syscall"
+
+	"github.com/uoregon-libraries/gopkg/logger"
 )
 
 func _exec(cmd *exec.Cmd, binary string, args ...string) (ok bool) {

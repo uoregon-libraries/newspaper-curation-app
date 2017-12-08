@@ -10,13 +10,14 @@
 package schema
 
 import (
-	"fileutil"
 	"fmt"
 	"path/filepath"
 	"sort"
 	"strconv"
 	"strings"
 	"time"
+
+	"github.com/uoregon-libraries/gopkg/fileutil"
 )
 
 // Batch represents high-level batch information

@@ -2,10 +2,12 @@ package responder
 
 import (
 	"cmd/server/internal/settings"
-	"logger"
+
 	"net/http"
 	"time"
 	"user"
+
+	"github.com/uoregon-libraries/gopkg/logger"
 )
 
 // GetUserLogin returns the Apache-auth user or the debuguser argument if

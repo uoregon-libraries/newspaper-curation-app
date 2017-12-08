@@ -1,11 +1,12 @@
 package main
 
 import (
-	"logger"
 	"os"
 	"os/signal"
 	"sync/atomic"
 	"syscall"
+
+	"github.com/uoregon-libraries/gopkg/logger"
 )
 
 var isDone int32

@@ -3,7 +3,7 @@ package jobs
 import (
 	"config"
 	"db"
-	"fileutil"
+
 	"fmt"
 	"io/ioutil"
 	"os"
@@ -11,6 +11,8 @@ import (
 	"regexp"
 	"shell"
 	"strconv"
+
+	"github.com/uoregon-libraries/gopkg/fileutil"
 )
 
 var splitPageFilenames = regexp.MustCompile(`^seq-(\d+).pdf$`)

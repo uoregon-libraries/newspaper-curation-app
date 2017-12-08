@@ -6,15 +6,17 @@ package main
 import (
 	"config"
 	"db"
-	"fileutil"
+
 	"fmt"
 	"legacyfinder"
-	"logger"
+
 	"os"
 	"path/filepath"
-	"wordutils"
 
 	"github.com/jessevdk/go-flags"
+	"github.com/uoregon-libraries/gopkg/fileutil"
+	"github.com/uoregon-libraries/gopkg/logger"
+	"github.com/uoregon-libraries/gopkg/wordutils"
 )
 
 // Conf stores the configuration data read from the legacy Python settings

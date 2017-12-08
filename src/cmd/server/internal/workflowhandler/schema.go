@@ -6,13 +6,15 @@ import (
 	"html/template"
 	"issuefinder"
 	"issuesearch"
-	"logger"
+
 	"path"
 	"path/filepath"
 	"schema"
 	"strconv"
 	"strings"
 	"time"
+
+	"github.com/uoregon-libraries/gopkg/logger"
 )
 
 // Issue wraps the DB issue, and decorates them with display-friendly functions

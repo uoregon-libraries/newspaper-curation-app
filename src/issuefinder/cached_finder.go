@@ -4,8 +4,9 @@
 package issuefinder
 
 import (
-	"fileutil"
 	"time"
+
+	"github.com/uoregon-libraries/gopkg/fileutil"
 )
 
 // cacheID is just a uint used to make it clear there's a relationship being expressed

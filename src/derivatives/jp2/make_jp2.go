@@ -5,11 +5,13 @@
 package jp2
 
 import (
-	"fileutil"
 	"fmt"
-	"logger"
+
 	"os"
 	"path/filepath"
+
+	"github.com/uoregon-libraries/gopkg/fileutil"
+	"github.com/uoregon-libraries/gopkg/logger"
 )
 
 // RateFactor is our constant divisor / multiplier for rates.  We store

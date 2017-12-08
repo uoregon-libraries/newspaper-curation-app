@@ -5,11 +5,13 @@ import (
 	"db"
 	"derivatives/alto"
 	"derivatives/jp2"
-	"fileutil"
+
 	"os"
 	"path/filepath"
 	"regexp"
 	"strings"
+
+	"github.com/uoregon-libraries/gopkg/fileutil"
 )
 
 var allowedFilesRegex = regexp.MustCompile(`(?i:^[0-9]{4}.(pdf|jp2|xml|tiff?))`)

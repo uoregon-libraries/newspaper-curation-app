@@ -2,8 +2,10 @@ package jobs
 
 import (
 	"config"
-	"fileutil"
+
 	"os"
+
+	"github.com/uoregon-libraries/gopkg/fileutil"
 )
 
 // MoveIssueForDerivatives is a job that gets queued up when an issue is ready
