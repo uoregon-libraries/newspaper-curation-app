@@ -39,7 +39,7 @@ type Transformer struct {
 
 	err         error
 	testedRates map[int]bool
-	Logger      logger.Logger
+	Logger      *logger.Logger
 }
 
 // New creates a new PDF/TIFF-to-JP2 transformer with default values for the

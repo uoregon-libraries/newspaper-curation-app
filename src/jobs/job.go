@@ -26,16 +26,18 @@ type Processor interface {
 // logging to the database
 type Job struct {
 	*db.Job
-	Logger logger.Logger
+	Logger *logger.Logger
 }
 
 // NewJob wraps the given db.Job and sets up a logger
 func NewJob(dbj *db.Job) *Job {
 	var j = &Job{Job: dbj}
-	j.Logger = logger.Logger{
-		TimeFormat: "2006/01/02 15:04:05.000",
-		AppName:    filepath.Base(os.Args[0]),
-		Output:     jobLogWriter{j},
+	j.Logger = &logger.Logger{
+		&logger.SimpleLogger{
+			TimeFormat: "2006/01/02 15:04:05.000",
+			AppName:    filepath.Base(os.Args[0]),
+			Output:     jobLogWriter{j},
+		},
 	}
 	return j
 }

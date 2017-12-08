@@ -27,7 +27,7 @@ type Transformer struct {
 
 	// Logger can be set up manually for customized logging, otherwise it just
 	// gets set to the default logger
-	Logger logger.Logger
+	Logger *logger.Logger
 
 	err  error
 	html []byte
