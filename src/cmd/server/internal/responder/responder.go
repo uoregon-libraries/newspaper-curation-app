@@ -5,6 +5,7 @@ package responder
 
 import (
 	"db"
+	"encoding/base64"
 	"logger"
 	"net/http"
 	"time"
@@ -59,6 +60,14 @@ func (r *Responder) Render(t *tmpl.Template) {
 	var cookie, err = r.Request.Cookie("Alert")
 	if err == nil && cookie.Value != "" {
 		r.Vars.Alert = cookie.Value
+		// TODO: This is such a horrible hack.  We need real session data management.
+		if len(r.Vars.Alert) > 6 && r.Vars.Alert[0:6] == "base64" {
+			var data, err = base64.StdEncoding.DecodeString(r.Vars.Alert[6:])
+			r.Vars.Alert = string(data)
+			if err != nil {
+				r.Vars.Alert = ""
+			}
+		}
 		http.SetCookie(r.Writer, &http.Cookie{Name: "Alert", Value: "", Expires: time.Time{}, Path: "/"})
 	}
 	cookie, err = r.Request.Cookie("Info")
