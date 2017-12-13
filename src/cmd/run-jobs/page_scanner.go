@@ -3,11 +3,10 @@ package main
 import (
 	"config"
 	"db"
-
 	"jobs"
-
 	"os"
 	"path/filepath"
+	"pdf"
 	"regexp"
 	"sort"
 	"strings"
@@ -247,15 +246,15 @@ func validScanPDFDPI(path string, expectedDPI int) bool {
 	}
 
 	for _, filename := range pdfFiles {
-		var dpis = getPDFDPIs(filename)
+		var dpis = pdf.ImageDPIs(filename)
 		if len(dpis) == 0 {
 			logger.Errorf("%q has no images or is invalid", filename)
 			return false
 		}
 
 		for _, dpi := range dpis {
-			if dpi.xDPI > maxDPI || dpi.yDPI > maxDPI {
-				logger.Errorf("%q has an image with a bad DPI (%g x %g)", filename, dpi.xDPI, dpi.yDPI)
+			if dpi.X > maxDPI || dpi.Y > maxDPI {
+				logger.Errorf("%q has an image with a bad DPI (%g x %g)", filename, dpi.X, dpi.Y)
 				return false
 			}
 		}

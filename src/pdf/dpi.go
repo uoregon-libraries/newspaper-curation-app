@@ -1,8 +1,7 @@
-package main
+package pdf
 
 import (
 	"bytes"
-
 	"os/exec"
 	"strconv"
 	"strings"
@@ -10,14 +9,15 @@ import (
 	"github.com/uoregon-libraries/gopkg/logger"
 )
 
-// pdfImageDPI holds x and y dpis gathered from PDF images
-type pdfImageDPI struct {
-	xDPI float64
-	yDPI float64
+// ImageDPI holds x and y dpis gathered from PDF images
+type ImageDPI struct {
+	X float64
+	Y float64
 }
 
-// getPDFDPIs returns an array of pdfImageDPIs
-func getPDFDPIs(path string) []pdfImageDPI {
+// ImageDPIs returns an array of ImageDPIs by reading the images in the
+// given PDF with "pdfimages -list"
+func ImageDPIs(path string) []ImageDPI {
 	var cmdParts = []string{"pdfimages", "-list", path}
 	var cmd = exec.Command(cmdParts[0], cmdParts[1:]...)
 	var output, err = cmd.CombinedOutput()
@@ -30,7 +30,7 @@ func getPDFDPIs(path string) []pdfImageDPI {
 		return nil
 	}
 
-	var dpis []pdfImageDPI
+	var dpis []ImageDPI
 	for i, line := range bytes.Split(output, []byte("\n")) {
 		// The first two lines don't give us any information
 		if bytes.HasPrefix(line, []byte("page")) || bytes.HasPrefix(line, []byte("--------")) {
@@ -72,7 +72,7 @@ func getPDFDPIs(path string) []pdfImageDPI {
 			return nil
 		}
 
-		dpis = append(dpis, pdfImageDPI{xDPI: xdpi, yDPI: ydpi})
+		dpis = append(dpis, ImageDPI{X: xdpi, Y: ydpi})
 	}
 
 	return dpis
