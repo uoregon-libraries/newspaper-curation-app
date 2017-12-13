@@ -6,7 +6,6 @@ import (
 	"jobs"
 	"os"
 	"path/filepath"
-	"pdf"
 	"regexp"
 	"sort"
 	"strings"
@@ -14,6 +13,7 @@ import (
 
 	"github.com/uoregon-libraries/gopkg/fileutil"
 	"github.com/uoregon-libraries/gopkg/logger"
+	"github.com/uoregon-libraries/gopkg/pdf"
 )
 
 var pdfFilenameRegex = regexp.MustCompile(`(?i:^[0-9]{4}.pdf)`)
