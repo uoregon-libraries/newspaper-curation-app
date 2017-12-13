@@ -43,16 +43,24 @@ func getPDFDPIs(path string) []pdfImageDPI {
 		}
 
 		var parts = bytes.Fields(line)
-		if len(parts) < 14 {
+		if len(parts) < 15 {
 			logger.Errorf("Too few fields in line %d of %q output: %q", i+1, strings.Join(cmdParts, " "), line)
 			return nil
 		}
 
-		var xdpiString, ydpiString = string(parts[12]), string(parts[13])
+		var xdpiString, ydpiString, sizeString = string(parts[12]), string(parts[13]), string(parts[14])
 
 		// In rare cases, we have embedded images with no DPI information
 		// somehow...  we have to ignore these situations....
 		if xdpiString == "inf" || ydpiString == "inf" {
+			continue
+		}
+
+		// Then there are the cases where the size string is empty or so low we
+		// just don't care about the image
+		if sizeString == "-" || sizeString[len(sizeString)-1] == 'B' {
+			logger.Debugf("Invalid DPI information in line %d of %q output: %q (skipping: small image)",
+				i+1, strings.Join(cmdParts, " "), line)
 			continue
 		}
 
