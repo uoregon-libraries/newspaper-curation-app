@@ -44,6 +44,7 @@ type Issue struct {
 
 	Error                  string       // If set, a metadata curator reported a problem
 	Location               string       // Where is this issue on disk?
+	HumanName              string       // What is the issue's "human" name (for consistent folder naming)?
 	IsFromScanner          bool         // Is the issue scanned in-house?  (Born-digital == false)
 	HasDerivatives         bool         // Does the issue have derivatives done?
 	WorkflowStepString     string       `sql:"workflow_step"` // If set, tells us what "human workflow" step we're on

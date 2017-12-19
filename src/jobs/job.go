@@ -160,7 +160,11 @@ func NewIssueJob(dbJob *db.Job) *IssueJob {
 // Subdir returns a subpath to the job issue's directory for consistent
 // directory naming and single-level paths
 func (ij *IssueJob) Subdir() string {
-	return fmt.Sprintf("%s-%s%02d", ij.Issue.Title.LCCN, ij.Issue.DateString(), ij.Issue.Edition)
+	if ij.DBIssue.HumanName == "" {
+		ij.DBIssue.HumanName = fmt.Sprintf("%s-%s%02d-%d",
+			ij.Issue.Title.LCCN, ij.Issue.DateString(), ij.Issue.Edition, ij.DBIssue.ID)
+	}
+	return ij.DBIssue.HumanName
 }
 
 // WIPDir returns a hidden name for a work-in-progress directory to allow
