@@ -171,6 +171,8 @@ func (i *Issue) decorateExternalErrors() {
 }
 
 // decorateDupeErrors adds errors to the issue if we find the same key in the global watcher
+//
+// TODO: Check the database for dupes as well!
 func (i *Issue) decorateDupeErrors() {
 	var key, err = issuesearch.ParseSearchKey(i.Key())
 	// This shouldn't be able to happen, but if it does the best we can do is log
