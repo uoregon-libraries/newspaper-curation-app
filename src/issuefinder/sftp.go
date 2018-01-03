@@ -32,19 +32,12 @@ func (s *Searcher) FindSFTPIssues() error {
 }
 
 // findSFTPIssuesForTitle finds all issues within the given title's path by
-// looking for YYYY-MM-DD formatted directories.  As the path is expected to be
-// "standard", the last directory element in the path must be an SFTP title
-// name or an LCCN.
+// looking for YYYY-MM-DD formatted directories.  The last directory element in
+// the path must be an SFTP title name or an LCCN.
 func (s *Searcher) findSFTPIssuesForTitlePath(titlePath string) error {
-	// Make sure we have a legitimate title - we have to check titles by
-	// directory and LCCN
 	var titleName = filepath.Base(titlePath)
 	var title = s.findFilesystemTitle(titleName, titlePath)
 
-	// A missing title is a problem for all standard directory layouts, because
-	// these are always in-house issues.  Live batches or old batches on the
-	// filesystem wouldn't hit this check.
-	//
 	// Note that despite not having a valid title we still scan the directory in
 	// order to catch other errors and aggregate the unknown titles' issues.
 	if title == nil {
@@ -77,7 +70,7 @@ func (s *Searcher) findSFTPIssuesForTitlePath(titlePath string) error {
 		// Invalid issue directory names can't have an issue, so we can continue
 		// without fixing up the errors
 		if err != nil {
-			addErr(fmt.Errorf("invalid issue directory name: must be formatted YYYY-MM-DD or YYYYMMDD"))
+			addErr(fmt.Errorf("invalid issue directory name: must be formatted YYYY-MM-DD"))
 			continue
 		}
 
