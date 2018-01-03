@@ -41,50 +41,5 @@ func (f *Finder) FindIssues() (*issuefinder.Finder, error) {
 	if err != nil {
 		return nil, fmt.Errorf("unable to cache sftp issues: %s", err)
 	}
-
-	err = f.findStandardIssues(realFinder)
-	if err != nil {
-		return nil, fmt.Errorf("unable to cache standard filesystem issues: %s", err)
-	}
-
-	err = realFinder.FindDiskBatches(f.config.BatchOutputPath)
-	if err != nil {
-		return nil, fmt.Errorf("unable to cache batches: %s", err)
-	}
 	return realFinder, nil
-}
-
-// findStandardIssues deals with all the various locations for issues which
-// are not in a batch directory structure.  This doesn't mean they haven't been
-// batched, just that the directory uses the somewhat consistent pdf-to-chronam
-// structure `topdir/sftpnameOrLCCN/yyyy-mm-dd/`
-func (f *Finder) findStandardIssues(realFinder *issuefinder.Finder) error {
-	var locs = []string{
-		f.config.MasterPDFBackupPath,
-		f.config.PDFPageReviewPath,
-		f.config.PDFPagesAwaitingMetadataReview,
-		f.config.PDFIssuesAwaitingDerivatives,
-		f.config.ScansAwaitingDerivatives,
-		f.config.PDFPageBackupPath,
-		f.config.PDFPageSourcePath,
-	}
-
-	var namespaces = map[string]issuefinder.Namespace{
-		f.config.MasterPDFBackupPath:            issuefinder.MasterBackup,
-		f.config.PDFPageReviewPath:              issuefinder.AwaitingPageReview,
-		f.config.PDFPagesAwaitingMetadataReview: issuefinder.AwaitingMetadataReview,
-		f.config.PDFIssuesAwaitingDerivatives:   issuefinder.PDFsAwaitingDerivatives,
-		f.config.ScansAwaitingDerivatives:       issuefinder.ScansAwaitingDerivatives,
-		f.config.PDFPageBackupPath:              issuefinder.PageBackup,
-		f.config.PDFPageSourcePath:              issuefinder.ReadyForBatching,
-	}
-
-	for _, loc := range locs {
-		var err = realFinder.FindStandardIssues(namespaces[loc], loc)
-		if err != nil {
-			return err
-		}
-	}
-
-	return nil
 }

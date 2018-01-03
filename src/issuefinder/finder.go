@@ -108,22 +108,10 @@ func (f *Finder) createAndProcessSearcher(ns Namespace, loc string, processor fu
 	return err
 }
 
-// FindDiskBatches creates and runs a custom-namespaced disk batch Searcher,
-// aggregates its data, and returns any errors encountered
-func (f *Finder) FindDiskBatches(path string) error {
-	return f.createAndProcessSearcher(BatchedOnDisk, path, func(s *Searcher) error { return s.FindDiskBatches() })
-}
-
 // FindSFTPIssues creates and runs an SFTP Searcher, aggregates its data,
 // and returns any errors encountered
 func (f *Finder) FindSFTPIssues(path string) error {
 	return f.createAndProcessSearcher(SFTPUpload, path, func(s *Searcher) error { return s.FindSFTPIssues() })
-}
-
-// FindStandardIssues creates and runs a cutom-namespaced standard issue
-// Searcher, aggregates its data, and returns any errors encountered
-func (f *Finder) FindStandardIssues(ns Namespace, path string) error {
-	return f.createAndProcessSearcher(ns, path, func(s *Searcher) error { return s.FindStandardIssues() })
 }
 
 // FindWebBatches creates and runs a website batch Searcher, aggregates its

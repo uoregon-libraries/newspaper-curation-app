@@ -1,20 +1,16 @@
 package issuefinder
 
 import (
-	"chronam"
-
 	"fmt"
 	"path/filepath"
 	"schema"
-	"strconv"
 	"strings"
 	"time"
 
 	"github.com/uoregon-libraries/gopkg/fileutil"
 )
 
-// FindSFTPIssues is just barely its own special case because unlike the
-// standard structure, there is no "topdir" element in the paths
+// FindSFTPIssues aggregates all the uploaded born-digital PDFs
 func (s *Searcher) FindSFTPIssues() error {
 	s.init()
 
@@ -26,7 +22,7 @@ func (s *Searcher) FindSFTPIssues() error {
 
 	// Find all issues next
 	for _, titlePath := range titlePaths {
-		err = s.findStandardIssuesForTitlePath(titlePath, true)
+		err = s.findSFTPIssuesForTitlePath(titlePath)
 		if err != nil {
 			return err
 		}
@@ -35,49 +31,11 @@ func (s *Searcher) FindSFTPIssues() error {
 	return nil
 }
 
-// FindStandardIssues does the work of finding and returning all issue
-// information within a Searcher's Location with the assumption that the path
-// conforms to `topdir/sftpnameOrLCCN/yyyy-mm-dd/`
-func (s *Searcher) FindStandardIssues() error {
-	s.init()
-
-	// First find all topdirs
-	var topdirs, err = fileutil.FindDirectories(s.Location)
-	if err != nil {
-		return err
-	}
-
-	// Next, find titles
-	var titlePaths []string
-	for _, p := range topdirs {
-		var paths, err = fileutil.FindDirectories(p)
-		if err != nil {
-			return err
-		}
-
-		titlePaths = append(titlePaths, paths...)
-	}
-
-	// Finally, find issues
-	for _, titlePath := range titlePaths {
-		err = s.findStandardIssuesForTitlePath(titlePath, false)
-		if err != nil {
-			return err
-		}
-	}
-
-	return nil
-}
-
-// findStandardIssuesForTitle finds all issues within the given title's path by
-// looking for YYYY-MM-DD or YYYY-MM-DD_EE formatted directories.  The latter
-// format is only allowed if strict is false (SFTP issues, for instance, don't
-// allow an edition).  As the path is expected to be "standard", the last
-// directory element in the path must be an SFTP title name or an LCCN.
-//
-// TODO: Add a way to handle the flat workflow dirs (lccn-yyyymmdd), and
-// deprecate this as it is no longer going to be our standard.
-func (s *Searcher) findStandardIssuesForTitlePath(titlePath string, strict bool) error {
+// findSFTPIssuesForTitle finds all issues within the given title's path by
+// looking for YYYY-MM-DD formatted directories.  As the path is expected to be
+// "standard", the last directory element in the path must be an SFTP title
+// name or an LCCN.
+func (s *Searcher) findSFTPIssuesForTitlePath(titlePath string) error {
 	// Make sure we have a legitimate title - we have to check titles by
 	// directory and LCCN
 	var titleName = filepath.Base(titlePath)
@@ -115,39 +73,7 @@ func (s *Searcher) findStandardIssuesForTitlePath(titlePath string, strict bool)
 			base = base[:len(base)-6]
 		}
 
-		// Strip off any "==" nonsense if it starts exactly 6 characters from the
-		// end of the string
-		var idx = strings.Index(base, "==")
-		var l = len(base)
-		if idx == l-6 {
-			base = base[:idx]
-		}
-
-		// Strip hyphens to make things more standard since the new setup has
-		// YYYYMMDDEE once sftp issues are queued
-		base = strings.Replace(base, "-", "", 2)
-
-		// Strip the underscore as well, again for consistency
-		base = strings.Replace(base, "_", "", 1)
-
-		// Check for an edition suffix
-		var edition = 1
-		if len(base) == 10 {
-			var edstr = base[8:10]
-			edition, err = strconv.Atoi(edstr)
-			if edition < 1 {
-				addErr(fmt.Errorf("invalid issue directory edition suffix (%s)", edstr))
-			}
-
-			// SFTP dirs can't have an edition suffix, so we conditionally store an error
-			if strict {
-				addErr(fmt.Errorf("edition suffix isn't allowed here"))
-			}
-
-			base = base[:8]
-		}
-
-		var dt, err = time.Parse("20060102", base)
+		var dt, err = time.Parse("2006-01-02", base)
 		// Invalid issue directory names can't have an issue, so we can continue
 		// without fixing up the errors
 		if err != nil {
@@ -155,12 +81,7 @@ func (s *Searcher) findStandardIssuesForTitlePath(titlePath string, strict bool)
 			continue
 		}
 
-		var issue = title.AddIssue(&schema.Issue{Date: dt, Edition: edition, Location: issuePath})
-
-		err = issue.ParseMetadata()
-		if err != nil {
-			addErr(fmt.Errorf("invalid issue metadata: %s", err))
-		}
+		var issue = title.AddIssue(&schema.Issue{Date: dt, Edition: 1, Location: issuePath})
 
 		issue.FindFiles()
 
@@ -168,56 +89,28 @@ func (s *Searcher) findStandardIssuesForTitlePath(titlePath string, strict bool)
 			e.SetIssue(issue)
 		}
 		s.Issues = append(s.Issues, issue)
-		s.verifyStandardIssueFiles(issue, strict)
+		s.verifySFTPIssueFiles(issue)
 	}
 
 	return nil
 }
 
-// verifyStandardIssueFiles looks for errors in any files within a given issue.
+// verifySFTPIssueFiles looks for errors in any files within a given issue.
 // In our standard layout, the following are considered errors:
-// - There are files that aren't regular (symlinks, directories, etc), though
-//   some exceptions exist, such as the .derivatives sub-directory
-// - There are files that aren't pdf, tiff, jp2, or xml (though a
-//   few exceptions exist, such as .meta.json and Adobe Bridge dot-files we
-//   ignore when we get to the processing phase)
-// - Any derivative file exists without a corresponding PDF
+// - There are files that aren't regular (symlinks, directories, etc)
+// - There are files that aren't pdf
 // - The issue directory is empty
-//
-// Additionally, if strict is true, we don't allow for any exceptions to the
-// file type and extension rules, to prevent SFTP directories from being
-// processed when there's anything non-conformant.
-func (s *Searcher) verifyStandardIssueFiles(issue *schema.Issue, strict bool) {
+func (s *Searcher) verifySFTPIssueFiles(issue *schema.Issue) {
 	if len(issue.Files) == 0 {
 		s.newError(issue.Location, fmt.Errorf("no issue files found")).SetIssue(issue)
 		return
 	}
 
-	// Cache all filenames beforehand
-	var hasPDF = make(map[string]bool)
 	for _, file := range issue.Files {
-		var ext = strings.ToLower(filepath.Ext(file.Name))
-		if ext == ".pdf" {
-			hasPDF[strings.Replace(file.Name, ext, "", 1)] = true
-		}
-	}
-
-	// NOTE: These rules *seem* general-case, but they only makes sense for
-	// standard issues, so if we extract this code into a more reusable function,
-	// we need to refine or separate some rules.  A batch can have the master
-	// PDFs stored in a subdirectory, a meta.json file (not .meta.json), and
-	// issue-level XMLs that don't have a corresponding PDF.
-	for _, file := range issue.Files {
-		// We could check .meta.json, .derivatives, .Bridge*, etc. individually,
-		// but the very low likelihood of dot-files being real errors just isn't
-		// worth the granularity.
-		if strict == false && file.Name[0] == '.' {
-			continue
-		}
-
 		var makeErr = func(format string, args ...interface{}) {
 			s.newError(file.Location, fmt.Errorf(format, args...)).SetFile(file)
 		}
+
 		if file.IsDir() {
 			makeErr("%q is a subdirectory", file.Name)
 			continue
@@ -228,94 +121,10 @@ func (s *Searcher) verifyStandardIssueFiles(issue *schema.Issue, strict bool) {
 			continue
 		}
 
-		// NOTE: It may be a good idea to validate that all content files are
-		// numeric-only.  Mostly ####.jp2/pdf/etc, though if we handle batches at
-		// some point, we may also see YYYYMMDDEE.xml.
 		var ext = strings.ToLower(filepath.Ext(file.Name))
-		if ext != ".pdf" && ext != ".tiff" && ext != ".tif" && ext != ".jp2" && ext != ".xml" {
+		if ext != ".pdf" {
 			makeErr("%q has an invalid extension", file.Name)
 			continue
 		}
-
-		if ext != ".pdf" {
-			if !hasPDF[strings.Replace(file.Name, ext, "", 1)] {
-				makeErr("%q has no associated PDF", file.Name)
-				continue
-			}
-		}
-	}
-}
-
-// FindDiskBatches finds all batches in the batch output path, then finds their
-// titles and their titles' issues, and caches everything
-func (s *Searcher) FindDiskBatches() error {
-	s.init()
-
-	// First, find batch directories
-	var batchDirs, err = fileutil.FindDirectories(s.Location)
-	if err != nil {
-		return err
-	}
-
-	// For each batch, we want to store the batch information as well as
-	// everything in it
-	for _, batchDir := range batchDirs {
-		// To simplify things, we don't actually scour the filesystem for titles
-		// and issues; instead, we parse the batch XML, as that should *always*
-		// contain all issues (and their titles LCCNs).
-		s.cacheBatchDataFromXML(batchDir)
-	}
-
-	return nil
-}
-
-// cacheBatchDataFromXML reads the batch.xml file and caches all titles and
-// issues found inside.  Errors are stored, and many are ignored, as a broken
-// batch or batch XML isn't necessarily uncommon with live data, oddly enough.
-// We don't bother to verify issue directories or files at this point, because
-// only a code bug would cause the generated batches to break, which isn't
-// something anybody but a dev can deal with.
-func (s *Searcher) cacheBatchDataFromXML(batchDir string) {
-	var parts = strings.Split(batchDir, string(filepath.Separator))
-	var batchName = parts[len(parts)-1]
-	var batch, err = schema.ParseBatchname(batchName)
-	if err != nil {
-		s.newError(batchDir, fmt.Errorf("invalid batch directory name %#v: %s", batchDir, err))
-		return
-	}
-	batch.Location = batchDir
-	s.Batches = append(s.Batches, batch)
-
-	var bx *chronam.BatchXML
-	bx, err = chronam.ParseBatchXML(batchDir)
-	if err != nil {
-		s.newError(batchDir, fmt.Errorf("unable to process batch XML: %s", err)).SetBatch(batch)
-		return
-	}
-
-	var dataDir = filepath.Join(batchDir, "data")
-
-	// All titles within a batch are treated as being unique within the system as
-	// a whole.  And since batched titles may or may not be in our database, and
-	// we always know we have an LCCN, we don't bother doing global lookups.
-	for _, ix := range bx.Issues {
-		var dt time.Time
-		dt, err = time.Parse("2006-01-02", ix.Date)
-		if err != nil {
-			s.newError(batchDir, fmt.Errorf("invalid issue date in batch XML (%#v): %s", ix, err)).SetBatch(batch)
-			return
-		}
-		var ed int
-		ed, err = strconv.Atoi(ix.EditionOrder)
-		if err != nil {
-			s.newError(batchDir, fmt.Errorf("invalid issue edition in batch XML (%#v)", ix)).SetBatch(batch)
-		}
-
-		var titleDir = filepath.Join(dataDir, ix.LCCN)
-		var title = s.findOrCreateUnknownFilesystemTitle(ix.LCCN, titleDir)
-		var issueDir = filepath.Join(dataDir, ix.Content)
-		var issue = title.AddIssue(&schema.Issue{Date: dt, Edition: ed, Location: issueDir})
-		batch.AddIssue(issue)
-		s.Issues = append(s.Issues, issue)
 	}
 }
