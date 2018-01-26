@@ -28,21 +28,6 @@ func (s *Searcher) findFilesystemTitle(titleName, path string) *schema.Title {
 	return s.titleByLoc[path]
 }
 
-// findOrCreateUnknownFilesystemTitle looks up the title by path and returns it
-// or creates a new one.  This should only be used for titles for which we have
-// no metadata: when LCCN is the only data available, the title is incomplete.
-func (s *Searcher) findOrCreateUnknownFilesystemTitle(lccn, path string) *schema.Title {
-	// First see if we can look up the title in the database
-	if s.titleByLoc[path] == nil {
-		s.findFilesystemTitle(lccn, path)
-	}
-	// If it's still empty, we create it with the limited data we have
-	if s.titleByLoc[path] == nil {
-		s.addTitle(&schema.Title{LCCN: lccn, Location: path})
-	}
-	return s.titleByLoc[path]
-}
-
 // addTitle pushes the title into the global titles list and caches it by its
 // location field
 func (s *Searcher) addTitle(title *schema.Title) {
