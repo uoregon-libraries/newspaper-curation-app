@@ -74,50 +74,16 @@ func (s *Searcher) findSFTPIssuesForTitlePath(titlePath string) error {
 			continue
 		}
 
+		// Build the issue now that we know we can put together the minimal metadata
 		var issue = title.AddIssue(&schema.Issue{Date: dt, Edition: 1, Location: issuePath})
-
 		issue.FindFiles()
 
 		for _, e := range errors {
 			e.SetIssue(issue)
 		}
 		s.Issues = append(s.Issues, issue)
-		s.verifySFTPIssueFiles(issue)
+		s.verifyIssueFiles(issue, []string{".pdf"})
 	}
 
 	return nil
-}
-
-// verifySFTPIssueFiles looks for errors in any files within a given issue.
-// In our standard layout, the following are considered errors:
-// - There are files that aren't regular (symlinks, directories, etc)
-// - There are files that aren't pdf
-// - The issue directory is empty
-func (s *Searcher) verifySFTPIssueFiles(issue *schema.Issue) {
-	if len(issue.Files) == 0 {
-		s.newError(issue.Location, fmt.Errorf("no issue files found")).SetIssue(issue)
-		return
-	}
-
-	for _, file := range issue.Files {
-		var makeErr = func(format string, args ...interface{}) {
-			s.newError(file.Location, fmt.Errorf(format, args...)).SetFile(file)
-		}
-
-		if file.IsDir() {
-			makeErr("%q is a subdirectory", file.Name)
-			continue
-		}
-
-		if !file.IsRegular() {
-			makeErr("%q is not a regular file", file.Name)
-			continue
-		}
-
-		var ext = strings.ToLower(filepath.Ext(file.Name))
-		if ext != ".pdf" {
-			makeErr("%q has an invalid extension", file.Name)
-			continue
-		}
-	}
 }
