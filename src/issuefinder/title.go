@@ -5,26 +5,39 @@ import (
 	"db"
 	"fmt"
 	"httpcache"
+	"path/filepath"
 	"schema"
 )
 
-// findFilesystemTitle looks up the title by its given path and returns it or
-// creates a new one if its "titleName" is in the database.  "titleName" can
-// be LCCN or SFTP directory depending on the type of directory.
-func (s *Searcher) findFilesystemTitle(titleName, path string) *schema.Title {
+// findOrCreateFilesystemTitle looks up the title by its given path and returns
+// it or creates a new one if its "name" (last part of path) is in the
+// database.  If a title still isn't found, one is created, but an error is
+// attached to the searcher as we shouldn't be finding titles on the filesystem
+// that aren't in the database.
+func (s *Searcher) findOrCreateFilesystemTitle(path string) *schema.Title {
+	var t *schema.Title
+	var titleName = filepath.Base(path)
 	if s.titleByLoc[path] == nil {
 		// Make sure titles are loaded from the DB, and puke on any errors
 		var err = db.LoadTitles()
 		if err != nil {
 			panic(err)
 		}
-		var t = db.LookupTitle(titleName).SchemaTitle()
+		t = db.LookupTitle(titleName).SchemaTitle()
 		if t == nil {
 			return nil
 		}
 		t.Location = path
 		s.addTitle(t)
 	}
+
+	// If we still have no title, we create one but make it clear it's a problem
+	if t == nil {
+		t = &schema.Title{LCCN: titleName}
+		s.addTitle(t)
+		s.newError(path, fmt.Errorf("unable to find title %#v in database", titleName))
+	}
+
 	return s.titleByLoc[path]
 }
 

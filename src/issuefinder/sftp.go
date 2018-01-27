@@ -35,16 +35,7 @@ func (s *Searcher) FindSFTPIssues() error {
 // looking for YYYY-MM-DD formatted directories.  The last directory element in
 // the path must be an SFTP title name or an LCCN.
 func (s *Searcher) findSFTPIssuesForTitlePath(titlePath string) error {
-	var titleName = filepath.Base(titlePath)
-	var title = s.findFilesystemTitle(titleName, titlePath)
-
-	// Note that despite not having a valid title we still scan the directory in
-	// order to catch other errors and aggregate the unknown titles' issues.
-	if title == nil {
-		title = &schema.Title{LCCN: titlePath}
-		s.addTitle(title)
-		s.newError(titlePath, fmt.Errorf("unable to find title %#v in database", titleName))
-	}
+	var title = s.findOrCreateFilesystemTitle(titlePath)
 
 	var issuePaths, err = fileutil.FindDirectories(titlePath)
 	if err != nil {
