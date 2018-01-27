@@ -111,13 +111,15 @@ func (f *Finder) createAndProcessSearcher(ns Namespace, loc string, processor fu
 // FindSFTPIssues creates and runs an SFTP Searcher, aggregates its data,
 // and returns any errors encountered
 func (f *Finder) FindSFTPIssues(path string) error {
-	return f.createAndProcessSearcher(SFTPUpload, path, func(s *Searcher) error { return s.FindSFTPIssues() })
+	var searchFn = func(s *Searcher) error { return s.FindSFTPIssues() }
+	return f.createAndProcessSearcher(SFTPUpload, path, searchFn)
 }
 
 // FindWebBatches creates and runs a website batch Searcher, aggregates its
 // data, and returns any errors encountered
 func (f *Finder) FindWebBatches(hostname, cachePath string) error {
-	return f.createAndProcessSearcher(Website, hostname, func(s *Searcher) error { return s.FindWebBatches(cachePath) })
+	var searchFn = func(s *Searcher) error { return s.FindWebBatches(cachePath) }
+	return f.createAndProcessSearcher(Website, hostname, searchFn)
 }
 
 // aggregate just puts the searcher's data into the Finder for global use
