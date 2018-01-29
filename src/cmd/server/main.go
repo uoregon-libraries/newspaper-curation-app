@@ -1,7 +1,6 @@
 package main
 
 import (
-	"cmd/server/internal/findhandler"
 	"cmd/server/internal/responder"
 	"cmd/server/internal/settings"
 	"cmd/server/internal/sftphandler"
@@ -115,7 +114,6 @@ func startServer() {
 	go watcher.Watch(5 * time.Minute)
 	sftphandler.Setup(r, path.Join(hp, "sftp"), Conf, watcher)
 	workflowhandler.Setup(r, path.Join(hp, "workflow"), Conf, watcher)
-	findhandler.Setup(r, path.Join(hp, "search-issues"), watcher)
 
 	var waited, lastWaited int
 	for watcher.IssueFinder().Issues == nil {
