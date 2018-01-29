@@ -194,18 +194,8 @@ func (i *Issue) decorateDupeErrors() {
 		case issuefinder.Website:
 			errstr += fmt.Sprintf(`a live issue: <a href="%s">%s, %s</a>`,
 				wi.Location[:len(wi.Location)-5], wi.Title.Name, wi.DateStringReadable())
-		case issuefinder.AwaitingPageReview:
-			errstr += "an issue waiting on page reordering and/or metadata entry"
-		case issuefinder.AwaitingMetadataReview:
-			errstr += "an issue waiting for metadata review"
-		case issuefinder.PDFsAwaitingDerivatives:
-			errstr += "an issue waiting for derivatives to be built"
-		case issuefinder.ScansAwaitingDerivatives:
-			errstr += "an issue waiting for derivatives to be built"
-		case issuefinder.ReadyForBatching:
-			errstr += "an issue which will be batched soon"
-		case issuefinder.BatchedOnDisk:
-			errstr += "an issue in an uningested batch"
+		case issuefinder.ScanUpload:
+			errstr += "a scanned issue waiting for processing"
 		default:
 			errstr += fmt.Sprintf("an unknown issue (location: %q)", wi.Location)
 		}

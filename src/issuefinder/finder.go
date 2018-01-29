@@ -19,14 +19,7 @@ type Namespace uint8
 const (
 	Website Namespace = iota
 	SFTPUpload
-	AwaitingPageReview
-	AwaitingMetadataReview
-	PDFsAwaitingDerivatives
-	ScansAwaitingDerivatives
-	ReadyForBatching
-	BatchedOnDisk
-	MasterBackup
-	PageBackup
+	ScanUpload
 )
 
 // Searcher is the central component of the issuefinder package, running the filesystem
