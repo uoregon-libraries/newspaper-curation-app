@@ -52,20 +52,12 @@ type Config struct {
 	Quality float64
 
 	// Paths to the various places we expect to find files
-	MasterPDFUploadPath            string `setting:"MASTER_PDF_UPLOAD_PATH" type:"path"`
-	MasterPDFBackupPath            string `setting:"MASTER_PDF_BACKUP_PATH" type:"path"`
-	PDFIssuesAwaitingDerivatives   string `setting:"PDF_ISSUES_AWAITING_DERIVATIVES" type:"path"`
-	PDFPageReviewPath              string `setting:"PDF_PAGE_REVIEW_PATH" type:"path"`
-	PDFPagesAwaitingMetadataReview string `setting:"PDF_PAGES_AWAITING_METADATA_REVIEW" type:"path"`
-	PDFPageSourcePath              string `setting:"PDF_PAGE_SOURCE_PATH" type:"path"`
-	BatchOutputPath                string `setting:"BATCH_OUTPUT_PATH" type:"path"`
-	PDFPageBackupPath              string `setting:"PDF_PAGE_BACKUP_PATH" type:"path"`
-	ScansAwaitingDerivatives       string `setting:"SCANS_AWAITING_DERIVATIVES" type:"path"`
-
-	// Eventually many of the paths above will be removed and this will be the
-	// main location for all issues.  We'll have metadata in the database to tell
-	// us workflow steps, rather relying on the filesystem paths.
-	WorkflowPath string `setting:"WORKFLOW_PATH" type:"path"`
+	MasterPDFUploadPath  string `setting:"MASTER_PDF_UPLOAD_PATH" type:"path"`
+	MasterScanUploadPath string `setting:"MASTER_SCAN_UPLOAD_PATH" type:"path"`
+	MasterPDFBackupPath  string `setting:"MASTER_PDF_BACKUP_PATH" type:"path"`
+	PDFPageReviewPath    string `setting:"PDF_PAGE_REVIEW_PATH" type:"path"`
+	BatchOutputPath      string `setting:"BATCH_OUTPUT_PATH" type:"path"`
+	WorkflowPath         string `setting:"WORKFLOW_PATH" type:"path"`
 }
 
 // Parse reads the given settings file and returns a parsed Config.  File paths

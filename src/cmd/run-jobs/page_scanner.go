@@ -36,7 +36,7 @@ func scanPageReviewIssues(c *config.Config) {
 // scanScannedIssues is a terrible name for the very important process of
 // looking for in-house scanned issues that are valid and ready for processing
 func scanScannedIssues(c *config.Config) {
-	var mocDirs = getScannedMOCDirList(c.ScansAwaitingDerivatives)
+	var mocDirs = getScannedMOCDirList(c.MasterScanUploadPath)
 	var lccnDirs []string
 	for _, mocDir := range mocDirs {
 		lccnDirs = append(lccnDirs, getLCCNDirs(mocDir)...)
