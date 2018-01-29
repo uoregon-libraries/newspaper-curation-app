@@ -108,6 +108,13 @@ func (f *Finder) FindSFTPIssues(path string) error {
 	return f.createAndProcessSearcher(SFTPUpload, path, searchFn)
 }
 
+// FindScannedIssues creates and runs a scanned-issue Searcher, aggregates its
+// data, and returns any errors encountered
+func (f *Finder) FindScannedIssues(path string) error {
+	var searchFn = func(s *Searcher) error { return s.FindScannedIssues() }
+	return f.createAndProcessSearcher(ScanUpload, path, searchFn)
+}
+
 // FindWebBatches creates and runs a website batch Searcher, aggregates its
 // data, and returns any errors encountered
 func (f *Finder) FindWebBatches(hostname, cachePath string) error {

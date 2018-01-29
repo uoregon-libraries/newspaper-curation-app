@@ -41,5 +41,11 @@ func (f *Finder) FindIssues() (*issuefinder.Finder, error) {
 	if err != nil {
 		return nil, fmt.Errorf("unable to cache sftp issues: %s", err)
 	}
+
+	err = realFinder.FindScannedIssues(f.config.MasterScanUploadPath)
+	if err != nil {
+		return nil, fmt.Errorf("unable to cache scanned issues: %s", err)
+	}
+
 	return realFinder, nil
 }
