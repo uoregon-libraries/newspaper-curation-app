@@ -5,7 +5,7 @@ import (
 	"config"
 	"db"
 	"fmt"
-	"legacyfinder"
+	"issuewatcher"
 
 	"net/http"
 	"path"
@@ -23,7 +23,7 @@ var (
 	basePath string
 
 	// watcher is used to look for dupes when queueing an issue for review
-	watcher *legacyfinder.Watcher
+	watcher *issuewatcher.Watcher
 
 	// Layout is the base template, cloned from the responder's layout, from
 	// which all workflow pages are built
@@ -47,7 +47,7 @@ var (
 
 // Setup sets up all the workflow-specific routing rules and does any other
 // init necessary for workflow handling
-func Setup(r *mux.Router, webPath string, c *config.Config, w *legacyfinder.Watcher) {
+func Setup(r *mux.Router, webPath string, c *config.Config, w *issuewatcher.Watcher) {
 	conf = c
 	basePath = webPath
 	watcher = w

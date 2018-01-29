@@ -9,7 +9,7 @@ import (
 	"db"
 
 	"fmt"
-	"legacyfinder"
+	"issuewatcher"
 
 	"net/http"
 	"os"
@@ -110,7 +110,7 @@ func startServer() {
 	var staticPrefix = path.Join(hp, "static")
 	r.NewRoute().PathPrefix(staticPrefix).Handler(http.StripPrefix(staticPrefix, fileServer))
 
-	var watcher = legacyfinder.NewWatcher(Conf, opts.ChronamRoot, opts.CachePath)
+	var watcher = issuewatcher.NewWatcher(Conf, opts.ChronamRoot, opts.CachePath)
 	go watcher.Watch(5 * time.Minute)
 	sftphandler.Setup(r, path.Join(hp, "sftp"), Conf, watcher)
 	workflowhandler.Setup(r, path.Join(hp, "workflow"), Conf, watcher)
