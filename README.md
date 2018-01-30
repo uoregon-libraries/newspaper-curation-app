@@ -1,20 +1,13 @@
 Batch Maker
 ===
 
-This is the third (and hopefully final) toolsuite for generating batches which
-can be ingested into [ONI](https://github.com/open-oni/open-oni) and
+This is the replacement toolsuite for generating batches which can be ingested
+into [ONI](https://github.com/open-oni/open-oni) and
 [chronam](https://github.com/LibraryOfCongress/chronam).  See our other
-repositories for the complete suite:
+repositories for the legacy suite:
 
 - [Back-end python tools](https://github.com/uoregon-libraries/pdf-to-chronam)
 - [Front-end PHP app](https://github.com/uoregon-libraries/pdf-to-chronam-admin)
-
-This project was created initially just to have a quick way to scan publisher's
-PDFs and find errors before running the Python scripts in the other repository,
-as PHP was proving unsuitable for disk scanning jobs, and Python wasn't a great
-fit for a new front-end app (and neither had great error detection and
-handling).  It is now planned to slowly replace the other codebases entirely,
-to simplify the application as well as provide something significantly faster.
 
 Compilation requires [Go](https://golang.org/dl/) 1.9 or later and gb:
 
@@ -23,9 +16,9 @@ Compilation requires [Go](https://golang.org/dl/) 1.9 or later and gb:
 server
 ---
 
-This tool currently adds two areas to the site: an SFTP queueing tool, and an
-issue finder.  Please note that, at the moment, this requires Apache sitting in
-front of the server for authentication.
+This is the web server which exposes all the batch-maker workflow UI.  Please
+note that, at the moment, this requires Apache sitting in front of the server
+for authentication.
 
 ### Usage
 
