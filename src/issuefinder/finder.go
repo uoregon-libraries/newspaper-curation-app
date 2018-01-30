@@ -20,6 +20,7 @@ const (
 	Website Namespace = iota
 	SFTPUpload
 	ScanUpload
+	InProcess
 )
 
 // Searcher is the central component of the issuefinder package, running the filesystem
@@ -120,6 +121,14 @@ func (f *Finder) FindScannedIssues(path string) error {
 func (f *Finder) FindWebBatches(hostname, cachePath string) error {
 	var searchFn = func(s *Searcher) error { return s.FindWebBatches(cachePath) }
 	return f.createAndProcessSearcher(Website, hostname, searchFn)
+}
+
+// FindInProcessIssues creates and runs an in-process issues (issues which are
+// in the workflow dir and have been indexed) searcher, aggregates its data,
+// and returns any errors encountered
+func (f *Finder) FindInProcessIssues() error {
+	var searchFn = func(s *Searcher) error { return s.FindInProcessIssues() }
+	return f.createAndProcessSearcher(InProcess, "database", searchFn)
 }
 
 // aggregate just puts the searcher's data into the Finder for global use

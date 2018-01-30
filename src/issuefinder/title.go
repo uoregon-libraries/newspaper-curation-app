@@ -74,3 +74,20 @@ func (s *Searcher) findOrCreateWebTitle(c *httpcache.Client, uri string) (*schem
 	})
 	return s.titleByLoc[uri], nil
 }
+
+// findOrCreateDatabaseTitle takes a database issue and returns the equivalent
+// schema.Title stored in this searcher, or else looks up the issue's db.Title,
+// creates an equivalent schema.Title and stores it, faking a location for
+// future lookup
+func (s *Searcher) findOrCreateDatabaseTitle(issue *db.Issue) *schema.Title {
+	db.LoadTitles()
+	var t = db.LookupTitle(issue.LCCN)
+	var fakeLocation = t.LCCN
+	if s.titleByLoc[fakeLocation] == nil {
+		var st = t.SchemaTitle()
+		st.Location = fakeLocation
+		s.addTitle(st)
+	}
+
+	return s.titleByLoc[fakeLocation]
+}
