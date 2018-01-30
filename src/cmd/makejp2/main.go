@@ -16,7 +16,7 @@ func usageFail(format string, args ...interface{}) {
 	fmt.Fprintf(os.Stderr, format, args...)
 	fmt.Fprintln(os.Stderr)
 	fmt.Fprintln(os.Stderr)
-	fmt.Fprintln(os.Stderr, "usage: pdf-to-alto-xml <source> <jp2 output file> <config file>")
+	fmt.Fprintln(os.Stderr, "usage: makejp2 <source> <jp2 output file> <config file>")
 	os.Exit(1)
 }
 
@@ -45,6 +45,6 @@ func main() {
 	t.OPJDecompress = config.OPJDecompress
 	err = t.Transform()
 	if err != nil {
-		fmt.Printf("Unable to run ALTO transform: %s\n", err)
+		fmt.Printf("Unable to generate a JP2: %s\n", err)
 	}
 }
