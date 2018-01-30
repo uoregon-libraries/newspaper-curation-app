@@ -27,9 +27,10 @@ import (
 type Watcher struct {
 	sync.RWMutex
 	finder          *issuefinder.Finder
-	config          *config.Config
 	webroot         string
 	tempdir         string
+	scanUpload      string
+	pdfUpload       string
 	lookup          *issuesearch.Lookup
 	status          watcherStatus
 	lastFullRefresh time.Time
@@ -60,14 +61,15 @@ func (ws watcherStatus) String() string {
 
 // New creates an issue Watcher.  Watch() must be called to begin
 // looking for issues.
-func New(conf *config.Config, webroot string, cachePath string) *Watcher {
+func New(conf *config.Config) *Watcher {
 	// We want our first load to reuse the existing cache if available, because
 	// an app restart usually happens very shortly after a crash / server reboot
 	return &Watcher{
 		finder:          issuefinder.New(),
-		config:          conf,
-		webroot:         webroot,
-		tempdir:         cachePath,
+		webroot:         conf.NewsWebroot,
+		tempdir:         conf.IssueCachePath,
+		scanUpload:      conf.MasterScanUploadPath,
+		pdfUpload:       conf.MasterPDFUploadPath,
 		lastFullRefresh: time.Now(),
 		done:            make(chan bool),
 	}
@@ -256,12 +258,12 @@ func (w *Watcher) FindIssues() (*issuefinder.Finder, error) {
 		return nil, fmt.Errorf("unable to cache web batches: %s", err)
 	}
 
-	err = realFinder.FindSFTPIssues(w.config.MasterPDFUploadPath)
+	err = realFinder.FindSFTPIssues(w.pdfUpload)
 	if err != nil {
 		return nil, fmt.Errorf("unable to cache sftp issues: %s", err)
 	}
 
-	err = realFinder.FindScannedIssues(w.config.MasterScanUploadPath)
+	err = realFinder.FindScannedIssues(w.scanUpload)
 	if err != nil {
 		return nil, fmt.Errorf("unable to cache scanned issues: %s", err)
 	}

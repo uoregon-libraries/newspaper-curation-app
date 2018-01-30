@@ -4,52 +4,32 @@
 package config
 
 import (
-	"bashconf"
-
 	"fmt"
-	"net/url"
-	"reflect"
-	"strconv"
 	"strings"
 
-	"github.com/uoregon-libraries/gopkg/fileutil"
+	"github.com/uoregon-libraries/gopkg/bashconf"
 )
 
-// Config holds the configuration needed for this application to work.  Note
-// that we don't (yet) pull in the entirety of the config data, just what's
-// necessary for this project.
+// Config holds the configuration needed for this application to work
 type Config struct {
-	// DatabaseConnect is the all-in-one database connection value build from the
+	// DatabaseConnect is the all-in-one database connection value built from the
 	// individual database settings
 	DatabaseConnect string
 
-	// OPJCompress stores the path to the openjpeg binary for creating JP2 files
-	OPJCompress string `setting:"OPJ_COMPRESS"`
+	// We pull the DB string values manually, but having this already converted
+	// to int is easier
+	DBPort int `setting:"DB_PORT" type:"int"`
 
-	// OPJDecompress stores the path to the openjpeg binary for reading JP2 files
+	// Binary paths
+	GhostScript   string `setting:"GHOSTSCRIPT"`
+	OPJCompress   string `setting:"OPJ_COMPRESS"`
 	OPJDecompress string `setting:"OPJ_DECOMPRESS"`
 
-	// GhostScript stores the path to the ghostscript binary for processing PDFs
-	GhostScript string `setting:"GHOSTSCRIPT"`
-
-	// Org code used for sftp-uploaded batches
-	PDFBatchMARCOrgCode string `setting:"PDF_BATCH_MARC_ORG_CODE"`
-
-	// IIIF Server URL
+	// Web configuration
+	Webroot     string `setting:"WEBROOT" type:"url"`
+	BindAddress string `setting:"BIND_ADDRESS"`
 	IIIFBaseURL string `setting:"IIIF_BASE_URL" type:"url"`
-
-	// Minimum number of pages an SFTPed issue must contain to be processed
-	MinimumIssuePages int
-
-	// DPI for generating JP2s
-	DPI int
-
-	// DPI used for images embedded in scanned PDFs, needed for ALTO XML
-	ScannedPDFDPI int
-
-	// JP2 quality value; converts to a rate using a an algorithm similar to that
-	// which GraphicsMagick uses
-	Quality float64
+	NewsWebroot string `setting:"NEWS_WEBROOT" type:"url"`
 
 	// Paths to the various places we expect to find files
 	MasterPDFUploadPath  string `setting:"MASTER_PDF_UPLOAD_PATH" type:"path"`
@@ -58,6 +38,21 @@ type Config struct {
 	PDFPageReviewPath    string `setting:"PDF_PAGE_REVIEW_PATH" type:"path"`
 	BatchOutputPath      string `setting:"BATCH_OUTPUT_PATH" type:"path"`
 	WorkflowPath         string `setting:"WORKFLOW_PATH" type:"path"`
+	IssueCachePath       string `setting:"ISSUE_CACHE_PATH" type:"path"`
+	AppRoot              string `setting:"APP_ROOT" type:"path"`
+	XMLTemplatePath      string `setting:"XML_TEMPLATE_PATH" type:"path"`
+
+	// Issue processor / batch maker rules
+	MinimumIssuePages   int    `setting:"MINIMUM_ISSUE_PAGES" type:"int"`
+	PDFBatchMARCOrgCode string `setting:"PDF_BATCH_MARC_ORG_CODE"`
+	MaxBatchSize        int    `setting:"MAX_BATCH_SIZE" type:"int"`
+	MinBatchSize        int    `setting:"MIN_BATCH_SIZE" type:"int"`
+	EmbargoDays         int    `setting:"EMBARGO_DAYS" type:"int"`
+
+	// Derivative generation rules
+	DPI           int     `setting:"DPI" type:"int"`
+	Quality       float64 `setting:"QUALITY" type:"float"`
+	ScannedPDFDPI int     `setting:"SCANNED_PDF_DPI" type:"int"`
 }
 
 // Parse reads the given settings file and returns a parsed Config.  File paths
@@ -67,40 +62,31 @@ func Parse(filename string) (*Config, error) {
 	var c = &Config{}
 	var errors []string
 
-	var bc, err = bashconf.ReadFile(filename)
+	var bc = bashconf.New()
+	bc.EnvironmentPrefix("BM_")
+	var err = bc.ParseFile(filename)
+	if err != nil {
+		return nil, err
+	}
+	err = bc.Store(c)
 	if err != nil {
 		return nil, err
 	}
 
-	// Read in all the settings we've mapped with tags
-	errors = append(errors, c.readTaggedFields(bc)...)
-
 	// Database connection string: build it, but also make sure port is valid
-	var i, _ = strconv.Atoi(bc["DB_PORT"])
-	if i == 0 {
-		errors = append(errors, "invalid DB_PORT")
-	}
-	c.DatabaseConnect = fmt.Sprintf("%s:%s@tcp(%s:%s)/%s", bc["DB_USER"],
-		bc["DB_PASSWORD"], bc["DB_HOST"], bc["DB_PORT"], bc["DB_DATABASE"])
+	c.DatabaseConnect = fmt.Sprintf("%s:%s@tcp(%s:%d)/%s", bc.Get("DB_USER"),
+		bc.Get("DB_PASSWORD"), bc.Get("DB_HOST"), c.DBPort, bc.Get("DB_DATABASE"))
 
-	c.MinimumIssuePages, _ = strconv.Atoi(bc["MINIMUM_ISSUE_PAGES"])
-	if c.MinimumIssuePages == 0 {
+	if c.MinimumIssuePages < 1 {
 		errors = append(errors, "invalid MINIMUM_ISSUE_PAGES: must be numeric and greater than 0")
 	}
 
-	c.DPI, _ = strconv.Atoi(bc["DPI"])
 	if c.DPI < 72 {
 		errors = append(errors, "invalid DPI: must be numeric and at least 72 (150 or higher is preferred)")
 	}
 
-	c.ScannedPDFDPI, _ = strconv.Atoi(bc["SCANNED_PDF_DPI"])
 	if c.ScannedPDFDPI < 72 {
 		errors = append(errors, "invalid DPI: must be numeric and at least 72")
-	}
-
-	c.Quality, _ = strconv.ParseFloat(bc["QUALITY"], 64)
-	if c.Quality == 0 {
-		errors = append(errors, "invalid QUALITY: must be numeric")
 	}
 
 	if len(errors) > 0 {
@@ -108,54 +94,4 @@ func Parse(filename string) (*Config, error) {
 	}
 
 	return c, nil
-}
-
-// readTaggedFields iterates over the tagged fields in c and pulls settings
-// from bc.  If a tagged field has a type, it's used to process/validate the
-// raw string value.
-func (c *Config) readTaggedFields(bc bashconf.Config) (errors []string) {
-	var rType = reflect.TypeOf(c).Elem()
-	var rVal = reflect.ValueOf(c).Elem()
-
-	for i := 0; i < rType.NumField(); i++ {
-		var sf = rType.Field(i)
-
-		// Ignore fields we can't set, regardless of tagging
-		if !rVal.Field(i).CanSet() {
-			continue
-		}
-
-		// If there's no "setting" tag, we have nothing to do here
-		var sKey = sf.Tag.Get("setting")
-		if sKey == "" {
-			continue
-		}
-
-		var val = bc[sKey]
-		var sType = sf.Tag.Get("type")
-		switch sType {
-		case "":
-			rVal.Field(i).SetString(val)
-		case "url":
-			var u, err = url.Parse(val)
-			if err != nil {
-				errors = append(errors, fmt.Sprintf("%#v (%#v) is not a valid URL: %s", sKey, val, err))
-			}
-			if u.Host == "" {
-				errors = append(errors, fmt.Sprintf("%#v (%#v) is not a valid URL: missing host", sKey, val))
-			}
-			if !strings.HasPrefix(u.Scheme, "http") {
-				errors = append(errors, fmt.Sprintf("%#v (%#v) is not a valid URL: must be http(s)", sKey, val))
-			}
-			rVal.Field(i).SetString(val)
-		case "path":
-			rVal.Field(i).SetString(val)
-			if !fileutil.IsDir(val) {
-				errors = append(errors, fmt.Sprintf("%#v (%#v) is not a directory", sKey, val))
-				continue
-			}
-		}
-	}
-
-	return errors
 }
