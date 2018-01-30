@@ -24,7 +24,7 @@ import (
 
 // Command-line options
 var opts struct {
-	ConfigFile string `short:"c" long:"config" description:"path to P2C config file" required:"true"`
+	ConfigFile string `short:"c" long:"config" description:"path to Black Mamba config file" required:"true"`
 }
 
 var p *flags.Parser
