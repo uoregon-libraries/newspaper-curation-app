@@ -1,10 +1,12 @@
-Batch Maker
+Black Mamba, The Batch Maker
 ===
 
-This is the replacement toolsuite for generating batches which can be ingested
-into [ONI](https://github.com/open-oni/open-oni) and
+This is the replacement toolsuite for handling the workflow of processing
+born-digital PDFs and in-house scans, and then generating batches which can be
+ingested into [ONI](https://github.com/open-oni/open-oni) and
 [chronam](https://github.com/LibraryOfCongress/chronam).  See our other
-repositories for the legacy suite:
+repositories for the legacy suite.  Actually, don't, unless you want a history
+lesson.  They're pretty awful:
 
 - [Back-end python tools](https://github.com/uoregon-libraries/pdf-to-chronam)
 - [Front-end PHP app](https://github.com/uoregon-libraries/pdf-to-chronam-admin)
@@ -16,7 +18,7 @@ Compilation requires [Go](https://golang.org/dl/) 1.9 or later and gb:
 server
 ---
 
-This is the web server which exposes all the batch-maker workflow UI.  Please
+This is the web server which exposes all of Black Mamba's workflow UI.  Please
 note that, at the moment, this requires Apache sitting in front of the server
 for authentication.
 
@@ -25,7 +27,7 @@ matches our own setup.
 
 ### Usage
 
-See `dev-server.sh` or `rhel7/p2cgo.service`
+See `dev-server.sh` or `rhel7/blackmamba.service`
 
 **NOTE**: The server builds a cache of issues and regularly rescans the
 filesystem and the live site to keep its cache nearly real-time for almost
@@ -65,3 +67,15 @@ You can also run the various watchers in their own processes if you need more gr
 
     # You MUST have *exactly one* worker watching the page-review folder
     ./bin/run-jobs -c ./settings watch-page-review
+
+Black Mamba?
+---
+
+"Black Mamba" makes no sense for this toolsuite, so what is the rationale
+behind the name?  Well, first, a [black mamba](https://en.wikipedia.org/wiki/Black_mamba)
+is a really cool snake.  Really cool snakes are much more awesome than
+random non-English words or phrases when it comes to naming projects primarily
+used by native English speakers.  This is an indisputable, objective fact.
+Second, when this project bites you, well... it hurts.  A lot.
+
+It's also the same acronym as "Batch Maker", so that's fun.
