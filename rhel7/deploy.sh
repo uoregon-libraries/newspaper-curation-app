@@ -15,22 +15,23 @@ make clean
 make
 
 echo Stopping service...
-sudo systemctl stop p2cgo
+sudo systemctl stop blackmamba
 
 echo Removing the old stuff
-sudo rm -f /usr/local/p2c-go/p2cgo.service
-sudo rm /usr/local/p2c-go/static/ -rf
-sudo rm /usr/local/p2c-go/templates/ -rf
+sudo rm -f /usr/local/black-mamba/server
+sudo rm -f /usr/local/black-mamba/blackmamba.service
+sudo rm /usr/local/black-mamba/static/ -rf
+sudo rm /usr/local/black-mamba/templates/ -rf
 
 echo Copying in the new stuff
 src=$(pwd)
-sudo cp $src/bin/server /usr/local/p2c-go/server
-sudo cp $src/rhel7/p2cgo.service /usr/local/p2c-go/
-sudo cp -r $src/templates/ /usr/local/p2c-go/
-sudo cp -r $src/static/ /usr/local/p2c-go/
+sudo cp $src/bin/server /usr/local/black-mamba/server
+sudo cp $src/rhel7/blackmamba.service /usr/local/black-mamba/
+sudo cp -r $src/templates/ /usr/local/black-mamba/
+sudo cp -r $src/static/ /usr/local/black-mamba/
 
 echo Doing a daemon reload and starting the service
 sudo systemctl daemon-reload
-sudo systemctl start p2cgo
+sudo systemctl start blackmamba
 
 git checkout master

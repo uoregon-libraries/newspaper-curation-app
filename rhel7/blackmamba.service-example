@@ -1,0 +1,13 @@
+[Unit]
+	Description=Black Mamba Admin Web Listener
+	After=network.target
+	RequiresMountsFor=/mnt/news
+
+[Service]
+	Type=simple
+	ExecStart=/usr/local/black-mamba/server \
+		-c /usr/local/black-mamba/settings \
+		--parent-webroot=/odnp-admin
+
+[Install]
+	WantedBy=multi-user.target
