@@ -1,13 +1,10 @@
 #!/usr/bin/bash
 #
-# dev-server.sh fires up a server listening on port 12346 and assuming a suffix
-# of "-indev" for Apache routing.  When Go source or template files change, it
-# auto-kills the server, recompiles, and starts the server back up.  Requires a
-# working settings file in the current directory.
+# dev-server.sh fires up the Black Mamba server.  When Go source or template
+# files change, it auto-kills the server, recompiles, and starts the server
+# back up.  Requires a working settings file in the current directory.
 set -eu
 
-port=${1:-12346}
-suffix=${2:--indev}
 debugflag="--debug"
 
 if [[ ! -z ${NODEBUG:-} ]]; then
@@ -62,16 +59,10 @@ while true; do
     oldmd5="$srcs_md5$tmpl_md5"
 
     ./bin/server \
-        -c ./settings \
-        --chronam-web-root http://oregonnews.uoregon.edu \
-        -p $port \
-        --webroot=/odnp-admin/sftpreport$suffix \
-        --parent-webroot=/odnp-admin \
-        --static-files $(pwd)/static \
-        --cache-path $(pwd)/tmp \
-        $debugflag \
-        $(pwd)/templates &
-      pid=$!
-    fi
+      -c ./settings \
+      --parent-webroot=/odnp-admin \
+      $debugflag &
+    pid=$!
+  fi
   sleep 1
 done
