@@ -12,13 +12,11 @@ import (
 	"issuesearch"
 
 	"os"
-	"path/filepath"
 	"schema"
 	"strings"
 	"sync"
 	"time"
 
-	"github.com/uoregon-libraries/gopkg/fileutil"
 	"github.com/uoregon-libraries/gopkg/logger"
 )
 
@@ -90,15 +88,9 @@ func (w *Watcher) Watch(interval time.Duration) {
 
 	// If a cache file is available, use it, but we'll still be refreshing data
 	// immediately; this just gets the watcher up and running more quickly
-	var cacheFile = filepath.Join(w.tempdir, "finder.cache")
-	if cacheFile != "" && fileutil.Exists(cacheFile) {
-		var finder, err = issuefinder.Deserialize(cacheFile)
-		if err != nil {
-			logger.Fatalf("Unable to deserialize the cache file %#v: %s", cacheFile, err)
-		}
-		w.finder = finder
-		w.lookup = issuesearch.NewLookup()
-		w.lookup.Populate(w.finder.Issues)
+	var err = w.Deserialize()
+	if err != nil {
+		logger.Fatalf("Unable to deserialize the cache file %#v: %s", w.CacheFile(), err)
 	}
 
 	if w.status&running != 0 {
@@ -114,9 +106,9 @@ func (w *Watcher) Watch(interval time.Duration) {
 		if time.Since(lastRefresh) > interval {
 			w.refresh()
 			lastRefresh = time.Now()
-			var err = w.finder.Serialize(cacheFile)
+			var err = w.Serialize()
 			if err != nil {
-				logger.Warnf("Unable to cache to %#v: %s", cacheFile, err)
+				logger.Warnf("Unable to cache to %#v: %s", w.CacheFile(), err)
 			}
 		}
 		time.Sleep(time.Second * 1)
