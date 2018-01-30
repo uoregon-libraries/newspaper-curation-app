@@ -12,9 +12,11 @@ import (
 // workflowStep semi-restricts values allowed in the Issue.WorkflowStep field
 type workflowStep string
 
-// Human workflow steps - these match the allowed values in the database
+// Meaningful / reportable workflow steps - these MUST match the allowed values
+// in the database
 const (
-	WSAwaitingPageReview     workflowStep = "AwaitingPageReview"
+	WSAwaitingProcessing     workflowStep = "AwaitingProcessing"
+	WSAwaitingPageReview                  = "AwaitingPageReview"
 	WSReadyForMetadataEntry               = "ReadyForMetadataEntry"
 	WSAwaitingMetadataReview              = "AwaitingMetadataReview"
 	WSReadyForBatching                    = "ReadyForBatching"

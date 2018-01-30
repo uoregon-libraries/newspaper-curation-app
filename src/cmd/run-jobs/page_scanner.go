@@ -81,7 +81,7 @@ func queueIssueForDerivatives(dbIssue *db.Issue) {
 		return
 	}
 	dbIssue.Location = newDir
-	dbIssue.WorkflowStep = db.WSAwaitingPageReview
+	dbIssue.WorkflowStep = db.WSAwaitingProcessing
 	err = dbIssue.Save()
 	if err != nil {
 		logger.Criticalf("Unable to update db Issue (location and awaiting page review status): %s", err)
