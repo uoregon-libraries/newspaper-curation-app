@@ -27,7 +27,7 @@ import (
 
 var opts struct {
 	ParentWebroot string `long:"parent-webroot" description:"The base path to the parent app" required:"true"`
-	ConfigFile    string `short:"c" long:"config" description:"path to P2C config file" required:"true"`
+	ConfigFile    string `short:"c" long:"config" description:"path to Black Mamba config file" required:"true"`
 	Debug         bool   `long:"debug" description:"Enables debug mode for testing different users"`
 }
 
