@@ -7,11 +7,13 @@ import (
 	"cmd/server/internal/workflowhandler"
 	"config"
 	"db"
+	"path/filepath"
 
 	"fmt"
 	"issuewatcher"
 
 	"net/http"
+	"net/url"
 	"os"
 	"path"
 	"time"
@@ -20,26 +22,13 @@ import (
 
 	"github.com/gorilla/mux"
 	"github.com/jessevdk/go-flags"
-	"github.com/uoregon-libraries/gopkg/fileutil"
 	"github.com/uoregon-libraries/gopkg/logger"
 )
 
-// Various command-line options live here, and yes, they're awful
-//
-// TODO:
-// - Put more of this stuff into the central "bash" config
-// - Migrate parent app in here entirely to get rid of some of the odd stuff
-//   that needs ParentWebroot
 var opts struct {
-	ConfigFile     string `short:"c" long:"config" description:"path to P2C config file" required:"true"`
-	Port           int    `short:"p" long:"port" description:"port to listen for HTTP traffic" required:"true"`
-	Bind           string `long:"bind" description:"Bind address, usually safe to leave blank"`
-	Debug          bool   `long:"debug" description:"Enables debug mode for testing different users"`
-	ChronamRoot    string `long:"chronam-web-root" description:"Full URL to live site; e.g. http://oregonnews.uoregon.edu" required:"true"`
-	CachePath      string `long:"cache-path" description:"Location to cache scanned results across startups" required:"true"`
-	Webroot        string `long:"webroot" description:"The base path to the app if it isn't just '/'"`
-	ParentWebroot  string `long:"parent-webroot" description:"The base path to the parent app" required:"true"`
-	StaticFilePath string `long:"static-files" description:"Path on disk to static JS/CSS/images" required:"true"`
+	ParentWebroot string `long:"parent-webroot" description:"The base path to the parent app" required:"true"`
+	ConfigFile    string `short:"c" long:"config" description:"path to P2C config file" required:"true"`
+	Debug         bool   `long:"debug" description:"Enables debug mode for testing different users"`
 }
 
 // Conf stores the configuration data read from the legacy Python settings
@@ -47,17 +36,12 @@ var Conf *config.Config
 
 func getConf() {
 	var p = flags.NewParser(&opts, flags.HelpFlag|flags.PassDoubleDash)
-	p.Usage = "[OPTIONS] <template path>"
-	var args, err = p.Parse()
+	var _, err = p.Parse()
 
 	if err != nil {
 		fmt.Fprintf(os.Stderr, "Error: %s\n\n", err)
 		p.WriteHelp(os.Stderr)
 		os.Exit(1)
-	}
-
-	if !fileutil.IsDir(opts.CachePath) {
-		logger.Fatalf("--cache-path %#v is not a valid directory", opts.CachePath)
 	}
 
 	Conf, err = config.Parse(opts.ConfigFile)
@@ -71,12 +55,10 @@ func getConf() {
 	}
 	user.DB = db.DB
 
-	if len(args) == 0 {
-		fmt.Fprintf(os.Stderr, "Missing required parameter, <template path>\n\n")
-		p.WriteHelp(os.Stderr)
-		os.Exit(1)
-	}
-	webutil.Webroot = opts.Webroot
+	// We can ignore the error here because the config magic already verified
+	// that the URL was valid
+	var u, _ = url.Parse(Conf.Webroot)
+	webutil.Webroot = u.Path
 	webutil.ParentWebroot = opts.ParentWebroot
 	webutil.WorkflowPath = Conf.WorkflowPath
 	webutil.IIIFBaseURL = Conf.IIIFBaseURL
@@ -87,7 +69,7 @@ func getConf() {
 		db.Debug = true
 	}
 
-	responder.InitRootTemplate(args[0])
+	responder.InitRootTemplate(filepath.Join(Conf.AppRoot, "templates"))
 }
 
 func makeRedirect(dest string, code int) http.Handler {
@@ -106,11 +88,11 @@ func startServer() {
 	// The static handler doesn't check permissions.  Right now this is okay, as
 	// what we serve isn't valuable beyond page layout, but this may warrant a
 	// fileserver clone + rewrite.
-	var fileServer = http.FileServer(http.Dir(opts.StaticFilePath))
+	var fileServer = http.FileServer(http.Dir(filepath.Join(Conf.AppRoot, "static")))
 	var staticPrefix = path.Join(hp, "static")
 	r.NewRoute().PathPrefix(staticPrefix).Handler(http.StripPrefix(staticPrefix, fileServer))
 
-	var watcher = issuewatcher.New(Conf, opts.ChronamRoot, opts.CachePath)
+	var watcher = issuewatcher.New(Conf)
 	go watcher.Watch(5 * time.Minute)
 	sftphandler.Setup(r, path.Join(hp, "sftp"), Conf, watcher)
 	workflowhandler.Setup(r, path.Join(hp, "workflow"), Conf, watcher)
@@ -132,9 +114,8 @@ func startServer() {
 
 	http.Handle("/", nocache(logMiddleware(r)))
 
-	var addr = fmt.Sprintf("%s:%d", opts.Bind, opts.Port)
-	logger.Infof("Listening on %s", addr)
-	if err := http.ListenAndServe(addr, nil); err != nil {
+	logger.Infof("Listening on %s", Conf.BindAddress)
+	if err := http.ListenAndServe(Conf.BindAddress, nil); err != nil {
 		logger.Fatalf("Error starting listener: %s", err)
 	}
 }

@@ -1,8 +1,6 @@
-# Variables needed for the PDF batching scripts
-
-# How many pages must an issue have?  Setting this to 2 can avoid processing
-# obviously unfinished uploads.
-MINIMUM_ISSUE_PAGES=2
+###
+# Binary paths
+###
 
 # What is the path to the ghostscript binary?  Usually you can just leave this
 # set to "gs", but may need to be tweaked on some systems.
@@ -10,12 +8,29 @@ GHOSTSCRIPT="gs"
 
 # What is the path to the opj binaries?  This may be opj_compress /
 # opj_decompress, opj2_*, or a full path, depending on a variety of factors....
-# The settings below work with the docker container:
 OPJ_COMPRESS="opj_compress"
 OPJ_DECOMPRESS="opj_decompress"
 
-# Full URL to the IIIF server's base path
+###
+# Web configuration
+###
+
+# Full URL to the Black Mamba web app; though the hostname isn't currently used,
+# it may be necessary for things like sending email notifications in the future
+WEBROOT="https://internal.somewhere.edu/black-mamba"
+
+# The bind address is what the server listens on, often just a port string
+# prefixed with a colon.  Apache would use this for reverse-proxying.
+BIND_ADDRESS=":12345"
+
+# Full URL to the IIIF server's base path - this is used to display issues'
+# pages during metadata entry and review
 IIIF_BASE_URL="https://my.server.com/iiif"
+
+# Full URL to the live news site, for pulling information about issues which
+# are in production, and may be used in the future to link from Black Mamba to
+# live batches' / issues' detail pages
+NEWS_WEBROOT="https://news.somewhere.edu"
 
 ###
 # Database settings
@@ -66,9 +81,26 @@ BATCH_OUTPUT_PATH="/mnt/news/outgoing"
 # modification, and all metadata will live in the database.
 WORKFLOW_PATH="/mnt/news/workflow"
 
+# This is where cached files are stored for the issue data.  This is extremely
+# important for issues which live on the live website, as those are very
+# expensive to pull each time a given process is run.
+ISSUE_CACHE_PATH="/var/local/news/black-mamba/cache"
+
+# This is where the core application lives, and is important for finding the
+# HTML template files as well as static files like JS and CSS
+APP_ROOT="/usr/local/black-mamba"
+
+# Where are the XML templates for building issue XML?  You can point this to
+# the XML in the repo (templates/xml) for ease, but some XML values may be wrong.
+XML_TEMPLATE_PATH="/usr/local/black-mamba/templates/xml"
+
 ###
-# Batch creation settings
+# General rules for issue processing and batch creation
 ###
+
+# How many pages must an issue have?  Setting this to 2 can avoid processing
+# obviously unfinished uploads.
+MINIMUM_ISSUE_PAGES=2
 
 # MARC organization code you want to use in chronam to represent batches from
 # PDF sources.  e.g., "oru" results in batch names like
@@ -83,8 +115,6 @@ PDF_BATCH_MARC_ORG_CODE="oru"
 #
 # NOTE: this limit will *not* split an issue.  i.e., this is the maximum number
 # of PDFs, not necessarily the precise number a batch will contain.
-#
-# TODO: Use this if/when batch creation gets into this app
 MAX_BATCH_SIZE=1200
 
 # What is the minimum size of a batch?  Issues will not be batched until there
@@ -92,35 +122,21 @@ MAX_BATCH_SIZE=1200
 # high, issues could sit around indefinitely waiting to be batched, especially
 # if you get PDFs infrequently and/or have a lot of small scanned batches with
 # various MARC Org Codes.
-#
-# TODO: Use this if/when batch creation gets into this app
 MIN_BATCH_SIZE=200
 
 # How many days does an issue have to wait after its publish date if it's
 # listed as an embargoed publication?
-#
-# TODO: Use this if/when batch creation gets into this app
 EMBARGO_DAYS=92
 
 ###
 # Derivative settings
 ###
 
-# Where are the XML templates for building issue XML?  You can point this to
-# the XML in the repo (src/xml) for ease, but some XML values may be wrong.
-#
-# TODO: Use this if/when batch creation gets into this app
-XML_TEMPLATE_PATH="/usr/local/pdf-to-chronam/xml"
-
 # DPI for ghostscript to use on the PDF-to-PNG conversion
 DPI=200
 
 # JP2 quality value for graphicsmagick
 QUALITY=62.5
-
-###
-# Scanned image settings
-###
 
 # Set this to the value your scanned images use to embed JPGs.  This should be
 # 150 per the NDNP spec, but could be changed if scanned images aren't under
