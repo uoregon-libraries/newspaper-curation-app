@@ -58,9 +58,9 @@ func (ws watcherStatus) String() string {
 	return strings.Join(str, "/")
 }
 
-// NewWatcher creates an issue Watcher.  Watch() must be called to begin
+// New creates an issue Watcher.  Watch() must be called to begin
 // looking for issues.
-func NewWatcher(conf *config.Config, webroot string, cachePath string) *Watcher {
+func New(conf *config.Config, webroot string, cachePath string) *Watcher {
 	// We want our first load to reuse the existing cache if available, because
 	// an app restart usually happens very shortly after a crash / server reboot
 	return &Watcher{
@@ -211,7 +211,7 @@ func (w *Watcher) refresh() {
 
 	// Now actually run the finder and replace it; during this process it's safe
 	// for other stuff to happen
-	var finder, err = w.findIssues()
+	var finder, err = w.FindIssues()
 
 	// This is supposed to happen in the background, so an error can only be
 	// reported; we can't do much else....
@@ -242,12 +242,12 @@ func (w *Watcher) LookupIssues(key *issuesearch.Key) []*schema.Issue {
 	return w.lookup.Issues(key)
 }
 
-// findIssues calls all the individual find* functions for the myriad of ways
+// FindIssues calls all the individual find* functions for the myriad of ways
 // we store issue information in the various locations, returning the
 // issuefinder.Finder with all this data.  Since this operates independently,
 // creating and returning a new issuefinder, it's threadsafe and can be called
 // with or without the issue watcher loop.
-func (w *Watcher) findIssues() (*issuefinder.Finder, error) {
+func (w *Watcher) FindIssues() (*issuefinder.Finder, error) {
 	var realFinder = issuefinder.New()
 	var err error
 
