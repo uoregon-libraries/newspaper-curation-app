@@ -4,7 +4,7 @@ import (
 	"cmd/server/internal/responder"
 	"config"
 	"fmt"
-	"legacyfinder"
+	"issuewatcher"
 
 	"net/http"
 	"path"
@@ -16,7 +16,7 @@ import (
 
 var (
 	sftpSearcher *SFTPSearcher
-	watcher      *legacyfinder.Watcher
+	watcher      *issuewatcher.Watcher
 	conf         *config.Config
 
 	// basePath is the path to the main sftp page.  Subpages all start with this path.
@@ -38,7 +38,7 @@ var (
 
 // Setup sets up all the SFTP-specific routing rules and does any other
 // init necessary for SFTP reports handling
-func Setup(r *mux.Router, sftpWebPath string, c *config.Config, w *legacyfinder.Watcher) {
+func Setup(r *mux.Router, sftpWebPath string, c *config.Config, w *issuewatcher.Watcher) {
 	conf = c
 	watcher = w
 	basePath = sftpWebPath

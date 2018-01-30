@@ -28,7 +28,7 @@ DB_PASSWORD="batchadmin"
 DB_DATABASE="batchadmin"
 
 ###
-# Paths for PDFs, derivatives, etc., in order of our expected workflow
+# Paths for PDFs, derivatives, etc.
 ###
 
 # Master PDFs are deposited here - these should be exactly what the publisher
@@ -37,56 +37,33 @@ DB_DATABASE="batchadmin"
 # subdirectory per issue, named by the issue's date, in YYYY-MM-DD format.
 MASTER_PDF_UPLOAD_PATH="/mnt/news/sftp"
 
+# In-house scans are deposited here.  The folder structure must be precisely as follows:
+#
+#     <scan upload root>/<MARC org code>/<lccn>/<issue date with optional edition>
+#
+# For example, "/mnt/news/scans/oru/sn12345678/2018-01-01_02"
+#
+# The TIFF files should be at least 300dpi, and the PDFs should contain a
+# 150dpi JPEG image encoded at about a quality of 40 (or "medium"), per the
+# NDNP spec.  The PDF also needs to have the OCR text embedded for the
+# derivative processing to create the proper page XML.
+MASTER_SCAN_UPLOAD_PATH="/mnt/news/scans"
+
 # When a master PDF has been split, this is where we back it up.  Master files
 # are stored in the batches, so if you back up the batch, this can be a short-
 # term backup location.
 MASTER_PDF_BACKUP_PATH="/mnt/news/backup/master"
 
-# This is where the PDFs live after being split, but before derivatives are
-# run.  Derivatives need to be created prior to the rest of the workflow
-# happening to ease some of the admin tool's work as well as (hopefully)
-# keeping the process reusable for scanned newspapers.
-PDF_ISSUES_AWAITING_DERIVATIVES="/mnt/news/awaiting-derivatives"
-
-# This is where split PDFs are moved after derivatives are built.  Pages should
-# be reordered and renamed externally (e.g., using Adobe Bridge).  Derivatives
-# will be placed in ".derivatives" under the issue's directory.  When renaming
-# files, do not modify PDFs, or derivatives will lose their mapping (they use
-# a sha256 sum of their source PDF page).
+# This is where split PDFs are moved for manual reordering / renaming (e.g.,
+# using Adobe Bridge)
 PDF_PAGE_REVIEW_PATH="/mnt/news/page-review"
-
-# Issues which have metadata entered, but need somebody to review that the
-# metadata is correct.  This is used only by the admin app, and is listed here
-# for the sake of completeness and for any one-off bash/python scripts which
-# need a single settings file to reference all paths.
-PDF_PAGES_AWAITING_METADATA_REVIEW="/mnt/news/metadata-review"
-
-# After users enter metadata in the admin tool, pages and their derivatives are
-# moved here to be queued up for processing to create a batch.
-PDF_PAGE_SOURCE_PATH="/mnt/news/incoming"
 
 # Once processing happens, batches are put here
 BATCH_OUTPUT_PATH="/mnt/news/outgoing"
 
-# Short-term backup for split pages in case a batch needs to be reprocessed.
-# Holds onto the issues just prior to ingest so fixes to a batch can reuse the
-# admin tool rather than having to edit the XML metadata.
-PDF_PAGE_BACKUP_PATH="/mnt/news/backup/pages"
-
-# For in-house scanning only, this setting tells the tiff processing job where
-# to find TIFF+PDF subdirectories.
-#
-# These subdirectories must look similar to the sftp subdirectories, where each
-# title has its own root, with date-based issue directories.  The TIFF
-# files should be at least 300dpi, and the PDFs should contain a 150dpi JPEG
-# image encoded at about a quality of 40 (or "medium"), per the NDNP spec.  The
-# PDF also needs to have the OCR text embedded for the derivative processing to
-# create the proper page XML.
-SCANS_AWAITING_DERIVATIVES="/mnt/news/scans"
-
-# Eventually many of the paths above will be removed and this will be the
-# main location for all issues.  We'll have metadata in the database to tell
-# us workflow steps, rather relying on the filesystem paths.
+# This is where scanned issues and SFTPed issues go after all manual processing
+# is done.  Issues moved here shouldn't be accessible to anybody for manual
+# modification, and all metadata will live in the database.
 WORKFLOW_PATH="/mnt/news/workflow"
 
 ###

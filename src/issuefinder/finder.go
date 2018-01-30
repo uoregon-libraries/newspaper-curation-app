@@ -19,14 +19,8 @@ type Namespace uint8
 const (
 	Website Namespace = iota
 	SFTPUpload
-	AwaitingPageReview
-	AwaitingMetadataReview
-	PDFsAwaitingDerivatives
-	ScansAwaitingDerivatives
-	ReadyForBatching
-	BatchedOnDisk
-	MasterBackup
-	PageBackup
+	ScanUpload
+	InProcess
 )
 
 // Searcher is the central component of the issuefinder package, running the filesystem
@@ -108,28 +102,33 @@ func (f *Finder) createAndProcessSearcher(ns Namespace, loc string, processor fu
 	return err
 }
 
-// FindDiskBatches creates and runs a custom-namespaced disk batch Searcher,
-// aggregates its data, and returns any errors encountered
-func (f *Finder) FindDiskBatches(path string) error {
-	return f.createAndProcessSearcher(BatchedOnDisk, path, func(s *Searcher) error { return s.FindDiskBatches() })
-}
-
 // FindSFTPIssues creates and runs an SFTP Searcher, aggregates its data,
 // and returns any errors encountered
 func (f *Finder) FindSFTPIssues(path string) error {
-	return f.createAndProcessSearcher(SFTPUpload, path, func(s *Searcher) error { return s.FindSFTPIssues() })
+	var searchFn = func(s *Searcher) error { return s.FindSFTPIssues() }
+	return f.createAndProcessSearcher(SFTPUpload, path, searchFn)
 }
 
-// FindStandardIssues creates and runs a cutom-namespaced standard issue
-// Searcher, aggregates its data, and returns any errors encountered
-func (f *Finder) FindStandardIssues(ns Namespace, path string) error {
-	return f.createAndProcessSearcher(ns, path, func(s *Searcher) error { return s.FindStandardIssues() })
+// FindScannedIssues creates and runs a scanned-issue Searcher, aggregates its
+// data, and returns any errors encountered
+func (f *Finder) FindScannedIssues(path string) error {
+	var searchFn = func(s *Searcher) error { return s.FindScannedIssues() }
+	return f.createAndProcessSearcher(ScanUpload, path, searchFn)
 }
 
 // FindWebBatches creates and runs a website batch Searcher, aggregates its
 // data, and returns any errors encountered
 func (f *Finder) FindWebBatches(hostname, cachePath string) error {
-	return f.createAndProcessSearcher(Website, hostname, func(s *Searcher) error { return s.FindWebBatches(cachePath) })
+	var searchFn = func(s *Searcher) error { return s.FindWebBatches(cachePath) }
+	return f.createAndProcessSearcher(Website, hostname, searchFn)
+}
+
+// FindInProcessIssues creates and runs an in-process issues (issues which are
+// in the workflow dir and have been indexed) searcher, aggregates its data,
+// and returns any errors encountered
+func (f *Finder) FindInProcessIssues() error {
+	var searchFn = func(s *Searcher) error { return s.FindInProcessIssues() }
+	return f.createAndProcessSearcher(InProcess, "database", searchFn)
 }
 
 // aggregate just puts the searcher's data into the Finder for global use

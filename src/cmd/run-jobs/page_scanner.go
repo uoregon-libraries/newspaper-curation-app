@@ -36,7 +36,7 @@ func scanPageReviewIssues(c *config.Config) {
 // scanScannedIssues is a terrible name for the very important process of
 // looking for in-house scanned issues that are valid and ready for processing
 func scanScannedIssues(c *config.Config) {
-	var mocDirs = getScannedMOCDirList(c.ScansAwaitingDerivatives)
+	var mocDirs = getScannedMOCDirList(c.MasterScanUploadPath)
 	var lccnDirs []string
 	for _, mocDir := range mocDirs {
 		lccnDirs = append(lccnDirs, getLCCNDirs(mocDir)...)
@@ -69,8 +69,8 @@ func scanScannedIssues(c *config.Config) {
 }
 
 // queueIssueForDerivatives first renames the directory so no more
-// modifications are likely to take place, then moves the PDFs (and only the
-// PDFs) to the workflow directory for derivative processing
+// modifications are likely to take place, then queues the directory for being
+// moved to the workflow space
 func queueIssueForDerivatives(dbIssue *db.Issue) {
 	var oldDir = dbIssue.Location
 	var newDir = filepath.Join(filepath.Dir(oldDir), ".notouchie-"+filepath.Base(oldDir))

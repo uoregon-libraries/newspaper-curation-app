@@ -1,7 +1,12 @@
-package legacyfinder
+// Package issuewatcher wraps the issuefinder.Finder with some app-specific know-how in order to
+// layer on top of the generic issuefinder to include behaviors necessary for
+// finding issues from all known locations by reading our settings file and
+// running the appropriate searches.
+package issuewatcher
 
 import (
 	"config"
+	"fmt"
 
 	"issuefinder"
 	"issuesearch"
@@ -21,7 +26,10 @@ import (
 // which scans issue directories and the live site at regular intervals
 type Watcher struct {
 	sync.RWMutex
-	*Finder
+	finder          *issuefinder.Finder
+	config          *config.Config
+	webroot         string
+	tempdir         string
 	lookup          *issuesearch.Lookup
 	status          watcherStatus
 	lastFullRefresh time.Time
@@ -50,13 +58,16 @@ func (ws watcherStatus) String() string {
 	return strings.Join(str, "/")
 }
 
-// NewWatcher creates a legacy issue Watcher.  Watch() must be called to begin
+// NewWatcher creates an issue Watcher.  Watch() must be called to begin
 // looking for issues.
 func NewWatcher(conf *config.Config, webroot string, cachePath string) *Watcher {
 	// We want our first load to reuse the existing cache if available, because
 	// an app restart usually happens very shortly after a crash / server reboot
 	return &Watcher{
-		Finder:          &Finder{finder: issuefinder.New(), config: conf, webroot: webroot, tempdir: cachePath},
+		finder:          issuefinder.New(),
+		config:          conf,
+		webroot:         webroot,
+		tempdir:         cachePath,
 		lastFullRefresh: time.Now(),
 		done:            make(chan bool),
 	}
@@ -65,7 +76,7 @@ func NewWatcher(conf *config.Config, webroot string, cachePath string) *Watcher 
 // IssueFinder returns the underlying issuefinder.Finder.  This will be nil
 // until the initial scan is complete
 func (w *Watcher) IssueFinder() *issuefinder.Finder {
-	return w.Finder.finder
+	return w.finder
 }
 
 // Watch loops forever, refreshing the data in the underlying Finder every so
@@ -85,7 +96,7 @@ func (w *Watcher) Watch(interval time.Duration) {
 		}
 		w.finder = finder
 		w.lookup = issuesearch.NewLookup()
-		w.lookup.Populate(w.Finder.finder.Issues)
+		w.lookup.Populate(w.finder.Issues)
 	}
 
 	if w.status&running != 0 {
@@ -145,7 +156,7 @@ func (w *Watcher) cleanupTempDir() {
 	}
 	var err = os.RemoveAll(w.tempdir)
 	if err != nil {
-		logger.Errorf("Unable to remove legacyfinder.Watcher's temp dir %#v: %s", w.tempdir, err)
+		logger.Errorf("Unable to remove issuewatcher.Watcher's temp dir %#v: %s", w.tempdir, err)
 	}
 	w.tempdir = ""
 }
@@ -155,7 +166,7 @@ func (w *Watcher) cleanupTempDir() {
 func (w *Watcher) makeTempDir() {
 	var err = os.MkdirAll(w.tempdir, 0700)
 	if err != nil {
-		logger.Errorf("Unable to create legacyfinder.Watcher's temp dir: %s", err)
+		logger.Errorf("Unable to create issuewatcher.Watcher's temp dir: %s", err)
 	}
 }
 
@@ -168,14 +179,14 @@ func (w *Watcher) refresh() {
 	// Safety: is run off already?  This can only happen if stop was called just
 	// as this was about to be called, but it's still better to be safe.
 	if w.status&running == 0 {
-		logger.Errorf("Trying to refresh a stopped legacyfinder")
+		logger.Errorf("Trying to refresh a stopped issuewatcher")
 		w.Unlock()
 		return
 	}
 
 	// Don't try to run multiple refreshes!
 	if w.status&refreshing != 0 {
-		logger.Errorf("Trying to double-refresh a legacyfinder")
+		logger.Errorf("Trying to double-refresh a issuewatcher")
 		w.Unlock()
 		return
 	}
@@ -200,7 +211,7 @@ func (w *Watcher) refresh() {
 
 	// Now actually run the finder and replace it; during this process it's safe
 	// for other stuff to happen
-	var finder, err = w.FindIssues()
+	var finder, err = w.findIssues()
 
 	// This is supposed to happen in the background, so an error can only be
 	// reported; we can't do much else....
@@ -208,7 +219,7 @@ func (w *Watcher) refresh() {
 		w.Lock()
 		w.status &= ^refreshing
 		w.Unlock()
-		logger.Errorf("Unable to refresh legacyfinder: %s", err)
+		logger.Errorf("Unable to refresh issuewatcher: %s", err)
 		return
 	}
 
@@ -229,4 +240,36 @@ func (w *Watcher) refresh() {
 // LookupIssues returns a list of schema Issues for the give search key
 func (w *Watcher) LookupIssues(key *issuesearch.Key) []*schema.Issue {
 	return w.lookup.Issues(key)
+}
+
+// findIssues calls all the individual find* functions for the myriad of ways
+// we store issue information in the various locations, returning the
+// issuefinder.Finder with all this data.  Since this operates independently,
+// creating and returning a new issuefinder, it's threadsafe and can be called
+// with or without the issue watcher loop.
+func (w *Watcher) findIssues() (*issuefinder.Finder, error) {
+	var realFinder = issuefinder.New()
+	var err error
+
+	err = realFinder.FindWebBatches(w.webroot, w.tempdir)
+	if err != nil {
+		return nil, fmt.Errorf("unable to cache web batches: %s", err)
+	}
+
+	err = realFinder.FindSFTPIssues(w.config.MasterPDFUploadPath)
+	if err != nil {
+		return nil, fmt.Errorf("unable to cache sftp issues: %s", err)
+	}
+
+	err = realFinder.FindScannedIssues(w.config.MasterScanUploadPath)
+	if err != nil {
+		return nil, fmt.Errorf("unable to cache scanned issues: %s", err)
+	}
+
+	err = realFinder.FindInProcessIssues()
+	if err != nil {
+		return nil, fmt.Errorf("unable to cache in-process issues: %s", err)
+	}
+
+	return realFinder, nil
 }

@@ -5,41 +5,39 @@ import (
 	"db"
 	"fmt"
 	"httpcache"
+	"path/filepath"
 	"schema"
 )
 
-// findFilesystemTitle looks up the title by its given path and returns it or
-// creates a new one if its "titleName" is in the database.  "titleName" can
-// be LCCN or SFTP directory depending on the type of directory.
-func (s *Searcher) findFilesystemTitle(titleName, path string) *schema.Title {
+// findOrCreateFilesystemTitle looks up the title by its given path and returns
+// it or creates a new one if its "name" (last part of path) is in the
+// database.  If a title still isn't found, one is created, but an error is
+// attached to the searcher as we shouldn't be finding titles on the filesystem
+// that aren't in the database.
+func (s *Searcher) findOrCreateFilesystemTitle(path string) *schema.Title {
+	var t *schema.Title
+	var titleName = filepath.Base(path)
 	if s.titleByLoc[path] == nil {
 		// Make sure titles are loaded from the DB, and puke on any errors
 		var err = db.LoadTitles()
 		if err != nil {
 			panic(err)
 		}
-		var t = db.LookupTitle(titleName).SchemaTitle()
+		t = db.LookupTitle(titleName).SchemaTitle()
 		if t == nil {
 			return nil
 		}
 		t.Location = path
 		s.addTitle(t)
 	}
-	return s.titleByLoc[path]
-}
 
-// findOrCreateUnknownFilesystemTitle looks up the title by path and returns it
-// or creates a new one.  This should only be used for titles for which we have
-// no metadata: when LCCN is the only data available, the title is incomplete.
-func (s *Searcher) findOrCreateUnknownFilesystemTitle(lccn, path string) *schema.Title {
-	// First see if we can look up the title in the database
-	if s.titleByLoc[path] == nil {
-		s.findFilesystemTitle(lccn, path)
+	// If we still have no title, we create one but make it clear it's a problem
+	if t == nil {
+		t = &schema.Title{LCCN: titleName}
+		s.addTitle(t)
+		s.newError(path, fmt.Errorf("unable to find title %#v in database", titleName))
 	}
-	// If it's still empty, we create it with the limited data we have
-	if s.titleByLoc[path] == nil {
-		s.addTitle(&schema.Title{LCCN: lccn, Location: path})
-	}
+
 	return s.titleByLoc[path]
 }
 
@@ -75,4 +73,21 @@ func (s *Searcher) findOrCreateWebTitle(c *httpcache.Client, uri string) (*schem
 		Location:           uri,
 	})
 	return s.titleByLoc[uri], nil
+}
+
+// findOrCreateDatabaseTitle takes a database issue and returns the equivalent
+// schema.Title stored in this searcher, or else looks up the issue's db.Title,
+// creates an equivalent schema.Title and stores it, faking a location for
+// future lookup
+func (s *Searcher) findOrCreateDatabaseTitle(issue *db.Issue) *schema.Title {
+	db.LoadTitles()
+	var t = db.LookupTitle(issue.LCCN)
+	var fakeLocation = t.LCCN
+	if s.titleByLoc[fakeLocation] == nil {
+		var st = t.SchemaTitle()
+		st.Location = fakeLocation
+		s.addTitle(st)
+	}
+
+	return s.titleByLoc[fakeLocation]
 }

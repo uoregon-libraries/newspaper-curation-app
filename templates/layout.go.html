@@ -37,11 +37,6 @@
               <li><a href="{{.Webroot}}/sftp">SFTP</a></li>
               {{end}}
 
-              {{if .User.PermittedTo SearchWorkflowIssues}}
-              <!-- This URL needs to match the router path in the server's main.go -->
-              <li><a href="{{.Webroot}}/search-issues">Issue Finder</a></li>
-              {{end}}
-
               {{if .User.PermittedTo ManageMOCs}}
                 <li><a href="{{ParentURL "mocs-list.php"}}">MARC Org Codes</a></li>
               {{end}}

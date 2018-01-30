@@ -180,6 +180,25 @@ func NewIssueFromScanDir(path string) (*Issue, error) {
 	return i, err
 }
 
+// FindInProcessIssues returns all issues which have been entered in the
+// workflow system, but haven't yet gone through all the way to the point of
+// being batched and approved for production
+//
+// TODO: At the moment, this returns all issues in the database.  This will be
+// a problem until the batch maker is migrated *and* we have some way to tie an
+// issue to a DB batch **AND** we have a way to flag a batch as being approved
+// for prod....  Obviously this MUST be addressed shortly after pushing live;
+// it's just a stopgap due to continuing filesystem problems on the legacy
+// setup.
+func FindInProcessIssues() ([]*Issue, error) {
+	var op = DB.Operation()
+	op.Dbg = Debug
+	var list []*Issue
+	op.Select("issues", &Issue{}).AllObjects(&list)
+	deserializeIssues(list)
+	return list, op.Err()
+}
+
 // FindIssuesOnDesk returns all issues "owned" by a given user id
 func FindIssuesOnDesk(userID int) ([]*Issue, error) {
 	var op = DB.Operation()
