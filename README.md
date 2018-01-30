@@ -20,6 +20,9 @@ This is the web server which exposes all the batch-maker workflow UI.  Please
 note that, at the moment, this requires Apache sitting in front of the server
 for authentication.
 
+We've provided an [example apache config](apache.conf) file which roughly
+matches our own setup.
+
 ### Usage
 
 See `dev-server.sh` or `rhel7/p2cgo.service`
