@@ -6,6 +6,7 @@
 package main
 
 import (
+	"cli"
 	"config"
 	"db"
 	"fmt"
@@ -13,13 +14,10 @@ import (
 	"issuefinder"
 	"issuesearch"
 	"issuewatcher"
-	"os"
 	"schema"
 	"strings"
 
-	"github.com/jessevdk/go-flags"
 	"github.com/uoregon-libraries/gopkg/logger"
-	"github.com/uoregon-libraries/gopkg/wordutils"
 )
 
 var issueSearchKeys []*issuesearch.Key
@@ -27,66 +25,40 @@ var issueSearchKeys []*issuesearch.Key
 var conf *config.Config
 
 // Command-line options
-var opts struct {
-	ConfigFile string   `short:"c" long:"config" description:"path to Black Mamba config file" required:"true"`
-	NotLive    bool     `long:"not-live" description:"don't report live issues"`
-	All        bool     `long:"all" description:"report all issues (unless --not-live is present)"`
-	IssueList  string   `long:"issue-list" description:"path to file containing list of newline-separated issue keys"`
-	IssueKeys  []string `long:"issue-key" description:"single issue key to process, e.g., 'sn12345678/1905123101'"`
+type _opts struct {
+	cli.BaseOptions
+	NotLive   bool     `long:"not-live" description:"don't report live issues"`
+	All       bool     `long:"all" description:"report all issues (unless --not-live is present)"`
+	IssueList string   `long:"issue-list" description:"path to file containing list of newline-separated issue keys"`
+	IssueKeys []string `long:"issue-key" description:"single issue key to process, e.g., 'sn12345678/1905123101'"`
 }
 
-var p *flags.Parser
-
-// wrap is a helper to wrap a usage message at 80 characters and print a
-// newline afterward
-func wrap(msg string) {
-	fmt.Fprint(os.Stderr, wordutils.Wrap(msg, 80))
-	fmt.Fprintln(os.Stderr)
-}
-
-func usageFail(format string, args ...interface{}) {
-	wrap(fmt.Sprintf(format, args...))
-	fmt.Fprintln(os.Stderr)
-	p.WriteHelp(os.Stderr)
-	fmt.Fprintln(os.Stderr)
-	wrap("At least one of --all, --issue-list, or --issue-key must be specified.  " +
-		"--all takes precedence over --issue-list, which takes precedence over " +
-		"--issue-key.  Note that --issue-key may be specified multiple times.")
-	fmt.Fprintln(os.Stderr)
-	wrap("Issue keys MUST be formatted as LCCN[/YYYY][MM][DD][EE].  The full " +
-		"LCCN is mandatory, while the rest of the key's parts can be added to " +
-		"refine the search.")
-	os.Exit(1)
-}
+var opts _opts
 
 func getOpts() {
-	p = flags.NewParser(&opts, flags.HelpFlag|flags.PassDoubleDash)
-	p.Usage = "[OPTIONS]"
-	var _, err = p.Parse()
+	var c = cli.New(&opts)
+	c.AppendUsage("At least one of --all, --issue-list, or --issue-key must be " +
+		"specified.  --all takes precedence over --issue-list, which takes precedence " +
+		"over --issue-key.  Note that --issue-key may be specified multiple times.")
+	c.AppendUsage("Issue keys MUST be formatted as LCCN[/YYYY][MM][DD][EE].  The full " +
+		"LCCN is mandatory, while the rest of the key's parts can be added to " +
+		"refine the search.")
+	var conf = c.GetConf()
 
-	if err != nil {
-		usageFail("Error: %s", err)
-	}
-
-	conf, err = config.Parse(opts.ConfigFile)
-	if err != nil {
-		logger.Fatalf("Config error: %s", err)
-	}
-
-	err = db.Connect(conf.DatabaseConnect)
+	var err = db.Connect(conf.DatabaseConnect)
 	if err != nil {
 		logger.Fatalf("Error trying to connect to database: %s", err)
 	}
 
 	if len(opts.IssueKeys) == 0 && opts.IssueList == "" && !opts.All {
-		usageFail("Error: You must specify one or more issue keys via --all, --issue-key, or --issue-list")
+		c.UsageFail("Error: You must specify one or more issue keys via --all, --issue-key, or --issue-list")
 	}
 
 	// If we have an issue list, read it into opts.IssueKeys
 	if opts.IssueList != "" {
 		var contents, err = ioutil.ReadFile(opts.IssueList)
 		if err != nil {
-			usageFail("Unable to open issue list file %#v: %s", opts.IssueList, err)
+			c.UsageFail("Unable to open issue list file %#v: %s", opts.IssueList, err)
 		}
 		opts.IssueKeys = strings.Split(string(contents), "\n")
 	}
@@ -102,7 +74,7 @@ func getOpts() {
 		ik = strings.Replace(ik, "-", "", -1)
 		var searchKey, err = issuesearch.ParseSearchKey(ik)
 		if err != nil {
-			usageFail("Invalid issue search key %#v: %s", ik, err)
+			c.UsageFail("Invalid issue search key %#v: %s", ik, err)
 		}
 		issueSearchKeys = append(issueSearchKeys, searchKey)
 	}
@@ -112,7 +84,7 @@ func getOpts() {
 	}
 
 	if len(issueSearchKeys) == 0 {
-		usageFail("No valid issue keys were found (did you use a blank issue key?)")
+		c.UsageFail("No valid issue keys were found (did you use a blank issue key?)")
 	}
 }
 
