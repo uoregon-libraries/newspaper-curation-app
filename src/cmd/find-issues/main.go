@@ -10,9 +10,11 @@ import (
 	"db"
 	"fmt"
 	"io/ioutil"
+	"issuefinder"
 	"issuesearch"
 	"issuewatcher"
 	"os"
+	"schema"
 	"strings"
 
 	"github.com/jessevdk/go-flags"
@@ -108,6 +110,8 @@ func getOpts() {
 	}
 }
 
+type errorFn func(*schema.Issue) []*issuefinder.Error
+
 func main() {
 	getOpts()
 	var watcher = issuewatcher.New(conf)
@@ -116,23 +120,27 @@ func main() {
 		logger.Fatalf("Unable to deserialize the watcher: %s", err)
 	}
 
-	var lastKey = ""
 	for _, k := range issueSearchKeys {
-		for _, issue := range watcher.LookupIssues(k) {
-			var currKey = issue.Key()
-			if currKey != lastKey {
-				fmt.Printf("%#v:\n", currKey)
-				lastKey = currKey
-			}
-			fmt.Printf("  - %#v\n", issue.Location)
-			if issue.Batch != nil {
-				fmt.Printf("    - Batch: %s\n", issue.Batch.Fullname())
-			}
+		reportIssues(watcher.LookupIssues(k), watcher.IssueErrors)
+	}
+}
 
-			var errors = watcher.IssueErrors(issue)
-			for _, e := range errors {
-				fmt.Printf("    - ERROR: (%#v) %s\n", e.Location, e.Error)
-			}
+func reportIssues(issueList schema.IssueList, errfn errorFn) {
+	var lastKey = ""
+	for _, issue := range issueList {
+		var currKey = issue.Key()
+		if currKey != lastKey {
+			fmt.Printf("%#v:\n", currKey)
+			lastKey = currKey
+		}
+		fmt.Printf("  - %#v\n", issue.Location)
+		if issue.Batch != nil {
+			fmt.Printf("    - Batch: %s\n", issue.Batch.Fullname())
+		}
+
+		var errors = errfn(issue)
+		for _, e := range errors {
+			fmt.Printf("    - ERROR: (%#v) %s\n", e.Location, e.Error)
 		}
 	}
 }
