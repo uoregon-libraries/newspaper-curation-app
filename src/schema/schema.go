@@ -238,6 +238,12 @@ func (i *Issue) FindFiles() {
 	}
 }
 
+// IsLive returns true if the issue both has a batch *and* the batch appears to
+// be on the live site
+func (i *Issue) IsLive() bool {
+	return i.Batch != nil && i.Batch.Location[0:4] == "http"
+}
+
 // IssueList groups a bunch of issues together
 type IssueList []*Issue
 
