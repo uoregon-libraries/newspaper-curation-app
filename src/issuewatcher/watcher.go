@@ -270,5 +270,7 @@ func (w *Watcher) FindIssues() (*issuefinder.Finder, error) {
 		return nil, fmt.Errorf("unable to cache in-process issues: %s", err)
 	}
 
+	realFinder.Errors.Index()
+
 	return realFinder, nil
 }
