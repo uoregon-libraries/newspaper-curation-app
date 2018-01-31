@@ -29,6 +29,7 @@ var conf *config.Config
 // Command-line options
 var opts struct {
 	ConfigFile string   `short:"c" long:"config" description:"path to Black Mamba config file" required:"true"`
+	NotLive    bool     `long:"not-live" description:"don't report live issues"`
 	IssueList  string   `long:"issue-list" description:"path to file containing list of newline-separated issue keys"`
 	IssueKeys  []string `long:"issue-key" description:"single issue key to process, e.g., 'sn12345678/1905123101'"`
 }
@@ -126,8 +127,18 @@ func main() {
 }
 
 func reportIssues(issueList schema.IssueList, errfn errorFn) {
+	var newList = issueList
+	if opts.NotLive {
+		newList = make(schema.IssueList, 0)
+		for _, issue := range issueList {
+			if !issue.IsLive() {
+				newList = append(newList, issue)
+			}
+		}
+	}
+
 	var lastKey = ""
-	for _, issue := range issueList {
+	for _, issue := range newList {
 		var currKey = issue.Key()
 		if currKey != lastKey {
 			fmt.Printf("%#v:\n", currKey)
