@@ -236,6 +236,11 @@ func (w *Watcher) LookupIssues(key *issuesearch.Key) []*schema.Issue {
 	return w.lookup.Issues(key)
 }
 
+// IssueErrors returns errors associated with the given issue
+func (w *Watcher) IssueErrors(i *schema.Issue) []*issuefinder.Error {
+	return w.finder.Errors.IssueErrors[i]
+}
+
 // FindIssues calls all the individual find* functions for the myriad of ways
 // we store issue information in the various locations, returning the
 // issuefinder.Finder with all this data.  Since this operates independently,
