@@ -5,6 +5,7 @@ import (
 	"config"
 	"fmt"
 	"os"
+	"reflect"
 
 	flags "github.com/jessevdk/go-flags"
 	"github.com/uoregon-libraries/gopkg/logger"
@@ -36,16 +37,29 @@ func Simple() *CLI {
 }
 
 // GetConf parses the command-line flags and returns the config file - it is
-// assumed that the options structure can be converted to a BaseOptions value,
-// otherwise this will fail
+// assumed that the options structure includes a ConfigFile string (which is
+// free if BaseOptions is an embedded type)
 func (c *CLI) GetConf() *config.Config {
 	var _, err = c.p.Parse()
 	if err != nil {
 		c.UsageFail("Error: %s", err)
 	}
 
+	var configFile string
+
+	// oV needs to be the option structure, not its pointer, so we can get its
+	// enumerated fields and values
+	var oV = reflect.ValueOf(c.opts).Elem()
+	var fV = oV.FieldByName("ConfigFile")
+	var empty reflect.Value
+	if fV == empty {
+		logger.Fatalf("Unable to locate ConfigFile in options structure!")
+	}
+
+	configFile = fV.Interface().(string)
+
 	var conf *config.Config
-	conf, err = config.Parse(c.opts.(*BaseOptions).ConfigFile)
+	conf, err = config.Parse(configFile)
 	if err != nil {
 		logger.Fatalf("Config error: %s", err)
 	}
