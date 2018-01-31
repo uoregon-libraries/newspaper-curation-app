@@ -3,23 +3,24 @@
 package main
 
 import (
+	"config"
 	"fmt"
-	"issuefinder"
+	"issuewatcher"
 
 	"os"
 
 	"github.com/jessevdk/go-flags"
-	"github.com/uoregon-libraries/gopkg/fileutil"
 	"github.com/uoregon-libraries/gopkg/logger"
 	"github.com/uoregon-libraries/gopkg/wordutils"
 )
 
 // Command-line options
 var opts struct {
-	CacheFile string `long:"cache-file" description:"Path to the finder cache" required:"true"`
+	ConfigFile string `short:"c" long:"config" description:"path to Black Mamba config file" required:"true"`
 }
 
 var p *flags.Parser
+var conf *config.Config
 
 // wrap is a helper to wrap a usage message at 80 characters and print a
 // newline afterward
@@ -43,22 +44,22 @@ func getOpts() {
 		usageFail("Error: %s", err)
 	}
 
-	if !fileutil.IsFile(opts.CacheFile) {
-		usageFail("ERROR: --cache-file %#v is not a valid file", opts.CacheFile)
+	conf, err = config.Parse(opts.ConfigFile)
+	if err != nil {
+		logger.Fatalf("Config error: %s", err)
 	}
 }
 
 func main() {
 	getOpts()
-	var finder, err = issuefinder.Deserialize(opts.CacheFile)
+	var watcher = issuewatcher.New(conf)
+	var err = watcher.Deserialize()
 	if err != nil {
-		logger.Fatalf("Unable to deserialize the cache file %#v: %s", opts.CacheFile, err)
+		logger.Fatalf("Unable to deserialize the watcher: %s", err)
 	}
 
-	finder.Errors.Index()
-
 	// Report all errors
-	for _, e := range finder.Errors.Errors {
+	for _, e := range watcher.IssueFinder().Errors.Errors {
 		logger.Errorf(e.Message())
 	}
 }
