@@ -4,60 +4,18 @@
 package main
 
 import (
+	"cli"
 	"fmt"
 	"issuefinder"
 
-	"os"
-
-	"github.com/jessevdk/go-flags"
-	"github.com/uoregon-libraries/gopkg/fileutil"
 	"github.com/uoregon-libraries/gopkg/logger"
-	"github.com/uoregon-libraries/gopkg/wordutils"
 )
 
-// Command-line options
-var opts struct {
-	Siteroot  string `long:"siteroot" description:"URL to the live host" required:"true"`
-	CachePath string `long:"cache-path" description:"Path to cache downloaded JSON files" required:"true"`
-}
-
-var p *flags.Parser
-
-// wrap is a helper to wrap a usage message at 80 characters and print a
-// newline afterward
-func wrap(msg string) {
-	fmt.Fprint(os.Stderr, wordutils.Wrap(msg, 80))
-	fmt.Fprintln(os.Stderr)
-}
-
-func usageFail(format string, args ...interface{}) {
-	wrap(fmt.Sprintf(format, args...))
-	fmt.Fprintln(os.Stderr)
-	p.WriteHelp(os.Stderr)
-	fmt.Fprintln(os.Stderr)
-	wrap("--siteroot must point to the live site, for downloading batch and LCCN information")
-	os.Exit(1)
-}
-
-func getConf() {
-	p = flags.NewParser(&opts, flags.HelpFlag|flags.PassDoubleDash)
-	p.Usage = "[OPTIONS]"
-	var _, err = p.Parse()
-
-	if err != nil {
-		usageFail("Error: %s", err)
-	}
-
-	if !fileutil.IsDir(opts.CachePath) {
-		usageFail("ERROR: --cache-path %#v is not a valid directory", opts.CachePath)
-	}
-}
-
 func main() {
-	getConf()
+	var conf = cli.Simple().GetConf()
 
 	var finder = issuefinder.New()
-	var err = finder.FindWebBatches(opts.Siteroot, opts.CachePath)
+	var err = finder.FindWebBatches(conf.NewsWebroot, conf.IssueCachePath)
 	if err != nil {
 		logger.Fatalf("Error trying to cache live batches: %s", err)
 	}
