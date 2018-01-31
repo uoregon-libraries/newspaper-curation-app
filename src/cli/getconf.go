@@ -14,8 +14,9 @@ import (
 
 // CLI centralizes the CLI parser as well as functionality around it
 type CLI struct {
-	p    *flags.Parser
-	opts interface{}
+	p         *flags.Parser
+	opts      interface{}
+	postUsage []string
 }
 
 // BaseOptions represents the simplest possible list of CLI options a Black
@@ -34,6 +35,11 @@ func New(opts interface{}) *CLI {
 // the tools which don't need special-case handling
 func Simple() *CLI {
 	return New(&BaseOptions{})
+}
+
+// AppendUsage adds a string which will be printed when usage is displayed
+func (c *CLI) AppendUsage(msg string) {
+	c.postUsage = append(c.postUsage, msg)
 }
 
 // GetConf parses the command-line flags and returns the config file - it is
@@ -80,5 +86,11 @@ func (c *CLI) UsageFail(format string, args ...interface{}) {
 	Wrap(fmt.Sprintf(format, args...))
 	fmt.Fprintln(os.Stderr)
 	c.p.WriteHelp(os.Stderr)
+	for i, msg := range c.postUsage {
+		if i > 0 {
+			fmt.Fprintln(os.Stderr)
+		}
+		Wrap(msg)
+	}
 	os.Exit(1)
 }
