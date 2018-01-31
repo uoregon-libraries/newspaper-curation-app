@@ -89,7 +89,7 @@ func main() {
 		var issueList = issues[k]
 		var hasNonLiveIssues bool
 		for _, issue := range issueList {
-			if issue.Batch == nil || issue.Batch.Location[0:4] != "http" {
+			if !issue.IsLive() {
 				hasNonLiveIssues = true
 			}
 		}
@@ -106,7 +106,7 @@ func main() {
 		var foundLive bool
 		for i, issue := range issueList {
 			var data = make(map[string]string)
-			if issue.Batch != nil && issue.Batch.Location[0:4] == "http" {
+			if issue.IsLive() {
 				if foundLive {
 					data["livedupe"] = "true"
 				}
