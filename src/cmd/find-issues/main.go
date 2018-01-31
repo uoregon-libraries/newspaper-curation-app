@@ -30,6 +30,7 @@ var conf *config.Config
 var opts struct {
 	ConfigFile string   `short:"c" long:"config" description:"path to Black Mamba config file" required:"true"`
 	NotLive    bool     `long:"not-live" description:"don't report live issues"`
+	All        bool     `long:"all" description:"report all issues (unless --not-live is present)"`
 	IssueList  string   `long:"issue-list" description:"path to file containing list of newline-separated issue keys"`
 	IssueKeys  []string `long:"issue-key" description:"single issue key to process, e.g., 'sn12345678/1905123101'"`
 }
@@ -48,9 +49,9 @@ func usageFail(format string, args ...interface{}) {
 	fmt.Fprintln(os.Stderr)
 	p.WriteHelp(os.Stderr)
 	fmt.Fprintln(os.Stderr)
-	wrap("At least one of --issue-list or --issue-key must be specified.  " +
-		"If both are specified, --issue-key will be ignored.  Note that " +
-		"--issue-key may be specified multiple times.")
+	wrap("At least one of --all, --issue-list, or --issue-key must be specified.  " +
+		"--all takes precedence over --issue-list, which takes precedence over " +
+		"--issue-key.  Note that --issue-key may be specified multiple times.")
 	fmt.Fprintln(os.Stderr)
 	wrap("Issue keys MUST be formatted as LCCN[/YYYY][MM][DD][EE].  The full " +
 		"LCCN is mandatory, while the rest of the key's parts can be added to " +
@@ -77,8 +78,8 @@ func getOpts() {
 		logger.Fatalf("Error trying to connect to database: %s", err)
 	}
 
-	if len(opts.IssueKeys) == 0 && opts.IssueList == "" {
-		usageFail("Error: You must specify one or more issue keys via --issue-key or --issue-list")
+	if len(opts.IssueKeys) == 0 && opts.IssueList == "" && !opts.All {
+		usageFail("Error: You must specify one or more issue keys via --all, --issue-key, or --issue-list")
 	}
 
 	// If we have an issue list, read it into opts.IssueKeys
@@ -106,6 +107,10 @@ func getOpts() {
 		issueSearchKeys = append(issueSearchKeys, searchKey)
 	}
 
+	if opts.All == true {
+		return
+	}
+
 	if len(issueSearchKeys) == 0 {
 		usageFail("No valid issue keys were found (did you use a blank issue key?)")
 	}
@@ -119,6 +124,11 @@ func main() {
 	var err = watcher.Deserialize()
 	if err != nil {
 		logger.Fatalf("Unable to deserialize the watcher: %s", err)
+	}
+
+	if opts.All {
+		reportIssues(watcher.IssueFinder().Issues, watcher.IssueErrors)
+		return
 	}
 
 	for _, k := range issueSearchKeys {
