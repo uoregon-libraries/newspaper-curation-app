@@ -4,7 +4,6 @@ import (
 	"db"
 	"fmt"
 	"html/template"
-	"issuefinder"
 	"issuesearch"
 
 	"path"
@@ -222,7 +221,7 @@ func (i *Issue) ValidateMetadata() {
 	var key, _ = issuesearch.ParseSearchKey(i.si.Key())
 	var schemaIssues = watcher.LookupIssues(key)
 	for _, issue := range schemaIssues {
-		if watcher.IssueFinder().IssueNamespace[issue] == issuefinder.Website {
+		if issue.WorkflowStep == schema.WSInProduction {
 			addError(fmt.Sprintf("This is a duplicate of a live issue (in %q); "+
 				"double-check the date and edition number, or contact support",
 				issue.Batch.Fullname()))
