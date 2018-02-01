@@ -30,6 +30,7 @@ type Watcher struct {
 	scanUpload      string
 	pdfUpload       string
 	lookup          *issuesearch.Lookup
+	canonIssues     map[string]*schema.Issue
 	status          watcherStatus
 	lastFullRefresh time.Time
 	done            chan bool
@@ -68,6 +69,7 @@ func New(conf *config.Config) *Watcher {
 		tempdir:         conf.IssueCachePath,
 		scanUpload:      conf.MasterScanUploadPath,
 		pdfUpload:       conf.MasterPDFUploadPath,
+		canonIssues:     make(map[string]*schema.Issue),
 		lastFullRefresh: time.Now(),
 		done:            make(chan bool),
 	}
@@ -241,36 +243,90 @@ func (w *Watcher) IssueErrors(i *schema.Issue) []*issuefinder.Error {
 	return w.finder.Errors.IssueErrors[i]
 }
 
+// duplicateIssueError returns an error that describes the duplication
+func duplicateIssueError(canonical *schema.Issue) error {
+	switch canonical.WorkflowStep {
+	case schema.WSInProduction:
+		return fmt.Errorf("duplicates a live issue in the batch %q", canonical.Batch.Fullname())
+
+	case schema.WSReadyForBatching:
+		return fmt.Errorf("duplicates an issue currently being prepped for batching")
+	}
+
+	return fmt.Errorf("duplicates an existing issue")
+}
+
 // FindIssues calls all the individual find* functions for the myriad of ways
 // we store issue information in the various locations, returning the
 // issuefinder.Finder with all this data.  Since this operates independently,
 // creating and returning a new issuefinder, it's threadsafe and can be called
 // with or without the issue watcher loop.
 func (w *Watcher) FindIssues() (*issuefinder.Finder, error) {
-	var realFinder = issuefinder.New()
+	var f = issuefinder.New()
 	var err error
+	var s *issuefinder.Searcher
+	var canonIssues = make(map[string]*schema.Issue)
 
-	_, err = realFinder.FindWebBatches(w.webroot, w.tempdir)
+	// Web issues are first as they are live, and therefore always canonical.
+	// All issues anywhere else in the workflow that duplicate one of these is
+	// unquestionably an error
+	s, err = f.FindWebBatches(w.webroot, w.tempdir)
 	if err != nil {
 		return nil, fmt.Errorf("unable to cache web batches: %s", err)
 	}
-
-	_, err = realFinder.FindSFTPIssues(w.pdfUpload)
-	if err != nil {
-		return nil, fmt.Errorf("unable to cache sftp issues: %s", err)
+	for _, issue := range s.Issues {
+		canonIssues[issue.Key()] = issue
 	}
 
-	_, err = realFinder.FindScannedIssues(w.scanUpload)
-	if err != nil {
-		return nil, fmt.Errorf("unable to cache scanned issues: %s", err)
-	}
-
-	_, err = realFinder.FindInProcessIssues()
+	// In-process issues are trickier - we label those which are
+	// WSReadyForBatching as canonical, *unless* they're a dupe of a live issue,
+	// in which case they have to be given an error
+	s, err = f.FindInProcessIssues()
 	if err != nil {
 		return nil, fmt.Errorf("unable to cache in-process issues: %s", err)
 	}
+	for _, issue := range s.Issues {
+		// Check for dupes first
+		var k = issue.Key()
+		var ci = canonIssues[k]
+		if ci != nil {
+			s.AddIssueError(issue, duplicateIssueError(ci))
+			continue
+		}
 
-	realFinder.Errors.Index()
+		// If no dupe, we mark canonical if the issue is ready for batching
+		if issue.WorkflowStep == schema.WSReadyForBatching {
+			canonIssues[k] = issue
+		}
+	}
 
-	return realFinder, nil
+	// SFTP and scanned issues get errors if they're a dupe of anything we've
+	// labeled canonical to this point
+	s, err = f.FindSFTPIssues(w.pdfUpload)
+	if err != nil {
+		return nil, fmt.Errorf("unable to cache sftp issues: %s", err)
+	}
+	for _, issue := range s.Issues {
+		var k = issue.Key()
+		var ci = canonIssues[k]
+		if ci != nil {
+			s.AddIssueError(issue, duplicateIssueError(ci))
+		}
+	}
+
+	s, err = f.FindScannedIssues(w.scanUpload)
+	if err != nil {
+		return nil, fmt.Errorf("unable to cache scanned issues: %s", err)
+	}
+	for _, issue := range s.Issues {
+		var k = issue.Key()
+		var ci = canonIssues[k]
+		if ci != nil {
+			s.AddIssueError(issue, duplicateIssueError(ci))
+		}
+	}
+
+	f.Errors.Index()
+
+	return f, nil
 }

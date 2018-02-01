@@ -95,6 +95,12 @@ func (s *Searcher) newError(loc string, err error) *Error {
 	return e
 }
 
+// AddIssueError attaches an error to an issue from an external caller
+func (s *Searcher) AddIssueError(i *schema.Issue, err error) {
+	var e = s.newError(i.Location, err)
+	e.SetIssue(i)
+}
+
 // SetBatch changes the batch and returns the Error
 func (e *Error) SetBatch(b *schema.Batch) *Error {
 	e.Batch = b
