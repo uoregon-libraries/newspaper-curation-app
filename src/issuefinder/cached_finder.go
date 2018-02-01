@@ -46,13 +46,14 @@ type cachedTitle struct {
 }
 
 type cachedIssue struct {
-	ID       cacheID
-	TitleID  cacheID
-	Date     time.Time
-	Edition  int
-	BatchID  cacheID
-	Location string
-	Files    []cachedFile
+	ID           cacheID
+	TitleID      cacheID
+	Date         time.Time
+	Edition      int
+	BatchID      cacheID
+	Location     string
+	WorkflowStep string
+	Files        []cachedFile
 }
 
 type cachedFile struct {

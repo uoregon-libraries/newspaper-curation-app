@@ -73,7 +73,7 @@ func (s *Searcher) cacheLiveIssue(batch *schema.Batch, title *schema.Title, meta
 		return
 	}
 
-	var issue = &schema.Issue{Date: dt, Edition: edition, Location: meta.URL}
+	var issue = &schema.Issue{Date: dt, Edition: edition, Location: meta.URL, WorkflowStep: schema.WSInProduction}
 	title.AddIssue(issue)
 	batch.AddIssue(issue)
 	s.Issues = append(s.Issues, issue)

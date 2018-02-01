@@ -7,6 +7,7 @@ import (
 	"os"
 	"path/filepath"
 	"regexp"
+	"schema"
 	"sort"
 	"strings"
 	"time"
@@ -81,7 +82,7 @@ func queueIssueForDerivatives(dbIssue *db.Issue) {
 		return
 	}
 	dbIssue.Location = newDir
-	dbIssue.WorkflowStep = db.WSAwaitingProcessing
+	dbIssue.WorkflowStep = schema.WSAwaitingProcessing
 	err = dbIssue.Save()
 	if err != nil {
 		logger.Criticalf("Unable to update db Issue (location and awaiting page review status): %s", err)

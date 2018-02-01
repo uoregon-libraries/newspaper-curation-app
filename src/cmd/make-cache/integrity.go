@@ -39,8 +39,10 @@ func testIntegrity(fA *issuefinder.Finder) {
 	validateLen("batch", len(fA.Batches), len(fB.Batches))
 	validateLen("error", len(fA.Errors.Errors), len(fB.Errors.Errors))
 
+	logger.Debugf("Sorting issues for comparisons")
 	fA.Issues.SortByKey()
 	fB.Issues.SortByKey()
+	logger.Debugf("Scanning %d issues to verify TSV output", len(fA.Issues))
 	var issueFails int
 	for i, issueA := range fA.Issues {
 		var issueB = fB.Issues[i]

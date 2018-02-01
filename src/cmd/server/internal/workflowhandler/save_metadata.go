@@ -2,9 +2,9 @@ package workflowhandler
 
 import (
 	"cmd/server/internal/responder"
-	"db"
 	"encoding/base64"
 	"fmt"
+	"schema"
 
 	"net/http"
 	"strconv"
@@ -115,7 +115,7 @@ func saveQueue(resp *responder.Responder, i *Issue, changes map[string]string) {
 	}
 
 	// If metadata is good, *now* we can actually update the workflow steps
-	i.WorkflowStep = db.WSAwaitingMetadataReview
+	i.WorkflowStep = schema.WSAwaitingMetadataReview
 	i.MetadataEntryUserID = resp.Vars.User.ID
 	i.Unclaim()
 

@@ -3,6 +3,7 @@ package workflowhandler
 import (
 	"cmd/server/internal/responder"
 	"db"
+	"schema"
 
 	"net/http"
 	"strconv"
@@ -106,10 +107,10 @@ func canReview(h HandlerFunc) HandlerFunc {
 // user can take action
 func _canPerformWorkflow(u *user.User, i *Issue) bool {
 	switch i.WorkflowStep {
-	case db.WSReadyForMetadataEntry:
+	case schema.WSReadyForMetadataEntry:
 		return u.PermittedTo(user.EnterIssueMetadata)
 
-	case db.WSAwaitingMetadataReview:
+	case schema.WSAwaitingMetadataReview:
 		return u.PermittedTo(user.ReviewIssueMetadata)
 	}
 
@@ -128,7 +129,7 @@ func canClaim(h HandlerFunc) HandlerFunc {
 			resp.Render(responder.Empty)
 			return
 		}
-		if i.WorkflowStep != db.WSReadyForMetadataEntry && i.WorkflowStep != db.WSAwaitingMetadataReview {
+		if i.WorkflowStep != schema.WSReadyForMetadataEntry && i.WorkflowStep != schema.WSAwaitingMetadataReview {
 			logger.Warnf("User %s trying to claim issue %d which has workflow step %s",
 				resp.Vars.User.Login, i.ID, i.WorkflowStepString)
 			resp.Vars.Alert = "Error: invalid action for this issue"
@@ -145,7 +146,7 @@ func canClaim(h HandlerFunc) HandlerFunc {
 // entering metadata
 func issueNeedsMetadataEntry(h HandlerFunc) HandlerFunc {
 	return HandlerFunc(func(resp *responder.Responder, i *Issue) {
-		if i.WorkflowStep != db.WSReadyForMetadataEntry {
+		if i.WorkflowStep != schema.WSReadyForMetadataEntry {
 			logger.Warnf("User %s trying to perform a metadata entry action on issue %d which has workflow step %s",
 				resp.Vars.User.Login, i.ID, i.WorkflowStepString)
 			resp.Vars.Alert = "Error: invalid action for this issue"
@@ -162,7 +163,7 @@ func issueNeedsMetadataEntry(h HandlerFunc) HandlerFunc {
 // for reviewing metadata
 func issueAwaitingMetadataReview(h HandlerFunc) HandlerFunc {
 	return HandlerFunc(func(resp *responder.Responder, i *Issue) {
-		if i.WorkflowStep != db.WSAwaitingMetadataReview {
+		if i.WorkflowStep != schema.WSAwaitingMetadataReview {
 			logger.Warnf("User %s trying to perform a metadata review action on issue %d which has workflow step %s",
 				resp.Vars.User.Login, i.ID, i.WorkflowStepString)
 			resp.Vars.Alert = "Error: invalid action for this issue"
