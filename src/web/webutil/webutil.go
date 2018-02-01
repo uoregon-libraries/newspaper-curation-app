@@ -87,8 +87,8 @@ func RawJS(file string) template.HTML {
 
 // IIIFInfoURL returns what a IIIF viewer needs to find a JP2
 func IIIFInfoURL(jp2Path string) string {
-	var relPath = strings.Replace(jp2Path, WorkflowPath, "", 1)
-	relPath = path.Clean(path.Join("workflow", relPath))
+	var relPath = strings.Replace(jp2Path, WorkflowPath+"/", "", 1)
+	relPath = path.Clean(relPath)
 	var identifier = url.PathEscape(relPath)
 	return fmt.Sprintf("%s/%s", IIIFBaseURL, path.Join(identifier, "info.json"))
 }
