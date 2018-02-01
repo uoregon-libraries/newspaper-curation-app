@@ -182,39 +182,15 @@ func (i *Issue) decorateDupeErrors() {
 
 	var watcherIssues = watcher.LookupIssues(key)
 	for _, wi := range watcherIssues {
-		var ws = wi.WorkflowStep
-		if ws == schema.WSSFTP {
+		if wi.WorkflowStep == i.WorkflowStep {
 			continue
 		}
 
-		var errstr = "likely duplicate of "
-		switch ws {
-		case schema.WSScan:
-			errstr += "a scanned issue waiting for processing"
-
-		case schema.WSAwaitingProcessing:
-			errstr += "a pending issue"
-
-		case schema.WSAwaitingPageReview:
-			errstr += "an issue awaiting page reordering / renumbering"
-
-		case schema.WSReadyForMetadataEntry:
-			errstr += "an issue awaiting metadata entry"
-
-		case schema.WSAwaitingMetadataReview:
-			errstr += "an issue awaiting metadata review"
-
-		case schema.WSReadyForBatching:
-			errstr += "an issue waiting to be batched"
-
-		case schema.WSInProduction:
-			errstr += fmt.Sprintf(`a live issue: <a href="%s">%s, %s</a>`,
+		var errstr = fmt.Sprintf("likely duplicate of %s", wi.WorkflowIdentification())
+		if wi.WorkflowStep == schema.WSInProduction {
+			errstr = fmt.Sprintf(`likely duplicate of a live issue: <a href="%s">%s, %s</a>`,
 				wi.Location[:len(wi.Location)-5], wi.Title.Name, wi.DateStringReadable())
-
-		default:
-			errstr += fmt.Sprintf("an unknown issue (location: %q)", wi.Location)
 		}
-
 		i.Errors = append(i.Errors, template.HTML(errstr))
 	}
 }

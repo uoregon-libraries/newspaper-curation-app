@@ -264,6 +264,37 @@ func (i *Issue) IsLive() bool {
 	return i.Batch != nil && i.Batch.Location[0:4] == "http"
 }
 
+// WorkflowIdentification returns a human-readable explanation of where an
+// issue lives currently is in the workflow - currently used for adding to
+// "likely duplicate of ..."
+func (i *Issue) WorkflowIdentification() string {
+	switch i.WorkflowStep {
+	case WSScan:
+		return "a scanned issue waiting for processing"
+
+	case WSAwaitingProcessing:
+		return "a pending issue"
+
+	case WSAwaitingPageReview:
+		return "an issue awaiting page reordering / renumbering"
+
+	case WSReadyForMetadataEntry:
+		return "an issue awaiting metadata entry"
+
+	case WSAwaitingMetadataReview:
+		return "an issue awaiting metadata review"
+
+	case WSReadyForBatching:
+		return "an issue waiting to be batched"
+
+	case WSInProduction:
+		return "a live issue in batch " + i.Batch.Fullname()
+
+	default:
+		return fmt.Sprintf("an unknown issue (location: %q)", i.Location)
+	}
+}
+
 // IssueList groups a bunch of issues together
 type IssueList []*Issue
 
