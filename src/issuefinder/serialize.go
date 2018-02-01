@@ -53,10 +53,11 @@ func (s *Searcher) cachedSearcher() cachedSearcher {
 	for _, i := range s.Issues {
 		issueID++
 		var ci = cachedIssue{
-			ID:       issueID,
-			Date:     i.Date,
-			Edition:  i.Edition,
-			Location: i.Location,
+			ID:           issueID,
+			Date:         i.Date,
+			Edition:      i.Edition,
+			Location:     i.Location,
+			WorkflowStep: string(i.WorkflowStep),
 		}
 		for _, f := range i.Files {
 			fileID++

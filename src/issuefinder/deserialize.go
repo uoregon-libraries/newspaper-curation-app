@@ -69,9 +69,10 @@ func (cs cachedSearcher) searcher() *Searcher {
 	}
 	for _, ci := range cs.Issues {
 		var i = &schema.Issue{
-			Date:     ci.Date,
-			Edition:  ci.Edition,
-			Location: ci.Location,
+			Date:         ci.Date,
+			Edition:      ci.Edition,
+			Location:     ci.Location,
+			WorkflowStep: schema.WorkflowStep(ci.WorkflowStep),
 		}
 		for _, cf := range ci.Files {
 			// Copy the fileutil.File structure or we get reused data
