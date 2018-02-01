@@ -58,7 +58,7 @@ type Issue struct {
 
 // NewIssue creates an issue ready for saving to the issues table
 func NewIssue(moc, lccn, dt string, ed int) *Issue {
-	return &Issue{MARCOrgCode: moc, LCCN: lccn, Date: dt, Edition: ed}
+	return &Issue{MARCOrgCode: moc, LCCN: lccn, Date: dt, Edition: ed, WorkflowStep: schema.WSAwaitingProcessing}
 }
 
 // FindIssue looks for an issue by its id
