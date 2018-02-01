@@ -45,6 +45,26 @@ back into our app.  The relevant commit links follow:
 If you wish to use this application with an ONI install, you'll need to do
 something similar.
 
+### IIIF Image Server
+
+You must stand up an IIIF image server for metadata entry and review, as those
+require visibility into the newspaper images.
+[RAIS](https://github.com/uoregon-libraries/rais-image-server) is the
+recommended image server due to its simplicity.
+
+A simple invocation can be done by using the Black Mamba settings file, since
+it is compatible with bash, and has all the settings RAIS needs:
+
+    source /path/to/black-mamba/settings
+    /path/to/rais-server --address ":12416" \
+        --tile-path $WORKFLOW_PATH \
+        --iiif-url "$IIIF_BASE_URL" \
+        --log-level INFO
+
+If using the [RAIS Docker Image](https://hub.docker.com/r/uolibraries/rais/),
+the approach is still fairly straightforward, but we haven't set this up yet.
+We're hoping to give Black Mamba a full docker-compose overhaul soon.
+
 Job Runner
 ---
 
