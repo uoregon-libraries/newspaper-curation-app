@@ -85,6 +85,9 @@ func (i *Issue) JP2Files() []string {
 // this issue is within the workflow
 func (i *Issue) TaskDescription() string {
 	switch i.WorkflowStep {
+	case db.WSAwaitingProcessing:
+		return "Not yet entered into the workflow"
+
 	case db.WSAwaitingPageReview:
 		return "Ready for page review (renaming files / validating raw PDFs / TIFFs)"
 
@@ -93,6 +96,9 @@ func (i *Issue) TaskDescription() string {
 
 	case db.WSAwaitingMetadataReview:
 		return "Awaiting review (metadata and page numbers)"
+
+	case db.WSReadyForBatching:
+		return "Ready to be built in a batch and loaded"
 
 	default:
 		logger.Criticalf("Invalid workflow step for issue %d: %q", i.ID, i.WorkflowStepString)
