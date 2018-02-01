@@ -15,7 +15,7 @@ func main() {
 	var conf = cli.Simple().GetConf()
 
 	var finder = issuefinder.New()
-	var err = finder.FindWebBatches(conf.NewsWebroot, conf.IssueCachePath)
+	var _, err = finder.FindWebBatches(conf.NewsWebroot, conf.IssueCachePath)
 	if err != nil {
 		logger.Fatalf("Error trying to cache live batches: %s", err)
 	}

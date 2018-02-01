@@ -95,30 +95,30 @@ func (f *Finder) storeSearcher(s *Searcher) {
 
 // createAndProcessSearcher instantiates a new Searcher, passes it to
 // Processor, aggregates its data in the Finder, and returns the error, if any
-func (f *Finder) createAndProcessSearcher(ns Namespace, loc string, processor func(s *Searcher) error) error {
+func (f *Finder) createAndProcessSearcher(ns Namespace, loc string, processor func(s *Searcher) error) (*Searcher, error) {
 	var s = NewSearcher(ns, loc)
 	var err = processor(s)
 	f.storeSearcher(s)
-	return err
+	return s, err
 }
 
 // FindSFTPIssues creates and runs an SFTP Searcher, aggregates its data,
 // and returns any errors encountered
-func (f *Finder) FindSFTPIssues(path string) error {
+func (f *Finder) FindSFTPIssues(path string) (*Searcher, error) {
 	var searchFn = func(s *Searcher) error { return s.FindSFTPIssues() }
 	return f.createAndProcessSearcher(SFTPUpload, path, searchFn)
 }
 
 // FindScannedIssues creates and runs a scanned-issue Searcher, aggregates its
 // data, and returns any errors encountered
-func (f *Finder) FindScannedIssues(path string) error {
+func (f *Finder) FindScannedIssues(path string) (*Searcher, error) {
 	var searchFn = func(s *Searcher) error { return s.FindScannedIssues() }
 	return f.createAndProcessSearcher(ScanUpload, path, searchFn)
 }
 
 // FindWebBatches creates and runs a website batch Searcher, aggregates its
 // data, and returns any errors encountered
-func (f *Finder) FindWebBatches(hostname, cachePath string) error {
+func (f *Finder) FindWebBatches(hostname, cachePath string) (*Searcher, error) {
 	var searchFn = func(s *Searcher) error { return s.FindWebBatches(cachePath) }
 	return f.createAndProcessSearcher(Website, hostname, searchFn)
 }
@@ -126,7 +126,7 @@ func (f *Finder) FindWebBatches(hostname, cachePath string) error {
 // FindInProcessIssues creates and runs an in-process issues (issues which are
 // in the workflow dir and have been indexed) searcher, aggregates its data,
 // and returns any errors encountered
-func (f *Finder) FindInProcessIssues() error {
+func (f *Finder) FindInProcessIssues() (*Searcher, error) {
 	var searchFn = func(s *Searcher) error { return s.FindInProcessIssues() }
 	return f.createAndProcessSearcher(InProcess, "database", searchFn)
 }

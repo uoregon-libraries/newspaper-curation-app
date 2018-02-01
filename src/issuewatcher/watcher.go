@@ -250,22 +250,22 @@ func (w *Watcher) FindIssues() (*issuefinder.Finder, error) {
 	var realFinder = issuefinder.New()
 	var err error
 
-	err = realFinder.FindWebBatches(w.webroot, w.tempdir)
+	_, err = realFinder.FindWebBatches(w.webroot, w.tempdir)
 	if err != nil {
 		return nil, fmt.Errorf("unable to cache web batches: %s", err)
 	}
 
-	err = realFinder.FindSFTPIssues(w.pdfUpload)
+	_, err = realFinder.FindSFTPIssues(w.pdfUpload)
 	if err != nil {
 		return nil, fmt.Errorf("unable to cache sftp issues: %s", err)
 	}
 
-	err = realFinder.FindScannedIssues(w.scanUpload)
+	_, err = realFinder.FindScannedIssues(w.scanUpload)
 	if err != nil {
 		return nil, fmt.Errorf("unable to cache scanned issues: %s", err)
 	}
 
-	err = realFinder.FindInProcessIssues()
+	_, err = realFinder.FindInProcessIssues()
 	if err != nil {
 		return nil, fmt.Errorf("unable to cache in-process issues: %s", err)
 	}
