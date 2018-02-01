@@ -34,7 +34,9 @@ type Title struct {
 	Slug        string
 	allErrors   []*issuefinder.Error
 	Errors      Errors
+	TitleErrors int
 	ChildErrors int
+	TotalErrors int
 	Issues      []*Issue
 	IssueLookup map[string]*Issue
 }
@@ -92,8 +94,11 @@ func (t *Title) decorateErrors() {
 		}
 		if e.Issue == nil && e.File == nil {
 			t.Errors = append(t.Errors, safeError(e.Error.Error()))
+			t.TitleErrors++
+			t.TotalErrors++
 		} else {
 			t.ChildErrors++
+			t.TotalErrors++
 		}
 	}
 }

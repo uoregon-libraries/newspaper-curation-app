@@ -1,6 +1,22 @@
 {{block "content" .}}
 
+{{if gt .Data.Title.TitleErrors 0}}
+  <h2>Errors</h2>
+  <div class="title-with-errors">
+    <span class="glyphicon glyphicon-exclamation-sign" aria-hidden="true"></span>
+    <span>
+      NOTE: This title has errors separate from the issues!  It is strongly advised you not queue issues unless you understand the ramifications fully!
+    </span>
+  </div>
+  <ul>
+    {{range .Data.Title.Errors}}
+    <li>{{.}}</li>
+    {{end}}
+  </ul>
+{{end}}
+
 <table class="table table-striped table-bordered table-condensed sortable">
+  <caption><h2>Issues</h2></caption>
   <thead>
     <tr>
       <th scope="col" class="sort-alpha">Issue</th>
