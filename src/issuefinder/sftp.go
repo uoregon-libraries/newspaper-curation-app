@@ -66,7 +66,7 @@ func (s *Searcher) findSFTPIssuesForTitlePath(titlePath string) error {
 		}
 
 		// Build the issue now that we know we can put together the minimal metadata
-		var issue = title.AddIssue(&schema.Issue{Date: dt, Edition: 1, Location: issuePath})
+		var issue = title.AddIssue(&schema.Issue{Date: dt, Edition: 1, Location: issuePath, WorkflowStep: schema.WSSFTP})
 		issue.FindFiles()
 
 		for _, e := range errors {
