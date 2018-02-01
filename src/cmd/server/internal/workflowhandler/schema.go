@@ -155,8 +155,6 @@ func (i *Issue) Path(actionPath string) string {
 
 // ValidateMetadata checks all fields for validity and sets up i.Errors to
 // describe anything wrong
-//
-// TODO: Verify the issue isn't a dupe of a live issue
 func (i *Issue) ValidateMetadata() {
 	i.errors = nil
 	var addError = func(msg string) { i.errors = append(i.errors, msg) }
