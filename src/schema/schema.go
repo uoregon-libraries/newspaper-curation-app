@@ -20,6 +20,24 @@ import (
 	"github.com/uoregon-libraries/gopkg/fileutil"
 )
 
+// WorkflowStep describes the location within the workflow any issue can exist
+// - this is basically a more comprehensive list than what's in the database in
+// order to capture every possible location: live batches, sftped issues
+// awaiting processing, etc.
+type WorkflowStep string
+
+// All possible statuses an issue could have
+const (
+	WSSFTP                   WorkflowStep = "SFTPUpload"
+	WSScan                                = "ScanUpload"
+	WSAwaitingProcessing                  = "AwaitingProcessing"
+	WSAwaitingPageReview                  = "AwaitingPageReview"
+	WSReadyForMetadataEntry               = "ReadyForMetadataEntry"
+	WSAwaitingMetadataReview              = "AwaitingMetadataReview"
+	WSReadyForBatching                    = "ReadyForBatching"
+	WSInProduction                        = "InProduction"
+)
+
 // Batch represents high-level batch information
 type Batch struct {
 	// MARCOrgCode tells us the organization responsible for the images in the batch
@@ -185,6 +203,8 @@ type Issue struct {
 
 	// Location is where this issue can be found, either a URL or filesystem path
 	Location string
+
+	WorkflowStep WorkflowStep
 }
 
 // DateString returns the date in a consistent format for use in issue key TSV output

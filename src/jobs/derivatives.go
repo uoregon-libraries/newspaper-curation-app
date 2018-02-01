@@ -2,9 +2,9 @@ package jobs
 
 import (
 	"config"
-	"db"
 	"derivatives/alto"
 	"derivatives/jp2"
+	"schema"
 
 	"os"
 	"path/filepath"
@@ -221,6 +221,6 @@ func (md *MakeDerivatives) createJP2(file string) (ok bool) {
 
 func (md *MakeDerivatives) updateIssueWorkflow() error {
 	md.DBIssue.HasDerivatives = true
-	md.DBIssue.WorkflowStep = db.WSReadyForMetadataEntry
+	md.DBIssue.WorkflowStep = schema.WSReadyForMetadataEntry
 	return md.DBIssue.Save()
 }

@@ -2,7 +2,7 @@ package jobs
 
 import (
 	"config"
-	"db"
+	"schema"
 
 	"fmt"
 	"io/ioutil"
@@ -256,6 +256,6 @@ func (ps *PageSplit) backupOriginals() (ok bool) {
 // issues" scanner
 func (ps *PageSplit) updateIssueWorkflow() error {
 	ps.DBIssue.Location = ps.FinalOutputDir
-	ps.DBIssue.WorkflowStep = db.WSAwaitingPageReview
+	ps.DBIssue.WorkflowStep = schema.WSAwaitingPageReview
 	return ps.DBIssue.Save()
 }

@@ -85,19 +85,19 @@ func (i *Issue) JP2Files() []string {
 // this issue is within the workflow
 func (i *Issue) TaskDescription() string {
 	switch i.WorkflowStep {
-	case db.WSAwaitingProcessing:
+	case schema.WSAwaitingProcessing:
 		return "Not yet entered into the workflow"
 
-	case db.WSAwaitingPageReview:
+	case schema.WSAwaitingPageReview:
 		return "Ready for page review (renaming files / validating raw PDFs / TIFFs)"
 
-	case db.WSReadyForMetadataEntry:
+	case schema.WSReadyForMetadataEntry:
 		return "Awaiting metadata entry / page numbering"
 
-	case db.WSAwaitingMetadataReview:
+	case schema.WSAwaitingMetadataReview:
 		return "Awaiting review (metadata and page numbers)"
 
-	case db.WSReadyForBatching:
+	case schema.WSReadyForBatching:
 		return "Ready to be built in a batch and loaded"
 
 	default:
@@ -139,10 +139,10 @@ func (i *Issue) Actions() []template.HTML {
 
 	if i.IsOwned() {
 		switch i.WorkflowStep {
-		case db.WSReadyForMetadataEntry:
+		case schema.WSReadyForMetadataEntry:
 			actions = append(actions, i.actionLink("Edit", "metadata", ""))
 
-		case db.WSAwaitingMetadataReview:
+		case schema.WSAwaitingMetadataReview:
 			actions = append(actions, i.actionLink("Review", "review/metadata", ""))
 		}
 

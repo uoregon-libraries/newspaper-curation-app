@@ -6,6 +6,7 @@ import (
 	"db"
 	"fmt"
 	"issuewatcher"
+	"schema"
 
 	"net/http"
 	"path"
@@ -119,7 +120,7 @@ func homeHandler(resp *responder.Responder, i *Issue) {
 	resp.Vars.Data["MyDeskIssues"] = wrapDBIssues(issues)
 
 	// Get issues needing metadata
-	issues, err = db.FindAvailableIssuesByWorkflowStep(db.WSReadyForMetadataEntry)
+	issues, err = db.FindAvailableIssuesByWorkflowStep(schema.WSReadyForMetadataEntry)
 	if err != nil {
 		logger.Errorf("Unable to find issues needing metadata entry: %s", err)
 		resp.Vars.Alert = fmt.Sprintf("Unable to search for issues; contact support or try again later.")
@@ -131,7 +132,7 @@ func homeHandler(resp *responder.Responder, i *Issue) {
 
 	// Get issues needing review which *weren't* queued by this user (unless the
 	// user is allowed to self-review)
-	issues, err = db.FindAvailableIssuesByWorkflowStep(db.WSAwaitingMetadataReview)
+	issues, err = db.FindAvailableIssuesByWorkflowStep(schema.WSAwaitingMetadataReview)
 	if err != nil {
 		logger.Errorf("Unable to find issues needing metadata review: %s", err)
 		resp.Vars.Alert = fmt.Sprintf("Unable to search for issues; contact support or try again later.")
