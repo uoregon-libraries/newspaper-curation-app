@@ -32,7 +32,7 @@ func (s *Searcher) findOrCreateFilesystemTitle(path string) *schema.Title {
 
 	// If we still have no title, we create one but make it clear it's a problem
 	if t == nil {
-		t = &schema.Title{LCCN: titleName, Location: path}
+		t = &schema.Title{LCCN: titleName, Location: path, Name: titleName}
 		s.addTitle(t)
 		s.newError(path, fmt.Errorf("unable to find title %#v in database", titleName))
 	}
