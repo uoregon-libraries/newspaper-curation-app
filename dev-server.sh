@@ -1,4 +1,4 @@
-#!/usr/bin/bash
+#!/usr/bin/env bash
 #
 # dev-server.sh fires up the Black Mamba server.  When Go source or template
 # files change, it auto-kills the server, recompiles, and starts the server

@@ -1,4 +1,4 @@
-#!/usr/bin/bash
+#!/usr/bin/env bash
 #
 # validate.sh runs various code analysis tools to reduce the likelihood of
 # unnoticed errors
