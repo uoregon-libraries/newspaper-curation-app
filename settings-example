@@ -90,9 +90,10 @@ ISSUE_CACHE_PATH="/var/local/news/black-mamba/cache"
 # HTML template files as well as static files like JS and CSS
 APP_ROOT="/usr/local/black-mamba"
 
-# Where are the XML templates for building issue XML?  You can point this to
-# the XML in the repo (templates/xml) for ease, but some XML values may be wrong.
-XML_TEMPLATE_PATH="/usr/local/black-mamba/templates/xml"
+# Where is the XML template for building issue XML?  You can point this to the
+# XML in the repo (templates/xml/mets.go.html) for ease, but some XML values
+# may be wrong.
+XML_TEMPLATE_PATH="/usr/local/black-mamba/templates/xml/mets.go.html"
 
 ###
 # General rules for issue processing and batch creation
