@@ -43,7 +43,7 @@ func getOpts() {
 	c.AppendUsage("Issue keys MUST be formatted as LCCN[/YYYY][MM][DD][EE].  The full " +
 		"LCCN is mandatory, while the rest of the key's parts can be added to " +
 		"refine the search.")
-	var conf = c.GetConf()
+	conf = c.GetConf()
 
 	var err = db.Connect(conf.DatabaseConnect)
 	if err != nil {
