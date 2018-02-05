@@ -1,0 +1,25 @@
+# This is an example of overriding the core docker setup.  Copy this to
+# `docker-compose.override.yml` and tweak it however you need for your dev
+# environment.
+version: '2'
+services:
+  # This example pins RAIS to a set version rather than just pulling the latest
+  rais:
+    image: uolibraries/rais:2.10.1
+
+  # This might be how you'd arrange a set of fake newspaper mounted directories
+  app:
+    volumes:
+      - ~/tmp/fakemount:/mnt/news
+
+  # Mount in the binaries, templates, and static files for easier debugging
+  web:
+    volumes:
+      - ./bin:/usr/local/blackmamba/bin
+
+  # Mount in the apache configs for easier debugging (so you don't have to
+  # issue a `docker-compose build apache` each time you change this stuff)
+  apache:
+    volumes:
+      - ./docker/apache/blackmamba.conf:/etc/apache2/sites-available/blackmamba.conf
+      - ./docker/apache/httpd-foreground:/usr/local/bin/httpd-foreground

@@ -1,0 +1,17 @@
+# I'd love to stick with Fedora 27 for all the things, but httpd won't install
+# inside Docker, so this is what we get
+FROM ubuntu:16.04
+MAINTAINER Jeremy Echols <jechols@uoregon.edu>
+
+RUN apt-get update -y
+RUN apt-get install -y apache2
+RUN a2enmod cache cache_disk expires rewrite proxy_http headers
+ADD apache/blackmamba.conf /etc/apache2/sites-available/blackmamba.conf
+RUN a2dissite 000-default.conf
+RUN a2ensite blackmamba.conf
+RUN mkdir -p /var/lock/apache2
+RUN mkdir -p /var/run/apache2
+
+EXPOSE 80
+COPY apache/httpd-foreground /usr/local/bin/httpd-foreground
+CMD ["/usr/local/bin/httpd-foreground"]

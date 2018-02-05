@@ -1,0 +1,51 @@
+FROM fedora:27
+MAINTAINER Jeremy Echols <jechols@uoregon.edu>
+
+# System dependencies
+RUN dnf update -y
+RUN dnf install -y findutils
+RUN dnf install -y git
+RUN dnf install -y golang
+RUN dnf install -y openjpeg2 openjpeg2-tools
+RUN dnf install -y mariadb
+
+# Go ENV setup
+ENV GOPATH /go
+ENV PATH $GOPATH/bin:/usr/local/go/bin:$PATH
+
+# Golang dependencies
+RUN go get -u bitbucket.org/liamstask/goose/cmd/goose
+RUN go get -u github.com/golang/lint/golint
+RUN go get -u github.com/constabulary/gb/...
+
+WORKDIR /usr/local/src/black-mamba
+
+# Grab and build the source before worrying about config files so when config
+# changes we aren't having to rebuild everything
+#
+# TODO: When we have a public repo, just pull that instead of this pain
+RUN mkdir -p /usr/local/black-mamba
+COPY ./Makefile /usr/local/src/black-mamba/Makefile
+COPY ./validate.sh /usr/local/src/black-mamba/validate.sh
+COPY ./src /usr/local/src/black-mamba/src
+COPY ./depfile /usr/local/src/black-mamba/depfile
+COPY ./vendor/manifest /usr/local/src/black-mamba/vendor/manifest
+RUN make
+RUN cp -r ./bin /usr/local/black-mamba/bin
+
+# We copy other files very granularly in order to avoid copying in binaries,
+# vendored sources, sensitive settings, etc.; we want to make sure this
+# dockerfile stands on its own
+COPY ./db/migrations /usr/local/black-mamba/db/migrations
+COPY ./static /usr/local/black-mamba/static
+COPY ./templates /usr/local/black-mamba/templates
+COPY ./settings-example /usr/local/black-mamba/settings
+COPY ./db/dbconf-example.yml /usr/local/black-mamba/db/dbconf.yml
+
+# Utilities
+COPY ./docker/migrate.sh /migrate.sh
+
+# Get the cache directory prepared
+RUN mkdir -p /var/local/news/black-mamba/cache
+
+WORKDIR /usr/local/black-mamba
