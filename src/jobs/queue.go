@@ -33,3 +33,9 @@ func QueueMoveIssueForDerivatives(issue *db.Issue, path string) error {
 func QueueMakeDerivatives(issue *db.Issue, path string) error {
 	return queueIssueJob(JobTypeMakeDerivatives, issue, path)
 }
+
+// QueueBuildMETS creates and queues a job to generate the METS XML for an
+// issue that's been moved through the metadata queue
+func QueueBuildMETS(issue *db.Issue, path string) error {
+	return queueIssueJob(JobTypeBuildMETS, issue, path)
+}
