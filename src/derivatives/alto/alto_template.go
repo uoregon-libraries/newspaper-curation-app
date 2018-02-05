@@ -1,5 +1,7 @@
 package alto
 
+import "version"
+
 var altoTemplateString = `
 <?xml version="1.0" encoding="utf-8"?>
 <alto xmlns="http://schema.ccs-gmbh.com/ALTO">
@@ -13,8 +15,8 @@ var altoTemplateString = `
         <processingStepSettings>N/A</processingStepSettings>
         <processingSoftware>
           <softwareCreator>UO Libraries</softwareCreator>
-          <softwareName>Batch Maker</softwareName>
-          <softwareVersion>1.0.0</softwareVersion>
+          <softwareName>Black Mamba: The Batch Maker</softwareName>
+          <softwareVersion>` + version.Version + `</softwareVersion>
         </processingSoftware>
       </ocrProcessingStep>
     </OCRProcessing>
