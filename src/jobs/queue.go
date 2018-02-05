@@ -28,8 +28,8 @@ func QueueMoveIssueForDerivatives(issue *db.Issue, path string) error {
 	return queueIssueJob(JobTypeMoveIssueForDerivatives, issue, path)
 }
 
-// QueueMakeDerivatives creates and queues a job to generate ALTO XML, JP2s,
-// and .meta.json for an issue
+// QueueMakeDerivatives creates and queues a job to generate ALTO XML and JP2s
+// for an issue
 func QueueMakeDerivatives(issue *db.Issue, path string) error {
 	return queueIssueJob(JobTypeMakeDerivatives, issue, path)
 }
