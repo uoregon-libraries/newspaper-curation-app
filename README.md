@@ -46,9 +46,6 @@ This is the web server which exposes all of Black Mamba's workflow UI.  Please
 note that, at the moment, this requires Apache sitting in front of the server
 for authentication.
 
-We've provided an [example apache config](apache.conf) file which roughly
-matches our own setup.
-
 ### Usage
 
 See the [Docker setup](docker/) to understand how to install all the
