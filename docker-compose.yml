@@ -49,7 +49,7 @@ services:
   db-migrate:
     extends: app
     restart: on-failure
-    command: /migrate.sh
+    command: goose up
     depends_on:
       - db
 

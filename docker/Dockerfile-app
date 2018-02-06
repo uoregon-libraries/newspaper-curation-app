@@ -43,9 +43,11 @@ COPY ./settings-example /usr/local/black-mamba/settings
 COPY ./db/dbconf-example.yml /usr/local/black-mamba/db/dbconf.yml
 
 # Utilities
-COPY ./docker/migrate.sh /migrate.sh
+COPY ./docker/wait_for_database /usr/local/bin/
+COPY ./docker/entrypoint.sh /entrypoint.sh
 
 # Get the cache directory prepared
 RUN mkdir -p /var/local/news/black-mamba/cache
 
 WORKDIR /usr/local/black-mamba
+ENTRYPOINT ["/entrypoint.sh"]
