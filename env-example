@@ -1,0 +1,3 @@
+# Copy this to .env and modify to give docker-compose preset environment vars
+APP_URL=http://localhost
+BM_NEWS_WEBROOT=https://oregonnews.uoregon.edu

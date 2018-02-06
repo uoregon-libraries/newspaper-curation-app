@@ -6,3 +6,4 @@
 /.build.txt
 /db/dbconf.yml
 /docker-compose.override.yml
+/.env
