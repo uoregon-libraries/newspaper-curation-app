@@ -21,7 +21,7 @@ WEBROOT="https://internal.somewhere.edu/black-mamba"
 
 # The bind address is what the server listens on, often just a port string
 # prefixed with a colon.  Apache would use this for reverse-proxying.
-BIND_ADDRESS=":12345"
+BIND_ADDRESS=":8080"
 
 # Full URL to the IIIF server's base path - this is used to display issues'
 # pages during metadata entry and review

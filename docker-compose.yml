@@ -57,7 +57,7 @@ services:
   web:
     extends: app
     expose:
-      - 12345
+      - 8080
     depends_on:
       - db-migrate
     command: ./bin/server -c ./settings --parent-webroot="$APP_URL/black-mamba" --debug
