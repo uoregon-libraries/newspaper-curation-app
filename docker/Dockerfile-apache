@@ -12,6 +12,9 @@ RUN a2ensite blackmamba.conf
 RUN mkdir -p /var/lock/apache2
 RUN mkdir -p /var/run/apache2
 
+# Force apache error logs to stderr
+RUN ln -sf /proc/self/fd/1 /var/log/apache2/error.log
+
 EXPOSE 80
 COPY apache/httpd-foreground /usr/local/bin/httpd-foreground
 CMD ["/usr/local/bin/httpd-foreground"]
