@@ -16,6 +16,7 @@ var allowedWorkflowSteps = []schema.WorkflowStep{
 	schema.WSAwaitingPageReview,
 	schema.WSReadyForMetadataEntry,
 	schema.WSAwaitingMetadataReview,
+	schema.WSReadyForMETSXML,
 	schema.WSReadyForBatching,
 }
 
