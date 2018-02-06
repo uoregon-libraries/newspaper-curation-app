@@ -13,7 +13,15 @@ services:
   # Workers needs all workflow directories
   workers:
     volumes:
+      # Workflow directories
       - ~/tmp/fakemount:/mnt/news
+      # Mount in the binaries, templates, and static files for easier debugging
+      - ./bin:/usr/local/black-mamba/bin
+      - ./static:/usr/local/black-mamba/static
+      - ./templates:/usr/local/black-mamba/templates
+      - ./settings-example:/usr/local/black-mamba/settings
+      - ./db/migrations:/usr/local/black-mamba/db/migrations
+      - ./db/dbconf-example.yml:/usr/local/black-mamba/db/dbconf.yml
 
   web:
     volumes:
@@ -23,6 +31,9 @@ services:
       - ./bin:/usr/local/black-mamba/bin
       - ./static:/usr/local/black-mamba/static
       - ./templates:/usr/local/black-mamba/templates
+      - ./settings-example:/usr/local/black-mamba/settings
+      - ./db/migrations:/usr/local/black-mamba/db/migrations
+      - ./db/dbconf-example.yml:/usr/local/black-mamba/db/dbconf.yml
 
   # Mount in the apache configs for easier debugging (so you don't have to
   # issue a `docker-compose build apache` each time you change this stuff)
