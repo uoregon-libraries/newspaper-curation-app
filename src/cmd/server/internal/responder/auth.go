@@ -6,8 +6,6 @@ import (
 	"net/http"
 	"time"
 	"user"
-
-	"github.com/uoregon-libraries/gopkg/logger"
 )
 
 // GetUserLogin returns the Apache-auth user or the debuguser argument if
@@ -25,10 +23,8 @@ func GetUserLogin(w http.ResponseWriter, req *http.Request) string {
 		if l == "nil" {
 			l = ""
 			http.SetCookie(w, &http.Cookie{Name: "debuguser", Value: "", Expires: time.Time{}, Path: "/"})
-			logger.Debugf(`Explicit request to clear "debuguser" cookie`)
 		} else if l != "" {
 			http.SetCookie(w, &http.Cookie{Name: "debuguser", Value: l, Path: "/"})
-			logger.Debugf(`Setting cookie: debuguser="%s"`, l)
 		}
 	}
 
