@@ -40,7 +40,6 @@ type Config struct {
 	WorkflowPath         string `setting:"WORKFLOW_PATH" type:"path"`
 	IssueCachePath       string `setting:"ISSUE_CACHE_PATH" type:"path"`
 	AppRoot              string `setting:"APP_ROOT" type:"path"`
-	XMLTemplatePath      string `setting:"XML_TEMPLATE_PATH" type:"path"`
 
 	// Issue processor / batch maker rules
 	MinimumIssuePages   int    `setting:"MINIMUM_ISSUE_PAGES" type:"int"`

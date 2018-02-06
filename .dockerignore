@@ -4,5 +4,6 @@
 /tmp
 /settings
 /.build.txt
+.git
 /db/dbconf.yml
 /docker-compose.override.yml

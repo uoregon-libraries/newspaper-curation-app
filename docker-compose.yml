@@ -1,0 +1,83 @@
+# This is primarily for development simplicity and as a recipe for proper stack
+# setup, as opposed to a good production setup.  Care has been taken to make it
+# a solid default, but this isn't how we use the stack in production, so
+# consider this a guideline more than anything else.
+version: '2'
+
+volumes:
+  db:
+  issue-cache:
+
+services:
+  db:
+    image: mariadb
+    environment:
+      - MYSQL_ROOT_PASSWORD=123456
+      - MYSQL_DATABASE=blackmamba
+      - MYSQL_USER=blackmamba
+      - MYSQL_PASSWORD=blackmamba
+    volumes:
+      - ./docker/mysql/:/etc/mysql/conf.d:Z
+      - db:/var/lib/mysql
+
+  iiif:
+    image: uolibraries/rais
+    environment:
+      - RAIS_IIIFURL=$APP_URL/images/iiif
+      - RAIS_TILECACHELEN=250
+    volumes:
+      - /mnt/news/workflow:/var/local/images
+    expose:
+      - 12415
+
+  # App defines a static image with all binaries precompiled
+  app:
+    build:
+      context: .
+      dockerfile: ./docker/Dockerfile-app
+    volumes:
+      - /mnt/news:/mnt/news
+      - issue-cache:/var/local/news/black-mamba/cache
+    environment:
+      - BM_WEBROOT=$APP_URL/black-mamba
+      - BM_DB_HOST=db
+      # The redundancy here ensures we get a warning if $BM_NEWS_WEBROOT isn't set
+      - BM_NEWS_WEBROOT=$BM_NEWS_WEBROOT
+      - BM_IIIF_BASE_URL=$APP_URL/images/iiif
+    command: /usr/bin/false
+
+  db-migrate:
+    extends: app
+    restart: on-failure
+    command: goose up
+    depends_on:
+      - db
+
+  # Web runs the binary for black mamba's GUI
+  web:
+    extends: app
+    expose:
+      - 8080
+    depends_on:
+      - db-migrate
+    command: ./bin/server -c ./settings --parent-webroot="$APP_URL/black-mamba" --debug
+
+  workers:
+    extends: app
+    environment:
+      - BM_OPJ_COMPRESS=opj2_compress
+      - BM_OPJ_DECOMPRESS=opj2_decompress
+    depends_on:
+      - db-migrate
+    command: ./bin/run-jobs -c ./settings watchall
+
+  # Apache routes to web and IIIF, and should be the only externally-exposed container
+  apache:
+    build:
+      context: ./docker
+      dockerfile: ./Dockerfile-apache
+    depends_on:
+      - web
+      - iiif
+    ports:
+      - 80:80
