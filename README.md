@@ -1,19 +1,41 @@
 Black Mamba, The Batch Maker
 ===
 
-This is the replacement toolsuite for handling the workflow of processing
-born-digital PDFs and in-house scans, and then generating batches which can be
-ingested into [ONI](https://github.com/open-oni/open-oni) and
-[chronam](https://github.com/LibraryOfCongress/chronam).  See our other
+This toolsuite handles (most of) the Oregon Digital Newspaper Project's
+workflow of processing born-digital PDFs and in-house scans, and then
+generating batches which can be ingested into [ONI](https://github.com/open-oni/open-oni)
+and [chronam](https://github.com/LibraryOfCongress/chronam).  See our other
 repositories for the legacy suite.  Actually, don't, unless you want a history
 lesson.  They're pretty awful:
 
 - [Back-end python tools](https://github.com/uoregon-libraries/pdf-to-chronam)
+  - This has been completely deprecated.  YAY!
 - [Front-end PHP app](https://github.com/uoregon-libraries/pdf-to-chronam-admin)
+  - This still has a few necessary pieces of the project.  BOO!
 
-Compilation requires [Go](https://golang.org/dl/) 1.9 or later and gb:
+*Apologies*: this toolsuite was built to meet our needs.  It's very likely some
+of our assumptions won't work for everybody, and it's certain that there are
+pieces of the suite which need better documentation.
 
-    go get github.com/constabulary/gb/...
+Preliminary Setup
+---
+
+You'll need:
+
+- Go and some dependencies (see below)
+- MariaDB
+- A IIIF server capable of handling tiled JP2 files
+- Apache for authentication as well as proxying to Black Mamba and the IIIF server
+
+**Please note**: The easiest way to get up and running with Black Mamba is via
+our [Docker setup](docker/).  It's fairly simple to set it up manually, but if
+you go that route, it's going to be a lot easier if you read the docker files
+in order to understand the installation and the stack.
+
+Compilation requires [Go](https://golang.org/dl/) 1.9 or later, golint, and
+[gb](https://getgb.io/).  Migrating the database can be done manually by
+executing the "up" sections of the various migration files, but it's *far*
+easier to just use [goose](https://bitbucket.org/liamstask/goose).
 
 server
 ---
@@ -27,23 +49,34 @@ matches our own setup.
 
 ### Usage
 
-See `dev-server.sh` or `rhel7/blackmamba.service`
+See the [Docker setup](docker/) to understand how to install all the
+dependencies, compile binaries, set up Apache, etc.  See `dev-server.sh`, or
+`rhel7/blackmamba.service` for examples of running and deploying Black Mamba.
 
 **NOTE**: The server builds a cache of issues and regularly rescans the
 filesystem and the live site to keep its cache nearly real-time for almost
-instant lookups of issue data.  However, building this cache requires the JSON
-endpoints chronam uses.  ONI was rewritten to use IIIF instead of the old JSON,
-and, out of the box, ONI isn't compatible with this cache-building system.  The
-IIIF JSON supplies very generic information, which doesn't give us enough to
-report very well on any given issue, so we had to put the old JSON responses
-back into our app.  The relevant commit links follow:
+instant lookups of issue data.  However, building this cache requires the live
+site to use the same JSON endpoints chronam uses.
+
+ONI's JSON endpoints were rewritten to use IIIF, so out of the box, ONI isn't
+compatible with this cache-building system.  The IIIF endpoints supply very
+generic information, which didn't give us issue-level information without
+performing thousands of additional HTTP requests, so we had to put the old JSON
+responses back into our app.  If you wish to use this application with an ONI
+install, you'll need to do something similar.
+
+The relevant commit links follow:
 
 - [Override IIIF JSON endpoints with previous JSON](https://github.com/uoregon-libraries/oregon-oni/commit/067ab17084d9015996932d2e001226aa18bbcdb6)
 - [ Fix batch JSON pagination](https://github.com/uoregon-libraries/oregon-oni/commit/0463435615b23058ca1bc2afd8017e7001dc0657)
 - [Fix missing route name](https://github.com/uoregon-libraries/oregon-oni/commit/94f84a30abd6ad5a38c8bd932a95297e1a9b1989)
 
-If you wish to use this application with an ONI install, you'll need to do
-something similar.
+### Administrator First-Time Setup
+
+Your first session should be started by running the server with the `--debug`
+flag, then you can hit `/sftp?debuguser=sysadmin` to log in as a super admin.
+You can then set up other users as necessary.  Once you have Apache set up to
+do the authentication, you shouldn't need to enable `--debug` again.
 
 ### IIIF Image Server
 
@@ -60,10 +93,6 @@ it is compatible with bash, and has all the settings RAIS needs:
         --tile-path $WORKFLOW_PATH \
         --iiif-url "$IIIF_BASE_URL" \
         --log-level INFO
-
-If using the [RAIS Docker Image](https://hub.docker.com/r/uolibraries/rais/),
-the approach is still fairly straightforward, but we haven't set this up yet.
-We're hoping to give Black Mamba a full docker-compose overhaul soon.
 
 Job Runner
 ---
@@ -87,6 +116,14 @@ You can also run the various watchers in their own processes if you need more gr
 
     # You MUST have *exactly one* worker watching the page-review folder
     ./bin/run-jobs -c ./settings watch-page-review
+
+Other Tools
+---
+
+You'll find a lot of other tools in `bin` after compiling Black Mamba.  Most
+have some kind of useful help, so feel free to give them a try, but they won't
+be documented in depth.  Most are one-offs to help diagnose problems or test
+features, and shouldn't be necessary for regular use of this software.
 
 Black Mamba?
 ---
