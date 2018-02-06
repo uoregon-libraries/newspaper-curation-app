@@ -28,6 +28,17 @@ RUN make
 RUN mkdir -p /usr/local/pdf-to-chronam/bin
 RUN ln /usr/local/poppler-0.22.5/utils/pdftotext /usr/local/bin/
 
+# Oh, right, and openjpeg2 is painful as well because it has to be installed
+# *from source* in order to recognize libpng
+WORKDIR /usr/local/
+RUN curl -sL "https://github.com/uclouvain/openjpeg/archive/v2.3.0.tar.gz" | tar -xz
+RUN dnf install -y libtiff-devel libpng-devel cmake
+RUN mkdir /usr/local/openjpeg-2.3.0/build
+WORKDIR /usr/local/openjpeg-2.3.0/build
+RUN cmake ..
+RUN make
+RUN make install
+RUN make clean
 
 # Less expensive system dependencies
 RUN dnf install -y findutils
@@ -35,7 +46,6 @@ RUN dnf install -y GraphicsMagick ghostscript
 RUN dnf install -y tar
 RUN dnf install -y git
 RUN dnf install -y golang
-RUN dnf install -y openjpeg2 openjpeg2-tools
 RUN dnf install -y mariadb
 
 # Go ENV setup

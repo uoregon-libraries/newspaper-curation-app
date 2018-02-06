@@ -64,9 +64,6 @@ services:
 
   workers:
     extends: app
-    environment:
-      - BM_OPJ_COMPRESS=opj2_compress
-      - BM_OPJ_DECOMPRESS=opj2_decompress
     depends_on:
       - db-migrate
     command: ./bin/run-jobs -c ./settings watchall
