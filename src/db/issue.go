@@ -16,6 +16,7 @@ var allowedWorkflowSteps = []schema.WorkflowStep{
 	schema.WSAwaitingPageReview,
 	schema.WSReadyForMetadataEntry,
 	schema.WSAwaitingMetadataReview,
+	schema.WSReadyForMETSXML,
 	schema.WSReadyForBatching,
 }
 
@@ -258,7 +259,7 @@ func (i *Issue) Unclaim() {
 func (i *Issue) ApproveMetadata(reviewerID int) {
 	i.Unclaim()
 	i.ReviewedByUserID = reviewerID
-	i.WorkflowStep = schema.WSReadyForBatching
+	i.WorkflowStep = schema.WSReadyForMETSXML
 }
 
 // RejectMetadata sends the issue back to the metadata entry user and saves the

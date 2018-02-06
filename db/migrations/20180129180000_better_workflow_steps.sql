@@ -5,6 +5,7 @@ ALTER TABLE `issues` MODIFY `workflow_step` ENUM(
   'AwaitingPageReview',
   'ReadyForMetadataEntry',
   'AwaitingMetadataReview',
+  'ReadyForMETSXML',
   'ReadyForBatching'
 ) DEFAULT 'AwaitingProcessing';
 

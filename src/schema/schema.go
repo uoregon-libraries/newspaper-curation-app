@@ -34,6 +34,7 @@ const (
 	WSAwaitingPageReview                  = "AwaitingPageReview"
 	WSReadyForMetadataEntry               = "ReadyForMetadataEntry"
 	WSAwaitingMetadataReview              = "AwaitingMetadataReview"
+	WSReadyForMETSXML                     = "ReadyForMETSXML"
 	WSReadyForBatching                    = "ReadyForBatching"
 	WSInProduction                        = "InProduction"
 )

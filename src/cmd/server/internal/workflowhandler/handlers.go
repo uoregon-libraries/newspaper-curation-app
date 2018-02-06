@@ -263,6 +263,9 @@ func approveIssueMetadataHandler(resp *responder.Responder, i *Issue) {
 		return
 	}
 
+	// We queue the METS creation job, but whether it succeeds or not, the issue
+	// was already successfully approved, so we just have to hope for the best
+	queueMETSCreation(i)
 	resp.Audit("approve-metadata", fmt.Sprintf("issue id %d", i.ID))
 	http.SetCookie(resp.Writer, &http.Cookie{Name: "Info", Value: "Issue approved", Path: "/"})
 	http.Redirect(resp.Writer, resp.Request, basePath, http.StatusFound)

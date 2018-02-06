@@ -105,16 +105,9 @@ A simple approach to run everything needed is as follows:
 
     ./bin/run-jobs -c ./settings watchall
 
-You can also run the various watchers in their own processes if you need more granularity:
-
-    # One worker just watches the file-move jobs since these are heavy on IO but not CPU
-    ./bin/run-jobs -c ./settings watch sftp_issue_move move_issue_for_derivatives
-
-    # One worker for page-split jobs and derivative generation since they're both going to fight for CPU
-    ./bin/run-jobs -c ./settings watch page_split make_derivatives
-
-    # You MUST have *exactly one* worker watching the page-review folder
-    ./bin/run-jobs -c ./settings watch-page-review
+You can also run the various watchers in their own processes if you need more
+granularity, but that's left as an exercise for the reader to avoid
+documentation that no longer matches reality....
 
 Other Tools
 ---

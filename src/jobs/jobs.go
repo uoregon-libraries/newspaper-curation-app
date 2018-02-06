@@ -19,6 +19,7 @@ const (
 	JobTypeSFTPIssueMove           JobType = "sftp_issue_move"
 	JobTypeMoveIssueForDerivatives JobType = "move_issue_for_derivatives"
 	JobTypeMakeDerivatives         JobType = "make_derivatives"
+	JobTypeBuildMETS               JobType = "build_mets"
 )
 
 // ValidJobTypes is the full list of job types which can exist in the jobs
@@ -28,6 +29,7 @@ var ValidJobTypes = []JobType{
 	JobTypeSFTPIssueMove,
 	JobTypeMoveIssueForDerivatives,
 	JobTypeMakeDerivatives,
+	JobTypeBuildMETS,
 }
 
 // JobStatus represents the different states in which a job can exist
@@ -54,6 +56,8 @@ func DBJobToProcessor(dbJob *db.Job) Processor {
 		return &MoveIssueForDerivatives{IssueJob: NewIssueJob(dbJob)}
 	case JobTypeMakeDerivatives:
 		return &MakeDerivatives{IssueJob: NewIssueJob(dbJob)}
+	case JobTypeBuildMETS:
+		return &BuildMETS{IssueJob: NewIssueJob(dbJob)}
 	default:
 		logger.Errorf("Unknown job type %q for job id %d", dbJob.Type, dbJob.ID)
 		return nil

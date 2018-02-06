@@ -1,0 +1,128 @@
+{{define "metsxml"}}
+<!--
+  Why a template instead of proper structures?  Go seems to absolutely suck
+  at XML namespaces, particularly when the namespace prefix doesn't match the
+  last path element.  More info: https://github.com/golang/go/issues/13400
+
+  Changes here need to be tested VERY carefully against real issues to verify
+  the XML we produce continues to do what we expect
+-->
+<?xml version='1.0' encoding='utf-8'?>
+<mets xmlns="http://www.loc.gov/METS/"
+  xmlns:mods="http://www.loc.gov/mods/v3"
+  xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+  xmlns:mix="http://www.loc.gov/mix/"
+  xmlns:ndnp="http://www.loc.gov/ndnp"
+  xmlns:premis="http://www.oclc.org/premis"
+  xmlns:xlink="http://www.w3.org/1999/xlink"
+  xsi:schemaLocation="http://www.loc.gov/METS/ http://www.loc.gov/standards/mets/version17/mets.v1-7.xsd http://www.loc.gov/mods/v3 http://www.loc.gov/standards/mods/v3/mods-3-3.xsd"
+  LABEL="{{.Title.Title}}, {{.Issue.Date}}{{if .Issue.EditionLabel}}, {{.Issue.EditionLabel}}{{end}}"
+  PROFILE="urn:library-of-congress:mets:profiles:ndnp:issue:v1.5"
+  TYPE="urn:library-of-congress:ndnp:mets:newspaper:issue"
+>
+  <!-- CREATEDATE is mostly RFC3339 -->
+  <metsHdr CREATEDATE="{{.NowRFC3339}}">
+    <agent ROLE="CREATOR" TYPE="ORGANIZATION">
+      <name>University of Oregon</name>
+    </agent>
+  </metsHdr>
+  <dmdSec ID="issueModsBib">
+    <mdWrap LABEL="Issue metadata" MDTYPE="MODS">
+      <xmlData>
+        <mods:mods>
+          <mods:relatedItem type="host">
+            <mods:identifier type="lccn">{{.Issue.LCCN}}</mods:identifier>
+            <mods:part>
+              {{if .Issue.Volume}}
+              <mods:detail type="volume">
+                <mods:number>{{.Issue.Volume}}</mods:number>
+              </mods:detail>
+              {{end}}
+              {{if .Issue.Issue}}
+              <mods:detail type="issue">
+                <mods:number>{{.Issue.Issue}}</mods:number>
+              </mods:detail>
+              {{end}}
+              <mods:detail type="edition">
+                <mods:number>{{.Issue.Edition}}</mods:number>
+                {{if .Issue.EditionLabel}}
+                <mods:caption>{{.Issue.EditionLabel}}</mods:caption>
+                {{end}}
+              </mods:detail>
+            </mods:part>
+          </mods:relatedItem>
+          <mods:originInfo>
+            <mods:dateIssued encoding="iso8601">{{.Issue.Date}}</mods:dateIssued>
+            {{if ne .Issue.Date .Issue.DateAsLabeled}}
+            <mods:dateIssued encoding="iso8601" qualifier="questionable">{{.Issue.DateAsLabeled}}</mods:dateIssued>
+            {{end}}
+          </mods:originInfo>
+          <mods:note type="noteAboutReproduction">Present</mods:note>
+          {{if .Title.Rights}}
+          <mods:accessCondition>{{.Title.Rights}}</mods:accessCondition>
+          {{end}}
+        </mods:mods>
+      </xmlData>
+    </mdWrap>
+  </dmdSec>
+  {{range $index, $label := .Issue.PageLabels}}
+  {{$pageno := incr $index}}
+  <dmdSec ID="pageModsBib{{$pageno}}" xmlns:mods="http://www.loc.gov/mods/v3">
+    <mdWrap MDTYPE="MODS" LABEL="Page metadata">
+      <xmlData>
+        <mods:mods>
+          <mods:part>
+            <mods:extent unit="pages">
+              <mods:start>{{$pageno}}</mods:start>
+            </mods:extent>
+            {{if $label}}
+            <mods:detail type="page number">
+              <mods:number>{{$label}}</mods:number>
+            </mods:detail>
+            {{end}}
+          </mods:part>
+          <mods:relatedItem type="original">
+            <mods:physicalDescription>
+              <mods:form type="print" />
+            </mods:physicalDescription>
+            <mods:location>
+              <mods:physicalLocation authority="marcorg" displayLabel="University of Oregon Libraries; Eugene, OR">oru</mods:physicalLocation>
+            </mods:location>
+          </mods:relatedItem>
+          <mods:note type="agencyResponsibleForReproduction" displayLabel="University of Oregon Libraries; Eugene, OR">oru</mods:note>
+          <mods:note type="noteAboutReproduction">Present</mods:note>
+        </mods:mods>
+      </xmlData>
+    </mdWrap>
+  </dmdSec>
+  {{end}}
+  <fileSec>
+    {{range $index, $label := .Issue.PageLabels}}
+    {{$pageno := incr $index}}
+    <fileGrp ID="pageFileGrp{{$pageno}}">
+      <file ID="serviceFile1" USE="service">
+        <FLocat LOCTYPE="OTHER" OTHERLOCTYPE="file" xlink:href="{{printf "%04d" $pageno}}.jp2" />
+      </file>
+      <file ID="otherDerivativeFile1" USE="derivative">
+        <FLocat LOCTYPE="OTHER" OTHERLOCTYPE="file" xlink:href="{{printf "%04d" $pageno}}.pdf" />
+      </file>
+      <file ID="ocrFile1" USE="ocr">
+        <FLocat LOCTYPE="OTHER" OTHERLOCTYPE="file" xlink:href="{{printf "%04d" $pageno}}.xml" />
+      </file>
+    </fileGrp>
+    {{end}}
+  </fileSec>
+  <structMap>
+    <div DMDID="issueModsBib" TYPE="np:issue">
+      {{range $index, $label := .Issue.PageLabels}}
+      {{$pageno := incr $index}}
+      <div DMDID="pageModsBib{{$pageno}}" TYPE="np:page">
+        <fptr FILEID="serviceFile{{$pageno}}" />
+        <fptr FILEID="otherDerivativeFile{{$pageno}}" />
+        <fptr FILEID="ocrFile{{$pageno}}" />
+      </div>
+      {{end}}
+    </div>
+  </structMap>
+</mets>
+{{end}}
