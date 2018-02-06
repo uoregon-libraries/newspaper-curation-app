@@ -23,6 +23,8 @@ Preliminary Setup
 You'll need:
 
 - Go and some dependencies (see below)
+- Poppler Utils for PDF processing
+- OpenJPEG 2 for JP2 generation
 - MariaDB
 - A IIIF server capable of handling tiled JP2 files
 - Apache for authentication as well as proxying to Black Mamba and the IIIF server

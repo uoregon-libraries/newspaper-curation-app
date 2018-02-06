@@ -1,13 +1,37 @@
+# This image is used both for the workers and the web server containers; this
+# is not a great practice.  In a production environment you probably would want
+# a much slimmer web server that only had the "server" binary and the static
+# files and templates.  The worker system would need a bit more, like the
+# openjpeg tools, poppler, etc., but still wouldn't need the whole Go stack or
+# a Maria DB client.
 FROM fedora:27
 MAINTAINER Jeremy Echols <jechols@uoregon.edu>
 
 # System dependencies
 RUN dnf update -y
 RUN dnf install -y findutils
+RUN dnf install -y make automake gcc-c++
+RUN dnf install -y poppler-utils poppler-devel fontconfig-devel libjpeg-devel
+RUN dnf install -y tar
 RUN dnf install -y git
 RUN dnf install -y golang
 RUN dnf install -y openjpeg2 openjpeg2-tools
 RUN dnf install -y mariadb
+
+# Grab and patch poppler-utils: 0.22.5 (this is a known-good release for our patch)
+WORKDIR /usr/local/
+RUN curl -s "https://poppler.freedesktop.org/poppler-0.22.5.tar.gz" | tar -xz
+RUN curl -s "https://raw.githubusercontent.com/uoregon-libraries/pdftotext/master/pdftotext.cc" \
+         > /usr/local/poppler-0.22.5/utils/pdftotext.cc
+
+# Compile
+WORKDIR /usr/local/poppler-0.22.5
+RUN ./configure
+RUN make
+
+# Link the patched pdftotext binary
+RUN mkdir -p /usr/local/pdf-to-chronam/bin
+RUN ln /usr/local/poppler-0.22.5/utils/pdftotext /usr/local/bin/
 
 # Go ENV setup
 ENV GOPATH /go
