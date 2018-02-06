@@ -4,7 +4,7 @@
 version: '2'
 services:
   # This example pins RAIS to a set version rather than just pulling the latest
-  rais:
+  iiif:
     image: uolibraries/rais:2.10.1
 
   # This might be how you'd arrange a set of fake newspaper mounted directories
@@ -15,7 +15,9 @@ services:
   # Mount in the binaries, templates, and static files for easier debugging
   web:
     volumes:
-      - ./bin:/usr/local/blackmamba/bin
+      - ./bin:/usr/local/black-mamba/bin
+      - ./static:/usr/local/black-mamba/static
+      - ./templates:/usr/local/black-mamba/templates
 
   # Mount in the apache configs for easier debugging (so you don't have to
   # issue a `docker-compose build apache` each time you change this stuff)
