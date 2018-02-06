@@ -255,6 +255,7 @@ func runAllQueues(c *config.Config) {
 		func() { watchScans(c) },
 		func() { watch(c, []string{"sftp_issue_move", "move_issue_for_derivatives"}) },
 		func() { watch(c, []string{"page_split", "make_derivatives"}) },
+		func() { watch(c, []string{"build_mets"}) },
 	)
 }
 
