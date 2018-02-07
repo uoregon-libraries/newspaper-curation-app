@@ -12,12 +12,12 @@ import (
 
 // BatchXML is used to deserialize batch.xml files to get at their issues list
 type BatchXML struct {
-	XMLName xml.Name   `xml:"batch"`
-	Issues  []IssueXML `xml:"issue"`
+	XMLName xml.Name        `xml:"batch"`
+	Issues  []BatchIssueXML `xml:"issue"`
 }
 
-// IssueXML describes each <issue> element in the batch XML
-type IssueXML struct {
+// BatchIssueXML describes each <issue> element in the batch XML
+type BatchIssueXML struct {
 	EditionOrder string `xml:"editionOrder,attr"`
 	Date         string `xml:"issueDate,attr"`
 	LCCN         string `xml:"lccn,attr"`
