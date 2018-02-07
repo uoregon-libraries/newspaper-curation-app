@@ -53,6 +53,7 @@ type Issue struct {
 	WorkflowOwnerExpiresAt time.Time           // When does the workflow owner lose ownership?
 	MetadataEntryUserID    int                 // Who entered metadata?
 	ReviewedByUserID       int                 // Who reviewed metadata?
+	MetadataApprovedAt     time.Time           // When was metadata approved / how long has this been waiting to batch?
 	RejectionNotes         string              // If rejected (during metadata review), this tells us why
 	RejectedByUserID       int                 // Who did the rejection?
 }
@@ -258,6 +259,7 @@ func (i *Issue) Unclaim() {
 // manual steps) and sets the reviewer id to that which was passed in
 func (i *Issue) ApproveMetadata(reviewerID int) {
 	i.Unclaim()
+	i.MetadataApprovedAt = time.Now()
 	i.ReviewedByUserID = reviewerID
 	i.WorkflowStep = schema.WSReadyForMETSXML
 }
