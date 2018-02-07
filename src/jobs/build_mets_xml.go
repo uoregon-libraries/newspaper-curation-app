@@ -7,6 +7,7 @@ import (
 	"fmt"
 	"path/filepath"
 	"schema"
+	"time"
 )
 
 // BuildMETS creates the final file needed for an issue to be able to be
@@ -50,7 +51,7 @@ func (job *BuildMETS) Process(c *config.Config) bool {
 }
 
 func (job *BuildMETS) generateMETS() (ok bool) {
-	var err = mets.New(job.templatePath, job.outputXMLPath, job.DBIssue, job.Title).Transform()
+	var err = mets.New(job.templatePath, job.outputXMLPath, job.DBIssue, job.Title, time.Now()).Transform()
 	if err == nil {
 		return true
 	}

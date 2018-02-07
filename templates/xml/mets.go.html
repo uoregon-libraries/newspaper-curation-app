@@ -7,7 +7,6 @@
   Changes here need to be tested VERY carefully against real issues to verify
   the XML we produce continues to do what we expect
 -->
-<?xml version='1.0' encoding='utf-8'?>
 <mets xmlns="http://www.loc.gov/METS/"
   xmlns:mods="http://www.loc.gov/mods/v3"
   xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
@@ -67,7 +66,7 @@
   </dmdSec>
   {{range $index, $label := .Issue.PageLabels}}
   {{$pageno := incr $index}}
-  <dmdSec ID="pageModsBib{{$pageno}}" xmlns:mods="http://www.loc.gov/mods/v3">
+  <dmdSec ID="pageModsBib{{$pageno}}">
     <mdWrap MDTYPE="MODS" LABEL="Page metadata">
       <xmlData>
         <mods:mods>
@@ -75,7 +74,7 @@
             <mods:extent unit="pages">
               <mods:start>{{$pageno}}</mods:start>
             </mods:extent>
-            {{if $label}}
+            {{if and ((ne $label "0") $label)}}
             <mods:detail type="page number">
               <mods:number>{{$label}}</mods:number>
             </mods:detail>
@@ -100,13 +99,13 @@
     {{range $index, $label := .Issue.PageLabels}}
     {{$pageno := incr $index}}
     <fileGrp ID="pageFileGrp{{$pageno}}">
-      <file ID="serviceFile1" USE="service">
+      <file ID="serviceFile{{$pageno}}" USE="service">
         <FLocat LOCTYPE="OTHER" OTHERLOCTYPE="file" xlink:href="{{printf "%04d" $pageno}}.jp2" />
       </file>
-      <file ID="otherDerivativeFile1" USE="derivative">
+      <file ID="otherDerivativeFile{{$pageno}}" USE="derivative">
         <FLocat LOCTYPE="OTHER" OTHERLOCTYPE="file" xlink:href="{{printf "%04d" $pageno}}.pdf" />
       </file>
-      <file ID="ocrFile1" USE="ocr">
+      <file ID="ocrFile{{$pageno}}" USE="ocr">
         <FLocat LOCTYPE="OTHER" OTHERLOCTYPE="file" xlink:href="{{printf "%04d" $pageno}}.xml" />
       </file>
     </fileGrp>
