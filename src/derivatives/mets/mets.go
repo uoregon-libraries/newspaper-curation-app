@@ -12,12 +12,15 @@ import (
 	"github.com/uoregon-libraries/gopkg/fileutil"
 )
 
+// TimeFormat is the standard format used in our METS header - it's basically
+// RFC3339 without a timezone
+const TimeFormat = "2006-01-02T15:04:05"
+
 // Transformer takes an issue and generates METS XML to a given file
 type Transformer struct {
 	tmpl    *template.Template
 	outFile string
-	issue   *db.Issue
-	title   *db.Title
+	d       *data
 	err     error
 }
 
@@ -31,10 +34,10 @@ type data struct {
 //
 // We need an issue as well as a title in order to avoid DB lookups, reduce
 // unknowns, and allow for unsaved / faked data
-func New(templatePath string, outputFileName string, issue *db.Issue, title *db.Title) *Transformer {
+func New(templatePath string, outputFileName string, issue *db.Issue, title *db.Title, createDate time.Time) *Transformer {
 	var tmpl = template.New("metsxml")
 	tmpl.Funcs(template.FuncMap{"incr": func(i int) int { return i + 1 }})
-	var t = &Transformer{tmpl, outputFileName, issue, title, nil}
+	var t = &Transformer{tmpl, outputFileName, &data{issue, title, createDate.Format(TimeFormat)}, nil}
 	t.tmpl, t.err = tmpl.ParseFiles(templatePath)
 	return t
 }
@@ -46,7 +49,7 @@ func (t *Transformer) Transform() error {
 	}
 
 	var buf = new(bytes.Buffer)
-	var err = t.tmpl.Execute(buf, data{t.issue, t.title, time.Now().Format(time.RFC3339)})
+	var err = t.tmpl.Execute(buf, t.d)
 	if err != nil {
 		return fmt.Errorf("unable to execute METS template: %s", err)
 	}
