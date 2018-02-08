@@ -3,18 +3,22 @@
 # environment.
 version: '2'
 services:
-  # This example pins RAIS to a set version rather than just pulling the latest
   iiif:
-    image: uolibraries/rais:2.10.1
     # Homedir workflow directories require a hack to IIIF's image location
     volumes:
-      - ~/tmp/fakemount/workflow:/var/local/images
+      - ./test/fakemount/workflow:/var/local/images
+
+  # DB Migrate needs all the DB stuff
+  db-migrate:
+    volumes:
+      - ./db/migrations:/usr/local/black-mamba/db/migrations
+      - ./db/dbconf-example.yml:/usr/local/black-mamba/db/dbconf.yml
 
   # Workers needs all workflow directories
   workers:
     volumes:
       # Workflow directories
-      - ~/tmp/fakemount:/mnt/news
+      - ./test/fakemount:/mnt/news
       # Mount in the binaries, templates, and static files for easier debugging
       - ./bin:/usr/local/black-mamba/bin
       - ./static:/usr/local/black-mamba/static
@@ -26,7 +30,7 @@ services:
   web:
     volumes:
       # Workflow directories
-      - ~/tmp/fakemount:/mnt/news
+      - ./test/fakemount:/mnt/news
       # Mount in the binaries, templates, and static files for easier debugging
       - ./bin:/usr/local/black-mamba/bin
       - ./static:/usr/local/black-mamba/static
