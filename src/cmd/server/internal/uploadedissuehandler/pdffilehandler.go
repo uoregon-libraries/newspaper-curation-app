@@ -1,4 +1,4 @@
-package sftphandler
+package uploadedissuehandler
 
 import (
 	"cmd/server/internal/responder"

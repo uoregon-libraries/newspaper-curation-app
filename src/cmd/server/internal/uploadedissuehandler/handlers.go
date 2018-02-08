@@ -1,4 +1,4 @@
-package sftphandler
+package uploadedissuehandler
 
 import (
 	"cmd/server/internal/responder"
@@ -51,7 +51,7 @@ func Setup(r *mux.Router, sftpWebPath string, c *config.Config, w *issuewatcher.
 
 	sftpSearcher = newSFTPSearcher(conf.MasterPDFUploadPath)
 	Layout = responder.Layout.Clone()
-	Layout.Path = path.Join(Layout.Path, "sftp")
+	Layout.Path = path.Join(Layout.Path, "uploadedissues")
 	HomeTmpl = Layout.MustBuild("home.go.html")
 	IssueTmpl = Layout.MustBuild("issue.go.html")
 	TitleTmpl = Layout.MustBuild("title.go.html")

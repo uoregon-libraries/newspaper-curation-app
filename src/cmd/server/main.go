@@ -3,7 +3,7 @@ package main
 import (
 	"cmd/server/internal/responder"
 	"cmd/server/internal/settings"
-	"cmd/server/internal/sftphandler"
+	"cmd/server/internal/uploadedissuehandler"
 	"cmd/server/internal/workflowhandler"
 	"config"
 	"db"
@@ -94,7 +94,7 @@ func startServer() {
 
 	var watcher = issuewatcher.New(Conf)
 	go watcher.Watch(5 * time.Minute)
-	sftphandler.Setup(r, path.Join(hp, "sftp"), Conf, watcher)
+	uploadedissuehandler.Setup(r, path.Join(hp, "uploadedissues"), Conf, watcher)
 	workflowhandler.Setup(r, path.Join(hp, "workflow"), Conf, watcher)
 
 	var waited, lastWaited int
