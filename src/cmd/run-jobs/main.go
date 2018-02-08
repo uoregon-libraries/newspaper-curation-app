@@ -236,7 +236,7 @@ func runAllQueues(c *config.Config) {
 	waitFor(
 		func() { watchPageReview(c) },
 		func() {
-			watchJobTypes(c, jobs.JobTypeSFTPIssueMove, jobs.JobTypeMoveIssueForDerivatives)
+			watchJobTypes(c, jobs.JobTypeSFTPIssueMove, jobs.JobTypeScanIssueMove, jobs.JobTypeMoveIssueForDerivatives)
 		},
 		func() {
 			watchJobTypes(c, jobs.JobTypePageSplit, jobs.JobTypeMakeDerivatives)

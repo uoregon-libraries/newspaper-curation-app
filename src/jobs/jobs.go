@@ -17,6 +17,7 @@ type JobType string
 const (
 	JobTypePageSplit               JobType = "page_split"
 	JobTypeSFTPIssueMove           JobType = "sftp_issue_move"
+	JobTypeScanIssueMove           JobType = "scan_issue_move"
 	JobTypeMoveIssueForDerivatives JobType = "move_issue_for_derivatives"
 	JobTypeMakeDerivatives         JobType = "make_derivatives"
 	JobTypeBuildMETS               JobType = "build_mets"
@@ -27,6 +28,7 @@ const (
 var ValidJobTypes = []JobType{
 	JobTypePageSplit,
 	JobTypeSFTPIssueMove,
+	JobTypeScanIssueMove,
 	JobTypeMoveIssueForDerivatives,
 	JobTypeMakeDerivatives,
 	JobTypeBuildMETS,
@@ -50,6 +52,8 @@ func DBJobToProcessor(dbJob *db.Job) Processor {
 	switch JobType(dbJob.Type) {
 	case JobTypeSFTPIssueMove:
 		return &SFTPIssueMover{IssueJob: NewIssueJob(dbJob)}
+	case JobTypeScanIssueMove:
+		return &ScanIssueMover{IssueJob: NewIssueJob(dbJob)}
 	case JobTypePageSplit:
 		return &PageSplit{IssueJob: NewIssueJob(dbJob)}
 	case JobTypeMoveIssueForDerivatives:
