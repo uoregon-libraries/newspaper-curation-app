@@ -66,7 +66,7 @@ func DBJobToProcessor(dbJob *db.Job) Processor {
 
 // NextJobProcessor gets the oldest job with any of the given job types, sets
 // it as in-process, and returns its Processor
-func NextJobProcessor(types []string) Processor {
+func NextJobProcessor(types []JobType) Processor {
 	var dbJob, err = popFirstPendingJob(types)
 
 	if err != nil {
@@ -82,7 +82,7 @@ func NextJobProcessor(types []string) Processor {
 
 // popFirstPendingJob is a helper for locking the database to pull the next pending job of
 // the given type and setting it as being in-process
-func popFirstPendingJob(types []string) (*db.Job, error) {
+func popFirstPendingJob(types []JobType) (*db.Job, error) {
 	var op = db.DB.Operation()
 	op.Dbg = db.Debug
 
@@ -95,7 +95,7 @@ func popFirstPendingJob(types []string) (*db.Job, error) {
 	var placeholders []string
 	args = append(args, string(JobStatusPending))
 	for _, t := range types {
-		args = append(args, t)
+		args = append(args, string(t))
 		placeholders = append(placeholders, "?")
 	}
 

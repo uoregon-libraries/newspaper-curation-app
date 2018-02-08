@@ -9,7 +9,6 @@ import (
 	"db"
 	"fmt"
 	"jobs"
-
 	"os"
 	"schema"
 	"strconv"
@@ -17,7 +16,7 @@ import (
 	"sync"
 	"time"
 
-	"github.com/jessevdk/go-flags"
+	flags "github.com/jessevdk/go-flags"
 	"github.com/uoregon-libraries/gopkg/logger"
 	"github.com/uoregon-libraries/gopkg/wordutils"
 )
@@ -128,7 +127,7 @@ func main() {
 	case "requeue":
 		requeue(args)
 	case "watch":
-		watch(c, args)
+		watch(c, args...)
 	case "watch-page-review":
 		watchPageReview(c)
 	case "watchall":
@@ -179,22 +178,27 @@ func validateJobQueue(queue string) {
 	}
 }
 
-func watch(c *config.Config, queues []string) {
+func watch(c *config.Config, queues ...string) {
 	if len(queues) == 0 {
 		usageFail("Error: you must specify one or more queues to watch")
 	}
 
 	logger.Infof("Watching queues: %s", strings.Join(queues, " / "))
 
-	for _, queue := range queues {
+	var jobTypes = make([]jobs.JobType, len(queues))
+	for i, queue := range queues {
 		validateJobQueue(queue)
+		jobTypes[i] = jobs.JobType(queue)
 	}
 
-	// On CTRL-C try to finish the current task before exiting
+	watchJobTypes(c, jobTypes...)
+}
+
+func watchJobTypes(c *config.Config, jobTypes ...jobs.JobType) {
 	var nextAttempt time.Time
 	for !done() {
 		if time.Now().After(nextAttempt) {
-			var pr = jobs.NextJobProcessor(queues)
+			var pr = jobs.NextJobProcessor(jobTypes)
 			if pr == nil {
 				nextAttempt = time.Now().Add(time.Second * 10)
 				continue
@@ -231,9 +235,15 @@ func watchPageReview(c *config.Config) {
 func runAllQueues(c *config.Config) {
 	waitFor(
 		func() { watchPageReview(c) },
-		func() { watch(c, []string{"sftp_issue_move", "move_issue_for_derivatives"}) },
-		func() { watch(c, []string{"page_split", "make_derivatives"}) },
-		func() { watch(c, []string{"build_mets"}) },
+		func() {
+			watchJobTypes(c, jobs.JobTypeSFTPIssueMove, jobs.JobTypeMoveIssueForDerivatives)
+		},
+		func() {
+			watchJobTypes(c, jobs.JobTypePageSplit, jobs.JobTypeMakeDerivatives)
+		},
+		func() {
+			watchJobTypes(c, jobs.JobTypeBuildMETS)
+		},
 	)
 }
 
