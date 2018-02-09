@@ -20,7 +20,7 @@
         <div class="alert alert-warning">This issue is relatively new and may get more uploads - queue with care!</div>
       {{end}}
 
-      {{if .User.PermittedTo ModifySFTPWorkflow}}
+      {{if .User.PermittedTo ModifyUploadedIssues}}
         <div><button type="submit">Queue Issue</button> for derivative generation</div>
       {{end}}
     {{end}}

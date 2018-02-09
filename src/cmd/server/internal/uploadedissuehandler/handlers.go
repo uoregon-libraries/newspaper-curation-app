@@ -19,14 +19,14 @@ var (
 	watcher      *issuewatcher.Watcher
 	conf         *config.Config
 
-	// basePath is the path to the main sftp page.  Subpages all start with this path.
+	// basePath is the path to the main uploaded issues page.  Subpages all start with this path.
 	basePath string
 
 	// Layout is the base template, cloned from the responder's layout, from
-	// which all sftp pages are built
+	// which all subpages are built
 	Layout *tmpl.TRoot
 
-	// HomeTmpl renders the main sftp reports page
+	// HomeTmpl renders the uploaded issues landing page
 	HomeTmpl *tmpl.Template
 
 	// TitleTmpl renders the list of issues and a summary of errors for a given title
@@ -36,18 +36,17 @@ var (
 	IssueTmpl *tmpl.Template
 )
 
-// Setup sets up all the SFTP-specific routing rules and does any other
-// init necessary for SFTP reports handling
-func Setup(r *mux.Router, sftpWebPath string, c *config.Config, w *issuewatcher.Watcher) {
+// Setup sets up all the routing rules and other configuration
+func Setup(r *mux.Router, baseWebPath string, c *config.Config, w *issuewatcher.Watcher) {
 	conf = c
 	watcher = w
-	basePath = sftpWebPath
+	basePath = baseWebPath
 	var s = r.PathPrefix(basePath).Subrouter()
-	s.Path("").Handler(responder.CanViewSFTPIssues(HomeHandler))
-	s.Path("/{lccn}").Handler(responder.CanViewSFTPIssues(TitleHandler))
-	s.Path("/{lccn}/{issue}").Handler(responder.CanViewSFTPIssues(IssueHandler))
-	s.Path("/{lccn}/{issue}/workflow/{action}").Methods("POST").Handler(responder.CanWorkflowSFTPIssues(IssueWorkflowHandler))
-	s.Path("/{lccn}/{issue}/{filename}").Handler(responder.CanViewSFTPIssues(PDFFileHandler))
+	s.Path("").Handler(canView(HomeHandler))
+	s.Path("/{lccn}").Handler(canView(TitleHandler))
+	s.Path("/{lccn}/{issue}").Handler(canView(IssueHandler))
+	s.Path("/{lccn}/{issue}/workflow/{action}").Methods("POST").Handler(canModify(IssueWorkflowHandler))
+	s.Path("/{lccn}/{issue}/{filename}").Handler(canView(PDFFileHandler))
 
 	sftpSearcher = newSFTPSearcher(conf.MasterPDFUploadPath)
 	Layout = responder.Layout.Clone()
