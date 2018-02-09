@@ -96,6 +96,9 @@ func startServer() {
 	uploadedissuehandler.Setup(r, path.Join(hp, "uploadedissues"), conf, watcher)
 	workflowhandler.Setup(r, path.Join(hp, "workflow"), conf, watcher)
 
+	// Any unknown paths get a semi-friendly 404
+	r.NewRoute().PathPrefix("").HandlerFunc(fourOhFour)
+
 	var waited, lastWaited int
 	for watcher.IssueFinder().Issues == nil {
 		if waited == 5 {
@@ -117,6 +120,13 @@ func startServer() {
 	if err := http.ListenAndServe(conf.BindAddress, nil); err != nil {
 		logger.Fatalf("Error starting listener: %s", err)
 	}
+}
+
+func fourOhFour(w http.ResponseWriter, req *http.Request) {
+	w.WriteHeader(http.StatusNotFound)
+	var r = responder.Response(w, req)
+	r.Vars.Alert = "Not Found"
+	r.Render(responder.Empty)
 }
 
 func main() {
