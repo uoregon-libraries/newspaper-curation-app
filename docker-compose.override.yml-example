@@ -6,42 +6,42 @@ services:
   iiif:
     # Homedir workflow directories require a hack to IIIF's image location
     volumes:
-      - ./test/fakemount/workflow:/var/local/images
+      - ./test/fakemount/workflow:/var/local/images:z
 
   # DB Migrate needs all the DB stuff
   db-migrate:
     volumes:
-      - ./db/migrations:/usr/local/black-mamba/db/migrations
-      - ./db/dbconf-example.yml:/usr/local/black-mamba/db/dbconf.yml
+      - ./db/migrations:/usr/local/black-mamba/db/migrations:Z
+      - ./db/dbconf-example.yml:/usr/local/black-mamba/db/dbconf.yml:z
 
   # Workers needs all workflow directories
   workers:
     volumes:
       # Workflow directories
-      - ./test/fakemount:/mnt/news
+      - ./test/fakemount:/mnt/news:z
       # Mount in the binaries, templates, and static files for easier debugging
-      - ./bin:/usr/local/black-mamba/bin
-      - ./static:/usr/local/black-mamba/static
-      - ./templates:/usr/local/black-mamba/templates
-      - ./settings-example:/usr/local/black-mamba/settings
-      - ./db/migrations:/usr/local/black-mamba/db/migrations
-      - ./db/dbconf-example.yml:/usr/local/black-mamba/db/dbconf.yml
+      - ./bin:/usr/local/black-mamba/bin:z
+      - ./static:/usr/local/black-mamba/static:z
+      - ./templates:/usr/local/black-mamba/templates:z
+      - ./settings-example:/usr/local/black-mamba/settings:z
+      - ./db/migrations:/usr/local/black-mamba/db/migrations:z
+      - ./db/dbconf-example.yml:/usr/local/black-mamba/db/dbconf.yml:z
 
   web:
     volumes:
       # Workflow directories
-      - ./test/fakemount:/mnt/news
+      - ./test/fakemount:/mnt/news:z
       # Mount in the binaries, templates, and static files for easier debugging
-      - ./bin:/usr/local/black-mamba/bin
-      - ./static:/usr/local/black-mamba/static
-      - ./templates:/usr/local/black-mamba/templates
-      - ./settings-example:/usr/local/black-mamba/settings
-      - ./db/migrations:/usr/local/black-mamba/db/migrations
-      - ./db/dbconf-example.yml:/usr/local/black-mamba/db/dbconf.yml
+      - ./bin:/usr/local/black-mamba/bin:z
+      - ./static:/usr/local/black-mamba/static:z
+      - ./templates:/usr/local/black-mamba/templates:z
+      - ./settings-example:/usr/local/black-mamba/settings:z
+      - ./db/migrations:/usr/local/black-mamba/db/migrations:z
+      - ./db/dbconf-example.yml:/usr/local/black-mamba/db/dbconf.yml:z
 
   # Mount in the apache configs for easier debugging (so you don't have to
   # issue a `docker-compose build apache` each time you change this stuff)
   apache:
     volumes:
-      - ./docker/apache/blackmamba.conf:/etc/apache2/sites-available/blackmamba.conf
-      - ./docker/apache/httpd-foreground:/usr/local/bin/httpd-foreground
+      - ./docker/apache/blackmamba.conf:/etc/apache2/sites-available/blackmamba.conf:Z
+      - ./docker/apache/httpd-foreground:/usr/local/bin/httpd-foreground:Z
