@@ -21,7 +21,7 @@ import (
 	"web/webutil"
 
 	"github.com/gorilla/mux"
-	"github.com/jessevdk/go-flags"
+	flags "github.com/jessevdk/go-flags"
 	"github.com/uoregon-libraries/gopkg/logger"
 )
 
