@@ -22,8 +22,8 @@
       <th scope="col" class="sort-alpha">Issue</th>
       <th scope="col" class="sort-alpha">Last Modified</th>
       <th scope="col" class="sort-alpha">Issue Status</th>
-      <th scope="col" class="sort-number">PDF Count</th>
-      <th scope="col" class="sort-alpha">PDF Status</th>
+      <th scope="col" class="sort-number">File Count</th>
+      <th scope="col" class="sort-alpha">File Status</th>
     </tr>
   </thead>
 
@@ -46,13 +46,13 @@
             <div class="issue-new">This issue was recently uploaded, and might get more changes</div>
           {{- end}}
         </td>
-        <td>{{len .PDFs}}</td>
+        <td>{{len .Files}}</td>
         <td>
-          {{- if gt (len .PDFs) 0}}
+          {{- if gt (len .Files) 0}}
             {{if gt .ChildErrors 0}}
-              <b>{{.ChildErrors}} PDF error(s)</b>
+              <b>{{.ChildErrors}} file error(s)</b>
             {{- else}}
-              No PDF errors detected
+              No file errors detected
             {{- end}}
           {{- else}}
             N/A
