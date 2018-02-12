@@ -32,7 +32,7 @@ func (e Errors) String() string {
 type Title struct {
 	*schema.Title
 	Slug        string
-	allErrors   []*issuefinder.Error
+	allErrors   *issuefinder.ErrorList
 	Errors      Errors
 	TitleErrors int
 	ChildErrors int
@@ -43,10 +43,10 @@ type Title struct {
 
 // decorateTitles iterates over the list of the searcher's titles and decorates
 // each, then its issues, and the issues' files, to prepare for web display
-func (s *SFTPSearcher) decorateTitles() {
+func (s *Searcher) decorateTitles() {
 	s.titles = make([]*Title, 0)
 	s.titleLookup = make(map[string]*Title)
-	for _, t := range s.searcher.Titles {
+	for _, t := range s.scanner.Finder.Titles {
 		s.appendSchemaTitle(t)
 	}
 
@@ -56,8 +56,8 @@ func (s *SFTPSearcher) decorateTitles() {
 	})
 }
 
-func (s *SFTPSearcher) appendSchemaTitle(t *schema.Title) {
-	var title = &Title{Title: t, Slug: t.LCCN, allErrors: s.searcher.Errors.Errors}
+func (s *Searcher) appendSchemaTitle(t *schema.Title) {
+	var title = &Title{Title: t, Slug: t.LCCN, allErrors: s.scanner.Finder.Errors}
 	title.decorateIssues(t.Issues)
 	title.decorateErrors()
 	s.titles = append(s.titles, title)
@@ -68,7 +68,7 @@ func (t *Title) decorateIssues(issueList []*schema.Issue) {
 	t.Issues = make([]*Issue, 0)
 	t.IssueLookup = make(map[string]*Issue)
 	for _, i := range issueList {
-		var _, isInProcess = sftpSearcher.inProcessIssues.Load(i.Key())
+		var _, isInProcess = searcher.inProcessIssues.Load(i.Key())
 		if !isInProcess {
 			t.appendSchemaIssue(i)
 		}
@@ -88,10 +88,7 @@ func (t *Title) appendSchemaIssue(i *schema.Issue) *Issue {
 
 func (t *Title) decorateErrors() {
 	t.Errors = make(Errors, 0)
-	for _, e := range t.allErrors {
-		if e.Title != t.Title {
-			continue
-		}
+	for _, e := range t.allErrors.TitleErrors[t.Title] {
 		if e.Issue == nil && e.File == nil {
 			t.Errors = append(t.Errors, safeError(e.Error.Error()))
 			t.TitleErrors++
@@ -155,11 +152,7 @@ func (i *Issue) appendSchemaFile(f *schema.File) {
 
 func (i *Issue) decorateErrors() {
 	i.Errors = make(Errors, 0)
-	for _, e := range i.Title.allErrors {
-		if e.Issue != i.Issue {
-			continue
-		}
-
+	for _, e := range i.Title.allErrors.IssueErrors[i.Issue] {
 		if e.File == nil {
 			i.Errors = append(i.Errors, safeError(e.Error.Error()))
 		} else {
@@ -289,7 +282,7 @@ type PDF struct {
 
 func (p *PDF) decorateErrors() {
 	p.Errors = make(Errors, 0)
-	for _, e := range p.Issue.Title.allErrors {
+	for _, e := range p.Issue.Title.allErrors.IssueErrors[p.Issue.Issue] {
 		if e.File != p.File {
 			continue
 		}

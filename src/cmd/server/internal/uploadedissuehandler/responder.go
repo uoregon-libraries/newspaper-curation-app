@@ -44,7 +44,7 @@ func getResponder(w http.ResponseWriter, req *http.Request) *resp {
 
 func (r *resp) loadTitles() {
 	var err error
-	r.sftpTitles, err = sftpSearcher.Titles()
+	r.sftpTitles, err = searcher.Titles()
 	if err != nil {
 		logger.Errorf("Couldn't load SFTP titles: %s", err)
 		r.err = &respError{http.StatusInternalServerError, "Error trying to load titles; try again or contact support"}
@@ -59,7 +59,7 @@ func (r *resp) loadTitle() {
 	}
 
 	// If we have an lccn var, it's an error to not find a title
-	r.title = sftpSearcher.TitleLookup(lccn)
+	r.title = searcher.TitleLookup(lccn)
 	if r.title == nil {
 		r.err = &respError{http.StatusNotFound, fmt.Sprintf("Unable to find title %#v", lccn)}
 	}

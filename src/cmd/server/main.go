@@ -65,7 +65,6 @@ func getConf() {
 	if opts.Debug == true {
 		logger.Warnf("Debug mode has been enabled")
 		settings.DEBUG = true
-		db.Debug = true
 	}
 
 	responder.InitRootTemplate(filepath.Join(conf.AppRoot, "templates"))

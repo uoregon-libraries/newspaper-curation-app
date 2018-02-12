@@ -1,51 +1,53 @@
 package uploadedissuehandler
 
 import (
+	"config"
 	"db"
 	"fmt"
-	"issuefinder"
+	"issuewatcher"
 	"jobs"
 	"schema"
 	"sync"
 	"time"
 )
 
-// secondsBetweenSFTPReload should be a value that ensures nearly real-time
+// secondsBetweenIssueReload should be a value that ensures nearly real-time
 // data, but avoids hammering the disk if a lot of refreshing happens
-const secondsBetweenSFTPReload = 30
+const secondsBetweenIssueReload = 30
 
 // secondsBeforeFatalError is how long we allow the system to run with an error
 // response before we actually return a failure from any functions which
 // require searching the filesystem
 const secondsBeforeFatalError = 600
 
-// SFTPSearcher wraps an issuefinder.Searcher specifically for SFTP data.
-// This is thread-safe; a single instance can and should used for the life of
-// the web server.  All data access is via functions to allow automatic
-// rescanning of the file system.
-type SFTPSearcher struct {
+// Searcher holds onto a duped Scanner for running local queries against scan
+// and sftp uploads.  This structure is completely thread-safe; a single
+// instance can and should used for the life of the web server.  All data
+// access is via functions to allow automatic rescanning of the file system.
+type Searcher struct {
 	sync.Mutex
 	lastLoaded      time.Time
-	searcher        *issuefinder.Searcher
+	scanner         *issuewatcher.Scanner
 	titles          []*Title
 	titleLookup     map[string]*Title
 	inProcessIssues sync.Map
 }
 
-// newSFTPSearcher returns a searcher that wraps issuefinder and schema data
-// for web presentation of titles, issues, files, and errors in SFTP uploads
-func newSFTPSearcher(path string) *SFTPSearcher {
-	return &SFTPSearcher{searcher: issuefinder.NewSearcher(issuefinder.SFTPUpload, path)}
+// newSearcher returns a searcher that wraps issuefinder and schema data for
+// web presentation of titles, issues, files, and errors in SFTP/scanned
+// uploads
+func newSearcher(conf *config.Config) *Searcher {
+	return &Searcher{scanner: issuewatcher.NewScanner(conf).DisableDB().DisableWeb()}
 }
 
 // load checks the time since the last load, and loads issues from the
 // filesystem if necessary.  If issues were loaded, the various types are
 // decorated as needed for web presentation.
-func (s *SFTPSearcher) load() error {
+func (s *Searcher) load() error {
 	s.Lock()
 	defer s.Unlock()
 
-	if time.Since(s.lastLoaded) < time.Second*secondsBetweenSFTPReload {
+	if time.Since(s.lastLoaded) < time.Second*secondsBetweenIssueReload {
 		return nil
 	}
 
@@ -54,7 +56,7 @@ func (s *SFTPSearcher) load() error {
 		return err
 	}
 
-	err = s.searcher.FindSFTPIssues()
+	err = s.scanner.Scan()
 	if err == nil {
 		s.lastLoaded = time.Now()
 		s.decorateTitles()
@@ -67,7 +69,7 @@ func (s *SFTPSearcher) load() error {
 // awaiting processing.
 //
 // The searcher must be locked here, as it completely replaces inProcessIssues.
-func (s *SFTPSearcher) buildInProcessList() error {
+func (s *Searcher) buildInProcessList() error {
 	s.inProcessIssues = sync.Map{}
 
 	var dbJobs, err = db.FindJobsByStatusAndType(string(jobs.JobStatusPending), string(jobs.JobTypeSFTPIssueMove))
@@ -96,7 +98,7 @@ func (s *SFTPSearcher) buildInProcessList() error {
 }
 
 // Titles returns the list of titles in the SFTP directory
-func (s *SFTPSearcher) Titles() ([]*Title, error) {
+func (s *Searcher) Titles() ([]*Title, error) {
 	var err = s.load()
 	if err != nil && time.Since(s.lastLoaded) > secondsBeforeFatalError {
 		return nil, err
@@ -106,13 +108,13 @@ func (s *SFTPSearcher) Titles() ([]*Title, error) {
 }
 
 // ForceReload clears the last loaded time and refreshed the titles cache
-func (s *SFTPSearcher) ForceReload() {
+func (s *Searcher) ForceReload() {
 	s.lastLoaded = time.Time{}
 	s.Titles()
 }
 
 // TitleLookup returns the Title for a given LCCN
-func (s *SFTPSearcher) TitleLookup(lccn string) *Title {
+func (s *Searcher) TitleLookup(lccn string) *Title {
 	s.load()
 	return s.titleLookup[lccn]
 }

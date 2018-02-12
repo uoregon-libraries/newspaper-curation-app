@@ -14,9 +14,9 @@ import (
 )
 
 var (
-	sftpSearcher *SFTPSearcher
-	watcher      *issuewatcher.Watcher
-	conf         *config.Config
+	searcher *Searcher
+	watcher  *issuewatcher.Watcher
+	conf     *config.Config
 
 	// basePath is the path to the main uploaded issues page.  Subpages all start with this path.
 	basePath string
@@ -47,7 +47,7 @@ func Setup(r *mux.Router, baseWebPath string, c *config.Config, w *issuewatcher.
 	s.Path("/{lccn}/{issue}/workflow/{action}").Methods("POST").Handler(canModify(IssueWorkflowHandler))
 	s.Path("/{lccn}/{issue}/{filename}").Handler(canView(PDFFileHandler))
 
-	sftpSearcher = newSFTPSearcher(conf.MasterPDFUploadPath)
+	searcher = newSearcher(c)
 	Layout = responder.Layout.Clone()
 	Layout.Path = path.Join(Layout.Path, "uploadedissues")
 	HomeTmpl = Layout.MustBuild("home.go.html")
@@ -76,7 +76,7 @@ func IssueHandler(w http.ResponseWriter, req *http.Request) {
 	r.Render(IssueTmpl)
 }
 
-// IssueWorkflowHandler handles setting up the sftp move job
+// IssueWorkflowHandler handles setting up the issue move job
 func IssueWorkflowHandler(w http.ResponseWriter, req *http.Request) {
 	// Since we have real logic in this handler, we want to bail if we already
 	// know there are errors
