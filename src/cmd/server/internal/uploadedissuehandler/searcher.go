@@ -13,7 +13,7 @@ import (
 
 // secondsBetweenIssueReload should be a value that ensures nearly real-time
 // data, but avoids hammering the disk if a lot of refreshing happens
-const secondsBetweenIssueReload = 30
+const secondsBetweenIssueReload = 10
 
 // secondsBeforeFatalError is how long we allow the system to run with an error
 // response before we actually return a failure from any functions which
