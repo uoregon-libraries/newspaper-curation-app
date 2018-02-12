@@ -11,7 +11,6 @@ import (
 	"web/tmpl"
 
 	"github.com/gorilla/mux"
-	"github.com/uoregon-libraries/gopkg/logger"
 )
 
 var (
@@ -59,7 +58,6 @@ func Setup(r *mux.Router, baseWebPath string, c *config.Config, w *issuewatcher.
 // HomeHandler spits out the title list
 func HomeHandler(w http.ResponseWriter, req *http.Request) {
 	var r = getResponder(w, req)
-	logger.Debugf("There are %d titles", len(r.sftpTitles))
 	r.Vars.Title = "All Uploaded Issues' Titles"
 	r.Render(HomeTmpl)
 }
