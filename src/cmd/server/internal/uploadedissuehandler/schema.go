@@ -185,7 +185,7 @@ func (i *Issue) decorateDupeErrors() {
 		return
 	}
 
-	var watcherIssues = watcher.LookupIssues(key)
+	var watcherIssues = watcher.Scanner.LookupIssues(key)
 	for _, wi := range watcherIssues {
 		if wi.WorkflowStep == i.WorkflowStep {
 			continue

@@ -59,18 +59,18 @@ func getConf() {
 
 func main() {
 	getConf()
-	var watcher = issuewatcher.New(conf)
+	var scanner = issuewatcher.NewScanner(conf)
 
 	logger.Infof("Running scan")
-	var liveFinder, err = watcher.FindIssues()
+	var err = scanner.Scan()
 	if err != nil {
 		logger.Fatalf("Error trying to find issues: %s", err)
 	}
 
 	logger.Debugf("Serializing to disk")
-	err = liveFinder.Serialize(watcher.CacheFile())
+	err = scanner.Finder.Serialize(scanner.CacheFile())
 	if err != nil {
 		logger.Fatalf("Error trying to serialize: %s", err)
 	}
-	testIntegrity(liveFinder)
+	testIntegrity(scanner.Finder)
 }

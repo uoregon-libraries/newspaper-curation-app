@@ -100,7 +100,7 @@ func startServer() {
 	r.NewRoute().PathPrefix("").HandlerFunc(notFound)
 
 	var waited, lastWaited int
-	for watcher.IssueFinder().Issues == nil {
+	for watcher.Scanner.Finder.Issues == nil {
 		if waited == 5 {
 			logger.Infof("Waiting for initial issue scan to complete.  This can take " +
 				"several minutes if the issues haven't been scanned in a while.  If this " +

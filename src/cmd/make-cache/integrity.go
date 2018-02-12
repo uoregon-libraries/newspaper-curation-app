@@ -19,21 +19,21 @@ func validateLen(thing string, a, b int) {
 	if a == b {
 		return
 	}
-	integrityFail(fmt.Sprintf("The %s lengths don't match; real watcher had %d; cache data had %d", thing, a, b))
+	integrityFail(fmt.Sprintf("The %s lengths don't match; real scanner had %d; cache data had %d", thing, a, b))
 }
 
 func testIntegrity(fA *issuefinder.Finder) {
 	fails = 0
 	logger.Infof("Reading cached file to verify integrity")
-	var watcherB = issuewatcher.New(conf)
-	var err = watcherB.Deserialize()
+	var scannerB = issuewatcher.NewScanner(conf)
+	var err = scannerB.Deserialize()
 	if err != nil {
 		integrityFail(fmt.Sprintf("Unable to deserialize the cached file: %s", err))
 		return
 	}
 
-	logger.Debugf("Testing deserialized watcher against live watcher")
-	var fB = watcherB.IssueFinder()
+	logger.Debugf("Testing deserialized scanner against live scanner")
+	var fB = scannerB.Finder
 	validateLen("issue", len(fA.Issues), len(fB.Issues))
 	validateLen("title", len(fA.Titles), len(fB.Titles))
 	validateLen("batch", len(fA.Batches), len(fB.Batches))

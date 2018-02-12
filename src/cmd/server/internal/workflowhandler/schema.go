@@ -219,7 +219,7 @@ func (i *Issue) ValidateMetadata() {
 	// Now check for live dupes - given we're generating a search key from a real
 	// issue, we can safely ignore the ParseSearchKey error
 	var key, _ = issuesearch.ParseSearchKey(i.si.Key())
-	var schemaIssues = watcher.LookupIssues(key)
+	var schemaIssues = watcher.Scanner.LookupIssues(key)
 	for _, issue := range schemaIssues {
 		if issue.WorkflowStep == schema.WSInProduction {
 			addError(fmt.Sprintf("This is a duplicate of a live issue (in %q); "+
