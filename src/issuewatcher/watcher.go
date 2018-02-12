@@ -249,7 +249,7 @@ func duplicateIssueError(canonical *schema.Issue) error {
 	case schema.WSInProduction:
 		return fmt.Errorf("duplicates a live issue in the batch %q", canonical.Batch.Fullname())
 
-	case schema.WSReadyForBatching:
+	case schema.WSReadyForBatching, schema.WSReadyForMETSXML:
 		return fmt.Errorf("duplicates an issue currently being prepped for batching")
 	}
 
