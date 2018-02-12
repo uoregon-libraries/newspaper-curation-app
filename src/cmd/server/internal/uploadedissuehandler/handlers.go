@@ -56,124 +56,50 @@ func Setup(r *mux.Router, baseWebPath string, c *config.Config, w *issuewatcher.
 	TitleTmpl = Layout.MustBuild("title.go.html")
 }
 
-// LoadTitles takes a responder and attempts to load the title list
-// into it.  If the list can't be loaded, an HTTP error is sent out and the
-// return is false.
-func LoadTitles(r *responder.Responder) bool {
-	var titles, err = sftpSearcher.Titles()
-	if err != nil {
-		logger.Errorf("Couldn't load titles in %s: %s", sftpSearcher.searcher.Location, err)
-		http.Error(r.Writer, "Unable to load title list!", 500)
-		return false
-	}
-
-	// TODO: Make responder act more as an embeddable type rather than the final renderer
-	r.Vars.Data["Titles"] = titles
-	return true
-}
-
-// findTitle attempts to load the title list, then find and return the
-// title specified in the URL If no title is found (or loading
-// title fails), nil is returned, and the caller should do nothing, as
-// http headers / rendering is already done.
-func findTitle(r *responder.Responder) *Title {
-	if !LoadTitles(r) {
-		return nil
-	}
-	var lccn = mux.Vars(r.Request)["lccn"]
-	var title = sftpSearcher.TitleLookup(lccn)
-
-	if title == nil {
-		r.Vars.Alert = fmt.Sprintf("Unable to find title %#v", lccn)
-		r.Render(responder.Empty)
-		return nil
-	}
-
-	return title
-}
-
-// findIssue attempts to find the title specified in the URL and then the
-// issue for that title, also specified in the URL.  If found, the issue is
-// returned.  If not found, some kind of contextual error will be displayed to
-// the end user and the caller should do nothing.
-func findIssue(r *responder.Responder) *Issue {
-	var title = findTitle(r)
-	if title == nil {
-		return nil
-	}
-
-	var issueDate = mux.Vars(r.Request)["issue"]
-	var issue = title.IssueLookup[issueDate]
-
-	if issue == nil {
-		r.Vars.Alert = fmt.Sprintf("Unable to find issue %#v for title %#v", issueDate, title.Name)
-		r.Render(responder.Empty)
-		return nil
-	}
-
-	return issue
-}
-
 // HomeHandler spits out the title list
 func HomeHandler(w http.ResponseWriter, req *http.Request) {
-	var r = responder.Response(w, req)
-	if !LoadTitles(r) {
-		return
-	}
-
-	r.Vars.Title = "SFTP Titles List"
+	var r = getResponder(w, req)
+	logger.Debugf("There are %d titles", len(r.sftpTitles))
+	r.Vars.Title = "All Uploaded Issues' Titles"
 	r.Render(HomeTmpl)
 }
 
 // TitleHandler prints a list of issues for a given title
 func TitleHandler(w http.ResponseWriter, req *http.Request) {
-	var r = responder.Response(w, req)
-	var title = findTitle(r)
-	if title == nil {
-		return
-	}
-
-	r.Vars.Data["Title"] = title
-	r.Vars.Title = "SFTP Issues for " + title.Name
+	var r = getResponder(w, req)
+	r.Vars.Title = "Issues for " + r.title.Name
 	r.Render(TitleTmpl)
 }
 
 // IssueHandler prints a list of pages for a given issue
 func IssueHandler(w http.ResponseWriter, req *http.Request) {
-	var r = responder.Response(w, req)
-	var issue = findIssue(r)
-	if issue == nil {
-		return
-	}
-
-	r.Vars.Data["Issue"] = issue
-	r.Vars.Title = fmt.Sprintf("SFTP PDFs for %s, issue %s", issue.Title.Name, issue.Date.Format("2006-01-02"))
+	var r = getResponder(w, req)
+	r.Vars.Title = fmt.Sprintf("Files for %s, issue %s", r.title.Name, r.issue.Date.Format("2006-01-02"))
 	r.Render(IssueTmpl)
 }
 
 // IssueWorkflowHandler handles setting up the sftp move job
 func IssueWorkflowHandler(w http.ResponseWriter, req *http.Request) {
-	var r = responder.Response(w, req)
-	var issue = findIssue(r)
-	if issue == nil {
+	// Since we have real logic in this handler, we want to bail if we already
+	// know there are errors
+	var r = getResponder(w, req)
+	if r.err != nil {
 		return
 	}
 
-	var action = mux.Vars(r.Request)["action"]
-	switch action {
+	switch r.vars["action"] {
 	case "queue":
-		var ok, msg = queueSFTPIssueMove(issue)
+		var ok, msg = queueSFTPIssueMove(r.issue)
 		var cname = "Info"
 		if !ok {
 			cname = "Alert"
 		}
 
-		r.Audit("sftp-queue", fmt.Sprintf("Issue %q, success: %#v", issue.Key(), ok))
+		r.Audit("sftp-queue", fmt.Sprintf("Issue %q, success: %#v", r.issue.Key(), ok))
 		http.SetCookie(w, &http.Cookie{Name: cname, Value: msg, Path: "/"})
-		http.Redirect(w, req, TitlePath(issue.Title.Slug), http.StatusFound)
+		http.Redirect(w, req, TitlePath(r.issue.Title.Slug), http.StatusFound)
 
 	default:
-		r.Vars.Alert = fmt.Sprintf("Invalid workflow action %#v", action)
-		r.Render(responder.Empty)
+		r.Error(http.StatusBadRequest, "")
 	}
 }

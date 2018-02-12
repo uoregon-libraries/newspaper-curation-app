@@ -11,41 +11,40 @@ import (
 	"path/filepath"
 	"strings"
 
-	"github.com/gorilla/mux"
 	"github.com/uoregon-libraries/gopkg/fileutil"
 	"github.com/uoregon-libraries/gopkg/logger"
 )
 
 // PDFFileHandler attempts to find and display a PDF file to the browser
 func PDFFileHandler(w http.ResponseWriter, req *http.Request) {
-	var r = responder.Response(w, req)
-	var issue = findIssue(r)
-	var fileslug = mux.Vars(req)["filename"]
-	var pdf = issue.PDFLookup[fileslug]
+	var r = getResponder(w, req)
+	if r.err != nil {
+		return
+	}
+
+	var fileslug = r.vars["filename"]
+	var pdf = r.issue.PDFLookup[fileslug]
 	if pdf == nil {
-		r.Vars.Alert = fmt.Sprintf("Invalid request")
-		r.Render(responder.Empty)
+		r.Error(http.StatusBadRequest, "")
 		return
 	}
 
 	var path = pdf.Location
 	if strings.ToUpper(filepath.Ext(path)) != ".PDF" {
-		r.Vars.Alert = fmt.Sprintf("%#v is not a valid PDF file and cannot be viewed", path)
+		r.Vars.Alert = fmt.Sprintf("%q is not a valid PDF file and cannot be viewed", path)
 		r.Render(responder.Empty)
 		return
 	}
 
 	if !fileutil.IsFile(path) {
-		r.Vars.Alert = fmt.Sprintf("Unable to locate %#v!", path)
-		r.Render(responder.Empty)
+		r.Error(http.StatusNotFound, fmt.Sprintf("Unable to locate %q!", path))
 		return
 	}
 
 	var f, err = os.Open(path)
 	if err != nil {
-		logger.Errorf("Unable to read %#v", path)
-		r.Vars.Alert = fmt.Sprintf("Unable to read %#v!", path)
-		r.Render(responder.Empty)
+		logger.Errorf("Unable to read %q", path)
+		r.Error(http.StatusInternalServerError, fmt.Sprintf("Unable to read %q!", path))
 		return
 	}
 	defer f.Close()
