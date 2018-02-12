@@ -118,7 +118,6 @@ func (s *Searcher) findScannedIssuesForTitlePath(titlePath string) error {
 		err = s.verifyScanIssuePDFTIFFPairs(issuePath)
 		if err != nil {
 			addErr(err)
-			continue
 		}
 
 		for _, e := range errors {
