@@ -97,7 +97,7 @@ func startServer() {
 	workflowhandler.Setup(r, path.Join(hp, "workflow"), conf, watcher)
 
 	// Any unknown paths get a semi-friendly 404
-	r.NewRoute().PathPrefix("").HandlerFunc(fourOhFour)
+	r.NewRoute().PathPrefix("").HandlerFunc(notFound)
 
 	var waited, lastWaited int
 	for watcher.IssueFinder().Issues == nil {
@@ -122,11 +122,9 @@ func startServer() {
 	}
 }
 
-func fourOhFour(w http.ResponseWriter, req *http.Request) {
-	w.WriteHeader(http.StatusNotFound)
+func notFound(w http.ResponseWriter, req *http.Request) {
 	var r = responder.Response(w, req)
-	r.Vars.Alert = "Not Found"
-	r.Render(responder.Empty)
+	r.Error(http.StatusNotFound, "")
 }
 
 func main() {
