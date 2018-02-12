@@ -2,6 +2,7 @@ package uploadedissuehandler
 
 import (
 	"cmd/server/internal/responder"
+	"mime"
 
 	"fmt"
 	"io"
@@ -15,23 +16,24 @@ import (
 	"github.com/uoregon-libraries/gopkg/logger"
 )
 
-// PDFFileHandler attempts to find and display a PDF file to the browser
-func PDFFileHandler(w http.ResponseWriter, req *http.Request) {
+// FileHandler attempts to find and display a file to the browser
+func FileHandler(w http.ResponseWriter, req *http.Request) {
 	var r = getResponder(w, req)
 	if r.err != nil {
 		return
 	}
 
 	var fileslug = r.vars["filename"]
-	var pdf = r.issue.PDFLookup[fileslug]
-	if pdf == nil {
+	var file = r.issue.FileLookup[fileslug]
+	if file == nil {
 		r.Error(http.StatusBadRequest, "")
 		return
 	}
 
-	var path = pdf.Location
-	if strings.ToUpper(filepath.Ext(path)) != ".PDF" {
-		r.Vars.Alert = fmt.Sprintf("%q is not a valid PDF file and cannot be viewed", path)
+	var path = file.Location
+	var ext = strings.ToUpper(filepath.Ext(path))
+	if ext != ".PDF" && ext != ".TIF" && ext != ".TIFF" {
+		r.Vars.Alert = fmt.Sprintf("%q is not a valid file type (PDF/TIFF only), and cannot be viewed", path)
 		r.Render(responder.Empty)
 		return
 	}
@@ -49,6 +51,6 @@ func PDFFileHandler(w http.ResponseWriter, req *http.Request) {
 	}
 	defer f.Close()
 
-	w.Header().Set("Content-Type", "application/pdf")
+	w.Header().Set("Content-Type", mime.TypeByExtension(ext))
 	io.Copy(w, f)
 }

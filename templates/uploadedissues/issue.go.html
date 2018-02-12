@@ -39,15 +39,15 @@
   </thead>
 
   <tbody>
-    {{range .Data.Issue.PDFs}}
-      <tr {{if gt (len .Errors) 0}} class="pdf-with-errors"{{end}}>
+    {{range .Data.Issue.Files}}
+      <tr {{if gt (len .Errors) 0}} class="file-with-errors"{{end}}>
         <td>{{.Link}}</td>
         <td>{{TimeString .ModTime}}</td>
         <td>
           {{- if gt (len .Errors) 0}}
             <b>{{.Errors}}</b>
           {{- else}}
-            No PDF errors detected
+            No file errors detected
           {{- end}}
         </td>
       </tr>

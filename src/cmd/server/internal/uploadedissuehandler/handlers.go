@@ -45,7 +45,7 @@ func Setup(r *mux.Router, baseWebPath string, c *config.Config, w *issuewatcher.
 	s.Path("/{lccn}").Handler(canView(TitleHandler))
 	s.Path("/{lccn}/{issue}").Handler(canView(IssueHandler))
 	s.Path("/{lccn}/{issue}/workflow/{action}").Methods("POST").Handler(canModify(IssueWorkflowHandler))
-	s.Path("/{lccn}/{issue}/{filename}").Handler(canView(PDFFileHandler))
+	s.Path("/{lccn}/{issue}/{filename}").Handler(canView(FileHandler))
 
 	searcher = newSearcher(c)
 	Layout = responder.Layout.Clone()

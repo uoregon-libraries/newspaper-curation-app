@@ -19,7 +19,7 @@ func IssueWorkflowPath(title, issue, action string) string {
 	return path.Join(basePath, title, issue, "workflow", action)
 }
 
-// PDFPath returns the relative path to view a given PDF file
-func PDFPath(title, issue, filename string) string {
+// FilePath returns the relative path to view a given file
+func FilePath(title, issue, filename string) string {
 	return path.Join(basePath, title, issue, filename)
 }

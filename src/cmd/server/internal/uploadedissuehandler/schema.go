@@ -121,19 +121,19 @@ func (t *Title) Link() template.HTML {
 // Issue wraps a schema.Issue for web presentation
 type Issue struct {
 	*schema.Issue
-	Slug        string          // Short, URL-friendly identifier for an issue
-	Title       *Title          // Title to which this issue belongs
-	QueueInfo   template.HTML   // Informational message from the queue process, if any
-	Errors      Errors          // List of errors automatically identified for this issue
-	ChildErrors int             // Count of child errors for use in the templates
-	PDFs        []*PDF          // List of "PDFs" - which are actually any associated files in the sftp issue's dir
-	PDFLookup   map[string]*PDF // Lookup for finding a PDF by its filename / slug
-	Modified    time.Time       // When this issue's most recent file was modified
+	Slug        string           // Short, URL-friendly identifier for an issue
+	Title       *Title           // Title to which this issue belongs
+	QueueInfo   template.HTML    // Informational message from the queue process, if any
+	Errors      Errors           // List of errors automatically identified for this issue
+	ChildErrors int              // Count of child errors for use in the templates
+	Files       []*File          // List of files
+	FileLookup  map[string]*File // Lookup for finding a File by its filename / slug
+	Modified    time.Time        // When this issue's most recent file was modified
 }
 
 func (i *Issue) decorateFiles(fileList []*schema.File) {
-	i.PDFs = make([]*PDF, 0)
-	i.PDFLookup = make(map[string]*PDF)
+	i.Files = make([]*File, 0)
+	i.FileLookup = make(map[string]*File)
 	for _, f := range fileList {
 		i.appendSchemaFile(f)
 		if i.Modified.Before(f.ModTime) {
@@ -144,10 +144,10 @@ func (i *Issue) decorateFiles(fileList []*schema.File) {
 
 func (i *Issue) appendSchemaFile(f *schema.File) {
 	var slug = filepath.Base(f.Location)
-	var pdf = &PDF{File: f, Slug: slug, Issue: i}
+	var pdf = &File{File: f, Slug: slug, Issue: i}
 	pdf.decorateErrors()
-	i.PDFs = append(i.PDFs, pdf)
-	i.PDFLookup[pdf.Slug] = pdf
+	i.Files = append(i.Files, pdf)
+	i.FileLookup[pdf.Slug] = pdf
 }
 
 func (i *Issue) decorateErrors() {
@@ -272,15 +272,15 @@ func (i *Issue) WorkflowPath(action string) string {
 	return IssueWorkflowPath(i.Title.Slug, i.Slug, action)
 }
 
-// PDF wraps a schema.File for web presentation
-type PDF struct {
+// File wraps a schema.File for web presentation
+type File struct {
 	*schema.File
 	Issue  *Issue
 	Slug   string
 	Errors Errors
 }
 
-func (p *PDF) decorateErrors() {
+func (p *File) decorateErrors() {
 	p.Errors = make(Errors, 0)
 	for _, e := range p.Issue.Title.allErrors.IssueErrors[p.Issue.Issue] {
 		if e.File != p.File {
@@ -292,7 +292,7 @@ func (p *PDF) decorateErrors() {
 }
 
 // Link returns a link for this title
-func (p *PDF) Link() template.HTML {
-	var path = PDFPath(p.Issue.Title.Slug, p.Issue.Slug, p.Slug)
+func (p *File) Link() template.HTML {
+	var path = FilePath(p.Issue.Title.Slug, p.Issue.Slug, p.Slug)
 	return template.HTML(fmt.Sprintf(`<a href="%s">%s</a>`, path, p.Slug))
 }
