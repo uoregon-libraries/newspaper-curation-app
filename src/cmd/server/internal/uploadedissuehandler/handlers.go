@@ -72,6 +72,10 @@ func TitleHandler(w http.ResponseWriter, req *http.Request) {
 // IssueHandler prints a list of pages for a given issue
 func IssueHandler(w http.ResponseWriter, req *http.Request) {
 	var r = getResponder(w, req)
+	if r.err != nil {
+		r.Render(nil)
+		return
+	}
 	r.Vars.Title = fmt.Sprintf("Files for %s, issue %s", r.title.Name, r.issue.Date.Format("2006-01-02"))
 	r.Render(IssueTmpl)
 }
@@ -82,6 +86,7 @@ func IssueWorkflowHandler(w http.ResponseWriter, req *http.Request) {
 	// know there are errors
 	var r = getResponder(w, req)
 	if r.err != nil {
+		r.Render(nil)
 		return
 	}
 

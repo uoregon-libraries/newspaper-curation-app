@@ -20,6 +20,7 @@ import (
 func FileHandler(w http.ResponseWriter, req *http.Request) {
 	var r = getResponder(w, req)
 	if r.err != nil {
+		r.Render(nil)
 		return
 	}
 
