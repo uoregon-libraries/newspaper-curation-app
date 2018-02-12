@@ -1,6 +1,7 @@
 /bin
 /pkg
-/vendor/src
+/vendor
+!/vendor/manifest
 /tmp
 /settings
 /.build.txt
