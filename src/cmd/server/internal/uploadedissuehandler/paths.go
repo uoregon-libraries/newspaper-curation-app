@@ -9,7 +9,7 @@ func TitlePath(name string) string {
 	return path.Join(basePath, name)
 }
 
-// IssuePath returns the relative path to the given issue's PDF list page
+// IssuePath returns the relative path to the given issue's file list page
 func IssuePath(title, issue string) string {
 	return path.Join(basePath, title, issue)
 }
