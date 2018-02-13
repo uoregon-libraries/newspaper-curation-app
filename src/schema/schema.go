@@ -196,11 +196,12 @@ func (list TitleList) Unique() TitleList {
 
 // Issue is an extremely basic encapsulation of an issue's high-level data
 type Issue struct {
-	Title   *Title
-	Date    time.Time
-	Edition int
-	Batch   *Batch
-	Files   []*File
+	MARCOrgCode string
+	Title       *Title
+	Date        time.Time
+	Edition     int
+	Batch       *Batch
+	Files       []*File
 
 	// Location is where this issue can be found, either a URL or filesystem path
 	Location string

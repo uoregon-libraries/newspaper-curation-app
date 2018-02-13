@@ -83,7 +83,11 @@ func queueIssueMove(i *Issue) (ok bool, status string) {
 }
 
 func createDatabaseIssue(i *Issue) (*db.Issue, error) {
-	var dbi = db.NewIssue(conf.PDFBatchMARCOrgCode, i.Title.LCCN, i.DateStringReadable(), i.Edition)
+	var dbi = db.NewIssue(i.MARCOrgCode, i.Title.LCCN, i.DateStringReadable(), i.Edition)
+	// SFTP issues (for now) don't get their MOC set, so we have to do that here
+	if dbi.MARCOrgCode == "" && i.WorkflowStep == schema.WSSFTP {
+		dbi.MARCOrgCode = conf.PDFBatchMARCOrgCode
+	}
 	dbi.Location = i.Location
 	return dbi, dbi.Save()
 }
