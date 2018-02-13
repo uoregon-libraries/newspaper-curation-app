@@ -43,6 +43,7 @@ type Issue struct {
 
 	Error                  string              // If set, a metadata curator reported a problem
 	Location               string              // Where is this issue on disk?
+	MasterBackupLocation   string              // Where is the master backup located?  (born-digital only)
 	HumanName              string              // What is the issue's "human" name (for consistent folder naming)?
 	IsFromScanner          bool                // Is the issue scanned in-house?  (Born-digital == false)
 	HasDerivatives         bool                // Does the issue have derivatives done?

@@ -257,5 +257,6 @@ func (ps *PageSplit) backupOriginals() (ok bool) {
 func (ps *PageSplit) updateIssueWorkflow() error {
 	ps.DBIssue.Location = ps.FinalOutputDir
 	ps.DBIssue.WorkflowStep = schema.WSAwaitingPageReview
+	ps.DBIssue.MasterBackupLocation = ps.MasterBackup
 	return ps.DBIssue.Save()
 }
