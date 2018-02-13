@@ -58,14 +58,14 @@ func Setup(r *mux.Router, baseWebPath string, c *config.Config, w *issuewatcher.
 // HomeHandler spits out the title list
 func HomeHandler(w http.ResponseWriter, req *http.Request) {
 	var r = getResponder(w, req)
-	r.Vars.Title = "All Uploaded Issues' Titles"
+	r.Vars.Title = "Uploaded Issues"
 	r.Render(HomeTmpl)
 }
 
 // TitleHandler prints a list of issues for a given title
 func TitleHandler(w http.ResponseWriter, req *http.Request) {
 	var r = getResponder(w, req)
-	r.Vars.Title = "Issues for " + r.title.Name
+	r.Vars.Title = r.title.Name
 	r.Render(TitleTmpl)
 }
 
@@ -76,7 +76,7 @@ func IssueHandler(w http.ResponseWriter, req *http.Request) {
 		r.Render(nil)
 		return
 	}
-	r.Vars.Title = fmt.Sprintf("Files for %s, issue %s", r.title.Name, r.issue.Date.Format("2006-01-02"))
+	r.Vars.Title = fmt.Sprintf("%s, issue %s", r.title.Name, r.issue.Date.Format("2006-01-02"))
 	r.Render(IssueTmpl)
 }
 
