@@ -59,6 +59,7 @@ func Setup(r *mux.Router, baseWebPath string, c *config.Config, w *issuewatcher.
 func HomeHandler(w http.ResponseWriter, req *http.Request) {
 	var r = getResponder(w, req)
 	r.Vars.Title = "Uploaded Issues"
+	r.Vars.Data["OtherErrors"] = searcher.scanner.Finder.Errors.OtherErrors
 	r.Render(HomeTmpl)
 }
 
