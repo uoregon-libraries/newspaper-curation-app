@@ -102,11 +102,10 @@ func (s *Searcher) findScannedIssuesForTitlePath(moc, titlePath string) error {
 		}
 
 		var dt, err = time.Parse("2006-01-02", base)
-		// Invalid issue directory names can't have an issue, so we can continue
-		// without fixing up the errors
+		// Invalid issue directory names will have an invalid date, but still need
+		// to be visible in the issue queue
 		if err != nil {
-			addErr(fmt.Errorf("invalid issue directory name: must be formatted YYYY-MM-DD or YYYY-MM-DD_EE"))
-			continue
+			addErr(fmt.Errorf("issue folder date format, %q, is invalid", filepath.Base(issuePath)))
 		}
 
 		// Build the issue now that we know we can put together the minimal metadata
