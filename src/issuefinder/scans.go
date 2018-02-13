@@ -111,7 +111,12 @@ func (s *Searcher) findScannedIssuesForTitlePath(titlePath string) error {
 		}
 
 		// Build the issue now that we know we can put together the minimal metadata
-		var issue = title.AddIssue(&schema.Issue{Date: dt, Edition: edition, Location: issuePath, WorkflowStep: schema.WSScan})
+		var issue = title.AddIssue(&schema.Issue{
+			Date:         dt,
+			Edition:      edition,
+			Location:     issuePath,
+			WorkflowStep: schema.WSScan,
+		})
 		issue.FindFiles()
 
 		// Make sure PDF and TIFF pairs match up properly
