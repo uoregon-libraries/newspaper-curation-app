@@ -22,6 +22,11 @@ func QueueSFTPIssueMove(issue *db.Issue, path string) error {
 	return queueIssueJob(JobTypeSFTPIssueMove, issue, path)
 }
 
+// QueueScanIssueMove creates a scan issue move job
+func QueueScanIssueMove(issue *db.Issue, path string) error {
+	return queueIssueJob(JobTypeScanIssueMove, issue, path)
+}
+
 // QueueMoveIssueForDerivatives creates and queues a job to move an issue dir
 // into the workflow area so a derivative job can be created
 func QueueMoveIssueForDerivatives(issue *db.Issue, path string) error {

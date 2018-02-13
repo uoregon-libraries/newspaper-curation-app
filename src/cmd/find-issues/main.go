@@ -92,19 +92,19 @@ type errorFn func(*schema.Issue) []*issuefinder.Error
 
 func main() {
 	getOpts()
-	var watcher = issuewatcher.New(conf)
-	var err = watcher.Deserialize()
+	var scanner = issuewatcher.NewScanner(conf)
+	var err = scanner.Deserialize()
 	if err != nil {
-		logger.Fatalf("Unable to deserialize the watcher: %s", err)
+		logger.Fatalf("Unable to deserialize the scanner: %s", err)
 	}
 
 	if opts.All {
-		reportIssues(watcher.IssueFinder().Issues, watcher.IssueErrors)
+		reportIssues(scanner.Finder.Issues, scanner.IssueErrors)
 		return
 	}
 
 	for _, k := range issueSearchKeys {
-		reportIssues(watcher.LookupIssues(k), watcher.IssueErrors)
+		reportIssues(scanner.LookupIssues(k), scanner.IssueErrors)
 	}
 }
 

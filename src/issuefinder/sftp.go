@@ -11,7 +11,7 @@ import (
 )
 
 // FindSFTPIssues aggregates all the uploaded born-digital PDFs
-func (s *Searcher) FindSFTPIssues() error {
+func (s *Searcher) FindSFTPIssues(orgCode string) error {
 	s.init()
 
 	// First find all titles
@@ -22,7 +22,7 @@ func (s *Searcher) FindSFTPIssues() error {
 
 	// Find all issues next
 	for _, titlePath := range titlePaths {
-		err = s.findSFTPIssuesForTitlePath(titlePath)
+		err = s.findSFTPIssuesForTitlePath(titlePath, orgCode)
 		if err != nil {
 			return err
 		}
@@ -34,7 +34,7 @@ func (s *Searcher) FindSFTPIssues() error {
 // findSFTPIssuesForTitle finds all issues within the given title's path by
 // looking for YYYY-MM-DD formatted directories.  The last directory element in
 // the path must be an SFTP title name or an LCCN.
-func (s *Searcher) findSFTPIssuesForTitlePath(titlePath string) error {
+func (s *Searcher) findSFTPIssuesForTitlePath(titlePath, orgCode string) error {
 	var title = s.findOrCreateFilesystemTitle(titlePath)
 
 	var issuePaths, err = fileutil.FindDirectories(titlePath)
@@ -57,16 +57,21 @@ func (s *Searcher) findSFTPIssuesForTitlePath(titlePath string) error {
 			base = base[:len(base)-6]
 		}
 
-		var dt, err = time.Parse("2006-01-02", base)
-		// Invalid issue directory names can't have an issue, so we can continue
-		// without fixing up the errors
+		var _, err = time.Parse("2006-01-02", base)
+		// Invalid issue directory names will have an invalid date, but still need
+		// to be visible in the issue queue
 		if err != nil {
-			addErr(fmt.Errorf("invalid issue directory name: must be formatted YYYY-MM-DD"))
-			continue
+			addErr(fmt.Errorf("issue folder date format, %q, is invalid", filepath.Base(issuePath)))
 		}
 
 		// Build the issue now that we know we can put together the minimal metadata
-		var issue = title.AddIssue(&schema.Issue{Date: dt, Edition: 1, Location: issuePath, WorkflowStep: schema.WSSFTP})
+		var issue = title.AddIssue(&schema.Issue{
+			MARCOrgCode:  orgCode,
+			RawDate:      base,
+			Edition:      1,
+			Location:     issuePath,
+			WorkflowStep: schema.WSSFTP,
+		})
 		issue.FindFiles()
 
 		for _, e := range errors {

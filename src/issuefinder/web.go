@@ -56,7 +56,7 @@ func (s *Searcher) FindWebBatches(cachePath string) error {
 }
 
 func (s *Searcher) cacheLiveIssue(batch *schema.Batch, title *schema.Title, meta *chronam.IssueMetadata) {
-	var dt, err = time.Parse("2006-01-02", meta.Date)
+	var _, err = time.Parse("2006-01-02", meta.Date)
 	if err != nil {
 		s.newError(batch.Location, fmt.Errorf("invalid date for issue %#v: %s", meta, err)).SetBatch(batch)
 		return
@@ -73,7 +73,7 @@ func (s *Searcher) cacheLiveIssue(batch *schema.Batch, title *schema.Title, meta
 		return
 	}
 
-	var issue = &schema.Issue{Date: dt, Edition: edition, Location: meta.URL, WorkflowStep: schema.WSInProduction}
+	var issue = &schema.Issue{RawDate: meta.Date, Edition: edition, Location: meta.URL, WorkflowStep: schema.WSInProduction}
 	title.AddIssue(issue)
 	batch.AddIssue(issue)
 	s.Issues = append(s.Issues, issue)

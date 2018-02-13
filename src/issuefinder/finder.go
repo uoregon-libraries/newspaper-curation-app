@@ -104,8 +104,8 @@ func (f *Finder) createAndProcessSearcher(ns Namespace, loc string, processor fu
 
 // FindSFTPIssues creates and runs an SFTP Searcher, aggregates its data,
 // and returns any errors encountered
-func (f *Finder) FindSFTPIssues(path string) (*Searcher, error) {
-	var searchFn = func(s *Searcher) error { return s.FindSFTPIssues() }
+func (f *Finder) FindSFTPIssues(path, orgCode string) (*Searcher, error) {
+	var searchFn = func(s *Searcher) error { return s.FindSFTPIssues(orgCode) }
 	return f.createAndProcessSearcher(SFTPUpload, path, searchFn)
 }
 

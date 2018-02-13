@@ -3,7 +3,7 @@ package main
 import (
 	"cmd/server/internal/responder"
 	"cmd/server/internal/settings"
-	"cmd/server/internal/sftphandler"
+	"cmd/server/internal/uploadedissuehandler"
 	"cmd/server/internal/workflowhandler"
 	"config"
 	"db"
@@ -31,8 +31,7 @@ var opts struct {
 	Debug         bool   `long:"debug" description:"Enables debug mode for testing different users"`
 }
 
-// Conf stores the configuration data read from the legacy Python settings
-var Conf *config.Config
+var conf *config.Config
 
 func getConf() {
 	var p = flags.NewParser(&opts, flags.HelpFlag|flags.PassDoubleDash)
@@ -44,12 +43,12 @@ func getConf() {
 		os.Exit(1)
 	}
 
-	Conf, err = config.Parse(opts.ConfigFile)
+	conf, err = config.Parse(opts.ConfigFile)
 	if err != nil {
 		logger.Fatalf("Config error: %s", err)
 	}
 
-	err = db.Connect(Conf.DatabaseConnect)
+	err = db.Connect(conf.DatabaseConnect)
 	if err != nil {
 		logger.Fatalf("Error trying to connect to database: %s", err)
 	}
@@ -57,19 +56,18 @@ func getConf() {
 
 	// We can ignore the error here because the config magic already verified
 	// that the URL was valid
-	var u, _ = url.Parse(Conf.Webroot)
+	var u, _ = url.Parse(conf.Webroot)
 	webutil.Webroot = u.Path
 	webutil.ParentWebroot = opts.ParentWebroot
-	webutil.WorkflowPath = Conf.WorkflowPath
-	webutil.IIIFBaseURL = Conf.IIIFBaseURL
+	webutil.WorkflowPath = conf.WorkflowPath
+	webutil.IIIFBaseURL = conf.IIIFBaseURL
 
 	if opts.Debug == true {
 		logger.Warnf("Debug mode has been enabled")
 		settings.DEBUG = true
-		db.Debug = true
 	}
 
-	responder.InitRootTemplate(filepath.Join(Conf.AppRoot, "templates"))
+	responder.InitRootTemplate(filepath.Join(conf.AppRoot, "templates"))
 }
 
 func makeRedirect(dest string, code int) http.Handler {
@@ -88,17 +86,20 @@ func startServer() {
 	// The static handler doesn't check permissions.  Right now this is okay, as
 	// what we serve isn't valuable beyond page layout, but this may warrant a
 	// fileserver clone + rewrite.
-	var fileServer = http.FileServer(http.Dir(filepath.Join(Conf.AppRoot, "static")))
+	var fileServer = http.FileServer(http.Dir(filepath.Join(conf.AppRoot, "static")))
 	var staticPrefix = path.Join(hp, "static")
 	r.NewRoute().PathPrefix(staticPrefix).Handler(http.StripPrefix(staticPrefix, fileServer))
 
-	var watcher = issuewatcher.New(Conf)
+	var watcher = issuewatcher.New(conf)
 	go watcher.Watch(5 * time.Minute)
-	sftphandler.Setup(r, path.Join(hp, "sftp"), Conf, watcher)
-	workflowhandler.Setup(r, path.Join(hp, "workflow"), Conf, watcher)
+	uploadedissuehandler.Setup(r, path.Join(hp, "uploadedissues"), conf, watcher)
+	workflowhandler.Setup(r, path.Join(hp, "workflow"), conf, watcher)
+
+	// Any unknown paths get a semi-friendly 404
+	r.NewRoute().PathPrefix("").HandlerFunc(notFound)
 
 	var waited, lastWaited int
-	for watcher.IssueFinder().Issues == nil {
+	for watcher.Scanner.Finder.Issues == nil {
 		if waited == 5 {
 			logger.Infof("Waiting for initial issue scan to complete.  This can take " +
 				"several minutes if the issues haven't been scanned in a while.  If this " +
@@ -114,10 +115,15 @@ func startServer() {
 
 	http.Handle("/", nocache(logMiddleware(r)))
 
-	logger.Infof("Listening on %s", Conf.BindAddress)
-	if err := http.ListenAndServe(Conf.BindAddress, nil); err != nil {
+	logger.Infof("Listening on %s", conf.BindAddress)
+	if err := http.ListenAndServe(conf.BindAddress, nil); err != nil {
 		logger.Fatalf("Error starting listener: %s", err)
 	}
+}
+
+func notFound(w http.ResponseWriter, req *http.Request) {
+	var r = responder.Response(w, req)
+	r.Error(http.StatusNotFound, "")
 }
 
 func main() {

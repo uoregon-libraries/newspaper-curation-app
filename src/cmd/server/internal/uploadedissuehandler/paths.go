@@ -1,4 +1,4 @@
-package sftphandler
+package uploadedissuehandler
 
 import (
 	"path"
@@ -9,7 +9,7 @@ func TitlePath(name string) string {
 	return path.Join(basePath, name)
 }
 
-// IssuePath returns the relative path to the given issue's PDF list page
+// IssuePath returns the relative path to the given issue's file list page
 func IssuePath(title, issue string) string {
 	return path.Join(basePath, title, issue)
 }
@@ -19,7 +19,7 @@ func IssueWorkflowPath(title, issue, action string) string {
 	return path.Join(basePath, title, issue, "workflow", action)
 }
 
-// PDFPath returns the relative path to view a given PDF file
-func PDFPath(title, issue, filename string) string {
+// FilePath returns the relative path to view a given file
+func FilePath(title, issue, filename string) string {
 	return path.Join(basePath, title, issue, filename)
 }

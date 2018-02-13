@@ -161,8 +161,8 @@ func NewIssueJob(dbJob *db.Job) *IssueJob {
 // directory naming and single-level paths
 func (ij *IssueJob) Subdir() string {
 	if ij.DBIssue.HumanName == "" {
-		ij.DBIssue.HumanName = fmt.Sprintf("%s-%s%02d-%d",
-			ij.Issue.Title.LCCN, ij.Issue.DateString(), ij.Issue.Edition, ij.DBIssue.ID)
+		ij.DBIssue.HumanName = fmt.Sprintf("%s-%s-%d",
+			ij.Issue.Title.LCCN, ij.Issue.DateEdition(), ij.DBIssue.ID)
 	}
 	return ij.DBIssue.HumanName
 }

@@ -5,7 +5,9 @@
   <div class="title-with-errors">
     <span class="glyphicon glyphicon-exclamation-sign" aria-hidden="true"></span>
     <span>
-      NOTE: This title has errors separate from the issues!  It is strongly advised you not queue issues unless you understand the ramifications fully!
+      This title has errors which may prevent all issues from showing up, or
+      which may be causing the title itself to fail.  It is strongly advised
+      you not queue issues unless you understand the ramifications fully.
     </span>
   </div>
   <ul>
@@ -19,18 +21,22 @@
   <caption><h2>Issues</h2></caption>
   <thead>
     <tr>
+      <th scope="col" class="sort-alpha">Org. Code</th>
       <th scope="col" class="sort-alpha">Issue</th>
+      <th scope="col" class="sort-alpha">Type</th>
       <th scope="col" class="sort-alpha">Last Modified</th>
       <th scope="col" class="sort-alpha">Issue Status</th>
-      <th scope="col" class="sort-number">PDF Count</th>
-      <th scope="col" class="sort-alpha">PDF Status</th>
+      <th scope="col" class="sort-number">File Count</th>
+      <th scope="col" class="sort-alpha">File Status</th>
     </tr>
   </thead>
 
   <tbody>
     {{range .Data.Title.Issues}}
       <tr>
+        <td>{{.MARCOrgCode}}</td>
         <td>{{.Link}}</td>
+        <td>{{.WorkflowStep}}</td>
         <td>{{TimeString .Modified}}</td>
         <td>
           {{- if gt (len .Errors) 0}}
@@ -46,13 +52,13 @@
             <div class="issue-new">This issue was recently uploaded, and might get more changes</div>
           {{- end}}
         </td>
-        <td>{{len .PDFs}}</td>
+        <td>{{len .Files}}</td>
         <td>
-          {{- if gt (len .PDFs) 0}}
+          {{- if gt (len .Files) 0}}
             {{if gt .ChildErrors 0}}
-              <b>{{.ChildErrors}} PDF error(s)</b>
+              <b>{{.ChildErrors}} file error(s)</b>
             {{- else}}
-              No PDF errors detected
+              No file errors detected
             {{- end}}
           {{- else}}
             N/A

@@ -9,7 +9,6 @@ import (
 	"db"
 	"fmt"
 	"jobs"
-
 	"os"
 	"schema"
 	"strconv"
@@ -17,7 +16,7 @@ import (
 	"sync"
 	"time"
 
-	"github.com/jessevdk/go-flags"
+	flags "github.com/jessevdk/go-flags"
 	"github.com/uoregon-libraries/gopkg/logger"
 	"github.com/uoregon-libraries/gopkg/wordutils"
 )
@@ -65,10 +64,6 @@ func usageFail(format string, args ...interface{}) {
 		`more complex granularity offered by "watch" and "watch-page-review"`)
 	wrapBullet("* watch <queue name> [<queue name>...]: Watches for jobs in the " +
 		"given queue(s), processing them in a loop until CTRL+C is pressed")
-	wrapBullet("* watch-scans: Watches for issues in the scan source folder " +
-		"which are ready to be moved for metadata entry.  No job is associated " +
-		"with this action, hence it must run on its own, and should only have " +
-		"one copy running at a time.")
 	wrapBullet("* watch-page-review: Watches for issues awaiting page review " +
 		"(reordering or other manual processing) which are ready to be moved for " +
 		"metadata entry.  No job is associated with this action, hence it must run on " +
@@ -132,9 +127,7 @@ func main() {
 	case "requeue":
 		requeue(args)
 	case "watch":
-		watch(c, args)
-	case "watch-scans":
-		watchScans(c)
+		watch(c, args...)
 	case "watch-page-review":
 		watchPageReview(c)
 	case "watchall":
@@ -185,22 +178,27 @@ func validateJobQueue(queue string) {
 	}
 }
 
-func watch(c *config.Config, queues []string) {
+func watch(c *config.Config, queues ...string) {
 	if len(queues) == 0 {
 		usageFail("Error: you must specify one or more queues to watch")
 	}
 
 	logger.Infof("Watching queues: %s", strings.Join(queues, " / "))
 
-	for _, queue := range queues {
+	var jobTypes = make([]jobs.JobType, len(queues))
+	for i, queue := range queues {
 		validateJobQueue(queue)
+		jobTypes[i] = jobs.JobType(queue)
 	}
 
-	// On CTRL-C try to finish the current task before exiting
+	watchJobTypes(c, jobTypes...)
+}
+
+func watchJobTypes(c *config.Config, jobTypes ...jobs.JobType) {
 	var nextAttempt time.Time
 	for !done() {
 		if time.Now().After(nextAttempt) {
-			var pr = jobs.NextJobProcessor(queues)
+			var pr = jobs.NextJobProcessor(jobTypes)
 			if pr == nil {
 				nextAttempt = time.Now().Add(time.Second * 10)
 				continue
@@ -209,21 +207,6 @@ func watch(c *config.Config, queues []string) {
 			logger.Debugf("Starting job id %d: %q", pr.JobID(), pr.JobType())
 			pr.SetProcessSuccess(pr.Process(c))
 			logger.Debugf("Finished job id %d", pr.JobID())
-		}
-
-		// Try not to eat all the CPU
-		time.Sleep(time.Second)
-	}
-}
-
-func watchScans(c *config.Config) {
-	logger.Infof("Watching scan source folders")
-
-	var nextAttempt time.Time
-	for !done() {
-		if time.Now().After(nextAttempt) {
-			scanScannedIssues(c)
-			nextAttempt = time.Now().Add(time.Hour)
 		}
 
 		// Try not to eat all the CPU
@@ -252,10 +235,15 @@ func watchPageReview(c *config.Config) {
 func runAllQueues(c *config.Config) {
 	waitFor(
 		func() { watchPageReview(c) },
-		func() { watchScans(c) },
-		func() { watch(c, []string{"sftp_issue_move", "move_issue_for_derivatives"}) },
-		func() { watch(c, []string{"page_split", "make_derivatives"}) },
-		func() { watch(c, []string{"build_mets"}) },
+		func() {
+			watchJobTypes(c, jobs.JobTypeSFTPIssueMove, jobs.JobTypeScanIssueMove, jobs.JobTypeMoveIssueForDerivatives)
+		},
+		func() {
+			watchJobTypes(c, jobs.JobTypePageSplit, jobs.JobTypeMakeDerivatives)
+		},
+		func() {
+			watchJobTypes(c, jobs.JobTypeBuildMETS)
+		},
 	)
 }
 

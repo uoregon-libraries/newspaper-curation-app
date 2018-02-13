@@ -11,14 +11,14 @@ import (
 
 func main() {
 	var conf = cli.Simple().GetConf()
-	var watcher = issuewatcher.New(conf)
-	var err = watcher.Deserialize()
+	var scanner = issuewatcher.NewScanner(conf)
+	var err = scanner.Deserialize()
 	if err != nil {
-		logger.Fatalf("Unable to deserialize the watcher: %s", err)
+		logger.Fatalf("Unable to deserialize the scanner: %s", err)
 	}
 
 	// Report all errors
-	for _, e := range watcher.IssueFinder().Errors.Errors {
+	for _, e := range scanner.Finder.Errors.Errors {
 		logger.Errorf(e.Message())
 	}
 }

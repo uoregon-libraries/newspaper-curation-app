@@ -17,6 +17,7 @@ type JobType string
 const (
 	JobTypePageSplit               JobType = "page_split"
 	JobTypeSFTPIssueMove           JobType = "sftp_issue_move"
+	JobTypeScanIssueMove           JobType = "scan_issue_move"
 	JobTypeMoveIssueForDerivatives JobType = "move_issue_for_derivatives"
 	JobTypeMakeDerivatives         JobType = "make_derivatives"
 	JobTypeBuildMETS               JobType = "build_mets"
@@ -27,6 +28,7 @@ const (
 var ValidJobTypes = []JobType{
 	JobTypePageSplit,
 	JobTypeSFTPIssueMove,
+	JobTypeScanIssueMove,
 	JobTypeMoveIssueForDerivatives,
 	JobTypeMakeDerivatives,
 	JobTypeBuildMETS,
@@ -50,6 +52,8 @@ func DBJobToProcessor(dbJob *db.Job) Processor {
 	switch JobType(dbJob.Type) {
 	case JobTypeSFTPIssueMove:
 		return &SFTPIssueMover{IssueJob: NewIssueJob(dbJob)}
+	case JobTypeScanIssueMove:
+		return &ScanIssueMover{IssueJob: NewIssueJob(dbJob)}
 	case JobTypePageSplit:
 		return &PageSplit{IssueJob: NewIssueJob(dbJob)}
 	case JobTypeMoveIssueForDerivatives:
@@ -66,7 +70,7 @@ func DBJobToProcessor(dbJob *db.Job) Processor {
 
 // NextJobProcessor gets the oldest job with any of the given job types, sets
 // it as in-process, and returns its Processor
-func NextJobProcessor(types []string) Processor {
+func NextJobProcessor(types []JobType) Processor {
 	var dbJob, err = popFirstPendingJob(types)
 
 	if err != nil {
@@ -82,7 +86,7 @@ func NextJobProcessor(types []string) Processor {
 
 // popFirstPendingJob is a helper for locking the database to pull the next pending job of
 // the given type and setting it as being in-process
-func popFirstPendingJob(types []string) (*db.Job, error) {
+func popFirstPendingJob(types []JobType) (*db.Job, error) {
 	var op = db.DB.Operation()
 	op.Dbg = db.Debug
 
@@ -95,7 +99,7 @@ func popFirstPendingJob(types []string) (*db.Job, error) {
 	var placeholders []string
 	args = append(args, string(JobStatusPending))
 	for _, t := range types {
-		args = append(args, t)
+		args = append(args, string(t))
 		placeholders = append(placeholders, "?")
 	}
 

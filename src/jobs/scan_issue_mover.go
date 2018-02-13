@@ -11,7 +11,7 @@ type ScanIssueMover struct {
 	*IssueJob
 }
 
-// Process moves the SFTP issue directory to the workflow area
+// Process moves the scanned issue directory to the workflow area
 func (im *ScanIssueMover) Process(config *config.Config) bool {
 	if !moveIssue(im.IssueJob, config.WorkflowPath) {
 		return false

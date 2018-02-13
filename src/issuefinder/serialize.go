@@ -54,7 +54,7 @@ func (s *Searcher) cachedSearcher() cachedSearcher {
 		issueID++
 		var ci = cachedIssue{
 			ID:           issueID,
-			Date:         i.Date,
+			RawDate:      i.RawDate,
 			Edition:      i.Edition,
 			Location:     i.Location,
 			WorkflowStep: string(i.WorkflowStep),

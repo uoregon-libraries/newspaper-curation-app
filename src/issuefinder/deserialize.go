@@ -69,7 +69,7 @@ func (cs cachedSearcher) searcher() *Searcher {
 	}
 	for _, ci := range cs.Issues {
 		var i = &schema.Issue{
-			Date:         ci.Date,
+			RawDate:      ci.RawDate,
 			Edition:      ci.Edition,
 			Location:     ci.Location,
 			WorkflowStep: schema.WorkflowStep(ci.WorkflowStep),

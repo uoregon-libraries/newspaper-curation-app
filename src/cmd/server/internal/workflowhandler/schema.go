@@ -58,9 +58,9 @@ func (i *Issue) LCCN() string {
 	return i.si.Title.LCCN
 }
 
-// Date returns the human-friendly date string
+// Date returns the issue's raw date string
 func (i *Issue) Date() string {
-	return i.si.DateStringReadable()
+	return i.si.RawDate
 }
 
 // JP2Files aggregates all the JP2s that exist in this issue's directory
@@ -219,7 +219,7 @@ func (i *Issue) ValidateMetadata() {
 	// Now check for live dupes - given we're generating a search key from a real
 	// issue, we can safely ignore the ParseSearchKey error
 	var key, _ = issuesearch.ParseSearchKey(i.si.Key())
-	var schemaIssues = watcher.LookupIssues(key)
+	var schemaIssues = watcher.Scanner.LookupIssues(key)
 	for _, issue := range schemaIssues {
 		if issue.WorkflowStep == schema.WSInProduction {
 			addError(fmt.Sprintf("This is a duplicate of a live issue (in %q); "+

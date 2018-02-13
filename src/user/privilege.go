@@ -19,9 +19,9 @@ var (
 	ListUsers   = newPrivilege(RoleUserManager)
 	ModifyUsers = newPrivilege(RoleUserManager)
 
-	// SFTP reporting / queueing
-	ViewSFTPReport     = newPrivilege(RoleSFTPWorkflowManager)
-	ModifySFTPWorkflow = newPrivilege(RoleSFTPWorkflowManager)
+	// Uploaded issue viewing & queueing
+	ViewUploadedIssues   = newPrivilege(RoleWorkflowManager)
+	ModifyUploadedIssues = newPrivilege(RoleWorkflowManager)
 
 	// View the SFTP credentials for a title
 	ViewTitleSFTPCredentials = newPrivilege(RoleTitleManager)

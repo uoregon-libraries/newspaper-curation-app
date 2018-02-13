@@ -1,4 +1,4 @@
-package sftphandler
+package uploadedissuehandler
 
 import (
 	"db"
@@ -32,7 +32,7 @@ func (e Errors) String() string {
 type Title struct {
 	*schema.Title
 	Slug        string
-	allErrors   []*issuefinder.Error
+	allErrors   *issuefinder.ErrorList
 	Errors      Errors
 	TitleErrors int
 	ChildErrors int
@@ -43,10 +43,10 @@ type Title struct {
 
 // decorateTitles iterates over the list of the searcher's titles and decorates
 // each, then its issues, and the issues' files, to prepare for web display
-func (s *SFTPSearcher) decorateTitles() {
+func (s *Searcher) decorateTitles() {
 	s.titles = make([]*Title, 0)
 	s.titleLookup = make(map[string]*Title)
-	for _, t := range s.searcher.Titles {
+	for _, t := range s.scanner.Finder.Titles {
 		s.appendSchemaTitle(t)
 	}
 
@@ -56,8 +56,8 @@ func (s *SFTPSearcher) decorateTitles() {
 	})
 }
 
-func (s *SFTPSearcher) appendSchemaTitle(t *schema.Title) {
-	var title = &Title{Title: t, Slug: t.LCCN, allErrors: s.searcher.Errors.Errors}
+func (s *Searcher) appendSchemaTitle(t *schema.Title) {
+	var title = &Title{Title: t, Slug: t.LCCN, allErrors: s.scanner.Finder.Errors}
 	title.decorateIssues(t.Issues)
 	title.decorateErrors()
 	s.titles = append(s.titles, title)
@@ -68,7 +68,7 @@ func (t *Title) decorateIssues(issueList []*schema.Issue) {
 	t.Issues = make([]*Issue, 0)
 	t.IssueLookup = make(map[string]*Issue)
 	for _, i := range issueList {
-		var _, isInProcess = sftpSearcher.inProcessIssues.Load(i.Key())
+		var _, isInProcess = searcher.inProcessIssues.Load(i.Key())
 		if !isInProcess {
 			t.appendSchemaIssue(i)
 		}
@@ -76,7 +76,7 @@ func (t *Title) decorateIssues(issueList []*schema.Issue) {
 }
 
 func (t *Title) appendSchemaIssue(i *schema.Issue) *Issue {
-	var issue = &Issue{Issue: i, Slug: i.DateString(), Title: t}
+	var issue = &Issue{Issue: i, Slug: i.DateEdition(), Title: t}
 	issue.decorateFiles(i.Files)
 	issue.decorateErrors()
 	issue.decorateExternalErrors()
@@ -88,10 +88,7 @@ func (t *Title) appendSchemaIssue(i *schema.Issue) *Issue {
 
 func (t *Title) decorateErrors() {
 	t.Errors = make(Errors, 0)
-	for _, e := range t.allErrors {
-		if e.Title != t.Title {
-			continue
-		}
+	for _, e := range t.allErrors.TitleErrors[t.Title] {
 		if e.Issue == nil && e.File == nil {
 			t.Errors = append(t.Errors, safeError(e.Error.Error()))
 			t.TitleErrors++
@@ -124,19 +121,19 @@ func (t *Title) Link() template.HTML {
 // Issue wraps a schema.Issue for web presentation
 type Issue struct {
 	*schema.Issue
-	Slug        string          // Short, URL-friendly identifier for an issue
-	Title       *Title          // Title to which this issue belongs
-	QueueInfo   template.HTML   // Informational message from the queue process, if any
-	Errors      Errors          // List of errors automatically identified for this issue
-	ChildErrors int             // Count of child errors for use in the templates
-	PDFs        []*PDF          // List of "PDFs" - which are actually any associated files in the sftp issue's dir
-	PDFLookup   map[string]*PDF // Lookup for finding a PDF by its filename / slug
-	Modified    time.Time       // When this issue's most recent file was modified
+	Slug        string           // Short, URL-friendly identifier for an issue
+	Title       *Title           // Title to which this issue belongs
+	QueueInfo   template.HTML    // Informational message from the queue process, if any
+	Errors      Errors           // List of errors automatically identified for this issue
+	ChildErrors int              // Count of child errors for use in the templates
+	Files       []*File          // List of files
+	FileLookup  map[string]*File // Lookup for finding a File by its filename / slug
+	Modified    time.Time        // When this issue's most recent file was modified
 }
 
 func (i *Issue) decorateFiles(fileList []*schema.File) {
-	i.PDFs = make([]*PDF, 0)
-	i.PDFLookup = make(map[string]*PDF)
+	i.Files = make([]*File, 0)
+	i.FileLookup = make(map[string]*File)
 	for _, f := range fileList {
 		i.appendSchemaFile(f)
 		if i.Modified.Before(f.ModTime) {
@@ -147,19 +144,15 @@ func (i *Issue) decorateFiles(fileList []*schema.File) {
 
 func (i *Issue) appendSchemaFile(f *schema.File) {
 	var slug = filepath.Base(f.Location)
-	var pdf = &PDF{File: f, Slug: slug, Issue: i}
+	var pdf = &File{File: f, Slug: slug, Issue: i}
 	pdf.decorateErrors()
-	i.PDFs = append(i.PDFs, pdf)
-	i.PDFLookup[pdf.Slug] = pdf
+	i.Files = append(i.Files, pdf)
+	i.FileLookup[pdf.Slug] = pdf
 }
 
 func (i *Issue) decorateErrors() {
 	i.Errors = make(Errors, 0)
-	for _, e := range i.Title.allErrors {
-		if e.Issue != i.Issue {
-			continue
-		}
-
+	for _, e := range i.Title.allErrors.IssueErrors[i.Issue] {
 		if e.File == nil {
 			i.Errors = append(i.Errors, safeError(e.Error.Error()))
 		} else {
@@ -185,7 +178,7 @@ func (i *Issue) decorateDupeErrors() {
 		return
 	}
 
-	var watcherIssues = watcher.LookupIssues(key)
+	var watcherIssues = watcher.Scanner.LookupIssues(key)
 	for _, wi := range watcherIssues {
 		if wi.WorkflowStep == i.WorkflowStep {
 			continue
@@ -194,7 +187,7 @@ func (i *Issue) decorateDupeErrors() {
 		var errstr = fmt.Sprintf("likely duplicate of %s", wi.WorkflowIdentification())
 		if wi.WorkflowStep == schema.WSInProduction {
 			errstr = fmt.Sprintf(`likely duplicate of a live issue: <a href="%s">%s, %s</a>`,
-				wi.Location[:len(wi.Location)-5], wi.Title.Name, wi.DateStringReadable())
+				wi.Location[:len(wi.Location)-5], wi.Title.Name, wi.RawDate)
 		}
 		i.Errors = append(i.Errors, template.HTML(errstr))
 	}
@@ -271,7 +264,7 @@ func (i *Issue) IsDangerouslyNew() bool {
 // Link returns a link for this title
 func (i *Issue) Link() template.HTML {
 	var path = IssuePath(i.Title.Slug, i.Slug)
-	return template.HTML(fmt.Sprintf(`<a href="%s">%s</a>`, path, i.Date.Format("2006-01-02")))
+	return template.HTML(fmt.Sprintf(`<a href="%s">%s</a>`, path, i.RawDate))
 }
 
 // WorkflowPath returns the path to perform a workflow action against this issue
@@ -279,17 +272,17 @@ func (i *Issue) WorkflowPath(action string) string {
 	return IssueWorkflowPath(i.Title.Slug, i.Slug, action)
 }
 
-// PDF wraps a schema.File for web presentation
-type PDF struct {
+// File wraps a schema.File for web presentation
+type File struct {
 	*schema.File
 	Issue  *Issue
 	Slug   string
 	Errors Errors
 }
 
-func (p *PDF) decorateErrors() {
+func (p *File) decorateErrors() {
 	p.Errors = make(Errors, 0)
-	for _, e := range p.Issue.Title.allErrors {
+	for _, e := range p.Issue.Title.allErrors.IssueErrors[p.Issue.Issue] {
 		if e.File != p.File {
 			continue
 		}
@@ -299,7 +292,7 @@ func (p *PDF) decorateErrors() {
 }
 
 // Link returns a link for this title
-func (p *PDF) Link() template.HTML {
-	var path = PDFPath(p.Issue.Title.Slug, p.Issue.Slug, p.Slug)
+func (p *File) Link() template.HTML {
+	var path = FilePath(p.Issue.Title.Slug, p.Issue.Slug, p.Slug)
 	return template.HTML(fmt.Sprintf(`<a href="%s">%s</a>`, path, p.Slug))
 }

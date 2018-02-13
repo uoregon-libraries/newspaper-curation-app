@@ -32,9 +32,8 @@
                 <li><a href="{{ParentURL "title-list.php"}}">Titles</a></li>
               {{end}}
 
-              {{if .User.PermittedTo ViewSFTPReport}}
-              <!-- This URL needs to match the router path in the server's main.go -->
-              <li><a href="{{.Webroot}}/sftp">SFTP</a></li>
+              {{if .User.PermittedTo ViewUploadedIssues}}
+              <li><a href="{{.Webroot}}/uploadedissues">Uploaded Issues</a></li>
               {{end}}
 
               {{if .User.PermittedTo ManageMOCs}}

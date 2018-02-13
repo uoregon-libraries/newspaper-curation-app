@@ -53,6 +53,7 @@ func main() {
 		usageFail("You must specify a valid path to test")
 	}
 
+	refreshFakemount(testDir)
 	moveSFTPs(testDir)
 	moveScans(testDir)
 }
@@ -93,6 +94,20 @@ func getDirParts(dirName string) (*issue, error) {
 	i.date = dateString[:4] + "-" + dateString[4:6] + "-" + dateString[6:]
 
 	return i, nil
+}
+
+func refreshFakemount(testDir string) {
+	for _, dir := range []string{"backup/master", "outgoing", "page-review", "scans", "sftp", "workflow"} {
+		var fullPath = filepath.Join(testDir, "fakemount", dir)
+		if err := os.RemoveAll(fullPath); err != nil {
+			logger.Criticalf("Unable to delete %q: %s", fullPath, err)
+			os.Exit(255)
+		}
+		if err := os.MkdirAll(fullPath, 0775); err != nil {
+			logger.Criticalf("Unable to create %q: %s", fullPath, err)
+			os.Exit(255)
+		}
+	}
 }
 
 func moveSFTPs(testDir string) {

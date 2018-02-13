@@ -15,7 +15,6 @@ import (
 	"sort"
 	"strconv"
 	"strings"
-	"time"
 
 	"github.com/uoregon-libraries/gopkg/fileutil"
 )
@@ -196,11 +195,12 @@ func (list TitleList) Unique() TitleList {
 
 // Issue is an extremely basic encapsulation of an issue's high-level data
 type Issue struct {
-	Title   *Title
-	Date    time.Time
-	Edition int
-	Batch   *Batch
-	Files   []*File
+	MARCOrgCode string
+	Title       *Title
+	RawDate     string // This is the date as seen on the filesystem when the issue was uploaded
+	Edition     int
+	Batch       *Batch
+	Files       []*File
 
 	// Location is where this issue can be found, either a URL or filesystem path
 	Location string
@@ -208,20 +208,21 @@ type Issue struct {
 	WorkflowStep WorkflowStep
 }
 
-// DateString returns the date in a consistent format for use in issue key TSV output
-func (i *Issue) DateString() string {
-	return i.Date.Format("20060102")
+// condensedDate returns the date in a consistent format for use in issue key TSV output
+func (i *Issue) condensedDate() string {
+	return strings.Replace(i.RawDate, "-", "", -1)
 }
 
-// DateStringReadable is how we format dates for folder names and metadata
-// entry: YYYY-MM-DD
-func (i *Issue) DateStringReadable() string {
-	return i.Date.Format("2006-01-02")
+// DateEdition returns the combination of condensed date (no hyphens) and
+// two-digit edition number for use in issue keys and other places we need the
+// "local" unique string
+func (i *Issue) DateEdition() string {
+	return fmt.Sprintf("%s%02d", i.condensedDate(), i.Edition)
 }
 
 // Key returns the unique string that represents this issue
 func (i *Issue) Key() string {
-	return fmt.Sprintf("%s/%s%02d", i.Title.LCCN, i.DateString(), i.Edition)
+	return fmt.Sprintf("%s/%s", i.Title.LCCN, i.DateEdition())
 }
 
 // TSV gives us something which can be used to uniquely identify all aspects of
@@ -236,7 +237,7 @@ func (i *Issue) TSV() string {
 	for _, file := range i.Files {
 		fileNames = append(fileNames, file.Name)
 	}
-	return fmt.Sprintf("%s\t%s\t%s\t%s%02d\t%s\t%s", bString, tString, i.Location, i.DateString(),
+	return fmt.Sprintf("%s\t%s\t%s\t%s%02d\t%s\t%s", bString, tString, i.Location, i.condensedDate(),
 		i.Edition, i.WorkflowStep, strings.Join(fileNames, ","))
 }
 

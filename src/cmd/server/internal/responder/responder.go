@@ -93,3 +93,14 @@ func (r *Responder) Audit(action, msg string) {
 		logger.Criticalf("Unable to write AuditLog{%s (%s), %q, %s}: %s", u.Login, u.IP, action, msg, err)
 	}
 }
+
+// Error sets up the Alert var and sends the appropriate header to the browser.
+// If msg is empty, the status text from the http package is used.
+func (r *Responder) Error(status int, msg string) {
+	r.Writer.WriteHeader(status)
+	if msg == "" {
+		msg = http.StatusText(status)
+	}
+	r.Vars.Alert = msg
+	r.Render(Empty)
+}

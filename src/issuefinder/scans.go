@@ -42,20 +42,19 @@ func (s *Searcher) FindScannedIssues() error {
 	}
 
 	// Next, find titles
-	var titlePaths []string
 	for _, mocPath := range validMOCPaths {
 		var paths, err = fileutil.FindDirectories(mocPath)
 		if err != nil {
 			return err
 		}
-		titlePaths = append(titlePaths, paths...)
-	}
 
-	// Finally, find the issues
-	for _, titlePath := range titlePaths {
-		err = s.findScannedIssuesForTitlePath(titlePath)
-		if err != nil {
-			return err
+		// Find the issues within this title path
+		var moc = filepath.Base(mocPath)
+		for _, titlePath := range paths {
+			err = s.findScannedIssuesForTitlePath(moc, titlePath)
+			if err != nil {
+				return err
+			}
 		}
 	}
 
@@ -70,7 +69,7 @@ func (s *Searcher) FindScannedIssues() error {
 // - The issue has no TIFFs
 // - The PDFs and TIFFs don't match up (same number of PDFs as TIFFs and same filenames)
 // - Any PDF has an image with an unexpected DPI (using our gopkg/pdf lib)
-func (s *Searcher) findScannedIssuesForTitlePath(titlePath string) error {
+func (s *Searcher) findScannedIssuesForTitlePath(moc, titlePath string) error {
 	var title = s.findOrCreateFilesystemTitle(titlePath)
 
 	var issuePaths, err = fileutil.FindDirectories(titlePath)
@@ -102,23 +101,27 @@ func (s *Searcher) findScannedIssuesForTitlePath(titlePath string) error {
 			base = base[:10]
 		}
 
-		var dt, err = time.Parse("2006-01-02", base)
-		// Invalid issue directory names can't have an issue, so we can continue
-		// without fixing up the errors
+		var _, err = time.Parse("2006-01-02", base)
+		// Invalid issue directory names will have an invalid date, but still need
+		// to be visible in the issue queue
 		if err != nil {
-			addErr(fmt.Errorf("invalid issue directory name: must be formatted YYYY-MM-DD or YYYY-MM-DD_EE"))
-			continue
+			addErr(fmt.Errorf("issue folder date format, %q, is invalid", filepath.Base(issuePath)))
 		}
 
 		// Build the issue now that we know we can put together the minimal metadata
-		var issue = title.AddIssue(&schema.Issue{Date: dt, Edition: edition, Location: issuePath, WorkflowStep: schema.WSScan})
+		var issue = title.AddIssue(&schema.Issue{
+			RawDate:      base,
+			Edition:      edition,
+			Location:     issuePath,
+			WorkflowStep: schema.WSScan,
+			MARCOrgCode:  moc,
+		})
 		issue.FindFiles()
 
 		// Make sure PDF and TIFF pairs match up properly
 		err = s.verifyScanIssuePDFTIFFPairs(issuePath)
 		if err != nil {
 			addErr(err)
-			continue
 		}
 
 		for _, e := range errors {

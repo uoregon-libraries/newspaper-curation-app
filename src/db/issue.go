@@ -2,7 +2,6 @@ package db
 
 import (
 	"fmt"
-	"path/filepath"
 	"schema"
 	"strconv"
 	"strings"
@@ -117,68 +116,6 @@ func FindIssueByKey(key string) (*Issue, error) {
 		return nil, nil
 	}
 	return list[0], nil
-}
-
-// NewIssueFromScanDir attempts to take a path and create a DB Issue from it,
-// with the assumption that it's from an in-house scan.  This means the
-// directory will contain the issue date/edition as the last component, an LCCN
-// directory at second-to-last, and a MARC org code just before that.  It is
-// assumed that the MOC and LCCN have already been validated.  The issue
-// directory name itself will be parsed for validity and an error is returned
-// if any part of it is invalid.  If the database already has an issue with the
-// same issue key but different data, an error will be returned.
-func NewIssueFromScanDir(path string) (*Issue, error) {
-	var parts = strings.Split(path, string(filepath.Separator))
-	var last = len(parts) - 1
-	var moc, lccn, dted = parts[last-2], parts[last-1], parts[last]
-
-	// Make sure the date (and edition, if present) are valid
-	var edition = 1
-
-	var dt = dted
-	if len(dted) == 13 && dted[10] == '_' {
-		var edstr string
-		dt, edstr = dted[:10], dted[11:]
-		edition, _ = strconv.Atoi(edstr)
-		if edition == 0 {
-			return nil, fmt.Errorf("invalid edition value")
-		}
-	}
-
-	var t, err = time.Parse("2006-01-02", dt)
-	if err != nil {
-		return nil, fmt.Errorf("invalid date directory %q: %s", dted, err)
-	}
-	var tstr = t.Format("2006-01-02")
-	if tstr != dt {
-		return nil, fmt.Errorf("invalid date directory %q: time portion parses to %s", dted, tstr)
-	}
-
-	var i = NewIssue(moc, lccn, dt, edition)
-	i.Location = path
-	i.IsFromScanner = true
-
-	// Check for a dupe with the side-effect of extra validation
-	var si *schema.Issue
-	si, err = i.SchemaIssue()
-	if err != nil {
-		return nil, err
-	}
-	var di *Issue
-	di, err = FindIssueByKey(si.Key())
-	if err != nil {
-		return nil, fmt.Errorf("unable to check for dupe of %q: %s", si.Key(), err)
-	}
-
-	if di != nil {
-		if i.MARCOrgCode != di.MARCOrgCode || i.Location != di.Location || i.IsFromScanner != di.IsFromScanner {
-			return nil, fmt.Errorf("existing issue in database (id %d) doesn't match new issue", di.ID)
-		}
-		return di, nil
-	}
-
-	err = i.Save()
-	return i, err
 }
 
 // FindInProcessIssues returns all issues which have been entered in the
@@ -318,7 +255,8 @@ func deserializeIssues(list []*Issue) {
 // things like issue keys.  NOTE: this will hit the database if titles haven't
 // already been loaded!
 func (i *Issue) SchemaIssue() (*schema.Issue, error) {
-	var dt, err = time.Parse("2006-01-02", i.Date)
+	// An issue shouldn't be able to get into the database if it has an invalid date
+	var _, err = time.Parse("2006-01-02", i.Date)
 	if err != nil {
 		return nil, fmt.Errorf("invalid time format (%s) in database issue", i.Date)
 	}
@@ -329,10 +267,11 @@ func (i *Issue) SchemaIssue() (*schema.Issue, error) {
 		return nil, fmt.Errorf("missing title for issue ID %d", i.ID)
 	}
 	var si = &schema.Issue{
-		Date:         dt,
+		RawDate:      i.Date,
 		Edition:      i.Edition,
 		Title:        t,
 		Location:     i.Location,
+		MARCOrgCode:  i.MARCOrgCode,
 		WorkflowStep: schema.WorkflowStep(i.WorkflowStep),
 	}
 	return si, nil

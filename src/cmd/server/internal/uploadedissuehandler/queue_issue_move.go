@@ -1,13 +1,14 @@
-package sftphandler
+package uploadedissuehandler
 
 import (
 	"db"
 	"jobs"
+	"schema"
 
 	"github.com/uoregon-libraries/gopkg/logger"
 )
 
-func queueSFTPIssueMove(i *Issue) (ok bool, status string) {
+func queueIssueMove(i *Issue) (ok bool, status string) {
 	// Find a DB issue or create one
 	var dbi, err = db.FindIssueByKey(i.Key())
 	if err != nil {
@@ -62,19 +63,38 @@ func queueSFTPIssueMove(i *Issue) (ok bool, status string) {
 	}
 
 	// All's well - queue up the job
-	err = jobs.QueueSFTPIssueMove(dbi, i.Location)
+	switch i.WorkflowStep {
+	case schema.WSSFTP:
+		err = jobs.QueueSFTPIssueMove(dbi, i.Location)
+	case schema.WSScan:
+		err = jobs.QueueScanIssueMove(dbi, i.Location)
+	default:
+		logger.Criticalf("Invalid issue %q: workflow step %q isn't allowed for issue move jobs", i.Key(), i.WorkflowStep)
+		return false, "Error: the requested issue cannot be queued.  Contact the system administrator for more information."
+	}
 	if err != nil {
-		logger.Criticalf("Unable to queue issue %q for sftp move: %s", i.Key(), err)
+		logger.Criticalf("Unable to queue issue %q for move: %s", i.Key(), err)
 		return false, "Error trying to queue issue.  Try again or contact the system administrator."
 	}
 
-	sftpSearcher.ForceReload()
+	searcher.ForceReload()
 
 	return true, "Issue queued successfully"
 }
 
 func createDatabaseIssue(i *Issue) (*db.Issue, error) {
-	var dbi = db.NewIssue(conf.PDFBatchMARCOrgCode, i.Title.LCCN, i.DateStringReadable(), i.Edition)
+	var dbi = db.NewIssue(i.MARCOrgCode, i.Title.LCCN, i.RawDate, i.Edition)
+
+	// SFTP issues (for now) don't get their MOC set, so we have to do that here
+	if dbi.MARCOrgCode == "" && i.WorkflowStep == schema.WSSFTP {
+		dbi.MARCOrgCode = conf.PDFBatchMARCOrgCode
+	}
+
+	// Scanned issues need to be marked as such
+	if i.WorkflowStep == schema.WSScan {
+		dbi.IsFromScanner = true
+	}
+
 	dbi.Location = i.Location
 	return dbi, dbi.Save()
 }

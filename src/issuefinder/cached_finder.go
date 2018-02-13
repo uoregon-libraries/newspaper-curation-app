@@ -4,8 +4,6 @@
 package issuefinder
 
 import (
-	"time"
-
 	"github.com/uoregon-libraries/gopkg/fileutil"
 )
 
@@ -48,7 +46,7 @@ type cachedTitle struct {
 type cachedIssue struct {
 	ID           cacheID
 	TitleID      cacheID
-	Date         time.Time
+	RawDate      string
 	Edition      int
 	BatchID      cacheID
 	Location     string

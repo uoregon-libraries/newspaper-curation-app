@@ -18,12 +18,12 @@ import (
 
 func main() {
 	var conf = cli.Simple().GetConf()
-	var cacheFile = issuewatcher.New(conf).CacheFile()
+	var scanner = issuewatcher.NewScanner(conf)
+	var cacheFile = scanner.CacheFile()
 	if !fileutil.IsFile(cacheFile) {
 		logger.Fatalf("cache-file %#v is not a valid file", cacheFile)
 	}
-	var watcher = issuewatcher.New(conf)
-	var err = watcher.Deserialize()
+	var err = scanner.Deserialize()
 	if err != nil {
 		logger.Fatalf("Unable to deserialize the cache file %#v: %s", cacheFile, err)
 	}
@@ -31,7 +31,7 @@ func main() {
 	// Store the prioritized list of issues seen for a given issue key
 	var issues = make(map[string][]*schema.Issue)
 	var dupeKeys []string
-	var finder = watcher.IssueFinder()
+	var finder = scanner.Finder
 	for _, issue := range finder.Issues {
 		var k = issue.Key()
 		// On the first dupe, we record it in the dupeKeys list
