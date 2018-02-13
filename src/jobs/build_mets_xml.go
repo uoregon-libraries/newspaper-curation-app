@@ -4,7 +4,6 @@ import (
 	"config"
 	"db"
 	"derivatives/mets"
-	"fmt"
 	"path/filepath"
 	"schema"
 	"time"
@@ -27,8 +26,7 @@ func (job *BuildMETS) Process(c *config.Config) bool {
 
 	// Set up variables
 	job.templatePath = c.XMLTemplatePath
-	var dateEdStr = fmt.Sprintf("%s%02d", job.Issue.DateString(), job.Issue.Edition)
-	job.outputXMLPath = filepath.Join(job.Issue.Location, dateEdStr+".xml")
+	job.outputXMLPath = filepath.Join(job.Issue.Location, job.Issue.DateEdition()+".xml")
 	var err error
 	job.Title, err = db.FindTitleByLCCN(job.DBIssue.LCCN)
 	if err != nil {

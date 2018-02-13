@@ -255,7 +255,8 @@ func deserializeIssues(list []*Issue) {
 // things like issue keys.  NOTE: this will hit the database if titles haven't
 // already been loaded!
 func (i *Issue) SchemaIssue() (*schema.Issue, error) {
-	var dt, err = time.Parse("2006-01-02", i.Date)
+	// An issue shouldn't be able to get into the database if it has an invalid date
+	var _, err = time.Parse("2006-01-02", i.Date)
 	if err != nil {
 		return nil, fmt.Errorf("invalid time format (%s) in database issue", i.Date)
 	}
@@ -266,7 +267,7 @@ func (i *Issue) SchemaIssue() (*schema.Issue, error) {
 		return nil, fmt.Errorf("missing title for issue ID %d", i.ID)
 	}
 	var si = &schema.Issue{
-		Date:         dt,
+		RawDate:      i.Date,
 		Edition:      i.Edition,
 		Title:        t,
 		Location:     i.Location,

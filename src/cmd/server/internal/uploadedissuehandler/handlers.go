@@ -77,7 +77,7 @@ func IssueHandler(w http.ResponseWriter, req *http.Request) {
 		r.Render(nil)
 		return
 	}
-	r.Vars.Title = fmt.Sprintf("%s, issue %s", r.title.Name, r.issue.Date.Format("2006-01-02"))
+	r.Vars.Title = fmt.Sprintf("%s, issue %s", r.title.Name, r.issue.RawDate)
 	r.Render(IssueTmpl)
 }
 

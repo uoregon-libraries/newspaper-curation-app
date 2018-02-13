@@ -72,14 +72,14 @@ func (r *resp) loadIssue() {
 	}
 
 	// If there's no "issue" var, there's also nothing to do here
-	var issueDate, ok = r.vars["issue"]
+	var dateEdition, ok = r.vars["issue"]
 	if !ok {
 		return
 	}
 
-	r.issue = r.title.IssueLookup[issueDate]
+	r.issue = r.title.IssueLookup[dateEdition]
 	if r.issue == nil {
-		var msg = fmt.Sprintf("Unable to find issue %#v for title %#v", issueDate, r.title.Name)
+		var msg = fmt.Sprintf("Unable to find issue %#v for title %#v", dateEdition, r.title.Name)
 		r.err = &respError{http.StatusNotFound, msg}
 	}
 }

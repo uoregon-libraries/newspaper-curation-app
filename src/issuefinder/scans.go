@@ -101,7 +101,7 @@ func (s *Searcher) findScannedIssuesForTitlePath(moc, titlePath string) error {
 			base = base[:10]
 		}
 
-		var dt, err = time.Parse("2006-01-02", base)
+		var _, err = time.Parse("2006-01-02", base)
 		// Invalid issue directory names will have an invalid date, but still need
 		// to be visible in the issue queue
 		if err != nil {
@@ -110,7 +110,7 @@ func (s *Searcher) findScannedIssuesForTitlePath(moc, titlePath string) error {
 
 		// Build the issue now that we know we can put together the minimal metadata
 		var issue = title.AddIssue(&schema.Issue{
-			Date:         dt,
+			RawDate:      base,
 			Edition:      edition,
 			Location:     issuePath,
 			WorkflowStep: schema.WSScan,

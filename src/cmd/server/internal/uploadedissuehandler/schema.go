@@ -76,7 +76,7 @@ func (t *Title) decorateIssues(issueList []*schema.Issue) {
 }
 
 func (t *Title) appendSchemaIssue(i *schema.Issue) *Issue {
-	var issue = &Issue{Issue: i, Slug: i.DateString(), Title: t}
+	var issue = &Issue{Issue: i, Slug: i.DateEdition(), Title: t}
 	issue.decorateFiles(i.Files)
 	issue.decorateErrors()
 	issue.decorateExternalErrors()
@@ -187,7 +187,7 @@ func (i *Issue) decorateDupeErrors() {
 		var errstr = fmt.Sprintf("likely duplicate of %s", wi.WorkflowIdentification())
 		if wi.WorkflowStep == schema.WSInProduction {
 			errstr = fmt.Sprintf(`likely duplicate of a live issue: <a href="%s">%s, %s</a>`,
-				wi.Location[:len(wi.Location)-5], wi.Title.Name, wi.DateStringReadable())
+				wi.Location[:len(wi.Location)-5], wi.Title.Name, wi.RawDate)
 		}
 		i.Errors = append(i.Errors, template.HTML(errstr))
 	}
@@ -264,7 +264,7 @@ func (i *Issue) IsDangerouslyNew() bool {
 // Link returns a link for this title
 func (i *Issue) Link() template.HTML {
 	var path = IssuePath(i.Title.Slug, i.Slug)
-	return template.HTML(fmt.Sprintf(`<a href="%s">%s</a>`, path, i.Date.Format("2006-01-02")))
+	return template.HTML(fmt.Sprintf(`<a href="%s">%s</a>`, path, i.RawDate))
 }
 
 // WorkflowPath returns the path to perform a workflow action against this issue

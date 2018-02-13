@@ -58,9 +58,9 @@ func (i *Issue) LCCN() string {
 	return i.si.Title.LCCN
 }
 
-// Date returns the human-friendly date string
+// Date returns the issue's raw date string
 func (i *Issue) Date() string {
-	return i.si.DateStringReadable()
+	return i.si.RawDate
 }
 
 // JP2Files aggregates all the JP2s that exist in this issue's directory

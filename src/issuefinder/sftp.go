@@ -57,7 +57,7 @@ func (s *Searcher) findSFTPIssuesForTitlePath(titlePath, orgCode string) error {
 			base = base[:len(base)-6]
 		}
 
-		var dt, err = time.Parse("2006-01-02", base)
+		var _, err = time.Parse("2006-01-02", base)
 		// Invalid issue directory names will have an invalid date, but still need
 		// to be visible in the issue queue
 		if err != nil {
@@ -67,7 +67,7 @@ func (s *Searcher) findSFTPIssuesForTitlePath(titlePath, orgCode string) error {
 		// Build the issue now that we know we can put together the minimal metadata
 		var issue = title.AddIssue(&schema.Issue{
 			MARCOrgCode:  orgCode,
-			Date:         dt,
+			RawDate:      base,
 			Edition:      1,
 			Location:     issuePath,
 			WorkflowStep: schema.WSSFTP,
