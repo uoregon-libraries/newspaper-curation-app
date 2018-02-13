@@ -12,13 +12,14 @@ import (
 // standard locations.  By default, a Scan() call won't do anything - one or
 // more of the EnableXXX methods must first be called to set up paths.
 type Scanner struct {
-	Finder      *issuefinder.Finder
-	Webroot     string
-	Tempdir     string
-	ScanUpload  string
-	PDFUpload   string
-	Lookup      *issuesearch.Lookup
-	CanonIssues map[string]*schema.Issue
+	Finder              *issuefinder.Finder
+	Webroot             string
+	Tempdir             string
+	ScanUpload          string
+	PDFUpload           string
+	PDFBatchMARCOrgCode string
+	Lookup              *issuesearch.Lookup
+	CanonIssues         map[string]*schema.Issue
 
 	skipweb  bool
 	skipsftp bool
@@ -41,6 +42,7 @@ func NewScanner(conf *config.Config) *Scanner {
 	s.Tempdir = conf.IssueCachePath
 	s.ScanUpload = conf.MasterScanUploadPath
 	s.PDFUpload = conf.MasterPDFUploadPath
+	s.PDFBatchMARCOrgCode = conf.PDFBatchMARCOrgCode
 
 	return s
 }
@@ -159,7 +161,7 @@ func (s *Scanner) Scan() error {
 	if !s.skipsftp {
 		// SFTP and scanned issues get errors if they're a dupe of anything we've
 		// labeled canonical to this point
-		srch, err = f.FindSFTPIssues(s.PDFUpload)
+		srch, err = f.FindSFTPIssues(s.PDFUpload, s.PDFBatchMARCOrgCode)
 		if err != nil {
 			return fmt.Errorf("unable to cache sftp issues: %s", err)
 		}

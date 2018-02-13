@@ -11,7 +11,7 @@ import (
 )
 
 // FindSFTPIssues aggregates all the uploaded born-digital PDFs
-func (s *Searcher) FindSFTPIssues() error {
+func (s *Searcher) FindSFTPIssues(orgCode string) error {
 	s.init()
 
 	// First find all titles
@@ -22,7 +22,7 @@ func (s *Searcher) FindSFTPIssues() error {
 
 	// Find all issues next
 	for _, titlePath := range titlePaths {
-		err = s.findSFTPIssuesForTitlePath(titlePath)
+		err = s.findSFTPIssuesForTitlePath(titlePath, orgCode)
 		if err != nil {
 			return err
 		}
@@ -34,7 +34,7 @@ func (s *Searcher) FindSFTPIssues() error {
 // findSFTPIssuesForTitle finds all issues within the given title's path by
 // looking for YYYY-MM-DD formatted directories.  The last directory element in
 // the path must be an SFTP title name or an LCCN.
-func (s *Searcher) findSFTPIssuesForTitlePath(titlePath string) error {
+func (s *Searcher) findSFTPIssuesForTitlePath(titlePath, orgCode string) error {
 	var title = s.findOrCreateFilesystemTitle(titlePath)
 
 	var issuePaths, err = fileutil.FindDirectories(titlePath)
@@ -67,6 +67,7 @@ func (s *Searcher) findSFTPIssuesForTitlePath(titlePath string) error {
 
 		// Build the issue now that we know we can put together the minimal metadata
 		var issue = title.AddIssue(&schema.Issue{
+			MARCOrgCode:  orgCode,
 			Date:         dt,
 			Edition:      1,
 			Location:     issuePath,
