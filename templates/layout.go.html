@@ -36,12 +36,12 @@
               <li><a href="{{.Webroot}}/uploadedissues">Uploaded Issues</a></li>
               {{end}}
 
-              {{if .User.PermittedTo ManageMOCs}}
-                <li><a href="{{ParentURL "mocs-list.php"}}">MARC Org Codes</a></li>
-              {{end}}
-
               {{if .User.PermittedTo ViewMetadataWorkflow}}
                 <li><a href="{{.Webroot}}/workflow">Workflow</a></li>
+              {{end}}
+
+              {{if .User.PermittedTo ManageMOCs}}
+                <li><a href="{{ParentURL "mocs-list.php"}}">MARC Org Codes</a></li>
               {{end}}
 
               {{if .User.PermittedTo ListUsers}}
