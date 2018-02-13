@@ -92,7 +92,7 @@ func IssueWorkflowHandler(w http.ResponseWriter, req *http.Request) {
 
 	switch r.vars["action"] {
 	case "queue":
-		var ok, msg = queueSFTPIssueMove(r.issue)
+		var ok, msg = queueIssueMove(r.issue)
 		var cname = "Info"
 		if !ok {
 			cname = "Alert"

@@ -3,11 +3,12 @@ package uploadedissuehandler
 import (
 	"db"
 	"jobs"
+	"schema"
 
 	"github.com/uoregon-libraries/gopkg/logger"
 )
 
-func queueSFTPIssueMove(i *Issue) (ok bool, status string) {
+func queueIssueMove(i *Issue) (ok bool, status string) {
 	// Find a DB issue or create one
 	var dbi, err = db.FindIssueByKey(i.Key())
 	if err != nil {
@@ -62,9 +63,17 @@ func queueSFTPIssueMove(i *Issue) (ok bool, status string) {
 	}
 
 	// All's well - queue up the job
-	err = jobs.QueueSFTPIssueMove(dbi, i.Location)
+	switch i.WorkflowStep {
+	case schema.WSSFTP:
+		err = jobs.QueueSFTPIssueMove(dbi, i.Location)
+	case schema.WSScan:
+		err = jobs.QueueScanIssueMove(dbi, i.Location)
+	default:
+		logger.Criticalf("Invalid issue %q: workflow step %q isn't allowed for issue move jobs", i.Key(), i.WorkflowStep)
+		return false, "Error: the requested issue cannot be queued.  Contact the system administrator for more information."
+	}
 	if err != nil {
-		logger.Criticalf("Unable to queue issue %q for sftp move: %s", i.Key(), err)
+		logger.Criticalf("Unable to queue issue %q for move: %s", i.Key(), err)
 		return false, "Error trying to queue issue.  Try again or contact the system administrator."
 	}
 
