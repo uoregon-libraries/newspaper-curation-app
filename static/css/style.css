@@ -2,7 +2,7 @@ body {
   padding-bottom: 70px;
 }
 
-.title-with-errors {
+.issue-with-errors, .title-with-errors {
   background: #FEE;
 }
 .title-with-errors .title-link {
