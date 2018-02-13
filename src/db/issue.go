@@ -333,6 +333,7 @@ func (i *Issue) SchemaIssue() (*schema.Issue, error) {
 		Edition:      i.Edition,
 		Title:        t,
 		Location:     i.Location,
+		MARCOrgCode:  i.MARCOrgCode,
 		WorkflowStep: schema.WorkflowStep(i.WorkflowStep),
 	}
 	return si, nil
