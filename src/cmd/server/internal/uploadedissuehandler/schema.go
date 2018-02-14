@@ -280,19 +280,19 @@ type File struct {
 	Errors Errors
 }
 
-func (p *File) decorateErrors() {
-	p.Errors = make(Errors, 0)
-	for _, e := range p.Issue.Title.allErrors.IssueErrors[p.Issue.Issue] {
-		if e.File != p.File {
+func (f *File) decorateErrors() {
+	f.Errors = make(Errors, 0)
+	for _, e := range f.Issue.Title.allErrors.IssueErrors[f.Issue.Issue] {
+		if e.File != f.File {
 			continue
 		}
 
-		p.Errors = append(p.Errors, safeError(e.Error.Error()))
+		f.Errors = append(f.Errors, safeError(e.Error.Error()))
 	}
 }
 
 // Link returns a link for this title
-func (p *File) Link() template.HTML {
-	var path = FilePath(p.Issue.Title.Slug, p.Issue.Slug, p.Slug)
-	return template.HTML(fmt.Sprintf(`<a href="%s">%s</a>`, path, p.Slug))
+func (f *File) Link() template.HTML {
+	var path = FilePath(f.Issue.Title.Slug, f.Issue.Slug, f.Slug)
+	return template.HTML(fmt.Sprintf(`<a href="%s">%s</a>`, path, f.Slug))
 }
