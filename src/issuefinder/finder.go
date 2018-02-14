@@ -90,7 +90,6 @@ func (s *Searcher) init() {
 
 func (f *Finder) storeSearcher(s *Searcher) {
 	f.Searchers[s.Namespace] = s
-	f.aggregate(s)
 }
 
 // createAndProcessSearcher instantiates a new Searcher, passes it to
@@ -99,6 +98,8 @@ func (f *Finder) createAndProcessSearcher(ns Namespace, loc string, processor fu
 	var s = NewSearcher(ns, loc)
 	var err = processor(s)
 	f.storeSearcher(s)
+
+	f.aggregate(s)
 	return s, err
 }
 
@@ -145,5 +146,20 @@ func (f *Finder) aggregate(s *Searcher) {
 	}
 	for _, e := range s.Errors.Errors {
 		f.Errors.Append(e)
+	}
+}
+
+// Aggregate puts all searchers' data into the Finder for global use.  This
+// must be called if batches, issues, titles, or errors are added to a searcher
+// directly (rather than via FindXXX methods).
+func (f *Finder) Aggregate() {
+	f.Batches = nil
+	f.Titles = nil
+	f.Issues = nil
+	f.IssueNamespace = make(map[*schema.Issue]Namespace)
+	f.Errors = &ErrorList{}
+
+	for _, s := range f.Searchers {
+		f.aggregate(s)
 	}
 }

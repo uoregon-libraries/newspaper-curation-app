@@ -188,6 +188,8 @@ func (s *Scanner) Scan() error {
 		}
 	}
 
+	// Re-aggregate all data to get the new dupe errors we could now have
+	f.Aggregate()
 	f.Errors.Index()
 
 	// Create a new lookup using the new finder's data
