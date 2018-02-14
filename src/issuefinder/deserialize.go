@@ -31,14 +31,15 @@ func Deserialize(filename string) (*Finder, error) {
 func (cf cachedFinder) finder() *Finder {
 	var f = New()
 	for _, cSrch := range cf.Searchers {
-		var srch = cSrch.searcher()
+		var srch = cSrch.addSearcher()
 		f.storeSearcher(srch)
 	}
+	f.Aggregate()
 	return f
 }
 
 // searcher internally converts the cache-friendly data to a Searcher instance
-func (cs cachedSearcher) searcher() *Searcher {
+func (cs cachedSearcher) addSearcher() *Searcher {
 	var batchLookup = make(map[cacheID]*schema.Batch)
 	var titleLookup = make(map[cacheID]*schema.Title)
 	var issueLookup = make(map[cacheID]*schema.Issue)
