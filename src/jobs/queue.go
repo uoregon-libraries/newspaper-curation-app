@@ -11,20 +11,19 @@ import (
 // advanced job semantics: specifying that the job shouldn't run immediately,
 // should queue a specific job ID after completion, should set the WorkflowStep
 // to a custom value rather than whatever the job would normally do, etc.
-func PrepareIssueJobAdvanced(t JobType, issue *db.Issue, path string) *db.Job {
+func PrepareIssueJobAdvanced(t JobType, issue *db.Issue, path string, nextWS schema.WorkflowStep) *db.Job {
 	return &db.Job{
-		Type:     string(t),
-		ObjectID: issue.ID,
-		Location: path,
-		Status:   string(JobStatusPending),
-		RunAt:    time.Now(),
+		Type:             string(t),
+		ObjectID:         issue.ID,
+		Location:         path,
+		Status:           string(JobStatusPending),
+		NextWorkflowStep: string(nextWS),
+		RunAt:            time.Now(),
 	}
 }
 
 func queueIssueJob(t JobType, issue *db.Issue, path string, nextWS schema.WorkflowStep) error {
-	var j = PrepareIssueJobAdvanced(t, issue, path)
-	j.NextWorkflowStep = string(nextWS)
-	return j.Save()
+	return PrepareIssueJobAdvanced(t, issue, path, nextWS).Save()
 }
 
 // QueuePageSplit creates and queues a page-splitting job with the given data
