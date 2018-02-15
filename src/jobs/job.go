@@ -99,6 +99,7 @@ func (j *Job) Requeue() error {
 		Status:           string(JobStatusPending),
 		RunAt:            j.RunAt,
 		NextWorkflowStep: j.NextWorkflowStep,
+		QueueJobID:       j.QueueJobID,
 	}
 
 	clone.Save()
@@ -194,5 +195,30 @@ func (ij *IssueJob) UpdateWorkflow() {
 	var err = ij.DBIssue.Save()
 	if err != nil {
 		ij.Logger.Criticalf("Unable to update issue (dbid %d) workflow post-job: %s", ij.DBIssue.ID, err)
+	}
+
+	var qid = ij.Job.Job.QueueJobID
+	if qid > 0 {
+		ij.queueNextJob()
+	}
+}
+
+func (ij *IssueJob) queueNextJob() {
+	var qid = ij.Job.Job.QueueJobID
+	var nextJob, err = db.FindJob(qid)
+	if err != nil {
+		ij.Logger.Criticalf("Unable to read next job from database (dbid %d): %s", qid, err)
+		return
+	}
+	if nextJob == nil {
+		ij.Logger.Criticalf("Unable to find next job in the database (dbid %d)", qid)
+		return
+	}
+	nextJob.Status = string(JobStatusPending)
+	nextJob.Location = ij.DBIssue.Location
+	err = nextJob.Save()
+	if err != nil {
+		ij.Logger.Criticalf("Unable to mark next job pending (dbid %d): %s", qid, err)
+		return
 	}
 }
