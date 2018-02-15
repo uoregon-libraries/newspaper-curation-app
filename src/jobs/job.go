@@ -93,11 +93,14 @@ func (j *Job) Requeue() error {
 	op.BeginTransaction()
 
 	var clone = &db.Job{
-		Type:     j.Type,
-		ObjectID: j.ObjectID,
-		Location: j.Location,
-		Status:   string(JobStatusPending),
+		Type:             j.Type,
+		ObjectID:         j.ObjectID,
+		Location:         j.Location,
+		Status:           string(JobStatusPending),
+		RunAt:            j.RunAt,
+		NextWorkflowStep: j.NextWorkflowStep,
 	}
+
 	clone.Save()
 
 	j.Status = string(JobStatusFailedDone)
