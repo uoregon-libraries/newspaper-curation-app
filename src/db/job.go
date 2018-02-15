@@ -1,6 +1,10 @@
 package db
 
-import "time"
+import (
+	"time"
+
+	"github.com/Nerdmaster/magicsql"
+)
 
 // JobLog is a single log entry attached to a job
 type JobLog struct {
@@ -98,6 +102,11 @@ func (j *Job) WriteLog(level string, message string) error {
 func (j *Job) Save() error {
 	var op = DB.Operation()
 	op.Dbg = Debug
+	return j.SaveOp(op)
+}
+
+// SaveOp creates or updates the job in the jobs table using a custom operation
+func (j *Job) SaveOp(op *magicsql.Operation) error {
 	op.Save("jobs", j)
 	return op.Err()
 }

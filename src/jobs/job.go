@@ -102,10 +102,10 @@ func (j *Job) Requeue() error {
 		QueueJobID:       j.QueueJobID,
 	}
 
-	clone.Save()
+	clone.SaveOp(op)
 
 	j.Status = string(JobStatusFailedDone)
-	j.Save()
+	j.SaveOp(op)
 
 	op.EndTransaction()
 	return op.Err()

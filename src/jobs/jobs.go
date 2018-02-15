@@ -110,7 +110,7 @@ func popFirstPendingJob(types []JobType) (*db.Job, error) {
 
 	j.Status = string(JobStatusInProcess)
 	j.StartedAt = time.Now()
-	j.Save()
+	j.SaveOp(op)
 
 	return j, op.Err()
 }
