@@ -2,7 +2,6 @@ package jobs
 
 import (
 	"config"
-	"schema"
 
 	"fmt"
 	"io/ioutil"
@@ -91,7 +90,8 @@ func (ps *PageSplit) removeTempFiles() {
 }
 
 func (ps *PageSplit) process() (ok bool) {
-	ps.RunWhileTrue(
+	ps.updateWorkflowCB = ps.updateIssueWorkflow
+	return ps.RunWhileTrue(
 		ps.createMasterPDF,
 		ps.splitPages,
 		ps.fixPageNames,
@@ -99,14 +99,6 @@ func (ps *PageSplit) process() (ok bool) {
 		ps.backupOriginals,
 		ps.moveToPageReview,
 	)
-
-	// The move above is done, so failing to update the workflow doesn't actually
-	// mean the operation failed; it just means we have to loudly log things
-	var err = ps.updateIssueWorkflow()
-	if err != nil {
-		ps.Logger.Criticalf("Unable to update issue (dbid %d) workflow post-split: %s", ps.DBIssue.ID, err)
-	}
-	return true
 }
 
 // createMasterPDF combines pages and pre-processes PDFs - ghostscript seems to
@@ -254,9 +246,7 @@ func (ps *PageSplit) backupOriginals() (ok bool) {
 // updateIssueWorkflow sets the Issue's location and flips the "awaiting manual
 // ordering" flag so we can track the issue with our "move manually ordered
 // issues" scanner
-func (ps *PageSplit) updateIssueWorkflow() error {
+func (ps *PageSplit) updateIssueWorkflow() {
 	ps.DBIssue.Location = ps.FinalOutputDir
-	ps.DBIssue.WorkflowStep = schema.WSAwaitingPageReview
 	ps.DBIssue.MasterBackupLocation = ps.MasterBackup
-	return ps.DBIssue.Save()
 }

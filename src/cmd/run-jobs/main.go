@@ -206,6 +206,7 @@ func watchJobTypes(c *config.Config, jobTypes ...jobs.JobType) {
 
 			logger.Debugf("Starting job id %d: %q", pr.JobID(), pr.JobType())
 			pr.SetProcessSuccess(pr.Process(c))
+			pr.UpdateWorkflow()
 			logger.Debugf("Finished job id %d", pr.JobID())
 		}
 

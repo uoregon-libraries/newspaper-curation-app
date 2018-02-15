@@ -5,7 +5,6 @@ import (
 	"db"
 	"derivatives/mets"
 	"path/filepath"
-	"schema"
 	"time"
 )
 
@@ -34,18 +33,7 @@ func (job *BuildMETS) Process(c *config.Config) bool {
 		return false
 	}
 
-	var ok = job.generateMETS()
-	if !ok {
-		return false
-	}
-
-	// The METS is generated, so failing to update the workflow doesn't actually
-	// mean the operation failed; it just means we have to YELL about the problem
-	err = job.updateIssueWorkflow()
-	if err != nil {
-		job.Logger.Criticalf("Unable to update issue (dbid %d) workflow post-METS: %s", job.DBIssue.ID, err)
-	}
-	return true
+	return job.generateMETS()
 }
 
 func (job *BuildMETS) generateMETS() (ok bool) {
@@ -55,9 +43,4 @@ func (job *BuildMETS) generateMETS() (ok bool) {
 	}
 	job.Logger.Errorf("Unable to generate METS XML for issues %d: %s", job.DBIssue.ID, err)
 	return false
-}
-
-func (job *BuildMETS) updateIssueWorkflow() error {
-	job.DBIssue.WorkflowStep = schema.WSReadyForBatching
-	return job.DBIssue.Save()
 }

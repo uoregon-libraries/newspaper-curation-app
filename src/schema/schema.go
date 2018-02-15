@@ -27,7 +27,9 @@ type WorkflowStep string
 
 // All possible statuses an issue could have
 const (
-	WSSFTP                   WorkflowStep = "SFTPUpload"
+	// WSNil should only be used to indicate a workflow step is irrelevant or else unset
+	WSNil                    WorkflowStep = ""
+	WSSFTP                                = "SFTPUpload"
 	WSScan                                = "ScanUpload"
 	WSAwaitingProcessing                  = "AwaitingProcessing"
 	WSAwaitingPageReview                  = "AwaitingPageReview"
