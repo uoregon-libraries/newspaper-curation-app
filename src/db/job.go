@@ -36,7 +36,7 @@ type Job struct {
 	// for issue jobs, obviously
 	NextWorkflowStep string
 
-	// NextJobID tells us which job (if any) should be queued up after this one
+	// QueueJobID tells us which job (if any) should be queued up after this one
 	// completes successfully
 	QueueJobID int
 }

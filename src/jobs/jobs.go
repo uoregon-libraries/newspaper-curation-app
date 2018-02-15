@@ -15,21 +15,19 @@ type JobType string
 
 // The full list of job types
 const (
-	JobTypePageSplit               JobType = "page_split"
-	JobTypeSFTPIssueMove           JobType = "sftp_issue_move"
-	JobTypeScanIssueMove           JobType = "scan_issue_move"
-	JobTypeMoveIssueForDerivatives JobType = "move_issue_for_derivatives"
-	JobTypeMakeDerivatives         JobType = "make_derivatives"
-	JobTypeBuildMETS               JobType = "build_mets"
+	JobTypePageSplit             JobType = "page_split"
+	JobTypeMoveIssueToWorkflow   JobType = "move_issue_to_workflow"
+	JobTypeMoveIssueToPageReview JobType = "move_issue_to_page_review"
+	JobTypeMakeDerivatives       JobType = "make_derivatives"
+	JobTypeBuildMETS             JobType = "build_mets"
 )
 
 // ValidJobTypes is the full list of job types which can exist in the jobs
 // table, for use in validating command-line job queue processing
 var ValidJobTypes = []JobType{
 	JobTypePageSplit,
-	JobTypeSFTPIssueMove,
-	JobTypeScanIssueMove,
-	JobTypeMoveIssueForDerivatives,
+	JobTypeMoveIssueToWorkflow,
+	JobTypeMoveIssueToPageReview,
 	JobTypeMakeDerivatives,
 	JobTypeBuildMETS,
 }
@@ -39,6 +37,7 @@ type JobStatus string
 
 // The full list of job statuses
 const (
+	JobStatusOnHold     JobStatus = "on_hold"     // Jobs waiting for another job to complete
 	JobStatusPending    JobStatus = "pending"     // Jobs needing to be processed
 	JobStatusInProcess  JobStatus = "in_process"  // Jobs which have been taken by a worker but aren't done
 	JobStatusSuccessful JobStatus = "success"     // Jobs which were successful
@@ -50,14 +49,12 @@ const (
 // database job's processor set up
 func DBJobToProcessor(dbJob *db.Job) Processor {
 	switch JobType(dbJob.Type) {
-	case JobTypeSFTPIssueMove:
-		return &SFTPIssueMover{IssueJob: NewIssueJob(dbJob)}
-	case JobTypeScanIssueMove:
-		return &ScanIssueMover{IssueJob: NewIssueJob(dbJob)}
+	case JobTypeMoveIssueToWorkflow:
+		return &WorkflowIssueMover{IssueJob: NewIssueJob(dbJob)}
+	case JobTypeMoveIssueToPageReview:
+		return &PageReviewIssueMover{IssueJob: NewIssueJob(dbJob)}
 	case JobTypePageSplit:
 		return &PageSplit{IssueJob: NewIssueJob(dbJob)}
-	case JobTypeMoveIssueForDerivatives:
-		return &MoveIssueForDerivatives{IssueJob: NewIssueJob(dbJob)}
 	case JobTypeMakeDerivatives:
 		return &MakeDerivatives{IssueJob: NewIssueJob(dbJob)}
 	case JobTypeBuildMETS:

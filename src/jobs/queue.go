@@ -26,25 +26,50 @@ func queueIssueJob(t JobType, issue *db.Issue, path string, nextWS schema.Workfl
 	return PrepareIssueJobAdvanced(t, issue, path, nextWS).Save()
 }
 
-// QueuePageSplit creates and queues a page-splitting job with the given data
-func QueuePageSplit(issue *db.Issue, path string) error {
-	return queueIssueJob(JobTypePageSplit, issue, path, schema.WSAwaitingPageReview)
+// QueueSerial attempts to save the jobs (in a transaction), setting the first
+// one as ready to run while the others become effectively dependent on the
+// prior job in the list
+func QueueSerial(jobs ...*db.Job) error {
+	var op = db.DB.Operation()
+	op.BeginTransaction()
+	defer op.EndTransaction()
+
+	// Iterate over jobs in reverse so we can set the prior job's next-run id
+	// without saving things twice
+	var lastJobID int
+	for i := len(jobs) - 1; i >= 0; i-- {
+		var j = jobs[i]
+		j.QueueJobID = lastJobID
+		if i != 0 {
+			j.Status = string(JobStatusOnHold)
+		}
+		var err = j.SaveOp(op)
+		if err != nil {
+			return err
+		}
+		lastJobID = j.ID
+	}
+
+	return op.Err()
 }
 
-// QueueSFTPIssueMove creates an sftp issue move job
+// QueueSFTPIssueMove queues up an issue move into the workflow area followed
+// by a page-split and then a move to the page review area
 func QueueSFTPIssueMove(issue *db.Issue, path string) error {
-	return queueIssueJob(JobTypeSFTPIssueMove, issue, path, schema.WSNil)
+	return QueueSerial(
+		PrepareIssueJobAdvanced(JobTypeMoveIssueToWorkflow, issue, path, schema.WSNil),
+		PrepareIssueJobAdvanced(JobTypePageSplit, issue, path, schema.WSNil),
+		PrepareIssueJobAdvanced(JobTypeMoveIssueToPageReview, issue, path, schema.WSAwaitingPageReview),
+	)
 }
 
-// QueueScanIssueMove creates a scan issue move job
-func QueueScanIssueMove(issue *db.Issue, path string) error {
-	return queueIssueJob(JobTypeScanIssueMove, issue, path, schema.WSNil)
-}
-
-// QueueMoveIssueForDerivatives creates and queues a job to move an issue dir
-// into the workflow area so a derivative job can be created
+// QueueMoveIssueForDerivatives creates jobs to move issues into the workflow
+// and then immediately generate derivatives
 func QueueMoveIssueForDerivatives(issue *db.Issue, path string) error {
-	return queueIssueJob(JobTypeMoveIssueForDerivatives, issue, path, schema.WSNil)
+	return QueueSerial(
+		PrepareIssueJobAdvanced(JobTypeMoveIssueToWorkflow, issue, path, schema.WSNil),
+		PrepareIssueJobAdvanced(JobTypeMakeDerivatives, issue, path, schema.WSReadyForMetadataEntry),
+	)
 }
 
 // QueueMakeDerivatives creates and queues a job to generate ALTO XML and JP2s

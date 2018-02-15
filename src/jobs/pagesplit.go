@@ -24,7 +24,6 @@ type PageSplit struct {
 	MasterBackup   string // Where the real master file(s) will eventually live
 	TempDir        string // Where we do all page-level processing
 	WIPDir         string // Where we copy files after processing
-	FinalOutputDir string // Where we move files after the copy was successful
 	GhostScript    string // The path to gs for combining the fake master PDF
 	MinPages       int    // Number of pages below which we refuse to process
 }
@@ -39,16 +38,11 @@ func (ps *PageSplit) Process(config *config.Config) bool {
 	}
 	defer ps.removeTempFiles()
 
-	ps.WIPDir = filepath.Join(config.PDFPageReviewPath, ps.IssueJob.WIPDir())
-	ps.FinalOutputDir = filepath.Join(config.PDFPageReviewPath, ps.Subdir())
+	ps.WIPDir = filepath.Join(config.WorkflowPath, ps.IssueJob.WIPDir())
 	ps.MasterBackup = filepath.Join(config.MasterPDFBackupPath, ps.Subdir())
 
 	if !fileutil.MustNotExist(ps.WIPDir) {
 		ps.Logger.Errorf("WIP dir %q already exists", ps.WIPDir)
-		return false
-	}
-	if !fileutil.MustNotExist(ps.FinalOutputDir) {
-		ps.Logger.Errorf("Final output dir %q already exists", ps.FinalOutputDir)
 		return false
 	}
 	if !fileutil.MustNotExist(ps.MasterBackup) {
@@ -97,7 +91,7 @@ func (ps *PageSplit) process() (ok bool) {
 		ps.fixPageNames,
 		ps.convertToPDFA,
 		ps.backupOriginals,
-		ps.moveToPageReview,
+		ps.moveIssue,
 	)
 }
 
@@ -200,26 +194,7 @@ func (ps *PageSplit) convertToPDFA() (ok bool) {
 	return true
 }
 
-// moveToPageReview copies tmpdir to the WIPDir, then moves it to the final
-// location once the copy succeeded so we can avoid broken dir moves
-func (ps *PageSplit) moveToPageReview() (ok bool) {
-	var err = fileutil.CopyDirectory(ps.TempDir, ps.WIPDir)
-	if err != nil {
-		ps.Logger.Errorf("Unable to move temporary directory %q to %q", ps.TempDir, ps.WIPDir)
-		return false
-	}
-	err = os.Rename(ps.WIPDir, ps.FinalOutputDir)
-	if err != nil {
-		ps.Logger.Errorf("Unable to rename WIP directory %q to %q", ps.WIPDir, ps.FinalOutputDir)
-		return false
-	}
-
-	return true
-}
-
-// backupOriginals stores the original uploads in the master backup location.
-// If this fails, we have a problem, because the pages were already split and
-// moved.  All we can do is log critical errors.
+// backupOriginals stores the original uploads in the master backup location
 func (ps *PageSplit) backupOriginals() (ok bool) {
 	var masterParent = filepath.Dir(ps.MasterBackup)
 	var err = os.MkdirAll(masterParent, 0700)
@@ -243,10 +218,27 @@ func (ps *PageSplit) backupOriginals() (ok bool) {
 	return true
 }
 
+// moveIssue moves the processed files into the recently-removed workflow
+// location.  Failures here are very not-ideal as we've already successfully
+// destroyed the original files.  They still exist in the master backup
+// location, but that's not super easy to automatically fix.
+func (ps *PageSplit) moveIssue() (ok bool) {
+	var err = fileutil.CopyDirectory(ps.TempDir, ps.WIPDir)
+	if err != nil {
+		ps.Logger.Criticalf("Unable to move temporary directory %q to %q: %s", ps.TempDir, ps.WIPDir, err)
+		return false
+	}
+	err = os.Rename(ps.WIPDir, ps.Location)
+	if err != nil {
+		ps.Logger.Criticalf("Unable to move WIP directory %q to %q: %s", ps.WIPDir, ps.Location, err)
+		return false
+	}
+	return true
+}
+
 // updateIssueWorkflow sets the Issue's location and flips the "awaiting manual
 // ordering" flag so we can track the issue with our "move manually ordered
 // issues" scanner
 func (ps *PageSplit) updateIssueWorkflow() {
-	ps.DBIssue.Location = ps.FinalOutputDir
 	ps.DBIssue.MasterBackupLocation = ps.MasterBackup
 }

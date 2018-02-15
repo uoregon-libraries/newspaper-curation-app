@@ -67,7 +67,7 @@ func queueIssueMove(i *Issue) (ok bool, status string) {
 	case schema.WSSFTP:
 		err = jobs.QueueSFTPIssueMove(dbi, i.Location)
 	case schema.WSScan:
-		err = jobs.QueueScanIssueMove(dbi, i.Location)
+		err = jobs.QueueMoveIssueForDerivatives(dbi, i.Location)
 	default:
 		logger.Criticalf("Invalid issue %q: workflow step %q isn't allowed for issue move jobs", i.Key(), i.WorkflowStep)
 		return false, "Error: the requested issue cannot be queued.  Contact the system administrator for more information."
