@@ -1,6 +1,10 @@
 package db
 
-import "time"
+import (
+	"time"
+
+	"github.com/Nerdmaster/magicsql"
+)
 
 // JobLog is a single log entry attached to a job
 type JobLog struct {
@@ -22,6 +26,19 @@ type Job struct {
 	Location    string
 	Status      string
 	logs        []*JobLog
+
+	// The job won't be run until sometime after RunAt; usually it's very close,
+	// but the daemon doesn't pound the database every 5 milliseconds, so it can
+	// take a little bit
+	RunAt time.Time
+
+	// This is the issue's workflow step if the job is successful; only relevant
+	// for issue jobs, obviously
+	NextWorkflowStep string
+
+	// QueueJobID tells us which job (if any) should be queued up after this one
+	// completes successfully
+	QueueJobID int
 }
 
 // FindJob gets a job by its id
@@ -85,6 +102,11 @@ func (j *Job) WriteLog(level string, message string) error {
 func (j *Job) Save() error {
 	var op = DB.Operation()
 	op.Dbg = Debug
+	return j.SaveOp(op)
+}
+
+// SaveOp creates or updates the job in the jobs table using a custom operation
+func (j *Job) SaveOp(op *magicsql.Operation) error {
 	op.Save("jobs", j)
 	return op.Err()
 }

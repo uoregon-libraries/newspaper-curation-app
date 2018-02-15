@@ -4,7 +4,6 @@ import (
 	"config"
 	"derivatives/alto"
 	"derivatives/jp2"
-	"schema"
 
 	"os"
 	"path/filepath"
@@ -40,6 +39,7 @@ type MakeDerivatives struct {
 func (md *MakeDerivatives) Process(c *config.Config) bool {
 	md.Logger.Debugf("Starting make-derivatives job for issue id %d", md.DBIssue.ID)
 
+	md.updateWorkflowCB = md.updateIssueWorkflow
 	md.OPJCompress = c.OPJCompress
 	md.OPJDecompress = c.OPJDecompress
 	md.GhostScript = c.GhostScript
@@ -58,24 +58,12 @@ func (md *MakeDerivatives) Process(c *config.Config) bool {
 	}
 
 	// Run our serial operations, failing on the first non-ok response
-	var ok = md.RunWhileTrue(
+	return md.RunWhileTrue(
 		md.findPDFs,
 		md.findTIFFs,
 		md.validateSourceFiles,
 		md.generateDerivatives,
 	)
-	if !ok {
-		return false
-	}
-
-	// The derivatives are generated, so failing to update the workflow doesn't
-	// actually mean the operation failed; it just means we have to YELL about
-	// the problem
-	var err = md.updateIssueWorkflow()
-	if err != nil {
-		md.Logger.Criticalf("Unable to update issue (dbid %d) workflow post-derivative-generate: %s", md.DBIssue.ID, err)
-	}
-	return true
 }
 
 // findPDFs builds the list of Alto and JP2 derivative sources
@@ -219,8 +207,6 @@ func (md *MakeDerivatives) createJP2(file string) (ok bool) {
 	return true
 }
 
-func (md *MakeDerivatives) updateIssueWorkflow() error {
+func (md *MakeDerivatives) updateIssueWorkflow() {
 	md.DBIssue.HasDerivatives = true
-	md.DBIssue.WorkflowStep = schema.WSReadyForMetadataEntry
-	return md.DBIssue.Save()
 }

@@ -1,46 +1,85 @@
 package jobs
 
-import "db"
+import (
+	"db"
+	"schema"
+	"time"
+)
 
-func queueIssueJob(t JobType, issue *db.Issue, path string) error {
-	var j = &db.Job{
-		Type:     string(t),
-		ObjectID: issue.ID,
-		Location: path,
-		Status:   string(JobStatusPending),
+// PrepareIssueJobAdvanced is a way to get an issue job ready with the
+// necessary base values, but not save it immediately, to allow for more
+// advanced job semantics: specifying that the job shouldn't run immediately,
+// should queue a specific job ID after completion, should set the WorkflowStep
+// to a custom value rather than whatever the job would normally do, etc.
+func PrepareIssueJobAdvanced(t JobType, issue *db.Issue, path string, nextWS schema.WorkflowStep) *db.Job {
+	return &db.Job{
+		Type:             string(t),
+		ObjectID:         issue.ID,
+		Location:         path,
+		Status:           string(JobStatusPending),
+		NextWorkflowStep: string(nextWS),
+		RunAt:            time.Now(),
 	}
-	return j.Save()
 }
 
-// QueuePageSplit creates and queues a page-splitting job with the given data
-func QueuePageSplit(issue *db.Issue, path string) error {
-	return queueIssueJob(JobTypePageSplit, issue, path)
+func queueIssueJob(t JobType, issue *db.Issue, path string, nextWS schema.WorkflowStep) error {
+	return PrepareIssueJobAdvanced(t, issue, path, nextWS).Save()
 }
 
-// QueueSFTPIssueMove creates an sftp issue move job
+// QueueSerial attempts to save the jobs (in a transaction), setting the first
+// one as ready to run while the others become effectively dependent on the
+// prior job in the list
+func QueueSerial(jobs ...*db.Job) error {
+	var op = db.DB.Operation()
+	op.BeginTransaction()
+	defer op.EndTransaction()
+
+	// Iterate over jobs in reverse so we can set the prior job's next-run id
+	// without saving things twice
+	var lastJobID int
+	for i := len(jobs) - 1; i >= 0; i-- {
+		var j = jobs[i]
+		j.QueueJobID = lastJobID
+		if i != 0 {
+			j.Status = string(JobStatusOnHold)
+		}
+		var err = j.SaveOp(op)
+		if err != nil {
+			return err
+		}
+		lastJobID = j.ID
+	}
+
+	return op.Err()
+}
+
+// QueueSFTPIssueMove queues up an issue move into the workflow area followed
+// by a page-split and then a move to the page review area
 func QueueSFTPIssueMove(issue *db.Issue, path string) error {
-	return queueIssueJob(JobTypeSFTPIssueMove, issue, path)
+	return QueueSerial(
+		PrepareIssueJobAdvanced(JobTypeMoveIssueToWorkflow, issue, path, schema.WSNil),
+		PrepareIssueJobAdvanced(JobTypePageSplit, issue, path, schema.WSNil),
+		PrepareIssueJobAdvanced(JobTypeMoveIssueToPageReview, issue, path, schema.WSAwaitingPageReview),
+	)
 }
 
-// QueueScanIssueMove creates a scan issue move job
-func QueueScanIssueMove(issue *db.Issue, path string) error {
-	return queueIssueJob(JobTypeScanIssueMove, issue, path)
-}
-
-// QueueMoveIssueForDerivatives creates and queues a job to move an issue dir
-// into the workflow area so a derivative job can be created
+// QueueMoveIssueForDerivatives creates jobs to move issues into the workflow
+// and then immediately generate derivatives
 func QueueMoveIssueForDerivatives(issue *db.Issue, path string) error {
-	return queueIssueJob(JobTypeMoveIssueForDerivatives, issue, path)
+	return QueueSerial(
+		PrepareIssueJobAdvanced(JobTypeMoveIssueToWorkflow, issue, path, schema.WSNil),
+		PrepareIssueJobAdvanced(JobTypeMakeDerivatives, issue, path, schema.WSReadyForMetadataEntry),
+	)
 }
 
 // QueueMakeDerivatives creates and queues a job to generate ALTO XML and JP2s
 // for an issue
 func QueueMakeDerivatives(issue *db.Issue, path string) error {
-	return queueIssueJob(JobTypeMakeDerivatives, issue, path)
+	return queueIssueJob(JobTypeMakeDerivatives, issue, path, schema.WSReadyForMetadataEntry)
 }
 
 // QueueBuildMETS creates and queues a job to generate the METS XML for an
 // issue that's been moved through the metadata queue
 func QueueBuildMETS(issue *db.Issue, path string) error {
-	return queueIssueJob(JobTypeBuildMETS, issue, path)
+	return queueIssueJob(JobTypeBuildMETS, issue, path, schema.WSReadyForBatching)
 }

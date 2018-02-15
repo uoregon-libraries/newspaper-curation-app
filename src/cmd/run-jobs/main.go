@@ -206,6 +206,7 @@ func watchJobTypes(c *config.Config, jobTypes ...jobs.JobType) {
 
 			logger.Debugf("Starting job id %d: %q", pr.JobID(), pr.JobType())
 			pr.SetProcessSuccess(pr.Process(c))
+			pr.UpdateWorkflow()
 			logger.Debugf("Finished job id %d", pr.JobID())
 		}
 
@@ -236,7 +237,7 @@ func runAllQueues(c *config.Config) {
 	waitFor(
 		func() { watchPageReview(c) },
 		func() {
-			watchJobTypes(c, jobs.JobTypeSFTPIssueMove, jobs.JobTypeScanIssueMove, jobs.JobTypeMoveIssueForDerivatives)
+			watchJobTypes(c, jobs.JobTypeMoveIssueToWorkflow, jobs.JobTypeMoveIssueToPageReview)
 		},
 		func() {
 			watchJobTypes(c, jobs.JobTypePageSplit, jobs.JobTypeMakeDerivatives)

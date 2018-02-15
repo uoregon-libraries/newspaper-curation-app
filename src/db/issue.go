@@ -6,6 +6,8 @@ import (
 	"strconv"
 	"strings"
 	"time"
+
+	"github.com/Nerdmaster/magicsql"
 )
 
 // Workflow steps in-process issues may have - these MUST match the allowed
@@ -213,6 +215,13 @@ func (i *Issue) RejectMetadata(reviewerID int, notes string) {
 
 // Save creates or updates the Issue in the issues table
 func (i *Issue) Save() error {
+	var op = DB.Operation()
+	op.Dbg = Debug
+	return i.SaveOp(op)
+}
+
+// SaveOp creates or updates the Issue in the issues table with a custom operation
+func (i *Issue) SaveOp(op *magicsql.Operation) error {
 	var valid bool
 	for _, validWS := range allowedWorkflowSteps {
 		if string(i.WorkflowStep) == string(validWS) {
@@ -225,8 +234,6 @@ func (i *Issue) Save() error {
 	}
 
 	i.serialize()
-	var op = DB.Operation()
-	op.Dbg = Debug
 	op.Save("issues", i)
 	return op.Err()
 }

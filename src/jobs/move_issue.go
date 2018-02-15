@@ -7,8 +7,8 @@ import (
 	"github.com/uoregon-libraries/gopkg/fileutil"
 )
 
-// moveIssue is used by both the sftp and scan issue movers to consistently
-// validate and move the source issue directory into the workflow location
+// moveIssue is used by various issue move jobs to consistently validate and
+// move the source issue directory into the workflow location
 func moveIssue(ij *IssueJob, path string) bool {
 	var iKey = ij.Issue.Key()
 

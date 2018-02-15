@@ -72,17 +72,12 @@ func (s *Searcher) load() error {
 func (s *Searcher) buildInProcessList() error {
 	s.inProcessIssues = sync.Map{}
 
-	var sftpJobs, scanJobs []*db.Job
-	var err error
-	sftpJobs, err = db.FindJobsByStatusAndType(string(jobs.JobStatusPending), string(jobs.JobTypeSFTPIssueMove))
-	if err == nil {
-		scanJobs, err = db.FindJobsByStatusAndType(string(jobs.JobStatusPending), string(jobs.JobTypeScanIssueMove))
-	}
+	var jobs, err = db.FindJobsByStatusAndType(string(jobs.JobStatusPending), string(jobs.JobTypeMoveIssueToWorkflow))
 	if err != nil {
 		return fmt.Errorf("unable to find pending sftp issue move jobs: %s", err)
 	}
 
-	for _, job := range append(sftpJobs, scanJobs...) {
+	for _, job := range jobs {
 		var dbi, err = db.FindIssue(job.ObjectID)
 		if err != nil {
 			return fmt.Errorf("unable to get issue for job id %d: %s", job.ID, err)

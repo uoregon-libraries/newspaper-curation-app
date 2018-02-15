@@ -15,6 +15,7 @@ import (
 // A Processor is a general interface for all database-driven jobs that process something
 type Processor interface {
 	Process(*config.Config) bool
+	UpdateWorkflow()
 	SetProcessSuccess(bool)
 	JobID() int
 	JobType() JobType
@@ -92,15 +93,19 @@ func (j *Job) Requeue() error {
 	op.BeginTransaction()
 
 	var clone = &db.Job{
-		Type:     j.Type,
-		ObjectID: j.ObjectID,
-		Location: j.Location,
-		Status:   string(JobStatusPending),
+		Type:             j.Type,
+		ObjectID:         j.ObjectID,
+		Location:         j.Location,
+		Status:           string(JobStatusPending),
+		RunAt:            j.RunAt,
+		NextWorkflowStep: j.NextWorkflowStep,
+		QueueJobID:       j.QueueJobID,
 	}
-	clone.Save()
+
+	clone.SaveOp(op)
 
 	j.Status = string(JobStatusFailedDone)
-	j.Save()
+	j.SaveOp(op)
 
 	op.EndTransaction()
 	return op.Err()
@@ -130,8 +135,9 @@ func (l *jobLogger) Log(level logger.LogLevel, message string) {
 // specific issues
 type IssueJob struct {
 	*Job
-	Issue   *schema.Issue
-	DBIssue *db.Issue
+	Issue            *schema.Issue
+	DBIssue          *db.Issue
+	updateWorkflowCB func()
 }
 
 // NewIssueJob setups up an IssueJob from a database Job, centralizing the
@@ -171,4 +177,48 @@ func (ij *IssueJob) Subdir() string {
 // processing / copying to occur in a way that won't mess up end users
 func (ij *IssueJob) WIPDir() string {
 	return ".wip-" + ij.Subdir()
+}
+
+// UpdateWorkflow sets the attached issue's WorkflowStep if the job has defined
+// a NextWorkflowStep.  The optional updateWorkflowCB is called if defined, and
+// then the issue job is saved.  At this point, however, the job is complete,
+// so all we can do is loudly log failures.
+func (ij *IssueJob) UpdateWorkflow() {
+	var ws = schema.WorkflowStep(ij.NextWorkflowStep)
+	if ws != schema.WSNil {
+		ij.DBIssue.WorkflowStep = ws
+	}
+	if ij.updateWorkflowCB != nil {
+		ij.updateWorkflowCB()
+	}
+
+	var err = ij.DBIssue.Save()
+	if err != nil {
+		ij.Logger.Criticalf("Unable to update issue (dbid %d) workflow post-job: %s", ij.DBIssue.ID, err)
+	}
+
+	var qid = ij.Job.Job.QueueJobID
+	if qid > 0 {
+		ij.queueNextJob()
+	}
+}
+
+func (ij *IssueJob) queueNextJob() {
+	var qid = ij.Job.Job.QueueJobID
+	var nextJob, err = db.FindJob(qid)
+	if err != nil {
+		ij.Logger.Criticalf("Unable to read next job from database (dbid %d): %s", qid, err)
+		return
+	}
+	if nextJob == nil {
+		ij.Logger.Criticalf("Unable to find next job in the database (dbid %d)", qid)
+		return
+	}
+	nextJob.Status = string(JobStatusPending)
+	nextJob.Location = ij.DBIssue.Location
+	err = nextJob.Save()
+	if err != nil {
+		ij.Logger.Criticalf("Unable to mark next job pending (dbid %d): %s", qid, err)
+		return
+	}
 }
