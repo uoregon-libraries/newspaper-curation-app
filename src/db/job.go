@@ -17,6 +17,7 @@ type Job struct {
 	CreatedAt   time.Time `sql:",readonly"`
 	StartedAt   time.Time `sql:",noinsert"`
 	CompletedAt time.Time `sql:",noinsert"`
+	RunAt       time.Time // The job won't be run until sometime after RunAt
 	Type        string    `sql:"job_type"`
 	ObjectID    int
 	Location    string

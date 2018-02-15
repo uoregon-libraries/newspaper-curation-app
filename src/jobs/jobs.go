@@ -97,13 +97,13 @@ func popFirstPendingJob(types []JobType) (*db.Job, error) {
 	var j = &db.Job{}
 	var args []interface{}
 	var placeholders []string
-	args = append(args, string(JobStatusPending))
+	args = append(args, string(JobStatusPending), time.Now())
 	for _, t := range types {
 		args = append(args, string(t))
 		placeholders = append(placeholders, "?")
 	}
 
-	var clause = fmt.Sprintf("status = ? AND job_type IN (%s)", strings.Join(placeholders, ","))
+	var clause = fmt.Sprintf("status = ? AND run_at <= ? AND job_type IN (%s)", strings.Join(placeholders, ","))
 	if !op.Select("jobs", &db.Job{}).Where(clause, args...).Order("created_at").First(j) {
 		return nil, op.Err()
 	}
