@@ -3,7 +3,8 @@
 /vendor
 !/vendor/manifest
 /tmp
-/settings
+/settings*
+!/settings-example
 /.build.txt
 /db/dbconf.yml
 /docker-compose.override.yml
