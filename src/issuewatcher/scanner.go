@@ -112,9 +112,8 @@ func duplicateIssueError(canonical *schema.Issue) error {
 
 // Scan calls all the individual find* functions for the myriad of ways we
 // store issue information in the various locations (dependent on what's been
-// enabled), returning the issuefinder.Finder with all this data.  The
-// Scanner's issuefinder is replaced only after successful searching to ensure
-// minimal disruption, especially in the event of an error.
+// enabled).  The Scanner's issuefinder is replaced only after successful
+// searching to ensure minimal disruption, especially in the event of an error.
 func (s *Scanner) Scan() error {
 	var f = issuefinder.New()
 	var err error
