@@ -9,16 +9,18 @@ import (
 	"schema"
 	"sync"
 	"time"
+
+	"github.com/uoregon-libraries/gopkg/logger"
 )
 
 // secondsBetweenIssueReload should be a value that ensures nearly real-time
 // data, but avoids hammering the disk if a lot of refreshing happens
-const secondsBetweenIssueReload = 10
+const secondsBetweenIssueReload = 60
 
 // secondsBeforeFatalError is how long we allow the system to run with an error
 // response before we actually return a failure from any functions which
 // require searching the filesystem
-const secondsBeforeFatalError = 600
+const maxLoadFailures = 5
 
 // Searcher holds onto a duped Scanner for running local queries against scan
 // and sftp uploads.  This structure is completely thread-safe; a single
@@ -26,42 +28,69 @@ const secondsBeforeFatalError = 600
 // access is via functions to allow automatic rescanning of the file system.
 type Searcher struct {
 	sync.RWMutex
+	conf            *config.Config
 	lastLoaded      time.Time
 	scanner         *issuewatcher.Scanner
+	nextScanner     *issuewatcher.Scanner
 	titles          []*Title
 	titleLookup     map[string]*Title
 	inProcessIssues sync.Map
+	fails           int
 }
 
 // newSearcher returns a searcher that wraps issuefinder and schema data for
 // web presentation of titles, issues, files, and errors in SFTP/scanned
 // uploads
 func newSearcher(conf *config.Config) *Searcher {
-	return &Searcher{scanner: issuewatcher.NewScanner(conf).DisableDB().DisableWeb()}
+	var s = &Searcher{conf: conf}
+	go s.watch()
+	return s
 }
 
-// load checks the time since the last load, and loads issues from the
+// watch checks the time since the last load, and loads issues from the
 // filesystem if necessary.  If issues were loaded, the various types are
-// decorated as needed for web presentation.
-func (s *Searcher) load() error {
-	s.Lock()
-	defer s.Unlock()
+// decorated as needed for web presentation.  This should be run in a goroutine
+// as it loops forever.
+func (s *Searcher) watch() {
+	for {
+		s.Lock()
+		var since = time.Since(s.lastLoaded)
+		s.Unlock()
 
-	if time.Since(s.lastLoaded) < time.Second*secondsBetweenIssueReload {
-		return nil
+		if since >= time.Second*secondsBetweenIssueReload {
+			var err = s.scan()
+			if err != nil {
+				s.Lock()
+				s.fails++
+				s.Unlock()
+				logger.Errorf("Searcher.scan(): %s", err)
+			}
+		}
+
+		time.Sleep(time.Second)
 	}
+}
 
+func (s *Searcher) scan() error {
 	var err = s.buildInProcessList()
 	if err != nil {
-		return err
+		return fmt.Errorf("unable to build in-process issue list: %s", err)
 	}
 
-	err = s.scanner.Scan()
-	if err == nil {
-		s.lastLoaded = time.Now()
-		s.decorateTitles()
+	s.nextScanner = issuewatcher.NewScanner(s.conf).DisableDB().DisableWeb()
+	err = s.nextScanner.Scan()
+	if err != nil {
+		return fmt.Errorf("unable to scan filesystem: %s", err)
 	}
-	return err
+
+	s.Lock()
+	s.lastLoaded = time.Now()
+	s.scanner = s.nextScanner
+	s.decorateTitles()
+	s.fails = 0
+	s.Unlock()
+
+	return nil
 }
 
 // buildInProcessList pulls all pending SFTP move jobs from the database and
@@ -102,12 +131,6 @@ func (s *Searcher) Titles() []*Title {
 	s.RLock()
 	defer s.RUnlock()
 	return s.titles
-}
-
-// ForceReload clears the last loaded time and refreshed the titles cache
-func (s *Searcher) ForceReload() {
-	s.lastLoaded = time.Time{}
-	s.Titles()
 }
 
 // TitleLookup returns the Title for a given LCCN
