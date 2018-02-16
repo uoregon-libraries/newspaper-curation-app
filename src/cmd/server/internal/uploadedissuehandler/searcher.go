@@ -134,6 +134,13 @@ func (s *Searcher) Titles() []*Title {
 	return s.titles
 }
 
+// FailedSearch returns true if too many scans have failed in a row
+func (s *Searcher) FailedSearch() bool {
+	s.RLock()
+	defer s.RUnlock()
+	return s.fails > maxLoadFailures
+}
+
 // TitleLookup returns the Title for a given LCCN
 func (s *Searcher) TitleLookup(lccn string) *Title {
 	s.RLock()

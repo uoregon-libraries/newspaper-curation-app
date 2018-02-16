@@ -81,6 +81,11 @@ func (r *resp) loadIssue() {
 // Render sets up the titles/title/issue data vars for the template, then
 // delegates to the base responder.Responder
 func (r *resp) Render(t *tmpl.Template) {
+	// Hack in an error if the searcher has failed too often
+	if searcher.FailedSearch() {
+		r.err = &respError{http.StatusInternalServerError, "Unable to load titles and issues; try again or contact support"}
+	}
+
 	// Avoid any further work if we had an error
 	if r.err != nil {
 		r.Error(r.err.status, r.err.msg)
