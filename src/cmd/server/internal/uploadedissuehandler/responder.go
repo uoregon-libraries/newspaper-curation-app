@@ -19,11 +19,11 @@ type respError struct {
 // auto-load in all uploaded issue handling
 type resp struct {
 	*responder.Responder
-	sftpTitles []*Title
-	title      *Title
-	issue      *Issue
-	vars       map[string]string
-	err        *respError
+	titles []*Title
+	title  *Title
+	issue  *Issue
+	vars   map[string]string
+	err    *respError
 }
 
 // getResponder sets up a resp with default values for issue/title to avoid
@@ -44,9 +44,9 @@ func getResponder(w http.ResponseWriter, req *http.Request) *resp {
 
 func (r *resp) loadTitles() {
 	var err error
-	r.sftpTitles, err = searcher.Titles()
+	r.titles, err = searcher.Titles()
 	if err != nil {
-		logger.Errorf("Couldn't load SFTP titles: %s", err)
+		logger.Errorf("Couldn't load titles: %s", err)
 		r.err = &respError{http.StatusInternalServerError, "Error trying to load titles; try again or contact support"}
 	}
 }
@@ -94,7 +94,7 @@ func (r *resp) Render(t *tmpl.Template) {
 	}
 
 	// Set up all the data vars
-	r.Vars.Data["Titles"] = r.sftpTitles
+	r.Vars.Data["Titles"] = r.titles
 	r.Vars.Data["Title"] = r.title
 	r.Vars.Data["Issue"] = r.issue
 
