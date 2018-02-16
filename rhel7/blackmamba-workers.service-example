@@ -6,7 +6,8 @@
 [Service]
 	Type=simple
 	ExecStart=/usr/local/black-mamba/run-jobs \
-		-c /usr/local/black-mamba/settings
+		-c /usr/local/black-mamba/settings \
+    watchall
 
 [Install]
 	WantedBy=multi-user.target
