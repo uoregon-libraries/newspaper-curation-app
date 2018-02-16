@@ -4,6 +4,7 @@ import (
 	"config"
 	"db"
 	"fmt"
+	"issuefinder"
 	"issuewatcher"
 	"jobs"
 	"schema"
@@ -138,4 +139,18 @@ func (s *Searcher) TitleLookup(lccn string) *Title {
 	s.RLock()
 	defer s.RUnlock()
 	return s.titleLookup[lccn]
+}
+
+// Ready returns whether or not the searcher has completed at least one search
+func (s *Searcher) Ready() bool {
+	s.RLock()
+	defer s.RUnlock()
+	return s.scanner != nil
+}
+
+// TopErrors returns the list of errors found that weren't tied to an issue/title/file
+func (s *Searcher) TopErrors() []*issuefinder.Error {
+	s.RLock()
+	defer s.RUnlock()
+	return s.scanner.Finder.Errors.OtherErrors
 }
