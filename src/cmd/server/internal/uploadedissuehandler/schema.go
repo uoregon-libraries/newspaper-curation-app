@@ -44,32 +44,32 @@ type Title struct {
 // decorateTitles iterates over the list of the searcher's titles and decorates
 // each, then its issues, and the issues' files, to prepare for web display
 func (s *Searcher) decorateTitles() {
-	s.titles = make([]*Title, 0)
-	s.titleLookup = make(map[string]*Title)
+	var nextTitles = make([]*Title, 0)
+	var nextTitleLookup = make(map[string]*Title)
 	for _, t := range s.scanner.Finder.Titles {
-		s.appendSchemaTitle(t)
+		var title = &Title{Title: t, Slug: t.LCCN, allErrors: s.scanner.Finder.Errors}
+		title.decorateIssues(t.Issues)
+		title.decorateErrors()
+		nextTitles = append(s.titles, title)
+		nextTitleLookup[title.Slug] = title
 	}
 
 	// We like titles sorted by name for presentation
 	sort.Slice(s.titles, func(i, j int) bool {
 		return strings.ToLower(s.titles[i].Name) < strings.ToLower(s.titles[j].Name)
 	})
-}
 
-func (s *Searcher) appendSchemaTitle(t *schema.Title) {
-	var title = &Title{Title: t, Slug: t.LCCN, allErrors: s.scanner.Finder.Errors}
-	title.decorateIssues(t.Issues)
-	title.decorateErrors()
-	s.titles = append(s.titles, title)
-	s.titleLookup[title.Slug] = title
+	s.Lock()
+	s.titles = nextTitles
+	s.titleLookup = nextTitleLookup
+	s.Unlock()
 }
 
 func (t *Title) decorateIssues(issueList []*schema.Issue) {
 	t.Issues = make([]*Issue, 0)
 	t.IssueLookup = make(map[string]*Issue)
 	for _, i := range issueList {
-		var _, isInProcess = searcher.inProcessIssues.Load(i.Key())
-		if !isInProcess {
+		if !searcher.IsInProcess(i.Key()) {
 			t.appendSchemaIssue(i)
 		}
 	}

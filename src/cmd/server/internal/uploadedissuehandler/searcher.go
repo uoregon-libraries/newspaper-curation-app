@@ -35,7 +35,7 @@ type Searcher struct {
 	nextScanner     *issuewatcher.Scanner
 	titles          []*Title
 	titleLookup     map[string]*Title
-	inProcessIssues sync.Map
+	inProcessIssues map[string]bool
 	fails           int
 }
 
@@ -54,9 +54,9 @@ func newSearcher(conf *config.Config) *Searcher {
 // as it loops forever.
 func (s *Searcher) watch() {
 	for {
-		s.Lock()
+		s.RLock()
 		var since = time.Since(s.lastLoaded)
-		s.Unlock()
+		s.RUnlock()
 
 		if since >= time.Second*secondsBetweenIssueReload {
 			var err = s.scan()
@@ -73,7 +73,7 @@ func (s *Searcher) watch() {
 }
 
 func (s *Searcher) scan() error {
-	var err = s.buildInProcessList()
+	var err = s.BuildInProcessList()
 	if err != nil {
 		return fmt.Errorf("unable to build in-process issue list: %s", err)
 	}
@@ -87,20 +87,19 @@ func (s *Searcher) scan() error {
 	s.Lock()
 	s.lastLoaded = time.Now()
 	s.scanner = s.nextScanner
-	s.decorateTitles()
 	s.fails = 0
 	s.Unlock()
+
+	s.decorateTitles()
 
 	return nil
 }
 
-// buildInProcessList pulls all pending SFTP move jobs from the database and
+// BuildInProcessList pulls all pending SFTP move jobs from the database and
 // indexes them by location in order to avoid showing issues which are already
 // awaiting processing.
-//
-// The searcher must be locked here, as it completely replaces inProcessIssues.
-func (s *Searcher) buildInProcessList() error {
-	s.inProcessIssues = sync.Map{}
+func (s *Searcher) BuildInProcessList() error {
+	var nextInProcessIssues = make(map[string]bool)
 
 	var jobs, err = db.FindRecentJobsByType(string(jobs.JobTypeMoveIssueToWorkflow), time.Second*secondsBetweenIssueReload)
 	if err != nil {
@@ -121,10 +120,22 @@ func (s *Searcher) buildInProcessList() error {
 		if err != nil {
 			return err
 		}
-		s.inProcessIssues.Store(si.Key(), true)
+		nextInProcessIssues[si.Key()] = true
 	}
 
+	s.Lock()
+	s.inProcessIssues = nextInProcessIssues
+	s.Unlock()
+
 	return nil
+}
+
+// IsInProcess returns whether the given issue key has been seen in the
+// in-process issue list
+func (s *Searcher) IsInProcess(issueKey string) bool {
+	s.RLock()
+	defer s.RUnlock()
+	return s.inProcessIssues[issueKey]
 }
 
 // Titles returns the list of titles
