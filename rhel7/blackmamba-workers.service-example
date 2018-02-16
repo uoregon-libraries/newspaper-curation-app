@@ -1,0 +1,12 @@
+[Unit]
+	Description=Black Mamba Job Runner
+	After=network.target
+	RequiresMountsFor=/mnt/news
+
+[Service]
+	Type=simple
+	ExecStart=/usr/local/black-mamba/run-jobs \
+		-c /usr/local/black-mamba/settings
+
+[Install]
+	WantedBy=multi-user.target

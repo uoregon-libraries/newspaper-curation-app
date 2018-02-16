@@ -14,24 +14,39 @@ git checkout $version
 make clean
 make
 
-echo Stopping service...
-sudo systemctl stop blackmamba
+echo Stopping services...
+sudo systemctl stop httpd
+sudo systemctl stop blackmamba-httpd
+sudo systemctl stop blackmamba-workers
 
 echo Removing the old stuff
 sudo rm -f /usr/local/black-mamba/server
-sudo rm -f /usr/local/black-mamba/blackmamba.service
+sudo rm -f /usr/local/black-mamba/run-jobs
+sudo rm -f /usr/local/black-mamba/blackmamba-httpd.service
+sudo rm -f /usr/local/black-mamba/blackmamba-workers.service
 sudo rm /usr/local/black-mamba/static/ -rf
 sudo rm /usr/local/black-mamba/templates/ -rf
 
+echo Removing the cache
+sudo rm /tmp/black-mamba/finder.cache -f
+
+echo Migrating the database
+goose --env production up
+
 echo Copying in the new stuff
 src=$(pwd)
-sudo cp $src/bin/server /usr/local/black-mamba/server
-sudo cp $src/rhel7/blackmamba.service /usr/local/black-mamba/
-sudo cp -r $src/templates/ /usr/local/black-mamba/
-sudo cp -r $src/static/ /usr/local/black-mamba/
+dst="/usr/local/black-mamba"
+sudo cp $src/bin/server $dst/
+sudo cp $src/bin/run-jobs $dst/
+sudo cp $src/rhel7/blackmamba-httpd.service $dst/
+sudo cp $src/rhel7/blackmamba-workers.service $dst/
+sudo cp -r $src/templates/ $dst/
+sudo cp -r $src/static/ $dst/
 
 echo Doing a daemon reload and starting the service
 sudo systemctl daemon-reload
-sudo systemctl start blackmamba
+sudo systemctl start blackmamba-workers
+sudo systemctl start blackmamba-httpd
+sudo systemctl start httpd
 
 git checkout master
