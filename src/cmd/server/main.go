@@ -92,8 +92,6 @@ func startServer() {
 
 	var watcher = issuewatcher.New(conf)
 	go watcher.Watch(5 * time.Minute)
-	uploadedissuehandler.Setup(r, path.Join(hp, "uploadedissues"), conf, watcher)
-	workflowhandler.Setup(r, path.Join(hp, "workflow"), conf, watcher)
 
 	// Any unknown paths get a semi-friendly 404
 	r.NewRoute().PathPrefix("").HandlerFunc(notFound)
@@ -112,6 +110,9 @@ func startServer() {
 		waited++
 		time.Sleep(1 * time.Second)
 	}
+
+	uploadedissuehandler.Setup(r, path.Join(hp, "uploadedissues"), conf, watcher)
+	workflowhandler.Setup(r, path.Join(hp, "workflow"), conf, watcher)
 
 	http.Handle("/", nocache(logMiddleware(r)))
 
