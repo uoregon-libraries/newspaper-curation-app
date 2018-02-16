@@ -73,6 +73,31 @@ func FindJobsByStatusAndType(st string, t string) ([]*Job, error) {
 	return findJobs("status = ? AND job_type = ?", st, t)
 }
 
+// FindRecentJobsByType grabs all jobs of the given type which were created
+// within the given duration or are still pending, for use in pulling lists of
+// issues which are in the process of doing something
+func FindRecentJobsByType(t string, d time.Duration) ([]*Job, error) {
+	var pendingJobs, otherJobs []*Job
+	var err error
+
+	// HACK: this hard-coded "pending" crap is awful, but the jobs package is
+	// where the constants live, and jobs depends on db, so we can't have db
+	// depend on jobs.  We need a nicer approach for constants that multiple
+	// modules need.
+	var pending = "pending"
+
+	pendingJobs, err = FindJobsByStatusAndType(pending, t)
+	if err != nil {
+		return nil, err
+	}
+	otherJobs, err = findJobs("status <> ? AND job_type = ? AND created_at > ?", pending, t, time.Now().Add(-d))
+	if err != nil {
+		return nil, err
+	}
+
+	return append(pendingJobs, otherJobs...), nil
+}
+
 // FindJobsForIssueID returns all jobs tied to the given issue
 func FindJobsForIssueID(id int) ([]*Job, error) {
 	return findJobs("object_id = ?", id)

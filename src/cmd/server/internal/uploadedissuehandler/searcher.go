@@ -102,9 +102,9 @@ func (s *Searcher) scan() error {
 func (s *Searcher) buildInProcessList() error {
 	s.inProcessIssues = sync.Map{}
 
-	var jobs, err = db.FindJobsByStatusAndType(string(jobs.JobStatusPending), string(jobs.JobTypeMoveIssueToWorkflow))
+	var jobs, err = db.FindRecentJobsByType(string(jobs.JobTypeMoveIssueToWorkflow), time.Second*secondsBetweenIssueReload)
 	if err != nil {
-		return fmt.Errorf("unable to find pending sftp issue move jobs: %s", err)
+		return fmt.Errorf("unable to find recent issue move jobs: %s", err)
 	}
 
 	for _, job := range jobs {
