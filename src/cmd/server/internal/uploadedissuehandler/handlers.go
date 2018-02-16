@@ -59,7 +59,11 @@ func Setup(r *mux.Router, baseWebPath string, c *config.Config, w *issuewatcher.
 func HomeHandler(w http.ResponseWriter, req *http.Request) {
 	var r = getResponder(w, req)
 	r.Vars.Title = "Uploaded Issues"
-	r.Vars.Data["OtherErrors"] = searcher.scanner.Finder.Errors.OtherErrors
+	if searcher.Ready() {
+		r.Vars.Data["OtherErrors"] = searcher.TopErrors()
+	} else {
+		r.Vars.Data["OtherErrors"] = []string{}
+	}
 	r.Render(HomeTmpl)
 }
 
@@ -99,7 +103,7 @@ func IssueWorkflowHandler(w http.ResponseWriter, req *http.Request) {
 			cname = "Alert"
 		}
 
-		r.Audit("sftp-queue", fmt.Sprintf("Issue %q, success: %#v", r.issue.Key(), ok))
+		r.Audit("queue", fmt.Sprintf("Issue from %q, success: %#v", r.issue.Location, ok))
 		http.SetCookie(w, &http.Cookie{Name: cname, Value: msg, Path: "/"})
 		http.Redirect(w, req, TitlePath(r.issue.Title.Slug), http.StatusFound)
 

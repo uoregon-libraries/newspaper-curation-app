@@ -7,7 +7,6 @@ import (
 	"web/tmpl"
 
 	"github.com/gorilla/mux"
-	"github.com/uoregon-libraries/gopkg/logger"
 )
 
 type respError struct {
@@ -19,11 +18,11 @@ type respError struct {
 // auto-load in all uploaded issue handling
 type resp struct {
 	*responder.Responder
-	sftpTitles []*Title
-	title      *Title
-	issue      *Issue
-	vars       map[string]string
-	err        *respError
+	titles []*Title
+	title  *Title
+	issue  *Issue
+	vars   map[string]string
+	err    *respError
 }
 
 // getResponder sets up a resp with default values for issue/title to avoid
@@ -43,12 +42,7 @@ func getResponder(w http.ResponseWriter, req *http.Request) *resp {
 }
 
 func (r *resp) loadTitles() {
-	var err error
-	r.sftpTitles, err = searcher.Titles()
-	if err != nil {
-		logger.Errorf("Couldn't load SFTP titles: %s", err)
-		r.err = &respError{http.StatusInternalServerError, "Error trying to load titles; try again or contact support"}
-	}
+	r.titles = searcher.Titles()
 }
 
 func (r *resp) loadTitle() {
@@ -87,6 +81,11 @@ func (r *resp) loadIssue() {
 // Render sets up the titles/title/issue data vars for the template, then
 // delegates to the base responder.Responder
 func (r *resp) Render(t *tmpl.Template) {
+	// Hack in an error if the searcher has failed too often
+	if searcher.FailedSearch() {
+		r.err = &respError{http.StatusInternalServerError, "Unable to load titles and issues; try again or contact support"}
+	}
+
 	// Avoid any further work if we had an error
 	if r.err != nil {
 		r.Error(r.err.status, r.err.msg)
@@ -94,7 +93,7 @@ func (r *resp) Render(t *tmpl.Template) {
 	}
 
 	// Set up all the data vars
-	r.Vars.Data["Titles"] = r.sftpTitles
+	r.Vars.Data["Titles"] = r.titles
 	r.Vars.Data["Title"] = r.title
 	r.Vars.Data["Issue"] = r.issue
 
