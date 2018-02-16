@@ -3,14 +3,11 @@
 # This should be considered a working example... but not necessarily the best
 # way to deploy this to production!  Tweak for your own environment.
 
-version=$(git tag | tail -1)
-echo "Checking out $version and recompiling for deployment"
 status=$(git status --porcelain | grep -v "^??")
 if [[ $status != "" ]]; then
   echo "Stash changes to deploy"
   exit 1
 fi
-git checkout $version
 make clean
 make
 
@@ -48,5 +45,3 @@ sudo systemctl daemon-reload
 sudo systemctl start blackmamba-workers
 sudo systemctl start blackmamba-httpd
 sudo systemctl start httpd
-
-git checkout master
