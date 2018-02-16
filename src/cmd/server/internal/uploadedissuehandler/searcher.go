@@ -25,7 +25,7 @@ const secondsBeforeFatalError = 600
 // instance can and should used for the life of the web server.  All data
 // access is via functions to allow automatic rescanning of the file system.
 type Searcher struct {
-	sync.Mutex
+	sync.RWMutex
 	lastLoaded      time.Time
 	scanner         *issuewatcher.Scanner
 	titles          []*Title
@@ -97,14 +97,11 @@ func (s *Searcher) buildInProcessList() error {
 	return nil
 }
 
-// Titles returns the list of titles in the SFTP directory
-func (s *Searcher) Titles() ([]*Title, error) {
-	var err = s.load()
-	if err != nil && time.Since(s.lastLoaded) > secondsBeforeFatalError {
-		return nil, err
-	}
-
-	return s.titles, nil
+// Titles returns the list of titles
+func (s *Searcher) Titles() []*Title {
+	s.RLock()
+	defer s.RUnlock()
+	return s.titles
 }
 
 // ForceReload clears the last loaded time and refreshed the titles cache
@@ -115,6 +112,7 @@ func (s *Searcher) ForceReload() {
 
 // TitleLookup returns the Title for a given LCCN
 func (s *Searcher) TitleLookup(lccn string) *Title {
-	s.load()
+	s.RLock()
+	defer s.RUnlock()
 	return s.titleLookup[lccn]
 }

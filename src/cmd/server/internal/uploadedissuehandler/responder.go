@@ -7,7 +7,6 @@ import (
 	"web/tmpl"
 
 	"github.com/gorilla/mux"
-	"github.com/uoregon-libraries/gopkg/logger"
 )
 
 type respError struct {
@@ -43,12 +42,7 @@ func getResponder(w http.ResponseWriter, req *http.Request) *resp {
 }
 
 func (r *resp) loadTitles() {
-	var err error
-	r.titles, err = searcher.Titles()
-	if err != nil {
-		logger.Errorf("Couldn't load titles: %s", err)
-		r.err = &respError{http.StatusInternalServerError, "Error trying to load titles; try again or contact support"}
-	}
+	r.titles = searcher.Titles()
 }
 
 func (r *resp) loadTitle() {
