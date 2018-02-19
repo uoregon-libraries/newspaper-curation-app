@@ -273,6 +273,9 @@ func (i *Issue) IsLive() bool {
 // "likely duplicate of ..."
 func (i *Issue) WorkflowIdentification() string {
 	switch i.WorkflowStep {
+	case WSSFTP:
+		return "a born-digital issue waiting for processing"
+
 	case WSScan:
 		return "a scanned issue waiting for processing"
 
