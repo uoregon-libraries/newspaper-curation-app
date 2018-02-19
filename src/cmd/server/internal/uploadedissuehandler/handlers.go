@@ -70,7 +70,7 @@ func HomeHandler(w http.ResponseWriter, req *http.Request) {
 // TitleHandler prints a list of issues for a given title
 func TitleHandler(w http.ResponseWriter, req *http.Request) {
 	var r = getResponder(w, req)
-	r.Vars.Title = r.title.Name
+	r.Vars.Title = fmt.Sprintf("%s - %s", r.title.Name, r.title.Type)
 	r.Render(TitleTmpl)
 }
 
@@ -81,7 +81,7 @@ func IssueHandler(w http.ResponseWriter, req *http.Request) {
 		r.Render(nil)
 		return
 	}
-	r.Vars.Title = fmt.Sprintf("%s, issue %s", r.title.Name, r.issue.RawDate)
+	r.Vars.Title = fmt.Sprintf("%s, issue %s - %s", r.title.Name, r.issue.RawDate, r.title.Type)
 	r.Render(IssueTmpl)
 }
 

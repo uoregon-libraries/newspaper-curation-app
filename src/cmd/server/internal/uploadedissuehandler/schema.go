@@ -36,6 +36,18 @@ const (
 	TitleTypeBornDigital
 )
 
+// String tells us a human-friendly meaning for the type of title
+func (tt TitleType) String() string {
+	switch tt {
+	case TitleTypeScanned:
+		return "Scanned"
+	case TitleTypeBornDigital:
+		return "BornDigital"
+	}
+
+	return "N/A"
+}
+
 // Title wraps a schema.Title with some extra information for web presentation.
 type Title struct {
 	*schema.Title
