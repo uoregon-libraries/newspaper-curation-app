@@ -1,3 +1,23 @@
+{{define "titleitem"}}
+      <li>
+        {{if gt .TotalErrors 0}}
+          <div class="title-with-errors">
+            <div class="title-link">{{.Link}}</div>
+            {{if gt .TitleErrors 0}}
+              <span class="glyphicon glyphicon-exclamation-sign" aria-hidden="true"></span>
+              <span class="count">{{.TitleErrors}} error(s) detected on this title</span>
+            {{end}}
+            {{if gt .ChildErrors 0}}
+              <span class="glyphicon glyphicon-exclamation-sign" aria-hidden="true"></span>
+              <span class="count">{{.ChildErrors}} error(s) detected in issues and/or files</span>
+            {{end}}
+          </div>
+        {{- else}}
+          {{.Link}}
+        {{- end}}
+      </li>
+{{end}}
+
 {{block "content" .}}
 
 {{if gt (len .Data.OtherErrors) 0}}
@@ -16,27 +36,20 @@
   </ul>
 {{end}}
 
-<h2>Titles</h2>
+<h2>Born-Digital Titles</h2>
 <ul>
-  {{range .Data.Titles}}
+  {{range .Data.BornDigitalTitles}}
     {{if .Show}}
-      <li>
-        {{if gt .TotalErrors 0}}
-          <div class="title-with-errors">
-            <div class="title-link">{{.Link}}</div>
-            {{if gt .TitleErrors 0}}
-              <span class="glyphicon glyphicon-exclamation-sign" aria-hidden="true"></span>
-              <span class="count">{{.TitleErrors}} error(s) detected on this title</span>
-            {{end}}
-            {{if gt .ChildErrors 0}}
-              <span class="glyphicon glyphicon-exclamation-sign" aria-hidden="true"></span>
-              <span class="count">{{.ChildErrors}} error(s) detected in issues and/or files</span>
-            {{end}}
-          </div>
-        {{- else}}
-          {{.Link}}
-        {{- end}}
-      </li>
+      {{template "titleitem" .}}
+    {{end}}
+  {{end}}
+</ul>
+
+<h2>Scanned Titles</h2>
+<ul>
+  {{range .Data.ScannedTitles}}
+    {{if .Show}}
+      {{template "titleitem" .}}
     {{end}}
   {{end}}
 </ul>

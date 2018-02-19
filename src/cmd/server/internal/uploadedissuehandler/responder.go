@@ -18,11 +18,12 @@ type respError struct {
 // auto-load in all uploaded issue handling
 type resp struct {
 	*responder.Responder
-	titles []*Title
-	title  *Title
-	issue  *Issue
-	vars   map[string]string
-	err    *respError
+	bornDigitalTitles []*Title
+	scannedTitles     []*Title
+	title             *Title
+	issue             *Issue
+	vars              map[string]string
+	err               *respError
 }
 
 // getResponder sets up a resp with default values for issue/title to avoid
@@ -42,7 +43,14 @@ func getResponder(w http.ResponseWriter, req *http.Request) *resp {
 }
 
 func (r *resp) loadTitles() {
-	r.titles = searcher.Titles()
+	for _, t := range searcher.Titles() {
+		switch t.Type {
+		case TitleTypeScanned:
+			r.scannedTitles = append(r.scannedTitles, t)
+		case TitleTypeBornDigital:
+			r.bornDigitalTitles = append(r.bornDigitalTitles, t)
+		}
+	}
 }
 
 func (r *resp) loadTitle() {
@@ -93,7 +101,8 @@ func (r *resp) Render(t *tmpl.Template) {
 	}
 
 	// Set up all the data vars
-	r.Vars.Data["Titles"] = r.titles
+	r.Vars.Data["BornDigitalTitles"] = r.bornDigitalTitles
+	r.Vars.Data["ScannedTitles"] = r.scannedTitles
 	r.Vars.Data["Title"] = r.title
 	r.Vars.Data["Issue"] = r.issue
 

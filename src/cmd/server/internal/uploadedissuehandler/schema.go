@@ -28,6 +28,15 @@ func (e Errors) String() string {
 	return strings.Join(sList, "; ")
 }
 
+// TitleType tells us if a title contains born-digital issues or scanned
+type TitleType int
+
+// The two constants for TitleType
+const (
+	TitleTypeScanned TitleType = iota
+	TitleTypeBornDigital
+)
+
 // Title wraps a schema.Title with some extra information for web presentation.
 type Title struct {
 	*schema.Title
@@ -39,6 +48,7 @@ type Title struct {
 	TotalErrors int
 	Issues      []*Issue
 	IssueLookup map[string]*Issue
+	Type        TitleType
 }
 
 // decorateTitles iterates over the list of the searcher's titles and decorates
@@ -47,14 +57,37 @@ func (s *Searcher) decorateTitles() {
 	var nextTitles = make([]*Title, 0)
 	var nextTitleLookup = make(map[string]*Title)
 	for _, t := range s.scanner.Finder.Titles {
-		var title = &Title{Title: t, Slug: t.LCCN, allErrors: s.scanner.Finder.Errors}
-		title.decorateIssues(t.Issues)
-		title.decorateErrors()
+		var title, err = s.makeTitle(t)
+		if err != nil {
+			logger.Errorf("Unable to build title: %s", err)
+			continue
+		}
 		nextTitles = append(nextTitles, title)
 		nextTitleLookup[title.Slug] = title
 	}
 
 	s.swapTitleData(nextTitles, nextTitleLookup)
+}
+
+func (s *Searcher) makeTitle(t *schema.Title) (*Title, error) {
+	var title = &Title{Title: t, allErrors: s.scanner.Finder.Errors}
+
+	// Location is the only element that actually uniquely identifies a title, so
+	// we have to use that to figure out if this is a scanned issue or not
+	var slug = t.LCCN
+	if strings.HasPrefix(t.Location, s.conf.MasterPDFUploadPath) {
+		title.Type = TitleTypeBornDigital
+		title.Slug = "dig-" + slug
+	} else if strings.HasPrefix(t.Location, s.conf.MasterScanUploadPath) {
+		title.Type = TitleTypeScanned
+		title.Slug = "scan-" + slug
+	} else {
+		return nil, fmt.Errorf("unknown title location: %q", t.Location)
+	}
+
+	title.decorateIssues(t.Issues)
+	title.decorateErrors()
+	return title, nil
 }
 
 func (s *Searcher) swapTitleData(nextTitles []*Title, nextTitleLookup map[string]*Title) {
