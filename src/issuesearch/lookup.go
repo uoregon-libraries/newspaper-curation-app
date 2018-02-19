@@ -2,6 +2,7 @@ package issuesearch
 
 import (
 	"schema"
+	"sync"
 )
 
 // IssueMap links a textual issue key to one or more Issue objects
@@ -9,6 +10,8 @@ type IssueMap map[string]schema.IssueList
 
 // Lookup aggregates issue lists to create very granularly searchable data
 type Lookup struct {
+	sync.RWMutex
+
 	// Issue lets us find issues by key; we should usually have only one
 	// issue per key, but the live site could have something that's still sitting
 	// in the "ready for ingest" area, or the page backup area.
@@ -41,6 +44,8 @@ func NewLookup() *Lookup {
 
 // Populate stores the given list of issues in the various maps
 func (l *Lookup) Populate(issues schema.IssueList) {
+	l.Lock()
+	defer l.Unlock()
 	for _, issue := range issues {
 		l.cacheIssueLookup(issue)
 	}
@@ -95,6 +100,9 @@ func (l *Lookup) getLookup(k *Key) IssueMap {
 
 // Issues returns the list of issues which match the given search key
 func (l *Lookup) Issues(k *Key) schema.IssueList {
+	l.RLock()
+	defer l.RUnlock()
+
 	var lookup = l.getLookup(k)
 	var issues = lookup[k.String()]
 	issues.SortByKey()
