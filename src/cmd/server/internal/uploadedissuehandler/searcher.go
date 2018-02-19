@@ -18,12 +18,11 @@ import (
 // data, but avoids hammering the disk if a lot of refreshing happens
 const secondsBetweenIssueReload = 60
 
-// secondsBeforeFatalError is how long we allow the system to run with an error
-// response before we actually return a failure from any functions which
-// require searching the filesystem
+// maxLoadFailures is the number of times in a row a scan may fail before we
+// consider the system in a failed state and respond to requests with an error
 const maxLoadFailures = 5
 
-// Searcher holds onto a duped Scanner for running local queries against scan
+// Searcher holds onto a Scanner for running local queries against scan
 // and sftp uploads.  This structure is completely thread-safe; a single
 // instance can and should used for the life of the web server.  All data
 // access is via functions to allow automatic rescanning of the file system.
