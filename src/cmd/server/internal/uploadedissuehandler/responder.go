@@ -46,16 +46,16 @@ func (r *resp) loadTitles() {
 }
 
 func (r *resp) loadTitle() {
-	// If there's no "lccn" var, we don't expect (or look for) a title
-	var lccn, ok = r.vars["lccn"]
+	// If there's no "title" var, we don't expect (or look for) a title
+	var slug, ok = r.vars["title"]
 	if !ok {
 		return
 	}
 
-	// If we have an lccn var, it's an error to not find a title
-	r.title = searcher.TitleLookup(lccn)
+	// If we have a title var, it's an error to not find a title
+	r.title = searcher.TitleLookup(slug)
 	if r.title == nil {
-		r.err = &respError{http.StatusNotFound, fmt.Sprintf("Unable to find title %#v", lccn)}
+		r.err = &respError{http.StatusNotFound, fmt.Sprintf("Unable to find title %#v", slug)}
 	}
 }
 

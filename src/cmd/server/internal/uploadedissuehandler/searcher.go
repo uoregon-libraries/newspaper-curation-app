@@ -150,11 +150,11 @@ func (s *Searcher) FailedSearch() bool {
 	return s.fails > maxLoadFailures
 }
 
-// TitleLookup returns the Title for a given LCCN
-func (s *Searcher) TitleLookup(lccn string) *Title {
+// TitleLookup returns the Title for a given slug
+func (s *Searcher) TitleLookup(slug string) *Title {
 	s.RLock()
 	defer s.RUnlock()
-	return s.titleLookup[lccn]
+	return s.titleLookup[slug]
 }
 
 // Ready returns whether or not the searcher has completed at least one search
