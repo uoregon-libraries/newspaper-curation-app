@@ -50,7 +50,7 @@ func (s *Searcher) decorateTitles() {
 		var title = &Title{Title: t, Slug: t.LCCN, allErrors: s.scanner.Finder.Errors}
 		title.decorateIssues(t.Issues)
 		title.decorateErrors()
-		nextTitles = append(s.titles, title)
+		nextTitles = append(nextTitles, title)
 		nextTitleLookup[title.Slug] = title
 	}
 
