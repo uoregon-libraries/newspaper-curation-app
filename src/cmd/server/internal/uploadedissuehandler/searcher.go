@@ -32,7 +32,6 @@ type Searcher struct {
 	conf            *config.Config
 	lastLoaded      time.Time
 	scanner         *issuewatcher.Scanner
-	nextScanner     *issuewatcher.Scanner
 	titles          []*Title
 	titleLookup     map[string]*Title
 	inProcessIssues map[string]bool
@@ -78,15 +77,15 @@ func (s *Searcher) scan() error {
 		return fmt.Errorf("unable to build in-process issue list: %s", err)
 	}
 
-	s.nextScanner = issuewatcher.NewScanner(s.conf).DisableDB().DisableWeb()
-	err = s.nextScanner.Scan()
+	var nextScanner = issuewatcher.NewScanner(s.conf).DisableDB().DisableWeb()
+	err = nextScanner.Scan()
 	if err != nil {
 		return fmt.Errorf("unable to scan filesystem: %s", err)
 	}
 
 	s.Lock()
 	s.lastLoaded = time.Now()
-	s.scanner = s.nextScanner
+	s.scanner = nextScanner
 	s.fails = 0
 	s.Unlock()
 
