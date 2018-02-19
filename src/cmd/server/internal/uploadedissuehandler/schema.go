@@ -71,18 +71,24 @@ func (t *Title) appendSchemaIssue(i *schema.Issue) *Issue {
 	return issue
 }
 
+func (t *Title) addError(err template.HTML) {
+	t.Errors = append(t.Errors, err)
+	t.TitleErrors++
+	t.TotalErrors++
+}
+
 func (t *Title) decorateErrors() {
 	t.Errors = make(Errors, 0)
 	for _, e := range t.allErrors.TitleErrors[t.Title] {
-		if e.Issue == nil && e.File == nil {
-			t.Errors = append(t.Errors, safeError(e.Error.Error()))
-			t.TitleErrors++
-			t.TotalErrors++
-		} else {
-			t.ChildErrors++
-			t.TotalErrors++
-		}
+		t.addError(safeError(e.Error.Error()))
 	}
+}
+
+// AddChildError should be called when an issue has any kind of error so we
+// know this title's issues will need to be looked at closely
+func (t *Title) AddChildError() {
+	t.ChildErrors++
+	t.TotalErrors++
 }
 
 // We want HTML-friendly errors for when we need to put in our own, but
@@ -135,15 +141,23 @@ func (i *Issue) appendSchemaFile(f *schema.File) {
 	i.FileLookup[pdf.Slug] = pdf
 }
 
+func (i *Issue) addError(err template.HTML) {
+	i.Errors = append(i.Errors, err)
+	i.Title.AddChildError()
+}
+
 func (i *Issue) decorateErrors() {
 	i.Errors = make(Errors, 0)
 	for _, e := range i.Title.allErrors.IssueErrors[i.Issue] {
-		if e.File == nil {
-			i.Errors = append(i.Errors, safeError(e.Error.Error()))
-		} else {
-			i.ChildErrors++
-		}
+		i.addError(safeError(e.Error.Error()))
 	}
+}
+
+// AddChildError should be called when a file has any kind of error so we know
+// this issue's pages will need to be looked at closely
+func (i *Issue) AddChildError() {
+	i.ChildErrors++
+	i.Title.AddChildError()
 }
 
 // decorateExternalErrors checks for external problems we don't detect when
@@ -174,7 +188,7 @@ func (i *Issue) decorateDupeErrors() {
 			errstr = fmt.Sprintf(`likely duplicate of a live issue: <a href="%s">%s, %s</a>`,
 				wi.Location[:len(wi.Location)-5], wi.Title.Name, wi.RawDate)
 		}
-		i.Errors = append(i.Errors, template.HTML(errstr))
+		i.addError(template.HTML(errstr))
 	}
 }
 
@@ -265,14 +279,18 @@ type File struct {
 	Errors Errors
 }
 
+func (f *File) addError(err template.HTML) {
+	f.Errors = append(f.Errors, err)
+	f.Issue.AddChildError()
+}
+
 func (f *File) decorateErrors() {
 	f.Errors = make(Errors, 0)
 	for _, e := range f.Issue.Title.allErrors.IssueErrors[f.Issue.Issue] {
 		if e.File != f.File {
 			continue
 		}
-
-		f.Errors = append(f.Errors, safeError(e.Error.Error()))
+		f.addError(safeError(e.Error.Error()))
 	}
 }
 
