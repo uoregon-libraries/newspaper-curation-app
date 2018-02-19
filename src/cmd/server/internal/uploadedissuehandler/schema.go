@@ -10,7 +10,6 @@ import (
 
 	"path/filepath"
 	"schema"
-	"sort"
 	"strings"
 	"time"
 
@@ -51,58 +50,6 @@ type Title struct {
 	Type        TitleType
 }
 
-// decorateTitles iterates over the list of the searcher's titles and decorates
-// each, then its issues, and the issues' files, to prepare for web display
-func (s *Searcher) decorateTitles() {
-	var nextTitles = make([]*Title, 0)
-	var nextTitleLookup = make(map[string]*Title)
-	for _, t := range s.scanner.Finder.Titles {
-		var title, err = s.makeTitle(t)
-		if err != nil {
-			logger.Errorf("Unable to build title: %s", err)
-			continue
-		}
-		nextTitles = append(nextTitles, title)
-		nextTitleLookup[title.Slug] = title
-	}
-
-	s.swapTitleData(nextTitles, nextTitleLookup)
-}
-
-func (s *Searcher) makeTitle(t *schema.Title) (*Title, error) {
-	var title = &Title{Title: t, allErrors: s.scanner.Finder.Errors}
-
-	// Location is the only element that actually uniquely identifies a title, so
-	// we have to use that to figure out if this is a scanned issue or not
-	var slug = t.LCCN
-	if strings.HasPrefix(t.Location, s.conf.MasterPDFUploadPath) {
-		title.Type = TitleTypeBornDigital
-		title.Slug = "dig-" + slug
-	} else if strings.HasPrefix(t.Location, s.conf.MasterScanUploadPath) {
-		title.Type = TitleTypeScanned
-		title.Slug = "scan-" + slug
-	} else {
-		return nil, fmt.Errorf("unknown title location: %q", t.Location)
-	}
-
-	title.decorateIssues(t.Issues)
-	title.decorateErrors()
-	return title, nil
-}
-
-func (s *Searcher) swapTitleData(nextTitles []*Title, nextTitleLookup map[string]*Title) {
-	s.Lock()
-	defer s.Unlock()
-
-	s.titles = nextTitles
-	s.titleLookup = nextTitleLookup
-
-	// We like titles sorted by name for presentation
-	sort.Slice(s.titles, func(i, j int) bool {
-		return strings.ToLower(s.titles[i].Name) < strings.ToLower(s.titles[j].Name)
-	})
-}
-
 func (t *Title) decorateIssues(issueList []*schema.Issue) {
 	t.Issues = make([]*Issue, 0)
 	t.IssueLookup = make(map[string]*Issue)
@@ -122,25 +69,6 @@ func (t *Title) appendSchemaIssue(i *schema.Issue) *Issue {
 	t.IssueLookup[issue.Slug] = issue
 
 	return issue
-}
-
-// RemoveIssue takes the given issue out of all lookups to hide it from
-// front-end queueing operations
-func (s *Searcher) RemoveIssue(i *Issue) {
-	s.Lock()
-	defer s.Unlock()
-
-	s.inProcessIssues[i.Key()] = true
-
-	var newIssues []*Issue
-	for _, issue := range i.Title.Issues {
-		if issue != i {
-			newIssues = append(newIssues, issue)
-		}
-	}
-
-	i.Title.Issues = newIssues
-	delete(i.Title.IssueLookup, i.Slug)
 }
 
 func (t *Title) decorateErrors() {
