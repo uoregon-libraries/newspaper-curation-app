@@ -91,6 +91,25 @@ func (t *Title) appendSchemaIssue(i *schema.Issue) *Issue {
 	return issue
 }
 
+// RemoveIssue takes the given issue out of all lookups to hide it from
+// front-end queueing operations
+func (s *Searcher) RemoveIssue(i *Issue) {
+	s.Lock()
+	defer s.Unlock()
+
+	s.inProcessIssues[i.Key()] = true
+
+	var newIssues []*Issue
+	for _, issue := range i.Title.Issues {
+		if issue != i {
+			newIssues = append(newIssues, issue)
+		}
+	}
+
+	i.Title.Issues = newIssues
+	delete(i.Title.IssueLookup, i.Slug)
+}
+
 func (t *Title) decorateErrors() {
 	t.Errors = make(Errors, 0)
 	for _, e := range t.allErrors.TitleErrors[t.Title] {

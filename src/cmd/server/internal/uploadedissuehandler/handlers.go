@@ -98,8 +98,11 @@ func IssueWorkflowHandler(w http.ResponseWriter, req *http.Request) {
 	switch r.vars["action"] {
 	case "queue":
 		var ok, msg = queueIssueMove(r.issue)
-		var cname = "Info"
-		if !ok {
+		var cname string
+		if ok {
+			cname = "Info"
+			searcher.RemoveIssue(r.issue)
+		} else {
 			cname = "Alert"
 		}
 
