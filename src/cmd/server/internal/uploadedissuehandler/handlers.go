@@ -25,8 +25,8 @@ var (
 	// which all subpages are built
 	Layout *tmpl.TRoot
 
-	// HomeTmpl renders the uploaded issues landing page
-	HomeTmpl *tmpl.Template
+	// TitleList renders the uploaded issues landing page
+	TitleList *tmpl.Template
 
 	// TitleTmpl renders the list of issues and a summary of errors for a given title
 	TitleTmpl *tmpl.Template
@@ -50,7 +50,7 @@ func Setup(r *mux.Router, baseWebPath string, c *config.Config, w *issuewatcher.
 	searcher = newSearcher(c)
 	Layout = responder.Layout.Clone()
 	Layout.Path = path.Join(Layout.Path, "uploadedissues")
-	HomeTmpl = Layout.MustBuild("home.go.html")
+	TitleList = Layout.MustBuild("title-list.go.html")
 	IssueTmpl = Layout.MustBuild("issue.go.html")
 	TitleTmpl = Layout.MustBuild("title.go.html")
 }
@@ -64,7 +64,7 @@ func HomeHandler(w http.ResponseWriter, req *http.Request) {
 	} else {
 		r.Vars.Data["OtherErrors"] = []string{}
 	}
-	r.Render(HomeTmpl)
+	r.Render(TitleList)
 }
 
 // TitleHandler prints a list of issues for a given title
