@@ -54,15 +54,20 @@ func (s *Searcher) decorateTitles() {
 		nextTitleLookup[title.Slug] = title
 	}
 
+	s.swapTitleData(nextTitles, nextTitleLookup)
+}
+
+func (s *Searcher) swapTitleData(nextTitles []*Title, nextTitleLookup map[string]*Title) {
+	s.Lock()
+	defer s.Unlock()
+
+	s.titles = nextTitles
+	s.titleLookup = nextTitleLookup
+
 	// We like titles sorted by name for presentation
 	sort.Slice(s.titles, func(i, j int) bool {
 		return strings.ToLower(s.titles[i].Name) < strings.ToLower(s.titles[j].Name)
 	})
-
-	s.Lock()
-	s.titles = nextTitles
-	s.titleLookup = nextTitleLookup
-	s.Unlock()
 }
 
 func (t *Title) decorateIssues(issueList []*schema.Issue) {
