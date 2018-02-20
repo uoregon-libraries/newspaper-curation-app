@@ -35,8 +35,17 @@ func processIssue(path string) {
 		return
 	}
 
-	// TODO: Try to find a master backup for this issue
-	// dbi.MasterBackupLocation
+	logger.Debugf("Processing %q", path)
+
+	// Try to find a master backup for this issue - I do this by directory name
+	// because of an out-of-band rename job I did to try and reorganize stuff.
+	// If you aren't me, this won't work for you.
+	var base = filepath.Base(path)
+	var backupPath = filepath.Join(conf.MasterPDFBackupPath, base)
+	if fileutil.IsDir(backupPath) {
+		logger.Debugf("Found master backup at %q", backupPath)
+		dbi.MasterBackupLocation = backupPath
+	}
 
 	err = dbi.Save()
 	if err != nil {
