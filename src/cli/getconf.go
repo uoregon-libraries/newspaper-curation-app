@@ -23,7 +23,7 @@ type CLI struct {
 // Mamba command can have: a config file.  Commands should extend this rather
 // than having their own custom type in order to ensure consistency.
 type BaseOptions struct {
-	ConfigFile string `short:"c" long:"config" description:"path to Black Mamba config file" required:"true"`
+	ConfigFile string `short:"c" long:"config" description:"path to NCA config file" required:"true"`
 }
 
 // New returns a CLI instance for parsing flags into the given structure

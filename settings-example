@@ -15,7 +15,7 @@ OPJ_DECOMPRESS="opj_decompress"
 # Web configuration
 ###
 
-# Full URL to the Black Mamba web app; though the hostname isn't currently used,
+# Full URL to the NCA web app; though the hostname isn't currently used,
 # it may be necessary for things like sending email notifications in the future
 WEBROOT="https://internal.somewhere.edu/nca"
 
@@ -28,7 +28,7 @@ BIND_ADDRESS=":8080"
 IIIF_BASE_URL="https://my.server.com/iiif"
 
 # Full URL to the live news site, for pulling information about issues which
-# are in production, and may be used in the future to link from Black Mamba to
+# are in production, and may be used in the future to link from NCA to
 # live batches' / issues' detail pages
 NEWS_WEBROOT="https://news.somewhere.edu"
 
