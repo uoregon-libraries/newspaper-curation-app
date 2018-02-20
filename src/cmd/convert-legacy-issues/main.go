@@ -32,13 +32,9 @@ func getConf() {
 	var c = cli.New(&opts)
 	conf = c.GetConf()
 
-	// Just to be extra-safe, let's not even setup the database connection for a
-	// dry run
-	if !opts.DryRun {
-		var err = db.Connect(conf.DatabaseConnect)
-		if err != nil {
-			logger.Fatalf("Error trying to connect to database: %s", err)
-		}
+	var err = db.Connect(conf.DatabaseConnect)
+	if err != nil {
+		logger.Fatalf("Error trying to connect to database: %s", err)
 	}
 }
 
