@@ -13,9 +13,9 @@ services:
     image: mariadb
     environment:
       - MYSQL_ROOT_PASSWORD=123456
-      - MYSQL_DATABASE=blackmamba
-      - MYSQL_USER=blackmamba
-      - MYSQL_PASSWORD=blackmamba
+      - MYSQL_DATABASE=nca
+      - MYSQL_USER=nca
+      - MYSQL_PASSWORD=nca
     volumes:
       - ./docker/mysql/:/etc/mysql/conf.d:Z
       - db:/var/lib/mysql

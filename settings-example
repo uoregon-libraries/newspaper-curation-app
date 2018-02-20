@@ -38,9 +38,9 @@ NEWS_WEBROOT="https://news.somewhere.edu"
 
 DB_HOST="127.0.0.1"
 DB_PORT=3306
-DB_USER="blackmamba"
-DB_PASSWORD="blackmamba"
-DB_DATABASE="blackmamba"
+DB_USER="nca"
+DB_PASSWORD="nca"
+DB_DATABASE="nca"
 
 ###
 # Paths for PDFs, derivatives, etc.

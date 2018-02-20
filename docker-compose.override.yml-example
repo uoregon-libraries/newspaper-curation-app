@@ -43,5 +43,5 @@ services:
   # issue a `docker-compose build apache` each time you change this stuff)
   apache:
     volumes:
-      - ./docker/apache/blackmamba.conf:/etc/apache2/sites-available/blackmamba.conf:Z
+      - ./docker/apache/nca.conf:/etc/apache2/sites-available/nca.conf:Z
       - ./docker/apache/httpd-foreground:/usr/local/bin/httpd-foreground:Z

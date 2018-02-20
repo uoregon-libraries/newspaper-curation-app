@@ -2,7 +2,7 @@
 MAX_TRIES=15
 TRIES=0
 while true; do
-  mysql -uroot -hdb -p123456 -e 'ALTER DATABASE blackmamba charset=utf8'
+  mysql -uroot -hdb -p123456 -e 'ALTER DATABASE nca charset=utf8'
   st=$?
   if [[ $st == 0 ]]; then
     exit 0

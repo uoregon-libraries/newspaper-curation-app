@@ -6,9 +6,9 @@ MAINTAINER Jeremy Echols <jechols@uoregon.edu>
 RUN apt-get update -y
 RUN apt-get install -y apache2
 RUN a2enmod cache cache_disk expires rewrite proxy_http headers
-ADD apache/blackmamba.conf /etc/apache2/sites-available/blackmamba.conf
+ADD apache/nca.conf /etc/apache2/sites-available/nca.conf
 RUN a2dissite 000-default.conf
-RUN a2ensite blackmamba.conf
+RUN a2ensite nca.conf
 RUN mkdir -p /var/lock/apache2
 RUN mkdir -p /var/run/apache2
 
