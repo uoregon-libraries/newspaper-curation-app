@@ -104,7 +104,13 @@ func (r *resp) Render(t *tmpl.Template) {
 	r.Vars.Data["BornDigitalTitles"] = r.bornDigitalTitles
 	r.Vars.Data["ScannedTitles"] = r.scannedTitles
 	r.Vars.Data["Title"] = r.title
-	r.Vars.Data["Issue"] = r.issue
+
+	// If we've pulled a single issue, scan the PDFs if they haven't already been
+	// scanned so we can check for embedded image DPI errors
+	if r.issue != nil {
+		r.issue.ScanPDFImageDPIs()
+		r.Vars.Data["Issue"] = r.issue
+	}
 
 	r.Responder.Render(t)
 }
