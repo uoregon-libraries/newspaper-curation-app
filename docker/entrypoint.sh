@@ -6,8 +6,8 @@ if [[ ${APP_URL:-} == "" ]]; then
   echo "start due to an invalid WEBROOT, this could be why"
   echo
 fi
-if [[ ${BM_NEWS_WEBROOT:-} == "" ]]; then
-  echo "BM_NEWS_WEBROOT must be set"
+if [[ ${NCA_NEWS_WEBROOT:-} == "" ]]; then
+  echo "NCA_NEWS_WEBROOT must be set"
   exit 1
 fi
 
@@ -15,5 +15,5 @@ echo "Waiting for database connectivity"
 wait_for_database
 
 echo 'Executing "'$@'"'
-cd /usr/local/black-mamba
+cd /usr/local/nca
 exec $@

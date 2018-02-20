@@ -15,7 +15,7 @@ var altoTemplateString = `
         <processingStepSettings>N/A</processingStepSettings>
         <processingSoftware>
           <softwareCreator>UO Libraries</softwareCreator>
-          <softwareName>Black Mamba: The Batch Maker</softwareName>
+          <softwareName>NCA: The Batch Maker</softwareName>
           <softwareVersion>` + version.Version + `</softwareVersion>
         </processingSoftware>
       </ocrProcessingStep>
