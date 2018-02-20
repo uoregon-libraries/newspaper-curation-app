@@ -17,14 +17,28 @@ import (
 	"github.com/uoregon-libraries/gopkg/logger"
 )
 
-var conf *config.Config
+// Command-line options
+type _opts struct {
+	cli.BaseOptions
+	DryRun bool `short:"n" long:"dry-run" description:"don't write to the database"`
+}
+
+var (
+	opts _opts
+	conf *config.Config
+)
 
 func getConf() {
-	var c = cli.Simple()
+	var c = cli.New(&opts)
 	conf = c.GetConf()
-	var err = db.Connect(conf.DatabaseConnect)
-	if err != nil {
-		logger.Fatalf("Error trying to connect to database: %s", err)
+
+	// Just to be extra-safe, let's not even setup the database connection for a
+	// dry run
+	if !opts.DryRun {
+		var err = db.Connect(conf.DatabaseConnect)
+		if err != nil {
+			logger.Fatalf("Error trying to connect to database: %s", err)
+		}
 	}
 }
 
@@ -55,10 +69,15 @@ func processIssue(path string) {
 		dbi.MasterBackupLocation = backupPath
 	}
 
-	err = dbi.Save()
-	if err != nil {
-		logger.Errorf("Error trying to save issue from dir %q: %s", path, err)
-		return
+	if opts.DryRun {
+		logger.Debugf("Dry run - not saving to database")
+	} else {
+		logger.Debugf("Saving issue to database")
+		err = dbi.Save()
+		if err != nil {
+			logger.Errorf("Error trying to save issue from dir %q: %s", path, err)
+			return
+		}
 	}
 
 	// Don't queue jobs if the issue was already in the database - chances are
