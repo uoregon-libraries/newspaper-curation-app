@@ -39,11 +39,11 @@ services:
       - /mnt/news:/mnt/news:z
       - issue-cache:/var/local/news/black-mamba/cache
     environment:
-      - BM_WEBROOT=$APP_URL/black-mamba
-      - BM_DB_HOST=db
-      # The redundancy here ensures we get a warning if $BM_NEWS_WEBROOT isn't set
-      - BM_NEWS_WEBROOT=$BM_NEWS_WEBROOT
-      - BM_IIIF_BASE_URL=$APP_URL/images/iiif
+      - NCA_WEBROOT=$APP_URL/black-mamba
+      - NCA_DB_HOST=db
+      # The redundancy here ensures we get a warning if $NCA_NEWS_WEBROOT isn't set
+      - NCA_NEWS_WEBROOT=$NCA_NEWS_WEBROOT
+      - NCA_IIIF_BASE_URL=$APP_URL/images/iiif
     command: /usr/bin/true
 
   db-migrate:

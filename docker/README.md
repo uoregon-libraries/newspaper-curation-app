@@ -6,7 +6,7 @@ up the IIIF server, how to find the live issues, etc.
 
 ```bash
   export APP_URL="https://jechols.uoregon.edu"
-  export BM_NEWS_WEBROOT="https://oregonnews.uoregon.edu"
+  export NCA_NEWS_WEBROOT="https://oregonnews.uoregon.edu"
 ```
 
 Consider copying `docker-compose.override.yml-example` to customize your setup
