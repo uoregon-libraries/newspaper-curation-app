@@ -48,7 +48,11 @@ func (c *CLI) AppendUsage(msg string) {
 func (c *CLI) GetConf() *config.Config {
 	var _, err = c.p.Parse()
 	if err != nil {
-		c.UsageFail("Error: %s", err)
+		var ferr, ok = err.(*flags.Error)
+		if ok && ferr.Type == flags.ErrHelp {
+			c.HelpExit()
+		}
+		c.UsageFail("Error: %q", err)
 	}
 
 	var configFile string
@@ -78,6 +82,18 @@ func (c *CLI) GetConf() *config.Config {
 func Wrap(msg string) {
 	fmt.Fprint(os.Stderr, wordutils.Wrap(msg, 80))
 	fmt.Fprintln(os.Stderr)
+}
+
+// HelpExit exits the application after printing out the parser's help
+func (c *CLI) HelpExit() {
+	c.p.WriteHelp(os.Stderr)
+	for i, msg := range c.postUsage {
+		if i > 0 {
+			fmt.Fprintln(os.Stderr)
+		}
+		Wrap(msg)
+	}
+	os.Exit(0)
 }
 
 // UsageFail exits the application after printing out a message and the
