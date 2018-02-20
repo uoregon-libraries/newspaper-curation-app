@@ -3,13 +3,43 @@
 # This should be considered a working example... but not necessarily the best
 # way to deploy this to production!  Tweak for your own environment.
 
+type=${1:-}
+
+case "$type" in
+
+"dev")
+  checkout=
+  version="-$(git log -1 --format="%h")"
+  ;;
+
+"prod")
+  checkout=$(git tag | tail -1)
+  version=
+  ;;
+
+*)
+  echo "You must specify 'dev' or 'prod'"
+  exit 1
+esac
+
 status=$(git status --porcelain | grep -v "^??")
 if [[ $status != "" ]]; then
   echo "Stash changes to deploy"
   exit 1
 fi
+
+
+if [[ $checkout != "" ]]; then
+  git checkout $checkout
+fi
+
+cp src/version/version.go /tmp/old-version.go
+sed -i "s|\"$|$version\"|" src/version/version.go
+
 make clean
 make
+
+cp /tmp/old-version.go src/version/version.go
 
 echo Stopping services...
 sudo systemctl stop httpd
