@@ -125,10 +125,9 @@ func getDBIssue(path string) (*db.Issue, error) {
 		return nil, fmt.Errorf("incorrect number of labels")
 	}
 
-	// Set workflow step to awaiting metadata review just to be safe - these have
-	// already been through review, unfortunately, but some are many months old
-	// for unknown reasons.
-	dbi.WorkflowStep = schema.WSAwaitingMetadataReview
+	// Make sure the issues start out invisible to the front-end; until the jobs
+	// run we don't want them being claimed by users
+	dbi.WorkflowStep = schema.WSAwaitingProcessing
 
 	return dbi, nil
 }
