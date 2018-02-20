@@ -76,9 +76,9 @@ func processIssue(path string) {
 		}
 	}
 
-	// Don't queue jobs if the issue was already in the database - chances are
-	// the jobs were already created
-	if !alreadyInDB {
+	// Don't queue jobs if it's a dry run, nor if the issue was already in the
+	// database - chances are the jobs were already created
+	if !opts.DryRun && !alreadyInDB {
 		jobs.QueueSerial(
 			jobs.PrepareIssueJobAdvanced(jobs.JobTypeMoveIssueToWorkflow, dbi, path, schema.WSNil),
 			jobs.PrepareIssueJobAdvanced(jobs.JobTypeMakeDerivatives, dbi, path, schema.WSAwaitingMetadataReview),
