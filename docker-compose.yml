@@ -53,7 +53,7 @@ services:
     depends_on:
       - db
 
-  # Web runs the binary for black mamba's GUI
+  # Web runs the binary for nca's GUI
   web:
     extends: app
     expose:
