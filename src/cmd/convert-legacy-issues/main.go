@@ -29,13 +29,21 @@ func getConf() {
 }
 
 func processIssue(path string) {
+	var alreadyInDB bool
+
 	var dbi, err = getDBIssue(path)
 	if err != nil {
 		logger.Errorf("Error in issue dir %q: %s", path, err)
 		return
 	}
 
-	logger.Debugf("Processing %q", path)
+	var info = "new"
+	if dbi.ID > 0 {
+		alreadyInDB = true
+		info = "existing"
+	}
+
+	logger.Debugf("Processing %q (%s)", path, info)
 
 	// Try to find a master backup for this issue - I do this by directory name
 	// because of an out-of-band rename job I did to try and reorganize stuff.
@@ -53,10 +61,14 @@ func processIssue(path string) {
 		return
 	}
 
-	jobs.QueueSerial(
-		jobs.PrepareIssueJobAdvanced(jobs.JobTypeMoveIssueToWorkflow, dbi, path, schema.WSNil),
-		jobs.PrepareIssueJobAdvanced(jobs.JobTypeMakeDerivatives, dbi, path, schema.WSAwaitingMetadataReview),
-	)
+	// Don't queue jobs if the issue was already in the database - chances are
+	// the jobs were already created
+	if !alreadyInDB {
+		jobs.QueueSerial(
+			jobs.PrepareIssueJobAdvanced(jobs.JobTypeMoveIssueToWorkflow, dbi, path, schema.WSNil),
+			jobs.PrepareIssueJobAdvanced(jobs.JobTypeMakeDerivatives, dbi, path, schema.WSAwaitingMetadataReview),
+		)
+	}
 }
 
 func getIncomingIssuePaths() (paths []string) {
