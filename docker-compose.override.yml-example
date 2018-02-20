@@ -11,8 +11,8 @@ services:
   # DB Migrate needs all the DB stuff
   db-migrate:
     volumes:
-      - ./db/migrations:/usr/local/black-mamba/db/migrations:Z
-      - ./db/dbconf-example.yml:/usr/local/black-mamba/db/dbconf.yml:z
+      - ./db/migrations:/usr/local/nca/db/migrations:Z
+      - ./db/dbconf-example.yml:/usr/local/nca/db/dbconf.yml:z
 
   # Workers needs all workflow directories
   workers:
@@ -20,24 +20,24 @@ services:
       # Workflow directories
       - ./test/fakemount:/mnt/news:z
       # Mount in the binaries, templates, and static files for easier debugging
-      - ./bin:/usr/local/black-mamba/bin:z
-      - ./static:/usr/local/black-mamba/static:z
-      - ./templates:/usr/local/black-mamba/templates:z
-      - ./settings-example:/usr/local/black-mamba/settings:z
-      - ./db/migrations:/usr/local/black-mamba/db/migrations:z
-      - ./db/dbconf-example.yml:/usr/local/black-mamba/db/dbconf.yml:z
+      - ./bin:/usr/local/nca/bin:z
+      - ./static:/usr/local/nca/static:z
+      - ./templates:/usr/local/nca/templates:z
+      - ./settings-example:/usr/local/nca/settings:z
+      - ./db/migrations:/usr/local/nca/db/migrations:z
+      - ./db/dbconf-example.yml:/usr/local/nca/db/dbconf.yml:z
 
   web:
     volumes:
       # Workflow directories
       - ./test/fakemount:/mnt/news:z
       # Mount in the binaries, templates, and static files for easier debugging
-      - ./bin:/usr/local/black-mamba/bin:z
-      - ./static:/usr/local/black-mamba/static:z
-      - ./templates:/usr/local/black-mamba/templates:z
-      - ./settings-example:/usr/local/black-mamba/settings:z
-      - ./db/migrations:/usr/local/black-mamba/db/migrations:z
-      - ./db/dbconf-example.yml:/usr/local/black-mamba/db/dbconf.yml:z
+      - ./bin:/usr/local/nca/bin:z
+      - ./static:/usr/local/nca/static:z
+      - ./templates:/usr/local/nca/templates:z
+      - ./settings-example:/usr/local/nca/settings:z
+      - ./db/migrations:/usr/local/nca/db/migrations:z
+      - ./db/dbconf-example.yml:/usr/local/nca/db/dbconf.yml:z
 
   # Mount in the apache configs for easier debugging (so you don't have to
   # issue a `docker-compose build apache` each time you change this stuff)

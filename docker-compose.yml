@@ -37,9 +37,9 @@ services:
       dockerfile: ./docker/Dockerfile-app
     volumes:
       - /mnt/news:/mnt/news:z
-      - issue-cache:/var/local/news/black-mamba/cache
+      - issue-cache:/var/local/news/nca/cache
     environment:
-      - NCA_WEBROOT=$APP_URL/black-mamba
+      - NCA_WEBROOT=$APP_URL/nca
       - NCA_DB_HOST=db
       # The redundancy here ensures we get a warning if $NCA_NEWS_WEBROOT isn't set
       - NCA_NEWS_WEBROOT=$NCA_NEWS_WEBROOT
@@ -60,7 +60,7 @@ services:
       - 8080
     depends_on:
       - db-migrate
-    command: ./bin/server -c ./settings --parent-webroot="$APP_URL/black-mamba" --debug
+    command: ./bin/server -c ./settings --parent-webroot="$APP_URL/nca" --debug
 
   workers:
     extends: app
