@@ -14,6 +14,7 @@ import (
 	"time"
 
 	"github.com/uoregon-libraries/gopkg/logger"
+	"github.com/uoregon-libraries/gopkg/pdf"
 )
 
 // Errors wraps an array of error strings for nicer display
@@ -283,12 +284,27 @@ func (i *Issue) WorkflowPath(action string) string {
 	return IssueWorkflowPath(i.Title.Slug, i.Slug, action)
 }
 
+// ScanPDFImageDPIs runs through each PDF in the issue and checks it for DPI
+// validity.  The results are cached to avoid this very costly process running
+// too many times, and this should only be called when a user is viewing a
+// single issue.  Running it on all issues' files for every scan could be
+// disastrous.
+func (i *Issue) ScanPDFImageDPIs() {
+	for _, f := range i.Files {
+		f.ValidateDPI()
+	}
+}
+
 // File wraps a schema.File for web presentation
 type File struct {
 	*schema.File
 	Issue  *Issue
 	Slug   string
 	Errors Errors
+
+	// hasScannedPDFDPIs is used to avoid double-scanning the same file, since
+	// the per-issue cost for this is fairly high
+	hasScannedPDFDPIs bool
 }
 
 func (f *File) addError(err template.HTML) {
@@ -310,4 +326,45 @@ func (f *File) decorateErrors() {
 func (f *File) Link() template.HTML {
 	var path = FilePath(f.Issue.Title.Slug, f.Issue.Slug, f.Slug)
 	return template.HTML(fmt.Sprintf(`<a href="%s">%s</a>`, path, f.Slug))
+}
+
+// validDPI returns whether a file has a valid DPI for PDFs in scanned issues
+func (f *File) validDPI() error {
+	var maxDPI = float64(conf.ScannedPDFDPI) * 1.15
+	var minDPI = float64(conf.ScannedPDFDPI) * 0.85
+
+	var dpis = pdf.ImageDPIs(f.Location)
+	if len(dpis) == 0 {
+		return fmt.Errorf("contains no images or is invalid PDF")
+	}
+
+	for _, dpi := range dpis {
+		if dpi.X > maxDPI || dpi.Y > maxDPI || dpi.X < minDPI || dpi.Y < minDPI {
+			return fmt.Errorf("has an image with a bad DPI (%g x %g; expected DPI %g)", dpi.X, dpi.Y, conf.ScannedPDFDPI)
+		}
+	}
+
+	return nil
+}
+
+// ValidateDPI adds errors to the file if its embedded images' DPIs are not
+// within 15% of the configured scanner DPI.  This does nothing if the file's
+// issue isn't scanned or if the file isn't a PDF.
+func (f *File) ValidateDPI() {
+	if f.Issue.Title.Type != TitleTypeScanned {
+		return
+	}
+	if strings.ToUpper(filepath.Ext(f.Name)) != ".PDF" {
+		return
+	}
+	if f.hasScannedPDFDPIs {
+		return
+	}
+
+	var err = f.validDPI()
+	if err != nil {
+		f.addError(safeError(err.Error()))
+	}
+
+	f.hasScannedPDFDPIs = true
 }
