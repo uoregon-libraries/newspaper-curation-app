@@ -1,4 +1,4 @@
-Black Mamba, The Batch Maker
+Newspaper Curation App
 ===
 
 This toolsuite handles (most of) the Oregon Digital Newspaper Project's
@@ -27,9 +27,9 @@ You'll need:
 - OpenJPEG 2 for JP2 generation
 - MariaDB
 - A IIIF server capable of handling tiled JP2 files
-- Apache for authentication as well as proxying to Black Mamba and the IIIF server
+- Apache for authentication as well as proxying to NCA and the IIIF server
 
-**Please note**: The easiest way to get up and running with Black Mamba is via
+**Please note**: The easiest way to get up and running with NCA is via
 our [Docker setup](docker/).  It's fairly simple to set it up manually, but if
 you go that route, it's going to be a lot easier if you read the docker files
 in order to understand the installation and the stack.
@@ -42,7 +42,7 @@ easier to just use [goose](https://bitbucket.org/liamstask/goose).
 server
 ---
 
-This is the web server which exposes all of Black Mamba's workflow UI.  Please
+This is the web server which exposes all of NCA's workflow UI.  Please
 note that, at the moment, this requires Apache sitting in front of the server
 for authentication.
 
@@ -50,7 +50,7 @@ for authentication.
 
 See the [Docker setup](docker/) to understand how to install all the
 dependencies, compile binaries, set up Apache, etc.  See `dev-server.sh`, or
-`rhel7/blackmamba.service` for examples of running and deploying Black Mamba.
+`rhel7/nca-*.service` for examples of running and deploying NCA.
 
 **NOTE**: The server builds a cache of issues and regularly rescans the
 filesystem and the live site to keep its cache nearly real-time for almost
@@ -84,10 +84,10 @@ require visibility into the newspaper images.
 [RAIS](https://github.com/uoregon-libraries/rais-image-server) is the
 recommended image server due to its simplicity.
 
-A simple invocation can be done by using the Black Mamba settings file, since
+A simple invocation can be done by using the NCA settings file, since
 it is compatible with bash, and has all the settings RAIS needs:
 
-    source /path/to/black-mamba/settings
+    source /path/to/nca/settings
     /path/to/rais-server --address ":12416" \
         --tile-path $WORKFLOW_PATH \
         --iiif-url "$IIIF_BASE_URL" \
@@ -112,19 +112,7 @@ documentation that no longer matches reality....
 Other Tools
 ---
 
-You'll find a lot of other tools in `bin` after compiling Black Mamba.  Most
+You'll find a lot of other tools in `bin` after compiling NCA.  Most
 have some kind of useful help, so feel free to give them a try, but they won't
 be documented in depth.  Most are one-offs to help diagnose problems or test
 features, and shouldn't be necessary for regular use of this software.
-
-Black Mamba?
----
-
-"Black Mamba" makes no sense for this toolsuite, so what is the rationale
-behind the name?  Well, first, a [black mamba](https://en.wikipedia.org/wiki/Black_mamba)
-is a really cool snake.  Really cool snakes are much more awesome than
-random non-English words or phrases when it comes to naming projects primarily
-used by native English speakers.  This is an indisputable, objective fact.
-Second, when this project bites you, well... it hurts.  A lot.
-
-It's also the same acronym as "Batch Maker", so that's fun.
