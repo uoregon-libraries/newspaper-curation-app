@@ -190,7 +190,11 @@ func (i *Issue) ValidateMetadata() {
 		addError("Page labeling isn't completed")
 	}
 	if numLabels > numFiles {
-		logger.Errorf("There are %d page labels (%#v), but only %d JP2 files!", numLabels, i.JP2Files(), numFiles)
+		logger.Errorf("There are %d page labels, but only %d JP2 files!", numLabels, numFiles)
+		for _, jp2 := range i.JP2Files() {
+			logger.Debugf("  - %q", jp2)
+		}
+
 		addError("Unknown error in page labeling; contact support or try again")
 	}
 
