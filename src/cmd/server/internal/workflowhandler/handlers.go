@@ -157,7 +157,7 @@ func claimIssueHandler(resp *responder.Responder, i *Issue) {
 	i.Claim(resp.Vars.User.ID)
 	var err = i.Save()
 	if err != nil {
-		logger.Errorf("Unable to claim issue id %s by user %s: %s", i.ID, resp.Vars.User.Login, err)
+		logger.Errorf("Unable to claim issue id %d by user %s: %s", i.ID, resp.Vars.User.Login, err)
 		resp.Vars.Alert = "Unable to claim issue; contact support or try again later."
 		resp.Writer.WriteHeader(http.StatusInternalServerError)
 		resp.Render(responder.Empty)
@@ -174,7 +174,7 @@ func unclaimIssueHandler(resp *responder.Responder, i *Issue) {
 	i.Unclaim()
 	var err = i.Save()
 	if err != nil {
-		logger.Errorf("Unable to unclaim issue id %s for user %s: %s", i.ID, resp.Vars.User.Login, err)
+		logger.Errorf("Unable to unclaim issue id %d for user %s: %s", i.ID, resp.Vars.User.Login, err)
 		resp.Vars.Alert = "Unable to unclaim issue; contact support or try again later."
 		resp.Writer.WriteHeader(http.StatusInternalServerError)
 		resp.Render(responder.Empty)

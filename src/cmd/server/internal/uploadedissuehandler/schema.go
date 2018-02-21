@@ -346,7 +346,7 @@ func (f *File) validDPI() error {
 
 	for _, dpi := range dpis {
 		if dpi.X > maxDPI || dpi.Y > maxDPI || dpi.X < minDPI || dpi.Y < minDPI {
-			return fmt.Errorf("has an image with a bad DPI (%g x %g; expected DPI %g)", dpi.X, dpi.Y, conf.ScannedPDFDPI)
+			return fmt.Errorf("has an image with a bad DPI (%g x %g; expected DPI %d)", dpi.X, dpi.Y, conf.ScannedPDFDPI)
 		}
 	}
 
