@@ -68,7 +68,6 @@ func (s *Searcher) FindScannedIssues() error {
 // - The issue directory isn't a valid date or date/edition combo
 // - The issue has no TIFFs
 // - The PDFs and TIFFs don't match up (same number of PDFs as TIFFs and same filenames)
-// - Any PDF has an image with an unexpected DPI (using our gopkg/pdf lib)
 func (s *Searcher) findScannedIssuesForTitlePath(moc, titlePath string) error {
 	var title = s.findOrCreateFilesystemTitle(titlePath)
 
