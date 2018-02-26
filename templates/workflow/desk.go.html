@@ -1,11 +1,47 @@
 {{block "content" .}}
 
-<h2>Desk</h2>
-<p>
-  Tasks on your desk are assigned to you and need attention.  If items aren't
-  processed by their expiration, they'll be returned to the appropriate pool
-  and any work you've done will be lost.
-</p>
+<div class="tabs">
+  <div role="tablist" aria-label="Workflow">
+    <button role="tab" aria-selected="true" aria-controls="desk-tab" id="desk">Desk</button>
+
+    <button role="tab" aria-selected="false" aria-controls="needs-metadata-tab" id="needs-metadata" tabindex="-1">
+      Metadata Entry
+    </button>
+
+    <button role="tab" aria-selected="false" aria-controls="needs-review-tab" id="needs-review" tabindex="-1">
+      Metadata Review
+    </button>
+  </div>
+
+  <!-- Everybody can see their own desk -->
+  <div tabindex="0" role="tabpanel" id="desk-tab" aria-labelledby="desk">
+    {{template "desk" .}}
+  </div>
+
+  <!-- Issues needing metadata entry -->
+  {{if .User.PermittedTo EnterIssueMetadata}}
+  <div tabindex="0" role="tabpanel" id="needs-metadata-tab" aria-labelledby="needs-metadata" hidden="">
+    {{template "needs-metadata" .}}
+  </div>
+  {{end}}
+
+  <!-- Issues with metadata needing review -->
+  {{if .User.PermittedTo ReviewIssueMetadata}}
+  <div tabindex="0" role="tabpanel" id="needs-review-tab" aria-labelledby="needs-review" hidden="">
+    {{template "needs-review" .}}
+  </div>
+  {{end}}
+</div>
+
+{{end}} <!-- block "content" -->
+
+
+{{block "desk" .}}
+  <p>
+    Tasks on your desk are assigned to you and need attention.  If items aren't
+    processed by their expiration, they'll be returned to the appropriate pool
+    and any work you've done will be lost.
+  </p>
 
 {{if .Data.MyDeskIssues}}
   <table class="table">
@@ -29,18 +65,20 @@
   <em>There are no tasks awaiting your attention</em>
 {{end}}
 
-{{if .User.PermittedTo EnterIssueMetadata}}
-  <h2>Pending Issues</h2>
+{{end}}<!-- block "desk" -->
+
+
+{{block "needs-metadata" .}}
   <p>
-    Pending issues are issues which have been uploaded, split into pages, and
-    converted to PDF/a format.  They still need manual metadata entered before
-    they will be ready to convert to a batch and ingest.
+    These issues have been uploaded or scanned, split into pages, and converted
+    to PDF/a format.  They still need manual metadata entered before they will
+    be ready to convert to a batch and ingest.
   </p>
 
   {{if .Data.PendingMetadataIssues}}
     <table class="table">
       <thead>
-        <caption>Issues Needing Metadata</caption>
+        <caption>Issues Needing Metadata Entry</caption>
       </thead>
 
       <tbody>
@@ -57,19 +95,18 @@
   {{else}}
     <em>There are no issues needing metadata entry</em>
   {{end}}
-{{end}}
+{{end}} <!-- block "needs-metadata" -->
 
-{{if .User.PermittedTo ReviewIssueMetadata}}
-  <h2>Awaiting Review</h2>
+{{block "needs-review" .}}
   <p>
-    Issues awaiting review have had all metadata entered and need an issue
-    reviewer to flag them as ready for processing.
+    These issues have had all metadata entered and need an issue reviewer to
+    flag them as ready for processing.
   </p>
 
   {{if .Data.PendingReviewIssues}}
     <table class="table">
       <thead>
-        <caption>Issues Needing Metadata</caption>
+        <caption>Issues Needing Metadata Review</caption>
       </thead>
 
       <tbody>
@@ -86,6 +123,4 @@
   {{else}}
     <em>There are no issues needing metadata review</em>
   {{end}}
-{{end}}
-
-{{end}}
+{{end}} <!-- block "needs-review" -->
