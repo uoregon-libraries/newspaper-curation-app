@@ -4,6 +4,8 @@
 # unnoticed errors
 set -eu
 
+source ./gopath
+
 err() {
   echo $@ >&2
 }
