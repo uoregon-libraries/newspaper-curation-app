@@ -39,6 +39,7 @@
   <div class="col-md-12">
     <form class="form-horizontal" role="form" method="POST" action="{{"review/approve"|.Data.Issue.Path}}">
       <dl class="dl-horizontal">
+        <dt>Metadata Author</dt><dd>{{.Data.Issue.MetadataAuthorLogin}}</dd>
         <dt>Title</dt><dd>{{.Data.Issue.Title}}</dd>
         <dt>MARC Org Code</dt><dd>{{.Data.Issue.MARCOrgCode}}</dd>
         <dt>Issue Date as labeled</dt><dd>{{.Data.Issue.DateAsLabeled}}</dd>
