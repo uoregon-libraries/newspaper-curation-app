@@ -130,6 +130,7 @@ type Issue struct {
 	QueueInfo   template.HTML    // Informational message from the queue process, if any
 	Errors      Errors           // List of errors automatically identified for this issue
 	ChildErrors int              // Count of child errors for use in the templates
+	TotalErrors int              // Count of child + issue errors
 	Files       []*File          // List of files
 	FileLookup  map[string]*File // Lookup for finding a File by its filename / slug
 	Modified    time.Time        // When this issue's most recent file was modified
@@ -157,6 +158,7 @@ func (i *Issue) appendSchemaFile(f *schema.File) {
 func (i *Issue) addError(err template.HTML) {
 	i.Errors = append(i.Errors, err)
 	i.Title.AddChildError()
+	i.TotalErrors++
 }
 
 func (i *Issue) decorateErrors() {
@@ -170,7 +172,11 @@ func (i *Issue) decorateErrors() {
 // this issue's pages will need to be looked at closely
 func (i *Issue) AddChildError() {
 	i.ChildErrors++
-	i.Title.AddChildError()
+	if i.ChildErrors == 1 {
+		i.addError(safeError("one or more files are invalid"))
+		return
+	}
+	i.TotalErrors++
 }
 
 // decorateExternalErrors checks for external problems we don't detect when

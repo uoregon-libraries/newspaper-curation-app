@@ -1,6 +1,6 @@
 {{block "content" .}}
 
-{{if gt (len .Data.Issue.Errors) 0}}
+{{if gt (len .Data.Issue.TotalErrors) 0}}
   <h2>Errors</h2>
   <div class="issue-with-errors">
     This issue has errors, and cannot be queued:
