@@ -13,7 +13,7 @@ case "$type" in
   ;;
 
 "prod")
-  checkout=$(git tag | tail -1)
+  checkout=$(git tag | grep -v ".-rc" | tail -1)
   version=
   ;;
 
