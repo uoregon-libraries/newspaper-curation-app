@@ -15,9 +15,9 @@ OPJ_DECOMPRESS="opj_decompress"
 # Web configuration
 ###
 
-# Full URL to the Black Mamba web app; though the hostname isn't currently used,
+# Full URL to the NCA web app; though the hostname isn't currently used,
 # it may be necessary for things like sending email notifications in the future
-WEBROOT="https://internal.somewhere.edu/black-mamba"
+WEBROOT="https://internal.somewhere.edu/nca"
 
 # The bind address is what the server listens on, often just a port string
 # prefixed with a colon.  Apache would use this for reverse-proxying.
@@ -28,7 +28,7 @@ BIND_ADDRESS=":8080"
 IIIF_BASE_URL="https://my.server.com/iiif"
 
 # Full URL to the live news site, for pulling information about issues which
-# are in production, and may be used in the future to link from Black Mamba to
+# are in production, and may be used in the future to link from NCA to
 # live batches' / issues' detail pages
 NEWS_WEBROOT="https://news.somewhere.edu"
 
@@ -38,9 +38,9 @@ NEWS_WEBROOT="https://news.somewhere.edu"
 
 DB_HOST="127.0.0.1"
 DB_PORT=3306
-DB_USER="blackmamba"
-DB_PASSWORD="blackmamba"
-DB_DATABASE="blackmamba"
+DB_USER="nca"
+DB_PASSWORD="nca"
+DB_DATABASE="nca"
 
 ###
 # Paths for PDFs, derivatives, etc.
@@ -84,16 +84,16 @@ WORKFLOW_PATH="/mnt/news/workflow"
 # This is where cached files are stored for the issue data.  This is extremely
 # important for issues which live on the live website, as those are very
 # expensive to pull each time a given process is run.
-ISSUE_CACHE_PATH="/var/local/news/black-mamba/cache"
+ISSUE_CACHE_PATH="/var/local/news/nca/cache"
 
 # This is where the core application lives, and is important for finding the
 # HTML template files as well as static files like JS and CSS
-APP_ROOT="/usr/local/black-mamba"
+APP_ROOT="/usr/local/nca"
 
 # Where is the XML template for building issue XML?  You can point this to the
 # XML in the repo (templates/xml/mets.go.html) for ease, but some XML values
 # may be wrong.
-XML_TEMPLATE_PATH="/usr/local/black-mamba/templates/xml/mets.go.html"
+XML_TEMPLATE_PATH="/usr/local/nca/templates/xml/mets.go.html"
 
 ###
 # General rules for issue processing and batch creation

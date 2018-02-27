@@ -13,9 +13,9 @@ services:
     image: mariadb
     environment:
       - MYSQL_ROOT_PASSWORD=123456
-      - MYSQL_DATABASE=blackmamba
-      - MYSQL_USER=blackmamba
-      - MYSQL_PASSWORD=blackmamba
+      - MYSQL_DATABASE=nca
+      - MYSQL_USER=nca
+      - MYSQL_PASSWORD=nca
     volumes:
       - ./docker/mysql/:/etc/mysql/conf.d:Z
       - db:/var/lib/mysql
@@ -37,13 +37,13 @@ services:
       dockerfile: ./docker/Dockerfile-app
     volumes:
       - /mnt/news:/mnt/news:z
-      - issue-cache:/var/local/news/black-mamba/cache
+      - issue-cache:/var/local/news/nca/cache
     environment:
-      - BM_WEBROOT=$APP_URL/black-mamba
-      - BM_DB_HOST=db
-      # The redundancy here ensures we get a warning if $BM_NEWS_WEBROOT isn't set
-      - BM_NEWS_WEBROOT=$BM_NEWS_WEBROOT
-      - BM_IIIF_BASE_URL=$APP_URL/images/iiif
+      - NCA_WEBROOT=$APP_URL/nca
+      - NCA_DB_HOST=db
+      # The redundancy here ensures we get a warning if $NCA_NEWS_WEBROOT isn't set
+      - NCA_NEWS_WEBROOT=$NCA_NEWS_WEBROOT
+      - NCA_IIIF_BASE_URL=$APP_URL/images/iiif
     command: /usr/bin/true
 
   db-migrate:
@@ -53,14 +53,14 @@ services:
     depends_on:
       - db
 
-  # Web runs the binary for black mamba's GUI
+  # Web runs the binary for nca's GUI
   web:
     extends: app
     expose:
       - 8080
     depends_on:
       - db-migrate
-    command: ./bin/server -c ./settings --parent-webroot="$APP_URL/black-mamba" --debug
+    command: ./bin/server -c ./settings --parent-webroot="$APP_URL/nca" --debug
 
   workers:
     extends: app

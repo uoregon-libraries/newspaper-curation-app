@@ -17,6 +17,7 @@ import (
 	"strings"
 
 	"github.com/uoregon-libraries/gopkg/fileutil"
+	"github.com/uoregon-libraries/gopkg/logger"
 )
 
 // WorkflowStep describes the location within the workflow any issue can exist
@@ -255,7 +256,12 @@ func (i *Issue) FindFiles() {
 		return
 	}
 
-	var infos, _ = fileutil.ReaddirSorted(i.Location)
+	var infos, err = fileutil.ReaddirSorted(i.Location)
+	if err != nil {
+		logger.Errorf("Error trying to open %q to read contents: %s", i.Location, err)
+		return
+	}
+
 	for _, file := range fileutil.InfosToFiles(infos) {
 		var loc = filepath.Join(i.Location, file.Name)
 		i.Files = append(i.Files, &File{File: file, Issue: i, Location: loc})
@@ -273,6 +279,9 @@ func (i *Issue) IsLive() bool {
 // "likely duplicate of ..."
 func (i *Issue) WorkflowIdentification() string {
 	switch i.WorkflowStep {
+	case WSSFTP:
+		return "a born-digital issue waiting for processing"
+
 	case WSScan:
 		return "a scanned issue waiting for processing"
 

@@ -63,7 +63,7 @@ func Parse(filename string) (*Config, error) {
 	var errors []string
 
 	var bc = bashconf.New()
-	bc.EnvironmentPrefix("BM_")
+	bc.EnvironmentPrefix("NCA_")
 	var err = bc.ParseFile(filename)
 	if err != nil {
 		return nil, err

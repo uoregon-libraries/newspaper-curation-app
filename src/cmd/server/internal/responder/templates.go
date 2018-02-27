@@ -61,7 +61,6 @@ func InitRootTemplate(templatePath string) {
 		"ViewUploadedIssues":       func() *user.Privilege { return user.ViewUploadedIssues },
 		"ModifyUploadedIssues":     func() *user.Privilege { return user.ModifyUploadedIssues },
 		"ViewTitleSFTPCredentials": func() *user.Privilege { return user.ViewTitleSFTPCredentials },
-		"SearchWorkflowIssues":     func() *user.Privilege { return user.SearchWorkflowIssues },
 		"ModifyValidatedLCCNs":     func() *user.Privilege { return user.ModifyValidatedLCCNs },
 		"ModifyTitleSFTP":          func() *user.Privilege { return user.ModifyTitleSFTP },
 		"ListAuditLogs":            func() *user.Privilege { return user.ListAuditLogs },

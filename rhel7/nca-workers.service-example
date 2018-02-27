@@ -1,0 +1,13 @@
+[Unit]
+	Description=Newspaper Curation App Job Runner
+	After=network.target
+	RequiresMountsFor=/mnt/news
+
+[Service]
+	Type=simple
+	ExecStart=/usr/local/nca/run-jobs \
+		-c /usr/local/nca/settings \
+    watchall
+
+[Install]
+	WantedBy=multi-user.target

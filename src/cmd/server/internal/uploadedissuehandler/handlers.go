@@ -25,8 +25,8 @@ var (
 	// which all subpages are built
 	Layout *tmpl.TRoot
 
-	// HomeTmpl renders the uploaded issues landing page
-	HomeTmpl *tmpl.Template
+	// TitleList renders the uploaded issues landing page
+	TitleList *tmpl.Template
 
 	// TitleTmpl renders the list of issues and a summary of errors for a given title
 	TitleTmpl *tmpl.Template
@@ -42,15 +42,15 @@ func Setup(r *mux.Router, baseWebPath string, c *config.Config, w *issuewatcher.
 	basePath = baseWebPath
 	var s = r.PathPrefix(basePath).Subrouter()
 	s.Path("").Handler(canView(HomeHandler))
-	s.Path("/{lccn}").Handler(canView(TitleHandler))
-	s.Path("/{lccn}/{issue}").Handler(canView(IssueHandler))
-	s.Path("/{lccn}/{issue}/workflow/{action}").Methods("POST").Handler(canModify(IssueWorkflowHandler))
-	s.Path("/{lccn}/{issue}/{filename}").Handler(canView(FileHandler))
+	s.Path("/{title}").Handler(canView(TitleHandler))
+	s.Path("/{title}/{issue}").Handler(canView(IssueHandler))
+	s.Path("/{title}/{issue}/workflow/{action}").Methods("POST").Handler(canModify(IssueWorkflowHandler))
+	s.Path("/{title}/{issue}/{filename}").Handler(canView(FileHandler))
 
 	searcher = newSearcher(c)
 	Layout = responder.Layout.Clone()
 	Layout.Path = path.Join(Layout.Path, "uploadedissues")
-	HomeTmpl = Layout.MustBuild("home.go.html")
+	TitleList = Layout.MustBuild("title-list.go.html")
 	IssueTmpl = Layout.MustBuild("issue.go.html")
 	TitleTmpl = Layout.MustBuild("title.go.html")
 }
@@ -59,14 +59,18 @@ func Setup(r *mux.Router, baseWebPath string, c *config.Config, w *issuewatcher.
 func HomeHandler(w http.ResponseWriter, req *http.Request) {
 	var r = getResponder(w, req)
 	r.Vars.Title = "Uploaded Issues"
-	r.Vars.Data["OtherErrors"] = searcher.scanner.Finder.Errors.OtherErrors
-	r.Render(HomeTmpl)
+	if searcher.Ready() {
+		r.Vars.Data["OtherErrors"] = searcher.TopErrors()
+	} else {
+		r.Vars.Data["OtherErrors"] = []string{}
+	}
+	r.Render(TitleList)
 }
 
 // TitleHandler prints a list of issues for a given title
 func TitleHandler(w http.ResponseWriter, req *http.Request) {
 	var r = getResponder(w, req)
-	r.Vars.Title = r.title.Name
+	r.Vars.Title = fmt.Sprintf("%s - %s", r.title.Name, r.title.Type)
 	r.Render(TitleTmpl)
 }
 
@@ -77,7 +81,7 @@ func IssueHandler(w http.ResponseWriter, req *http.Request) {
 		r.Render(nil)
 		return
 	}
-	r.Vars.Title = fmt.Sprintf("%s, issue %s", r.title.Name, r.issue.RawDate)
+	r.Vars.Title = fmt.Sprintf("%s, issue %s - %s", r.title.Name, r.issue.RawDate, r.title.Type)
 	r.Render(IssueTmpl)
 }
 
@@ -94,12 +98,15 @@ func IssueWorkflowHandler(w http.ResponseWriter, req *http.Request) {
 	switch r.vars["action"] {
 	case "queue":
 		var ok, msg = queueIssueMove(r.issue)
-		var cname = "Info"
-		if !ok {
+		var cname string
+		if ok {
+			cname = "Info"
+			searcher.RemoveIssue(r.issue)
+		} else {
 			cname = "Alert"
 		}
 
-		r.Audit("sftp-queue", fmt.Sprintf("Issue %q, success: %#v", r.issue.Key(), ok))
+		r.Audit("queue", fmt.Sprintf("Issue from %q, success: %#v", r.issue.Location, ok))
 		http.SetCookie(w, &http.Cookie{Name: cname, Value: msg, Path: "/"})
 		http.Redirect(w, req, TitlePath(r.issue.Title.Slug), http.StatusFound)
 

@@ -27,7 +27,7 @@ import (
 
 var opts struct {
 	ParentWebroot string `long:"parent-webroot" description:"The base path to the parent app" required:"true"`
-	ConfigFile    string `short:"c" long:"config" description:"path to Black Mamba config file" required:"true"`
+	ConfigFile    string `short:"c" long:"config" description:"path to NCA config file" required:"true"`
 	Debug         bool   `long:"debug" description:"Enables debug mode for testing different users"`
 }
 
@@ -92,11 +92,6 @@ func startServer() {
 
 	var watcher = issuewatcher.New(conf)
 	go watcher.Watch(5 * time.Minute)
-	uploadedissuehandler.Setup(r, path.Join(hp, "uploadedissues"), conf, watcher)
-	workflowhandler.Setup(r, path.Join(hp, "workflow"), conf, watcher)
-
-	// Any unknown paths get a semi-friendly 404
-	r.NewRoute().PathPrefix("").HandlerFunc(notFound)
 
 	var waited, lastWaited int
 	for watcher.Scanner.Finder.Issues == nil {
@@ -112,6 +107,12 @@ func startServer() {
 		waited++
 		time.Sleep(1 * time.Second)
 	}
+
+	uploadedissuehandler.Setup(r, path.Join(hp, "uploadedissues"), conf, watcher)
+	workflowhandler.Setup(r, path.Join(hp, "workflow"), conf, watcher)
+
+	// Any unknown paths get a semi-friendly 404
+	r.NewRoute().PathPrefix("").HandlerFunc(notFound)
 
 	http.Handle("/", nocache(logMiddleware(r)))
 

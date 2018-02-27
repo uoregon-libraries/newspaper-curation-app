@@ -10,11 +10,11 @@ import (
 
 	"path/filepath"
 	"schema"
-	"sort"
 	"strings"
 	"time"
 
 	"github.com/uoregon-libraries/gopkg/logger"
+	"github.com/uoregon-libraries/gopkg/pdf"
 )
 
 // Errors wraps an array of error strings for nicer display
@@ -28,6 +28,27 @@ func (e Errors) String() string {
 	return strings.Join(sList, "; ")
 }
 
+// TitleType tells us if a title contains born-digital issues or scanned
+type TitleType int
+
+// The two constants for TitleType
+const (
+	TitleTypeScanned TitleType = iota
+	TitleTypeBornDigital
+)
+
+// String tells us a human-friendly meaning for the type of title
+func (tt TitleType) String() string {
+	switch tt {
+	case TitleTypeScanned:
+		return "Scanned"
+	case TitleTypeBornDigital:
+		return "BornDigital"
+	}
+
+	return "N/A"
+}
+
 // Title wraps a schema.Title with some extra information for web presentation.
 type Title struct {
 	*schema.Title
@@ -39,37 +60,14 @@ type Title struct {
 	TotalErrors int
 	Issues      []*Issue
 	IssueLookup map[string]*Issue
-}
-
-// decorateTitles iterates over the list of the searcher's titles and decorates
-// each, then its issues, and the issues' files, to prepare for web display
-func (s *Searcher) decorateTitles() {
-	s.titles = make([]*Title, 0)
-	s.titleLookup = make(map[string]*Title)
-	for _, t := range s.scanner.Finder.Titles {
-		s.appendSchemaTitle(t)
-	}
-
-	// We like titles sorted by name for presentation
-	sort.Slice(s.titles, func(i, j int) bool {
-		return strings.ToLower(s.titles[i].Name) < strings.ToLower(s.titles[j].Name)
-	})
-}
-
-func (s *Searcher) appendSchemaTitle(t *schema.Title) {
-	var title = &Title{Title: t, Slug: t.LCCN, allErrors: s.scanner.Finder.Errors}
-	title.decorateIssues(t.Issues)
-	title.decorateErrors()
-	s.titles = append(s.titles, title)
-	s.titleLookup[title.Slug] = title
+	Type        TitleType
 }
 
 func (t *Title) decorateIssues(issueList []*schema.Issue) {
 	t.Issues = make([]*Issue, 0)
 	t.IssueLookup = make(map[string]*Issue)
 	for _, i := range issueList {
-		var _, isInProcess = searcher.inProcessIssues.Load(i.Key())
-		if !isInProcess {
+		if !searcher.IsInProcess(i.Key()) {
 			t.appendSchemaIssue(i)
 		}
 	}
@@ -86,18 +84,24 @@ func (t *Title) appendSchemaIssue(i *schema.Issue) *Issue {
 	return issue
 }
 
+func (t *Title) addError(err template.HTML) {
+	t.Errors = append(t.Errors, err)
+	t.TitleErrors++
+	t.TotalErrors++
+}
+
 func (t *Title) decorateErrors() {
 	t.Errors = make(Errors, 0)
 	for _, e := range t.allErrors.TitleErrors[t.Title] {
-		if e.Issue == nil && e.File == nil {
-			t.Errors = append(t.Errors, safeError(e.Error.Error()))
-			t.TitleErrors++
-			t.TotalErrors++
-		} else {
-			t.ChildErrors++
-			t.TotalErrors++
-		}
+		t.addError(safeError(e.Error.Error()))
 	}
+}
+
+// AddChildError should be called when an issue has any kind of error so we
+// know this title's issues will need to be looked at closely
+func (t *Title) AddChildError() {
+	t.ChildErrors++
+	t.TotalErrors++
 }
 
 // We want HTML-friendly errors for when we need to put in our own, but
@@ -126,6 +130,7 @@ type Issue struct {
 	QueueInfo   template.HTML    // Informational message from the queue process, if any
 	Errors      Errors           // List of errors automatically identified for this issue
 	ChildErrors int              // Count of child errors for use in the templates
+	TotalErrors int              // Count of child + issue errors
 	Files       []*File          // List of files
 	FileLookup  map[string]*File // Lookup for finding a File by its filename / slug
 	Modified    time.Time        // When this issue's most recent file was modified
@@ -150,15 +155,28 @@ func (i *Issue) appendSchemaFile(f *schema.File) {
 	i.FileLookup[pdf.Slug] = pdf
 }
 
+func (i *Issue) addError(err template.HTML) {
+	i.Errors = append(i.Errors, err)
+	i.Title.AddChildError()
+	i.TotalErrors++
+}
+
 func (i *Issue) decorateErrors() {
 	i.Errors = make(Errors, 0)
 	for _, e := range i.Title.allErrors.IssueErrors[i.Issue] {
-		if e.File == nil {
-			i.Errors = append(i.Errors, safeError(e.Error.Error()))
-		} else {
-			i.ChildErrors++
-		}
+		i.addError(safeError(e.Error.Error()))
 	}
+}
+
+// AddChildError should be called when a file has any kind of error so we know
+// this issue's pages will need to be looked at closely
+func (i *Issue) AddChildError() {
+	i.ChildErrors++
+	if i.ChildErrors == 1 {
+		i.addError(safeError("one or more files are invalid"))
+		return
+	}
+	i.TotalErrors++
 }
 
 // decorateExternalErrors checks for external problems we don't detect when
@@ -189,7 +207,7 @@ func (i *Issue) decorateDupeErrors() {
 			errstr = fmt.Sprintf(`likely duplicate of a live issue: <a href="%s">%s, %s</a>`,
 				wi.Location[:len(wi.Location)-5], wi.Title.Name, wi.RawDate)
 		}
-		i.Errors = append(i.Errors, template.HTML(errstr))
+		i.addError(template.HTML(errstr))
 	}
 }
 
@@ -272,12 +290,32 @@ func (i *Issue) WorkflowPath(action string) string {
 	return IssueWorkflowPath(i.Title.Slug, i.Slug, action)
 }
 
+// ScanPDFImageDPIs runs through each PDF in the issue and checks it for DPI
+// validity.  The results are cached to avoid this very costly process running
+// too many times, and this should only be called when a user is viewing a
+// single issue.  Running it on all issues' files for every scan could be
+// disastrous.
+func (i *Issue) ScanPDFImageDPIs() {
+	for _, f := range i.Files {
+		f.ValidateDPI()
+	}
+}
+
 // File wraps a schema.File for web presentation
 type File struct {
 	*schema.File
 	Issue  *Issue
 	Slug   string
 	Errors Errors
+
+	// hasScannedPDFDPIs is used to avoid double-scanning the same file, since
+	// the per-issue cost for this is fairly high
+	hasScannedPDFDPIs bool
+}
+
+func (f *File) addError(err template.HTML) {
+	f.Errors = append(f.Errors, err)
+	f.Issue.AddChildError()
 }
 
 func (f *File) decorateErrors() {
@@ -286,8 +324,7 @@ func (f *File) decorateErrors() {
 		if e.File != f.File {
 			continue
 		}
-
-		f.Errors = append(f.Errors, safeError(e.Error.Error()))
+		f.addError(safeError(e.Error.Error()))
 	}
 }
 
@@ -295,4 +332,45 @@ func (f *File) decorateErrors() {
 func (f *File) Link() template.HTML {
 	var path = FilePath(f.Issue.Title.Slug, f.Issue.Slug, f.Slug)
 	return template.HTML(fmt.Sprintf(`<a href="%s">%s</a>`, path, f.Slug))
+}
+
+// validDPI returns whether a file has a valid DPI for PDFs in scanned issues
+func (f *File) validDPI() error {
+	var maxDPI = float64(conf.ScannedPDFDPI) * 1.15
+	var minDPI = float64(conf.ScannedPDFDPI) * 0.85
+
+	var dpis = pdf.ImageDPIs(f.Location)
+	if len(dpis) == 0 {
+		return fmt.Errorf("contains no images or is invalid PDF")
+	}
+
+	for _, dpi := range dpis {
+		if dpi.X > maxDPI || dpi.Y > maxDPI || dpi.X < minDPI || dpi.Y < minDPI {
+			return fmt.Errorf("has an image with a bad DPI (%g x %g; expected DPI %d)", dpi.X, dpi.Y, conf.ScannedPDFDPI)
+		}
+	}
+
+	return nil
+}
+
+// ValidateDPI adds errors to the file if its embedded images' DPIs are not
+// within 15% of the configured scanner DPI.  This does nothing if the file's
+// issue isn't scanned or if the file isn't a PDF.
+func (f *File) ValidateDPI() {
+	if f.Issue.Title.Type != TitleTypeScanned {
+		return
+	}
+	if strings.ToUpper(filepath.Ext(f.Name)) != ".PDF" {
+		return
+	}
+	if f.hasScannedPDFDPIs {
+		return
+	}
+
+	var err = f.validDPI()
+	if err != nil {
+		f.addError(safeError(err.Error()))
+	}
+
+	f.hasScannedPDFDPIs = true
 }

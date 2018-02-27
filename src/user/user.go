@@ -48,6 +48,21 @@ func FindByLogin(l string) *User {
 	return users[0]
 }
 
+// FindByID looks up a user by the given ID
+func FindByID(id int) *User {
+	var user = &User{}
+	var op = DB.Operation()
+	var ok = op.Select("users", &User{}).Where("id = ?", id).First(user)
+	if op.Err() != nil {
+		logger.Errorf("Unable to query users: %s", op.Err())
+	}
+
+	if !ok {
+		return EmptyUser
+	}
+	return user
+}
+
 // Roles returns the split list of roles assigned to a user
 func (u *User) Roles() []*Role {
 	if len(u.roles) == 0 {

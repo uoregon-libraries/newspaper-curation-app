@@ -77,8 +77,6 @@ func queueIssueMove(i *Issue) (ok bool, status string) {
 		return false, "Error trying to queue issue.  Try again or contact the system administrator."
 	}
 
-	searcher.ForceReload()
-
 	return true, "Issue queued successfully"
 }
 

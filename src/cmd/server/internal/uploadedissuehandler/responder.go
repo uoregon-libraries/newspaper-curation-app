@@ -7,7 +7,6 @@ import (
 	"web/tmpl"
 
 	"github.com/gorilla/mux"
-	"github.com/uoregon-libraries/gopkg/logger"
 )
 
 type respError struct {
@@ -19,11 +18,12 @@ type respError struct {
 // auto-load in all uploaded issue handling
 type resp struct {
 	*responder.Responder
-	sftpTitles []*Title
-	title      *Title
-	issue      *Issue
-	vars       map[string]string
-	err        *respError
+	bornDigitalTitles []*Title
+	scannedTitles     []*Title
+	title             *Title
+	issue             *Issue
+	vars              map[string]string
+	err               *respError
 }
 
 // getResponder sets up a resp with default values for issue/title to avoid
@@ -43,25 +43,27 @@ func getResponder(w http.ResponseWriter, req *http.Request) *resp {
 }
 
 func (r *resp) loadTitles() {
-	var err error
-	r.sftpTitles, err = searcher.Titles()
-	if err != nil {
-		logger.Errorf("Couldn't load SFTP titles: %s", err)
-		r.err = &respError{http.StatusInternalServerError, "Error trying to load titles; try again or contact support"}
+	for _, t := range searcher.Titles() {
+		switch t.Type {
+		case TitleTypeScanned:
+			r.scannedTitles = append(r.scannedTitles, t)
+		case TitleTypeBornDigital:
+			r.bornDigitalTitles = append(r.bornDigitalTitles, t)
+		}
 	}
 }
 
 func (r *resp) loadTitle() {
-	// If there's no "lccn" var, we don't expect (or look for) a title
-	var lccn, ok = r.vars["lccn"]
+	// If there's no "title" var, we don't expect (or look for) a title
+	var slug, ok = r.vars["title"]
 	if !ok {
 		return
 	}
 
-	// If we have an lccn var, it's an error to not find a title
-	r.title = searcher.TitleLookup(lccn)
+	// If we have a title var, it's an error to not find a title
+	r.title = searcher.TitleLookup(slug)
 	if r.title == nil {
-		r.err = &respError{http.StatusNotFound, fmt.Sprintf("Unable to find title %#v", lccn)}
+		r.err = &respError{http.StatusNotFound, fmt.Sprintf("Unable to find title %#v", slug)}
 	}
 }
 
@@ -87,6 +89,11 @@ func (r *resp) loadIssue() {
 // Render sets up the titles/title/issue data vars for the template, then
 // delegates to the base responder.Responder
 func (r *resp) Render(t *tmpl.Template) {
+	// Hack in an error if the searcher has failed too often
+	if searcher.FailedSearch() {
+		r.err = &respError{http.StatusInternalServerError, "Unable to load titles and issues; try again or contact support"}
+	}
+
 	// Avoid any further work if we had an error
 	if r.err != nil {
 		r.Error(r.err.status, r.err.msg)
@@ -94,9 +101,16 @@ func (r *resp) Render(t *tmpl.Template) {
 	}
 
 	// Set up all the data vars
-	r.Vars.Data["Titles"] = r.sftpTitles
+	r.Vars.Data["BornDigitalTitles"] = r.bornDigitalTitles
+	r.Vars.Data["ScannedTitles"] = r.scannedTitles
 	r.Vars.Data["Title"] = r.title
-	r.Vars.Data["Issue"] = r.issue
+
+	// If we've pulled a single issue, scan the PDFs if they haven't already been
+	// scanned so we can check for embedded image DPI errors
+	if r.issue != nil {
+		r.issue.ScanPDFImageDPIs()
+		r.Vars.Data["Issue"] = r.issue
+	}
 
 	r.Responder.Render(t)
 }

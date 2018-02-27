@@ -121,6 +121,19 @@ func FindIssueByKey(key string) (*Issue, error) {
 	return list[0], nil
 }
 
+// FindIssueByLocation returns the first issue with the given location
+func FindIssueByLocation(location string) (*Issue, error) {
+	var op = DB.Operation()
+	op.Dbg = Debug
+	var i = &Issue{}
+	var ok = op.Select("issues", &Issue{}).Where("location = ?", location).First(i)
+	if !ok {
+		return nil, op.Err()
+	}
+	i.deserialize()
+	return i, op.Err()
+}
+
 // FindInProcessIssues returns all issues which have been entered in the
 // workflow system, but haven't yet gone through all the way to the point of
 // being batched and approved for production
