@@ -10,7 +10,7 @@
 		{
 			"importpath": "github.com/uoregon-libraries/gopkg",
 			"repository": "https://github.com/uoregon-libraries/gopkg",
-			"revision": "a4f7eb2ae904b14c9df869b37bdfd83126921cb4",
+			"revision": "29e57e15adafdcac20398c41048f2da407438ee6",
 			"branch": "master"
 		},
 		{
