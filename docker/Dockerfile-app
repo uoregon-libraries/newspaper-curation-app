@@ -69,6 +69,7 @@ COPY ./validate.sh /usr/local/src/nca/validate.sh
 COPY ./src /usr/local/src/nca/src
 COPY ./depfile /usr/local/src/nca/depfile
 COPY ./vendor/manifest /usr/local/src/nca/vendor/manifest
+COPY ./gopath /usr/local/src/nca/gopath
 RUN make
 RUN cp -r ./bin /usr/local/nca/bin
 
