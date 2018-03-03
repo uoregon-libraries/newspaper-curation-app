@@ -7,12 +7,14 @@ import (
 	"issuefinder"
 	"issuesearch"
 	"jobs"
+	"os"
 
 	"path/filepath"
 	"schema"
 	"strings"
 	"time"
 
+	"github.com/uoregon-libraries/gopkg/fileutil"
 	"github.com/uoregon-libraries/gopkg/logger"
 	"github.com/uoregon-libraries/gopkg/pdf"
 )
@@ -87,6 +89,7 @@ func (t *Title) appendSchemaIssue(i *schema.Issue) *Issue {
 	issue.decorateFiles(i.Files)
 	issue.decorateErrors()
 	issue.decorateExternalErrors()
+	issue.scanModifiedTime()
 	t.Issues = append(t.Issues, issue)
 	t.IssueLookup[issue.Slug] = issue
 
@@ -150,8 +153,33 @@ func (i *Issue) decorateFiles(fileList []*schema.File) {
 	i.FileLookup = make(map[string]*File)
 	for _, f := range fileList {
 		i.appendSchemaFile(f)
-		if i.Modified.Before(f.ModTime) {
-			i.Modified = f.ModTime
+	}
+}
+
+// scanModifiedTime forcibly pulls stats from the filesystem for the issue
+// directory as well as every file to be sure we get real-time information if
+// files are changed between cache refreshes.
+func (i *Issue) scanModifiedTime() {
+	var info, err = os.Stat(i.Location)
+	if err != nil {
+		logger.Errorf("Unable to stat %q: %s", i.Location, err)
+		i.Modified = time.Now()
+		return
+	}
+	i.Modified = info.ModTime()
+
+	var files []os.FileInfo
+	files, err = fileutil.Readdir(i.Location)
+	if err != nil {
+		logger.Errorf("Unable to read dir %q: %s", i.Location, err)
+		i.Modified = time.Now()
+		return
+	}
+
+	for _, file := range files {
+		var mod = file.ModTime()
+		if i.Modified.Before(mod) {
+			i.Modified = mod
 		}
 	}
 }
