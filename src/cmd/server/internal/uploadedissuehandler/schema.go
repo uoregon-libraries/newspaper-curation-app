@@ -17,6 +17,15 @@ import (
 	"github.com/uoregon-libraries/gopkg/pdf"
 )
 
+// DaysIssueConsideredDangerous is how long we require an issue to be untouched
+// prior to anybody queueing it
+const DaysIssueConsideredDangerous = 2
+
+// DaysIssueConsideredNew is how long we warn users that the issue is new - but
+// it can be queued before that warning goes away so long as
+// DaysIssueConsideredDangerous has elapsed
+const DaysIssueConsideredNew = 14
+
 // Errors wraps an array of error strings for nicer display
 type Errors []template.HTML
 
@@ -269,14 +278,14 @@ func (i *Issue) decoratePriorJobLogs() {
 // IsNew tells the presentation if the issue is fairly new, which can be
 // important for some publishers who upload over several days
 func (i *Issue) IsNew() bool {
-	return time.Since(i.Modified) < time.Hour*24*14
+	return time.Since(i.Modified) < time.Hour*24*DaysIssueConsideredNew
 }
 
 // IsDangerouslyNew on the other hand tells us if the issue is so new that
 // we're not okay with manual queueing even with a warning, because it's just
 // not safe!
 func (i *Issue) IsDangerouslyNew() bool {
-	return time.Since(i.Modified) < time.Hour*24*2
+	return time.Since(i.Modified) < time.Hour*24*DaysIssueConsideredDangerous
 }
 
 // Link returns a link for this title
