@@ -50,7 +50,7 @@ func (c *CLI) GetConf() *config.Config {
 	if err != nil {
 		var ferr, ok = err.(*flags.Error)
 		if ok && ferr.Type == flags.ErrHelp {
-			c.HelpExit()
+			c.HelpExit(0)
 		}
 		c.UsageFail("Error: %q", err)
 	}
@@ -85,15 +85,13 @@ func Wrap(msg string) {
 }
 
 // HelpExit exits the application after printing out the parser's help
-func (c *CLI) HelpExit() {
+func (c *CLI) HelpExit(code int) {
 	c.p.WriteHelp(os.Stderr)
-	for i, msg := range c.postUsage {
-		if i > 0 {
-			fmt.Fprintln(os.Stderr)
-		}
+	for _, msg := range c.postUsage {
+		fmt.Fprintln(os.Stderr)
 		Wrap(msg)
 	}
-	os.Exit(0)
+	os.Exit(code)
 }
 
 // UsageFail exits the application after printing out a message and the
@@ -101,12 +99,5 @@ func (c *CLI) HelpExit() {
 func (c *CLI) UsageFail(format string, args ...interface{}) {
 	Wrap(fmt.Sprintf(format, args...))
 	fmt.Fprintln(os.Stderr)
-	c.p.WriteHelp(os.Stderr)
-	for i, msg := range c.postUsage {
-		if i > 0 {
-			fmt.Fprintln(os.Stderr)
-		}
-		Wrap(msg)
-	}
-	os.Exit(1)
+	c.HelpExit(1)
 }
