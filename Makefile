@@ -1,6 +1,8 @@
-.PHONY: all validate build lint format clean
+.PHONY: all fast validate build lint format clean
 
 all: vendor/src validate build
+
+fast: vendor/src build
 
 validate:
 	./validate.sh
