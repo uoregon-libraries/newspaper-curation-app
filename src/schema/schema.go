@@ -211,21 +211,16 @@ type Issue struct {
 	WorkflowStep WorkflowStep
 }
 
-// condensedDate returns the date in a consistent format for use in issue key TSV output
-func (i *Issue) condensedDate() string {
-	return strings.Replace(i.RawDate, "-", "", -1)
-}
-
 // DateEdition returns the combination of condensed date (no hyphens) and
 // two-digit edition number for use in issue keys and other places we need the
 // "local" unique string
 func (i *Issue) DateEdition() string {
-	return fmt.Sprintf("%s%02d", i.condensedDate(), i.Edition)
+	return fmt.Sprintf("%s%02d", CondensedDate(i.RawDate), i.Edition)
 }
 
 // Key returns the unique string that represents this issue
 func (i *Issue) Key() string {
-	return fmt.Sprintf("%s/%s", i.Title.LCCN, i.DateEdition())
+	return IssueKey(i.Title.LCCN, i.RawDate, i.Edition)
 }
 
 // TSV gives us something which can be used to uniquely identify all aspects of
@@ -240,7 +235,7 @@ func (i *Issue) TSV() string {
 	for _, file := range i.Files {
 		fileNames = append(fileNames, file.Name)
 	}
-	return fmt.Sprintf("%s\t%s\t%s\t%s%02d\t%s\t%s", bString, tString, i.Location, i.condensedDate(),
+	return fmt.Sprintf("%s\t%s\t%s\t%s%02d\t%s\t%s", bString, tString, i.Location, CondensedDate(i.RawDate),
 		i.Edition, i.WorkflowStep, strings.Join(fileNames, ","))
 }
 

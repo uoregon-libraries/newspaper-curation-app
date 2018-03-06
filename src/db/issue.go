@@ -195,6 +195,11 @@ func FindAvailableIssuesByWorkflowStep(ws schema.WorkflowStep) ([]*Issue, error)
 	return list, op.Err()
 }
 
+// Key returns the standardized issue key for this DB issue
+func (i *Issue) Key() string {
+	return schema.IssueKey(i.LCCN, i.Date, i.Edition)
+}
+
 // Claim sets the workflow owner to the given user id, and sets the expiration
 // time to a week from now
 func (i *Issue) Claim(byUserID int) {
