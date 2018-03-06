@@ -20,4 +20,4 @@ format:
 	find src/ -name "*.go" | xargs gofmt -l -w -s
 
 clean:
-	rm -rf bin/ pkg/
+	rm -rf bin/* pkg/*
