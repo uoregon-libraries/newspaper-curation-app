@@ -154,6 +154,16 @@ func FindInProcessIssues() ([]*Issue, error) {
 	return list, op.Err()
 }
 
+// FindIssuesByBatchID returns all issues associated with the given batch id
+func FindIssuesByBatchID(batchID int) ([]*Issue, error) {
+	var op = DB.Operation()
+	op.Dbg = Debug
+	var list []*Issue
+	op.Select("issues", &Issue{}).Where(`batch_id = ?`, batchID).AllObjects(&list)
+	deserializeIssues(list)
+	return list, op.Err()
+}
+
 // FindIssuesOnDesk returns all issues "owned" by a given user id
 func FindIssuesOnDesk(userID int) ([]*Issue, error) {
 	var op = DB.Operation()

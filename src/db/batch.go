@@ -42,6 +42,21 @@ func CreateBatch(moc string, issues []*Issue) (*Batch, error) {
 	return b, err
 }
 
+// Issues pulls all issues from the database which have this batch's ID
+func (b *Batch) Issues() ([]*Issue, error) {
+	if len(b.issues) > 0 {
+		return b.issues, nil
+	}
+
+	if b.ID == 0 {
+		return b.issues, nil
+	}
+
+	var issues, err = FindIssuesByBatchID(b.ID)
+	b.issues = issues
+	return b.issues, err
+}
+
 // Save creates or updates the Batch in the batches table
 func (b *Batch) Save() error {
 	var op = DB.Operation()
