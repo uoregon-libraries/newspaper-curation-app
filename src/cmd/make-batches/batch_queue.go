@@ -159,20 +159,26 @@ func (q *batchQueue) FindReadyIssues(embargoedDays int) {
 	}
 }
 
-func (q *batchQueue) currentQueue() (mq *issueQueue, ok bool) {
-	mq = q.mocQueue[q.currentMOC]
-	if len(mq.list) > 0 {
-		return mq, true
+// nextMOC calculates which MARC Org Code should be used for the next batch and
+// returns its issue queue.  Iterates through known MOCs when queues are empty
+// until a queue is found or no queues are left, in which case nil is returned.
+func (q *batchQueue) nextMOCQueue() *issueQueue {
+	var mq = q.mocQueue[q.currentMOC]
+	if mq != nil && len(mq.list) > 0 {
+		return mq
 	}
 
-	delete(q.mocQueue, q.currentMOC)
-	q.mocList = q.mocList[1:]
 	if len(q.mocList) == 0 {
-		return nil, false
+		return nil
 	}
 
-	q.currentMOC = q.mocList[0]
-	return q.currentQueue()
+	q.currentMOC, q.mocList = q.mocList[0], q.mocList[1:]
+	return q.nextMOCQueue()
+}
+
+func (q *batchQueue) currentQueue() (*issueQueue, bool) {
+	var mq = q.nextMOCQueue()
+	return mq, mq != nil
 }
 
 // NextBatch returns a new Batch instance prepped with all the information
