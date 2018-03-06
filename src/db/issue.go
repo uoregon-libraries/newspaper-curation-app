@@ -190,6 +190,18 @@ func FindIssuesInPageReview() ([]*Issue, error) {
 	return list, op.Err()
 }
 
+// FindIssuesReadyForBatching looks for all issues which are in the
+// WSReadyForBatching workflow step and have no batch ID
+func FindIssuesReadyForBatching() ([]*Issue, error) {
+	var op = DB.Operation()
+	op.Dbg = Debug
+	var list []*Issue
+	op.Select("issues", &Issue{}).Where("workflow_step = ? AND batch_id = 0",
+		string(schema.WSReadyForBatching)).AllObjects(&list)
+	deserializeIssues(list)
+	return list, op.Err()
+}
+
 // FindAvailableIssuesByWorkflowStep looks for all "available" issues with the
 // requested workflow step and returns them.  We define "available" as:
 //
