@@ -43,6 +43,7 @@ type Issue struct {
 
 	/* Workflow information to keep track of the issue and what it needs */
 
+	BatchID                int                 // Which batch (if any) is this issue a part of?
 	Error                  string              // If set, a metadata curator reported a problem
 	Location               string              // Where is this issue on disk?
 	MasterBackupLocation   string              // Where is the master backup located?  (born-digital only)
