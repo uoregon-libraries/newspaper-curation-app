@@ -32,13 +32,14 @@ func getOpts() *config.Config {
 
 func main() {
 	var conf = getOpts()
-	logger.Debugf("Scanning ready issues for batchability")
+	logger.Infof("Scanning ready issues for batchability")
 
 	var q = newBatchQueue(conf.MinBatchSize, conf.MaxBatchSize)
 	q.FindReadyIssues(conf.EmbargoDays)
 	for {
 		var batch, ok = q.NextBatch()
 		if !ok {
+			logger.Debugf("No more batches")
 			break
 		}
 
@@ -48,7 +49,7 @@ func main() {
 			logger.Fatalf("Unable to pull issues for pending batch: %s", err)
 		}
 
-		logger.Debugf("Starting a new batch, %q", batch.Name)
+		logger.Infof("Starting a new batch, %q", batch.Name)
 
 		for _, issue := range issues {
 			logger.Debugf("Adding %q to batch", issue.Key())
@@ -57,5 +58,5 @@ func main() {
 		// ...
 	}
 
-	logger.Debugf("Batches can now be found in %q", conf.BatchOutputPath)
+	logger.Infof("Batches can now be found in %q", conf.BatchOutputPath)
 }

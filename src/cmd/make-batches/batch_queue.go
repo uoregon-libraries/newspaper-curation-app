@@ -2,7 +2,6 @@ package main
 
 import (
 	"db"
-	"log"
 	"schema"
 	"sort"
 	"time"
@@ -186,13 +185,19 @@ func (q *batchQueue) currentQueue() (*issueQueue, bool) {
 // removed from its queue so that each call to NextBatch returns a new batch.
 // ok is false when there was nothing left to batch.
 func (q *batchQueue) NextBatch() (*db.Batch, bool) {
+	for moc, mq := range q.mocQueue {
+		logger.Debugf("%q queue has %d issues left", moc, mq.pages)
+	}
+
 	var currentQ, ok = q.currentQueue()
 	if !ok {
+		logger.Debugf("Operation complete: no issues were found in the remaining queue(s)")
 		return nil, false
 	}
 
 	var smallQ = currentQ.splitQueue(q.maxPages)
 	if smallQ.pages < q.minPages && !smallQ.longWait {
+		logger.Infof("Not creating a batch for %q: too few pages (%d)", q.currentMOC, smallQ.pages)
 		return nil, false
 	}
 
@@ -203,7 +208,7 @@ func (q *batchQueue) NextBatch() (*db.Batch, bool) {
 
 	var batch, err = db.CreateBatch(q.currentMOC, dbIssues)
 	if err != nil {
-		log.Fatalf("Unable to create a new batch: %s", err)
+		logger.Fatalf("Unable to create a new batch: %s", err)
 	}
 
 	return batch, true
