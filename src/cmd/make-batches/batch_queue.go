@@ -170,9 +170,12 @@ func (q *batchQueue) NextBatch() (*db.Batch, bool) {
 	}
 
 	var smallQ = currentQ.splitQueue(q.maxPages)
-	if smallQ.pages < q.minPages && !smallQ.longWait {
-		logger.Infof("Not creating a batch for %q: too few pages (%d)", q.currentMOC, smallQ.pages)
-		return nil, false
+	if smallQ.pages < q.minPages {
+		if !smallQ.longWait {
+			logger.Infof("Not creating a batch for %q: too few pages (%d)", q.currentMOC, smallQ.pages)
+			return nil, false
+		}
+		logger.Infof("Small batch being pushed due to age of longest-waiting issue")
 	}
 
 	var dbIssues = make([]*db.Issue, len(smallQ.list))
