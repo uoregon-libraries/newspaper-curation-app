@@ -2,20 +2,10 @@ package main
 
 import (
 	"db"
-	"schema"
 	"sort"
-	"time"
 
 	"github.com/uoregon-libraries/gopkg/logger"
 )
-
-// issue wraps a db Issue but gives us a page count as well as how old this
-// issue is *relative to embargoes*
-type issue struct {
-	*db.Issue
-	pages     int
-	daysStale int
-}
 
 // issueQueue is a list of issues for a given MOC to ease batching.  It acts as
 // a CS set in that you can append the same issue multiple times without having
@@ -40,7 +30,7 @@ func (q *issueQueue) append(i *issue) {
 	}
 
 	q.list = append(q.list, i)
-	q.pages += len(i.PageLabels)
+	q.pages += i.pages
 	q.sorted = false
 	q.seen[i] = true
 
@@ -118,39 +108,27 @@ func (q *batchQueue) FindReadyIssues(embargoedDays int) {
 		logger.Fatalf("Error trying to find issues: %s", err)
 	}
 
-	for _, i := range issues {
-		var key = schema.IssueKey(i.LCCN, i.Date, i.Edition)
-		var issueDate, err = time.Parse("2006-01-02", i.Date)
+	for _, dbIssue := range issues {
+		var i, err = wrapIssue(dbIssue, embargoedDays)
 		if err != nil {
-			logger.Errorf("Issue %d (%s) has an invalid date: %s", i.ID, key, err)
+			logger.Errorf("Issue %d (%s) is invalid: %s", i.ID, i.Key(), err)
 			continue
 		}
 
-		var t = db.LookupTitle(i.LCCN)
-		if t == nil {
-			logger.Errorf("Issue %d (%s) has an LCCN with no database title", i.ID, key)
+		if i.embargoed {
+			logger.Infof("Skipping %s (embargoed)", i.Key())
 			continue
 		}
 
-		// Calculate days stale: that means the number of days that have passed
-		// since this issue was allowed to be put live
-		var daysStale = int(time.Since(issueDate).Hours() / 24.0)
-		if t.Embargoed {
-			daysStale -= embargoedDays
-			if daysStale < 0 {
-				logger.Infof("Skipping %s (embargoed)", key)
-				continue
-			}
-		}
-
-		logger.Infof("Adding %s to batch queue", key)
-		var wrappedIssue = &issue{Issue: i, daysStale: daysStale}
-		var mocQ, ok = q.mocQueue[wrappedIssue.MARCOrgCode]
+		logger.Infof("Adding %s to batch queue", i.Key())
+		var moc = i.MARCOrgCode
+		var mocQ, ok = q.mocQueue[moc]
 		if !ok {
 			mocQ = newMOCIssueQueue()
-			q.mocQueue[wrappedIssue.MARCOrgCode] = mocQ
+			q.mocQueue[moc] = mocQ
+			q.mocList = append(q.mocList, moc)
 		}
-		mocQ.append(wrappedIssue)
+		mocQ.append(i)
 	}
 }
 
