@@ -77,7 +77,7 @@ func (j *Job) SetProcessSuccess(success bool) {
 // RunWhileTrue simplifies the common operation processors deal with when
 // running a bunch of related operations, where the first failure needs to end
 // the process entirely
-func (j *Job) RunWhileTrue(subProcessors ...func() bool) (ok bool) {
+func RunWhileTrue(subProcessors ...func() bool) (ok bool) {
 	for _, subProc := range subProcessors {
 		if !subProc() {
 			return false
