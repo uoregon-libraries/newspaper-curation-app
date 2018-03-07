@@ -113,16 +113,12 @@ func newBatchQueue(minPages, maxPages int) *batchQueue {
 // have an easy checksum that's 100% separate from the filesystem)
 func (q *batchQueue) FindReadyIssues(embargoedDays int) {
 	db.LoadTitles()
-	var issues, err = db.FindAvailableIssuesByWorkflowStep(schema.WSReadyForBatching)
+	var issues, err = db.FindIssuesReadyForBatching()
 	if err != nil {
 		logger.Fatalf("Error trying to find issues: %s", err)
 	}
 
 	for _, i := range issues {
-		if i.BatchID != 0 {
-			continue
-		}
-
 		var key = schema.IssueKey(i.LCCN, i.Date, i.Edition)
 		var issueDate, err = time.Parse("2006-01-02", i.Date)
 		if err != nil {
