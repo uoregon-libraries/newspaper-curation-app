@@ -23,6 +23,7 @@ type Batch struct {
 // inefficient, but it gets the job done.
 func CreateBatch(moc string, issues []*Issue) (*Batch, error) {
 	var op = DB.Operation()
+	op.Dbg = Debug
 	op.BeginTransaction()
 	defer op.EndTransaction()
 
