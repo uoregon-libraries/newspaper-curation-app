@@ -38,7 +38,7 @@ func CreateBatch(moc string, issues []*Issue) (*Batch, error) {
 	}
 
 	b.Name = RandomBatchName(b.ID)
-	err = b.Save()
+	err = b.SaveOp(op)
 	return b, err
 }
 
