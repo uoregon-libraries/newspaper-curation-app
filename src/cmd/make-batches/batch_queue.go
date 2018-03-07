@@ -77,7 +77,7 @@ func (q *issueQueue) splitQueue(maxPages int) *issueQueue {
 	copy(list, q.list)
 	q.emptyList()
 
-	var popped *issueQueue
+	var popped = newMOCIssueQueue()
 	for passes := 3; passes > 0; passes-- {
 		for _, issue := range list {
 			var l = len(issue.PageLabels)
