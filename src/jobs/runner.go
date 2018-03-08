@@ -81,10 +81,15 @@ func (r *Runner) Watch(interval time.Duration) {
 				continue
 			}
 
-			r.logger.Debugf("Starting job id %d: %q", pr.JobID(), pr.JobType())
-			pr.SetProcessSuccess(pr.Process(r.config))
+			r.logger.Infof("Starting job id %d: %q", pr.JobID(), pr.JobType())
+			var success = pr.Process(r.config)
+			pr.SetProcessSuccess(success)
+			if success {
+				r.logger.Infof("Finished job id %d - success", pr.JobID())
+			} else {
+				r.logger.Infof("Job id %d **failed** (see job logs)", pr.JobID())
+			}
 			pr.UpdateWorkflow()
-			r.logger.Debugf("Finished job id %d", pr.JobID())
 		}
 
 		// Try not to eat all the CPU
