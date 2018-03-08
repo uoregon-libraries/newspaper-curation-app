@@ -14,12 +14,24 @@ import (
 	"strconv"
 	"strings"
 	"sync"
+	"sync/atomic"
 	"time"
 
 	flags "github.com/jessevdk/go-flags"
+	"github.com/uoregon-libraries/gopkg/interrupts"
 	"github.com/uoregon-libraries/gopkg/logger"
 	"github.com/uoregon-libraries/gopkg/wordutils"
 )
+
+var isDone int32
+
+func quit() {
+	atomic.StoreInt32(&isDone, 1)
+}
+
+func done() bool {
+	return atomic.LoadInt32(&isDone) == 1
+}
 
 // Command-line options
 var opts struct {
@@ -119,7 +131,7 @@ func main() {
 	}
 
 	// On CTRL-C / kill, try to finish the current task before exiting
-	catchInterrupts()
+	interrupts.TrapIntTerm(quit)
 
 	var action string
 	action, args = args[0], args[1:]
