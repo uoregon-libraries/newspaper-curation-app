@@ -75,28 +75,8 @@ func (r *Runner) Watch(interval time.Duration) {
 	var nextAttempt time.Time
 	for !r.done() {
 		if time.Now().After(nextAttempt) {
-			var pr = r.next()
-			if pr == nil {
+			if !r.processNext() {
 				nextAttempt = time.Now().Add(interval)
-				continue
-			}
-
-			var dbj = pr.DBJob()
-			r.logger.Infof("Starting job id %d: %q", dbj.ID, dbj.Type)
-			if pr.Process(r.config) {
-				dbj.Status = string(JobStatusSuccessful)
-				pr.UpdateWorkflow()
-				r.logger.Infof("Finished job id %d - success", dbj.ID)
-			} else {
-				dbj.Status = string(JobStatusFailed)
-				r.logger.Infof("Job id %d **failed** (see job logs)", dbj.ID)
-			}
-
-			dbj.CompletedAt = time.Now()
-			var err = dbj.Save()
-			if err != nil {
-				r.logger.Criticalf("Unable to update job status after completion (job: %d): %s",
-					dbj.ID, err)
 			}
 		}
 
@@ -113,20 +93,22 @@ func (r *Runner) Stop() {
 	atomic.StoreInt32(&r.isDone, 1)
 }
 
-// next gets the oldest job this runner can process, sets its status to
-// in-process, and returns it
-func (r *Runner) next() Processor {
+// processNext gets the oldest job this runner can process, sets its status to
+// in-process, and processes it.  If no processor was found, the return is
+// false and nothing happens.
+func (r *Runner) processNext() bool {
 	var dbJob, err = popNextPendingJob(r.jobTypes)
 
 	if err != nil {
 		r.logger.Errorf("Unable to pull next pending job: %s", err)
-		return nil
+		return false
 	}
 	if dbJob == nil {
-		return nil
+		return false
 	}
 
-	return DBJobToProcessor(dbJob)
+	r.process(DBJobToProcessor(dbJob))
+	return true
 }
 
 // popNextPendingJob is a helper for locking the database to pull the oldest
@@ -158,4 +140,50 @@ func popNextPendingJob(types []JobType) (*db.Job, error) {
 	j.SaveOp(op)
 
 	return j, op.Err()
+}
+
+func (r *Runner) process(pr Processor) {
+	var dbj = pr.DBJob()
+	r.logger.Infof("Starting job id %d: %q", dbj.ID, dbj.Type)
+	if pr.Process(r.config) {
+		dbj.Status = string(JobStatusSuccessful)
+		pr.UpdateWorkflow()
+		r.queueNextJob(pr)
+		r.logger.Infof("Finished job id %d - success", dbj.ID)
+	} else {
+		dbj.Status = string(JobStatusFailed)
+		r.logger.Infof("Job id %d **failed** (see job logs)", dbj.ID)
+	}
+
+	dbj.CompletedAt = time.Now()
+	var err = dbj.Save()
+	if err != nil {
+		r.logger.Criticalf("Unable to update job status after completion (job: %d): %s",
+			dbj.ID, err)
+	}
+}
+
+// queueNextJob starts the next job if one was set on the current database job
+func (r *Runner) queueNextJob(pr Processor) {
+	var qid = pr.DBJob().QueueJobID
+	if qid == 0 {
+		return
+	}
+
+	var nextJob, err = db.FindJob(qid)
+	if err != nil {
+		r.logger.Criticalf("Unable to read next job from database (dbid %d): %s", qid, err)
+		return
+	}
+	if nextJob == nil {
+		r.logger.Criticalf("Unable to find next job in the database (dbid %d)", qid)
+		return
+	}
+	nextJob.Status = string(JobStatusPending)
+	nextJob.Location = pr.ObjectLocation()
+	err = nextJob.Save()
+	if err != nil {
+		r.logger.Criticalf("Unable to mark next job pending (dbid %d): %s", qid, err)
+		return
+	}
 }

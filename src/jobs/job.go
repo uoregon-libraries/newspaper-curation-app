@@ -14,9 +14,19 @@ import (
 
 // A Processor is a general interface for all database-driven jobs that process something
 type Processor interface {
+	// Process runs the job and returns whether it was successful
 	Process(*config.Config) bool
+
+	// UpdateWorkflow does any job-specific workflow manipulation, such as
+	// changing the job's underlying object.  Only called on success.
 	UpdateWorkflow()
+
+	// DBJob returns the low-level database Job for updating status, etc.
 	DBJob() *db.Job
+
+	// ObjectLocation returns the job's object location, such as the directory in
+	// which an issue resides, for the runner to use when updating future jobs
+	ObjectLocation() string
 }
 
 // Job wraps the DB job data and provides business logic for things like
@@ -173,29 +183,9 @@ func (ij *IssueJob) UpdateWorkflow() {
 	if err != nil {
 		ij.Logger.Criticalf("Unable to update issue (dbid %d) workflow post-job: %s", ij.DBIssue.ID, err)
 	}
-
-	var qid = ij.Job.Job.QueueJobID
-	if qid > 0 {
-		ij.queueNextJob()
-	}
 }
 
-func (ij *IssueJob) queueNextJob() {
-	var qid = ij.Job.Job.QueueJobID
-	var nextJob, err = db.FindJob(qid)
-	if err != nil {
-		ij.Logger.Criticalf("Unable to read next job from database (dbid %d): %s", qid, err)
-		return
-	}
-	if nextJob == nil {
-		ij.Logger.Criticalf("Unable to find next job in the database (dbid %d)", qid)
-		return
-	}
-	nextJob.Status = string(JobStatusPending)
-	nextJob.Location = ij.DBIssue.Location
-	err = nextJob.Save()
-	if err != nil {
-		ij.Logger.Criticalf("Unable to mark next job pending (dbid %d): %s", qid, err)
-		return
-	}
+// ObjectLocation implements he Processor interface
+func (ij *IssueJob) ObjectLocation() string {
+	return ij.DBIssue.Location
 }
