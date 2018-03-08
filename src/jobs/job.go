@@ -16,9 +16,7 @@ import (
 type Processor interface {
 	Process(*config.Config) bool
 	UpdateWorkflow()
-	SetProcessSuccess(bool)
-	JobID() int
-	JobType() JobType
+	DBJob() *db.Job
 }
 
 // Job wraps the DB job data and provides business logic for things like
@@ -48,30 +46,9 @@ func Find(id int) *Job {
 	return NewJob(dbJob)
 }
 
-// JobID gets the underlying database job's id
-func (j *Job) JobID() int {
-	return j.Job.ID
-}
-
-// JobType converts the underlying database job's type to a proper JobType variable
-func (j *Job) JobType() JobType {
-	return JobType(j.Job.Type)
-}
-
-// SetProcessSuccess changes the process status to successful or failed and
-// stores it, logging a critical error if the database operation fails
-func (j *Job) SetProcessSuccess(success bool) {
-	switch success {
-	case true:
-		j.Status = string(JobStatusSuccessful)
-	case false:
-		j.Status = string(JobStatusFailed)
-	}
-	j.CompletedAt = time.Now()
-	var err = j.Save()
-	if err != nil {
-		j.Logger.Criticalf("Unable to update job status after completion (job: %d; success: %#v): %s", j.ID, success, err)
-	}
+// DBJob returns the database job
+func (j *Job) DBJob() *db.Job {
+	return j.Job
 }
 
 // RunWhileTrue simplifies the common operation processors deal with when

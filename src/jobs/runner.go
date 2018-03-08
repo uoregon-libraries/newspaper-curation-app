@@ -81,14 +81,22 @@ func (r *Runner) Watch(interval time.Duration) {
 				continue
 			}
 
-			r.logger.Infof("Starting job id %d: %q", pr.JobID(), pr.JobType())
-			var success = pr.Process(r.config)
-			pr.SetProcessSuccess(success)
-			if success {
+			var dbj = pr.DBJob()
+			r.logger.Infof("Starting job id %d: %q", dbj.ID, dbj.Type)
+			if pr.Process(r.config) {
+				dbj.Status = string(JobStatusSuccessful)
 				pr.UpdateWorkflow()
-				r.logger.Infof("Finished job id %d - success", pr.JobID())
+				r.logger.Infof("Finished job id %d - success", dbj.ID)
 			} else {
-				r.logger.Infof("Job id %d **failed** (see job logs)", pr.JobID())
+				dbj.Status = string(JobStatusFailed)
+				r.logger.Infof("Job id %d **failed** (see job logs)", dbj.ID)
+			}
+
+			dbj.CompletedAt = time.Now()
+			var err = dbj.Save()
+			if err != nil {
+				r.logger.Criticalf("Unable to update job status after completion (job: %d): %s",
+					dbj.ID, err)
 			}
 		}
 
