@@ -85,11 +85,11 @@ func (r *Runner) Watch(interval time.Duration) {
 			var success = pr.Process(r.config)
 			pr.SetProcessSuccess(success)
 			if success {
+				pr.UpdateWorkflow()
 				r.logger.Infof("Finished job id %d - success", pr.JobID())
 			} else {
 				r.logger.Infof("Job id %d **failed** (see job logs)", pr.JobID())
 			}
-			pr.UpdateWorkflow()
 		}
 
 		// Try not to eat all the CPU

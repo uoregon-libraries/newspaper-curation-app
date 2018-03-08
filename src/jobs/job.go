@@ -184,14 +184,12 @@ func (ij *IssueJob) WIPDir() string {
 // then the issue job is saved.  At this point, however, the job is complete,
 // so all we can do is loudly log failures.
 func (ij *IssueJob) UpdateWorkflow() {
-	if JobStatus(ij.Status) == JobStatusSuccessful {
-		var ws = schema.WorkflowStep(ij.NextWorkflowStep)
-		if ws != schema.WSNil {
-			ij.DBIssue.WorkflowStep = ws
-		}
-		if ij.updateWorkflowCB != nil {
-			ij.updateWorkflowCB()
-		}
+	var ws = schema.WorkflowStep(ij.NextWorkflowStep)
+	if ws != schema.WSNil {
+		ij.DBIssue.WorkflowStep = ws
+	}
+	if ij.updateWorkflowCB != nil {
+		ij.updateWorkflowCB()
 	}
 
 	var err = ij.DBIssue.Save()
@@ -199,11 +197,9 @@ func (ij *IssueJob) UpdateWorkflow() {
 		ij.Logger.Criticalf("Unable to update issue (dbid %d) workflow post-job: %s", ij.DBIssue.ID, err)
 	}
 
-	if JobStatus(ij.Status) == JobStatusSuccessful {
-		var qid = ij.Job.Job.QueueJobID
-		if qid > 0 {
-			ij.queueNextJob()
-		}
+	var qid = ij.Job.Job.QueueJobID
+	if qid > 0 {
+		ij.queueNextJob()
 	}
 }
 
