@@ -17,7 +17,7 @@ var opts _opts
 
 func getOpts() *config.Config {
 	var c = cli.New(&opts)
-	c.AppendUsage("Generates one or more batches depending on the number of " +
+	c.AppendUsage("Queues one or more batches depending on the number of " +
 		"issues in the database which are flagged as ready for batching.  See " +
 		"the MAX_BATCH_SIZE and MIN_BATCH_SIZE settings to control how many " +
 		"pages a batch may contain.")
@@ -58,5 +58,5 @@ func main() {
 		// ...
 	}
 
-	logger.Infof("Batches can now be found in %q", conf.BatchOutputPath)
+	// TODO: Log batches which have been prepared for creation
 }
