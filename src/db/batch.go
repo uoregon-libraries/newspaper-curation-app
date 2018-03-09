@@ -7,6 +7,19 @@ import (
 	"github.com/Nerdmaster/magicsql"
 )
 
+// BatchStatus tells us where this batch is in simple terms
+type BatchStatus string
+
+// These are all possible batch status values
+const (
+	BatchStatusPending   BatchStatus = "pending"    // Not yet built or in the process of being built
+	BatchStatusOnStaging             = "on_staging" // On the staging server awaiting QC
+	BatchStatusFailedQC              = "failed_qc"  // On staging, but QC failed it; it needs to be pulled and fixed
+	BatchStatusPassedQC              = "passed_qc"  // On staging, passed QC; it needs to be pulled from staging and pushed live
+	BatchStatusLive                  = "live"       // Batch has gone live; batch and its issues need to be archived
+	BatchStatusLiveDone              = "live_done"  // Batch has gone live; batch and its issues have been archived and are no longer on the filesystem
+)
+
 // Batch contains metadata for generating a batch XML.  Issues can be
 // associated with a single batch, and a batch will typically have many issues
 // assigned to it.
@@ -15,6 +28,8 @@ type Batch struct {
 	MARCOrgCode string
 	Name        string
 	CreatedAt   time.Time
+	Status      BatchStatus
+	Location    string
 
 	issues []*Issue
 }
@@ -28,7 +43,7 @@ func CreateBatch(moc string, issues []*Issue) (*Batch, error) {
 	op.BeginTransaction()
 	defer op.EndTransaction()
 
-	var b = &Batch{MARCOrgCode: moc, CreatedAt: time.Now(), issues: issues}
+	var b = &Batch{MARCOrgCode: moc, CreatedAt: time.Now(), issues: issues, Status: BatchStatusPending}
 	var err = b.SaveOp(op)
 	if err != nil {
 		return nil, err

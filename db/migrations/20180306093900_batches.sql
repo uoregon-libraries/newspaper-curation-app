@@ -5,6 +5,8 @@ CREATE TABLE `batches` (
   `marc_org_code` TINYTEXT NOT NULL COLLATE utf8_bin,
   `created_at` DATETIME,
   `name` TINYTEXT NOT NULL COLLATE utf8_bin,
+  `status` TINYTEXT NOT NULL COLLATE utf8_bin,
+  `location` TINYTEXT NOT NULL COLLATE utf8_bin,
   PRIMARY KEY (`id`)
 ) ENGINE=InnoDB AUTO_INCREMENT=1 DEFAULT CHARSET=utf8 COLLATE=utf8_bin;
 
