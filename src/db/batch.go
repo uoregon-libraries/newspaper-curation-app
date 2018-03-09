@@ -34,6 +34,18 @@ type Batch struct {
 	issues []*Issue
 }
 
+// FindBatch looks for a batch by its id
+func FindBatch(id int) (*Batch, error) {
+	var op = DB.Operation()
+	op.Dbg = Debug
+	var b = &Batch{}
+	var ok = op.Select("batches", b).Where("id = ?", id).First(b)
+	if !ok {
+		return nil, op.Err()
+	}
+	return b, op.Err()
+}
+
 // CreateBatch creates a batch in the database, using its ID to generate a
 // unique batch name, and associating the given list of issues.  This is
 // inefficient, but it gets the job done.
