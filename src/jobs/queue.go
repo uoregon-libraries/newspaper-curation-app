@@ -6,20 +6,26 @@ import (
 	"time"
 )
 
+// PrepareJobAdvanced gets a job of any kind set up with sensible defaults
+func PrepareJobAdvanced(t JobType) *db.Job {
+	return &db.Job{
+		Type:   string(t),
+		Status: string(JobStatusPending),
+		RunAt:  time.Now(),
+	}
+}
+
 // PrepareIssueJobAdvanced is a way to get an issue job ready with the
 // necessary base values, but not save it immediately, to allow for more
 // advanced job semantics: specifying that the job shouldn't run immediately,
 // should queue a specific job ID after completion, should set the WorkflowStep
 // to a custom value rather than whatever the job would normally do, etc.
 func PrepareIssueJobAdvanced(t JobType, issue *db.Issue, path string, nextWS schema.WorkflowStep) *db.Job {
-	return &db.Job{
-		Type:             string(t),
-		ObjectID:         issue.ID,
-		Location:         path,
-		Status:           string(JobStatusPending),
-		NextWorkflowStep: string(nextWS),
-		RunAt:            time.Now(),
-	}
+	var j = PrepareJobAdvanced(t)
+	j.ObjectID = issue.ID
+	j.NextWorkflowStep = string(nextWS)
+	j.Location = path
+	return j
 }
 
 func queueIssueJob(t JobType, issue *db.Issue, path string, nextWS schema.WorkflowStep) error {
