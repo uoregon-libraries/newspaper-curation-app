@@ -1,6 +1,7 @@
 package db
 
 import (
+	"fmt"
 	"time"
 
 	"github.com/Nerdmaster/magicsql"
@@ -56,6 +57,15 @@ func (b *Batch) Issues() ([]*Issue, error) {
 	var issues, err = FindIssuesByBatchID(b.ID)
 	b.issues = issues
 	return b.issues, err
+}
+
+// FullName returns the name of a batch as it is needed for chronam / ONI.
+//
+// Note that currently we assume all generated batches will be _ver01, because
+// we would usually generate a completely new batch if one were in such a state
+// as to need to be pulled from production.
+func (b *Batch) FullName() string {
+	return fmt.Sprintf("batch_%s_%s%s_ver01", b.MARCOrgCode, b.CreatedAt.Format("20060102"), b.Name)
 }
 
 // Save creates or updates the Batch in the batches table
