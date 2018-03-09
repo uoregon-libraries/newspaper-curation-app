@@ -57,11 +57,11 @@ func (ij *IssueJob) WIPDir() string {
 }
 
 // UpdateWorkflow sets the attached issue's WorkflowStep if the job has defined
-// a NextWorkflowStep.  The optional updateWorkflowCB is called if defined, and
+// "ExtraData".  The optional updateWorkflowCB is called if defined, and
 // then the issue job is saved.  At this point, however, the job is complete,
 // so all we can do is loudly log failures.
 func (ij *IssueJob) UpdateWorkflow() {
-	var ws = schema.WorkflowStep(ij.NextWorkflowStep)
+	var ws = schema.WorkflowStep(ij.ExtraData)
 	if ws != schema.WSNil {
 		ij.DBIssue.WorkflowStep = ws
 	}
