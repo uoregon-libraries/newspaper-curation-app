@@ -75,7 +75,8 @@ func (ij *IssueJob) UpdateWorkflow() {
 	}
 }
 
-// ObjectLocation implements he Processor interface
+// ObjectLocation implements the Processor interface, returning the issue's
+// current location
 func (ij *IssueJob) ObjectLocation() string {
 	return ij.DBIssue.Location
 }
