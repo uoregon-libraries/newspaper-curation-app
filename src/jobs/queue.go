@@ -102,7 +102,7 @@ func QueueBuildMETS(issue *db.Issue, path string) error {
 // where it can be loaded onto staging, and generating the bagit manifest.
 // Nothing can happen automatically after all this until the batch is verified
 // on staging.
-func QueueMakeBatch(batch *db.Batch, batchOutputPath string) error {
+func QueueMakeBatch(batch *db.Batch) error {
 	return QueueSerial(
 		PrepareBatchJobAdvanced(JobTypeCreateBatchStructure, batch),
 		PrepareBatchJobAdvanced(JobTypeMakeBatchXML, batch),

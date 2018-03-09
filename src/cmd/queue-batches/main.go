@@ -4,6 +4,7 @@ import (
 	"cli"
 	"config"
 	"db"
+	"jobs"
 
 	"github.com/uoregon-libraries/gopkg/logger"
 )
@@ -55,7 +56,8 @@ func main() {
 			logger.Debugf("Adding %q to batch", issue.Key())
 		}
 
-		// ...
+		// Queue the batch
+		jobs.QueueMakeBatch(batch)
 	}
 
 	// TODO: Log batches which have been prepared for creation
