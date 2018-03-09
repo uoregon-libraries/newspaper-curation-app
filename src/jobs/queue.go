@@ -28,6 +28,13 @@ func PrepareIssueJobAdvanced(t JobType, issue *db.Issue, path string, nextWS sch
 	return j
 }
 
+// PrepareBatchJobAdvanced gets a batch job ready for being used elsewhere
+func PrepareBatchJobAdvanced(t JobType, batch *db.Batch) *db.Job {
+	var j = PrepareJobAdvanced(t)
+	j.ObjectID = batch.ID
+	return j
+}
+
 func queueIssueJob(t JobType, issue *db.Issue, path string, nextWS schema.WorkflowStep) error {
 	return PrepareIssueJobAdvanced(t, issue, path, nextWS).Save()
 }
@@ -88,4 +95,18 @@ func QueueMakeDerivatives(issue *db.Issue, path string) error {
 // issue that's been moved through the metadata queue
 func QueueBuildMETS(issue *db.Issue, path string) error {
 	return queueIssueJob(JobTypeBuildMETS, issue, path, schema.WSReadyForBatching)
+}
+
+// QueueMakeBatch sets up the jobs for generating a batch on disk: generating
+// the directories and hard-links, making the batch XML, putting the batch
+// where it can be loaded onto staging, and generating the bagit manifest.
+// Nothing can happen automatically after all this until the batch is verified
+// on staging.
+func QueueMakeBatch(batch *db.Batch, batchOutputPath string) error {
+	return QueueSerial(
+		PrepareBatchJobAdvanced(JobTypeCreateBatchStructure, batch),
+		PrepareBatchJobAdvanced(JobTypeMakeBatchXML, batch),
+		PrepareBatchJobAdvanced(JobTypeMoveBatchToReadyLocation, batch),
+		PrepareBatchJobAdvanced(JobTypeWriteBagitManifest, batch),
+	)
 }

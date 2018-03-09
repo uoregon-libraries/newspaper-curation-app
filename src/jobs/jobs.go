@@ -11,11 +11,15 @@ type JobType string
 
 // The full list of job types
 const (
-	JobTypePageSplit             JobType = "page_split"
-	JobTypeMoveIssueToWorkflow   JobType = "move_issue_to_workflow"
-	JobTypeMoveIssueToPageReview JobType = "move_issue_to_page_review"
-	JobTypeMakeDerivatives       JobType = "make_derivatives"
-	JobTypeBuildMETS             JobType = "build_mets"
+	JobTypePageSplit                JobType = "page_split"
+	JobTypeMoveIssueToWorkflow      JobType = "move_issue_to_workflow"
+	JobTypeMoveIssueToPageReview    JobType = "move_issue_to_page_review"
+	JobTypeMakeDerivatives          JobType = "make_derivatives"
+	JobTypeBuildMETS                JobType = "build_mets"
+	JobTypeCreateBatchStructure     JobType = "create_batch_structure"
+	JobTypeMakeBatchXML             JobType = "make_batch_xml"
+	JobTypeMoveBatchToReadyLocation JobType = "move_batch_to_ready_location"
+	JobTypeWriteBagitManifest       JobType = "write_bagit_manifest"
 )
 
 // ValidJobTypes is the full list of job types which can exist in the jobs
