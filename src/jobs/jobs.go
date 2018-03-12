@@ -59,6 +59,17 @@ func DBJobToProcessor(dbJob *db.Job) Processor {
 		return &MakeDerivatives{IssueJob: NewIssueJob(dbJob)}
 	case JobTypeBuildMETS:
 		return &BuildMETS{IssueJob: NewIssueJob(dbJob)}
+	case JobTypeCreateBatchStructure:
+		return &CreateBatchStructure{BatchJob: NewBatchJob(dbJob)}
+	case JobTypeMakeBatchXML:
+		logger.Warnf("Not implemented")
+		return nil
+	case JobTypeMoveBatchToReadyLocation:
+		logger.Warnf("Not implemented")
+		return nil
+	case JobTypeWriteBagitManifest:
+		logger.Warnf("Not implemented")
+		return nil
 	default:
 		logger.Errorf("Unknown job type %q for job id %d", dbJob.Type, dbJob.ID)
 		return nil
