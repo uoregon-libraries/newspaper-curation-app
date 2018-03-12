@@ -1,4 +1,8 @@
 #!/bin/bash
+
+iam=$(whoami)
+sudo chown -R $iam ./fakemount
+
 lastdir=""
 for file in $(find fakemount/page-review/ -name "*.pdf"); do
   dir=${file%/*}
