@@ -92,6 +92,12 @@ func (b *Batch) FullName() string {
 	return fmt.Sprintf("batch_%s_%s%s_ver01", b.MARCOrgCode, b.CreatedAt.Format("20060102"), b.Name)
 }
 
+// AwardYear uses the batch creation date to produce the "award year" - this is
+// the most similar value we can produce
+func (b *Batch) AwardYear() int {
+	return b.CreatedAt.Year()
+}
+
 // Save creates or updates the Batch in the batches table
 func (b *Batch) Save() error {
 	var op = DB.Operation()
