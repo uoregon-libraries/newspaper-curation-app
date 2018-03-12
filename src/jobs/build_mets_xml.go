@@ -24,7 +24,7 @@ func (job *BuildMETS) Process(c *config.Config) bool {
 	job.Logger.Debugf("Starting build-mets job for issue id %d", job.DBIssue.ID)
 
 	// Set up variables
-	job.templatePath = c.XMLTemplatePath
+	job.templatePath = c.METSXMLTemplatePath
 	job.outputXMLPath = filepath.Join(job.Issue.Location, job.Issue.DateEdition()+".xml")
 	var err error
 	job.Title, err = db.FindTitleByLCCN(job.DBIssue.LCCN)
