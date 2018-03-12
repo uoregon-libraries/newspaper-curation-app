@@ -215,7 +215,7 @@ type Issue struct {
 // two-digit edition number for use in issue keys and other places we need the
 // "local" unique string
 func (i *Issue) DateEdition() string {
-	return fmt.Sprintf("%s%02d", CondensedDate(i.RawDate), i.Edition)
+	return IssueDateEdition(i.RawDate, i.Edition)
 }
 
 // Key returns the unique string that represents this issue
@@ -235,8 +235,8 @@ func (i *Issue) TSV() string {
 	for _, file := range i.Files {
 		fileNames = append(fileNames, file.Name)
 	}
-	return fmt.Sprintf("%s\t%s\t%s\t%s%02d\t%s\t%s", bString, tString, i.Location, CondensedDate(i.RawDate),
-		i.Edition, i.WorkflowStep, strings.Join(fileNames, ","))
+	return fmt.Sprintf("%s\t%s\t%s\t%s\t%s\t%s", bString, tString, i.Location,
+		i.DateEdition(), i.WorkflowStep, strings.Join(fileNames, ","))
 }
 
 // FindFiles clears the issue's file list and then reads everything in the
