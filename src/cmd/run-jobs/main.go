@@ -247,13 +247,26 @@ func runAllQueues(c *config.Config) {
 	waitFor(
 		func() { watchPageReview(c) },
 		func() {
+			// Potentially slow filesystem moves
 			watchJobTypes(c, jobs.JobTypeMoveIssueToWorkflow, jobs.JobTypeMoveIssueToPageReview)
 		},
 		func() {
-			watchJobTypes(c, jobs.JobTypePageSplit, jobs.JobTypeMakeDerivatives)
+			// Slow jobs: expensive process spawning or file crunching
+			watchJobTypes(c,
+				jobs.JobTypePageSplit,
+				jobs.JobTypeMakeDerivatives,
+				jobs.JobTypeWriteBagitManifest,
+			)
 		},
 		func() {
-			watchJobTypes(c, jobs.JobTypeBuildMETS)
+			// Fast jobs: file renaming, hard-linking, running templates for very
+			// simple XML output, etc.
+			watchJobTypes(c,
+				jobs.JobTypeBuildMETS,
+				jobs.JobTypeCreateBatchStructure,
+				jobs.JobTypeMakeBatchXML,
+				jobs.JobTypeMoveBatchToReadyLocation,
+			)
 		},
 	)
 }
