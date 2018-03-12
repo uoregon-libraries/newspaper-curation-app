@@ -63,17 +63,17 @@ func DBJobToProcessor(dbJob *db.Job) Processor {
 		return &CreateBatchStructure{BatchJob: NewBatchJob(dbJob)}
 	case JobTypeMakeBatchXML:
 		logger.Warnf("Not implemented")
-		return nil
 	case JobTypeMoveBatchToReadyLocation:
 		logger.Warnf("Not implemented")
-		return nil
 	case JobTypeWriteBagitManifest:
 		logger.Warnf("Not implemented")
-		return nil
 	default:
 		logger.Errorf("Unknown job type %q for job id %d", dbJob.Type, dbJob.ID)
-		return nil
 	}
+
+	dbJob.Status = string(JobStatusFailed)
+	dbJob.Save()
+	return nil
 }
 
 // FindAllFailedJobs returns a list of all jobs which failed; these are not

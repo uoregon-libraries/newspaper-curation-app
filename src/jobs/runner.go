@@ -107,7 +107,11 @@ func (r *Runner) processNext() bool {
 		return false
 	}
 
-	r.process(DBJobToProcessor(dbJob))
+	var j = DBJobToProcessor(dbJob)
+	if j == nil {
+		return false
+	}
+	r.process(j)
 	return true
 }
 
