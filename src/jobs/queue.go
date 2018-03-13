@@ -103,10 +103,13 @@ func QueueBuildMETS(issue *db.Issue, path string) error {
 // Nothing can happen automatically after all this until the batch is verified
 // on staging.
 func QueueMakeBatch(batch *db.Batch) error {
+	// Ensure the batch is flagged properly after it's ready
+	var moveJob = PrepareBatchJobAdvanced(JobTypeMoveBatchToReadyLocation, batch)
+	moveJob.ExtraData = string(db.BatchStatusQCReady)
+
 	return QueueSerial(
 		PrepareBatchJobAdvanced(JobTypeCreateBatchStructure, batch),
 		PrepareBatchJobAdvanced(JobTypeMakeBatchXML, batch),
-		PrepareBatchJobAdvanced(JobTypeMoveBatchToReadyLocation, batch),
-		PrepareBatchJobAdvanced(JobTypeWriteBagitManifest, batch),
+		moveJob, PrepareBatchJobAdvanced(JobTypeWriteBagitManifest, batch),
 	)
 }

@@ -10,6 +10,7 @@ import (
 // These are all possible batch status values
 const (
 	BatchStatusPending   = "pending"    // Not yet built or in the process of being built
+	BatchStatusQCReady   = "qc_ready"   // Ready for ingest onto staging
 	BatchStatusOnStaging = "on_staging" // On the staging server awaiting QC
 	BatchStatusFailedQC  = "failed_qc"  // On staging, but QC failed it; it needs to be pulled and fixed
 	BatchStatusPassedQC  = "passed_qc"  // On staging, passed QC; it needs to be pulled from staging and pushed live
