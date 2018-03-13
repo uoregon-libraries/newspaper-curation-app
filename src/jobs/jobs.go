@@ -64,7 +64,7 @@ func DBJobToProcessor(dbJob *db.Job) Processor {
 	case JobTypeMakeBatchXML:
 		return &MakeBatchXML{BatchJob: NewBatchJob(dbJob)}
 	case JobTypeMoveBatchToReadyLocation:
-		logger.Warnf("Not implemented")
+		return &MoveBatchToReadyLocation{BatchJob: NewBatchJob(dbJob)}
 	case JobTypeWriteBagitManifest:
 		logger.Warnf("Not implemented")
 	default:
