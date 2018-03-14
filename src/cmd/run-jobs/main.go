@@ -248,7 +248,11 @@ func runAllQueues(c *config.Config) {
 		func() { watchPageReview(c) },
 		func() {
 			// Potentially slow filesystem moves
-			watchJobTypes(c, jobs.JobTypeMoveIssueToWorkflow, jobs.JobTypeMoveIssueToPageReview)
+			watchJobTypes(c,
+				jobs.JobTypeMoveIssueToWorkflow,
+				jobs.JobTypeMoveIssueToPageReview,
+				jobs.JobTypeMoveMasterFiles,
+			)
 		},
 		func() {
 			// Slow jobs: expensive process spawning or file crunching

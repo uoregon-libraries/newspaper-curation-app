@@ -91,10 +91,14 @@ func QueueMakeDerivatives(issue *db.Issue, path string) error {
 	return queueIssueJob(JobTypeMakeDerivatives, issue, path, schema.WSReadyForMetadataEntry)
 }
 
-// QueueBuildMETS creates and queues a job to generate the METS XML for an
-// issue that's been moved through the metadata queue
-func QueueBuildMETS(issue *db.Issue, path string) error {
-	return queueIssueJob(JobTypeBuildMETS, issue, path, schema.WSReadyForBatching)
+// QueueFinalizeIssue creates and queues jobs that get an issue ready for
+// batching.  Currently this means generating the METS XML file and copying
+// master PDFs (if born-digital) into the issue directory.
+func QueueFinalizeIssue(issue *db.Issue, path string) error {
+	return QueueSerial(
+		PrepareIssueJobAdvanced(JobTypeBuildMETS, issue, path, schema.WSNil),
+		PrepareIssueJobAdvanced(JobTypeMoveMasterFiles, issue, path, schema.WSReadyForBatching),
+	)
 }
 
 // QueueMakeBatch sets up the jobs for generating a batch on disk: generating

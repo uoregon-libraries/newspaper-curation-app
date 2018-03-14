@@ -16,6 +16,7 @@ const (
 	JobTypeMoveIssueToPageReview    JobType = "move_issue_to_page_review"
 	JobTypeMakeDerivatives          JobType = "make_derivatives"
 	JobTypeBuildMETS                JobType = "build_mets"
+	JobTypeMoveMasterFiles          JobType = "move_master_files"
 	JobTypeCreateBatchStructure     JobType = "create_batch_structure"
 	JobTypeMakeBatchXML             JobType = "make_batch_xml"
 	JobTypeMoveBatchToReadyLocation JobType = "move_batch_to_ready_location"
@@ -30,6 +31,7 @@ var ValidJobTypes = []JobType{
 	JobTypeMoveIssueToPageReview,
 	JobTypeMakeDerivatives,
 	JobTypeBuildMETS,
+	JobTypeMoveMasterFiles,
 	JobTypeCreateBatchStructure,
 	JobTypeMakeBatchXML,
 	JobTypeMoveBatchToReadyLocation,
@@ -63,6 +65,8 @@ func DBJobToProcessor(dbJob *db.Job) Processor {
 		return &MakeDerivatives{IssueJob: NewIssueJob(dbJob)}
 	case JobTypeBuildMETS:
 		return &BuildMETS{IssueJob: NewIssueJob(dbJob)}
+	case JobTypeMoveMasterFiles:
+		return &MoveMasterFilesToIssueLocation{IssueJob: NewIssueJob(dbJob)}
 	case JobTypeCreateBatchStructure:
 		return &CreateBatchStructure{BatchJob: NewBatchJob(dbJob)}
 	case JobTypeMakeBatchXML:

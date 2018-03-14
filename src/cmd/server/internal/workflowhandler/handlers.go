@@ -6,6 +6,7 @@ import (
 	"db"
 	"fmt"
 	"issuewatcher"
+	"jobs"
 	"schema"
 
 	"net/http"
@@ -263,9 +264,13 @@ func approveIssueMetadataHandler(resp *responder.Responder, i *Issue) {
 		return
 	}
 
-	// We queue the METS creation job, but whether it succeeds or not, the issue
-	// was already successfully approved, so we just have to hope for the best
-	queueMETSCreation(i)
+	// We queue the issue finalization job, but whether it succeeds or not, the
+	// issue was already successfully approved, so we just have to hope for the
+	// best and log loudly if it doesn't work
+	err = jobs.QueueFinalizeIssue(i.Issue, i.Location)
+	if err != nil {
+		logger.Criticalf("Unable to queue issue finalization for issue id %d: %s", i.ID, err)
+	}
 	resp.Audit("approve-metadata", fmt.Sprintf("issue id %d", i.ID))
 	http.SetCookie(resp.Writer, &http.Cookie{Name: "Info", Value: "Issue approved", Path: "/"})
 	http.Redirect(resp.Writer, resp.Request, basePath, http.StatusFound)
