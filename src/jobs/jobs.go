@@ -30,6 +30,10 @@ var ValidJobTypes = []JobType{
 	JobTypeMoveIssueToPageReview,
 	JobTypeMakeDerivatives,
 	JobTypeBuildMETS,
+	JobTypeCreateBatchStructure,
+	JobTypeMakeBatchXML,
+	JobTypeMoveBatchToReadyLocation,
+	JobTypeWriteBagitManifest,
 }
 
 // JobStatus represents the different states in which a job can exist
