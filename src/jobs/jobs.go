@@ -66,7 +66,7 @@ func DBJobToProcessor(dbJob *db.Job) Processor {
 	case JobTypeMoveBatchToReadyLocation:
 		return &MoveBatchToReadyLocation{BatchJob: NewBatchJob(dbJob)}
 	case JobTypeWriteBagitManifest:
-		logger.Warnf("Not implemented")
+		return &WriteBagitManifest{BatchJob: NewBatchJob(dbJob)}
 	default:
 		logger.Errorf("Unknown job type %q for job id %d", dbJob.Type, dbJob.ID)
 	}
