@@ -58,7 +58,7 @@ func (md *MakeDerivatives) Process(c *config.Config) bool {
 	}
 
 	// Run our serial operations, failing on the first non-ok response
-	return md.RunWhileTrue(
+	return RunWhileTrue(
 		md.findPDFs,
 		md.findTIFFs,
 		md.validateSourceFiles,

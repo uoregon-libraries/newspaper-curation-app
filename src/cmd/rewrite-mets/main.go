@@ -68,7 +68,7 @@ func main() {
 	var parts = strings.Split(mxml.Label, ", "+issue.Date)
 	title.Title = parts[0]
 
-	err = mets.New(conf.XMLTemplatePath, destFile, issue, title, createdAt).Transform()
+	err = mets.New(conf.METSXMLTemplatePath, destFile, issue, title, createdAt).Transform()
 	if err == nil {
 		fmt.Println("Generated XML successfully")
 		os.Exit(0)

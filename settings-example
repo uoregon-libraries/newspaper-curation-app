@@ -90,10 +90,14 @@ ISSUE_CACHE_PATH="/var/local/news/nca/cache"
 # HTML template files as well as static files like JS and CSS
 APP_ROOT="/usr/local/nca"
 
-# Where is the XML template for building issue XML?  You can point this to the
+# Where is the template for building issue XML?  You can point this to the
 # XML in the repo (templates/xml/mets.go.html) for ease, but some XML values
 # may be wrong.
-XML_TEMPLATE_PATH="/usr/local/nca/templates/xml/mets.go.html"
+METS_XML_TEMPLATE_PATH="/usr/local/nca/templates/xml/mets.go.html"
+
+# Where is the template for building the batch XML?  This should be safe to use
+# as-is, but it could be changed if necessary.
+BATCH_XML_TEMPLATE_PATH="/usr/local/nca/templates/xml/batch.go.html"
 
 ###
 # General rules for issue processing and batch creation

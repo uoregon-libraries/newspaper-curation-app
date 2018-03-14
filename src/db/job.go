@@ -32,9 +32,9 @@ type Job struct {
 	// take a little bit
 	RunAt time.Time
 
-	// This is the issue's workflow step if the job is successful; only relevant
-	// for issue jobs, obviously
-	NextWorkflowStep string
+	// Extra information any job might need - e.g., the issue's next workflow
+	// step if the job is successful
+	ExtraData string
 
 	// QueueJobID tells us which job (if any) should be queued up after this one
 	// completes successfully

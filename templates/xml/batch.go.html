@@ -1,0 +1,7 @@
+{{- define "batch" -}}
+<ndnp:batch xmlns:ndnp="http://www.loc.gov/ndnp" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xmlns="http://www.loc.gov/ndnp" name="{{.Batch.FullName}}" awardee="{{.Batch.MARCOrgCode}}" awardYear="{{.Batch.AwardYear}}">
+{{- range .Issues}}
+  <issue lccn="{{.LCCN}}" issueDate="{{.Date}}" editionOrder="{{.Edition|printf "%02d"}}">{{.LCCN}}/print/{{.DateEdition}}/{{.DateEdition}}.xml</issue>
+{{- end}}
+</ndnp:batch>
+{{end}}

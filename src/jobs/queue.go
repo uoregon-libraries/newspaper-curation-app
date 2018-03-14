@@ -6,20 +6,33 @@ import (
 	"time"
 )
 
+// PrepareJobAdvanced gets a job of any kind set up with sensible defaults
+func PrepareJobAdvanced(t JobType) *db.Job {
+	return &db.Job{
+		Type:   string(t),
+		Status: string(JobStatusPending),
+		RunAt:  time.Now(),
+	}
+}
+
 // PrepareIssueJobAdvanced is a way to get an issue job ready with the
 // necessary base values, but not save it immediately, to allow for more
 // advanced job semantics: specifying that the job shouldn't run immediately,
 // should queue a specific job ID after completion, should set the WorkflowStep
 // to a custom value rather than whatever the job would normally do, etc.
 func PrepareIssueJobAdvanced(t JobType, issue *db.Issue, path string, nextWS schema.WorkflowStep) *db.Job {
-	return &db.Job{
-		Type:             string(t),
-		ObjectID:         issue.ID,
-		Location:         path,
-		Status:           string(JobStatusPending),
-		NextWorkflowStep: string(nextWS),
-		RunAt:            time.Now(),
-	}
+	var j = PrepareJobAdvanced(t)
+	j.ObjectID = issue.ID
+	j.ExtraData = string(nextWS)
+	j.Location = path
+	return j
+}
+
+// PrepareBatchJobAdvanced gets a batch job ready for being used elsewhere
+func PrepareBatchJobAdvanced(t JobType, batch *db.Batch) *db.Job {
+	var j = PrepareJobAdvanced(t)
+	j.ObjectID = batch.ID
+	return j
 }
 
 func queueIssueJob(t JobType, issue *db.Issue, path string, nextWS schema.WorkflowStep) error {
@@ -82,4 +95,21 @@ func QueueMakeDerivatives(issue *db.Issue, path string) error {
 // issue that's been moved through the metadata queue
 func QueueBuildMETS(issue *db.Issue, path string) error {
 	return queueIssueJob(JobTypeBuildMETS, issue, path, schema.WSReadyForBatching)
+}
+
+// QueueMakeBatch sets up the jobs for generating a batch on disk: generating
+// the directories and hard-links, making the batch XML, putting the batch
+// where it can be loaded onto staging, and generating the bagit manifest.
+// Nothing can happen automatically after all this until the batch is verified
+// on staging.
+func QueueMakeBatch(batch *db.Batch) error {
+	// Ensure the batch is flagged properly after it's ready
+	var moveJob = PrepareBatchJobAdvanced(JobTypeMoveBatchToReadyLocation, batch)
+	moveJob.ExtraData = string(db.BatchStatusQCReady)
+
+	return QueueSerial(
+		PrepareBatchJobAdvanced(JobTypeCreateBatchStructure, batch),
+		PrepareBatchJobAdvanced(JobTypeMakeBatchXML, batch),
+		moveJob, PrepareBatchJobAdvanced(JobTypeWriteBagitManifest, batch),
+	)
 }

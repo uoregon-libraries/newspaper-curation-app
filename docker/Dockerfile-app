@@ -25,7 +25,6 @@ RUN ./configure
 RUN make
 
 # Link the patched pdftotext binary
-RUN mkdir -p /usr/local/pdf-to-chronam/bin
 RUN ln /usr/local/poppler-0.22.5/utils/pdftotext /usr/local/bin/
 
 # Oh, right, and openjpeg2 is painful as well because it has to be installed

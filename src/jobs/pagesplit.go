@@ -85,7 +85,7 @@ func (ps *PageSplit) removeTempFiles() {
 
 func (ps *PageSplit) process() (ok bool) {
 	ps.updateWorkflowCB = ps.updateIssueWorkflow
-	return ps.RunWhileTrue(
+	return RunWhileTrue(
 		ps.createMasterPDF,
 		ps.splitPages,
 		ps.fixPageNames,

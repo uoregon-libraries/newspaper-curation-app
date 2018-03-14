@@ -2,10 +2,6 @@ package jobs
 
 import (
 	"db"
-	"fmt"
-
-	"strings"
-	"time"
 
 	"github.com/uoregon-libraries/gopkg/logger"
 )
@@ -15,11 +11,15 @@ type JobType string
 
 // The full list of job types
 const (
-	JobTypePageSplit             JobType = "page_split"
-	JobTypeMoveIssueToWorkflow   JobType = "move_issue_to_workflow"
-	JobTypeMoveIssueToPageReview JobType = "move_issue_to_page_review"
-	JobTypeMakeDerivatives       JobType = "make_derivatives"
-	JobTypeBuildMETS             JobType = "build_mets"
+	JobTypePageSplit                JobType = "page_split"
+	JobTypeMoveIssueToWorkflow      JobType = "move_issue_to_workflow"
+	JobTypeMoveIssueToPageReview    JobType = "move_issue_to_page_review"
+	JobTypeMakeDerivatives          JobType = "make_derivatives"
+	JobTypeBuildMETS                JobType = "build_mets"
+	JobTypeCreateBatchStructure     JobType = "create_batch_structure"
+	JobTypeMakeBatchXML             JobType = "make_batch_xml"
+	JobTypeMoveBatchToReadyLocation JobType = "move_batch_to_ready_location"
+	JobTypeWriteBagitManifest       JobType = "write_bagit_manifest"
 )
 
 // ValidJobTypes is the full list of job types which can exist in the jobs
@@ -59,57 +59,21 @@ func DBJobToProcessor(dbJob *db.Job) Processor {
 		return &MakeDerivatives{IssueJob: NewIssueJob(dbJob)}
 	case JobTypeBuildMETS:
 		return &BuildMETS{IssueJob: NewIssueJob(dbJob)}
+	case JobTypeCreateBatchStructure:
+		return &CreateBatchStructure{BatchJob: NewBatchJob(dbJob)}
+	case JobTypeMakeBatchXML:
+		return &MakeBatchXML{BatchJob: NewBatchJob(dbJob)}
+	case JobTypeMoveBatchToReadyLocation:
+		return &MoveBatchToReadyLocation{BatchJob: NewBatchJob(dbJob)}
+	case JobTypeWriteBagitManifest:
+		return &WriteBagitManifest{BatchJob: NewBatchJob(dbJob)}
 	default:
 		logger.Errorf("Unknown job type %q for job id %d", dbJob.Type, dbJob.ID)
-		return nil
-	}
-}
-
-// NextJobProcessor gets the oldest job with any of the given job types, sets
-// it as in-process, and returns its Processor
-func NextJobProcessor(types []JobType) Processor {
-	var dbJob, err = popFirstPendingJob(types)
-
-	if err != nil {
-		logger.Errorf("Unable to pull next pending job: %s", err)
-		return nil
-	}
-	if dbJob == nil {
-		return nil
 	}
 
-	return DBJobToProcessor(dbJob)
-}
-
-// popFirstPendingJob is a helper for locking the database to pull the next pending job of
-// the given type and setting it as being in-process
-func popFirstPendingJob(types []JobType) (*db.Job, error) {
-	var op = db.DB.Operation()
-	op.Dbg = db.Debug
-
-	op.BeginTransaction()
-	defer op.EndTransaction()
-
-	// Wrangle the IN pain...
-	var j = &db.Job{}
-	var args []interface{}
-	var placeholders []string
-	args = append(args, string(JobStatusPending), time.Now())
-	for _, t := range types {
-		args = append(args, string(t))
-		placeholders = append(placeholders, "?")
-	}
-
-	var clause = fmt.Sprintf("status = ? AND run_at <= ? AND job_type IN (%s)", strings.Join(placeholders, ","))
-	if !op.Select("jobs", &db.Job{}).Where(clause, args...).Order("created_at").First(j) {
-		return nil, op.Err()
-	}
-
-	j.Status = string(JobStatusInProcess)
-	j.StartedAt = time.Now()
-	j.SaveOp(op)
-
-	return j, op.Err()
+	dbJob.Status = string(JobStatusFailed)
+	dbJob.Save()
+	return nil
 }
 
 // FindAllFailedJobs returns a list of all jobs which failed; these are not

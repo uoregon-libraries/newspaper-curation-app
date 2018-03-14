@@ -43,6 +43,7 @@ type Issue struct {
 
 	/* Workflow information to keep track of the issue and what it needs */
 
+	BatchID                int                 // Which batch (if any) is this issue a part of?
 	Error                  string              // If set, a metadata curator reported a problem
 	Location               string              // Where is this issue on disk?
 	MasterBackupLocation   string              // Where is the master backup located?  (born-digital only)
@@ -153,6 +154,16 @@ func FindInProcessIssues() ([]*Issue, error) {
 	return list, op.Err()
 }
 
+// FindIssuesByBatchID returns all issues associated with the given batch id
+func FindIssuesByBatchID(batchID int) ([]*Issue, error) {
+	var op = DB.Operation()
+	op.Dbg = Debug
+	var list []*Issue
+	op.Select("issues", &Issue{}).Where(`batch_id = ?`, batchID).AllObjects(&list)
+	deserializeIssues(list)
+	return list, op.Err()
+}
+
 // FindIssuesOnDesk returns all issues "owned" by a given user id
 func FindIssuesOnDesk(userID int) ([]*Issue, error) {
 	var op = DB.Operation()
@@ -179,6 +190,18 @@ func FindIssuesInPageReview() ([]*Issue, error) {
 	return list, op.Err()
 }
 
+// FindIssuesReadyForBatching looks for all issues which are in the
+// WSReadyForBatching workflow step and have no batch ID
+func FindIssuesReadyForBatching() ([]*Issue, error) {
+	var op = DB.Operation()
+	op.Dbg = Debug
+	var list []*Issue
+	op.Select("issues", &Issue{}).Where("workflow_step = ? AND batch_id = 0",
+		string(schema.WSReadyForBatching)).AllObjects(&list)
+	deserializeIssues(list)
+	return list, op.Err()
+}
+
 // FindAvailableIssuesByWorkflowStep looks for all "available" issues with the
 // requested workflow step and returns them.  We define "available" as:
 //
@@ -193,6 +216,16 @@ func FindAvailableIssuesByWorkflowStep(ws schema.WorkflowStep) ([]*Issue, error)
 		string(ws), time.Now().Format("2006-01-02 15:04:05")).AllObjects(&list)
 	deserializeIssues(list)
 	return list, op.Err()
+}
+
+// Key returns the standardized issue key for this DB issue
+func (i *Issue) Key() string {
+	return schema.IssueKey(i.LCCN, i.Date, i.Edition)
+}
+
+// DateEdition returns the date+edition string used by our general schema
+func (i *Issue) DateEdition() string {
+	return schema.IssueDateEdition(i.Date, i.Edition)
 }
 
 // Claim sets the workflow owner to the given user id, and sets the expiration

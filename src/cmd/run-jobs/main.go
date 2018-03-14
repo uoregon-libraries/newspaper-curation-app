@@ -14,12 +14,40 @@ import (
 	"strconv"
 	"strings"
 	"sync"
+	"sync/atomic"
 	"time"
 
 	flags "github.com/jessevdk/go-flags"
+	"github.com/uoregon-libraries/gopkg/interrupts"
 	"github.com/uoregon-libraries/gopkg/logger"
 	"github.com/uoregon-libraries/gopkg/wordutils"
 )
+
+var runners struct {
+	sync.Mutex
+	list []*jobs.Runner
+}
+
+var isDone int32
+
+func addRunner(r *jobs.Runner) {
+	runners.Lock()
+	runners.list = append(runners.list, r)
+	runners.Unlock()
+}
+
+func quit() {
+	atomic.StoreInt32(&isDone, 1)
+	runners.Lock()
+	for _, r := range runners.list {
+		r.Stop()
+	}
+	runners.Unlock()
+}
+
+func done() bool {
+	return atomic.LoadInt32(&isDone) == 1
+}
 
 // Command-line options
 var opts struct {
@@ -119,7 +147,7 @@ func main() {
 	}
 
 	// On CTRL-C / kill, try to finish the current task before exiting
-	catchInterrupts()
+	interrupts.TrapIntTerm(quit)
 
 	var action string
 	action, args = args[0], args[1:]
@@ -183,36 +211,18 @@ func watch(c *config.Config, queues ...string) {
 		usageFail("Error: you must specify one or more queues to watch")
 	}
 
-	logger.Infof("Watching queues: %s", strings.Join(queues, " / "))
-
 	var jobTypes = make([]jobs.JobType, len(queues))
 	for i, queue := range queues {
 		validateJobQueue(queue)
 		jobTypes[i] = jobs.JobType(queue)
 	}
-
 	watchJobTypes(c, jobTypes...)
 }
 
 func watchJobTypes(c *config.Config, jobTypes ...jobs.JobType) {
-	var nextAttempt time.Time
-	for !done() {
-		if time.Now().After(nextAttempt) {
-			var pr = jobs.NextJobProcessor(jobTypes)
-			if pr == nil {
-				nextAttempt = time.Now().Add(time.Second * 10)
-				continue
-			}
-
-			logger.Debugf("Starting job id %d: %q", pr.JobID(), pr.JobType())
-			pr.SetProcessSuccess(pr.Process(c))
-			pr.UpdateWorkflow()
-			logger.Debugf("Finished job id %d", pr.JobID())
-		}
-
-		// Try not to eat all the CPU
-		time.Sleep(time.Second)
-	}
+	var r = jobs.NewRunner(c, jobTypes...)
+	addRunner(r)
+	r.Watch(time.Second * 10)
 }
 
 func watchPageReview(c *config.Config) {
@@ -237,13 +247,26 @@ func runAllQueues(c *config.Config) {
 	waitFor(
 		func() { watchPageReview(c) },
 		func() {
+			// Potentially slow filesystem moves
 			watchJobTypes(c, jobs.JobTypeMoveIssueToWorkflow, jobs.JobTypeMoveIssueToPageReview)
 		},
 		func() {
-			watchJobTypes(c, jobs.JobTypePageSplit, jobs.JobTypeMakeDerivatives)
+			// Slow jobs: expensive process spawning or file crunching
+			watchJobTypes(c,
+				jobs.JobTypePageSplit,
+				jobs.JobTypeMakeDerivatives,
+				jobs.JobTypeWriteBagitManifest,
+			)
 		},
 		func() {
-			watchJobTypes(c, jobs.JobTypeBuildMETS)
+			// Fast jobs: file renaming, hard-linking, running templates for very
+			// simple XML output, etc.
+			watchJobTypes(c,
+				jobs.JobTypeBuildMETS,
+				jobs.JobTypeCreateBatchStructure,
+				jobs.JobTypeMakeBatchXML,
+				jobs.JobTypeMoveBatchToReadyLocation,
+			)
 		},
 	)
 }
