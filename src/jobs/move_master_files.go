@@ -18,6 +18,7 @@ import (
 // born-digital issues; the scanned issues aren't pre-processed like PDFs are.
 type MoveMasterFilesToIssueLocation struct {
 	*IssueJob
+	tarfile string
 }
 
 // Process implements Processor, moving the issue's master files
@@ -27,10 +28,24 @@ func (j *MoveMasterFilesToIssueLocation) Process(c *config.Config) bool {
 		return true
 	}
 
+	j.tarfile = filepath.Join(j.DBIssue.Location, "master.tar")
 	j.Logger.Debugf("Starting master file move for issue id %d", j.DBIssue.ID)
 	var err = j.makeMasterTar()
 	if err != nil {
 		j.Logger.Errorf("Unable to produce tarfile from master PDF(s): %s", err)
+		return false
+	}
+
+	// Verify the tar wrote successfully just to be uber-paranoid before we go
+	// deleting the original master
+	var info os.FileInfo
+	info, err = os.Stat(j.tarfile)
+	if err != nil {
+		j.Logger.Errorf("Unable to stat tarfile: %s", err)
+		return false
+	}
+	if info.Size() == 0 {
+		j.Logger.Errorf("Generated tarfile is 0 bytes")
 		return false
 	}
 
@@ -58,9 +73,8 @@ func (j *MoveMasterFilesToIssueLocation) Process(c *config.Config) bool {
 
 func (j *MoveMasterFilesToIssueLocation) makeMasterTar() error {
 	var src = j.DBIssue.MasterBackupLocation
-	var dst = filepath.Join(j.Location, "master")
 
-	var f = fileutil.NewSafeFile(dst)
+	var f = fileutil.NewSafeFile(j.tarfile)
 	defer f.Close()
 
 	var tw = tar.NewWriter(f)
@@ -103,10 +117,10 @@ func (j *MoveMasterFilesToIssueLocation) makeMasterTar() error {
 		return fmt.Errorf("couldn't close tarfile: %s", err)
 	}
 
-	j.Logger.Debugf("Moving tarfile from temp file to final location %q", dst)
+	j.Logger.Debugf("Moving tarfile from temp file to final location %q", j.tarfile)
 	err = f.Close()
 	if err != nil {
-		return fmt.Errorf("couldn't move temp tarfile to %q: %s", dst, err)
+		return fmt.Errorf("couldn't move temp tarfile to %q: %s", j.tarfile, err)
 	}
 
 	return nil
