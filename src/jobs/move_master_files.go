@@ -28,9 +28,7 @@ func (j *MoveMasterFilesToIssueLocation) Process(c *config.Config) bool {
 	}
 
 	j.Logger.Debugf("Starting master file move for issue id %d", j.DBIssue.ID)
-	var src = j.DBIssue.MasterBackupLocation
-	var dst = filepath.Join(j.Location, "master")
-	var err = makeMasterTar(src, dst)
+	var err = j.makeMasterTar()
 	if err != nil {
 		j.Logger.Errorf("Unable to produce tarfile from master PDF(s): %s", err)
 		return false
@@ -40,7 +38,7 @@ func (j *MoveMasterFilesToIssueLocation) Process(c *config.Config) bool {
 	// getting the master into the right location, so we don't want to call the
 	// job a failure, but we do need to alert somebody to manually clean up the
 	// master files
-	err = os.RemoveAll(src)
+	err = os.RemoveAll(j.DBIssue.MasterBackupLocation)
 	if err != nil {
 		j.Logger.Errorf("Unable to remove master files after copy: %s.  Job is "+
 			"successful, but master files need manual cleanup.", err)
@@ -58,7 +56,10 @@ func (j *MoveMasterFilesToIssueLocation) Process(c *config.Config) bool {
 	return true
 }
 
-func makeMasterTar(src, dst string) error {
+func (j *MoveMasterFilesToIssueLocation) makeMasterTar() error {
+	var src = j.DBIssue.MasterBackupLocation
+	var dst = filepath.Join(j.Location, "master")
+
 	var f = fileutil.NewSafeFile(dst)
 	defer f.Close()
 
@@ -71,6 +72,7 @@ func makeMasterTar(src, dst string) error {
 
 	for _, info := range infos {
 		var fname = info.Name()
+		j.Logger.Debugf("Writing tar header for %q", fname)
 		var hdr = &tar.Header{
 			Name: filepath.Join("master", fname),
 			Mode: 0666,
@@ -81,9 +83,11 @@ func makeMasterTar(src, dst string) error {
 		var srcFile *os.File
 		err = tw.WriteHeader(hdr)
 		if err == nil {
+			j.Logger.Debugf("Reading source file %q", fname)
 			srcFile, err = os.Open(filepath.Join(src, fname))
 		}
 		if err == nil {
+			j.Logger.Debugf("Writing tar body for %q", fname)
 			_, err = io.Copy(tw, srcFile)
 		}
 		if err != nil {
@@ -92,12 +96,14 @@ func makeMasterTar(src, dst string) error {
 		}
 	}
 
+	j.Logger.Debugf("Closing tar stream")
 	err = tw.Close()
 	if err != nil {
 		f.Cancel()
 		return fmt.Errorf("couldn't close tarfile: %s", err)
 	}
 
+	j.Logger.Debugf("Moving tarfile from temp file to final location %q", dst)
 	err = f.Close()
 	if err != nil {
 		return fmt.Errorf("couldn't move temp tarfile to %q: %s", dst, err)
