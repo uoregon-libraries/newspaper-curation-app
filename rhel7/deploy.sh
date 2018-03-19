@@ -24,7 +24,9 @@ case "$type" in
   exit 1
 esac
 
+set +e
 status=$(git status --porcelain | grep -v "^??")
+set -e
 if [[ $status != "" ]]; then
   echo "Stash changes to deploy"
   exit 1
