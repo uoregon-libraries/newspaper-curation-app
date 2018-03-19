@@ -21,3 +21,7 @@ format:
 
 clean:
 	rm -rf bin/* pkg/*
+
+cleanall: clean
+	rm -rf vendor/src
+	rm -rf ${HOME}/.gb/cache
