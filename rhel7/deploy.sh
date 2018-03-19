@@ -3,6 +3,8 @@
 # This should be considered a working example... but not necessarily the best
 # way to deploy this to production!  Tweak for your own environment.
 
+set -eu
+
 type=${1:-}
 
 case "$type" in
