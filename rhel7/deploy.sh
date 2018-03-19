@@ -78,4 +78,7 @@ echo Doing a daemon reload and starting the service
 sudo systemctl daemon-reload
 sudo systemctl start nca-workers
 sudo systemctl start nca-httpd
+
+echo Waiting 30 seconds for NCA to finish scanning issues
+sleep 30
 sudo systemctl start httpd
