@@ -17,6 +17,7 @@ import (
 	"schema"
 	"strings"
 
+	"github.com/uoregon-libraries/gopkg/fileutil"
 	"github.com/uoregon-libraries/gopkg/logger"
 )
 
@@ -93,6 +94,10 @@ type errorFn func(*schema.Issue) []*issuefinder.Error
 func main() {
 	getOpts()
 	var scanner = issuewatcher.NewScanner(conf)
+	if !fileutil.Exists(scanner.CacheFile()) {
+		logger.Fatalf("Unable to deserialize the scanner: %s cannot be read", scanner.CacheFile())
+	}
+
 	var err = scanner.Deserialize()
 	if err != nil {
 		logger.Fatalf("Unable to deserialize the scanner: %s", err)
