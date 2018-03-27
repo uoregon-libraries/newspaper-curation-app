@@ -1,6 +1,7 @@
 package issuewatcher
 
 import (
+	"apperr"
 	"config"
 	"fmt"
 	"issuefinder"
@@ -92,22 +93,17 @@ func (s *Scanner) LookupIssues(key *issuesearch.Key) []*schema.Issue {
 	return s.Lookup.Issues(key)
 }
 
-// IssueErrors returns errors associated with the given issue
-func (s *Scanner) IssueErrors(i *schema.Issue) []*issuefinder.Error {
-	return s.Finder.Errors.IssueErrors[i]
-}
-
 // duplicateIssueError returns an error that describes the duplication
-func duplicateIssueError(canonical *schema.Issue) error {
+func duplicateIssueError(canonical *schema.Issue) apperr.Error {
 	switch canonical.WorkflowStep {
 	case schema.WSInProduction:
-		return fmt.Errorf("duplicates a live issue in the batch %q", canonical.Batch.Fullname())
+		return apperr.Errorf("duplicates a live issue in the batch %q", canonical.Batch.Fullname())
 
 	case schema.WSReadyForBatching, schema.WSReadyForMETSXML:
-		return fmt.Errorf("duplicates an issue currently being prepped for batching")
+		return apperr.Errorf("duplicates an issue currently being prepped for batching")
 	}
 
-	return fmt.Errorf("duplicates an existing issue")
+	return apperr.Errorf("duplicates an existing issue")
 }
 
 // Scan calls all the individual find* functions for the myriad of ways we
@@ -146,7 +142,7 @@ func (s *Scanner) Scan() error {
 			var k = issue.Key()
 			var ci = canonIssues[k]
 			if ci != nil {
-				srch.AddIssueError(issue, duplicateIssueError(ci))
+				issue.AddError(duplicateIssueError(ci))
 				continue
 			}
 
@@ -168,7 +164,7 @@ func (s *Scanner) Scan() error {
 			var k = issue.Key()
 			var ci = canonIssues[k]
 			if ci != nil {
-				srch.AddIssueError(issue, duplicateIssueError(ci))
+				issue.AddError(duplicateIssueError(ci))
 			}
 		}
 	}
@@ -182,14 +178,13 @@ func (s *Scanner) Scan() error {
 			var k = issue.Key()
 			var ci = canonIssues[k]
 			if ci != nil {
-				srch.AddIssueError(issue, duplicateIssueError(ci))
+				issue.AddError(duplicateIssueError(ci))
 			}
 		}
 	}
 
 	// Re-aggregate all data to get the new dupe errors we could now have
 	f.Aggregate()
-	f.Errors.Index()
 
 	// Create a new lookup using the new finder's data
 	s.Lookup = issuesearch.NewLookup()
