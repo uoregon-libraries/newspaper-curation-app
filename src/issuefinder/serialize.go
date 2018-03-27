@@ -1,6 +1,7 @@
 package issuefinder
 
 import (
+	"apperr"
 	"encoding/gob"
 
 	"fmt"
@@ -32,6 +33,7 @@ func (s *Searcher) cachedSearcher() cachedSearcher {
 			Keyword:     b.Keyword,
 			Version:     b.Version,
 			Location:    b.Location,
+			Errors:      b.Errors,
 		}
 		batchIDLookup[b] = batchID
 		batchLookup[batchID] = cb
@@ -45,6 +47,7 @@ func (s *Searcher) cachedSearcher() cachedSearcher {
 			Name:               t.Name,
 			PlaceOfPublication: t.PlaceOfPublication,
 			Location:           t.Location,
+			Errors:             t.Errors,
 		}
 		titleIDLookup[t] = titleID
 		titleLookup[titleID] = ct
@@ -58,6 +61,7 @@ func (s *Searcher) cachedSearcher() cachedSearcher {
 			Edition:      i.Edition,
 			Location:     i.Location,
 			WorkflowStep: string(i.WorkflowStep),
+			Errors:       i.Errors,
 		}
 		for _, f := range i.Files {
 			fileID++
@@ -65,6 +69,7 @@ func (s *Searcher) cachedSearcher() cachedSearcher {
 				ID:       fileID,
 				File:     *f.File,
 				Location: f.Location,
+				Errors:   f.Errors,
 			}
 			fileIDLookup[f] = fileID
 			ci.Files = append(ci.Files, cf)
@@ -80,28 +85,7 @@ func (s *Searcher) cachedSearcher() cachedSearcher {
 		cSrch.Issues = append(cSrch.Issues, ci)
 	}
 
-	for _, e := range s.Errors.Errors {
-		var b = e.Batch
-		var t = e.Title
-		var i = e.Issue
-		var f = e.File
-
-		var ce = cachedError{Location: e.Location, Error: e.Error.Error()}
-		if b != nil {
-			ce.BatchID = batchIDLookup[b]
-		}
-		if t != nil {
-			ce.TitleID = titleIDLookup[t]
-		}
-		if i != nil {
-			ce.IssueID = issueIDLookup[i]
-		}
-		if f != nil {
-			ce.FileID = fileIDLookup[f]
-		}
-		cSrch.Errors = append(cSrch.Errors, ce)
-	}
-
+	cSrch.Errors = s.Errors
 	return cSrch
 }
 
@@ -125,6 +109,7 @@ func (f *Finder) Serialize(outFilename string) error {
 	defer os.Remove(tmpfile.Name())
 
 	// Attempt to encode to said file, returning the error if that doesn't work
+	gob.Register(&apperr.BaseError{})
 	var enc = gob.NewEncoder(tmpfile)
 	err = enc.Encode(f.cachedFinder())
 	if err != nil {

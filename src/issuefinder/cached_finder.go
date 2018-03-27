@@ -4,6 +4,8 @@
 package issuefinder
 
 import (
+	"apperr"
+
 	"github.com/uoregon-libraries/gopkg/fileutil"
 )
 
@@ -24,7 +26,7 @@ type cachedSearcher struct {
 	Batches   []cachedBatch
 	Titles    []cachedTitle
 	Issues    []cachedIssue
-	Errors    []cachedError
+	Errors    apperr.List
 }
 
 type cachedBatch struct {
@@ -33,6 +35,7 @@ type cachedBatch struct {
 	Keyword     string
 	Version     int
 	Location    string
+	Errors      apperr.List
 }
 
 type cachedTitle struct {
@@ -41,6 +44,7 @@ type cachedTitle struct {
 	Name               string
 	PlaceOfPublication string
 	Location           string
+	Errors             apperr.List
 }
 
 type cachedIssue struct {
@@ -52,19 +56,12 @@ type cachedIssue struct {
 	Location     string
 	WorkflowStep string
 	Files        []cachedFile
+	Errors       apperr.List
 }
 
 type cachedFile struct {
 	fileutil.File
 	ID       cacheID
 	Location string
-}
-
-type cachedError struct {
-	BatchID  cacheID
-	TitleID  cacheID
-	IssueID  cacheID
-	FileID   cacheID
-	Location string
-	Error    string
+	Errors   apperr.List
 }

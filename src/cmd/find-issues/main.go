@@ -11,7 +11,6 @@ import (
 	"db"
 	"fmt"
 	"io/ioutil"
-	"issuefinder"
 	"issuesearch"
 	"issuewatcher"
 	"schema"
@@ -89,8 +88,6 @@ func getOpts() {
 	}
 }
 
-type errorFn func(*schema.Issue) []*issuefinder.Error
-
 func main() {
 	getOpts()
 	var scanner = issuewatcher.NewScanner(conf)
@@ -104,16 +101,16 @@ func main() {
 	}
 
 	if opts.All {
-		reportIssues(scanner.Finder.Issues, scanner.IssueErrors)
+		reportIssues(scanner.Finder.Issues)
 		return
 	}
 
 	for _, k := range issueSearchKeys {
-		reportIssues(scanner.LookupIssues(k), scanner.IssueErrors)
+		reportIssues(scanner.LookupIssues(k))
 	}
 }
 
-func reportIssues(issueList schema.IssueList, errfn errorFn) {
+func reportIssues(issueList schema.IssueList) {
 	var newList = issueList
 	if opts.NotLive {
 		newList = make(schema.IssueList, 0)
@@ -136,9 +133,8 @@ func reportIssues(issueList schema.IssueList, errfn errorFn) {
 			fmt.Printf("    - Batch: %s\n", issue.Batch.Fullname())
 		}
 
-		var errors = errfn(issue)
-		for _, e := range errors {
-			fmt.Printf("    - ERROR: (%#v) %s\n", e.Location, e.Error)
+		for _, e := range issue.Errors {
+			fmt.Printf("    - ERROR: %s\n", e)
 		}
 	}
 }

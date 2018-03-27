@@ -1,6 +1,7 @@
 package issuefinder
 
 import (
+	"apperr"
 	"chronam"
 	"fmt"
 	"httpcache"
@@ -32,7 +33,8 @@ func (s *Searcher) FindWebBatches(cachePath string) error {
 	for _, batchMetadata := range batchMetadataList {
 		var batch, err = schema.ParseBatchname(batchMetadata.Name)
 		if err != nil {
-			s.newError(s.Location, fmt.Errorf("invalid live batch name %#v: %s", batchMetadata.Name, err))
+			var e = apperr.Errorf("invalid live batch at %q: %s", s.Location, err)
+			s.Errors = append(s.Errors, e)
 			return nil
 		}
 		batch.Location = batchMetadata.URL
@@ -58,7 +60,7 @@ func (s *Searcher) FindWebBatches(cachePath string) error {
 func (s *Searcher) cacheLiveIssue(batch *schema.Batch, title *schema.Title, meta *chronam.IssueMetadata) {
 	var _, err = time.Parse("2006-01-02", meta.Date)
 	if err != nil {
-		s.newError(batch.Location, fmt.Errorf("invalid date for issue %#v: %s", meta, err)).SetBatch(batch)
+		batch.AddError(apperr.Errorf("invalid date for issue %#v: %s", meta, err))
 		return
 	}
 
@@ -69,7 +71,7 @@ func (s *Searcher) cacheLiveIssue(batch *schema.Batch, title *schema.Title, meta
 	var edition int
 	edition, err = strconv.Atoi(editionString)
 	if err != nil {
-		s.newError(batch.Location, fmt.Errorf("invalid edition (%#v) for issue %#v", editionString, meta)).SetBatch(batch)
+		batch.AddError(apperr.Errorf("invalid edition (%#v) for issue %#v", editionString, meta))
 		return
 	}
 

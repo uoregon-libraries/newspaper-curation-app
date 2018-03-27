@@ -1,7 +1,7 @@
 package issuefinder
 
 import (
-	"fmt"
+	"apperr"
 	"path/filepath"
 	"schema"
 	"strings"
@@ -44,16 +44,18 @@ func (s *Searcher) findSFTPIssuesForTitlePath(titlePath, orgCode string) error {
 
 	for _, issuePath := range issuePaths {
 		var base = filepath.Base(issuePath)
-		// We don't know the issue (or even if there is an issue object) yet, so we
-		// need to aggregate errors.  And we shortcut the aggregation so we don't
-		// forget to set the title.
-		var errors []*Error
-		var addErr = func(e error) { errors = append(errors, s.newError(issuePath, e).SetTitle(title)) }
+
+		// Set up the core of the issue data so we can start attaching errors
+		var issue = &schema.Issue{
+			MARCOrgCode:  orgCode,
+			Location:     issuePath,
+			WorkflowStep: schema.WSSFTP,
+		}
 
 		// A suffix of "-error" is a manually flagged error; we should keep an eye
 		// on these, but their contents can still be valuable
 		if strings.HasSuffix(base, "-error") {
-			addErr(fmt.Errorf("manually flagged issue"))
+			issue.AddError(apperr.Errorf("manually flagged issue"))
 			base = base[:len(base)-6]
 		}
 
@@ -61,22 +63,15 @@ func (s *Searcher) findSFTPIssuesForTitlePath(titlePath, orgCode string) error {
 		// Invalid issue directory names will have an invalid date, but still need
 		// to be visible in the issue queue
 		if err != nil {
-			addErr(fmt.Errorf("issue folder date format, %q, is invalid", filepath.Base(issuePath)))
+			issue.AddError(apperr.Errorf("issue folder date format, %q, is invalid", filepath.Base(issuePath)))
 		}
 
-		// Build the issue now that we know we can put together the minimal metadata
-		var issue = title.AddIssue(&schema.Issue{
-			MARCOrgCode:  orgCode,
-			RawDate:      base,
-			Edition:      1,
-			Location:     issuePath,
-			WorkflowStep: schema.WSSFTP,
-		})
+		// Finish the issue metadata and do final validations
+		issue.RawDate = base
+		issue.Edition = 1
 		issue.FindFiles()
+		title.AddIssue(issue)
 
-		for _, e := range errors {
-			e.SetIssue(issue)
-		}
 		s.Issues = append(s.Issues, issue)
 		s.verifyIssueFiles(issue, []string{".pdf"})
 	}

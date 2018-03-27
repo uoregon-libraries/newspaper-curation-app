@@ -1,7 +1,7 @@
 package issuefinder
 
 import (
-	"fmt"
+	"apperr"
 	"path/filepath"
 	"schema"
 	"strings"
@@ -16,22 +16,18 @@ import (
 //   drops off its various metadata files)
 func (s *Searcher) verifyIssueFiles(issue *schema.Issue, allowedExtensions []string) {
 	if len(issue.Files) == 0 {
-		s.newError(issue.Location, fmt.Errorf("no issue files found")).SetIssue(issue)
+		issue.AddError(apperr.New("no issue files found"))
 		return
 	}
 
 	for _, file := range issue.Files {
-		var makeErr = func(format string, args ...interface{}) {
-			s.newError(file.Location, fmt.Errorf(format, args...)).SetFile(file)
-		}
-
 		if file.IsDir() {
-			makeErr("%q is a subdirectory", file.Name)
+			file.AddError(apperr.Errorf("%q is a subdirectory", file.Name))
 			continue
 		}
 
 		if !file.IsRegular() {
-			makeErr("%q is not a regular file", file.Name)
+			file.AddError(apperr.Errorf("%q is not a regular file", file.Name))
 			continue
 		}
 
@@ -48,7 +44,7 @@ func (s *Searcher) verifyIssueFiles(issue *schema.Issue, allowedExtensions []str
 			}
 		}
 		if !match {
-			makeErr("%q has an invalid extension", file.Name)
+			file.AddError(apperr.Errorf("%q has an invalid extension", file.Name))
 			continue
 		}
 	}

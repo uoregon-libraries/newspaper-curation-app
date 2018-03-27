@@ -1,6 +1,7 @@
 package issuefinder
 
 import (
+	"apperr"
 	"bytes"
 	"encoding/gob"
 	"fmt"
@@ -16,6 +17,7 @@ func Deserialize(filename string) (*Finder, error) {
 		return nil, fmt.Errorf("unable to read file %#v: %s", filename, err)
 	}
 
+	gob.Register(&apperr.BaseError{})
 	var dec = gob.NewDecoder(bytes.NewBuffer(content))
 	var cf cachedFinder
 	err = dec.Decode(&cf)
@@ -53,6 +55,7 @@ func (cs cachedSearcher) addSearcher() *Searcher {
 			Keyword:     cb.Keyword,
 			Version:     cb.Version,
 			Location:    cb.Location,
+			Errors:      cb.Errors,
 		}
 		batchLookup[cb.ID] = b
 		srch.Batches = append(srch.Batches, b)
@@ -63,6 +66,7 @@ func (cs cachedSearcher) addSearcher() *Searcher {
 			Name:               ct.Name,
 			PlaceOfPublication: ct.PlaceOfPublication,
 			Location:           ct.Location,
+			Errors:             ct.Errors,
 		}
 		titleLookup[ct.ID] = t
 		srch.Titles = append(srch.Titles, t)
@@ -74,11 +78,12 @@ func (cs cachedSearcher) addSearcher() *Searcher {
 			Edition:      ci.Edition,
 			Location:     ci.Location,
 			WorkflowStep: schema.WorkflowStep(ci.WorkflowStep),
+			Errors:       ci.Errors,
 		}
 		for _, cf := range ci.Files {
 			// Copy the fileutil.File structure or we get reused data
 			var dupedFile = cf.File
-			var file = &schema.File{File: &dupedFile, Location: cf.Location, Issue: i}
+			var file = &schema.File{File: &dupedFile, Location: cf.Location, Issue: i, Errors: cf.Errors}
 			fileLookup[cf.ID] = file
 			i.Files = append(i.Files, file)
 		}
@@ -92,26 +97,8 @@ func (cs cachedSearcher) addSearcher() *Searcher {
 		titleLookup[ci.TitleID].AddIssue(i)
 	}
 
-	// Populate the Errors list
-	for _, ce := range cs.Errors {
-		var e = &Error{
-			Location: ce.Location,
-			Error:    fmt.Errorf(ce.Error),
-		}
-		if ce.BatchID != 0 {
-			e.Batch = batchLookup[ce.BatchID]
-		}
-		if ce.TitleID != 0 {
-			e.Title = titleLookup[ce.TitleID]
-		}
-		if ce.IssueID != 0 {
-			e.Issue = issueLookup[ce.IssueID]
-		}
-		if ce.FileID != 0 {
-			e.File = fileLookup[ce.FileID]
-		}
-		srch.Errors.Append(e)
-	}
+	// Copy the Errors list
+	srch.Errors = cs.Errors
 
 	return srch
 }

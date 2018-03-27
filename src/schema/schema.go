@@ -1,15 +1,10 @@
 // Package schema houses simple data types for titles, issues, batches, etc.
 // Types which live here are generally meant to be very general-case rather
 // than trying to hold all possible information for all possible use cases.
-//
-// Except... a Location field exists on all structures because the workflow
-// allows for multiple occurrences of metadata for any of the schema items.
-// They could be on the filesystem or the web.  And in the case of errors,
-// which we need to be able to detect, there can be dupes that need to be
-// reported and figured out.
 package schema
 
 import (
+	"apperr"
 	"fmt"
 	"path/filepath"
 	"sort"
@@ -58,6 +53,8 @@ type Batch struct {
 
 	// Location is where this batch can be found, either a URL or filesystem path
 	Location string
+
+	Errors apperr.List
 }
 
 // ParseBatchname creates a Batch by splitting up the full name string
@@ -112,11 +109,18 @@ func (b *Batch) AddIssue(i *Issue) {
 	i.Batch = b
 }
 
+// AddError attaches err to this batch
+func (b *Batch) AddError(err apperr.Error) {
+	b.Errors = append(b.Errors, err)
+}
+
 // Title is a publisher's information, unique per LCCN
 type Title struct {
 	LCCN               string
 	Name               string
 	PlaceOfPublication string
+	Errors             apperr.List
+	hasChildErrors     bool
 
 	// Issues contains the list of issues associated with a single title; though
 	// this can be derived by iterating over all the issues, it's useful to store
@@ -146,6 +150,20 @@ func (t *Title) AddIssue(i *Issue) *Issue {
 // location and issue list
 func (t *Title) GenericTitle() *Title {
 	return &Title{LCCN: t.LCCN, Name: t.Name, PlaceOfPublication: t.PlaceOfPublication}
+}
+
+// AddError attaches err to this title
+func (t *Title) AddError(err apperr.Error) {
+	t.Errors = append(t.Errors, err)
+}
+
+// AddChildError notes that this title has at least one issue with errors
+func (t *Title) AddChildError() {
+	if t.hasChildErrors {
+		return
+	}
+	t.AddError(apperr.New("one or more issues are invalid"))
+	t.hasChildErrors = true
 }
 
 // TitleList is a simple slice of titles for easier built-in sorting and
@@ -198,12 +216,14 @@ func (list TitleList) Unique() TitleList {
 
 // Issue is an extremely basic encapsulation of an issue's high-level data
 type Issue struct {
-	MARCOrgCode string
-	Title       *Title
-	RawDate     string // This is the date as seen on the filesystem when the issue was uploaded
-	Edition     int
-	Batch       *Batch
-	Files       []*File
+	MARCOrgCode    string
+	Title          *Title
+	RawDate        string // This is the date as seen on the filesystem when the issue was uploaded
+	Edition        int
+	Batch          *Batch
+	Files          []*File
+	Errors         apperr.List
+	hasChildErrors bool
 
 	// Location is where this issue can be found, either a URL or filesystem path
 	Location string
@@ -303,6 +323,27 @@ func (i *Issue) WorkflowIdentification() string {
 	}
 }
 
+// AddError attaches err to this issue and reports to the issue's title that it
+// has an error
+func (i *Issue) AddError(err apperr.Error) {
+	i.Errors = append(i.Errors, err)
+	if i.Title != nil {
+		i.Title.AddChildError()
+	}
+}
+
+// AddChildError sets a flag to let us know this issue has a child with an
+// error.  If this is the first time a child has reported an error, we store an
+// error on the issue itself so we can inform users just once instead of once
+// per error.
+func (i *Issue) AddChildError() {
+	if i.hasChildErrors == true {
+		return
+	}
+	i.AddError(apperr.New("one or more files are invalid"))
+	i.hasChildErrors = true
+}
+
 // IssueList groups a bunch of issues together
 type IssueList []*Issue
 
@@ -325,4 +366,12 @@ type File struct {
 	*fileutil.File
 	Location string
 	Issue    *Issue
+	Errors   apperr.List
+}
+
+// AddError puts err on this file and reports to its issue that one of its
+// children has an error
+func (f *File) AddError(err apperr.Error) {
+	f.Errors = append(f.Errors, err)
+	f.Issue.AddChildError()
 }

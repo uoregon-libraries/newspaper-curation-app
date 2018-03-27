@@ -49,6 +49,10 @@ func Setup(r *mux.Router, baseWebPath string, c *config.Config, w *issuewatcher.
 
 	searcher = newSearcher(c)
 	Layout = responder.Layout.Clone()
+
+	// Add custom functions we need for display of schema object errors
+	Layout.Funcs(tmpl.FuncMap{"ErrorHTML": errorHTML, "ErrorListHTML": errorListHTML})
+
 	Layout.Path = path.Join(Layout.Path, "uploadedissues")
 	TitleList = Layout.MustBuild("title-list.go.html")
 	IssueTmpl = Layout.MustBuild("issue.go.html")

@@ -1,8 +1,8 @@
 package issuefinder
 
 import (
+	"apperr"
 	"db"
-	"fmt"
 	"os"
 	"path/filepath"
 	"regexp"
@@ -34,7 +34,7 @@ func (s *Searcher) FindScannedIssues() error {
 	for _, mocPath := range mocPaths {
 		var mocName = filepath.Base(mocPath)
 		if !db.ValidMOC(mocName) {
-			s.newError(mocPath, fmt.Errorf("unable to find MARC Org Code %#v in database", mocName))
+			s.Errors = append(s.Errors, apperr.Errorf("unable to find MARC Org Code %#v in database", mocName))
 			continue
 		}
 
@@ -78,11 +78,13 @@ func (s *Searcher) findScannedIssuesForTitlePath(moc, titlePath string) error {
 
 	for _, issuePath := range issuePaths {
 		var base = filepath.Base(issuePath)
-		// We don't know the issue (or even if there is an issue object) yet, so we
-		// need to aggregate errors.  And we shortcut the aggregation so we don't
-		// forget to set the title.
-		var errors []*Error
-		var addErr = func(e error) { errors = append(errors, s.newError(issuePath, e).SetTitle(title)) }
+
+		// Set up the core of the issue data so we can start attaching errors
+		var issue = &schema.Issue{
+			Location:     issuePath,
+			WorkflowStep: schema.WSScan,
+			MARCOrgCode:  moc,
+		}
 
 		// If we have an edition, split it off and store it, otherwise it's 1
 		var edition = 1
@@ -90,42 +92,30 @@ func (s *Searcher) findScannedIssuesForTitlePath(moc, titlePath string) error {
 			var edStr = base[11:]
 			edition, err = strconv.Atoi(edStr)
 			if err != nil {
-				addErr(fmt.Errorf("invalid issue directory name: non-numeric edition value %q", edStr))
-				continue
-			}
-			if edition < 1 {
-				addErr(fmt.Errorf("invalid issue directory name: edition must be 1 or greater"))
-				continue
+				issue.AddError(apperr.Errorf("invalid issue directory name: non-numeric edition value %q", edStr))
+			} else if edition < 1 {
+				issue.AddError(apperr.Errorf("invalid issue directory name: edition must be 1 or greater"))
 			}
 			base = base[:10]
 		}
 
-		var _, err = time.Parse("2006-01-02", base)
-		// Invalid issue directory names will have an invalid date, but still need
-		// to be visible in the issue queue
-		if err != nil {
-			addErr(fmt.Errorf("issue folder date format, %q, is invalid", filepath.Base(issuePath)))
-		}
-
-		// Build the issue now that we know we can put together the minimal metadata
-		var issue = title.AddIssue(&schema.Issue{
-			RawDate:      base,
-			Edition:      edition,
-			Location:     issuePath,
-			WorkflowStep: schema.WSScan,
-			MARCOrgCode:  moc,
-		})
+		// Finish the issue metadata and do final validations
+		issue.RawDate = base
+		issue.Edition = edition
 		issue.FindFiles()
+		title.AddIssue(issue)
+
+		var _, err = time.Parse("2006-01-02", base)
+		if err != nil {
+			issue.AddError(apperr.Errorf("issue folder date format, %q, is invalid", filepath.Base(issuePath)))
+		}
 
 		// Make sure PDF and TIFF pairs match up properly
-		err = s.verifyScanIssuePDFTIFFPairs(issuePath)
-		if err != nil {
-			addErr(err)
+		var verifyErr = s.verifyScanIssuePDFTIFFPairs(issuePath)
+		if verifyErr != nil {
+			issue.AddError(verifyErr)
 		}
 
-		for _, e := range errors {
-			e.SetIssue(issue)
-		}
 		s.Issues = append(s.Issues, issue)
 		s.verifyIssueFiles(issue, []string{".pdf", ".tif", ".tiff"})
 	}
@@ -133,7 +123,7 @@ func (s *Searcher) findScannedIssuesForTitlePath(moc, titlePath string) error {
 	return nil
 }
 
-func (s *Searcher) verifyScanIssuePDFTIFFPairs(path string) error {
+func (s *Searcher) verifyScanIssuePDFTIFFPairs(path string) apperr.Error {
 	var tiffFiles, pdfFiles []string
 	var err error
 
@@ -147,15 +137,15 @@ func (s *Searcher) verifyScanIssuePDFTIFFPairs(path string) error {
 	}
 
 	if err != nil {
-		return fmt.Errorf("unable to scan %q for PDF / TIFF files: %s", path, err)
+		return apperr.Errorf("unable to scan %q for PDF / TIFF files: %s", path, err)
 	}
 
 	if len(tiffFiles) == 0 {
-		return fmt.Errorf("no TIFF files in %q", path)
+		return apperr.Errorf("no TIFF files in %q", path)
 	}
 
 	if len(tiffFiles) != len(pdfFiles) {
-		return fmt.Errorf("PDF/TIFF files don't match in %q", path)
+		return apperr.Errorf("PDF/TIFF files don't match in %q", path)
 	}
 
 	sort.Strings(tiffFiles)
@@ -166,7 +156,7 @@ func (s *Searcher) verifyScanIssuePDFTIFFPairs(path string) error {
 		var pdfParts = strings.Split(pdf, ".")
 		var tiffParts = strings.Split(tiff, ".")
 		if pdfParts[0] != tiffParts[0] {
-			return fmt.Errorf("PDF/TIFF files don't match (index %d / pdf %q / tiff %q) in %q", i, pdf, tiff, path)
+			return apperr.Errorf("PDF/TIFF files don't match (index %d / pdf %q / tiff %q) in %q", i, pdf, tiff, path)
 		}
 	}
 

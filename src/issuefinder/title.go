@@ -1,6 +1,7 @@
 package issuefinder
 
 import (
+	"apperr"
 	"chronam"
 	"db"
 	"fmt"
@@ -34,8 +35,7 @@ func (s *Searcher) findOrCreateFilesystemTitle(path string) *schema.Title {
 	if t == nil {
 		t = &schema.Title{LCCN: titleName, Location: path, Name: titleName}
 		s.addTitle(t)
-		var e = s.newError(path, fmt.Errorf("unable to find title %#v in database", titleName))
-		e.SetTitle(t)
+		t.AddError(apperr.Errorf("unable to find title %#v in database", titleName))
 	}
 
 	return s.titleByLoc[path]

@@ -1,13 +1,13 @@
 {{block "content" .}}
 
-{{if gt .Data.Issue.TotalErrors 0}}
+{{if .Data.Issue.HasErrors}}
   <h2>Errors</h2>
   <div class="issue-with-errors">
     This issue has errors, and cannot be queued:
   </div>
   <ul>
   {{range .Data.Issue.Errors}}
-    <li>{{.}}</li>
+    <li>{{ErrorHTML .}}</li>
   {{end}}
   </ul>
 {{else}}
@@ -56,12 +56,12 @@
 
   <tbody>
     {{range .Data.Issue.Files}}
-      <tr {{if gt (len .Errors) 0}} class="file-with-errors"{{end}}>
+      <tr {{if .HasErrors}} class="file-with-errors"{{end}}>
         <td>{{.Link}}</td>
         <td>{{TimeString .ModTime}}</td>
         <td>
-          {{- if gt (len .Errors) 0}}
-            <b>{{.Errors}}</b>
+          {{- if .HasErrors}}
+            <b>{{ErrorListHTML .Errors}}</b>
           {{- else}}
             No file errors detected
           {{- end}}

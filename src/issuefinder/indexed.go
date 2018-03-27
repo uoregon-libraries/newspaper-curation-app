@@ -1,8 +1,8 @@
 package issuefinder
 
 import (
+	"apperr"
 	"db"
-	"fmt"
 )
 
 // FindInProcessIssues aggregates all issues which have been indexed in the database
@@ -11,7 +11,7 @@ func (s *Searcher) FindInProcessIssues() error {
 
 	var issues, err = db.FindInProcessIssues()
 	if err != nil {
-		return fmt.Errorf("unable to scan in-process issues from database: %s", err)
+		return apperr.Errorf("unable to scan in-process issues from database: %s", err)
 	}
 	for _, issue := range issues {
 		s.storeInProcessIssue(issue)
@@ -27,24 +27,13 @@ func (s *Searcher) FindInProcessIssues() error {
 func (s *Searcher) storeInProcessIssue(dbIssue *db.Issue) {
 	var title = s.findOrCreateDatabaseTitle(dbIssue)
 
-	// We don't know the issue (or even if there is an issue object) yet, so we
-	// need to aggregate errors.  And we shortcut the aggregation so we don't
-	// forget to set the title.
-	var errors []*Error
-	var addErr = func(e error) { errors = append(errors, s.newError(dbIssue.Location, e).SetTitle(title)) }
-
-	// Build the issue now that we know we can put together the minimal metadata
 	var issue, err = dbIssue.SchemaIssue()
 	if err != nil {
-		addErr(err)
+		title.AddError(apperr.Errorf("invalid database issue id %d", dbIssue.ID))
 		return
 	}
 
 	// TODO: Do other sanity checking as it makes sense
-
-	for _, e := range errors {
-		e.SetIssue(issue)
-	}
 
 	title.AddIssue(issue)
 	issue.FindFiles()
