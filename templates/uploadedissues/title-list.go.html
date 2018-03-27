@@ -1,16 +1,10 @@
 {{define "titleitem"}}
       <li>
-        {{if gt .TotalErrors 0}}
+        {{if .HasErrors}}
           <div class="title-with-errors">
             <div class="title-link">{{.Link}}</div>
-            {{if gt .TitleErrors 0}}
-              <span class="glyphicon glyphicon-exclamation-sign" aria-hidden="true"></span>
-              <span class="count">{{.TitleErrors}} error(s) detected on this title</span>
-            {{end}}
-            {{if gt .ChildErrors 0}}
-              <span class="glyphicon glyphicon-exclamation-sign" aria-hidden="true"></span>
-              <span class="count">{{.ChildErrors}} error(s) detected in issues and/or files</span>
-            {{end}}
+            <span class="glyphicon glyphicon-exclamation-sign" aria-hidden="true"></span>
+            <span class="count">One or more errors detected on this title or its issues</span>
           </div>
         {{- else}}
           {{.Link}}
@@ -31,7 +25,7 @@
   </div>
   <ul>
     {{range .Data.OtherErrors}}
-    <li>{{.Message}}</li>
+    <li>{{ErrorHTML .}}</li>
     {{end}}
   </ul>
 {{end}}

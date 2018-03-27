@@ -1,18 +1,17 @@
 {{block "content" .}}
 
-{{if gt .Data.Title.TitleErrors 0}}
+{{if .Data.Title.HasErrors}}
   <h2>Errors</h2>
   <div class="title-with-errors">
     <span class="glyphicon glyphicon-exclamation-sign" aria-hidden="true"></span>
     <span>
-      This title has errors which may prevent all issues from showing up, or
-      which may be causing the title itself to fail.  It is strongly advised
-      you not queue issues unless you understand the ramifications fully.
+      Note: this title has one or more errors, and some or all of its issues
+      may not be suitable for queueing:
     </span>
   </div>
   <ul>
     {{range .Data.Title.Errors}}
-    <li>{{.}}</li>
+    <li>{{ErrorHTML .}}</li>
     {{end}}
   </ul>
 {{end}}
@@ -27,7 +26,6 @@
       <th scope="col" class="sort-alpha">Last Modified</th>
       <th scope="col" class="sort-alpha">Issue Status</th>
       <th scope="col" class="sort-number">File Count</th>
-      <th scope="col" class="sort-alpha">File Status</th>
     </tr>
   </thead>
 
@@ -39,12 +37,12 @@
         <td>{{.WorkflowStep}}</td>
         <td>{{TimeString .Modified}}</td>
         <td>
-          {{- if gt (len .Errors) 0}}
+          {{- if .HasErrors}}
             <div class="issue-error-list">
             Errors:
             <ul>
               {{range .Errors}}
-              <li>{{.}}</li>
+              <li>{{ErrorHTML .}}</li>
               {{end}}
             </ul>
           {{- end}}
@@ -53,17 +51,6 @@
           {{- end}}
         </td>
         <td>{{len .Files}}</td>
-        <td>
-          {{- if gt (len .Files) 0}}
-            {{if gt .ChildErrors 0}}
-              <b>{{.ChildErrors}} file error(s)</b>
-            {{- else}}
-              No file errors detected
-            {{- end}}
-          {{- else}}
-            N/A
-          {{- end}}
-        </td>
       </tr>
     {{end}}
   </tbody>

@@ -34,16 +34,21 @@ type HTMLError struct {
 	*apperr.BaseError
 }
 
-// HTMLify returns the errors joined together, with all non-HTMLError
+// errorHTML returns the error text, escaped if not an HTMLError
+func errorHTML(err apperr.Error) template.HTML {
+	var msg = err.Message()
+	if _, ok := err.(*HTMLError); !ok {
+		return template.HTML(template.HTMLEscapeString(msg))
+	}
+	return template.HTML(msg)
+}
+
+// errorHTML returns the errors joined together, with all non-HTMLError
 // instances' messages escaped for use in HTML
-func HTMLify(list apperr.List) template.HTML {
+func errorListHTML(list apperr.List) template.HTML {
 	var sList = make([]string, len(list))
-	for i, e := range list {
-		var msg = e.Message()
-		if _, ok := e.(HTMLError); ok != true {
-			msg = template.HTMLEscapeString(msg)
-		}
-		sList[i] = msg
+	for i, err := range list {
+		sList[i] = string(errorHTML(err))
 	}
 	return template.HTML(strings.Join(sList, "; "))
 }
@@ -102,7 +107,14 @@ func (t *Title) appendSchemaIssue(i *schema.Issue) *Issue {
 // Show returns true if the title has any issues or errors.  If there are no
 // errors and no issues, there's no reason to display it.
 func (t *Title) Show() bool {
-	return len(t.Issues) > 0 || len(t.Errors) > 0
+	return len(t.Issues) > 0 || t.HasErrors()
+}
+
+// HasErrors reports true if this title has any errors - due to the way
+// AddError works in the schema, this will report true if the title has an
+// error *or* if one or more issues have errors
+func (t *Title) HasErrors() bool {
+	return len(t.Errors) > 0
 }
 
 // Link returns a link for this title
@@ -286,6 +298,24 @@ func (i *Issue) ScanPDFImageDPIs() {
 	}
 }
 
+// HasErrors reports true if this issue has any errors - due to the way
+// AddError works in the schema, this will report true if the issue has an
+// error *or* if one or more files have errors
+func (i *Issue) HasErrors() bool {
+	return len(i.Errors) > 0
+}
+
+// ChildErrors reports the number of files with errors
+func (i *Issue) ChildErrors() (n int) {
+	for _, f := range i.Files {
+		if f.HasErrors() {
+			n++
+		}
+	}
+
+	return n
+}
+
 // File wraps a schema.File for web presentation
 type File struct {
 	*schema.File
@@ -342,4 +372,9 @@ func (f *File) ValidateDPI() {
 	}
 
 	f.hasScannedPDFDPIs = true
+}
+
+// HasErrors reports true if this file has any errors
+func (f *File) HasErrors() bool {
+	return len(f.Errors) > 0
 }
