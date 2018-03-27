@@ -3,7 +3,9 @@
 package main
 
 import (
+	"apperr"
 	"cli"
+	"fmt"
 	"issuewatcher"
 
 	"github.com/uoregon-libraries/gopkg/logger"
@@ -18,7 +20,28 @@ func main() {
 	}
 
 	// Report all errors
-	for _, e := range scanner.Finder.Errors {
-		logger.Errorf(e.Message())
+	reportErrors("Root", scanner.Finder.Errors)
+	for _, b := range scanner.Finder.Batches {
+		reportErrors(fmt.Sprintf("Batch %q", b.Fullname()), b.Errors)
+	}
+	for _, t := range scanner.Finder.Titles {
+		reportErrors(fmt.Sprintf("Title %q (%s)", t.Name, t.LCCN), t.Errors)
+		for _, i := range t.Issues {
+			reportErrors(fmt.Sprintf("Issue %s", i.Key()), i.Errors)
+			for _, f := range i.Files {
+				reportErrors(fmt.Sprintf("File %s/%s", i.Key(), f.Name), f.Errors)
+			}
+		}
+	}
+}
+
+func reportErrors(title string, list apperr.List) {
+	if len(list) == 0 {
+		return
+	}
+
+	fmt.Printf("- %s\n", title)
+	for _, err := range list {
+		fmt.Printf("  - %s\n", err.Message())
 	}
 }
