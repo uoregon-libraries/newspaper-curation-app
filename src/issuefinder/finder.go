@@ -5,6 +5,7 @@
 package issuefinder
 
 import (
+	"apperr"
 	"schema"
 )
 
@@ -38,12 +39,9 @@ type Searcher struct {
 	// live titles, since they're unique per LCCN.
 	titleByLoc map[string]*schema.Title
 
-	// Errors represent things wrong with title directories, issue names, batch
-	// XML, etc. which are in need of addressing, but which aren't critical
-	// enough to halt the rest of the find operation.  These are typically
-	// unavoidable human errors we expect to see sometimes, and we need to fix
-	// them, but we often still need to know what valid items exist.
-	Errors *ErrorList
+	// Errors is the list of errors which aren't specific to something like an
+	// issue or a batch; e.g., a bad MARC Org Code directory in the scan path
+	Errors apperr.List
 }
 
 // Finder groups all the searchers together, allowing for aggregation of issue,
@@ -56,7 +54,7 @@ type Finder struct {
 	Batches   []*schema.Batch
 	Titles    schema.TitleList
 	Issues    schema.IssueList
-	Errors    *ErrorList
+	Errors    apperr.List
 
 	// This little var helps us answer the age-old question: for a given unique
 	// issue, where is it in the workflow?
@@ -67,7 +65,6 @@ type Finder struct {
 func New() *Finder {
 	return &Finder{
 		Searchers:      make(map[Namespace]*Searcher),
-		Errors:         &ErrorList{},
 		IssueNamespace: make(map[*schema.Issue]Namespace),
 	}
 }
@@ -85,7 +82,7 @@ func (s *Searcher) init() {
 	s.Batches = make([]*schema.Batch, 0)
 	s.Titles = make(schema.TitleList, 0)
 	s.titleByLoc = make(map[string]*schema.Title)
-	s.Errors = &ErrorList{}
+	s.Errors = nil
 }
 
 func (f *Finder) storeSearcher(s *Searcher) {
@@ -144,8 +141,8 @@ func (f *Finder) aggregate(s *Searcher) {
 		f.Issues = append(f.Issues, i)
 		f.IssueNamespace[i] = s.Namespace
 	}
-	for _, e := range s.Errors.Errors {
-		f.Errors.Append(e)
+	for _, e := range s.Errors {
+		f.Errors = append(f.Errors, e)
 	}
 }
 
@@ -157,7 +154,7 @@ func (f *Finder) Aggregate() {
 	f.Titles = nil
 	f.Issues = nil
 	f.IssueNamespace = make(map[*schema.Issue]Namespace)
-	f.Errors = &ErrorList{}
+	f.Errors = nil
 
 	for _, s := range f.Searchers {
 		f.aggregate(s)
