@@ -18,7 +18,7 @@ func main() {
 	}
 
 	// Report all errors
-	for _, e := range scanner.Finder.Errors.Errors {
+	for _, e := range scanner.Finder.Errors {
 		logger.Errorf(e.Message())
 	}
 }

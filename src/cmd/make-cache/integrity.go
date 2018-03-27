@@ -4,6 +4,7 @@ import (
 	"fmt"
 	"issuefinder"
 	"issuewatcher"
+	"sort"
 
 	"github.com/uoregon-libraries/gopkg/logger"
 )
@@ -37,7 +38,7 @@ func testIntegrity(fA *issuefinder.Finder) {
 	validateLen("issue", len(fA.Issues), len(fB.Issues))
 	validateLen("title", len(fA.Titles), len(fB.Titles))
 	validateLen("batch", len(fA.Batches), len(fB.Batches))
-	validateLen("error", len(fA.Errors.Errors), len(fB.Errors.Errors))
+	validateLen("error", len(fA.Errors), len(fB.Errors))
 
 	logger.Debugf("Sorting issues for comparisons")
 	fA.Issues.SortByKey()
@@ -58,16 +59,24 @@ func testIntegrity(fA *issuefinder.Finder) {
 		}
 	}
 
-	fA.Errors.Sort()
-	fB.Errors.Sort()
-	var errorFails int
-	for i, errorA := range fA.Errors.Errors {
-		var errorB = fB.Errors.Errors[i]
+	var aErr = make([]string, len(fA.Errors))
+	for i, err := range fA.Errors {
+		aErr[i] = err.Message()
+	}
 
-		var msgA, msgB = errorA.Message(), errorB.Message()
-		if msgA != msgB {
+	var bErr = make([]string, len(fB.Errors))
+	for i, err := range fB.Errors {
+		bErr[i] = err.Message()
+	}
+
+	sort.Strings(aErr)
+	sort.Strings(bErr)
+	var errorFails int
+	for i, errorA := range aErr {
+		var errorB = bErr[i]
+		if errorA != errorB {
 			errorFails++
-			integrityFail(fmt.Sprintf("Errors[%d] don't match: in-memory: %#v cache: %#v", i, msgA, msgB))
+			integrityFail(fmt.Sprintf("Errors[%d] don't match: in-memory: %#v cache: %#v", i, errorA, errorB))
 			if errorFails > 5 {
 				break
 			}
