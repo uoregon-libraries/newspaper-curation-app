@@ -2,6 +2,7 @@
 /pkg
 /vendor/src
 /tmp
+/test
 /settings
 /.build.txt
 .git

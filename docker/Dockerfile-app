@@ -44,12 +44,16 @@ RUN dnf install -y findutils
 RUN dnf install -y GraphicsMagick ghostscript
 RUN dnf install -y tar
 RUN dnf install -y git
-RUN dnf install -y golang
 RUN dnf install -y mariadb
 
+# Install Go
+RUN curl https://dl.google.com/go/go1.10.linux-amd64.tar.gz >/tmp/go.tgz
+RUN cd /opt && tar -xzf /tmp/go.tgz
+
 # Go ENV setup
+ENV GOROOT /opt/go
 ENV GOPATH /go
-ENV PATH $GOPATH/bin:/usr/local/go/bin:$PATH
+ENV PATH $PATH:$GOROOT/bin:$GOPATH/bin
 
 # Golang dependencies
 RUN go get -u bitbucket.org/liamstask/goose/cmd/goose
