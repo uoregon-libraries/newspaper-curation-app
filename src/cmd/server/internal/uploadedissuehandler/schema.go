@@ -1,10 +1,10 @@
 package uploadedissuehandler
 
 import (
+	"apperr"
 	"db"
 	"fmt"
 	"html/template"
-	"issuefinder"
 	"issuesearch"
 	"jobs"
 	"os"
@@ -28,15 +28,24 @@ const DaysIssueConsideredDangerous = 2
 // DaysIssueConsideredDangerous has elapsed
 const DaysIssueConsideredNew = 14
 
-// Errors wraps an array of error strings for nicer display
-type Errors []template.HTML
+// An HTMLError implements apperr.Error but is meant to be displayed raw
+// instead of escaped
+type HTMLError struct {
+	*apperr.BaseError
+}
 
-func (e Errors) String() string {
-	var sList = make([]string, len(e))
-	for i, s := range e {
-		sList[i] = string(s)
+// HTMLify returns the errors joined together, with all non-HTMLError
+// instances' messages escaped for use in HTML
+func HTMLify(list apperr.List) template.HTML {
+	var sList = make([]string, len(list))
+	for i, e := range list {
+		var msg = e.Message()
+		if _, ok := e.(HTMLError); ok != true {
+			msg = template.HTMLEscapeString(msg)
+		}
+		sList[i] = msg
 	}
-	return strings.Join(sList, "; ")
+	return template.HTML(strings.Join(sList, "; "))
 }
 
 // TitleType tells us if a title contains born-digital issues or scanned
@@ -64,11 +73,6 @@ func (tt TitleType) String() string {
 type Title struct {
 	*schema.Title
 	Slug        string
-	allErrors   *issuefinder.ErrorList
-	Errors      Errors
-	TitleErrors int
-	ChildErrors int
-	TotalErrors int
 	Issues      []*Issue
 	IssueLookup map[string]*Issue
 	Type        TitleType
@@ -87,40 +91,12 @@ func (t *Title) decorateIssues(issueList []*schema.Issue) {
 func (t *Title) appendSchemaIssue(i *schema.Issue) *Issue {
 	var issue = &Issue{Issue: i, Slug: i.DateEdition(), Title: t}
 	issue.decorateFiles(i.Files)
-	issue.decorateErrors()
 	issue.decorateExternalErrors()
 	issue.scanModifiedTime()
 	t.Issues = append(t.Issues, issue)
 	t.IssueLookup[issue.Slug] = issue
 
 	return issue
-}
-
-func (t *Title) addError(err template.HTML) {
-	t.Errors = append(t.Errors, err)
-	t.TitleErrors++
-	t.TotalErrors++
-}
-
-func (t *Title) decorateErrors() {
-	t.Errors = make(Errors, 0)
-	for _, e := range t.allErrors.TitleErrors[t.Title] {
-		t.addError(safeError(e.Error.Error()))
-	}
-}
-
-// AddChildError should be called when an issue has any kind of error so we
-// know this title's issues will need to be looked at closely
-func (t *Title) AddChildError() {
-	t.ChildErrors++
-	t.TotalErrors++
-}
-
-// We want HTML-friendly errors for when we need to put in our own, but
-// we don't necessarily trust that the more internal errors won't have
-// things like "<" in 'em, so... this happens.
-func safeError(err string) template.HTML {
-	return template.HTML(template.HTMLEscapeString(err))
 }
 
 // Show returns true if the title has any issues or errors.  If there are no
@@ -137,15 +113,12 @@ func (t *Title) Link() template.HTML {
 // Issue wraps a schema.Issue for web presentation
 type Issue struct {
 	*schema.Issue
-	Slug        string           // Short, URL-friendly identifier for an issue
-	Title       *Title           // Title to which this issue belongs
-	QueueInfo   template.HTML    // Informational message from the queue process, if any
-	Errors      Errors           // List of errors automatically identified for this issue
-	ChildErrors int              // Count of child errors for use in the templates
-	TotalErrors int              // Count of child + issue errors
-	Files       []*File          // List of files
-	FileLookup  map[string]*File // Lookup for finding a File by its filename / slug
-	Modified    time.Time        // When this issue's most recent file was modified
+	Slug       string           // Short, URL-friendly identifier for an issue
+	Title      *Title           // Title to which this issue belongs
+	QueueInfo  template.HTML    // Informational message from the queue process, if any
+	Files      []*File          // List of files
+	FileLookup map[string]*File // Lookup for finding a File by its filename / slug
+	Modified   time.Time        // When this issue's most recent file was modified
 }
 
 func (i *Issue) decorateFiles(fileList []*schema.File) {
@@ -187,33 +160,8 @@ func (i *Issue) scanModifiedTime() {
 func (i *Issue) appendSchemaFile(f *schema.File) {
 	var slug = filepath.Base(f.Location)
 	var pdf = &File{File: f, Slug: slug, Issue: i}
-	pdf.decorateErrors()
 	i.Files = append(i.Files, pdf)
 	i.FileLookup[pdf.Slug] = pdf
-}
-
-func (i *Issue) addError(err template.HTML) {
-	i.Errors = append(i.Errors, err)
-	i.Title.AddChildError()
-	i.TotalErrors++
-}
-
-func (i *Issue) decorateErrors() {
-	i.Errors = make(Errors, 0)
-	for _, e := range i.Title.allErrors.IssueErrors[i.Issue] {
-		i.addError(safeError(e.Error.Error()))
-	}
-}
-
-// AddChildError should be called when a file has any kind of error so we know
-// this issue's pages will need to be looked at closely
-func (i *Issue) AddChildError() {
-	i.ChildErrors++
-	if i.ChildErrors == 1 {
-		i.addError(safeError("one or more files are invalid"))
-		return
-	}
-	i.TotalErrors++
 }
 
 // decorateExternalErrors checks for external problems we don't detect when
@@ -244,7 +192,7 @@ func (i *Issue) decorateDupeErrors() {
 			errstr = fmt.Sprintf(`likely duplicate of a live issue: <a href="%s">%s, %s</a>`,
 				wi.Location[:len(wi.Location)-5], wi.Title.Name, wi.RawDate)
 		}
-		i.addError(template.HTML(errstr))
+		i.AddError(&HTMLError{BaseError: &apperr.BaseError{ErrorString: errstr}})
 	}
 }
 
@@ -341,28 +289,12 @@ func (i *Issue) ScanPDFImageDPIs() {
 // File wraps a schema.File for web presentation
 type File struct {
 	*schema.File
-	Issue  *Issue
-	Slug   string
-	Errors Errors
+	Issue *Issue
+	Slug  string
 
 	// hasScannedPDFDPIs is used to avoid double-scanning the same file, since
 	// the per-issue cost for this is fairly high
 	hasScannedPDFDPIs bool
-}
-
-func (f *File) addError(err template.HTML) {
-	f.Errors = append(f.Errors, err)
-	f.Issue.AddChildError()
-}
-
-func (f *File) decorateErrors() {
-	f.Errors = make(Errors, 0)
-	for _, e := range f.Issue.Title.allErrors.IssueErrors[f.Issue.Issue] {
-		if e.File != f.File {
-			continue
-		}
-		f.addError(safeError(e.Error.Error()))
-	}
 }
 
 // Link returns a link for this title
@@ -372,18 +304,18 @@ func (f *File) Link() template.HTML {
 }
 
 // validDPI returns whether a file has a valid DPI for PDFs in scanned issues
-func (f *File) validDPI() error {
+func (f *File) validDPI() apperr.Error {
 	var maxDPI = float64(conf.ScannedPDFDPI) * 1.15
 	var minDPI = float64(conf.ScannedPDFDPI) * 0.85
 
 	var dpis = pdf.ImageDPIs(f.Location)
 	if len(dpis) == 0 {
-		return fmt.Errorf("contains no images or is invalid PDF")
+		return apperr.Errorf("contains no images or is invalid PDF")
 	}
 
 	for _, dpi := range dpis {
 		if dpi.X > maxDPI || dpi.Y > maxDPI || dpi.X < minDPI || dpi.Y < minDPI {
-			return fmt.Errorf("has an image with a bad DPI (%g x %g; expected DPI %d)", dpi.X, dpi.Y, conf.ScannedPDFDPI)
+			return apperr.Errorf("has an image with a bad DPI (%g x %g; expected DPI %d)", dpi.X, dpi.Y, conf.ScannedPDFDPI)
 		}
 	}
 
@@ -406,7 +338,7 @@ func (f *File) ValidateDPI() {
 
 	var err = f.validDPI()
 	if err != nil {
-		f.addError(safeError(err.Error()))
+		f.AddError(err)
 	}
 
 	f.hasScannedPDFDPIs = true

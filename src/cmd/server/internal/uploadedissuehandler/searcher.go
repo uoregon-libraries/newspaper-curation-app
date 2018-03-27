@@ -1,10 +1,10 @@
 package uploadedissuehandler
 
 import (
+	"apperr"
 	"config"
 	"db"
 	"fmt"
-	"issuefinder"
 	"issuewatcher"
 	"jobs"
 	"schema"
@@ -114,7 +114,7 @@ func (s *Searcher) decorateTitles() {
 }
 
 func (s *Searcher) makeTitle(t *schema.Title) (*Title, error) {
-	var title = &Title{Title: t, allErrors: s.scanner.Finder.Errors}
+	var title = &Title{Title: t}
 
 	// Location is the only element that actually uniquely identifies a title, so
 	// we have to use that to figure out if this is a scanned issue or not
@@ -130,7 +130,6 @@ func (s *Searcher) makeTitle(t *schema.Title) (*Title, error) {
 	}
 
 	title.decorateIssues(t.Issues)
-	title.decorateErrors()
 	return title, nil
 }
 
@@ -238,8 +237,8 @@ func (s *Searcher) Ready() bool {
 }
 
 // TopErrors returns the list of errors found that weren't tied to an issue/title/file
-func (s *Searcher) TopErrors() []*issuefinder.Error {
+func (s *Searcher) TopErrors() apperr.List {
 	s.RLock()
 	defer s.RUnlock()
-	return s.scanner.Finder.Errors.OtherErrors
+	return s.scanner.Finder.Errors
 }
