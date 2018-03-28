@@ -37,5 +37,5 @@ func (e *DuplicateIssueError) Propagate() bool {
 
 // ErrDuped flags this issue with a DuplicateIssueError
 func (i *Issue) ErrDuped(dupe *Issue) {
-	i.AddError(&DuplicateIssueError{Issue: i, Dupe: dupe})
+	i.addError(&DuplicateIssueError{Issue: i, Dupe: dupe})
 }

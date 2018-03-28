@@ -325,9 +325,9 @@ func (i *Issue) WorkflowIdentification() string {
 	}
 }
 
-// AddError attaches err to this issue and reports to the issue's title that it
+// addError attaches err to this issue and reports to the issue's title that it
 // has an error
-func (i *Issue) AddError(err apperr.Error) {
+func (i *Issue) addError(err apperr.Error) {
 	i.Errors = append(i.Errors, err)
 	if err.Propagate() && i.Title != nil {
 		i.Title.addChildError()
@@ -342,7 +342,7 @@ func (i *Issue) addChildError() {
 	if i.hasChildErrors == true {
 		return
 	}
-	i.AddError(apperr.New("one or more files are invalid"))
+	i.addError(apperr.New("one or more files are invalid"))
 	i.hasChildErrors = true
 }
 
