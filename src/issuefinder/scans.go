@@ -3,6 +3,7 @@ package issuefinder
 import (
 	"apperr"
 	"db"
+	"fmt"
 	"os"
 	"path/filepath"
 	"regexp"
@@ -92,9 +93,9 @@ func (s *Searcher) findScannedIssuesForTitlePath(moc, titlePath string) error {
 			var edStr = base[11:]
 			edition, err = strconv.Atoi(edStr)
 			if err != nil {
-				issue.AddError(apperr.Errorf("invalid issue directory name: non-numeric edition value %q", edStr))
+				issue.ErrInvalidFolderName("non-numeric edition value")
 			} else if edition < 1 {
-				issue.AddError(apperr.Errorf("invalid issue directory name: edition must be 1 or greater"))
+				issue.ErrInvalidFolderName("edition must be 1 or greater")
 			}
 			base = base[:10]
 		}
@@ -107,14 +108,11 @@ func (s *Searcher) findScannedIssuesForTitlePath(moc, titlePath string) error {
 
 		var _, err = time.Parse("2006-01-02", base)
 		if err != nil {
-			issue.AddError(apperr.Errorf("issue folder date format, %q, is invalid", filepath.Base(issuePath)))
+			issue.ErrInvalidFolderName("bad date format")
 		}
 
 		// Make sure PDF and TIFF pairs match up properly
-		var verifyErr = s.verifyScanIssuePDFTIFFPairs(issuePath)
-		if verifyErr != nil {
-			issue.AddError(verifyErr)
-		}
+		s.verifyScanIssuePDFTIFFPairs(issue)
 
 		s.Issues = append(s.Issues, issue)
 		s.verifyIssueFiles(issue, []string{".pdf", ".tif", ".tiff"})
@@ -123,29 +121,32 @@ func (s *Searcher) findScannedIssuesForTitlePath(moc, titlePath string) error {
 	return nil
 }
 
-func (s *Searcher) verifyScanIssuePDFTIFFPairs(path string) apperr.Error {
+func (s *Searcher) verifyScanIssuePDFTIFFPairs(issue *schema.Issue) {
 	var tiffFiles, pdfFiles []string
 	var err error
 
-	tiffFiles, err = fileutil.FindIf(path, func(i os.FileInfo) bool {
+	tiffFiles, err = fileutil.FindIf(issue.Location, func(i os.FileInfo) bool {
 		return tiffFilenameRegex.MatchString(i.Name())
 	})
 	if err == nil {
-		pdfFiles, err = fileutil.FindIf(path, func(i os.FileInfo) bool {
+		pdfFiles, err = fileutil.FindIf(issue.Location, func(i os.FileInfo) bool {
 			return pdfFilenameRegex.MatchString(i.Name())
 		})
 	}
 
 	if err != nil {
-		return apperr.Errorf("unable to scan %q for PDF / TIFF files: %s", path, err)
+		issue.ErrReadFailure(err)
+		return
 	}
 
 	if len(tiffFiles) == 0 {
-		return apperr.Errorf("no TIFF files in %q", path)
+		issue.ErrFolderContents("one or more TIFF files must be present")
+		return
 	}
 
 	if len(tiffFiles) != len(pdfFiles) {
-		return apperr.Errorf("PDF/TIFF files don't match in %q", path)
+		issue.ErrFolderContents("PDF/TIFF files don't match")
+		return
 	}
 
 	sort.Strings(tiffFiles)
@@ -156,9 +157,8 @@ func (s *Searcher) verifyScanIssuePDFTIFFPairs(path string) apperr.Error {
 		var pdfParts = strings.Split(pdf, ".")
 		var tiffParts = strings.Split(tiff, ".")
 		if pdfParts[0] != tiffParts[0] {
-			return apperr.Errorf("PDF/TIFF files don't match (index %d / pdf %q / tiff %q) in %q", i, pdf, tiff, path)
+			issue.ErrFolderContents(fmt.Sprintf("PDF/TIFF files don't match (index %d / pdf %q / tiff %q)", i, pdf, tiff))
+			return
 		}
 	}
-
-	return nil
 }

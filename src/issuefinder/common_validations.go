@@ -16,7 +16,7 @@ import (
 //   drops off its various metadata files)
 func (s *Searcher) verifyIssueFiles(issue *schema.Issue, allowedExtensions []string) {
 	if len(issue.Files) == 0 {
-		issue.AddError(apperr.New("no issue files found"))
+		issue.ErrNoFiles()
 		return
 	}
 
