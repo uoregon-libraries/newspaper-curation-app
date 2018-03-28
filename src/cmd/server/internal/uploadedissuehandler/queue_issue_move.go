@@ -63,7 +63,6 @@ func queueIssueMove(i *Issue) (ok bool, status string) {
 		}
 	}
 
-	i.scanModifiedTime()
 	if i.IsDangerouslyNew() {
 		return false, fmt.Sprintf("The requested issue has been modified too "+
 			"recently to be queued.  We currently require an issue to be untouched "+

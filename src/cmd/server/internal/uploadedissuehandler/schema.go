@@ -7,14 +7,12 @@ import (
 	"html/template"
 	"issuesearch"
 	"jobs"
-	"os"
 
 	"path/filepath"
 	"schema"
 	"strings"
 	"time"
 
-	"github.com/uoregon-libraries/gopkg/fileutil"
 	"github.com/uoregon-libraries/gopkg/logger"
 	"github.com/uoregon-libraries/gopkg/pdf"
 )
@@ -97,7 +95,6 @@ func (t *Title) appendSchemaIssue(i *schema.Issue) *Issue {
 	var issue = &Issue{Issue: i, Slug: i.DateEdition(), Title: t}
 	issue.decorateFiles(i.Files)
 	issue.decorateExternalErrors()
-	issue.scanModifiedTime()
 	t.Issues = append(t.Issues, issue)
 	t.IssueLookup[issue.Slug] = issue
 
@@ -130,7 +127,6 @@ type Issue struct {
 	QueueInfo  template.HTML    // Informational message from the queue process, if any
 	Files      []*File          // List of files
 	FileLookup map[string]*File // Lookup for finding a File by its filename / slug
-	Modified   time.Time        // When this issue's most recent file was modified
 }
 
 func (i *Issue) decorateFiles(fileList []*schema.File) {
@@ -138,34 +134,6 @@ func (i *Issue) decorateFiles(fileList []*schema.File) {
 	i.FileLookup = make(map[string]*File)
 	for _, f := range fileList {
 		i.appendSchemaFile(f)
-	}
-}
-
-// scanModifiedTime forcibly pulls stats from the filesystem for the issue
-// directory as well as every file to be sure we get real-time information if
-// files are changed between cache refreshes.
-func (i *Issue) scanModifiedTime() {
-	var info, err = os.Stat(i.Location)
-	if err != nil {
-		logger.Errorf("Unable to stat %q: %s", i.Location, err)
-		i.Modified = time.Now()
-		return
-	}
-	i.Modified = info.ModTime()
-
-	var files []os.FileInfo
-	files, err = fileutil.Readdir(i.Location)
-	if err != nil {
-		logger.Errorf("Unable to read dir %q: %s", i.Location, err)
-		i.Modified = time.Now()
-		return
-	}
-
-	for _, file := range files {
-		var mod = file.ModTime()
-		if i.Modified.Before(mod) {
-			i.Modified = mod
-		}
 	}
 }
 
@@ -266,14 +234,14 @@ func (i *Issue) decoratePriorJobLogs() {
 // IsNew tells the presentation if the issue is fairly new, which can be
 // important for some publishers who upload over several days
 func (i *Issue) IsNew() bool {
-	return time.Since(i.Modified) < time.Hour*24*DaysIssueConsideredNew
+	return time.Since(i.LastModified()) < time.Hour*24*DaysIssueConsideredNew
 }
 
 // IsDangerouslyNew on the other hand tells us if the issue is so new that
 // we're not okay with manual queueing even with a warning, because it's just
 // not safe!
 func (i *Issue) IsDangerouslyNew() bool {
-	return time.Since(i.Modified) < time.Hour*24*DaysIssueConsideredDangerous
+	return time.Since(i.LastModified()) < time.Hour*24*DaysIssueConsideredDangerous
 }
 
 // Link returns a link for this title
