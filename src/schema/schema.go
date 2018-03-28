@@ -327,7 +327,7 @@ func (i *Issue) WorkflowIdentification() string {
 // has an error
 func (i *Issue) AddError(err apperr.Error) {
 	i.Errors = append(i.Errors, err)
-	if i.Title != nil {
+	if err.Propagate() && i.Title != nil {
 		i.Title.AddChildError()
 	}
 }
@@ -373,5 +373,7 @@ type File struct {
 // children has an error
 func (f *File) AddError(err apperr.Error) {
 	f.Errors = append(f.Errors, err)
-	f.Issue.AddChildError()
+	if err.Propagate() {
+		f.Issue.AddChildError()
+	}
 }
