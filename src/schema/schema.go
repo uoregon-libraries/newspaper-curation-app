@@ -157,8 +157,8 @@ func (t *Title) AddError(err apperr.Error) {
 	t.Errors = append(t.Errors, err)
 }
 
-// AddChildError notes that this title has at least one issue with errors
-func (t *Title) AddChildError() {
+// addChildError notes that this title has at least one issue with errors
+func (t *Title) addChildError() {
 	if t.hasChildErrors {
 		return
 	}
@@ -328,15 +328,15 @@ func (i *Issue) WorkflowIdentification() string {
 func (i *Issue) AddError(err apperr.Error) {
 	i.Errors = append(i.Errors, err)
 	if err.Propagate() && i.Title != nil {
-		i.Title.AddChildError()
+		i.Title.addChildError()
 	}
 }
 
-// AddChildError sets a flag to let us know this issue has a child with an
+// addChildError sets a flag to let us know this issue has a child with an
 // error.  If this is the first time a child has reported an error, we store an
 // error on the issue itself so we can inform users just once instead of once
 // per error.
-func (i *Issue) AddChildError() {
+func (i *Issue) addChildError() {
 	if i.hasChildErrors == true {
 		return
 	}
@@ -374,6 +374,6 @@ type File struct {
 func (f *File) AddError(err apperr.Error) {
 	f.Errors = append(f.Errors, err)
 	if err.Propagate() {
-		f.Issue.AddChildError()
+		f.Issue.addChildError()
 	}
 }
