@@ -26,23 +26,26 @@ const DaysIssueConsideredDangerous = 2
 // DaysIssueConsideredDangerous has elapsed
 const DaysIssueConsideredNew = 14
 
-// An HTMLError implements apperr.Error but is meant to be displayed raw
-// instead of escaped
-type HTMLError struct {
-	*apperr.BaseError
-}
-
-// errorHTML returns the error text, escaped if not an HTMLError
+// errorHTML returns the error text - usually just err.Message(), but some
+// errors (okay, just one for now) need more details, including HTML output
 func errorHTML(err apperr.Error) template.HTML {
-	var msg = err.Message()
-	if _, ok := err.(*HTMLError); !ok {
-		return template.HTML(template.HTMLEscapeString(msg))
+	var msg = template.HTMLEscapeString(err.Message())
+	switch v := err.(type) {
+	case schema.DuplicateIssueError:
+		// The location is the JSON we get from the web scanner, so we have to trim
+		// ".json" off the end.  We could have the web view follow the JSON link to
+		// get the unquestionably correct URL to the issue, but that would add tens
+		// of thousands of unnecessary web hits.
+		var d = v.Dupe
+		nonJSONURL = d.Location[:len(d.Location)-5]
+		msg += fmt.Sprintf(`: <a href="%s">%s, %s</a>`, nonJSONURL, d.Title.Name, d.RawDate)
 	}
+
 	return template.HTML(msg)
 }
 
-// errorHTML returns the errors joined together, with all non-HTMLError
-// instances' messages escaped for use in HTML
+// errorHTML returns the errors joined together, using errorHTML to let each
+// error be displayed appropriately
 func errorListHTML(list apperr.List) template.HTML {
 	var sList = make([]string, len(list))
 	for i, err := range list {
@@ -163,16 +166,9 @@ func (i *Issue) decorateDupeErrors() {
 
 	var watcherIssues = watcher.Scanner.LookupIssues(key)
 	for _, wi := range watcherIssues {
-		if wi.WorkflowStep == i.WorkflowStep {
-			continue
+		if wi.WorkflowStep != i.WorkflowStep {
+			i.ErrDuped(wi)
 		}
-
-		var errstr = fmt.Sprintf("likely duplicate of %s", wi.WorkflowIdentification())
-		if wi.WorkflowStep == schema.WSInProduction {
-			errstr = fmt.Sprintf(`likely duplicate of a live issue: <a href="%s">%s, %s</a>`,
-				wi.Location[:len(wi.Location)-5], wi.Title.Name, wi.RawDate)
-		}
-		i.AddError(&HTMLError{BaseError: &apperr.BaseError{ErrorString: errstr}})
 	}
 }
 
