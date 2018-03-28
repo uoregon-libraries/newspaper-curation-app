@@ -1,7 +1,6 @@
 package issuewatcher
 
 import (
-	"apperr"
 	"config"
 	"fmt"
 	"issuefinder"
@@ -93,19 +92,6 @@ func (s *Scanner) LookupIssues(key *issuesearch.Key) []*schema.Issue {
 	return s.Lookup.Issues(key)
 }
 
-// duplicateIssueError returns an error that describes the duplication
-func duplicateIssueError(canonical *schema.Issue) apperr.Error {
-	switch canonical.WorkflowStep {
-	case schema.WSInProduction:
-		return apperr.Errorf("duplicates a live issue in the batch %q", canonical.Batch.Fullname())
-
-	case schema.WSReadyForBatching, schema.WSReadyForMETSXML:
-		return apperr.Errorf("duplicates an issue currently being prepped for batching")
-	}
-
-	return apperr.Errorf("duplicates an existing issue")
-}
-
 // Scan calls all the individual find* functions for the myriad of ways we
 // store issue information in the various locations (dependent on what's been
 // enabled).  The Scanner's issuefinder is replaced only after successful
@@ -142,7 +128,7 @@ func (s *Scanner) Scan() error {
 			var k = issue.Key()
 			var ci = canonIssues[k]
 			if ci != nil {
-				issue.AddError(duplicateIssueError(ci))
+				issue.ErrDuped(ci)
 				continue
 			}
 
@@ -164,7 +150,7 @@ func (s *Scanner) Scan() error {
 			var k = issue.Key()
 			var ci = canonIssues[k]
 			if ci != nil {
-				issue.AddError(duplicateIssueError(ci))
+				issue.ErrDuped(ci)
 			}
 		}
 	}
@@ -178,7 +164,7 @@ func (s *Scanner) Scan() error {
 			var k = issue.Key()
 			var ci = canonIssues[k]
 			if ci != nil {
-				issue.AddError(duplicateIssueError(ci))
+				issue.ErrDuped(ci)
 			}
 		}
 	}
