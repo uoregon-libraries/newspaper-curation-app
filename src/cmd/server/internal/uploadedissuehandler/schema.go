@@ -285,10 +285,6 @@ type File struct {
 	*schema.File
 	Issue *Issue
 	Slug  string
-
-	// hasScannedPDFDPIs is used to avoid double-scanning the same file, since
-	// the per-issue cost for this is fairly high
-	hasScannedPDFDPIs bool
 }
 
 // Link returns a link for this title
@@ -326,16 +322,11 @@ func (f *File) ValidateDPI() {
 	if strings.ToUpper(filepath.Ext(f.Name)) != ".PDF" {
 		return
 	}
-	if f.hasScannedPDFDPIs {
-		return
-	}
 
 	var err = f.validDPI()
 	if err != nil {
 		f.AddError(err)
 	}
-
-	f.hasScannedPDFDPIs = true
 }
 
 // HasErrors reports true if this file has any errors
