@@ -21,9 +21,9 @@ func (e BaseError) Error() string {
 	return e.ErrorString
 }
 
-// Message on the base error structure just reprints the error string
+// Message on the base error structure just delegates to Error()
 func (e BaseError) Message() string {
-	return e.ErrorString
+	return e.Error()
 }
 
 // List simplifies places where we need multiple errors
