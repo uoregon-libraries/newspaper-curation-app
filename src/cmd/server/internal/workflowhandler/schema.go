@@ -4,7 +4,6 @@ import (
 	"db"
 	"fmt"
 	"html/template"
-	"issuesearch"
 	"user"
 
 	"path"
@@ -225,7 +224,7 @@ func (i *Issue) ValidateMetadata() {
 
 	// Now check for live dupes - given we're generating a search key from a real
 	// issue, we can safely ignore the ParseSearchKey error
-	var key, _ = issuesearch.ParseSearchKey(i.si.Key())
+	var key, _ = schema.ParseSearchKey(i.si.Key())
 	var schemaIssues = watcher.Scanner.LookupIssues(key)
 	for _, issue := range schemaIssues {
 		if issue.WorkflowStep == schema.WSInProduction {

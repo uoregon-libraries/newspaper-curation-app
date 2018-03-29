@@ -1,12 +1,11 @@
-package issuesearch
+package schema
 
 import (
-	"schema"
 	"sync"
 )
 
 // IssueMap links a textual issue key to one or more Issue objects
-type IssueMap map[string]schema.IssueList
+type IssueMap map[string]IssueList
 
 // Lookup aggregates issue lists to create very granularly searchable data
 type Lookup struct {
@@ -43,7 +42,7 @@ func NewLookup() *Lookup {
 }
 
 // Populate stores the given list of issues in the various maps
-func (l *Lookup) Populate(issues schema.IssueList) {
+func (l *Lookup) Populate(issues IssueList) {
 	l.Lock()
 	defer l.Unlock()
 	for _, issue := range issues {
@@ -53,7 +52,7 @@ func (l *Lookup) Populate(issues schema.IssueList) {
 
 // cacheIssueLookup shortcuts the process of getting an issue's key and storing
 // issue data in the various caches
-func (l *Lookup) cacheIssueLookup(i *schema.Issue) {
+func (l *Lookup) cacheIssueLookup(i *Issue) {
 	var k = i.Key()
 
 	if i.Title == nil {
@@ -80,26 +79,26 @@ func (l *Lookup) cacheIssueLookup(i *schema.Issue) {
 	l.IssueNoYear[k] = append(l.IssueNoYear[k], i)
 }
 
-// getLookupForKey returns the appropriate issue map to use when looking up
+// getLookup returns the appropriate issue map to use when looking up
 // issues using the given key
 func (l *Lookup) getLookup(k *Key) IssueMap {
-	if k.year == 0 {
+	if k.Year == 0 {
 		return l.IssueNoYear
 	}
-	if k.month == 0 {
+	if k.Month == 0 {
 		return l.IssueNoMonth
 	}
-	if k.day == 0 {
+	if k.Day == 0 {
 		return l.IssueNoDay
 	}
-	if k.ed == 0 {
+	if k.Ed == 0 {
 		return l.IssueNoEdition
 	}
 	return l.Issue
 }
 
 // Issues returns the list of issues which match the given search key
-func (l *Lookup) Issues(k *Key) schema.IssueList {
+func (l *Lookup) Issues(k *Key) IssueList {
 	l.RLock()
 	defer l.RUnlock()
 

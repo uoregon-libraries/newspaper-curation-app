@@ -4,7 +4,6 @@ import (
 	"config"
 	"fmt"
 	"issuefinder"
-	"issuesearch"
 	"schema"
 )
 
@@ -18,7 +17,7 @@ type Scanner struct {
 	ScanUpload          string
 	PDFUpload           string
 	PDFBatchMARCOrgCode string
-	Lookup              *issuesearch.Lookup
+	Lookup              *schema.Lookup
 	CanonIssues         map[string]*schema.Issue
 
 	skipweb  bool
@@ -88,7 +87,7 @@ func (s *Scanner) Duplicate() *Scanner {
 }
 
 // LookupIssues returns a list of schema Issues for the give search key
-func (s *Scanner) LookupIssues(key *issuesearch.Key) []*schema.Issue {
+func (s *Scanner) LookupIssues(key *schema.Key) []*schema.Issue {
 	return s.Lookup.Issues(key)
 }
 
@@ -173,7 +172,7 @@ func (s *Scanner) Scan() error {
 	f.Aggregate()
 
 	// Create a new lookup using the new finder's data
-	s.Lookup = issuesearch.NewLookup()
+	s.Lookup = schema.NewLookup()
 	s.Lookup.Populate(f.Issues)
 	s.Finder = f
 

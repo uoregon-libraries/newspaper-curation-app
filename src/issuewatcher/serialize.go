@@ -2,8 +2,8 @@ package issuewatcher
 
 import (
 	"issuefinder"
-	"issuesearch"
 	"path/filepath"
+	"schema"
 
 	"github.com/uoregon-libraries/gopkg/fileutil"
 )
@@ -29,7 +29,7 @@ func (s *Scanner) Deserialize() error {
 			return err
 		}
 		s.Finder = finder
-		s.Lookup = issuesearch.NewLookup()
+		s.Lookup = schema.NewLookup()
 		s.Lookup.Populate(s.Finder.Issues)
 	}
 	return nil

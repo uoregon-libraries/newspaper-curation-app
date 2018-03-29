@@ -5,7 +5,6 @@ import (
 	"db"
 	"fmt"
 	"html/template"
-	"issuesearch"
 	"jobs"
 
 	"path/filepath"
@@ -156,7 +155,7 @@ func (i *Issue) decorateExternalErrors() {
 
 // decorateDupeErrors adds errors to the issue if we find the same key in the global watcher
 func (i *Issue) decorateDupeErrors() {
-	var key, err = issuesearch.ParseSearchKey(i.Key())
+	var key, err = schema.ParseSearchKey(i.Key())
 	// This shouldn't be able to happen, but if it does the best we can do is log
 	// it and skip dupe checking; better than panicking in the lookup below
 	if err != nil {
