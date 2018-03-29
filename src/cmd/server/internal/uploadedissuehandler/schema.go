@@ -97,7 +97,8 @@ func (t *Title) decorateIssues(issueList []*schema.Issue) {
 func (t *Title) appendSchemaIssue(i *schema.Issue) *Issue {
 	var issue = &Issue{Issue: i, Slug: i.DateEdition(), Title: t}
 	issue.decorateFiles(i.Files)
-	issue.decorateExternalErrors()
+	issue.decoratePriorJobLogs()
+	issue.ValidateFast()
 	t.Issues = append(t.Issues, issue)
 	t.IssueLookup[issue.Slug] = issue
 
@@ -125,11 +126,13 @@ func (t *Title) Link() template.HTML {
 // Issue wraps a schema.Issue for web presentation
 type Issue struct {
 	*schema.Issue
-	Slug       string           // Short, URL-friendly identifier for an issue
-	Title      *Title           // Title to which this issue belongs
-	QueueInfo  template.HTML    // Informational message from the queue process, if any
-	Files      []*File          // List of files
-	FileLookup map[string]*File // Lookup for finding a File by its filename / slug
+	Slug          string           // Short, URL-friendly identifier for an issue
+	Title         *Title           // Title to which this issue belongs
+	QueueInfo     template.HTML    // Informational message from the queue process, if any
+	Files         []*File          // List of files
+	FileLookup    map[string]*File // Lookup for finding a File by its filename / slug
+	validatedFast bool             // true if we checked the "fast" validations already
+	validatedAll  bool             // true if we checked all validations already
 }
 
 func (i *Issue) decorateFiles(fileList []*schema.File) {
@@ -145,31 +148,6 @@ func (i *Issue) appendSchemaFile(f *schema.File) {
 	var pdf = &File{File: f, Slug: slug, Issue: i}
 	i.Files = append(i.Files, pdf)
 	i.FileLookup[pdf.Slug] = pdf
-}
-
-// decorateExternalErrors checks for external problems we don't detect when
-// just scanning the issue directories and files
-func (i *Issue) decorateExternalErrors() {
-	i.decorateDupeErrors()
-	i.decoratePriorJobLogs()
-}
-
-// decorateDupeErrors adds errors to the issue if we find the same key in the global watcher
-func (i *Issue) decorateDupeErrors() {
-	var key, err = schema.ParseSearchKey(i.Key())
-	// This shouldn't be able to happen, but if it does the best we can do is log
-	// it and skip dupe checking; better than panicking in the lookup below
-	if err != nil {
-		logger.Errorf("Invalid issue key %q", i.Key())
-		return
-	}
-
-	var watcherIssues = watcher.Scanner.LookupIssues(key)
-	for _, wi := range watcherIssues {
-		if wi.WorkflowStep != i.WorkflowStep {
-			i.ErrDuped(wi)
-		}
-	}
 }
 
 // decoratePriorJobLogs adds information to issues that have old failed jobs.
@@ -233,11 +211,50 @@ func (i *Issue) IsNew() bool {
 	return time.Since(i.LastModified()) < time.Hour*24*DaysIssueConsideredNew
 }
 
-// IsDangerouslyNew on the other hand tells us if the issue is so new that
-// we're not okay with manual queueing even with a warning, because it's just
-// not safe!
-func (i *Issue) IsDangerouslyNew() bool {
-	return time.Since(i.LastModified()) < time.Hour*24*DaysIssueConsideredDangerous
+// ValidateFast runs all the upload-queue-specific validations except those
+// which are slow (namely the DPI check).  This should be run against every
+// issue being considered for queue.
+func (i *Issue) ValidateFast() {
+	// Only validate if we haven't already done so *or* if we had no prior
+	// errors.  Validating twice when we had no errors previously can be useful
+	// for getting real-time checks.  This is good!  But validating twice when we
+	// already have errors can end up giving us duplicate errors.  This... is not
+	// quite so good.
+	if i.validatedFast && len(i.Errors) > 0 {
+		return
+	}
+	i.validatedFast = true
+
+	var hrs = 24 * DaysIssueConsideredDangerous
+	if time.Since(i.LastModified()) < time.Hour*time.Duration(hrs) {
+		i.ErrTooNew(hrs)
+	}
+
+	i.CheckDupes(watcher.Scanner.Lookup)
+}
+
+// ValidateAll runs through all upload-queue-specific validations and adds
+// errors which are only relevant to these issues.  This validator runs the DPI
+// check and is therefore fairly slow for scanned uploads.  It shouldn't be run
+// in bulk across a large number of issues.
+func (i *Issue) ValidateAll() {
+	i.ValidateFast()
+
+	// Only validate if we haven't already done so *or* if we had no prior
+	// errors.  Validating twice when we had no errors previously can be useful
+	// for getting real-time checks.  This is good!  But validating twice when we
+	// already have errors can end up giving us duplicate errors.  This... is not
+	// quite so good.
+	if i.validatedAll && len(i.Errors) > 0 {
+		return
+	}
+	i.validatedAll = true
+
+	if i.WorkflowStep == schema.WSScan {
+		for _, f := range i.Files {
+			f.ValidateDPI()
+		}
+	}
 }
 
 // Link returns a link for this title
@@ -249,17 +266,6 @@ func (i *Issue) Link() template.HTML {
 // WorkflowPath returns the path to perform a workflow action against this issue
 func (i *Issue) WorkflowPath(action string) string {
 	return IssueWorkflowPath(i.Title.Slug, i.Slug, action)
-}
-
-// ScanPDFImageDPIs runs through each PDF in the issue and checks it for DPI
-// validity.  The results are cached to avoid this very costly process running
-// too many times, and this should only be called when a user is viewing a
-// single issue.  Running it on all issues' files for every scan could be
-// disastrous.
-func (i *Issue) ScanPDFImageDPIs() {
-	for _, f := range i.Files {
-		f.ValidateDPI()
-	}
 }
 
 // HasErrors reports true if this issue has any errors - due to the way
@@ -313,12 +319,9 @@ func (f *File) validDPI() apperr.Error {
 }
 
 // ValidateDPI adds errors to the file if its embedded images' DPIs are not
-// within 15% of the configured scanner DPI.  This does nothing if the file's
-// issue isn't scanned or if the file isn't a PDF.
+// within 15% of the configured scanner DPI.  This does nothing if the file
+// isn't a pdf.
 func (f *File) ValidateDPI() {
-	if f.Issue.Title.Type != TitleTypeScanned {
-		return
-	}
 	if strings.ToUpper(filepath.Ext(f.Name)) != ".PDF" {
 		return
 	}

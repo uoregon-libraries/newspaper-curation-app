@@ -377,6 +377,24 @@ func (i *Issue) LastModified() time.Time {
 	return modified
 }
 
+// CheckDupes centralizes the logic for seeing if an issue has a duplicate in a
+// given lookup, adding a duplication error if so
+func (i *Issue) CheckDupes(lookup *Lookup) {
+	// Get a search key for this issue.  If the issue key is invalid, that
+	// probably means a bad upload, and so dupe-checking doesn't really matter
+	var sKey, err = ParseSearchKey(i.Key())
+	if err != nil {
+		return
+	}
+
+	for _, i2 := range lookup.Issues(sKey) {
+		if i2.Location == i.Location && i2.WorkflowStep == i.WorkflowStep {
+			continue
+		}
+		i.ErrDuped(i2)
+	}
+}
+
 // IssueList groups a bunch of issues together
 type IssueList []*Issue
 
