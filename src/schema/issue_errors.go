@@ -7,24 +7,26 @@ import (
 	"path/filepath"
 )
 
-// issueError implements apperr.Error and forms the base for all issue errors
-type issueError struct {
-	i    *Issue
-	err  string
-	msg  string
-	prop bool
+// IssueError implements apperr.Error and forms the base for all issue errors
+type IssueError struct {
+	Err  string
+	Msg  string
+	Prop bool
 }
 
-func (e *issueError) Error() string {
-	return e.err
+func (e *IssueError) Error() string {
+	return e.Err
 }
 
-func (e *issueError) Message() string {
-	return e.msg
+// Message returns the long, human-friendly error message
+func (e *IssueError) Message() string {
+	return e.Msg
 }
 
-func (e *issueError) Propagate() bool {
-	return e.prop
+// Propagate returns whether the error should flag the object's parent as also
+// having an error
+func (e *IssueError) Propagate() bool {
+	return e.Prop
 }
 
 // errorIdent gives a consistent way to describe an issue which may not have a
@@ -35,67 +37,70 @@ func (i *Issue) errorIdent() string {
 
 // ErrNoFiles adds an error stating the issue folder is empty
 func (i *Issue) ErrNoFiles() {
-	i.addError(&issueError{
-		i:    i,
-		err:  "no files",
-		msg:  i.errorIdent() + " has no files",
-		prop: true,
+	i.addError(&IssueError{
+		Err:  "no files",
+		Msg:  i.errorIdent() + " has no files",
+		Prop: true,
 	})
 }
 
 // ErrInvalidFolderName adds an Error for invalid folder name formats
 func (i *Issue) ErrInvalidFolderName(extra string) {
-	i.addError(&issueError{
-		i:    i,
-		err:  "invalid folder name",
-		msg:  i.errorIdent() + " has an invalid folder name: " + extra,
-		prop: true,
+	i.addError(&IssueError{
+		Err:  "invalid folder name",
+		Msg:  i.errorIdent() + " has an invalid folder name: " + extra,
+		Prop: true,
 	})
 }
 
 // ErrReadFailure indicates the issue's folder wasn't able to be read
 func (i *Issue) ErrReadFailure(err error) {
-	i.addError(&issueError{
-		i:    i,
-		err:  err.Error(),
-		msg:  i.errorIdent() + " wasn't able to be scanned for files: " + err.Error(),
-		prop: true,
+	i.addError(&IssueError{
+		Err:  err.Error(),
+		Msg:  i.errorIdent() + " wasn't able to be scanned for files: " + err.Error(),
+		Prop: true,
 	})
 }
 
 // ErrFolderContents tells us the issue's files on disk are invalid in some way
 func (i *Issue) ErrFolderContents(extra string) {
-	i.addError(&issueError{
-		i:    i,
-		err:  "missing / invalid folder contents",
-		msg:  i.errorIdent() + " doesn't have valid files: " + extra,
-		prop: true,
+	i.addError(&IssueError{
+		Err:  "missing / invalid folder contents",
+		Msg:  i.errorIdent() + " doesn't have valid files: " + extra,
+		Prop: true,
+	})
+}
+
+// ErrTooNew adds an error for issues which are too new to be processed.  hours
+// should be set to the minimum number of hours an issue should be untouched
+// before being considered "safe".
+func (i *Issue) ErrTooNew(hours int) {
+	i.addError(&IssueError{
+		Err:  "too new for processing",
+		Msg:  fmt.Sprintf("%s must be left alone for a minimum of %d hours before processing", i.errorIdent(), hours),
+		Prop: false,
 	})
 }
 
 // DuplicateIssueError implements apperr.Error for duped issue situations, and
 // holds onto extra information for figuring out how to handle the dupe
 type DuplicateIssueError struct {
-	Issue *Issue
-	Dupe  *Issue
-}
-
-// Error returns the simple explanation: this issue is duplicated somewhere
-func (e *DuplicateIssueError) Error() string {
-	return "duplicate of another issue"
-}
-
-// Message returns more detailed information about the duplicate
-func (e *DuplicateIssueError) Message() string {
-	return fmt.Sprintf("%s is a likely duplicate of %s", e.Issue.errorIdent(), e.Dupe.WorkflowIdentification())
-}
-
-// Propagate returns true for duped issues, as these errors are fairly severe
-func (e *DuplicateIssueError) Propagate() bool {
-	return true
+	*IssueError
+	Location string
+	Name     string
+	IsLive   bool
 }
 
 // ErrDuped flags this issue with a DuplicateIssueError
 func (i *Issue) ErrDuped(dupe *Issue) {
-	i.addError(&DuplicateIssueError{Issue: i, Dupe: dupe})
+	i.addError(&DuplicateIssueError{
+		IssueError: &IssueError{
+			Err:  "duplicate of another issue",
+			Msg:  fmt.Sprintf("%s is a likely duplicate of %s", i.errorIdent(), dupe.WorkflowIdentification()),
+			Prop: true,
+		},
+		Location: dupe.Location,
+		Name:     dupe.Title.Name + ", " + dupe.RawDate,
+		IsLive:   dupe.WorkflowStep == WSInProduction,
+	})
 }
