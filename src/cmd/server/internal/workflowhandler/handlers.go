@@ -5,12 +5,12 @@ import (
 	"config"
 	"db"
 	"fmt"
+	"html/template"
 	"issuewatcher"
 	"jobs"
-	"schema"
-
 	"net/http"
 	"path"
+	"schema"
 	"user"
 	"web/tmpl"
 
@@ -114,7 +114,7 @@ func homeHandler(resp *responder.Responder, i *Issue) {
 	var issues, err = db.FindIssuesOnDesk(uid)
 	if err != nil {
 		logger.Errorf("Unable to find issues on user %d's desk: %s", uid, err)
-		resp.Vars.Alert = fmt.Sprintf("Unable to search for issues; contact support or try again later.")
+		resp.Vars.Alert = template.HTML(fmt.Sprintf("Unable to search for issues; contact support or try again later."))
 		resp.Render(responder.Empty)
 		return
 	}
@@ -124,7 +124,7 @@ func homeHandler(resp *responder.Responder, i *Issue) {
 	issues, err = db.FindAvailableIssuesByWorkflowStep(schema.WSReadyForMetadataEntry)
 	if err != nil {
 		logger.Errorf("Unable to find issues needing metadata entry: %s", err)
-		resp.Vars.Alert = fmt.Sprintf("Unable to search for issues; contact support or try again later.")
+		resp.Vars.Alert = template.HTML(fmt.Sprintf("Unable to search for issues; contact support or try again later."))
 		resp.Writer.WriteHeader(http.StatusInternalServerError)
 		resp.Render(responder.Empty)
 		return
@@ -136,7 +136,7 @@ func homeHandler(resp *responder.Responder, i *Issue) {
 	issues, err = db.FindAvailableIssuesByWorkflowStep(schema.WSAwaitingMetadataReview)
 	if err != nil {
 		logger.Errorf("Unable to find issues needing metadata review: %s", err)
-		resp.Vars.Alert = fmt.Sprintf("Unable to search for issues; contact support or try again later.")
+		resp.Vars.Alert = template.HTML(fmt.Sprintf("Unable to search for issues; contact support or try again later."))
 		resp.Writer.WriteHeader(http.StatusInternalServerError)
 		resp.Render(responder.Empty)
 		return
@@ -159,7 +159,7 @@ func claimIssueHandler(resp *responder.Responder, i *Issue) {
 	var err = i.Save()
 	if err != nil {
 		logger.Errorf("Unable to claim issue id %d by user %s: %s", i.ID, resp.Vars.User.Login, err)
-		resp.Vars.Alert = "Unable to claim issue; contact support or try again later."
+		resp.Vars.Alert = template.HTML("Unable to claim issue; contact support or try again later.")
 		resp.Writer.WriteHeader(http.StatusInternalServerError)
 		resp.Render(responder.Empty)
 		return
@@ -176,7 +176,7 @@ func unclaimIssueHandler(resp *responder.Responder, i *Issue) {
 	var err = i.Save()
 	if err != nil {
 		logger.Errorf("Unable to unclaim issue id %d for user %s: %s", i.ID, resp.Vars.User.Login, err)
-		resp.Vars.Alert = "Unable to unclaim issue; contact support or try again later."
+		resp.Vars.Alert = template.HTML("Unable to unclaim issue; contact support or try again later.")
 		resp.Writer.WriteHeader(http.StatusInternalServerError)
 		resp.Render(responder.Empty)
 		return
@@ -235,7 +235,7 @@ func saveErrorHandler(resp *responder.Responder, i *Issue) {
 	var err = i.Save()
 	if err != nil {
 		logger.Errorf("Unable to save issue id %d's error (POST: %#v): %s", i.ID, resp.Request.Form, err)
-		resp.Vars.Alert = "Error trying to save error report (no, the irony is not lost on us); try again or contact support"
+		resp.Vars.Alert = template.HTML("Error trying to save error report (no, the irony is not lost on us); try again or contact support")
 		resp.Writer.WriteHeader(http.StatusInternalServerError)
 		resp.Render(responder.Empty)
 		return
@@ -258,7 +258,7 @@ func approveIssueMetadataHandler(resp *responder.Responder, i *Issue) {
 	if err != nil {
 		logger.Errorf("Unable to save issue id %d's workflow approval by user %d (POST: %#v): %s",
 			i.ID, resp.Vars.User.ID, resp.Request.Form, err)
-		resp.Vars.Alert = "Error trying to approve the issue; try again or contact support"
+		resp.Vars.Alert = template.HTML("Error trying to approve the issue; try again or contact support")
 		resp.Writer.WriteHeader(http.StatusInternalServerError)
 		resp.Render(responder.Empty)
 		return
@@ -294,7 +294,7 @@ func rejectIssueMetadataHandler(resp *responder.Responder, i *Issue) {
 	var err = i.Save()
 	if err != nil {
 		logger.Errorf("Unable to save issue id %d's rejection notes (POST: %#v): %s", i.ID, resp.Request.Form, err)
-		resp.Vars.Alert = "Error trying to save rejection notes; try again or contact support"
+		resp.Vars.Alert = template.HTML("Error trying to save rejection notes; try again or contact support")
 		resp.Writer.WriteHeader(http.StatusInternalServerError)
 		resp.Render(responder.Empty)
 		return
