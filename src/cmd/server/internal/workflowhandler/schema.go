@@ -1,6 +1,7 @@
 package workflowhandler
 
 import (
+	"apperr"
 	"db"
 	"fmt"
 	"html/template"
@@ -16,13 +17,15 @@ import (
 	"github.com/uoregon-libraries/gopkg/logger"
 )
 
-// Issue wraps the DB issue, and decorates them with display-friendly functions
+// Issue wraps the DB issue, and decorates it with display-friendly functions
+// and dataentry-specific errors
 type Issue struct {
 	*db.Issue
 	MetadataAuthorLogin string
 
-	si     *schema.Issue
-	errors []string
+	si *schema.Issue
+
+	validationErrors []apperr.Error
 }
 
 func wrapDBIssue(dbIssue *db.Issue) *Issue {
@@ -160,21 +163,21 @@ func (i *Issue) Path(actionPath string) string {
 	return path.Join(basePath, strconv.Itoa(i.ID), actionPath)
 }
 
-// ValidateMetadata checks all fields for validity and sets up i.Errors to
-// describe anything wrong
+// ValidateMetadata checks all fields for validity and sets up
+// i.validationErrors to describe anything wrong
 func (i *Issue) ValidateMetadata() {
-	i.errors = nil
-	var addError = func(msg string) { i.errors = append(i.errors, msg) }
+	i.validationErrors = nil
+	var addError = func(err apperr.Error) { i.validationErrors = append(i.validationErrors, err) }
 	var validDate = func(dtString, fieldName string) {
 		var dtLayout = "2006-01-02"
 		var dt, err = time.Parse(dtLayout, dtString)
 		if err != nil || dt.Format(dtLayout) != dtString {
-			addError(fmt.Sprintf("%q is not a valid date", fieldName))
+			addError(apperr.Errorf("%q is not a valid date", fieldName))
 		}
 	}
 	var notBlank = func(val, fieldName string) {
 		if val == "" {
-			addError(fmt.Sprintf("%q cannot be blank", fieldName))
+			addError(apperr.Errorf("%q cannot be blank", fieldName))
 		}
 	}
 
@@ -183,13 +186,13 @@ func (i *Issue) ValidateMetadata() {
 	notBlank(i.Volume, "Volume Number")
 	notBlank(i.Issue.Issue, "Issue Number")
 	if i.Edition == 0 {
-		addError(`"Edition Number" cannot be zero`)
+		addError(apperr.New(`"Edition Number" cannot be zero`))
 	}
 
 	var numLabels = len(i.PageLabels)
 	var numFiles = len(i.JP2Files())
 	if numLabels < numFiles {
-		addError("Page labeling isn't completed")
+		addError(apperr.New("Page labeling isn't completed"))
 	}
 	if numLabels > numFiles {
 		logger.Errorf("There are %d page labels, but only %d JP2 files!", numLabels, numFiles)
@@ -197,45 +200,26 @@ func (i *Issue) ValidateMetadata() {
 			logger.Debugf("  - %q", jp2)
 		}
 
-		addError("Unknown error in page labeling; contact support or try again")
+		addError(apperr.New("Unknown error in page labeling; contact support or try again"))
 	}
 
-	// Generate a new schema issue to test for dupes - database errors can be
-	// logged, but not reported back to the user, so there's a lot of "log +
-	// return" sadness below
+	// Generate a new schema issue to test for dupes
 	var err error
 	i.si, err = i.Issue.SchemaIssue()
 	if err != nil {
 		logger.Criticalf("Unable to recreate schema.Issue for issue id %d: %s", i.ID, err)
+		addError(apperr.New("Unknown error checking issue validity; contact support or try again"))
 		return
 	}
 
-	var list []*db.Issue
-	list, err = db.FindIssuesByKey(i.si.Key())
-	if err != nil {
-		logger.Criticalf("Unable to search for database issue %q: %s", i.si.Key(), err)
-		return
-	}
-	for _, issue := range list {
-		if issue.ID != i.ID {
-			addError("This is a duplicate of another issue; double-check the date and edition number, or contact support")
-		}
-	}
-
-	// Now check for live dupes - given we're generating a search key from a real
-	// issue, we can safely ignore the ParseSearchKey error
-	var key, _ = schema.ParseSearchKey(i.si.Key())
-	var schemaIssues = watcher.Scanner.LookupIssues(key)
-	for _, issue := range schemaIssues {
-		if issue.WorkflowStep == schema.WSInProduction {
-			addError(fmt.Sprintf("This is a duplicate of a live issue (in %q); "+
-				"double-check the date and edition number, or contact support",
-				issue.Batch.Fullname()))
-		}
+	// Check dupes on the schema issue, then pull those errors onto our validations
+	i.si.CheckDupes(watcher.Scanner.Lookup)
+	for _, err := range i.si.Errors {
+		addError(err)
 	}
 }
 
 // Errors returns validation errors
-func (i *Issue) Errors() []string {
-	return i.errors
+func (i *Issue) Errors() []apperr.Error {
+	return i.validationErrors
 }
