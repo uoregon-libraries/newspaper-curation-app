@@ -3,6 +3,7 @@ package workflowhandler
 import (
 	"apperr"
 	"db"
+	"encoding/base64"
 	"fmt"
 	"html/template"
 	"user"
@@ -16,6 +17,18 @@ import (
 
 	"github.com/uoregon-libraries/gopkg/logger"
 )
+
+// encodedErrors creates a base64 alert for validation errors to be displayed
+// after attempting to queue an issue or approve an issue
+func encodedErrors(action string, errors []apperr.Error) string {
+	var errorstr string
+	for _, err := range errors {
+		errorstr += "<li>" + err.Message() + "</li>"
+	}
+	var alertMsg = "Cannot " + action + " this issue:<ul>" + errorstr + "</ul>"
+	var encodedAlert = "base64" + base64.StdEncoding.EncodeToString([]byte(alertMsg))
+	return encodedAlert
+}
 
 // Issue wraps the DB issue, and decorates it with display-friendly functions
 // and dataentry-specific errors

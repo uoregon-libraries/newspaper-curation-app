@@ -2,7 +2,6 @@ package workflowhandler
 
 import (
 	"cmd/server/internal/responder"
-	"encoding/base64"
 	"fmt"
 	"schema"
 
@@ -103,13 +102,7 @@ func saveQueue(resp *responder.Responder, i *Issue, changes map[string]string) {
 	// If there are errors, let the user know and redisplay the form; we still
 	// keep the saved changes in order to avoid losing metadata
 	if len(i.Errors()) > 0 {
-		var errors string
-		for _, err := range i.Errors() {
-			errors += "<li>" + err + "</li>"
-		}
-		var alertMsg = "Cannot queue this issue:<ul>" + errors + "</ul>"
-		var encodedAlert = "base64" + base64.StdEncoding.EncodeToString([]byte(alertMsg))
-		http.SetCookie(resp.Writer, &http.Cookie{Name: "Alert", Value: encodedAlert, Path: "/"})
+		http.SetCookie(resp.Writer, &http.Cookie{Name: "Alert", Value: encodedErrors("queue", i.Errors()), Path: "/"})
 		http.Redirect(resp.Writer, resp.Request, i.Path("metadata"), http.StatusFound)
 		return
 	}
