@@ -4,7 +4,6 @@ package schema
 
 import (
 	"fmt"
-	"path/filepath"
 )
 
 // IssueError implements apperr.Error and forms the base for all issue errors
@@ -29,17 +28,11 @@ func (e *IssueError) Propagate() bool {
 	return e.Prop
 }
 
-// errorIdent gives a consistent way to describe an issue which may not have a
-// key that means the same thing as its actual location on disk
-func (i *Issue) errorIdent() string {
-	return fmt.Sprintf("%s issue %s/%s", i.WorkflowStep, i.Title.LCCN, filepath.Base(i.Location))
-}
-
 // ErrNoFiles adds an error stating the issue folder is empty
 func (i *Issue) ErrNoFiles() {
 	i.addError(&IssueError{
 		Err:  "no files",
-		Msg:  i.errorIdent() + " has no files",
+		Msg:  "Issue has no files",
 		Prop: true,
 	})
 }
@@ -48,7 +41,7 @@ func (i *Issue) ErrNoFiles() {
 func (i *Issue) ErrInvalidFolderName(extra string) {
 	i.addError(&IssueError{
 		Err:  "invalid folder name",
-		Msg:  i.errorIdent() + " has an invalid folder name: " + extra,
+		Msg:  "Issue has an invalid folder name: " + extra,
 		Prop: true,
 	})
 }
@@ -57,7 +50,7 @@ func (i *Issue) ErrInvalidFolderName(extra string) {
 func (i *Issue) ErrReadFailure(err error) {
 	i.addError(&IssueError{
 		Err:  err.Error(),
-		Msg:  i.errorIdent() + " wasn't able to be scanned for files: " + err.Error(),
+		Msg:  "Issue wasn't able to be scanned for files: " + err.Error(),
 		Prop: true,
 	})
 }
@@ -66,7 +59,7 @@ func (i *Issue) ErrReadFailure(err error) {
 func (i *Issue) ErrFolderContents(extra string) {
 	i.addError(&IssueError{
 		Err:  "missing / invalid folder contents",
-		Msg:  i.errorIdent() + " doesn't have valid files: " + extra,
+		Msg:  "Issue's folder contents are invalid: " + extra,
 		Prop: true,
 	})
 }
@@ -77,7 +70,7 @@ func (i *Issue) ErrFolderContents(extra string) {
 func (i *Issue) ErrTooNew(hours int) {
 	i.addError(&IssueError{
 		Err:  "too new for processing",
-		Msg:  fmt.Sprintf("%s must be left alone for a minimum of %d hours before processing", i.errorIdent(), hours),
+		Msg:  fmt.Sprintf("Issue was modified too recently; it must be left alone for a minimum of %d hours before processing", hours),
 		Prop: false,
 	})
 }
@@ -96,7 +89,7 @@ func (i *Issue) ErrDuped(dupe *Issue) {
 	i.addError(&DuplicateIssueError{
 		IssueError: &IssueError{
 			Err:  "duplicate of another issue",
-			Msg:  fmt.Sprintf("%s is a likely duplicate of %s", i.errorIdent(), dupe.WorkflowIdentification()),
+			Msg:  fmt.Sprintf("This issue appears to be a duplicate of %s", dupe.WorkflowIdentification()),
 			Prop: true,
 		},
 		Location: dupe.Location,
