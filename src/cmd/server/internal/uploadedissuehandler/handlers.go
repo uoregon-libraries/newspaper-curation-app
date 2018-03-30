@@ -1,8 +1,10 @@
 package uploadedissuehandler
 
 import (
+	"apperr"
 	"cmd/server/internal/responder"
 	"config"
+	"encoding/base64"
 	"fmt"
 	"issuewatcher"
 
@@ -109,7 +111,7 @@ func IssueWorkflowHandler(w http.ResponseWriter, req *http.Request) {
 			searcher.RemoveIssue(r.issue)
 		} else {
 			cname = "Alert"
-			msg = err.Message()
+			msg = encodedError(err)
 		}
 
 		r.Audit("queue", fmt.Sprintf("Issue from %q, success: %#v", r.issue.Location, err == nil))
@@ -119,4 +121,9 @@ func IssueWorkflowHandler(w http.ResponseWriter, req *http.Request) {
 	default:
 		r.Error(http.StatusBadRequest, "")
 	}
+}
+
+// encodedError creates a base64 alert for errors to be displayed
+func encodedError(err apperr.Error) string {
+	return "base64" + base64.StdEncoding.EncodeToString([]byte(err.Message()))
 }
