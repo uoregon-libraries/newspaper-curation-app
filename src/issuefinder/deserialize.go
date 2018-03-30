@@ -17,7 +17,11 @@ func Deserialize(filename string) (*Finder, error) {
 		return nil, fmt.Errorf("unable to read file %#v: %s", filename, err)
 	}
 
+	// Register all the error types
 	gob.Register(&apperr.BaseError{})
+	gob.Register(&schema.IssueError{})
+	gob.Register(&schema.DuplicateIssueError{})
+
 	var dec = gob.NewDecoder(bytes.NewBuffer(content))
 	var cf cachedFinder
 	err = dec.Decode(&cf)

@@ -2,11 +2,10 @@ package uploadedissuehandler
 
 import (
 	"cmd/server/internal/responder"
-	"mime"
-
 	"fmt"
+	"html/template"
 	"io"
-
+	"mime"
 	"net/http"
 	"os"
 	"path/filepath"
@@ -34,7 +33,7 @@ func FileHandler(w http.ResponseWriter, req *http.Request) {
 	var path = file.Location
 	var ext = strings.ToUpper(filepath.Ext(path))
 	if ext != ".PDF" && ext != ".TIF" && ext != ".TIFF" {
-		r.Vars.Alert = fmt.Sprintf("%q is not a valid file type (PDF/TIFF only), and cannot be viewed", path)
+		r.Vars.Alert = template.HTML(fmt.Sprintf("%q is not a valid file type (PDF/TIFF only), and cannot be viewed", path))
 		r.Render(responder.Empty)
 		return
 	}

@@ -5,16 +5,13 @@ import (
 	"db"
 	"fmt"
 	"html/template"
-	"issuesearch"
 	"jobs"
-	"os"
 
 	"path/filepath"
 	"schema"
 	"strings"
 	"time"
 
-	"github.com/uoregon-libraries/gopkg/fileutil"
 	"github.com/uoregon-libraries/gopkg/logger"
 	"github.com/uoregon-libraries/gopkg/pdf"
 )
@@ -28,23 +25,27 @@ const DaysIssueConsideredDangerous = 2
 // DaysIssueConsideredDangerous has elapsed
 const DaysIssueConsideredNew = 14
 
-// An HTMLError implements apperr.Error but is meant to be displayed raw
-// instead of escaped
-type HTMLError struct {
-	*apperr.BaseError
-}
-
-// errorHTML returns the error text, escaped if not an HTMLError
+// errorHTML returns the error text - usually just err.Message(), but some
+// errors (okay, just one for now) need more details, including HTML output
 func errorHTML(err apperr.Error) template.HTML {
-	var msg = err.Message()
-	if _, ok := err.(*HTMLError); !ok {
-		return template.HTML(template.HTMLEscapeString(msg))
+	var msg = template.HTMLEscapeString(err.Message())
+	switch v := err.(type) {
+	case *schema.DuplicateIssueError:
+		if v.IsLive {
+			// The location is the JSON we get from the web scanner, so we have to trim
+			// ".json" off the end.  We could have the web view follow the JSON link to
+			// get the unquestionably correct URL to the issue, but that would add tens
+			// of thousands of unnecessary web hits.
+			var nonJSONURL = v.Location[:len(v.Location)-5]
+			msg += fmt.Sprintf(`: <a href="%s">%s</a>`, nonJSONURL, v.Name)
+		}
 	}
+
 	return template.HTML(msg)
 }
 
-// errorHTML returns the errors joined together, with all non-HTMLError
-// instances' messages escaped for use in HTML
+// errorHTML returns the errors joined together, using errorHTML to let each
+// error be displayed appropriately
 func errorListHTML(list apperr.List) template.HTML {
 	var sList = make([]string, len(list))
 	for i, err := range list {
@@ -96,8 +97,8 @@ func (t *Title) decorateIssues(issueList []*schema.Issue) {
 func (t *Title) appendSchemaIssue(i *schema.Issue) *Issue {
 	var issue = &Issue{Issue: i, Slug: i.DateEdition(), Title: t}
 	issue.decorateFiles(i.Files)
-	issue.decorateExternalErrors()
-	issue.scanModifiedTime()
+	issue.decoratePriorJobLogs()
+	issue.ValidateFast()
 	t.Issues = append(t.Issues, issue)
 	t.IssueLookup[issue.Slug] = issue
 
@@ -125,12 +126,13 @@ func (t *Title) Link() template.HTML {
 // Issue wraps a schema.Issue for web presentation
 type Issue struct {
 	*schema.Issue
-	Slug       string           // Short, URL-friendly identifier for an issue
-	Title      *Title           // Title to which this issue belongs
-	QueueInfo  template.HTML    // Informational message from the queue process, if any
-	Files      []*File          // List of files
-	FileLookup map[string]*File // Lookup for finding a File by its filename / slug
-	Modified   time.Time        // When this issue's most recent file was modified
+	Slug          string           // Short, URL-friendly identifier for an issue
+	Title         *Title           // Title to which this issue belongs
+	QueueInfo     template.HTML    // Informational message from the queue process, if any
+	Files         []*File          // List of files
+	FileLookup    map[string]*File // Lookup for finding a File by its filename / slug
+	validatedFast bool             // true if we checked the "fast" validations already
+	validatedAll  bool             // true if we checked all validations already
 }
 
 func (i *Issue) decorateFiles(fileList []*schema.File) {
@@ -141,71 +143,11 @@ func (i *Issue) decorateFiles(fileList []*schema.File) {
 	}
 }
 
-// scanModifiedTime forcibly pulls stats from the filesystem for the issue
-// directory as well as every file to be sure we get real-time information if
-// files are changed between cache refreshes.
-func (i *Issue) scanModifiedTime() {
-	var info, err = os.Stat(i.Location)
-	if err != nil {
-		logger.Errorf("Unable to stat %q: %s", i.Location, err)
-		i.Modified = time.Now()
-		return
-	}
-	i.Modified = info.ModTime()
-
-	var files []os.FileInfo
-	files, err = fileutil.Readdir(i.Location)
-	if err != nil {
-		logger.Errorf("Unable to read dir %q: %s", i.Location, err)
-		i.Modified = time.Now()
-		return
-	}
-
-	for _, file := range files {
-		var mod = file.ModTime()
-		if i.Modified.Before(mod) {
-			i.Modified = mod
-		}
-	}
-}
-
 func (i *Issue) appendSchemaFile(f *schema.File) {
 	var slug = filepath.Base(f.Location)
 	var pdf = &File{File: f, Slug: slug, Issue: i}
 	i.Files = append(i.Files, pdf)
 	i.FileLookup[pdf.Slug] = pdf
-}
-
-// decorateExternalErrors checks for external problems we don't detect when
-// just scanning the issue directories and files
-func (i *Issue) decorateExternalErrors() {
-	i.decorateDupeErrors()
-	i.decoratePriorJobLogs()
-}
-
-// decorateDupeErrors adds errors to the issue if we find the same key in the global watcher
-func (i *Issue) decorateDupeErrors() {
-	var key, err = issuesearch.ParseSearchKey(i.Key())
-	// This shouldn't be able to happen, but if it does the best we can do is log
-	// it and skip dupe checking; better than panicking in the lookup below
-	if err != nil {
-		logger.Errorf("Invalid issue key %q", i.Key())
-		return
-	}
-
-	var watcherIssues = watcher.Scanner.LookupIssues(key)
-	for _, wi := range watcherIssues {
-		if wi.WorkflowStep == i.WorkflowStep {
-			continue
-		}
-
-		var errstr = fmt.Sprintf("likely duplicate of %s", wi.WorkflowIdentification())
-		if wi.WorkflowStep == schema.WSInProduction {
-			errstr = fmt.Sprintf(`likely duplicate of a live issue: <a href="%s">%s, %s</a>`,
-				wi.Location[:len(wi.Location)-5], wi.Title.Name, wi.RawDate)
-		}
-		i.AddError(&HTMLError{BaseError: &apperr.BaseError{ErrorString: errstr}})
-	}
 }
 
 // decoratePriorJobLogs adds information to issues that have old failed jobs.
@@ -266,14 +208,53 @@ func (i *Issue) decoratePriorJobLogs() {
 // IsNew tells the presentation if the issue is fairly new, which can be
 // important for some publishers who upload over several days
 func (i *Issue) IsNew() bool {
-	return time.Since(i.Modified) < time.Hour*24*DaysIssueConsideredNew
+	return time.Since(i.LastModified()) < time.Hour*24*DaysIssueConsideredNew
 }
 
-// IsDangerouslyNew on the other hand tells us if the issue is so new that
-// we're not okay with manual queueing even with a warning, because it's just
-// not safe!
-func (i *Issue) IsDangerouslyNew() bool {
-	return time.Since(i.Modified) < time.Hour*24*DaysIssueConsideredDangerous
+// ValidateFast runs all the upload-queue-specific validations except those
+// which are slow (namely the DPI check).  This should be run against every
+// issue being considered for queue.
+func (i *Issue) ValidateFast() {
+	// Only validate if we haven't already done so *or* if we had no prior
+	// errors.  Validating twice when we had no errors previously can be useful
+	// for getting real-time checks.  This is good!  But validating twice when we
+	// already have errors can end up giving us duplicate errors.  This... is not
+	// quite so good.
+	if i.validatedFast && len(i.Errors) > 0 {
+		return
+	}
+	i.validatedFast = true
+
+	var hrs = 24 * DaysIssueConsideredDangerous
+	if time.Since(i.LastModified()) < time.Hour*time.Duration(hrs) {
+		i.ErrTooNew(hrs)
+	}
+
+	i.CheckDupes(watcher.Scanner.Lookup)
+}
+
+// ValidateAll runs through all upload-queue-specific validations and adds
+// errors which are only relevant to these issues.  This validator runs the DPI
+// check and is therefore fairly slow for scanned uploads.  It shouldn't be run
+// in bulk across a large number of issues.
+func (i *Issue) ValidateAll() {
+	i.ValidateFast()
+
+	// Only validate if we haven't already done so *or* if we had no prior
+	// errors.  Validating twice when we had no errors previously can be useful
+	// for getting real-time checks.  This is good!  But validating twice when we
+	// already have errors can end up giving us duplicate errors.  This... is not
+	// quite so good.
+	if i.validatedAll && len(i.Errors) > 0 {
+		return
+	}
+	i.validatedAll = true
+
+	if i.WorkflowStep == schema.WSScan {
+		for _, f := range i.Files {
+			f.ValidateDPI()
+		}
+	}
 }
 
 // Link returns a link for this title
@@ -285,17 +266,6 @@ func (i *Issue) Link() template.HTML {
 // WorkflowPath returns the path to perform a workflow action against this issue
 func (i *Issue) WorkflowPath(action string) string {
 	return IssueWorkflowPath(i.Title.Slug, i.Slug, action)
-}
-
-// ScanPDFImageDPIs runs through each PDF in the issue and checks it for DPI
-// validity.  The results are cached to avoid this very costly process running
-// too many times, and this should only be called when a user is viewing a
-// single issue.  Running it on all issues' files for every scan could be
-// disastrous.
-func (i *Issue) ScanPDFImageDPIs() {
-	for _, f := range i.Files {
-		f.ValidateDPI()
-	}
 }
 
 // HasErrors reports true if this issue has any errors - due to the way
@@ -321,10 +291,6 @@ type File struct {
 	*schema.File
 	Issue *Issue
 	Slug  string
-
-	// hasScannedPDFDPIs is used to avoid double-scanning the same file, since
-	// the per-issue cost for this is fairly high
-	hasScannedPDFDPIs bool
 }
 
 // Link returns a link for this title
@@ -353,16 +319,10 @@ func (f *File) validDPI() apperr.Error {
 }
 
 // ValidateDPI adds errors to the file if its embedded images' DPIs are not
-// within 15% of the configured scanner DPI.  This does nothing if the file's
-// issue isn't scanned or if the file isn't a PDF.
+// within 15% of the configured scanner DPI.  This does nothing if the file
+// isn't a pdf.
 func (f *File) ValidateDPI() {
-	if f.Issue.Title.Type != TitleTypeScanned {
-		return
-	}
 	if strings.ToUpper(filepath.Ext(f.Name)) != ".PDF" {
-		return
-	}
-	if f.hasScannedPDFDPIs {
 		return
 	}
 
@@ -370,8 +330,6 @@ func (f *File) ValidateDPI() {
 	if err != nil {
 		f.AddError(err)
 	}
-
-	f.hasScannedPDFDPIs = true
 }
 
 // HasErrors reports true if this file has any errors

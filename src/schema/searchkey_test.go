@@ -1,4 +1,4 @@
-package issuesearch
+package schema
 
 import (
 	"fmt"
@@ -24,19 +24,19 @@ func expectKey(testName, ik, lccn string, year, month, day, edition int, t *test
 	}
 
 	var errors []string
-	if key.lccn != lccn {
+	if key.LCCN != lccn {
 		errors = append(errors, fmt.Sprintf("expected LCCN %#v", lccn))
 	}
-	if key.year != year {
+	if key.Year != year {
 		errors = append(errors, fmt.Sprintf("expected year %d", year))
 	}
-	if key.month != month {
+	if key.Month != month {
 		errors = append(errors, fmt.Sprintf("expected month %d", month))
 	}
-	if key.day != day {
+	if key.Day != day {
 		errors = append(errors, fmt.Sprintf("expected day %d", day))
 	}
-	if key.ed != edition {
+	if key.Ed != edition {
 		errors = append(errors, fmt.Sprintf("expected edition %d", edition))
 	}
 

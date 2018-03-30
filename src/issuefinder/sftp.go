@@ -1,7 +1,6 @@
 package issuefinder
 
 import (
-	"apperr"
 	"path/filepath"
 	"schema"
 	"strings"
@@ -55,7 +54,7 @@ func (s *Searcher) findSFTPIssuesForTitlePath(titlePath, orgCode string) error {
 		// A suffix of "-error" is a manually flagged error; we should keep an eye
 		// on these, but their contents can still be valuable
 		if strings.HasSuffix(base, "-error") {
-			issue.AddError(apperr.Errorf("manually flagged issue"))
+			issue.ErrInvalidFolderName("manually flagged issue")
 			base = base[:len(base)-6]
 		}
 
@@ -63,7 +62,7 @@ func (s *Searcher) findSFTPIssuesForTitlePath(titlePath, orgCode string) error {
 		// Invalid issue directory names will have an invalid date, but still need
 		// to be visible in the issue queue
 		if err != nil {
-			issue.AddError(apperr.Errorf("issue folder date format, %q, is invalid", filepath.Base(issuePath)))
+			issue.ErrInvalidFolderName("bad date format")
 		}
 
 		// Finish the issue metadata and do final validations

@@ -11,7 +11,6 @@ import (
 	"db"
 	"fmt"
 	"io/ioutil"
-	"issuesearch"
 	"issuewatcher"
 	"schema"
 	"strings"
@@ -20,7 +19,7 @@ import (
 	"github.com/uoregon-libraries/gopkg/logger"
 )
 
-var issueSearchKeys []*issuesearch.Key
+var issueSearchKeys []*schema.Key
 
 var conf *config.Config
 
@@ -72,10 +71,17 @@ func getOpts() {
 
 		// Just to be nice, let's strip dashes so it's easier to paste in dates
 		ik = strings.Replace(ik, "-", "", -1)
-		var searchKey, err = issuesearch.ParseSearchKey(ik)
+		var searchKey, err = schema.ParseSearchKey(ik)
 		if err != nil {
 			c.UsageFail("Invalid issue search key %#v: %s", ik, err)
 		}
+
+		// See if a title's directory was given and convert to LCCN if so
+		var t, _ = db.FindTitleByDirectory(searchKey.LCCN)
+		if t != nil {
+			searchKey.LCCN = t.LCCN
+		}
+
 		issueSearchKeys = append(issueSearchKeys, searchKey)
 	}
 

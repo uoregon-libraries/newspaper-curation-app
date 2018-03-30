@@ -108,8 +108,12 @@ func (f *Finder) Serialize(outFilename string) error {
 	}
 	defer os.Remove(tmpfile.Name())
 
-	// Attempt to encode to said file, returning the error if that doesn't work
+	// Register all the error types
 	gob.Register(&apperr.BaseError{})
+	gob.Register(&schema.IssueError{})
+	gob.Register(&schema.DuplicateIssueError{})
+
+	// Attempt to encode to said file, returning the error if that doesn't work
 	var enc = gob.NewEncoder(tmpfile)
 	err = enc.Encode(f.cachedFinder())
 	if err != nil {

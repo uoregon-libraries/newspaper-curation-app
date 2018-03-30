@@ -1,11 +1,9 @@
 package issuewatcher
 
 import (
-	"apperr"
 	"config"
 	"fmt"
 	"issuefinder"
-	"issuesearch"
 	"schema"
 )
 
@@ -19,7 +17,7 @@ type Scanner struct {
 	ScanUpload          string
 	PDFUpload           string
 	PDFBatchMARCOrgCode string
-	Lookup              *issuesearch.Lookup
+	Lookup              *schema.Lookup
 	CanonIssues         map[string]*schema.Issue
 
 	skipweb  bool
@@ -89,21 +87,8 @@ func (s *Scanner) Duplicate() *Scanner {
 }
 
 // LookupIssues returns a list of schema Issues for the give search key
-func (s *Scanner) LookupIssues(key *issuesearch.Key) []*schema.Issue {
+func (s *Scanner) LookupIssues(key *schema.Key) []*schema.Issue {
 	return s.Lookup.Issues(key)
-}
-
-// duplicateIssueError returns an error that describes the duplication
-func duplicateIssueError(canonical *schema.Issue) apperr.Error {
-	switch canonical.WorkflowStep {
-	case schema.WSInProduction:
-		return apperr.Errorf("duplicates a live issue in the batch %q", canonical.Batch.Fullname())
-
-	case schema.WSReadyForBatching, schema.WSReadyForMETSXML:
-		return apperr.Errorf("duplicates an issue currently being prepped for batching")
-	}
-
-	return apperr.Errorf("duplicates an existing issue")
 }
 
 // Scan calls all the individual find* functions for the myriad of ways we
@@ -113,82 +98,47 @@ func duplicateIssueError(canonical *schema.Issue) apperr.Error {
 func (s *Scanner) Scan() error {
 	var f = issuefinder.New()
 	var err error
-	var srch *issuefinder.Searcher
-	var canonIssues = make(map[string]*schema.Issue)
 
 	if !s.skipweb {
-		// Web issues are first as they are live, and therefore always canonical.
-		// All issues anywhere else in the workflow that duplicate one of these is
-		// unquestionably an error
-		srch, err = f.FindWebBatches(s.Webroot, s.Tempdir)
+		_, err = f.FindWebBatches(s.Webroot, s.Tempdir)
 		if err != nil {
 			return fmt.Errorf("unable to cache web batches: %s", err)
-		}
-		for _, issue := range srch.Issues {
-			canonIssues[issue.Key()] = issue
 		}
 	}
 
 	if !s.skipdb {
-		// In-process issues are trickier - we label those which are post-review as
-		// canonical, *unless* they're a dupe of a live issue, in which case they
-		// have to be given an error
-		srch, err = f.FindInProcessIssues()
+		_, err = f.FindInProcessIssues()
 		if err != nil {
 			return fmt.Errorf("unable to cache in-process issues: %s", err)
-		}
-		for _, issue := range srch.Issues {
-			// Check for dupes first
-			var k = issue.Key()
-			var ci = canonIssues[k]
-			if ci != nil {
-				issue.AddError(duplicateIssueError(ci))
-				continue
-			}
-
-			// If no dupe, we mark canonical if the issue is ready for batching
-			if issue.WorkflowStep == schema.WSReadyForBatching || issue.WorkflowStep == schema.WSReadyForMETSXML {
-				canonIssues[k] = issue
-			}
 		}
 	}
 
 	if !s.skipsftp {
-		// SFTP and scanned issues get errors if they're a dupe of anything we've
-		// labeled canonical to this point
-		srch, err = f.FindSFTPIssues(s.PDFUpload, s.PDFBatchMARCOrgCode)
+		_, err = f.FindSFTPIssues(s.PDFUpload, s.PDFBatchMARCOrgCode)
 		if err != nil {
 			return fmt.Errorf("unable to cache sftp issues: %s", err)
-		}
-		for _, issue := range srch.Issues {
-			var k = issue.Key()
-			var ci = canonIssues[k]
-			if ci != nil {
-				issue.AddError(duplicateIssueError(ci))
-			}
 		}
 	}
 
 	if !s.skipscan {
-		srch, err = f.FindScannedIssues(s.ScanUpload)
+		_, err = f.FindScannedIssues(s.ScanUpload)
 		if err != nil {
 			return fmt.Errorf("unable to cache scanned issues: %s", err)
 		}
-		for _, issue := range srch.Issues {
-			var k = issue.Key()
-			var ci = canonIssues[k]
-			if ci != nil {
-				issue.AddError(duplicateIssueError(ci))
-			}
+	}
+
+	// Create a new lookup using the new finder's data
+	s.Lookup = schema.NewLookup()
+	s.Lookup.Populate(f.Issues)
+
+	// If this is an "everything" scanner, we need to check all issues for dupes
+	if !s.skipweb && !s.skipdb && !s.skipsftp && !s.skipscan {
+		for _, i := range f.Issues {
+			i.CheckDupes(s.Lookup)
 		}
 	}
 
-	// Re-aggregate all data to get the new dupe errors we could now have
-	f.Aggregate()
-
-	// Create a new lookup using the new finder's data
-	s.Lookup = issuesearch.NewLookup()
-	s.Lookup.Populate(f.Issues)
+	// Swap out the finder
 	s.Finder = f
 
 	return nil

@@ -2,7 +2,6 @@ package uploadedissuehandler
 
 import (
 	"db"
-	"fmt"
 	"jobs"
 	"schema"
 
@@ -10,6 +9,12 @@ import (
 )
 
 func queueIssueMove(i *Issue) (ok bool, status string) {
+	// Make sure the issue is definitely valid
+	i.ValidateAll()
+	if len(i.Errors) > 0 {
+		return false, string(errorListHTML(i.Errors))
+	}
+
 	// Find a DB issue or create one
 	var dbi, err = db.FindIssueByKey(i.Key())
 	if err != nil {
@@ -61,14 +66,6 @@ func queueIssueMove(i *Issue) (ok bool, status string) {
 				i.Key(), dbi.ID, job.ID, job.Status)
 			return false, "Previous / broken job detected.  Contact the system administrator for help."
 		}
-	}
-
-	i.scanModifiedTime()
-	if i.IsDangerouslyNew() {
-		return false, fmt.Sprintf("The requested issue has been modified too "+
-			"recently to be queued.  We currently require an issue to be untouched "+
-			"for at least %d day(s) to be certain the files aren't going to change.",
-			DaysIssueConsideredDangerous)
 	}
 
 	// All's well - queue up the job

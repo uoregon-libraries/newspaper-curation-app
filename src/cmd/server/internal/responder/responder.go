@@ -6,6 +6,7 @@ package responder
 import (
 	"db"
 	"encoding/base64"
+	"html/template"
 
 	"net/http"
 	"time"
@@ -26,8 +27,8 @@ type PageVars struct {
 	Title   string
 	Version string
 	Webroot string
-	Alert   string
-	Info    string
+	Alert   template.HTML
+	Info    template.HTML
 	User    *user.User
 	Data    GenericVars
 }
@@ -61,11 +62,11 @@ func (r *Responder) Render(t *tmpl.Template) {
 	r.injectDefaultTemplateVars()
 	var cookie, err = r.Request.Cookie("Alert")
 	if err == nil && cookie.Value != "" {
-		r.Vars.Alert = cookie.Value
+		r.Vars.Alert = template.HTML(cookie.Value)
 		// TODO: This is such a horrible hack.  We need real session data management.
 		if len(r.Vars.Alert) > 6 && r.Vars.Alert[0:6] == "base64" {
-			var data, err = base64.StdEncoding.DecodeString(r.Vars.Alert[6:])
-			r.Vars.Alert = string(data)
+			var data, err = base64.StdEncoding.DecodeString(string(r.Vars.Alert[6:]))
+			r.Vars.Alert = template.HTML(string(data))
 			if err != nil {
 				r.Vars.Alert = ""
 			}
@@ -74,7 +75,7 @@ func (r *Responder) Render(t *tmpl.Template) {
 	}
 	cookie, err = r.Request.Cookie("Info")
 	if err == nil && cookie.Value != "" {
-		r.Vars.Info = cookie.Value
+		r.Vars.Info = template.HTML(cookie.Value)
 		http.SetCookie(r.Writer, &http.Cookie{Name: "Info", Value: "", Expires: time.Time{}, Path: "/"})
 	}
 
@@ -101,6 +102,6 @@ func (r *Responder) Error(status int, msg string) {
 	if msg == "" {
 		msg = http.StatusText(status)
 	}
-	r.Vars.Alert = msg
+	r.Vars.Alert = template.HTML(msg)
 	r.Render(Empty)
 }
