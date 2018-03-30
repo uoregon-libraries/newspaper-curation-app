@@ -101,16 +101,18 @@ func IssueWorkflowHandler(w http.ResponseWriter, req *http.Request) {
 
 	switch r.vars["action"] {
 	case "queue":
-		var ok, msg = queueIssueMove(r.issue)
-		var cname string
-		if ok {
+		var err = r.issue.Queue()
+		var cname, msg string
+		if err == nil {
 			cname = "Info"
+			msg = "Issue queued successfully"
 			searcher.RemoveIssue(r.issue)
 		} else {
 			cname = "Alert"
+			msg = err.Message()
 		}
 
-		r.Audit("queue", fmt.Sprintf("Issue from %q, success: %#v", r.issue.Location, ok))
+		r.Audit("queue", fmt.Sprintf("Issue from %q, success: %#v", r.issue.Location, err == nil))
 		http.SetCookie(w, &http.Cookie{Name: cname, Value: msg, Path: "/"})
 		http.Redirect(w, req, TitlePath(r.issue.Title.Slug), http.StatusFound)
 
