@@ -6,6 +6,7 @@ package schema
 import (
 	"apperr"
 	"fmt"
+	"math"
 	"os"
 	"path/filepath"
 	"sort"
@@ -378,7 +379,10 @@ func (i *Issue) LastModified() time.Time {
 }
 
 // CheckDupes centralizes the logic for seeing if an issue has a duplicate in a
-// given lookup, adding a duplication error if so
+// given lookup, adding a duplication error if there is a dupe and that dupe is
+// considered to be more "canonical" than this issue.  e.g., if there's an
+// issue in the metadata entry stage and another in the sftp upload, the upload
+// is considered the dupe, not the one in metadata entry.
 func (i *Issue) CheckDupes(lookup *Lookup) {
 	// Get a search key for this issue.  If the issue key is invalid, that
 	// probably means a bad upload, and so dupe-checking doesn't really matter
@@ -388,11 +392,56 @@ func (i *Issue) CheckDupes(lookup *Lookup) {
 	}
 
 	for _, i2 := range lookup.Issues(sKey) {
-		if i2.Location == i.Location && i2.WorkflowStep == i.WorkflowStep {
-			continue
+		if i.WorkflowStep.before(i2.WorkflowStep) {
+			i.ErrDuped(i2)
 		}
-		i.ErrDuped(i2)
 	}
+}
+
+// before tells us if wsa is logically before wsb in terms of issues flowing
+// through the system.  A step is before another if it represents data that's
+// less certain; e.g., an uploaded issue is completely unknown and is therefore
+// before all other steps, but a live issue is considered done and wouldn't be
+// before anything else.
+func (wsa WorkflowStep) before(wsb WorkflowStep) bool {
+	var stepOrder = map[WorkflowStep]int{
+		// Nil is before literally everything except another nil
+		WSNil: 0,
+
+		// The uploads come before anything that isn't another upload, or nil
+		WSSFTP: 1,
+		WSScan: 1,
+
+		// Awaiting processing is a meaningless step that just says something
+		// automated needs to happen.  Because of this we can't say where it should
+		// fit in the workflow.  We have to return *something*, so we just say this
+		// isn't "before" anything (other than live issues).  Once processing is
+		// complete, it'll have a meaningful step again, and at that point we'll be
+		// able to catch any problems.
+		WSAwaitingProcessing: 100,
+
+		// Awaiting page review is still fairly unknown, like uploads, and only comes
+		// after them to make it clear that a new upload shouldn't supercede a
+		// previous upload.  But this could cause false dupe flags if an old upload
+		// had the wrong folder name, so I could see a case for changing this to the
+		// same value as uploads.
+		WSAwaitingPageReview: 2,
+
+		WSReadyForMetadataEntry:  3,
+		WSAwaitingMetadataReview: 4,
+
+		// When an issue is waiting for METS XML, its metadata is in exactly the
+		// same state as when it's ready for batching, and no dupe checking occurs
+		// here anyway, so these are considered equal
+		WSReadyForMETSXML:  5,
+		WSReadyForBatching: 5,
+
+		// Let's just make sure in-production always comes after everything else,
+		// even the unknown awaiting-processing issues
+		WSInProduction: math.MaxInt32,
+	}
+
+	return stepOrder[wsa] < stepOrder[wsb]
 }
 
 // IssueList groups a bunch of issues together
