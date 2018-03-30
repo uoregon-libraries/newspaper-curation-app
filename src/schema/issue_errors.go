@@ -89,7 +89,7 @@ func (i *Issue) ErrDuped(dupe *Issue) {
 	i.addError(&DuplicateIssueError{
 		IssueError: &IssueError{
 			Err:  "duplicate of another issue",
-			Msg:  fmt.Sprintf("This issue appears to be a duplicate of %s", dupe.WorkflowIdentification()),
+			Msg:  fmt.Sprintf("This issue appears to be a duplicate (same LCCN, date, and edition) of %s", dupe.WorkflowIdentification()),
 			Prop: true,
 		},
 		Location: dupe.Location,
