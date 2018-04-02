@@ -160,7 +160,7 @@ func (q *batchQueue) currentQueue() (*issueQueue, bool) {
 // ok is false when there was nothing left to batch.
 func (q *batchQueue) NextBatch() (*db.Batch, bool) {
 	for moc, mq := range q.mocQueue {
-		logger.Debugf("%q queue has %d issues left", moc, mq.pages)
+		logger.Debugf("%q queue has %d pages left", moc, mq.pages)
 	}
 
 	var currentQ, ok = q.currentQueue()
