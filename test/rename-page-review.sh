@@ -1,7 +1,7 @@
 #!/bin/bash
 ./makemine.sh
 lastdir=""
-for file in $(find fakemount/page-review/ -name "*.pdf"); do
+for file in $(find fakemount/page-review/ -name "*.pdf" | sort); do
   dir=${file%/*}
   if [[ $dir != $lastdir ]]; then
     c=0
