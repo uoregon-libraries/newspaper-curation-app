@@ -6,6 +6,7 @@ import (
 	"fmt"
 	"html/template"
 	"jobs"
+	"uploads"
 
 	"path/filepath"
 	"schema"
@@ -13,12 +14,7 @@ import (
 	"time"
 
 	"github.com/uoregon-libraries/gopkg/logger"
-	"github.com/uoregon-libraries/gopkg/pdf"
 )
-
-// DaysIssueConsideredDangerous is how long we require an issue to be untouched
-// prior to anybody queueing it
-const DaysIssueConsideredDangerous = 2
 
 // DaysIssueConsideredNew is how long we warn users that the issue is new - but
 // it can be queued before that warning goes away so long as
@@ -95,8 +91,13 @@ func (t *Title) decorateIssues(issueList []*schema.Issue) {
 }
 
 func (t *Title) appendSchemaIssue(i *schema.Issue) *Issue {
-	var issue = &Issue{Issue: i, Slug: i.DateEdition(), Title: t}
-	issue.decorateFiles(i.Files)
+	var uIssue = uploads.New(i, watcher.Scanner, conf)
+	var issue = &Issue{
+		Issue: uIssue,
+		Slug:  i.DateEdition(),
+		Title: t,
+	}
+	issue.decorateFiles(uIssue.Files)
 	issue.decoratePriorJobLogs()
 	issue.ValidateFast()
 	t.Issues = append(t.Issues, issue)
@@ -123,31 +124,25 @@ func (t *Title) Link() template.HTML {
 	return template.HTML(fmt.Sprintf(`<a href="%s">%s</a>`, TitlePath(t.Slug), t.Name))
 }
 
-// Issue wraps a schema.Issue for web presentation
+// Issue wraps uploads.Issue for web presentation
 type Issue struct {
-	*schema.Issue
-	Slug          string           // Short, URL-friendly identifier for an issue
-	Title         *Title           // Title to which this issue belongs
-	QueueInfo     template.HTML    // Informational message from the queue process, if any
-	Files         []*File          // List of files
-	FileLookup    map[string]*File // Lookup for finding a File by its filename / slug
-	validatedFast bool             // true if we checked the "fast" validations already
-	validatedAll  bool             // true if we checked all validations already
+	*uploads.Issue
+	Slug       string           // Short, URL-friendly identifier for an issue
+	Title      *Title           // Title to which this issue belongs
+	QueueInfo  template.HTML    // Informational message from the queue process, if any
+	Files      []*File          // List of files
+	FileLookup map[string]*File // Lookup for finding a File by its filename / slug
 }
 
-func (i *Issue) decorateFiles(fileList []*schema.File) {
+func (i *Issue) decorateFiles(fileList []*uploads.File) {
 	i.Files = make([]*File, 0)
 	i.FileLookup = make(map[string]*File)
 	for _, f := range fileList {
-		i.appendSchemaFile(f)
+		var slug = filepath.Base(f.Location)
+		var pdf = &File{File: f, Slug: slug, Issue: i}
+		i.Files = append(i.Files, pdf)
+		i.FileLookup[pdf.Slug] = pdf
 	}
-}
-
-func (i *Issue) appendSchemaFile(f *schema.File) {
-	var slug = filepath.Base(f.Location)
-	var pdf = &File{File: f, Slug: slug, Issue: i}
-	i.Files = append(i.Files, pdf)
-	i.FileLookup[pdf.Slug] = pdf
 }
 
 // decoratePriorJobLogs adds information to issues that have old failed jobs.
@@ -211,52 +206,6 @@ func (i *Issue) IsNew() bool {
 	return time.Since(i.LastModified()) < time.Hour*24*DaysIssueConsideredNew
 }
 
-// ValidateFast runs all the upload-queue-specific validations except those
-// which are slow (namely the DPI check).  This should be run against every
-// issue being considered for queue.
-func (i *Issue) ValidateFast() {
-	// Only validate if we haven't already done so *or* if we had no prior
-	// errors.  Validating twice when we had no errors previously can be useful
-	// for getting real-time checks.  This is good!  But validating twice when we
-	// already have errors can end up giving us duplicate errors.  This... is not
-	// quite so good.
-	if i.validatedFast && len(i.Errors) > 0 {
-		return
-	}
-	i.validatedFast = true
-
-	var hrs = 24 * DaysIssueConsideredDangerous
-	if time.Since(i.LastModified()) < time.Hour*time.Duration(hrs) {
-		i.ErrTooNew(hrs)
-	}
-
-	i.CheckDupes(watcher.Scanner.Lookup)
-}
-
-// ValidateAll runs through all upload-queue-specific validations and adds
-// errors which are only relevant to these issues.  This validator runs the DPI
-// check and is therefore fairly slow for scanned uploads.  It shouldn't be run
-// in bulk across a large number of issues.
-func (i *Issue) ValidateAll() {
-	i.ValidateFast()
-
-	// Only validate if we haven't already done so *or* if we had no prior
-	// errors.  Validating twice when we had no errors previously can be useful
-	// for getting real-time checks.  This is good!  But validating twice when we
-	// already have errors can end up giving us duplicate errors.  This... is not
-	// quite so good.
-	if i.validatedAll && len(i.Errors) > 0 {
-		return
-	}
-	i.validatedAll = true
-
-	if i.WorkflowStep == schema.WSScan {
-		for _, f := range i.Files {
-			f.ValidateDPI()
-		}
-	}
-}
-
 // Link returns a link for this title
 func (i *Issue) Link() template.HTML {
 	var path = IssuePath(i.Title.Slug, i.Slug)
@@ -288,7 +237,7 @@ func (i *Issue) ChildErrors() (n int) {
 
 // File wraps a schema.File for web presentation
 type File struct {
-	*schema.File
+	*uploads.File
 	Issue *Issue
 	Slug  string
 }
@@ -297,39 +246,6 @@ type File struct {
 func (f *File) Link() template.HTML {
 	var path = FilePath(f.Issue.Title.Slug, f.Issue.Slug, f.Slug)
 	return template.HTML(fmt.Sprintf(`<a href="%s">%s</a>`, path, f.Slug))
-}
-
-// validDPI returns whether a file has a valid DPI for PDFs in scanned issues
-func (f *File) validDPI() apperr.Error {
-	var maxDPI = float64(conf.ScannedPDFDPI) * 1.15
-	var minDPI = float64(conf.ScannedPDFDPI) * 0.85
-
-	var dpis = pdf.ImageDPIs(f.Location)
-	if len(dpis) == 0 {
-		return apperr.Errorf("contains no images or is invalid PDF")
-	}
-
-	for _, dpi := range dpis {
-		if dpi.X > maxDPI || dpi.Y > maxDPI || dpi.X < minDPI || dpi.Y < minDPI {
-			return apperr.Errorf("has an image with a bad DPI (%g x %g; expected DPI %d)", dpi.X, dpi.Y, conf.ScannedPDFDPI)
-		}
-	}
-
-	return nil
-}
-
-// ValidateDPI adds errors to the file if its embedded images' DPIs are not
-// within 15% of the configured scanner DPI.  This does nothing if the file
-// isn't a pdf.
-func (f *File) ValidateDPI() {
-	if strings.ToUpper(filepath.Ext(f.Name)) != ".PDF" {
-		return
-	}
-
-	var err = f.validDPI()
-	if err != nil {
-		f.AddError(err)
-	}
 }
 
 // HasErrors reports true if this file has any errors
