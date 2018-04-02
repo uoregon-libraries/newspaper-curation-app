@@ -51,12 +51,14 @@ sudo systemctl stop nca-httpd
 sudo systemctl stop nca-workers
 
 echo Removing the old stuff
-sudo rm -f /usr/local/nca/server
-sudo rm -f /usr/local/nca/run-jobs
-sudo rm -f /usr/local/nca/nca-httpd.service
-sudo rm -f /usr/local/nca/nca-workers.service
-sudo rm /usr/local/nca/static/ -rf
-sudo rm /usr/local/nca/templates/ -rf
+ncadir=/usr/local/nca
+tmpdir=/tmp/nca-$(date +"%s")
+sudo mv $ncadir $tmpdir
+sudo mkdir $ncadir
+sudo mv $tmpdir/settings* $ncadir/
+sudo find $ncadir/ -mindepth 1 -maxdepth 1 -type f -not -name "settings*" -exec rm -f {} \;
+sudo rm $ncadir/templates/ -rf
+sudo rm $ncadir/static/ -rf
 
 echo Removing the cache
 sudo rm /tmp/nca/finder.cache -f
@@ -66,13 +68,14 @@ goose --env production up
 
 echo Copying in the new stuff
 src=$(pwd)
-dst="/usr/local/nca"
-sudo cp $src/bin/server $dst/
-sudo cp $src/bin/run-jobs $dst/
-sudo cp $src/rhel7/nca-httpd.service $dst/
-sudo cp $src/rhel7/nca-workers.service $dst/
-sudo cp -r $src/templates/ $dst/
-sudo cp -r $src/static/ $dst/
+sudo cp $src/bin/server $ncadir/
+sudo cp $src/bin/run-jobs $ncadir/
+sudo cp $src/bin/queue-batches $ncadir/
+sudo cp $src/bin/bulk-issue-queue $ncadir/
+sudo cp $src/rhel7/nca-httpd.service $ncadir/
+sudo cp $src/rhel7/nca-workers.service $ncadir/
+sudo cp -r $src/templates/ $ncadir/
+sudo cp -r $src/static/ $ncadir/
 
 echo Doing a daemon reload and starting the service
 sudo systemctl daemon-reload
@@ -82,3 +85,4 @@ sudo systemctl start nca-httpd
 echo Waiting 30 seconds for NCA to finish scanning issues
 sleep 30
 sudo systemctl start httpd
+sudo rm -rf $tmpdir
