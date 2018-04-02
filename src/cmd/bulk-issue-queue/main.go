@@ -8,6 +8,7 @@ import (
 	"issuewatcher"
 	"os"
 	"schema"
+	"strings"
 	"uploads"
 
 	"github.com/uoregon-libraries/gopkg/logger"
@@ -112,7 +113,11 @@ func main() {
 		logger.Infof("Looking at issue %q", i.Key())
 		i.ValidateAll()
 		if len(i.Errors) != 0 {
-			logger.Warnf("Skipping %q: %#v", i.Key(), i.Errors)
+			var errorList []string
+			for _, e := range i.Errors {
+				errorList = append(errorList, e.Message())
+			}
+			logger.Warnf("Skipping %q: %s", i.Key(), strings.Join(errorList, "; "))
 			continue
 		}
 
