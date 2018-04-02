@@ -173,7 +173,7 @@ func (q *batchQueue) NextBatch() (*db.Batch, bool) {
 	if smallQ.pages < q.minPages {
 		if !smallQ.longWait {
 			logger.Infof("Not creating a batch for %q: too few pages (%d)", q.currentMOC, smallQ.pages)
-			return nil, false
+			return nil, true
 		}
 		logger.Infof("Small batch being pushed due to age of longest-waiting issue")
 	}

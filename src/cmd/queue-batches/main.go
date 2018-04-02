@@ -44,6 +44,10 @@ func main() {
 			break
 		}
 
+		if batch == nil {
+			return
+		}
+
 		var issues, err = batch.Issues()
 		if err != nil {
 			// No idea what this could mean other than maybe an SQL typo
