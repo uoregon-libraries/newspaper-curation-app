@@ -45,7 +45,7 @@ func main() {
 		}
 
 		if batch == nil {
-			return
+			continue
 		}
 
 		var issues, err = batch.Issues()
