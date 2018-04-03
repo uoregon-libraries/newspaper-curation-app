@@ -13,7 +13,7 @@ import (
 	"github.com/uoregon-libraries/gopkg/fileutil"
 )
 
-var allowedFilesRegex = regexp.MustCompile(`(?i:^[0-9]{4}.(pdf|jp2|xml|tiff?))`)
+var allowedFilesRegex = regexp.MustCompile(`(?i:^([0-9]{4}.(pdf|jp2|xml|tiff?))|[0-9]{10}.xml)`)
 var pdfFilenameRegex = regexp.MustCompile(`(?i:^[0-9]{4}.pdf)`)
 var tiffFilenameRegex = regexp.MustCompile(`(?i:^[0-9]{4}.tiff?)`)
 
