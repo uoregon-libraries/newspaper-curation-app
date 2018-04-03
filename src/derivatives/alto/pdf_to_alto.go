@@ -2,6 +2,7 @@ package alto
 
 import (
 	"bytes"
+	"encoding/xml"
 
 	"fmt"
 	"io/ioutil"
@@ -129,7 +130,10 @@ func (t *Transformer) writeALTOFile() {
 		return
 	}
 
-	_, err = f.Write(t.xml)
+	_, err = f.Write([]byte(xml.Header))
+	if err == nil {
+		_, err = f.Write(t.xml)
+	}
 	if err != nil {
 		t.err = fmt.Errorf("unable to write to alto output file %q: %s", t.ALTOOutputFilename, err)
 		f.Close()

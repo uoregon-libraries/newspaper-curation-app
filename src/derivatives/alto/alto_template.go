@@ -3,7 +3,6 @@ package alto
 import "version"
 
 var altoTemplateString = `
-<?xml version="1.0" encoding="utf-8"?>
 <alto xmlns="http://schema.ccs-gmbh.com/ALTO">
   <Description>
     <MeasurementUnit>inch1200</MeasurementUnit>
