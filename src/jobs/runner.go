@@ -75,9 +75,15 @@ func (r *Runner) Watch(interval time.Duration) {
 	var nextAttempt time.Time
 	for !r.done() {
 		if time.Now().After(nextAttempt) {
-			if !r.processNext() {
-				nextAttempt = time.Now().Add(interval)
+			// Loop until there aren't any jobs left to process
+			for r.processNext() {
+				// If r.done() became true, we need to stop looping and let nature take
+				// its course....
+				if r.done() {
+					break
+				}
 			}
+			nextAttempt = time.Now().Add(interval)
 		}
 
 		// Try not to eat all the CPU
