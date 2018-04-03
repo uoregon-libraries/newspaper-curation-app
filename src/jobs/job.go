@@ -108,9 +108,18 @@ type jobLogger struct {
 // specific job id's logs
 func (l *jobLogger) Log(level logger.LogLevel, message string) {
 	var timeString = time.Now().Format(logger.TimeFormat)
-	fmt.Fprintf(os.Stderr, "%s - %s - %s - [job %s:%d] %s\n",
+	var msg = fmt.Sprintf("%s - %s - %s - [job %s:%d] %s\n",
 		timeString, l.AppName, level.String(), l.Job.Type, l.Job.ID, message)
-	var err = l.Job.WriteLog(level.String(), message)
+	var _, err = os.Stderr.WriteString(msg)
+	if err != nil {
+		_, err = fmt.Printf("ERROR: unable to write log message %q to STDERR: %s", msg, err)
+		if err != nil {
+			// Granted we probably won't see this, either, but we're out of options here....
+			panic("Unable to write to STDERR or STDOUT")
+		}
+	}
+
+	err = l.Job.WriteLog(level.String(), message)
 	if err != nil {
 		logger.Criticalf("Unable to write log message: %s", err)
 		return
