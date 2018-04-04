@@ -46,9 +46,9 @@ make
 cp /tmp/old-version.go src/version/version.go
 
 echo Stopping services...
-sudo systemctl stop httpd
-sudo systemctl stop nca-httpd
-sudo systemctl stop nca-workers
+sudo systemctl stop httpd || true
+sudo systemctl stop nca-httpd || true
+sudo systemctl stop nca-workers || true
 
 echo Removing the old stuff
 ncadir=/usr/local/nca
