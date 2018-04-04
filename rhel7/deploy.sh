@@ -61,6 +61,7 @@ if [[ -d $ncadir ]]; then
   sudo find $ncadir/ -mindepth 1 -maxdepth 1 -type f -not -name "settings*" -exec rm -f {} \;
   sudo rm $ncadir/templates/ -rf
   sudo rm $ncadir/static/ -rf
+  sudo rm -f /etc/rsyslog.d/nca.conf
 else
   echo First-time install detected: edit $ncadir/settings
   sudo mkdir $ncadir
@@ -80,6 +81,7 @@ sudo cp $src/bin/queue-batches $ncadir/
 sudo cp $src/bin/bulk-issue-queue $ncadir/
 sudo cp $src/rhel7/nca-httpd.service $ncadir/
 sudo cp $src/rhel7/nca-workers.service $ncadir/
+sudo cp $src/rhel7/nca-rsyslog.conf /etc/rsyslog.d/nca.conf
 sudo cp -r $src/templates/ $ncadir/
 sudo cp -r $src/static/ $ncadir/
 
@@ -89,6 +91,7 @@ sudo systemctl enable $ncadir/nca-workers.service
 sudo systemctl daemon-reload
 sudo systemctl start nca-workers
 sudo systemctl start nca-httpd
+sudo systemctl restart rsyslog
 
 echo Waiting 30 seconds for NCA to finish scanning issues
 sleep 30

@@ -1,0 +1,4 @@
+:programname, isequal, "run-jobs" /var/log/nca-run-jobs.log
+& stop
+:programname, isequal, "server" /var/log/nca-server.log
+& stop
