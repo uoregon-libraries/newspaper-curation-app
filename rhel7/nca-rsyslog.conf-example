@@ -1,3 +1,7 @@
+# Don't throttle NCA logging (journald may still do so, however)
+$imjournalRatelimitInterval 0
+$imjournalRatelimitBurst 0
+
 :programname, isequal, "nca-workers" /var/log/nca-workers.log
 & stop
 :programname, isequal, "nca-httpd" /var/log/nca-httpd.log
