@@ -8,6 +8,7 @@
 	ExecStart=/usr/local/nca/server \
 		-c /usr/local/nca/settings \
 		--parent-webroot=/odnp-admin
+	SyslogIdentifier=nca-httpd
 
 [Install]
 	WantedBy=multi-user.target
