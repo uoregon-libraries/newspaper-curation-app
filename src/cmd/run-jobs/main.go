@@ -232,7 +232,7 @@ func watchPageReview(c *config.Config) {
 	for !done() {
 		if time.Now().After(nextAttempt) {
 			scanPageReviewIssues(c)
-			nextAttempt = time.Now().Add(time.Minute)
+			nextAttempt = time.Now().Add(10 * time.Minute)
 		}
 
 		// Try not to eat all the CPU
