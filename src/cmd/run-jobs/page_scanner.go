@@ -6,14 +6,11 @@ import (
 	"jobs"
 	"os"
 	"path/filepath"
-	"regexp"
 	"schema"
 	"time"
 
 	"github.com/uoregon-libraries/gopkg/logger"
 )
-
-var pdfFilenameRegex = regexp.MustCompile(`(?i:^[0-9]{4}.pdf)`)
 
 func scanPageReviewIssues(c *config.Config) {
 	var list, err = db.FindIssuesInPageReview()
@@ -23,7 +20,7 @@ func scanPageReviewIssues(c *config.Config) {
 	}
 
 	for _, dbIssue := range list {
-		if issuePagesReady(dbIssue.Location, time.Hour, pdfFilenameRegex) {
+		if pageReviewIssueReady(dbIssue.Location, time.Hour) {
 			queueIssueForDerivatives(dbIssue)
 		}
 	}

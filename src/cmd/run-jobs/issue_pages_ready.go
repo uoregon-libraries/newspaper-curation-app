@@ -10,15 +10,18 @@ import (
 	"github.com/uoregon-libraries/gopkg/logger"
 )
 
-// issuePagesReady tells us if issues being manually modified are ready to be
-// moved on in the workflow.  Pages are considered ready if all of the
+var pdfFilenameRegex = regexp.MustCompile(`(?i:^[0-9]{4}.pdf)`)
+var notRenamedRegex = regexp.MustCompile(`(?i:^seq-[0-9]{4}.pdf)`)
+
+// pageReviewIssueReady tells us if issues being manually modified are ready to
+// be moved on in the workflow.  Pages are considered ready if all of the
 // following are true:
 //
 // * The path hasn't been modified less than minAge ago
 // * No files exist that don't match one of the validFiles regexes
 //   * Dotfiles are the exception, as we simply ignore these since Bridge and Macs drop these everywhere
 // * Nothing is in the path that was modified less than minAge ago
-func issuePagesReady(path string, minAge time.Duration, validFileRegexes ...*regexp.Regexp) bool {
+func pageReviewIssueReady(path string, minAge time.Duration) bool {
 	// Validate that the directory itself can be statted and hasn't been touched
 	// in at least an hour
 	var info, err = os.Stat(path)
@@ -27,7 +30,6 @@ func issuePagesReady(path string, minAge time.Duration, validFileRegexes ...*reg
 		return false
 	}
 	if time.Since(info.ModTime()) < minAge {
-		logger.Debugf("Not processing %q (directory was touched too recently)", path)
 		return false
 	}
 
@@ -44,28 +46,24 @@ func issuePagesReady(path string, minAge time.Duration, validFileRegexes ...*reg
 
 		// Ignore hidden files
 		if filepath.Base(fName)[0] == '.' {
-			logger.Debugf("Ignoring hidden file %q", fName)
 			continue
 		}
 
-		// Failure to match one of the regexes isn't an error; it just means people may not be
-		// done working on the issue files
-		var matchesOneRegex = false
-		for _, validFileRegex := range validFileRegexes {
-			if validFileRegex.MatchString(fName) {
-				matchesOneRegex = true
-				continue
-			}
+		// If files aren't renamed yet, we don't need to log it, just return false
+		if notRenamedRegex.MatchString(fName) {
+			return false
 		}
-		if !matchesOneRegex {
-			logger.Debugf("Not processing %q (%q doesn't match valid file regex)", path, fName)
+
+		// Files that aren't in the "seq-0001.pdf" pattern *and* not in the proper
+		// pattern are considered problems
+		if !pdfFilenameRegex.MatchString(fName) {
+			logger.Errorf("Not processing %q (%q doesn't match valid file regex)", path, fName)
 			return false
 		}
 
 		// If any file was touched less than an hour ago, we don't consider it safe
 		// to process yet
 		if time.Since(info.ModTime()) < minAge {
-			logger.Debugf("Not processing %q (%q was touched too recently)", path, fName)
 			return false
 		}
 	}
