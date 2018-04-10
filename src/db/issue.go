@@ -59,11 +59,30 @@ type Issue struct {
 	MetadataApprovedAt     time.Time           // When was metadata approved / how long has this been waiting to batch?
 	RejectionNotes         string              // If rejected (during metadata review), this tells us why
 	RejectedByUserID       int                 // Who did the rejection?
+	Ignored                bool                // Is the issue bad / in prod / otherwise skipped from workflow scans?
 }
 
 // NewIssue creates an issue ready for saving to the issues table
 func NewIssue(moc, lccn, dt string, ed int) *Issue {
 	return &Issue{MARCOrgCode: moc, LCCN: lccn, Date: dt, Edition: ed, WorkflowStep: schema.WSAwaitingProcessing}
+}
+
+// findIssues is a centralized finder that auto-skips issues flagged as ignored
+// and auto-deserializes the issues returned
+func findIssues(cond string, args ...interface{}) ([]*Issue, error) {
+	var op = DB.Operation()
+	op.Dbg = Debug
+
+	var list []*Issue
+	if cond == "" {
+		cond = "ignored = ?"
+	} else {
+		cond = "(" + cond + ")" + " AND ignored = ?"
+	}
+	args = append(args, false)
+	op.Select("issues", &Issue{}).Where(cond, args...).AllObjects(&list)
+	deserializeIssues(list)
+	return list, op.Err()
 }
 
 // FindIssue looks for an issue by its id
@@ -101,13 +120,7 @@ func FindIssuesByKey(key string) ([]*Issue, error) {
 		return nil, fmt.Errorf("invalid issue key %q", key)
 	}
 
-	var op = DB.Operation()
-	op.Dbg = Debug
-
-	var list []*Issue
-	op.Select("issues", &Issue{}).Where("lccn = ? AND date = ? AND edition = ?", lccn, date, ed).AllObjects(&list)
-	deserializeIssues(list)
-	return list, op.Err()
+	return findIssues("lccn = ? AND date = ? AND edition = ?", lccn, date, ed)
 }
 
 // FindIssueByKey returns the first issue with the given key
@@ -126,80 +139,44 @@ func FindIssueByKey(key string) (*Issue, error) {
 func FindIssueByLocation(location string) (*Issue, error) {
 	var op = DB.Operation()
 	op.Dbg = Debug
-	var i = &Issue{}
-	var ok = op.Select("issues", &Issue{}).Where("location = ?", location).First(i)
-	if !ok {
-		return nil, op.Err()
+	var i *Issue
+	var list, err = findIssues("location = ?", location)
+	if len(list) != 0 {
+		i = list[0]
 	}
-	i.deserialize()
-	return i, op.Err()
+	return i, err
 }
 
 // FindInProcessIssues returns all issues which have been entered in the
 // workflow system, but haven't yet gone through all the way to the point of
 // being batched and approved for production
-//
-// TODO: At the moment, this returns all issues in the database.  This will be
-// a problem until the batch maker is migrated *and* we have some way to tie an
-// issue to a DB batch **AND** we have a way to flag a batch as being approved
-// for prod....  Obviously this MUST be addressed shortly after pushing live;
-// it's just a stopgap due to continuing filesystem problems on the legacy
-// setup.
 func FindInProcessIssues() ([]*Issue, error) {
-	var op = DB.Operation()
-	op.Dbg = Debug
-	var list []*Issue
-	op.Select("issues", &Issue{}).AllObjects(&list)
-	deserializeIssues(list)
-	return list, op.Err()
+	return findIssues("")
 }
 
 // FindIssuesByBatchID returns all issues associated with the given batch id
 func FindIssuesByBatchID(batchID int) ([]*Issue, error) {
-	var op = DB.Operation()
-	op.Dbg = Debug
-	var list []*Issue
-	op.Select("issues", &Issue{}).Where(`batch_id = ?`, batchID).AllObjects(&list)
-	deserializeIssues(list)
-	return list, op.Err()
+	return findIssues("batch_id = ?", batchID)
 }
 
 // FindIssuesOnDesk returns all issues "owned" by a given user id
 func FindIssuesOnDesk(userID int) ([]*Issue, error) {
-	var op = DB.Operation()
-	op.Dbg = Debug
-	var list []*Issue
-	var sel = op.Select("issues", &Issue{})
-	sel = sel.Where(`
+	return findIssues(`
 		workflow_owner_id = ? AND
 		workflow_owner_expires_at IS NOT NULL AND
 		workflow_owner_expires_at > ?`, userID, time.Now())
-	sel.AllObjects(&list)
-	deserializeIssues(list)
-	return list, op.Err()
 }
 
 // FindIssuesInPageReview looks for all issues currently awaiting page review
 // and returns them
 func FindIssuesInPageReview() ([]*Issue, error) {
-	var op = DB.Operation()
-	op.Dbg = Debug
-	var list []*Issue
-	op.Select("issues", &Issue{}).Where("workflow_step = ?", string(schema.WSAwaitingPageReview)).AllObjects(&list)
-	deserializeIssues(list)
-	return list, op.Err()
+	return findIssues("workflow_step = ?", string(schema.WSAwaitingPageReview))
 }
 
 // FindIssuesReadyForBatching looks for all issues which are in the
 // WSReadyForBatching workflow step and have no batch ID
 func FindIssuesReadyForBatching() ([]*Issue, error) {
-	var op = DB.Operation()
-	op.Dbg = Debug
-	var list []*Issue
-	op.Select("issues", &Issue{}).Where("workflow_step = ? AND batch_id = 0",
-		string(schema.WSReadyForBatching)).AllObjects(&list)
-	deserializeIssues(list)
-	return list, op.Err()
+	return findIssues("workflow_step = ? AND batch_id = 0", string(schema.WSReadyForBatching))
 }
 
 // FindAvailableIssuesByWorkflowStep looks for all "available" issues with the
@@ -208,14 +185,8 @@ func FindIssuesReadyForBatching() ([]*Issue, error) {
 // - No owner (or owner expired)
 // - Have not been reported as having errors
 func FindAvailableIssuesByWorkflowStep(ws schema.WorkflowStep) ([]*Issue, error) {
-	var op = DB.Operation()
-	op.Dbg = Debug
-	var list []*Issue
-	op.Select("issues", &Issue{}).Where(
-		"workflow_step = ? AND (workflow_owner_id = 0 OR workflow_owner_expires_at < ?) AND error = ''",
-		string(ws), time.Now().Format("2006-01-02 15:04:05")).AllObjects(&list)
-	deserializeIssues(list)
-	return list, op.Err()
+	return findIssues("workflow_step = ? AND (workflow_owner_id = 0 OR workflow_owner_expires_at < ?) AND error = ''",
+		string(ws), time.Now().Format("2006-01-02 15:04:05"))
 }
 
 // Key returns the standardized issue key for this DB issue
