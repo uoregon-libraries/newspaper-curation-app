@@ -14,7 +14,4 @@ to be more development-friendly.  You could also put in your own values for the
 various environment variables so you didn't have to do the "export..." dance
 every time you need to start the system up from a new environment.
 
-The application will be available at `$APP_URL/nca`.  As there's
-currently no homepage (or probably is by the time anybody is reading this - I
-probably just haven't updated docs yet), you have to go to `/sftp` or another
-handler path directly; e.g., `https://jechols.uoregon.edu/sftp`.
+The application will be available at `$APP_URL/nca`.
