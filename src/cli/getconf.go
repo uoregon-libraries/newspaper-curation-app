@@ -1,4 +1,4 @@
-// Package cli provides helpers for common Black Mamaba command-line tools' needs
+// Package cli provides helpers for common NCA command-line tools' needs
 package cli
 
 import (
