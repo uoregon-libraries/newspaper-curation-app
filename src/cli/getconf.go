@@ -46,16 +46,7 @@ func (c *CLI) AppendUsage(msg string) {
 // assumed that the options structure includes a ConfigFile string (which is
 // free if BaseOptions is an embedded type)
 func (c *CLI) GetConf() *config.Config {
-	var _, err = c.p.Parse()
-	if err != nil {
-		var ferr, ok = err.(*flags.Error)
-		if ok && ferr.Type == flags.ErrHelp {
-			c.HelpExit(0)
-		}
-		c.UsageFail("Error: %q", err)
-	}
-
-	var configFile string
+	c.Parse()
 
 	// oV needs to be the option structure, not its pointer, so we can get its
 	// enumerated fields and values
@@ -66,15 +57,28 @@ func (c *CLI) GetConf() *config.Config {
 		logger.Fatalf("Unable to locate ConfigFile in options structure!")
 	}
 
-	configFile = fV.Interface().(string)
+	var configFile = fV.Interface().(string)
 
-	var conf *config.Config
-	conf, err = config.Parse(configFile)
+	var conf, err = config.Parse(configFile)
 	if err != nil {
 		logger.Fatalf("Config error: %s", err)
 	}
 
 	return conf
+}
+
+// Parse just runs the flags parser with some of our custom logic for handling
+// errors and the help flag
+func (c *CLI) Parse() {
+	var _, err = c.p.Parse()
+	if err != nil {
+		var ferr, ok = err.(*flags.Error)
+		if ok && ferr.Type == flags.ErrHelp {
+			c.HelpExit(0)
+		}
+		c.UsageFail("Error: %q", err)
+	}
+
 }
 
 // Wrap is a helper to wrap a usage message at 80 characters and print a
