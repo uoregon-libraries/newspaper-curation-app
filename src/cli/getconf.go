@@ -19,9 +19,9 @@ type CLI struct {
 	postUsage []string
 }
 
-// BaseOptions represents the simplest possible list of CLI options a Black
-// Mamba command can have: a config file.  Commands should extend this rather
-// than having their own custom type in order to ensure consistency.
+// BaseOptions represents the simplest possible list of CLI options an NCA
+// command can have: a config file.  Commands should extend this rather than
+// having their own custom type in order to ensure consistency.
 type BaseOptions struct {
 	ConfigFile string `short:"c" long:"config" description:"path to NCA config file" required:"true"`
 }
