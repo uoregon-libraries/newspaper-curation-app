@@ -45,3 +45,5 @@ services:
     volumes:
       - ./docker/apache/nca.conf:/etc/apache2/sites-available/nca.conf:Z
       - ./docker/apache/httpd-foreground:/usr/local/bin/httpd-foreground:Z
+    ports:
+      - 80:80

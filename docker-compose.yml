@@ -76,5 +76,3 @@ services:
     depends_on:
       - web
       - iiif
-    ports:
-      - 80:80
