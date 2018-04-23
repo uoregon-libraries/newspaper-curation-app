@@ -1,4 +1,6 @@
 #!/bin/bash
+set -eu
+
 pushd .
 cd ..
 docker-compose exec db mysql -unca -pnca -Dnca -e "delete from jobs; delete from issues; delete from job_logs; delete from batches;"
