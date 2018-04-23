@@ -32,6 +32,7 @@ services:
 
   # App defines a static image with all binaries precompiled
   app:
+    image: uolibraries/nca_app
     build:
       context: .
       dockerfile: ./docker/Dockerfile-app
