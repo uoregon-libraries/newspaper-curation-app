@@ -52,9 +52,9 @@ func (q *issueQueue) emptyList() {
 
 // splitQueue picks the issues which will be included in the next batch, up to
 // the given page limit, and puts them into a new issueQueue.  Issues are
-// prioritized by those which have been waiting the longest, and then the issue
-// list is iterated over multiple times to fit as many issues as possible.  The
-// issues put in the returned queue are *removed* from this queue's issues list.
+// prioritized by those which have been waiting the longest, and then issues
+// are added to the new queue.  Issues put in the returned queue are *removed*
+// from this queue's issues list.
 func (q *issueQueue) splitQueue(maxPages int) *issueQueue {
 	if !q.sorted {
 		sort.Slice(q.list, func(i, j int) bool {
@@ -68,14 +68,12 @@ func (q *issueQueue) splitQueue(maxPages int) *issueQueue {
 	q.emptyList()
 
 	var popped = newMOCIssueQueue()
-	for passes := 3; passes > 0; passes-- {
-		for _, issue := range list {
-			var l = len(issue.PageLabels)
-			if popped.pages+l <= maxPages {
-				popped.append(issue)
-			} else {
-				q.append(issue)
-			}
+	for _, issue := range list {
+		var l = len(issue.PageLabels)
+		if popped.pages+l <= maxPages {
+			popped.append(issue)
+		} else {
+			q.append(issue)
 		}
 	}
 
