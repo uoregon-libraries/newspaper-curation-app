@@ -6,6 +6,7 @@ import (
 	"fmt"
 	"os"
 	"reflect"
+	"version"
 
 	flags "github.com/jessevdk/go-flags"
 	"github.com/uoregon-libraries/gopkg/logger"
@@ -90,6 +91,8 @@ func Wrap(msg string) {
 
 // HelpExit exits the application after printing out the parser's help
 func (c *CLI) HelpExit(code int) {
+	fmt.Fprintln(os.Stderr, "NCA Version v"+version.Version)
+	fmt.Fprintln(os.Stderr)
 	c.p.WriteHelp(os.Stderr)
 	for _, msg := range c.postUsage {
 		fmt.Fprintln(os.Stderr)
