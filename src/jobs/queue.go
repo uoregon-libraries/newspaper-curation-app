@@ -23,6 +23,7 @@ func PrepareJobAdvanced(t JobType) *db.Job {
 func PrepareIssueJobAdvanced(t JobType, issue *db.Issue, path string, nextWS schema.WorkflowStep) *db.Job {
 	var j = PrepareJobAdvanced(t)
 	j.ObjectID = issue.ID
+	j.ObjectType = db.JobObjectTypeIssue
 	j.ExtraData = string(nextWS)
 	j.Location = path
 	return j
@@ -32,6 +33,7 @@ func PrepareIssueJobAdvanced(t JobType, issue *db.Issue, path string, nextWS sch
 func PrepareBatchJobAdvanced(t JobType, batch *db.Batch) *db.Job {
 	var j = PrepareJobAdvanced(t)
 	j.ObjectID = batch.ID
+	j.ObjectType = db.JobObjectTypeBatch
 	return j
 }
 

@@ -81,6 +81,7 @@ func (j *Job) Requeue() error {
 	var clone = &db.Job{
 		Type:       j.Type,
 		ObjectID:   j.ObjectID,
+		ObjectType: j.ObjectType,
 		Location:   j.Location,
 		Status:     string(JobStatusPending),
 		RunAt:      j.RunAt,

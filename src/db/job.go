@@ -6,6 +6,12 @@ import (
 	"github.com/Nerdmaster/magicsql"
 )
 
+// Object types for consistently inserting into the database
+const (
+	JobObjectTypeBatch = "batch"
+	JobObjectTypeIssue = "issue"
+)
+
 // JobLog is a single log entry attached to a job
 type JobLog struct {
 	ID        int `sql:",primary"`
@@ -23,6 +29,7 @@ type Job struct {
 	CompletedAt time.Time `sql:",noinsert"`
 	Type        string    `sql:"job_type"`
 	ObjectID    int
+	ObjectType  string
 	Location    string
 	Status      string
 	logs        []*JobLog
