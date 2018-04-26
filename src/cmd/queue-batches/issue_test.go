@@ -39,7 +39,7 @@ func makeIssue(lccn, date string) *db.Issue {
 func mustWrap(dbi *db.Issue, t *testing.T) *issue {
 	var i, err = wrapIssue(dbi, embargoedDays)
 	if err != nil {
-		t.Errorf("Issue with bad date shouldn't have worked")
+		t.Errorf("Error wrapping issue: %s", err)
 	}
 
 	return i
