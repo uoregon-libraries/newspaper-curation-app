@@ -309,7 +309,7 @@ func rejectIssueMetadataHandler(resp *responder.Responder, i *Issue) {
 		return
 	}
 
-	resp.Audit("report-error", fmt.Sprintf("issue id %d", i.ID))
-	http.SetCookie(resp.Writer, &http.Cookie{Name: "Info", Value: "Issue error reported", Path: "/"})
+	resp.Audit("reject-metadata", fmt.Sprintf("issue id %d", i.ID))
+	http.SetCookie(resp.Writer, &http.Cookie{Name: "Info", Value: "Issue rejected", Path: "/"})
 	http.Redirect(resp.Writer, resp.Request, basePath, http.StatusFound)
 }
