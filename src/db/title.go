@@ -116,9 +116,18 @@ func (t *Title) SchemaTitle() *schema.Title {
 	if t == nil {
 		return nil
 	}
+
+	var ttl, loc = t.MarcTitle, t.MarcLocation
+
+	// Not great, but this does the trick well enough when we haven't gotten a
+	// valid MARC record
+	if !t.ValidLCCN {
+		ttl = t.Title
+	}
+
 	return &schema.Title{
 		LCCN:               t.LCCN,
-		Name:               t.MarcTitle,
-		PlaceOfPublication: t.MarcLocation,
+		Name:               ttl,
+		PlaceOfPublication: loc,
 	}
 }
