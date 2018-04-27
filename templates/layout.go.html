@@ -41,6 +41,10 @@
                 <li><a href="{{.Webroot}}/workflow">Workflow</a></li>
               {{end}}
 
+              {{if .User.PermittedTo SearchIssues}}
+                <li><a href="{{.Webroot}}/find">Find Issues</a></li>
+              {{end}}
+
               {{if .User.PermittedTo ManageMOCs}}
                 <li><a href="{{ParentURL "mocs-list.php"}}">MARC Org Codes</a></li>
               {{end}}
