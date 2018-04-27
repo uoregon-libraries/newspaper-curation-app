@@ -1,6 +1,7 @@
 package main
 
 import (
+	"cmd/server/internal/issuefinderhandler"
 	"cmd/server/internal/responder"
 	"cmd/server/internal/settings"
 	"cmd/server/internal/uploadedissuehandler"
@@ -108,8 +109,10 @@ func startServer() {
 		time.Sleep(1 * time.Second)
 	}
 
+	// Set up routing for various "sub-apps"
 	uploadedissuehandler.Setup(r, path.Join(hp, "uploadedissues"), conf, watcher)
 	workflowhandler.Setup(r, path.Join(hp, "workflow"), conf, watcher)
+	issuefinderhandler.Setup(r, path.Join(hp, "find"), conf, watcher)
 
 	// Any unknown paths get a semi-friendly 404
 	r.NewRoute().PathPrefix("").HandlerFunc(notFound)

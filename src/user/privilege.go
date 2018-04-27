@@ -26,6 +26,11 @@ var (
 	// View the SFTP credentials for a title
 	ViewTitleSFTPCredentials = newPrivilege(RoleTitleManager)
 
+	// Search for issues across all locations - this could really be more open,
+	// but I don't see it being necessary for anybody but workflow managers at
+	// the moment
+	SearchIssues = newPrivilege(RoleWorkflowManager)
+
 	// Admins only
 	ModifyValidatedLCCNs = newPrivilege()
 	ModifyTitleSFTP      = newPrivilege()
