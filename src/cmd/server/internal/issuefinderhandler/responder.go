@@ -23,8 +23,8 @@ type respError struct {
 type resp struct {
 	*responder.Responder
 	err    *respError
-	Titles []*schema.Title
-	Issues []*schema.Issue
+	Titles schema.TitleList
+	Issues schema.IssueList
 	LCCN   string
 	Year   int
 	Month  int
@@ -42,7 +42,7 @@ func getResponder(w http.ResponseWriter, req *http.Request) *resp {
 // loadTitles grabs all known titles from the database, converts to
 // schema.Title instances, and stuffs them into a "Titles" variable
 func (r *resp) loadTitles() {
-	var titles = make([]*schema.Title, 0)
+	var titles = make(schema.TitleList, 0)
 	var dbTitles, err = db.AllTitles()
 	if err != nil {
 		logger.Errorf("Unable to look up titles from database: %s", err)
@@ -56,6 +56,7 @@ func (r *resp) loadTitles() {
 	for _, t := range dbTitles {
 		titles = append(titles, t.SchemaTitle())
 	}
+	titles.SortByName()
 
 	r.Titles = titles
 }
