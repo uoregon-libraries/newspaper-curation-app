@@ -84,6 +84,15 @@ func LoadTitles() error {
 	return op.Err()
 }
 
+// AllTitles returns everything in the title cache, reloading it if needed
+func AllTitles() ([]*Title, error) {
+	var err = LoadTitles()
+	if err != nil {
+		return nil, err
+	}
+	return allTitles, nil
+}
+
 // LookupTitle looks up the title in the the database by directory name and
 // LCCN to give a simpler way to find titles in a general case.  This only
 // works after titles have been loaded in order to simplify usage, but it's up
