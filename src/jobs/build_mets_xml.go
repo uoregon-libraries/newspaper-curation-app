@@ -27,7 +27,7 @@ func (job *BuildMETS) Process(c *config.Config) bool {
 	job.templatePath = c.METSXMLTemplatePath
 	job.outputXMLPath = filepath.Join(job.Issue.Location, job.Issue.DateEdition()+".xml")
 	var err error
-	job.Title, err = db.FindTitleByLCCN(job.DBIssue.LCCN)
+	job.Title, err = db.FindTitle("lccn = ?", job.DBIssue.LCCN)
 	if err != nil {
 		job.Logger.Errorf("Unable to look up title for issue id %d (LCCN %q): %s", job.DBIssue.ID, job.DBIssue.LCCN, err)
 		return false

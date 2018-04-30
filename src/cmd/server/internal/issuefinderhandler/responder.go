@@ -43,7 +43,7 @@ func getResponder(w http.ResponseWriter, req *http.Request) *resp {
 // schema.Title instances, and stuffs them into a "Titles" variable
 func (r *resp) loadTitles() {
 	var titles = make(schema.TitleList, 0)
-	var dbTitles, err = db.AllTitles()
+	var dbTitles, err = db.Titles()
 	if err != nil {
 		logger.Errorf("Unable to look up titles from database: %s", err)
 		r.err = &respError{

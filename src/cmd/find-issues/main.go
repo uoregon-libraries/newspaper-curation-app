@@ -33,6 +33,7 @@ type _opts struct {
 }
 
 var opts _opts
+var titles db.TitleList
 
 func getOpts() {
 	var c = cli.New(&opts)
@@ -62,6 +63,11 @@ func getOpts() {
 		opts.IssueKeys = strings.Split(string(contents), "\n")
 	}
 
+	titles, err = db.Titles()
+	if err != nil {
+		c.UsageFail("Unable to read titles from the database: %s", err)
+	}
+
 	// Verify that each issue key at least *looks* legit before burning time
 	// searching stuff
 	for _, ik := range opts.IssueKeys {
@@ -77,7 +83,7 @@ func getOpts() {
 		}
 
 		// See if a title's directory was given and convert to LCCN if so
-		var t, _ = db.FindTitleByDirectory(searchKey.LCCN)
+		var t = titles.FindByDirectory(searchKey.LCCN)
 		if t != nil {
 			searchKey.LCCN = t.LCCN
 		}

@@ -18,15 +18,9 @@ var (
 )
 
 func overrideLookup() {
-	lookupTitle = func(s string) *db.Title {
-		switch s {
-		case lccnSimple:
-			return &db.Title{}
-		case lccnEmbargoed:
-			return &db.Title{Embargoed: true}
-		default:
-			return nil
-		}
+	titles = db.TitleList{
+		&db.Title{LCCN: lccnSimple},
+		&db.Title{LCCN: lccnEmbargoed, Embargoed: true},
 	}
 }
 

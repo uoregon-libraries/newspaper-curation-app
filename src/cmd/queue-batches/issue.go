@@ -6,8 +6,6 @@ import (
 	"time"
 )
 
-var lookupTitle = db.LookupTitle
-
 // issue wraps a db Issue but gives us a page count as well as how old this
 // issue is *relative to embargoes*
 type issue struct {
@@ -26,7 +24,7 @@ func wrapIssue(dbIssue *db.Issue, embargoedDays int) (*issue, error) {
 
 	var i = &issue{Issue: dbIssue, pages: len(dbIssue.PageLabels)}
 
-	i.title = lookupTitle(i.LCCN)
+	i.title = titles.Find(i.LCCN)
 	if i.title == nil {
 		return nil, fmt.Errorf("LCCN %q has no database title", i.LCCN)
 	}
