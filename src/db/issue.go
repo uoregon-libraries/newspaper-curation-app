@@ -32,6 +32,10 @@ type Issue struct {
 	DateAsLabeled string
 	Volume        string
 
+	// Titles are tied to issues by LCCN, and all issues must have a title in the
+	// database, so we load these when we load the issue data
+	Title *Title `sql:"-"`
+
 	// This field is a bit confusing, but it is the NDNP field for the issue
 	// "number", which is actually a string since it can contain things like
 	// "ISSUE XIX"
@@ -93,6 +97,11 @@ func FindIssue(id int) (*Issue, error) {
 	var ok = op.Select("issues", &Issue{}).Where("id = ?", id).First(i)
 	if !ok {
 		return nil, op.Err()
+	}
+	var err error
+	i.Title, err = FindTitle("lccn = ?", i.LCCN)
+	if err != nil {
+		return nil, err
 	}
 	i.deserialize()
 	return i, op.Err()
@@ -270,15 +279,19 @@ func (i *Issue) deserialize() {
 
 // deserializeIssues runs deserialize() against all issues in the list
 func deserializeIssues(list []*Issue) {
+	// Pull all titles so we hit the titles table only once.  We can ignore the
+	// error here because it'll be stored on the operation and returned from
+	// whatever called this.
+	var titles, _ = Titles()
 	for _, i := range list {
+		i.Title = titles.FindByLCCN(i.LCCN)
 		i.deserialize()
 	}
 }
 
 // SchemaIssue returns an extremely over-simplified representation of this
 // issue as a schema.Issue instance for ensuring consistent representation of
-// things like issue keys.  NOTE: this will hit the database if titles haven't
-// already been loaded!
+// things like issue keys
 func (i *Issue) SchemaIssue() (*schema.Issue, error) {
 	// An issue shouldn't be able to get into the database if it has an invalid date
 	var _, err = time.Parse("2006-01-02", i.Date)
@@ -286,15 +299,10 @@ func (i *Issue) SchemaIssue() (*schema.Issue, error) {
 		return nil, fmt.Errorf("invalid time format (%s) in database issue", i.Date)
 	}
 
-	LoadTitles()
-	var t = LookupTitle(i.LCCN).SchemaTitle()
-	if t == nil {
-		return nil, fmt.Errorf("missing title for issue ID %d", i.ID)
-	}
 	var si = &schema.Issue{
 		RawDate:      i.Date,
 		Edition:      i.Edition,
-		Title:        t,
+		Title:        i.Title.SchemaTitle(),
 		Location:     i.Location,
 		MARCOrgCode:  i.MARCOrgCode,
 		WorkflowStep: schema.WorkflowStep(i.WorkflowStep),

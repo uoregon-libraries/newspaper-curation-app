@@ -1,10 +1,7 @@
 package db
 
 import (
-	"fmt"
 	"schema"
-	"sync"
-	"time"
 )
 
 // Title holds records from the titles table
@@ -21,84 +18,53 @@ type Title struct {
 	IsHistoric   bool
 }
 
-// allTitles is a cache of every title read from the database the first time
-// any title operations are requested, since the titles table is fairly small
-var allTitles []*Title
-var lastTitleLoad time.Time
-var atMutex sync.RWMutex
-
-// FindTitleByLCCN returns the title matching the given LCCN or nil
-func FindTitleByLCCN(lccn string) (*Title, error) {
-	var err = LoadTitles()
-	if err != nil {
-		return nil, err
-	}
-
-	atMutex.RLock()
-	defer atMutex.RUnlock()
-
-	for _, t := range allTitles {
-		if t.LCCN == lccn {
-			return t, nil
-		}
-	}
-	return nil, nil
+// FindTitle searches the database for a single title
+func FindTitle(where string, args ...interface{}) (*Title, error) {
+	var op = DB.Operation()
+	op.Dbg = Debug
+	var t = &Title{}
+	op.Select("titles", &Title{}).Where(where, args...).First(t)
+	return t, op.Err()
 }
 
-// FindTitleByDirectory looks up a title by the given directory string,
-// matching it against the sftp_dir field in the database
-func FindTitleByDirectory(dir string) (*Title, error) {
-	var err = LoadTitles()
-	if err != nil {
-		return nil, err
-	}
+// TitleList holds a full list of database titles for quick scan operations on
+// all titles, such as is needed to do mass lookups of issues' LCCNs
+type TitleList []*Title
 
-	atMutex.RLock()
-	defer atMutex.RUnlock()
-
-	for _, t := range allTitles {
-		if t.SFTPDir == dir {
-			return t, nil
-		}
-	}
-	return nil, nil
-}
-
-// LoadTitles reads and stores all title data in memory
-func LoadTitles() error {
-	if DB == nil {
-		return fmt.Errorf("DB is not initialized")
-	}
-
-	atMutex.Lock()
-	defer atMutex.Unlock()
-
-	if len(allTitles) != 0 && time.Since(lastTitleLoad) < time.Minute*15 {
-		return nil
-	}
-
+// Titles returns all titles in the database for bulk operations
+func Titles() (TitleList, error) {
+	var allTitles = make(TitleList, 0)
 	var op = DB.Operation()
 	op.Dbg = Debug
 	op.Select("titles", &Title{}).AllObjects(&allTitles)
-	lastTitleLoad = time.Now()
-	return op.Err()
+	return allTitles, op.Err()
 }
 
-// AllTitles returns everything in the title cache, reloading it if needed
-func AllTitles() ([]*Title, error) {
-	var err = LoadTitles()
-	if err != nil {
-		return nil, err
+// FindByLCCN returns the title matching the given LCCN or nil
+func (tl TitleList) FindByLCCN(lccn string) *Title {
+	for _, t := range tl {
+		if t.LCCN == lccn {
+			return t
+		}
 	}
-	return allTitles, nil
+	return nil
 }
 
-// LookupTitle looks up the title in the the database by directory name and
-// LCCN to give a simpler way to find titles in a general case.  This only
-// works after titles have been loaded in order to simplify usage, but it's up
-// to the caller to make sure titles have in fact been loaded.
-func LookupTitle(identifier string) *Title {
-	for _, t := range allTitles {
+// FindByDirectory looks up a title by the given directory string, matching it
+// against the sftp_dir field in the database
+func (tl TitleList) FindByDirectory(dir string) *Title {
+	for _, t := range tl {
+		if t.SFTPDir == dir {
+			return t
+		}
+	}
+	return nil
+}
+
+// Find looks for the title by either directory name or LCCN to give a simpler
+// way to find titles in a general case
+func (tl TitleList) Find(identifier string) *Title {
+	for _, t := range tl {
 		if t.SFTPDir == identifier {
 			return t
 		}
