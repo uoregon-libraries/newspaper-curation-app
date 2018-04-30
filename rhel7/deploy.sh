@@ -40,7 +40,7 @@ fi
 cp src/version/version.go /tmp/old-version.go
 sed -i "s|\"$|$version\"|" src/version/version.go
 
-make cleanall
+make clean
 make
 
 cp /tmp/old-version.go src/version/version.go
