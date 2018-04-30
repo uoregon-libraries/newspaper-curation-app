@@ -141,11 +141,6 @@ func main() {
 		usageFail("Error: you must specify an action")
 	}
 
-	var err = db.LoadTitles()
-	if err != nil {
-		logger.Fatalf("Cannot load titles: %s", err)
-	}
-
 	// On CTRL-C / kill, try to finish the current task before exiting
 	interrupts.TrapIntTerm(quit)
 
