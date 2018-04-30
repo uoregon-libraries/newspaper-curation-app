@@ -19,12 +19,7 @@ func (s *Searcher) findOrCreateFilesystemTitle(path string) *schema.Title {
 	var t *schema.Title
 	var titleName = filepath.Base(path)
 	if s.titleByLoc[path] == nil {
-		// Make sure titles are loaded from the DB, and puke on any errors
-		var err = db.LoadTitles()
-		if err != nil {
-			panic(err)
-		}
-		t = db.LookupTitle(titleName).SchemaTitle()
+		t = s.dbTitles.Find(titleName).SchemaTitle()
 		if t != nil {
 			t.Location = path
 			s.addTitle(t)
@@ -80,8 +75,7 @@ func (s *Searcher) findOrCreateWebTitle(c *httpcache.Client, uri string) (*schem
 // creates an equivalent schema.Title and stores it, faking a location for
 // future lookup
 func (s *Searcher) findOrCreateDatabaseTitle(issue *db.Issue) *schema.Title {
-	db.LoadTitles()
-	var t = db.LookupTitle(issue.LCCN)
+	var t = s.dbTitles.Find(issue.LCCN)
 	var fakeLocation = t.LCCN
 	if s.titleByLoc[fakeLocation] == nil {
 		var st = t.SchemaTitle()

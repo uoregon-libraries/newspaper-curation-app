@@ -6,6 +6,7 @@ package issuefinder
 
 import (
 	"apperr"
+	"db"
 	"schema"
 )
 
@@ -33,6 +34,10 @@ type Searcher struct {
 	Issues  schema.IssueList
 	Batches []*schema.Batch
 	Titles  schema.TitleList
+
+	// dbTitles holds a temporary cache (living for the life of this Searcher) of
+	// all titles in the database
+	dbTitles db.TitleList
 
 	// titleByLoc holds titles keyed by their location so we don't duplicate the
 	// same title entry if it's in the same place.  This is most applicable to
@@ -83,6 +88,13 @@ func (s *Searcher) init() {
 	s.Titles = make(schema.TitleList, 0)
 	s.titleByLoc = make(map[string]*schema.Title)
 	s.Errors = nil
+
+	// Make sure titles are loaded from the DB, and puke on any errors
+	var err error
+	s.dbTitles, err = db.Titles()
+	if err != nil {
+		panic(err)
+	}
 }
 
 func (f *Finder) storeSearcher(s *Searcher) {
