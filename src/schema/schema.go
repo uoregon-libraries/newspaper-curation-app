@@ -176,12 +176,12 @@ type TitleList []*Title
 // trimCommonPrefixes strips "The", "A", and "An" from the string if they're at
 // the beginning, and removes leading spaces
 func trimCommonPrefixes(s string) string {
-	s = strings.TrimPrefix(s, "The")
-	s = strings.TrimPrefix(s, "the")
-	s = strings.TrimPrefix(s, "A")
-	s = strings.TrimPrefix(s, "a")
-	s = strings.TrimPrefix(s, "An")
-	s = strings.TrimPrefix(s, "an")
+	s = strings.TrimPrefix(s, "The ")
+	s = strings.TrimPrefix(s, "the ")
+	s = strings.TrimPrefix(s, "A ")
+	s = strings.TrimPrefix(s, "a ")
+	s = strings.TrimPrefix(s, "An ")
+	s = strings.TrimPrefix(s, "an ")
 	return strings.TrimSpace(s)
 }
 
