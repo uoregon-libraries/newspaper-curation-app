@@ -81,7 +81,7 @@ func (md *MakeDerivatives) findPDFs() (ok bool) {
 		md.Logger.Errorf("No valid PDFs found")
 		return false
 	}
-	md.Logger.Debugf("Found PDFs: %#v", pdfs)
+	md.Logger.Debugf("Found %d PDFs", len(pdfs))
 
 	for _, pdf := range pdfs {
 		md.AltoDerivativeSources = append(md.AltoDerivativeSources, pdf)
@@ -107,7 +107,7 @@ func (md *MakeDerivatives) _findTIFFs() (ok bool) {
 		md.Logger.Errorf("No TIFFs present")
 		return false
 	}
-	md.Logger.Debugf("Found TIFFs: %#v", tiffs)
+	md.Logger.Debugf("Found %d TIFFs", len(tiffs))
 
 	md.JP2DerivativeSources = make([]string, len(tiffs))
 	for i, tiff := range tiffs {
