@@ -1,0 +1,14 @@
+{{block "content" .}}
+
+<h2>Page Numbering</h2>
+{{template "issue_page_view" .Data.Issue.JP2Files}}
+
+<hr />
+<h2>Metadata</h2>
+{{template "issue_metadata_view" .Data.Issue}}
+
+{{end}}
+
+{{block "extrajs" .}}
+{{template "osdjs" .}}
+{{end}}
