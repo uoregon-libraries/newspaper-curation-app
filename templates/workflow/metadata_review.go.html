@@ -12,44 +12,15 @@
 
 <hr />
 <h2>Page Numbering</h2>
-
-<div class="row">
-  <div class="col-md-12">
-    <dl class="dl-horizontal">
-      <dt>Page Label</dt>
-      <dd id="page-label-text"></dd>
-    </dl>
-  </div>
-</div>
-<div class="osd-container">
-  <div>
-    Image <span id="osd-image-number">1</span> of {{.Data.Issue.JP2Files|len}}
-    <button id="osd-jump-top" class="btn btn-default">Jump to top</button>
-    <button id="osd-jump-bottom" class="btn btn-default">Jump to bottom</button>
-  </div>
-  <div id="osd-toolbar" class="osd-toolbar">
-  </div>
-  <div id="osd-body" style="height: 300px;">
-  </div>
-</div>
+{{template "issue_page_view" .Data.Issue.JP2Files}}
 
 <hr />
 <h2>Metadata</h2>
+{{template "issue_metadata_view" .Data.Issue}}
+
 <div class="row">
   <div class="col-md-12">
     <form class="form-horizontal" role="form" method="POST" action="{{"review/approve"|.Data.Issue.Path}}">
-      <dl class="dl-horizontal">
-        <dt>Metadata Author</dt><dd>{{.Data.Issue.MetadataAuthorLogin}}</dd>
-        <dt>Title</dt><dd>{{.Data.Issue.Title}}</dd>
-        <dt>MARC Org Code</dt><dd>{{.Data.Issue.MARCOrgCode}}</dd>
-        <dt>Issue Date as labeled</dt><dd>{{.Data.Issue.DateAsLabeled}}</dd>
-        <dt>Issue Date</dt><dd>{{.Data.Issue.Date}}</dd>
-        <dt>Volume number</dt><dd>{{.Data.Issue.Volume}}</dd>
-        <dt>Issue number</dt><dd>{{.Data.Issue.Issue.Issue}}</dd>
-        <dt>Edition number</dt><dd>{{.Data.Issue.Edition}}</dd>
-        <dt>Edition label</dt><dd>{{.Data.Issue.EditionLabel}}</dd>
-      </dl>
-
       <div class="form-group">
         <div class="col-md-2">
           <button type="Submit">Approve Issue</button>
@@ -65,18 +36,5 @@
 {{end}}
 
 {{block "extrajs" .}}
-{{RawJS "openseadragon/openseadragon.min.js"}}
-{{IncludeJS "osd"}}
-{{IncludeJS "metadata"}}
-<script>
-var pageLabels = {{.Data.Issue.PageLabels}};
-var totalPages = {{.Data.Issue.JP2Files|len}};
-
-var tileSources = [
-{{range $jp2 := .Data.Issue.JP2Files}}
-  "{{IIIFInfoURL $jp2}}",
-{{end}}
-]
-buildOSD("{{.Webroot}}/static");
-</script>
+{{template "osdjs" .}}
 {{end}}

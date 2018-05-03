@@ -45,6 +45,9 @@ var (
 
 	// RejectIssueTmpl renders the view for reporting an issue which is rejected by the reviewer
 	RejectIssueTmpl *tmpl.Template
+
+	// ViewIssueTmpl renders a read-only display of an issue
+	ViewIssueTmpl *tmpl.Template
 )
 
 // Setup sets up all the workflow-specific routing rules and does any other
@@ -60,6 +63,9 @@ func Setup(r *mux.Router, webPath string, c *config.Config, w *issuewatcher.Watc
 
 	// All other paths are centered around a specific issue
 	var s2 = s.PathPrefix("/{issue_id}").Subrouter()
+
+	// "Hidden" viewer path
+	s2.Path("/view").Handler(handle(canView(viewIssueHandler)))
 
 	// Claim / unclaim handlers are for both metadata and review
 	s2.Path("/claim").Methods("POST").Handler(handle(canClaim(claimIssueHandler)))
@@ -96,12 +102,13 @@ func Setup(r *mux.Router, webPath string, c *config.Config, w *issuewatcher.Watc
 
 	Layout = responder.Layout.Clone()
 	Layout.Path = path.Join(Layout.Path, "workflow")
-	Layout.MustReadPartials("_issue_table_rows.go.html")
+	Layout.MustReadPartials("_issue_table_rows.go.html", "_osdjs.go.html", "_view_issue.go.html")
 	DeskTmpl = Layout.MustBuild("desk.go.html")
 	MetadataFormTmpl = Layout.MustBuild("metadata_form.go.html")
 	ReportErrorTmpl = Layout.MustBuild("report_error.go.html")
 	ReviewMetadataTmpl = Layout.MustBuild("metadata_review.go.html")
 	RejectIssueTmpl = Layout.MustBuild("reject_issue.go.html")
+	ViewIssueTmpl = Layout.MustBuild("view_issue.go.html")
 }
 
 // homeHandler shows claimed workflow items that need to be finished as well as
@@ -150,6 +157,14 @@ func homeHandler(resp *responder.Responder, i *Issue) {
 	resp.Vars.Data["PendingReviewIssues"] = wrapDBIssues(issuesTwo)
 
 	resp.Render(DeskTmpl)
+}
+
+// viewIssueHandler displays the given issue to the user so it can be looked
+// over without having to claim it
+func viewIssueHandler(resp *responder.Responder, i *Issue) {
+	resp.Vars.Title = "Issue Metadata / Page Numbers"
+	resp.Vars.Data["Issue"] = i
+	resp.Render(ViewIssueTmpl)
 }
 
 // claimIssueHandler just assigns the given issue to the logged-in user and
