@@ -1,6 +1,7 @@
 package responder
 
 import (
+	"cmd/server/internal/settings"
 	"fmt"
 	"html/template"
 	"strings"
@@ -47,6 +48,7 @@ func InitRootTemplate(templatePath string) {
 		},
 		"IIIFInfoURL": webutil.IIIFInfoURL,
 		"raw":         func(s string) template.HTML { return template.HTML(s) },
+		"debug":       func() bool { return settings.DEBUG },
 
 		// We have functions for our privileges since they need to be "global" and
 		// easily verified at template compile time
