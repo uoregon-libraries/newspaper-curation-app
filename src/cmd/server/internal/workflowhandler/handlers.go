@@ -96,7 +96,7 @@ func Setup(r *mux.Router, webPath string, c *config.Config, w *issuewatcher.Watc
 
 	Layout = responder.Layout.Clone()
 	Layout.Path = path.Join(Layout.Path, "workflow")
-	Layout.MustReadPartials("_issue_table_rows.go.html", "_osdjs.go.html")
+	Layout.MustReadPartials("_issue_table_rows.go.html", "_osdjs.go.html", "_view_issue.go.html")
 	DeskTmpl = Layout.MustBuild("desk.go.html")
 	MetadataFormTmpl = Layout.MustBuild("metadata_form.go.html")
 	ReportErrorTmpl = Layout.MustBuild("report_error.go.html")
