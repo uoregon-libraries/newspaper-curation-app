@@ -69,18 +69,5 @@
 {{end}}
 
 {{block "extrajs" .}}
-{{RawJS "openseadragon/openseadragon.min.js"}}
-{{IncludeJS "osd"}}
-{{IncludeJS "metadata"}}
-<script>
-var pageLabels = {{.Data.Issue.PageLabels}};
-var totalPages = {{.Data.Issue.JP2Files|len}};
-
-var tileSources = [
-{{range $jp2 := .Data.Issue.JP2Files}}
-  "{{IIIFInfoURL $jp2}}",
-{{end}}
-]
-buildOSD("{{.Webroot}}/static");
-</script>
+{{template "osdjs" .}}
 {{end}}
