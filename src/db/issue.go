@@ -198,6 +198,12 @@ func FindAvailableIssuesByWorkflowStep(ws schema.WorkflowStep) ([]*Issue, error)
 		string(ws), time.Now().Format("2006-01-02 15:04:05"))
 }
 
+// FindIssuesWithErrors returns all issues with an error reported by metadata
+// entry personnel
+func FindIssuesWithErrors() ([]*Issue, error) {
+	return findIssues("error <> ''")
+}
+
 // Key returns the standardized issue key for this DB issue
 func (i *Issue) Key() string {
 	return schema.IssueKey(i.LCCN, i.Date, i.Edition)
