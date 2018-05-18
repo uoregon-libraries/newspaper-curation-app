@@ -72,40 +72,22 @@ func moveIssue(issue *db.Issue, dest string) (ok bool) {
 		return false
 	}
 
-	// Drop a file into the copied directory with the error notes
-	var errFile = filepath.Join(finalDest, "error.txt")
-	err = ioutil.WriteFile(errFile, []byte(issue.Error), 0660)
-
-	// I'm actually not sure what do to here - the copy succeeded, but the
-	// creation of a small text file failed.  This hopefully never happens.
-	if err != nil {
-		logger.Errorf("Unable to create error.txt file %q: %s", errFile, err)
-		err = os.RemoveAll(finalDest)
-		// If we couldn't create the error.txt file, there's reason to be
-		// concerned that we can't delete the destination folder, in which case
-		// garbage gets left over, so we have to log loudly again....  Man,
-		// filesystem-based workflows are riddled with failure potential.
-		if err != nil {
-			logger.Errorf("Unable to remove copied issue in %q: %s (you must remove this manually!", finalDest, err)
-		}
-
-		// In all cases, report failure because something *bad* is going on
-		return false
-	}
-
-	// Store "failure" status so we know if the loop needs to stop, but continue
-	// trying to get this issue's state as clean as possible
+	// We set this to true when we want the operation on this issue to continue
+	// (to get the data as "good" as possible), but still report "not okay"
 	var failure = false
 
 	// Fry the source, because all possible error situations in the copy were avoided
 	err = os.RemoveAll(issue.Location)
-
-	// Things are a lot trickier if we have an error on removal - the issue was
-	// copied successfully, so failing to remove it pretty much means we print
-	// a loud error stating the source has to be removed manually.  But we
-	// don't halt the operation, because things are effectively "good".
 	if err != nil {
 		logger.Errorf("Unable to remove issue in %q: %s (you must remove this manually!)", issue.Location, err)
+		failure = true
+	}
+
+	// Drop a file into the copied directory with the error notes
+	var errFile = filepath.Join(finalDest, "error.txt")
+	err = ioutil.WriteFile(errFile, []byte(issue.Error), 0660)
+	if err != nil {
+		logger.Errorf("Unable to create error.txt file %q: %s", errFile, err)
 		failure = true
 	}
 
