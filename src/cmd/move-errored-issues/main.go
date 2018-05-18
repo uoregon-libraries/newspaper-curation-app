@@ -91,8 +91,8 @@ func moveIssue(issue *db.Issue, dest string) (ok bool) {
 		failure = true
 	}
 
-	// Update the issue so we never deal with it again (but we preserve it so
-	// we can refer to it again if necessary)
+	// Update the issue so we never deal with it again (but we preserve pretty
+	// much all relevant data so we can refer to it if necessary).
 	issue.Location = ""
 	issue.Ignored = true
 	err = issue.Save()
