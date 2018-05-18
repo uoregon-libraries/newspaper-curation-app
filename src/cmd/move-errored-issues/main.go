@@ -60,25 +60,19 @@ func main() {
 // to continue moving other issues.
 func moveIssue(issue *db.Issue, dest string) (ok bool) {
 	logger.Infof("Attempting to move issue %d (location: %q)", issue.ID, issue.Location)
-	var finalDest = filepath.Join(dest, issue.HumanName)
-	var err = fileutil.CopyDirectory(issue.Location, finalDest)
-
-	// We report failure on any error because this can mean things like
-	// filesystem problems / network disk disconnects, etc.  Better to have to
-	// rerun the script than wade through dozens of errors to determine if any
-	// are different.
-	if err != nil {
-		logger.Errorf("Unable to copy issue from %q to %q: %s", issue.Location, finalDest, err)
-		return false
-	}
-
 	// We set this to true when we want the operation on this issue to continue
 	// (to get the data as "good" as possible), but still report "not okay"
 	var failure = false
 
-	// Fry the source, because all possible error situations in the copy were avoided
-	err = os.RemoveAll(issue.Location)
+	var finalDest = filepath.Join(dest, issue.HumanName)
+	var err = moveDir(issue.Location, finalDest)
 	if err != nil {
+		var merr, ok = err.(*moveError)
+		if !ok || !merr.didCopy {
+			logger.Errorf("Unable to copy issue from %q to %q: %s", issue.Location, finalDest, err)
+			return false
+		}
+
 		logger.Errorf("Unable to remove issue in %q: %s (you must remove this manually!)", issue.Location, err)
 		failure = true
 	}
@@ -109,4 +103,28 @@ func moveIssue(issue *db.Issue, dest string) (ok bool) {
 	}
 
 	return !failure
+}
+
+// moveError lets us wrap an error with extra information so we can tell if the
+// move failed after the copy was successful.  With this detail we know if the
+// problem is critical and will require re-copying entirely, or if the problem
+// just means somebody needs to clean up leftover files.
+type moveError struct {
+	error
+	didCopy bool
+}
+
+// moveDir runs the copy / remove logic, returning an error where applicable
+func moveDir(src, dst string) error {
+	var err = fileutil.CopyDirectory(src, dst)
+	if err != nil {
+		return &moveError{err, false}
+	}
+
+	err = os.RemoveAll(src)
+	if err != nil {
+		return &moveError{err, true}
+	}
+
+	return nil
 }
