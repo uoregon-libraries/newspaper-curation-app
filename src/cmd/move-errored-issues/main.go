@@ -87,7 +87,7 @@ func moveIssue(issue *db.Issue, dest string) (ok bool) {
 
 	// Now we want to move the master files (if they exist)
 	if issue.MasterBackupLocation != "" {
-		backupDest = filepath.Join(finalDest, "master")
+		var backupDest = filepath.Join(finalDest, "master")
 		err = moveDir(issue.MasterBackupLocation, backupDest)
 		// Errors while moving the master are very annoying, because the issue's
 		// files are already copied.  We just report the error and move on....
