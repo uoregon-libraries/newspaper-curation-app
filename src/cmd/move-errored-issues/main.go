@@ -65,6 +65,7 @@ func moveIssue(issue *db.Issue, dest string) (ok bool) {
 	var failure = false
 
 	var finalDest = filepath.Join(dest, issue.HumanName)
+	logger.Debugf("Moving %q to %q", issue.Location, finalDest)
 	var err = moveDir(issue.Location, finalDest)
 	if err != nil {
 		var merr, ok = err.(*moveError)
@@ -79,6 +80,7 @@ func moveIssue(issue *db.Issue, dest string) (ok bool) {
 
 	// Drop a file into the copied directory with the error notes
 	var errFile = filepath.Join(finalDest, "error.txt")
+	logger.Debugf("Writing errors to %q", errFile)
 	err = ioutil.WriteFile(errFile, []byte(issue.Error), 0660)
 	if err != nil {
 		logger.Errorf("Unable to create error.txt file %q: %s", errFile, err)
@@ -88,6 +90,7 @@ func moveIssue(issue *db.Issue, dest string) (ok bool) {
 	// Now we want to move the master files (if they exist)
 	if issue.MasterBackupLocation != "" {
 		var backupDest = filepath.Join(finalDest, "master")
+		logger.Debugf("Moving masters from %q to %q", issue.MasterBackupLocation, backupDest)
 		err = moveDir(issue.MasterBackupLocation, backupDest)
 		// Errors while moving the master are very annoying, because the issue's
 		// files are already copied.  We just report the error and move on....
@@ -101,6 +104,7 @@ func moveIssue(issue *db.Issue, dest string) (ok bool) {
 	// much all relevant data so we can refer to it if necessary).
 	issue.Location = ""
 	issue.Ignored = true
+	logger.Debugf("Updating issue metadata in database")
 	err = issue.Save()
 
 	// If we couldn't save to the database, we're very unhappy.  This is
@@ -114,6 +118,7 @@ func moveIssue(issue *db.Issue, dest string) (ok bool) {
 		return false
 	}
 
+	logger.Debugf("Done")
 	return !failure
 }
 
