@@ -19,6 +19,8 @@ services:
     volumes:
       # Workflow directories
       - ./test/fakemount:/mnt/news:z
+      # Entrypoint
+      - ./docker/entrypoint.sh:/entrypoint.sh
       # Mount in the binaries, templates, and static files for easier debugging
       - ./bin:/usr/local/nca/bin:z
       - ./static:/usr/local/nca/static:z
@@ -31,6 +33,8 @@ services:
     volumes:
       # Workflow directories
       - ./test/fakemount:/mnt/news:z
+      # Entrypoint
+      - ./docker/entrypoint.sh:/entrypoint.sh
       # Mount in the binaries, templates, and static files for easier debugging
       - ./bin:/usr/local/nca/bin:z
       - ./static:/usr/local/nca/static:z
