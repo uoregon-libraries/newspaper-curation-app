@@ -14,6 +14,14 @@ fi
 echo "Waiting for database connectivity"
 wait_for_database
 
+echo "Ensuring directories are present"
+source settings && mkdir -p $MASTER_PDF_UPLOAD_PATH
+source settings && mkdir -p $MASTER_SCAN_UPLOAD_PATH
+source settings && mkdir -p $MASTER_PDF_BACKUP_PATH
+source settings && mkdir -p $PDF_PAGE_REVIEW_PATH
+source settings && mkdir -p $BATCH_OUTPUT_PATH
+source settings && mkdir -p $WORKFLOW_PATH
+
 echo 'Executing "'$@'"'
 cd /usr/local/nca
 exec $@
