@@ -4,6 +4,7 @@ import (
 	"cmd/server/internal/responder"
 	"config"
 	"db"
+	"fmt"
 	"html/template"
 	"net/http"
 	"path"
@@ -73,7 +74,25 @@ func newHandler(w http.ResponseWriter, req *http.Request) {
 // saveHandler writes the new MOC to the db
 func saveHandler(w http.ResponseWriter, req *http.Request) {
 	var r = responder.Response(w, req)
-	r.Error(500, "Not implemented")
+	var code = req.FormValue("code")
+	if db.ValidMOC(code) {
+		r.Vars.Alert = template.HTML(fmt.Sprintf("MOC %q already exists", code))
+		r.Render(formTmpl)
+		return
+	}
+
+	var moc, err = db.CreateMOC(code)
+	if err != nil {
+		logger.Errorf("Unable to create new MOC %q: %s", moc, err)
+		r.Vars.Alert = template.HTML("Error trying to create new MOC - try again or contact support")
+		w.WriteHeader(http.StatusInternalServerError)
+		r.Render(responder.Empty)
+		return
+	}
+
+	r.Audit("create-moc", code)
+	http.SetCookie(w, &http.Cookie{Name: "Info", Value: "New MOC created", Path: "/"})
+	http.Redirect(w, req, basePath, http.StatusFound)
 }
 
 // deleteHandler removes the given MOC from the db
