@@ -56,9 +56,7 @@ func listHandler(w http.ResponseWriter, req *http.Request) {
 	r.Vars.Data["MOCs"], err = db.AllMOCs()
 	if err != nil {
 		logger.Errorf("Unable to load MOC list: %s", err)
-		r.Vars.Alert = template.HTML("Error trying to pull MOC list - try again or contact support")
-		w.WriteHeader(http.StatusInternalServerError)
-		r.Render(responder.Empty)
+		r.Error(http.StatusInternalServerError, "Error trying to pull MOC list - try again or contact support")
 		return
 	}
 	r.Render(listTmpl)
@@ -84,9 +82,7 @@ func saveHandler(w http.ResponseWriter, req *http.Request) {
 	var moc, err = db.CreateMOC(code)
 	if err != nil {
 		logger.Errorf("Unable to create new MOC %q: %s", moc, err)
-		r.Vars.Alert = template.HTML("Error trying to create new MOC - try again or contact support")
-		w.WriteHeader(http.StatusInternalServerError)
-		r.Render(responder.Empty)
+		r.Error(http.StatusInternalServerError, "Error trying to create new MOC - try again or contact support")
 		return
 	}
 
