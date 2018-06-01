@@ -46,7 +46,7 @@
               {{end}}
 
               {{if .User.PermittedTo ManageMOCs}}
-                <li><a href="{{ParentURL "mocs-list.php"}}">MARC Org Codes</a></li>
+                <li><a href="{{.Webroot}}/mocs">MARC Org Codes</a></li>
               {{end}}
 
               {{if .User.PermittedTo ListUsers}}
