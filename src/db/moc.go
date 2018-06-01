@@ -42,3 +42,11 @@ func CreateMOC(code string) (*MOC, error) {
 	op.Save("mocs", moc)
 	return moc, op.Err()
 }
+
+// DeleteMOC removes the MOC with the given id
+func DeleteMOC(id int) error {
+	var op = DB.Operation()
+	op.Dbg = Debug
+	op.Exec("DELETE FROM mocs WHERE id = ?", id)
+	return op.Err()
+}
