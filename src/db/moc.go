@@ -20,6 +20,6 @@ func AllMOCs() ([]*MOC, error) {
 	var op = DB.Operation()
 	op.Dbg = Debug
 	var list []*MOC
-	op.Select("mocs", &MOC{}).AllObjects(&list)
+	op.Select("mocs", &MOC{}).Order("code").AllObjects(&list)
 	return list, op.Err()
 }
