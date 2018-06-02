@@ -8,6 +8,7 @@ import (
 	"html/template"
 	"net/http"
 	"path"
+	"strconv"
 	"user"
 	"web/tmpl"
 
@@ -94,27 +95,22 @@ func saveHandler(w http.ResponseWriter, req *http.Request) {
 // deleteHandler removes the given MOC from the db
 func deleteHandler(w http.ResponseWriter, req *http.Request) {
 	var r = responder.Response(w, req)
-	var code = req.FormValue("code")
-	var moc, err = db.FindMOCByCode(code)
-	if err != nil {
-		logger.Errorf("Unable to find MOC %q for deletion: %s", code, err)
-		r.Error(http.StatusInternalServerError, "Error trying to delete MOC - try again or contact support")
-		return
-	}
-	if moc == nil {
-		r.Vars.Alert = template.HTML(fmt.Sprintf("MOC %q doesn't exist", code))
-		r.Render(listTmpl)
-		return
-	}
-
-	var err = db.DeleteMOC(moc.ID)
-	if err != nil {
-		logger.Errorf("Unable to delete MOC %q (id %d): %s", moc.Code, moc.ID, err)
+	var idString = req.FormValue("id")
+	var id, _ = strconv.Atoi(idString)
+	if id < 1 {
+		logger.Errorf("Invalid MOC id to delete (%s)", idString)
 		r.Error(http.StatusInternalServerError, "Error trying to delete MOC - try again or contact support")
 		return
 	}
 
-	r.Audit("delete-moc", code)
+	var err = db.DeleteMOC(id)
+	if err != nil {
+		logger.Errorf("Unable to delete MOC (id %d): %s", id, err)
+		r.Error(http.StatusInternalServerError, "Error trying to delete MOC - try again or contact support")
+		return
+	}
+
+	r.Audit("delete-moc", idString)
 	http.SetCookie(w, &http.Cookie{Name: "Info", Value: "Deleted MOC", Path: "/"})
 	http.Redirect(w, req, basePath, http.StatusFound)
 }
