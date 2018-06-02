@@ -38,7 +38,7 @@ func Setup(r *mux.Router, baseWebPath string, c *config.Config) {
 	s.Path("").Handler(canView(listHandler))
 	s.Path("/new").Handler(canAdd(newHandler))
 	s.Path("/save").Methods("POST").Handler(canAdd(saveHandler))
-	s.Path("/{mocid}/delete").Methods("POST").Handler(canDelete(deleteHandler))
+	s.Path("/delete").Methods("POST").Handler(canDelete(deleteHandler))
 
 	layout = responder.Layout.Clone()
 	layout.Funcs(tmpl.FuncMap{"MOCHomeURL": func() string { return basePath }})

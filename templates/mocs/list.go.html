@@ -21,7 +21,8 @@
           {{.Code}}
         </td>
         <td>
-          <form action="{{MOCHomeURL}}/{{.ID}}/delete" method="post">
+          <form action="{{MOCHomeURL}}/delete" method="post">
+            <input type="hidden" name="code" value="{{.Code}}" />
             <button type="submit">Delete</button>
           </form>
         </td>
