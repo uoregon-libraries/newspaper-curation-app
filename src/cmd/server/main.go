@@ -2,21 +2,20 @@ package main
 
 import (
 	"cmd/server/internal/issuefinderhandler"
+	"cmd/server/internal/mochandler"
 	"cmd/server/internal/responder"
 	"cmd/server/internal/settings"
 	"cmd/server/internal/uploadedissuehandler"
 	"cmd/server/internal/workflowhandler"
 	"config"
 	"db"
-	"path/filepath"
-
 	"fmt"
 	"issuewatcher"
-
 	"net/http"
 	"net/url"
 	"os"
 	"path"
+	"path/filepath"
 	"time"
 	"user"
 	"web/webutil"
@@ -113,6 +112,7 @@ func startServer() {
 	uploadedissuehandler.Setup(r, path.Join(hp, "uploadedissues"), conf, watcher)
 	workflowhandler.Setup(r, path.Join(hp, "workflow"), conf, watcher)
 	issuefinderhandler.Setup(r, path.Join(hp, "find"), conf, watcher)
+	mochandler.Setup(r, path.Join(hp, "mocs"), conf)
 
 	// Any unknown paths get a semi-friendly 404
 	r.NewRoute().PathPrefix("").HandlerFunc(notFound)

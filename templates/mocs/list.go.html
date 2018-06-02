@@ -1,0 +1,36 @@
+{{block "content" .}}
+
+<ul>
+  <li>
+    <a href="{{MOCHomeURL}}/new">Create new MARC Org Code</a>
+  </li>
+</ul>
+
+<table class="table table-striped table-bordered table-condensed sortable">
+  <thead>
+    <tr>
+      <th scope="col" class="sort-alpha">Code</th>
+      <th>Actions</th>
+    </tr>
+  </thead>
+
+  <tbody>
+    {{range .Data.MOCs}}
+      <tr>
+        <td>
+          {{.Code}}
+        </td>
+        <td>
+          <form action="{{MOCHomeURL}}/delete" method="post">
+            <input type="hidden" name="id" value="{{.ID}}" />
+            <button type="submit">Delete</button>
+          </form>
+        </td>
+      </tr>
+    {{end}}
+  </tbody>
+</table>
+
+<script>SortableTable.initAll()</script>
+
+{{end}}
