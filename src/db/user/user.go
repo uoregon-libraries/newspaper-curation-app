@@ -9,8 +9,8 @@ import (
 
 // User identifies a person who has logged in via Apache's auth
 type User struct {
-	ID          int `sql:",primary"`
-	Login       string
+	ID          int    `sql:",primary"`
+	Login       string `sql:",noupdate"`
 	RolesString string `sql:"roles"`
 	Guest       bool   `sql:"-"`
 	IP          string `sql:"-"`
