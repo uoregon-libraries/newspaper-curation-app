@@ -1,0 +1,32 @@
+{{block "content" .}}
+
+<ul>
+  <li>
+    <a href="{{UsersHomeURL}}/new">Create new user</a>
+  </li>
+</ul>
+
+<table class="table table-striped table-bordered table-condensed sortable">
+  <thead>
+    <tr>
+      <th scope="col" class="sort-alpha">Login</th>
+      <th scope="col" class="sort-alpha">Roles</th>
+      <th>Actions</th>
+    </tr>
+  </thead>
+
+  <tbody>
+    {{range .Data.Users}}
+      <tr>
+        <td>{{.Login}}</td>
+        <td>{{.RolesString}}</td>
+        <td>
+        </td>
+      </tr>
+    {{end}}
+  </tbody>
+</table>
+
+<script>SortableTable.initAll()</script>
+
+{{end}}

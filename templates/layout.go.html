@@ -50,7 +50,7 @@
               {{end}}
 
               {{if .User.PermittedTo ListUsers}}
-                <li><a href="{{ParentURL "user-list.php"}}">Users</a></li>
+                <li><a href="{{.Webroot}}/users}}">Users</a></li>
               {{end}}
 
               {{if .User.PermittedTo ListAuditLogs}}

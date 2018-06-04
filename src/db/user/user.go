@@ -35,6 +35,18 @@ func (u *User) serialize() {
 	u.RolesString = u.makeRoleString()
 }
 
+// All returns all users in the database
+func All() ([]*User, error) {
+	var users []*User
+	var op = db.DB.Operation()
+	op.Select("users", &User{}).AllObjects(&users)
+
+	for _, u := range users {
+		u.deserialize()
+	}
+	return users, op.Err()
+}
+
 // FindByLogin looks for a user whose login name is the given string
 func FindByLogin(l string) *User {
 	var users []*User
