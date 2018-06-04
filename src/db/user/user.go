@@ -32,6 +32,10 @@ func (u *User) deserialize() {
 	u.buildRoles()
 }
 
+func (u *User) serialize() {
+	u.RolesString = u.makeRoleString()
+}
+
 // FindByLogin looks for a user whose login name is the given string
 func FindByLogin(l string) *User {
 	var users []*User
@@ -92,4 +96,71 @@ func (u *User) buildRoles() {
 // PermittedTo returns true if this user has priv in his privilege list
 func (u *User) PermittedTo(priv *Privilege) bool {
 	return priv.AllowedByAny(u.Roles())
+}
+
+// IsAdmin is true if this user has the admin role
+func (u *User) IsAdmin() bool {
+	for _, r := range u.Roles() {
+		if r == RoleAdmin {
+			return true
+		}
+	}
+
+	return false
+}
+
+func (u *User) makeRoleString() string {
+	var roleNames = make([]string, len(u.roles))
+	for i, r := range u.roles {
+		roleNames[i] = r.Name
+	}
+
+	return strings.Join(roleNames, ",")
+}
+
+// Grant adds the given role to this user's list of roles if it hasn't already
+// been set
+func (u *User) Grant(role *Role) {
+	u.deserialize()
+	for _, r := range u.roles {
+		if r == role {
+			return
+		}
+	}
+
+	u.roles = append(u.roles, role)
+	u.serialize()
+}
+
+// Deny removes the given role from this user's roles list
+func (u *User) Deny(role *Role) {
+	for i, r := range u.roles {
+		if r == role {
+			u.roles = append(u.roles[:i], u.roles[i+1:]...)
+			u.serialize()
+			return
+		}
+	}
+}
+
+// CanGrant returns true if this user can grant the given role to other users
+func (u *User) CanGrant(role *Role) bool {
+	// If this person can't modify users, they cannot grant anything
+	if !u.PermittedTo(ModifyUsers) {
+		return false
+	}
+
+	// Admins can grant anything
+	if u.IsAdmin() {
+		return true
+	}
+
+	// Users who aren't admins cannot grant roles they don't have
+	for _, r := range u.Roles() {
+		if role == r {
+			return true
+		}
+	}
+
+	return false
 }
