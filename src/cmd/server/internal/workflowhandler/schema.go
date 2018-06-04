@@ -3,10 +3,10 @@ package workflowhandler
 import (
 	"apperr"
 	"db"
+	"db/user"
 	"encoding/base64"
 	"fmt"
 	"html/template"
-	"user"
 
 	"path"
 	"path/filepath"

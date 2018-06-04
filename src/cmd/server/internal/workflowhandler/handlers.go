@@ -4,6 +4,7 @@ import (
 	"cmd/server/internal/responder"
 	"config"
 	"db"
+	"db/user"
 	"fmt"
 	"html/template"
 	"issuewatcher"
@@ -11,7 +12,6 @@ import (
 	"net/http"
 	"path"
 	"schema"
-	"user"
 	"web/tmpl"
 
 	"github.com/gorilla/mux"

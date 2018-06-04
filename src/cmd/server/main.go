@@ -17,7 +17,6 @@ import (
 	"path"
 	"path/filepath"
 	"time"
-	"user"
 	"web/webutil"
 
 	"github.com/gorilla/mux"
@@ -52,7 +51,6 @@ func getConf() {
 	if err != nil {
 		logger.Fatalf("Error trying to connect to database: %s", err)
 	}
-	user.DB = db.DB
 
 	// We can ignore the error here because the config magic already verified
 	// that the URL was valid

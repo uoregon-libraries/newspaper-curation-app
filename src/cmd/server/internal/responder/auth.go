@@ -3,9 +3,9 @@ package responder
 import (
 	"cmd/server/internal/settings"
 
+	"db/user"
 	"net/http"
 	"time"
-	"user"
 )
 
 // GetUserLogin returns the Apache-auth user or the debuguser argument if

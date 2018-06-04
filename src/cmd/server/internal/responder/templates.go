@@ -2,11 +2,11 @@ package responder
 
 import (
 	"cmd/server/internal/settings"
+	"db/user"
 	"fmt"
 	"html/template"
 	"strings"
 	"time"
-	"user"
 	"web/tmpl"
 	"web/webutil"
 )

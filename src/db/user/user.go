@@ -1,15 +1,11 @@
 package user
 
 import (
+	"db"
 	"strings"
 
-	"github.com/Nerdmaster/magicsql"
 	"github.com/uoregon-libraries/gopkg/logger"
 )
-
-// DB holds the persistent magicsql.DB object, and must be set externally in
-// order for this package's database operations to succeed
-var DB *magicsql.DB
 
 // User identifies a person who has logged in via Apache's auth
 type User struct {
@@ -32,11 +28,10 @@ func New(login string) *User {
 	return &User{Login: login}
 }
 
-// FindByLogin looks for a user whose login name is the given string.  The
-// package variable DB must be set before this is called.
+// FindByLogin looks for a user whose login name is the given string
 func FindByLogin(l string) *User {
 	var users []*User
-	var op = DB.Operation()
+	var op = db.DB.Operation()
 	op.Select("users", &User{}).Where("login = ?", l).AllObjects(&users)
 	if op.Err() != nil {
 		logger.Errorf("Unable to query users: %s", op.Err())
@@ -51,7 +46,7 @@ func FindByLogin(l string) *User {
 // FindByID looks up a user by the given ID
 func FindByID(id int) *User {
 	var user = &User{}
-	var op = DB.Operation()
+	var op = db.DB.Operation()
 	var ok = op.Select("users", &User{}).Where("id = ?", id).First(user)
 	if op.Err() != nil {
 		logger.Errorf("Unable to query users: %s", op.Err())

@@ -5,9 +5,9 @@ import (
 	"db"
 	"schema"
 
+	"db/user"
 	"net/http"
 	"strconv"
-	"user"
 
 	"github.com/gorilla/mux"
 	"github.com/uoregon-libraries/gopkg/logger"

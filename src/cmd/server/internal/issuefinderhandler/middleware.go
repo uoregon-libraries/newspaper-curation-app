@@ -2,8 +2,8 @@ package issuefinderhandler
 
 import (
 	"cmd/server/internal/responder"
+	"db/user"
 	"net/http"
-	"user"
 )
 
 // canSearch verifies the user can search issues

@@ -8,9 +8,9 @@ import (
 	"encoding/base64"
 	"html/template"
 
+	"db/user"
 	"net/http"
 	"time"
-	"user"
 	"version"
 	"web/tmpl"
 	"web/webutil"

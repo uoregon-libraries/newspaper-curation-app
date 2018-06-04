@@ -2,8 +2,8 @@ package uploadedissuehandler
 
 import (
 	"cmd/server/internal/responder"
+	"db/user"
 	"net/http"
-	"user"
 )
 
 // canView verifies the user can view uploaded issues
