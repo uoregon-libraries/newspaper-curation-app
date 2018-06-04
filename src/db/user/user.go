@@ -15,7 +15,6 @@ type User struct {
 	Guest       bool   `sql:"-"`
 	IP          string `sql:"-"`
 	roles       []*Role
-	privileges  []*Privilege
 }
 
 // EmptyUser gives us a way to avoid returning a nil *User while still being
