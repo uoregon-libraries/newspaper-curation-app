@@ -3,10 +3,9 @@ package workflowhandler
 import (
 	"cmd/server/internal/responder"
 	"db"
-	"schema"
-
 	"db/user"
 	"net/http"
+	"schema"
 	"strconv"
 
 	"github.com/gorilla/mux"
