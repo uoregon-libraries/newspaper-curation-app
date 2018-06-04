@@ -78,3 +78,35 @@ func TestDeny(t *testing.T) {
 		t.Errorf("Deny should remove roles and reserialize (got %d roles)", len(u.roles))
 	}
 }
+
+func TestCanGrant(t *testing.T) {
+	var u = getu()
+	for _, r := range u.roles {
+		if !u.CanGrant(r) {
+			t.Error("User manager should be allowed to grant any assigned roles")
+		}
+	}
+
+	if u.CanGrant(RoleIssueCurator) {
+		t.Error("User manager shouldn't be allowed to grant unassigned roles")
+	}
+
+	for _, r := range u.roles {
+		u.Deny(r)
+	}
+
+	if u.PermittedTo(ModifyUsers) {
+		t.Error("User with no roles shouldn't be allowed to modify users")
+	}
+
+	u.Grant(RoleIssueCurator)
+	if u.CanGrant(u.roles[0]) {
+		t.Error("Non-user-manager shouldn't be allowed to grant any roles")
+	}
+
+	u.roles = nil
+	u.Grant(RoleAdmin)
+	if !u.CanGrant(RoleUserManager) {
+		t.Errorf("Admin should be allowed to grant user manager role")
+	}
+}
