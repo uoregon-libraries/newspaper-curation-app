@@ -175,3 +175,24 @@ func (u *User) CanGrant(role *Role) bool {
 
 	return false
 }
+
+// CanModifyUser tells us if u can modify the passed-in user
+func (u *User) CanModifyUser(user *User) bool {
+	// First and foremost, let's never let somebody modify themselves - too easy
+	// to accidentally ruin things
+	if u.ID == user.ID {
+		return false
+	}
+
+	// Otherwise, admins can do anything to anybody
+	if u.IsAdmin() {
+		return true
+	}
+
+	// Nobody can modify an admin but another admin
+	if user.IsAdmin() {
+		return false
+	}
+
+	return u.PermittedTo(ModifyUsers)
+}
