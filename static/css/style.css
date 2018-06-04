@@ -55,3 +55,9 @@ form.actions {
 .dl-horizontal dd {
   margin-left: 220px;
 }
+
+/* button-form lets us drop multiple <form> tags in a line when the form is
+ * nothing but a single button, such as "Delete" */
+.button-form {
+  display: inline-block;
+}
