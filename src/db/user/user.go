@@ -28,6 +28,10 @@ func New(login string) *User {
 	return &User{Login: login}
 }
 
+func (u *User) deserialize() {
+	u.buildRoles()
+}
+
 // FindByLogin looks for a user whose login name is the given string
 func FindByLogin(l string) *User {
 	var users []*User
@@ -40,6 +44,8 @@ func FindByLogin(l string) *User {
 	if len(users) == 0 {
 		return EmptyUser
 	}
+
+	users[0].deserialize()
 	return users[0]
 }
 
@@ -55,6 +61,7 @@ func FindByID(id int) *User {
 	if !ok {
 		return EmptyUser
 	}
+	user.deserialize()
 	return user
 }
 
