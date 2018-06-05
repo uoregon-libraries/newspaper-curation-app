@@ -95,7 +95,7 @@ func (r *Runner) Watch(interval time.Duration) {
 
 // Stop signals this job to stop looping once the current job is done
 func (r *Runner) Stop() {
-	r.logger.Infof("Recieved STOP request; attempting to clean up")
+	r.logger.Infof("Received STOP request; attempting to clean up")
 	atomic.StoreInt32(&r.isDone, 1)
 }
 
