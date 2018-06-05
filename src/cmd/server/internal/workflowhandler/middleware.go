@@ -3,11 +3,10 @@ package workflowhandler
 import (
 	"cmd/server/internal/responder"
 	"db"
-	"schema"
-
+	"db/user"
 	"net/http"
+	"schema"
 	"strconv"
-	"user"
 
 	"github.com/gorilla/mux"
 	"github.com/uoregon-libraries/gopkg/logger"

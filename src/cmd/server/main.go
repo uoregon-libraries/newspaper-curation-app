@@ -6,6 +6,7 @@ import (
 	"cmd/server/internal/responder"
 	"cmd/server/internal/settings"
 	"cmd/server/internal/uploadedissuehandler"
+	"cmd/server/internal/userhandler"
 	"cmd/server/internal/workflowhandler"
 	"config"
 	"db"
@@ -17,7 +18,6 @@ import (
 	"path"
 	"path/filepath"
 	"time"
-	"user"
 	"web/webutil"
 
 	"github.com/gorilla/mux"
@@ -52,7 +52,6 @@ func getConf() {
 	if err != nil {
 		logger.Fatalf("Error trying to connect to database: %s", err)
 	}
-	user.DB = db.DB
 
 	// We can ignore the error here because the config magic already verified
 	// that the URL was valid
@@ -113,6 +112,7 @@ func startServer() {
 	workflowhandler.Setup(r, path.Join(hp, "workflow"), conf, watcher)
 	issuefinderhandler.Setup(r, path.Join(hp, "find"), conf, watcher)
 	mochandler.Setup(r, path.Join(hp, "mocs"), conf)
+	userhandler.Setup(r, path.Join(hp, "users"), conf)
 
 	// Any unknown paths get a semi-friendly 404
 	r.NewRoute().PathPrefix("").HandlerFunc(notFound)

@@ -4,12 +4,12 @@ import (
 	"cmd/server/internal/responder"
 	"config"
 	"db"
+	"db/user"
 	"fmt"
 	"html/template"
 	"net/http"
 	"path"
 	"strconv"
-	"user"
 	"web/tmpl"
 
 	"github.com/gorilla/mux"
