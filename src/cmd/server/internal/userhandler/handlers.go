@@ -125,30 +125,34 @@ func editHandler(w http.ResponseWriter, req *http.Request) {
 	r.Render(formTmpl)
 }
 
-// saveHandler inserts or updates a user in the db, translating the checkbox
-// values to Grant/Deny calls
-func saveHandler(w http.ResponseWriter, req *http.Request) {
-	var r = responder.Response(w, req)
-	var u *user.User
-
+// getUserForSave uses the "id" param to determine if this is a create or an
+// update, sets up a User, applies roles based on the form, and returns the
+// user instance.  If anything goes wrong, an error will be sent to the client
+// and "handled" will be true, alerting the caller not to process anything.
+func getUserForSave(r *responder.Responder) (u *user.User, handled bool) {
 	// If this is an update, we need to load the original user first
 	if r.Request.FormValue("id") != "" {
-		var handled bool
 		u, handled = getUserForModify(r)
 		if handled {
-			return
+			return nil, true
 		}
 	} else {
 		var login = r.Request.FormValue("login")
 		u = user.New(login)
 	}
 
-	// Parse form to figure out grants / denies
+	return u, applyRoles(r, u)
+}
+
+// applyRoles parses the form to figure out grants / denies and sets them on
+// the given user.  Returns handled == true if there are any critical errors
+// which should prevent further processing.
+func applyRoles(r *responder.Responder, u *user.User) (handled bool) {
 	var err = r.Request.ParseForm()
 	if err != nil {
 		logger.Errorf("Unable to parse the form when trying to save a user: %s", err)
 		r.Error(http.StatusInternalServerError, "Error trying to save user data - try again or contact support")
-		return
+		return true
 	}
 
 	for param, vlist := range r.Request.Form {
@@ -160,7 +164,7 @@ func saveHandler(w http.ResponseWriter, req *http.Request) {
 			if role == nil {
 				logger.Errorf("Invalid role %q in user editor", roleName)
 				r.Error(http.StatusInternalServerError, "Error trying to save user data - try again or contact support")
-				return
+				return true
 			}
 
 			// This shouldn't be possible unless the user is trying to hack the form
@@ -168,9 +172,10 @@ func saveHandler(w http.ResponseWriter, req *http.Request) {
 				logger.Errorf("User %q trying to set (or remove) an unpermitted role (%q) in user editor",
 					r.Vars.User.Login, role.Name)
 				r.Error(http.StatusUnauthorized, "You are not permitted to set this role")
-				return
+				return true
 			}
 
+			// For safety we only accept one or zero values; anything else is silently thrown away
 			if vlist[0] == "1" {
 				u.Grant(role)
 			}
@@ -181,27 +186,53 @@ func saveHandler(w http.ResponseWriter, req *http.Request) {
 		}
 	}
 
-	// We validate the login after getting all the roles set - this allows us to
-	// redisplay the form with all the role data filled out
-	if u.ID == 0 {
-		var errored bool
-		if u.Login == "" {
-			r.Vars.Alert = template.HTML("Cannot create a user with no login name")
-			errored = true
-		} else if user.FindByLogin(u.Login) != user.EmptyUser {
-			r.Vars.Alert = template.HTML("User " + u.Login + " already exists")
-			errored = true
-		}
+	return false
+}
 
-		if errored {
-			r.Vars.Data["User"] = u
-			r.Vars.Title = "Create a new user"
-			r.Render(formTmpl)
-			return
-		}
+// handleInvalidUser verifies that a new user's login isn't blank and isn't a
+// dupe.  Currently there's no way to have an error if the user isn't new - we
+// already validated the roles are grantable, and you can't edit a user's
+// login.  But we want *all* saves to use this function just in case validation
+// changes in the future.
+func handleInvalidUser(r *responder.Responder, u *user.User) (handled bool) {
+	if u.ID != 0 {
+		return false
 	}
 
-	err = u.Save()
+	if u.Login == "" {
+		r.Vars.Alert = template.HTML("Cannot create a user with no login name")
+		handled = true
+	} else if user.FindByLogin(u.Login) != user.EmptyUser {
+		r.Vars.Alert = template.HTML("User " + u.Login + " already exists")
+		handled = true
+	}
+
+	if handled {
+		r.Vars.Data["User"] = u
+		r.Vars.Title = "Create a new user"
+		r.Render(formTmpl)
+		return true
+	}
+
+	return false
+}
+
+// saveHandler inserts or updates a user in the db, translating the checkbox
+// values to Grant/Deny calls
+func saveHandler(w http.ResponseWriter, req *http.Request) {
+	var r = responder.Response(w, req)
+	var u, handled = getUserForSave(r)
+	if handled {
+		return
+	}
+
+	// We validate the login after getting all the roles set - this allows us to
+	// redisplay the form with all the role data filled out
+	if handleInvalidUser(r, u) {
+		return
+	}
+
+	var err = u.Save()
 	if err != nil {
 		logger.Errorf("Unable to save user %q: %s", u.Login, err)
 		r.Error(http.StatusInternalServerError, "Error trying to save user data - try again or contact support")
