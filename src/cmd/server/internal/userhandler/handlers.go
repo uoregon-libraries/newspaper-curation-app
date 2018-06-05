@@ -234,7 +234,7 @@ func deleteHandler(w http.ResponseWriter, req *http.Request) {
 		return
 	}
 
-	r.Audit("delete-user", u.Name)
+	r.Audit("delete-user", u.Login)
 	http.SetCookie(w, &http.Cookie{Name: "Info", Value: "Deleted user", Path: "/"})
 	http.Redirect(w, req, basePath, http.StatusFound)
 }
