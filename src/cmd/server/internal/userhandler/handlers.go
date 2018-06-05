@@ -39,6 +39,7 @@ func Setup(r *mux.Router, baseWebPath string, c *config.Config) {
 	s.Path("/new").Handler(canModify(newHandler))
 	s.Path("/edit").Handler(canModify(editHandler))
 	s.Path("/save").Methods("POST").Handler(canModify(saveHandler))
+	s.Path("/delete").Methods("POST").Handler(canModify(deleteHandler))
 
 	layout = responder.Layout.Clone()
 	layout.Funcs(tmpl.FuncMap{
@@ -209,6 +210,32 @@ func saveHandler(w http.ResponseWriter, req *http.Request) {
 
 	r.Audit("save-user", fmt.Sprintf("Login: %q, roles: %q", u.Login, u.RolesString))
 	http.SetCookie(w, &http.Cookie{Name: "Info", Value: "User data saved", Path: "/"})
+	http.Redirect(w, req, basePath, http.StatusFound)
+}
+
+// deleteHandler removes the given user from the db
+func deleteHandler(w http.ResponseWriter, req *http.Request) {
+	var r = responder.Response(w, req)
+	var u, handled = getUserForModify(r)
+	if handled {
+		return
+	}
+
+	// Make sure the current user can actually edit the loaded user
+	if !r.Vars.User.CanModifyUser(u) {
+		r.Error(http.StatusUnauthorized, "You are not allowed to delete this user")
+		return
+	}
+
+	var err = u.Delete()
+	if err != nil {
+		logger.Errorf("Unable to delete user (id %d): %s", u.ID, err)
+		r.Error(http.StatusInternalServerError, "Error trying to delete user - try again or contact support")
+		return
+	}
+
+	r.Audit("delete-user", u.Name)
+	http.SetCookie(w, &http.Cookie{Name: "Info", Value: "Deleted user", Path: "/"})
 	http.Redirect(w, req, basePath, http.StatusFound)
 }
 

@@ -210,3 +210,14 @@ func (u *User) CanModifyUser(user *User) bool {
 
 	return u.PermittedTo(ModifyUsers)
 }
+
+// Delete attempts to remove this user from the database
+func (u *User) Delete() error {
+	var op = db.DB.Operation()
+	op.Dbg = db.Debug
+	op.Exec("DELETE FROM users WHERE id = ?", u.ID)
+	if op.Err() == nil {
+		u.ID = 0
+	}
+	return op.Err()
+}
