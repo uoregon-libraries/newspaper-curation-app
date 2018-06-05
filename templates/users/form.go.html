@@ -18,20 +18,20 @@
       <th scope="col">Status</th>
     </tr>
 
-    {{range Roles}}
-    {{if $.User.CanGrant .}}
+    {{range $count, $role := Roles}}
+    {{if $.User.CanGrant $role}}
     <tr>
-      <th scope="row">{{.Title}}</th>
-      <td>{{.Desc}}</td>
+      <th scope="row">{{$role.Title}}</th>
+      <td>{{$role.Desc}}</td>
 
       <td class="radio-group">
-        <input type="radio" id="{{.Name}}-on"
-          name="{{.Name}}" value="1" {{if $.Data.User.HasRole .}}checked{{end}} />
-        <label for="{{.Name}}-on">Assigned</label>
+        <input type="radio" id="{{$count}}-on"
+          name="role-{{$role.Name}}" value="1" {{if $.Data.User.HasRole .}}checked{{end}} />
+        <label for="{{$count}}-on">Assigned</label>
 
-        <input type="radio" id="{{.Name}}-off"
-          name="{{.Name}}" value="0" {{if not ($.Data.User.HasRole .)}}checked{{end}} />
-        <label for="{{.Name}}-off">Not assigned</label>
+        <input type="radio" id="{{$count}}-off"
+          name="role-{{$role.Name}}" value="0" {{if not ($.Data.User.HasRole .)}}checked{{end}} />
+        <label for="{{$count}}-off">Not assigned</label>
       </td>
 
     </tr>

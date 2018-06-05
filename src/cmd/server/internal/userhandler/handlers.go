@@ -4,6 +4,8 @@ import (
 	"cmd/server/internal/responder"
 	"config"
 	"db/user"
+	"fmt"
+	"html/template"
 	"net/http"
 	"path"
 	"strconv"
@@ -36,6 +38,7 @@ func Setup(r *mux.Router, baseWebPath string, c *config.Config) {
 	s.Path("").Handler(canView(listHandler))
 	s.Path("/new").Handler(canModify(newHandler))
 	s.Path("/edit").Handler(canModify(editHandler))
+	s.Path("/save").Methods("POST").Handler(canModify(saveHandler))
 
 	layout = responder.Layout.Clone()
 	layout.Funcs(tmpl.FuncMap{
@@ -119,6 +122,94 @@ func editHandler(w http.ResponseWriter, req *http.Request) {
 	r.Vars.Data["User"] = u
 	r.Vars.Title = "Editing " + u.Login
 	r.Render(formTmpl)
+}
+
+// saveHandler inserts or updates a user in the db, translating the checkbox
+// values to Grant/Deny calls
+func saveHandler(w http.ResponseWriter, req *http.Request) {
+	var r = responder.Response(w, req)
+	var u *user.User
+
+	// If this is an update, we need to load the original user first
+	if r.Request.FormValue("id") != "" {
+		var handled bool
+		u, handled = getUserForModify(r)
+		if handled {
+			return
+		}
+	} else {
+		var login = r.Request.FormValue("login")
+		u = user.New(login)
+	}
+
+	// Parse form to figure out grants / denies
+	var err = r.Request.ParseForm()
+	if err != nil {
+		logger.Errorf("Unable to parse the form when trying to save a user: %s", err)
+		r.Error(http.StatusInternalServerError, "Error trying to save user data - try again or contact support")
+		return
+	}
+
+	for param, vlist := range r.Request.Form {
+		if len(param) > 5 && param[:5] == "role-" {
+			var roleName = param[5:]
+			var role = user.FindRole(roleName)
+
+			// This shouldn't be possible *unless* I screwed up the form, in which case the user can't do much
+			if role == nil {
+				logger.Errorf("Invalid role %q in user editor", roleName)
+				r.Error(http.StatusInternalServerError, "Error trying to save user data - try again or contact support")
+				return
+			}
+
+			// This shouldn't be possible unless the user is trying to hack the form
+			if !r.Vars.User.CanGrant(role) {
+				logger.Errorf("User %q trying to set (or remove) an unpermitted role (%q) in user editor",
+					r.Vars.User.Login, role.Name)
+				r.Error(http.StatusUnauthorized, "You are not permitted to set this role")
+				return
+			}
+
+			if vlist[0] == "1" {
+				u.Grant(role)
+			}
+
+			if vlist[0] == "0" {
+				u.Deny(role)
+			}
+		}
+	}
+
+	// We validate the login after getting all the roles set - this allows us to
+	// redisplay the form with all the role data filled out
+	if u.ID == 0 {
+		var errored bool
+		if u.Login == "" {
+			r.Vars.Alert = template.HTML("Cannot create a user with no login name")
+			errored = true
+		} else if user.FindByLogin(u.Login) != user.EmptyUser {
+			r.Vars.Alert = template.HTML("User " + u.Login + " already exists")
+			errored = true
+		}
+
+		if errored {
+			r.Vars.Data["User"] = u
+			r.Vars.Title = "Create a new user"
+			r.Render(formTmpl)
+			return
+		}
+	}
+
+	err = u.Save()
+	if err != nil {
+		logger.Errorf("Unable to save user %q: %s", u.Login, err)
+		r.Error(http.StatusInternalServerError, "Error trying to save user data - try again or contact support")
+		return
+	}
+
+	r.Audit("save-user", fmt.Sprintf("Login: %q, roles: %q", u.Login, u.RolesString))
+	http.SetCookie(w, &http.Cookie{Name: "Info", Value: "User data saved", Path: "/"})
+	http.Redirect(w, req, basePath, http.StatusFound)
 }
 
 // canView verifies the user can view the user list

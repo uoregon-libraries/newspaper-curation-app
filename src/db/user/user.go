@@ -125,6 +125,15 @@ func (u *User) IsAdmin() bool {
 	return u.HasRole(RoleAdmin)
 }
 
+// Save stores the user's data to the database, rewriting the roles list
+func (u *User) Save() error {
+	var op = db.DB.Operation()
+	op.Dbg = db.Debug
+	u.serialize()
+	op.Save("users", u)
+	return op.Err()
+}
+
 func (u *User) makeRoleString() string {
 	var roleNames = make([]string, len(u.roles))
 	for i, r := range u.roles {
