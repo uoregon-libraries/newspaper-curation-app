@@ -61,3 +61,11 @@ form.actions {
 .button-form {
   display: inline-block;
 }
+
+.radio-group {
+  white-space: nowrap;
+}
+
+.radio-group input {
+  margin-left: 1em;
+}

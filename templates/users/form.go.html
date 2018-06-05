@@ -1,0 +1,47 @@
+{{block "content" .}}
+
+<form class="form-horizontal" role="form" method="post" action="{{UsersHomeURL}}/save">
+  {{if .Data.User.ID}}
+  <input type="hidden" name="id" value="{{.Data.User.ID}}" />
+  {{else}}
+  <div class="form-group">
+    <label for="login">Login Name</label>
+    <input name="login" id="login" />
+  </div>
+  {{end}}
+
+  <table class="table table-striped table-bordered table-condensed">
+    <caption>Roles</caption>
+    <tr>
+      <th scope="col">Role Name</th>
+      <th scope="col">Description</th>
+      <th scope="col">Status</th>
+    </tr>
+
+    {{range Roles}}
+    {{if $.User.CanGrant .}}
+    <tr>
+      <th scope="row">{{.Title}}</th>
+      <td>{{.Desc}}</td>
+
+      <td class="radio-group">
+        <input type="radio" id="{{.Name}}-on"
+          name="{{.Name}}" value="1" {{if $.Data.User.HasRole .}}checked{{end}} />
+        <label for="{{.Name}}-on">Assigned</label>
+
+        <input type="radio" id="{{.Name}}-off"
+          name="{{.Name}}" value="0" {{if not ($.Data.User.HasRole .)}}checked{{end}} />
+        <label for="{{.Name}}-off">Not assigned</label>
+      </td>
+
+    </tr>
+    {{end}}<!-- user is allowed to grant this role -->
+    {{end}}<!-- range loop -->
+  </table>
+
+  <div class="form-group">
+    <button type="submit">Save</button>
+  </div>
+</form>
+
+{{end}}

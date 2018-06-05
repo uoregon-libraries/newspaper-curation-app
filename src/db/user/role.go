@@ -1,6 +1,9 @@
 package user
 
-import "regexp"
+import (
+	"regexp"
+	"strings"
+)
 
 // A Role defines a grouping of privileges
 type Role struct {
@@ -41,6 +44,17 @@ var (
 // roles is our internal map of string to Role object
 var roles = make(map[string]*Role)
 
+// AssignableRoles is a list of roles which can be assigned to a user
+var AssignableRoles = []*Role{
+	RoleAdmin,
+	RoleTitleManager,
+	RoleIssueCurator,
+	RoleIssueReviewer,
+	RoleUserManager,
+	RoleMOCManager,
+	RoleWorkflowManager,
+}
+
 // newRole is internal as the list of roles shouldn't be modified by anything external
 func newRole(name, desc string) *Role {
 	var r = &Role{Name: name, Desc: oneline(desc)}
@@ -62,4 +76,10 @@ func (r *Role) Privileges() []*Privilege {
 		}
 	}
 	return privs
+}
+
+// Title returns a slightly nicer string for display
+func (r *Role) Title() string {
+	// Uppercase all words, and also ensure "MARC" is fully capitalized
+	return strings.Title(strings.Replace(r.Name, "marc", "MARC", -1))
 }

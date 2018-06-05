@@ -88,6 +88,17 @@ func (u *User) Roles() []*Role {
 	return u.roles
 }
 
+// HasRole returns true if the user has role in their list of roles
+func (u *User) HasRole(role *Role) bool {
+	for _, r := range u.Roles() {
+		if r == role {
+			return true
+		}
+	}
+
+	return false
+}
+
 func (u *User) buildRoles() {
 	var roleStrings = strings.Split(u.RolesString, ",")
 	u.roles = make([]*Role, 0)
@@ -111,13 +122,7 @@ func (u *User) PermittedTo(priv *Privilege) bool {
 
 // IsAdmin is true if this user has the admin role
 func (u *User) IsAdmin() bool {
-	for _, r := range u.Roles() {
-		if r == RoleAdmin {
-			return true
-		}
-	}
-
-	return false
+	return u.HasRole(RoleAdmin)
 }
 
 func (u *User) makeRoleString() string {
