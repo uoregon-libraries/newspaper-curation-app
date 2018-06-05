@@ -81,61 +81,69 @@ func parseIssueData(data mods.Data) {
 	// Go through the "relatedItem" tags to pull out the LCCN and dive into the
 	// issue metadata "detail" parts
 	for _, item := range data.RelatedItems {
-		if item.Type == "host" {
-			for _, id := range item.IDs {
-				if id.Type == "lccn" {
-					title.LCCN = id.Label
-					issue.LCCN = id.Label
-				}
-			}
-			// Each "part" can have multiple details, each of which contain our issue
-			// metadata: volume, issue, edition number, edition label
-			for _, part := range item.Parts {
-				for _, detail := range part.Details {
-					switch detail.Type {
-					case "volume":
-						issue.Volume = detail.Number
-					case "issue":
-						issue.Issue = detail.Number
-					case "edition":
-						var err error
-						issue.Edition, err = strconv.Atoi(detail.Number)
-						if err != nil || issue.Edition == 0 {
-							fail("Invalid value for issue edition: %q", detail.Number)
-						}
-						issue.EditionLabel = detail.Caption
-					}
-				}
-			}
-		}
+		parseRelatedItems(item)
 	}
 
 	// Origin info gives us the issue date and a possible date-as-labeled value
 	for _, info := range data.OriginInfos {
-		for _, date := range info.Dates {
-			switch date.Qualifier {
-			case "":
-				if issue.Date != "" {
-					fail("Too many dates found")
-				}
-				issue.Date = date.Date
-
-			case "questionable":
-				if issue.DateAsLabeled != "" {
-					fail("Too many date with 'questionable' qualifier found")
-				}
-				issue.DateAsLabeled = date.Date
-
-			default:
-				fail("Unknown date qualifier: %q", date.Qualifier)
-			}
-		}
+		parseOriginInfo(info)
 	}
 
 	// If there weren't any "questionable" dates, then DateAsLabeled is the same
 	// as the actual issue date
 	if issue.DateAsLabeled == "" {
 		issue.DateAsLabeled = issue.Date
+	}
+}
+
+func parseRelatedItems(item mods.RelItem) {
+	if item.Type == "host" {
+		for _, id := range item.IDs {
+			if id.Type == "lccn" {
+				title.LCCN = id.Label
+				issue.LCCN = id.Label
+			}
+		}
+		// Each "part" can have multiple details, each of which contain our issue
+		// metadata: volume, issue, edition number, edition label
+		for _, part := range item.Parts {
+			for _, detail := range part.Details {
+				switch detail.Type {
+				case "volume":
+					issue.Volume = detail.Number
+				case "issue":
+					issue.Issue = detail.Number
+				case "edition":
+					var err error
+					issue.Edition, err = strconv.Atoi(detail.Number)
+					if err != nil || issue.Edition == 0 {
+						fail("Invalid value for issue edition: %q", detail.Number)
+					}
+					issue.EditionLabel = detail.Caption
+				}
+			}
+		}
+	}
+}
+
+func parseOriginInfo(info mods.OriginInfo) {
+	for _, date := range info.Dates {
+		switch date.Qualifier {
+		case "":
+			if issue.Date != "" {
+				fail("Too many dates found")
+			}
+			issue.Date = date.Date
+
+		case "questionable":
+			if issue.DateAsLabeled != "" {
+				fail("Too many date with 'questionable' qualifier found")
+			}
+			issue.DateAsLabeled = date.Date
+
+		default:
+			fail("Unknown date qualifier: %q", date.Qualifier)
+		}
 	}
 }
 
