@@ -65,7 +65,7 @@ func TestTSV(t *testing.T) {
 	if err != nil {
 		t.Fatalf("Error getting current directory: %s", err)
 	}
-	testDir = filepath.Join(workDir, "../../test")
+	testDir = filepath.Join(workDir, "../cmd/server")
 	infos, err = fileutil.ReaddirSorted(testDir)
 	if err != nil {
 		t.Fatalf("Error reading %q: %s", testDir, err)
@@ -88,7 +88,7 @@ func TestTSV(t *testing.T) {
 		"somewhereOnDisk\\tsn12345678\\tTreehugger's Digest\\tEugene, Oregon\\t000001",
 		"/mnt/news/data/workflow/2004260523-2001020304-1",
 		"2001020304", "",
-		".gitignore,copy-sources.go,fakemount,make-older.sh,mets.sh,rename-page-review.sh,reset.sh,sources",
+		"internal,main.go,middleware.go",
 	}, "\t")
 	var tsv = i.TSV()
 	if tsv != expectedTSV {
