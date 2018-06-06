@@ -9,5 +9,5 @@ for file in $(find fakemount/page-review/ -name "*.pdf" | sort); do
   fi
   let c=c+1
   newfile=$(printf "%04d.pdf" $c)
-  echo "mv $file $dir/$newfile"
+  mv $file $dir/$newfile
 done
