@@ -22,6 +22,8 @@ if [[ $unformatted != "" ]]; then
   err "---------------------"
   err $unformatted
   result=1
+  err
+  err "Note: you can run 'make format' to rewrite offending files in place"
 fi
 
 if [[ $linter != "" ]]; then
