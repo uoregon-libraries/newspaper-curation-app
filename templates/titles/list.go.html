@@ -20,7 +20,7 @@
   <tbody>
     {{range .Data.Titles}}
       <tr>
-        <th scope="row">{{.Title}}</th>
+        <th scope="row" class="sortkey-{{.SortName}}">{{.Title.Title}}</th>
         <td>{{.LCCN}}</td>
         <td>{{if .Embargoed}}Yes{{else}}No{{end}}</td>
         <td>{{.Rights}}</td>

@@ -44,13 +44,15 @@ func Setup(r *mux.Router, baseWebPath string, c *config.Config) {
 func listHandler(w http.ResponseWriter, req *http.Request) {
 	var r = responder.Response(w, req)
 	r.Vars.Title = "Titles"
-	var titles, err = db.Titles()
+	var dbTitles, err = db.Titles()
 	if err != nil {
 		logger.Errorf("Unable to load title list: %s", err)
 		r.Error(http.StatusInternalServerError, "Error trying to pull title list - try again or contact support")
 		return
 	}
 
+	var titles = WrapTitles(dbTitles)
+	SortTitles(titles)
 	r.Vars.Data["Titles"] = titles
 	r.Render(listTmpl)
 }
