@@ -13,9 +13,10 @@ type Title struct {
 	Rights       string
 	ValidLCCN    bool
 	SFTPDir      string
+	SFTPUser     string
+	SFTPPass     string
 	MarcTitle    string
 	MarcLocation string
-	IsHistoric   bool
 }
 
 // FindTitle searches the database for a single title
