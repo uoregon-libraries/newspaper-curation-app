@@ -43,11 +43,7 @@ services:
       - ./db/migrations:/usr/local/nca/db/migrations:z
       - ./db/dbconf-example.yml:/usr/local/nca/db/dbconf.yml:z
 
-  # Mount in the apache configs for easier debugging (so you don't have to
-  # issue a `docker-compose build apache` each time you change this stuff)
-  apache:
-    volumes:
-      - ./docker/apache/nca.conf:/etc/apache2/sites-available/nca.conf:Z
-      - ./docker/apache/httpd-foreground:/usr/local/bin/httpd-foreground:Z
+  # Expose port 80 to the host's port 80
+  proxy:
     ports:
       - 80:80
