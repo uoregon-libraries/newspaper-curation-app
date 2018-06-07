@@ -5,6 +5,7 @@ import (
 	"cmd/server/internal/mochandler"
 	"cmd/server/internal/responder"
 	"cmd/server/internal/settings"
+	"cmd/server/internal/titlehandler"
 	"cmd/server/internal/uploadedissuehandler"
 	"cmd/server/internal/userhandler"
 	"cmd/server/internal/workflowhandler"
@@ -111,6 +112,7 @@ func startServer() {
 	issuefinderhandler.Setup(r, path.Join(hp, "find"), conf, watcher)
 	mochandler.Setup(r, path.Join(hp, "mocs"), conf)
 	userhandler.Setup(r, path.Join(hp, "users"), conf)
+	titlehandler.Setup(r, path.Join(hp, "titles"), conf)
 
 	// Any unknown paths get a semi-friendly 404
 	r.NewRoute().PathPrefix("").HandlerFunc(notFound)
