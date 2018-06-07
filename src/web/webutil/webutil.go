@@ -15,9 +15,6 @@ import (
 // handlers and site assets
 var Webroot string
 
-// ParentWebroot is a hack to deal with our horrific painful legacy PHP
-var ParentWebroot string
-
 // WorkflowPath is the path to the workflow directory for serving IIIF images
 var WorkflowPath string
 
@@ -46,11 +43,6 @@ func HomePath() string {
 // ImageURL takes a file and constructs an absolute web path string
 func ImageURL(file string) string {
 	return StaticPath("images", file)
-}
-
-// ParentURL takes a path and joins it with the configured path to the parent app
-func ParentURL(loc string) string {
-	return path.Join(ParentWebroot, loc)
 }
 
 // IncludeCSS generates a <link> tag with an absolute path for including the

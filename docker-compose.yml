@@ -61,7 +61,7 @@ services:
       - 8080
     depends_on:
       - db-migrate
-    command: ./bin/server -c ./settings --parent-webroot="/nca-legacy" --debug
+    command: ./bin/server -c ./settings --debug
 
   workers:
     extends: app

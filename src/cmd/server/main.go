@@ -26,9 +26,8 @@ import (
 )
 
 var opts struct {
-	ParentWebroot string `long:"parent-webroot" description:"The base path to the parent app" required:"true"`
-	ConfigFile    string `short:"c" long:"config" description:"path to NCA config file" required:"true"`
-	Debug         bool   `long:"debug" description:"Enables debug mode for testing different users"`
+	ConfigFile string `short:"c" long:"config" description:"path to NCA config file" required:"true"`
+	Debug      bool   `long:"debug" description:"Enables debug mode for testing different users"`
 }
 
 var conf *config.Config
@@ -57,7 +56,6 @@ func getConf() {
 	// that the URL was valid
 	var u, _ = url.Parse(conf.Webroot)
 	webutil.Webroot = u.Path
-	webutil.ParentWebroot = opts.ParentWebroot
 	webutil.WorkflowPath = conf.WorkflowPath
 	webutil.IIIFBaseURL = conf.IIIFBaseURL
 
