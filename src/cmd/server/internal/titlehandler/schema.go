@@ -19,7 +19,7 @@ type Title struct {
 // WrapTitle converts a db.Title to a Title, giving it a useful "SortName"
 // based on its name (stripped of common prefixes) and LCCN
 func WrapTitle(t *db.Title) *Title {
-	return &Title{t, strings.ToLower(re.ReplaceAllString(schema.TrimCommonPrefixes(t.Title)+t.LCCN, "-"))}
+	return &Title{t, strings.ToLower(re.ReplaceAllString(schema.TrimCommonPrefixes(t.Name)+t.LCCN, "-"))}
 }
 
 // WrapTitles takes a db.TitleList and wraps each title individually

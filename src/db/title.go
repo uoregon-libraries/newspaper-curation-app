@@ -7,7 +7,7 @@ import (
 // Title holds records from the titles table
 type Title struct {
 	ID           int `sql:",primary"`
-	Title        string
+	Name         string
 	LCCN         string
 	Embargoed    bool
 	Rights       string
@@ -84,17 +84,17 @@ func (t *Title) SchemaTitle() *schema.Title {
 		return nil
 	}
 
-	var ttl, loc = t.MarcTitle, t.MarcLocation
+	var name, loc = t.MarcTitle, t.MarcLocation
 
 	// Not great, but this does the trick well enough when we haven't gotten a
 	// valid MARC record
 	if !t.ValidLCCN {
-		ttl = t.Title
+		name = t.Name
 	}
 
 	return &schema.Title{
 		LCCN:               t.LCCN,
-		Name:               ttl,
+		Name:               name,
 		PlaceOfPublication: loc,
 	}
 }
