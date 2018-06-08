@@ -137,7 +137,7 @@ func setTitleData(r *responder.Responder, t *Title) (vErrors []string, handled b
 	}
 
 	var form = r.Request.Form
-	t.Name = form.Get("title")
+	t.Name = form.Get("name")
 	t.Rights = form.Get("rights")
 
 	switch form.Get("embargoed") {
@@ -164,7 +164,7 @@ func setTitleData(r *responder.Responder, t *Title) (vErrors []string, handled b
 	}
 
 	if t.Name == "" {
-		vErrors = append(vErrors, "Title cannot be blank")
+		vErrors = append(vErrors, "Name cannot be blank")
 	}
 	if t.LCCN == "" {
 		vErrors = append(vErrors, "LCCN cannot be blank")
