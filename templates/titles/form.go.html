@@ -1,0 +1,115 @@
+{{block "content" .}}
+
+<form class="form-horizontal" role="form" method="post" action="{{TitlesHomeURL}}/save">
+  {{if .Data.Title.ID}}
+  <input type="hidden" name="id" value="{{.Data.Title.ID}}" />
+  {{end}}
+
+  <div class="form-group">
+    <label class="col-sm-4 control-label" for="title">Title</label>
+    <div class="col-sm-8">
+      <input id="title" name="title" value="{{.Data.Title.Name}}" required="required" class="form-control" />
+      <p class="help-block">Enter the title as required by chronam: "title. (city, Or.)"</p>
+    </div>
+  </div>
+  </table>
+
+  <div class="form-group">
+    <label class="col-sm-4 control-label" for="lccn">LCCN</label>
+    <div class="col-sm-8">
+      {{if .Data.Title.ValidLCCN}}
+        {{if .User.PermittedTo ModifyValidatedLCCNs}}
+          <input id="lccn" name="lccn" value="{{.Data.Title.LCCN}}" class="form-control" required="required" />
+          <p class="help-block">This LCCN has been validated - only change it if you're certain this is necessary!</p>
+        {{else}}
+          <input id="lccn" value="{{.Data.Title.LCCN}}" class="form-control" disabled="disabled" />
+          <p class="help-block">This LCCN has been validated and cannot be changed</p>
+        {{end}}
+      {{else}}
+        <input id="lccn" name="lccn" value="{{.Data.Title.LCCN}}" class="form-control" required="required" />
+      {{end}}
+    </div>
+  </div>
+
+  <div class="form-group">
+    <label class="col-sm-4 control-label" for="embargoed">Embargoed?</label>
+    <div class="col-sm-8">
+      <select id="embargoed" name="embargoed" required="required">
+        <option value="">-- Select Embargo Status --</option>
+        <option value="0"{{if not .Data.Title.Embargoed}} selected="selected"{{end}}>No</option>
+        <option value="1"{{if .Data.Title.Embargoed}} selected="selected"{{end}}>Yes</option>
+      </select>
+    </div>
+  </div>
+
+  <div class="form-group">
+    <label class="col-sm-4 control-label" for="rights">Rights</label>
+    <div class="col-sm-8">
+      <select id="rights" name="rights">
+        <option value="">** NO Rights statement **</option>
+
+        <option value="http://www.europeana.eu/rights/rr-f/"
+          {{if eq .Data.Title.Rights "http://www.europeana.eu/rights/rr-f/"}} selected="selected"{{end}}
+        >http://www.europeana.eu/rights/rr-f/</option>
+
+        <option value="http://creativecommons.org/licenses/by/4.0/"
+          {{if eq .Data.Title.Rights "http://creativecommons.org/licenses/by/4.0/"}} selected="selected"{{end}}
+        >http://creativecommons.org/licenses/by/4.0/</option>
+
+        <option value="http://creativecommons.org/licenses/by-nc/4.0/"
+          {{if eq .Data.Title.Rights "http://creativecommons.org/licenses/by-nc/4.0/"}} selected="selected"{{end}}
+        >http://creativecommons.org/licenses/by-nc/4.0/</option>
+
+        <option value="http://creativecommons.org/licenses/by-nc-nd/4.0/"
+          {{if eq .Data.Title.Rights "http://creativecommons.org/licenses/by-nc-nd/4.0/"}} selected="selected"{{end}}
+        >http://creativecommons.org/licenses/by-nc-nd/4.0/</option>
+      </select>
+    </div>
+  </div>
+
+  {{if .User.PermittedTo ModifyTitleSFTP}}
+  <div class="form-group">
+    <label class="col-sm-4 control-label" for="sftpdir">SFTP directory</label>
+    <div class="col-sm-8">
+      <input id="sftpdir" name="sftpdir" value="{{.Data.Title.SFTPDir}}" class="form-control" />
+    </div>
+  </div>
+
+  <div class="form-group">
+    <label class="col-sm-4 control-label" for="sftpuser">SFTP username</label>
+    <div class="col-sm-8">
+      <input id="sftpuser" name="sftpuser" value="{{.Data.Title.SFTPUser}}" class="form-control" />
+    </div>
+  </div>
+
+  <div class="form-group">
+    <label class="col-sm-4 control-label" for="sftppass">SFTP password</label>
+    <div class="col-sm-8">
+      <input id="sftppass" name="sftppass" value="{{.Data.Title.SFTPPass}}" class="form-control" />
+    </div>
+  </div>
+
+  {{else if and (ne .Data.Title.ID 0) (.User.PermittedTo ViewTitleSFTPCredentials)}}
+  <div class="form-group">
+    <label class="col-sm-4 control-label" for="sftpuser">SFTP username</label>
+    <div class="col-sm-8">
+      <p id="sftpuser" class="form-control-static">{{.Data.Title.SFTPUser}}</p>
+    </div>
+  </div>
+
+  <div class="form-group">
+    <label class="col-sm-4 control-label" for="sftppass">SFTP password</label>
+    <div class="col-sm-8">
+      <p id="sftppass" class="form-control-static">{{.Data.Title.SFTPPass}}</p>
+    </div>
+  </div>
+  {{end}}
+
+  <div class="form-group">
+    <div class="col-sm-8 col-sm-offset-4">
+      <input class="btn btn-default" type="Submit" value="Submit" />
+    </div>
+  </div>
+</form>
+
+{{end}}

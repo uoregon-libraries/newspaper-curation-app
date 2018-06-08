@@ -25,7 +25,7 @@
         <td>{{if .Embargoed}}Yes{{else}}No{{end}}</td>
         <td>{{.Rights}}</td>
         <td>
-          <a href="/titles/{{.ID}}/edit">Edit</a>
+          <a href="{{TitlesHomeURL}}/edit?id={{.ID}}">Edit</a>
         </td>
       </tr>
     {{end}}

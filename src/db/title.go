@@ -28,6 +28,11 @@ func FindTitle(where string, args ...interface{}) (*Title, error) {
 	return t, op.Err()
 }
 
+// FindTitleByID wraps FindTitle to simplify basic finding
+func FindTitleByID(id int) (*Title, error) {
+	return FindTitle("id = ?", id)
+}
+
 // TitleList holds a full list of database titles for quick scan operations on
 // all titles, such as is needed to do mass lookups of issues' LCCNs
 type TitleList []*Title
