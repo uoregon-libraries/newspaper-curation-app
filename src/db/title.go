@@ -82,6 +82,14 @@ func (tl TitleList) Find(identifier string) *Title {
 	return nil
 }
 
+// Save stores the title data in the database
+func (t *Title) Save() error {
+	var op = DB.Operation()
+	op.Dbg = Debug
+	op.Save("titles", t)
+	return op.Err()
+}
+
 // SchemaTitle converts a database Title to a schema.Title instance
 func (t *Title) SchemaTitle() *schema.Title {
 	// Check for self being nil so we can safely chain this function
