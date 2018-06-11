@@ -224,6 +224,14 @@ func saveHandler(w http.ResponseWriter, req *http.Request) {
 		return
 	}
 
+	// We only check on MARC XML if we were able to save successfully to the
+	// database; this data is useful, but not critical to NCA's operations, so we
+	// run it in the background and let it do its thing when it can.  This should
+	// probably be a new job or something, though.
+	if !t.ValidLCCN {
+		go pullMARCForTitle(t)
+	}
+
 	r.Audit("save-title", fmt.Sprintf("%#v", r.Request.Form))
 	http.SetCookie(w, &http.Cookie{Name: "Info", Value: "Title saved", Path: "/"})
 	http.Redirect(w, r.Request, basePath, http.StatusFound)
