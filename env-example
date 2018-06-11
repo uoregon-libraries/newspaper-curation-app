@@ -1,4 +1,12 @@
 # Copy this to .env and modify to give docker-compose preset environment vars
+
+# APP_URL tells NCA how it would build a URL for things like the RAIS image server
 APP_URL=http://localhost
+
+# NCA_NEWS_WEBROOT tells NCA where to find the live newspaper issues
 NCA_NEWS_WEBROOT=https://oregonnews.uoregon.edu
+
+# COMPOSE_PROJECT_NAME ensures all `docker-compose` commands use "nca" as the
+# project name so that if you rename the directory in which your code resides,
+# you don't "lose" the image, containers, and volumes.
 COMPOSE_PROJECT_NAME=nca

@@ -9,9 +9,9 @@ up the IIIF server, how to find the live issues, etc.
   export NCA_NEWS_WEBROOT="https://oregonnews.uoregon.edu"
 ```
 
-Consider copying `docker-compose.override.yml-example` to customize your setup
-to be more development-friendly.  You could also put in your own values for the
-various environment variables so you didn't have to do the "export..." dance
-every time you need to start the system up from a new environment.
+Consider copying `docker-compose.override.yml-example` to
+`docker-compose.override.yml` and `env-example` to `.env` as both example files
+contain decent defaults for a development setup.  (*You'll obviously need to
+change `.env` after copying it*)
 
 The application will be available at `$APP_URL/nca`.
