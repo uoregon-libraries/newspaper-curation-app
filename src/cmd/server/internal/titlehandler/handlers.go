@@ -39,6 +39,7 @@ func Setup(r *mux.Router, baseWebPath string, c *config.Config) {
 	s.Path("/new").Handler(canModify(newHandler))
 	s.Path("/edit").Handler(canModify(editHandler))
 	s.Path("/save").Methods("POST").Handler(canModify(saveHandler))
+	s.Path("/validate").Methods("POST").Handler(canModify(validateHandler))
 
 	layout = responder.Layout.Clone()
 	layout.Funcs(tmpl.FuncMap{
@@ -234,5 +235,26 @@ func saveHandler(w http.ResponseWriter, req *http.Request) {
 
 	r.Audit("save-title", fmt.Sprintf("%#v", r.Request.Form))
 	http.SetCookie(w, &http.Cookie{Name: "Info", Value: "Title saved", Path: "/"})
+	http.Redirect(w, r.Request, basePath, http.StatusFound)
+}
+
+func validateHandler(w http.ResponseWriter, req *http.Request) {
+	var r = responder.Response(w, req)
+	var t, handled = getTitle(r)
+	if handled {
+		return
+	}
+
+	// When validation is explicitly requested, the user waits for a response
+	pullMARCForTitle(t)
+	r.Audit("validate-title", fmt.Sprintf("%q %q", t.MARCTitle, t.MARCLocation))
+
+	var alertLevel = "Info"
+	var response = "Validated LCCN"
+	if !t.ValidLCCN {
+		alertLevel = "Alert"
+		response = "LCCN was not able to be validated at this time - Chronicling America may be down or the LCCN may not be in their database"
+	}
+	http.SetCookie(w, &http.Cookie{Name: alertLevel, Value: response, Path: "/"})
 	http.Redirect(w, r.Request, basePath, http.StatusFound)
 }

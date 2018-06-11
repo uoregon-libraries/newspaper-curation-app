@@ -45,6 +45,14 @@
         {{if $.User.PermittedTo ModifyTitles}}
         <td>
           <a href="{{TitlesHomeURL}}/edit?id={{.ID}}" class="btn btn-default">Edit</a>
+
+          {{if not .ValidLCCN}}
+          <form action="{{TitlesHomeURL}}/validate" method="post">
+            <input type="hidden" name="id" value="{{.ID}}" />
+            <button type="submit" class="btn btn-default">Validate LCCN</button>
+          </form>
+          {{end}}
+
         </td>
         {{end}}
       </tr>
