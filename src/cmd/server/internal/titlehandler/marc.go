@@ -30,6 +30,10 @@ type marc struct {
 // pullMARCForTitle pulls the MARC record from the library of congress and sets the
 // title's data if successful
 func pullMARCForTitle(t *Title) {
+	t.ValidLCCN = false
+	t.MARCTitle = ""
+	t.MARCLocation = ""
+
 	var marcURL = "https://chroniclingamerica.loc.gov/lccn/" + t.LCCN + "/marc.xml"
 	var resp, err = http.Get(marcURL)
 	// An error from the Get call is not a deal-breaker, though we do want to
