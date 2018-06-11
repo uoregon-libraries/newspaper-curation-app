@@ -180,6 +180,9 @@ func setTitleData(r *responder.Responder, t *Title) (vErrors []string, handled b
 	}
 
 	for _, t2 := range allTitles {
+		if t.ID == t2.ID {
+			continue
+		}
 		if t.LCCN == t2.LCCN {
 			vErrors = append(vErrors, fmt.Sprintf("LCCN %q is already in use", t.LCCN))
 		}
