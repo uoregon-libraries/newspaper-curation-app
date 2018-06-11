@@ -76,6 +76,10 @@ func HomeHandler(w http.ResponseWriter, req *http.Request) {
 // TitleHandler prints a list of issues for a given title
 func TitleHandler(w http.ResponseWriter, req *http.Request) {
 	var r = getResponder(w, req)
+	if r.err != nil {
+		r.Render(nil)
+		return
+	}
 	r.Vars.Title = fmt.Sprintf("%s - %s", r.title.Name, r.title.Type)
 	r.Render(TitleTmpl)
 }
