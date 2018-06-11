@@ -9,6 +9,7 @@ import (
 )
 
 var re = regexp.MustCompile(`[^A-Za-z0-9]+`)
+var noWordRE = regexp.MustCompile(`\W+`)
 
 // Title wraps a db.Title for web display
 type Title struct {
@@ -36,4 +37,12 @@ func WrapTitles(list db.TitleList) []*Title {
 // the SortName string
 func SortTitles(list []*Title) {
 	sort.Slice(list, func(i, j int) bool { return list[i].SortName < list[j].SortName })
+}
+
+// TitlesDiffer returns true if the MARC title isn't the same as the name we've
+// given the title.  We strip all non-word characters for the comparison.
+func (t *Title) TitlesDiffer() bool {
+	var mt = noWordRE.ReplaceAllString(t.MARCTitle+t.MARCLocation, "")
+	var n = noWordRE.ReplaceAllString(t.Name, "")
+	return mt != n
 }

@@ -23,14 +23,28 @@
 
   <tbody>
     {{range .Data.Titles}}
-      <tr>
-        <th scope="row" class="sortkey-{{.SortName}}">{{.Name}}</th>
-        <td>{{.LCCN}}</td>
+      {{if .ValidLCCN}}<tr>{{else}}<tr class="danger">{{end}}
+        <th scope="row" class="sortkey-{{.SortName}}">
+          {{.Name}}
+          {{if and .ValidLCCN .TitlesDiffer}}
+            <div class="small">
+              <span class="label label-danger">MARC Title</span> {{.MARCTitle}} ({{.MARCLocation}})
+            </div>
+          {{end}}
+        </th>
+
+        <td>
+          {{.LCCN}}
+          {{if not .ValidLCCN}}<strong>(Not validated)</strong>{{end}}
+        </td>
+
         <td>{{if .Embargoed}}Yes{{else}}No{{end}}</td>
-        <td>{{.Rights}}</td>
+
+        <td class="rights-url">{{.Rights}}</td>
+
         {{if $.User.PermittedTo ModifyTitles}}
         <td>
-          <a href="{{TitlesHomeURL}}/edit?id={{.ID}}">Edit</a>
+          <a href="{{TitlesHomeURL}}/edit?id={{.ID}}" class="btn btn-default">Edit</a>
         </td>
         {{end}}
       </tr>
