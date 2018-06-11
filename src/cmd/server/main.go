@@ -117,7 +117,7 @@ func startServer() {
 	r.NewRoute().Path(hp).HandlerFunc(home)
 
 	// Any unknown paths get a semi-friendly 404
-	r.NewRoute().PathPrefix("").HandlerFunc(notFound)
+	r.NotFoundHandler = http.HandlerFunc(notFound)
 
 	http.Handle("/", nocache(logMiddleware(r)))
 
