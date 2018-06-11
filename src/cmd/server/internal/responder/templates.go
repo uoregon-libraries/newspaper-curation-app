@@ -20,7 +20,7 @@ var (
 	// allowed to visit a certain page or perform a certain action
 	InsufficientPrivileges *tmpl.Template
 
-	// Home, for now, is a very simple static welcome page
+	// Home (for now) is a very simple static welcome page
 	Home *tmpl.Template
 
 	// Empty holds a simple blank page for rendering the header/footer and often
