@@ -54,7 +54,7 @@ func pullMARCForTitle(t *Title) {
 		if df.Tag == "245" {
 			for _, sf := range df.Subfields {
 				if sf.Code == "a" {
-					t.MarcTitle = sf.Data
+					t.MARCTitle = sf.Data
 				}
 			}
 		}
@@ -62,13 +62,13 @@ func pullMARCForTitle(t *Title) {
 		if df.Tag == "260" || df.Tag == "264" {
 			for _, sf := range df.Subfields {
 				if sf.Code == "a" {
-					t.MarcLocation = marcStripLocRE.ReplaceAllString(sf.Data, "")
+					t.MARCLocation = marcStripLocRE.ReplaceAllString(sf.Data, "")
 				}
 			}
 		}
 	}
 
-	if t.MarcTitle != "" && t.MarcLocation != "" {
+	if t.MARCTitle != "" && t.MARCLocation != "" {
 		t.ValidLCCN = true
 	}
 

@@ -15,8 +15,8 @@ type Title struct {
 	SFTPDir      string
 	SFTPUser     string
 	SFTPPass     string
-	MarcTitle    string
-	MarcLocation string
+	MARCTitle    string
+	MARCLocation string
 }
 
 // FindTitle searches the database for a single title
@@ -97,7 +97,7 @@ func (t *Title) SchemaTitle() *schema.Title {
 		return nil
 	}
 
-	var name, loc = t.MarcTitle, t.MarcLocation
+	var name, loc = t.MARCTitle, t.MARCLocation
 
 	// Not great, but this does the trick well enough when we haven't gotten a
 	// valid MARC record
