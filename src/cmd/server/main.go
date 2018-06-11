@@ -114,6 +114,8 @@ func startServer() {
 	userhandler.Setup(r, path.Join(hp, "users"), conf)
 	titlehandler.Setup(r, path.Join(hp, "titles"), conf)
 
+	r.NewRoute().Path(hp).HandlerFunc(home)
+
 	// Any unknown paths get a semi-friendly 404
 	r.NewRoute().PathPrefix("").HandlerFunc(notFound)
 
@@ -128,6 +130,11 @@ func startServer() {
 func notFound(w http.ResponseWriter, req *http.Request) {
 	var r = responder.Response(w, req)
 	r.Error(http.StatusNotFound, "")
+}
+
+func home(w http.ResponseWriter, req *http.Request) {
+	var r = responder.Response(w, req)
+	r.Render(responder.Home)
 }
 
 func main() {
