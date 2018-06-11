@@ -53,7 +53,7 @@ func (r *Responder) injectDefaultTemplateVars() {
 	r.Vars.Webroot = webutil.Webroot
 	r.Vars.Version = version.Version
 	if r.Vars.Title == "" {
-		r.Vars.Title = "ODNP Admin"
+		r.Vars.Title = "Newspaper Curation App"
 	}
 }
 

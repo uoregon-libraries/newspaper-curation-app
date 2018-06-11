@@ -24,13 +24,13 @@
               <span class="icon-bar"></span>
               <span class="icon-bar"></span>
             </button>
-            <a class="navbar-brand" href="{{ParentURL "index.php"}}">NCA</a>
+            <a class="navbar-brand" href="{{.Webroot}}">NCA</a>
           </div>
 
           <div class="collapse navbar-collapse" id="navbar-collapse">
             <ul class="nav navbar-nav">
               {{if .User.PermittedTo ListTitles}}
-                <li><a href="{{ParentURL "title-list.php"}}">Titles</a></li>
+                <li><a href="{{.Webroot}}/titles">Titles</a></li>
               {{end}}
 
               {{if .User.PermittedTo ViewUploadedIssues}}
@@ -51,10 +51,6 @@
 
               {{if .User.PermittedTo ListUsers}}
                 <li><a href="{{.Webroot}}/users">Users</a></li>
-              {{end}}
-
-              {{if .User.PermittedTo ListAuditLogs}}
-                <li><a href="{{ParentURL "audit-logs-list.php"}}">Logs</a></li>
               {{end}}
             </ul>
             <p class="navbar-text navbar-right">

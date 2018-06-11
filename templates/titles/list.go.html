@@ -1,0 +1,65 @@
+{{block "content" .}}
+
+{{if .User.PermittedTo ModifyTitles}}
+<ul>
+  <li>
+    <a href="{{TitlesHomeURL}}/new">Create new title</a>
+  </li>
+</ul>
+{{end}}
+
+<table class="table table-striped table-bordered table-condensed sortable">
+  <thead>
+    <tr>
+      <th scope="col" class="sort-alpha">Title</th>
+      <th scope="col" class="sort-alpha">LCCN</th>
+      <th scope="col" class="sort-alpha">Embargoed?</th>
+      <th scope="col" class="sort-alpha">Rights</th>
+      {{if .User.PermittedTo ModifyTitles}}
+      <th scope="col">Actions</th>
+      {{end}}
+    </tr>
+  </thead>
+
+  <tbody>
+    {{range .Data.Titles}}
+      {{if .ValidLCCN}}<tr>{{else}}<tr class="danger">{{end}}
+        <th scope="row" class="sortkey-{{.SortName}}">
+          {{.Name}}
+          {{if and .ValidLCCN .TitlesDiffer}}
+            <div class="small">
+              <span class="label label-danger">MARC Title</span> {{.MARCTitle}} ({{.MARCLocation}})
+            </div>
+          {{end}}
+        </th>
+
+        <td>
+          {{.LCCN}}
+          {{if not .ValidLCCN}}<strong>(Not validated)</strong>{{end}}
+        </td>
+
+        <td>{{if .Embargoed}}Yes{{else}}No{{end}}</td>
+
+        <td class="rights-url">{{.Rights}}</td>
+
+        {{if $.User.PermittedTo ModifyTitles}}
+        <td>
+          <a href="{{TitlesHomeURL}}/edit?id={{.ID}}" class="btn btn-default">Edit</a>
+
+          {{if not .ValidLCCN}}
+          <form action="{{TitlesHomeURL}}/validate" method="post">
+            <input type="hidden" name="id" value="{{.ID}}" />
+            <button type="submit" class="btn btn-default">Validate LCCN</button>
+          </form>
+          {{end}}
+
+        </td>
+        {{end}}
+      </tr>
+    {{end}}
+  </tbody>
+</table>
+
+<script>SortableTable.initAll()</script>
+
+{{end}}

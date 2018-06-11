@@ -66,7 +66,7 @@ func main() {
 
 	// Now we should have issue date, so we can split up the label to get the title
 	var parts = strings.Split(mxml.Label, ", "+issue.Date)
-	title.Title = parts[0]
+	title.Name = parts[0]
 
 	err = mets.New(conf.METSXMLTemplatePath, destFile, issue, title, createdAt).Transform()
 	if err == nil {

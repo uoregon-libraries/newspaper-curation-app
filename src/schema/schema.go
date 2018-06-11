@@ -173,9 +173,9 @@ func (t *Title) addChildError() {
 // identifying a unique list of all titles
 type TitleList []*Title
 
-// trimCommonPrefixes strips "The", "A", and "An" from the string if they're at
+// TrimCommonPrefixes strips "The", "A", and "An" from the string if they're at
 // the beginning, and removes leading spaces
-func trimCommonPrefixes(s string) string {
+func TrimCommonPrefixes(s string) string {
 	s = strings.TrimPrefix(s, "The ")
 	s = strings.TrimPrefix(s, "the ")
 	s = strings.TrimPrefix(s, "A ")
@@ -189,7 +189,8 @@ func trimCommonPrefixes(s string) string {
 // names are the same
 func (list TitleList) SortByName() {
 	sort.Slice(list, func(i, j int) bool {
-		var a, b = strings.ToLower(trimCommonPrefixes(list[i].Name)), strings.ToLower(trimCommonPrefixes(list[j].Name))
+		var a = strings.ToLower(TrimCommonPrefixes(list[i].Name))
+		var b = strings.ToLower(TrimCommonPrefixes(list[j].Name))
 
 		if a == b {
 			a, b = list[i].Location, list[j].Location

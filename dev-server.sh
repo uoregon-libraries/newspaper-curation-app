@@ -60,7 +60,6 @@ while true; do
 
     ./bin/server \
       -c ./settings \
-      --parent-webroot=/odnp-admin \
       $debugflag &
     pid=$!
   fi

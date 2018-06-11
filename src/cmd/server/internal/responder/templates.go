@@ -20,6 +20,9 @@ var (
 	// allowed to visit a certain page or perform a certain action
 	InsufficientPrivileges *tmpl.Template
 
+	// Home, for now, is a very simple static welcome page
+	Home *tmpl.Template
+
 	// Empty holds a simple blank page for rendering the header/footer and often
 	// a simple alert-style message
 	Empty *tmpl.Template
@@ -38,7 +41,6 @@ func InitRootTemplate(templatePath string) {
 		"IncludeJS":  webutil.IncludeJS,
 		"RawJS":      webutil.RawJS,
 		"ImageURL":   webutil.ImageURL,
-		"ParentURL":  webutil.ParentURL,
 		"Comment":    HTMLComment,
 		"TimeString": func(t time.Time) string { return t.Format("2006-01-02 15:04") },
 		"nl2br": func(s string) template.HTML {
@@ -75,4 +77,5 @@ func InitRootTemplate(templatePath string) {
 	Layout.MustReadPartials("layout.go.html")
 	InsufficientPrivileges = Layout.MustBuild("insufficient-privileges.go.html")
 	Empty = Layout.MustBuild("empty.go.html")
+	Home = Layout.MustBuild("home.go.html")
 }

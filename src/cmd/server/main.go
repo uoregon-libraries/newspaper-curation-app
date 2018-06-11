@@ -5,6 +5,7 @@ import (
 	"cmd/server/internal/mochandler"
 	"cmd/server/internal/responder"
 	"cmd/server/internal/settings"
+	"cmd/server/internal/titlehandler"
 	"cmd/server/internal/uploadedissuehandler"
 	"cmd/server/internal/userhandler"
 	"cmd/server/internal/workflowhandler"
@@ -26,9 +27,8 @@ import (
 )
 
 var opts struct {
-	ParentWebroot string `long:"parent-webroot" description:"The base path to the parent app" required:"true"`
-	ConfigFile    string `short:"c" long:"config" description:"path to NCA config file" required:"true"`
-	Debug         bool   `long:"debug" description:"Enables debug mode for testing different users"`
+	ConfigFile string `short:"c" long:"config" description:"path to NCA config file" required:"true"`
+	Debug      bool   `long:"debug" description:"Enables debug mode for testing different users"`
 }
 
 var conf *config.Config
@@ -57,7 +57,6 @@ func getConf() {
 	// that the URL was valid
 	var u, _ = url.Parse(conf.Webroot)
 	webutil.Webroot = u.Path
-	webutil.ParentWebroot = opts.ParentWebroot
 	webutil.WorkflowPath = conf.WorkflowPath
 	webutil.IIIFBaseURL = conf.IIIFBaseURL
 
@@ -113,6 +112,9 @@ func startServer() {
 	issuefinderhandler.Setup(r, path.Join(hp, "find"), conf, watcher)
 	mochandler.Setup(r, path.Join(hp, "mocs"), conf)
 	userhandler.Setup(r, path.Join(hp, "users"), conf)
+	titlehandler.Setup(r, path.Join(hp, "titles"), conf)
+
+	r.NewRoute().Path(hp).HandlerFunc(home)
 
 	// Any unknown paths get a semi-friendly 404
 	r.NewRoute().PathPrefix("").HandlerFunc(notFound)
@@ -128,6 +130,11 @@ func startServer() {
 func notFound(w http.ResponseWriter, req *http.Request) {
 	var r = responder.Response(w, req)
 	r.Error(http.StatusNotFound, "")
+}
+
+func home(w http.ResponseWriter, req *http.Request) {
+	var r = responder.Response(w, req)
+	r.Render(responder.Home)
 }
 
 func main() {

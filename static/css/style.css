@@ -69,3 +69,8 @@ form.actions {
 .radio-group input {
   margin-left: 1em;
 }
+
+/* We don't want rights URL table cells wrapping */
+td.rights-url {
+  white-space: nowrap;
+}
