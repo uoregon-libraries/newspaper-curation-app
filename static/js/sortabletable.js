@@ -103,40 +103,47 @@ SortableTable.prototype = {
     for (var i = 0, n = this._tHeadRow.cells.length; i < n; i++) {
       var th = this._tHeadRow.cells[i];
       // check for sort type class and that header has content
-      if (th.dataset.sorttype != this._sortTypeNone && Utility.getInnerText(th).length > 0) {
-        // check that header does not contain block or focusable elements (which can't be embedded in a button)
-        var containsBlockOrFocusableElement = false;
-        var blockAndFocusableElementsRegExp = new RegExp(this._blockAndFocusableElementsPattern, "i");
-        var descendents = th.getElementsByTagName("*"); // To Do: Check IE 5
-        for (var j = 0, m = descendents.length; j < m; j++) {
-          if (descendents[j].tagName && blockAndFocusableElementsRegExp.test(descendents[j].tagName)) {
-            containsBlockOrFocusableElement = true;
-            break;
-          }
-        }
-        // add sort button & sort icon
-        if (!containsBlockOrFocusableElement) {
-          hasSortableColumns = true;
-          // create sort button
-          var sortButton = document.createElement("button");
-          sortButton.className = this._sortButtonClassName;
-          sortButton.onclick = Utility.createDelegate(this, this.sort, [i]);
-          // move contents of header into sort button
-          while (th.childNodes.length > 0) {
-            sortButton.appendChild(th.childNodes[0]);
-          }
-          // create sort icon
-          var sortIcon = document.createElement("abbr");
-          sortIcon.appendChild(document.createTextNode(this._unsortedIcon));
-          sortIcon.title = this._unsortedText;
-          sortIcon.className = this._sortIconClassName;
-          sortIcon.style.borderStyle = "none";
-          // append sort button & sort icon
-          sortButton.sortIcon = sortButton.appendChild(sortIcon);
-          th.sortButton = th.appendChild(sortButton);
+      var st = th.dataset.sorttype;
+      if (st == this._sortTypeNone) {
+        continue;
+      }
+      if (th.innerText.length == 0) {
+        continue
+      }
+
+      // check that header does not contain block or focusable elements (which can't be embedded in a button)
+      var containsBlockOrFocusableElement = false;
+      var blockAndFocusableElementsRegExp = new RegExp(this._blockAndFocusableElementsPattern, "i");
+      var descendents = th.getElementsByTagName("*"); // To Do: Check IE 5
+      for (var j = 0, m = descendents.length; j < m; j++) {
+        if (descendents[j].tagName && blockAndFocusableElementsRegExp.test(descendents[j].tagName)) {
+          containsBlockOrFocusableElement = true;
+          break;
         }
       }
+      // add sort button & sort icon
+      if (!containsBlockOrFocusableElement) {
+        hasSortableColumns = true;
+        // create sort button
+        var sortButton = document.createElement("button");
+        sortButton.className = this._sortButtonClassName;
+        sortButton.onclick = Utility.createDelegate(this, this.sort, [i]);
+        // move contents of header into sort button
+        while (th.childNodes.length > 0) {
+          sortButton.appendChild(th.childNodes[0]);
+        }
+        // create sort icon
+        var sortIcon = document.createElement("abbr");
+        sortIcon.appendChild(document.createTextNode(this._unsortedIcon));
+        sortIcon.title = this._unsortedText;
+        sortIcon.className = this._sortIconClassName;
+        sortIcon.style.borderStyle = "none";
+        // append sort button & sort icon
+        sortButton.sortIcon = sortButton.appendChild(sortIcon);
+        th.sortButton = th.appendChild(sortButton);
+      }
     }
+
     if (hasSortableColumns) {
       // add summary
       if (this._summary.length > 0) {
