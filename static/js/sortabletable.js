@@ -31,10 +31,6 @@
 //
 //  Table head (thead) and footer (tfoot) rows are not sorted.
 //  If no table head is present, one will be created around the first row.
-//  If a table footer is desired, but tfoot markup cannot be included in the HTML, add the following class to the table tag:
-//    class="sortable addFooter"
-//  Or
-//    class="sortable addFooter-n" - where n is the number of rows to include in the footer.
 //
 //  Default settings can be overriden by passing a settings object to the constructor, e.g.:
 //    SortableTable.initAll({ summary: "(Click a column header to sort)", ... })
@@ -71,7 +67,6 @@ SortableTable = function(table, settings)
   this._sortTypeAlpha = "alpha";
   this._sortTypeNone = "none";
   this._sortKeyPrefix = "sortkey";
-  this._addTFootClassName = "add-footer";
   this._blockAndFocusableElementsPattern = "^[DIV|P|H1|H2|H3|H4|H5|H6|HR|UL|OL|DL|BLOCKQUOTE|PRE|ADDRESS|TABLE|FORM|FIELDSET|INPUT|SELECT|TEXTAREA|BUTTON|A]$";
 
   // class variables
@@ -83,7 +78,6 @@ SortableTable = function(table, settings)
 
   // initialization
   this.setTHead();
-  this.setTFoot();
   this.setSortTypes();
   this.addSortLinks();
 }
@@ -100,26 +94,6 @@ SortableTable.prototype =
       tHead.appendChild(this._table.rows[0]);
     }
     this._tHeadRow = tHead.rows[tHead.rows.length - 1];
-  },
-
-  setTFoot: function()
-  {
-    /// <summary>Creates a table footer containing the last n rows if the table has class="addTFoot-n".</summary>
-    /// <remarks>Should be used only if tfoot markup cannot be included in the HTML.</remarks>
-    if (!this._table.tFoot)
-    {
-      var addTFootRegExp = new RegExp("\\b" + this._addTFootClassName + "-?(\\d*)\\b", "i"); // word-break, addTFootClassName, optional hyphen, any number of digits (captured), word-break
-      var addTFootMatch = this._table.className.match(addTFootRegExp);
-      if (addTFootMatch)
-      {
-        var tFoot = this._table.createTFoot();
-        var numberOfRows = addTFootMatch[1] ? parseInt(addTFootMatch[1]) : 1;
-        for (var i = 0, n = Math.min(numberOfRows, this._tBody.rows.length); i < n; i++)
-        {
-          tFoot.appendChild(this._tBody.rows[this._tBody.rows.length - 1]);
-        }
-      }
-    }
   },
 
   setSortTypes: function()
