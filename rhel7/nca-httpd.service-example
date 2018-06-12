@@ -6,7 +6,7 @@
 [Service]
 	Type=simple
 	ExecStart=/usr/local/nca/server \
-		-c /usr/local/nca/settings \
+		-c /usr/local/nca/settings
 	SyslogIdentifier=nca-httpd
 
 [Install]
