@@ -37,8 +37,7 @@
 //  Default settings can be overriden by passing a settings object to the constructor, e.g.:
 //    SortableTable.initAll({ summary: "(Click a column header to sort)", ... })
 
-SortableTable = function(table, settings)
-{
+SortableTable = function(table, settings) {
   /// <summary>Enables tables to be sorted dynamically</summary>
   /// <param name="table" type="DomElement">Table to be made sortable</param>
   /// <param name="settings" type="object" optional="true">Optional settings in object literal notation, e.g., { summary: "(Click a column header to sort)", ... }</param>
@@ -81,45 +80,36 @@ SortableTable = function(table, settings)
   this.addSortLinks();
 }
 
-SortableTable.prototype =
-{
-  setTHead: function()
-  {
+SortableTable.prototype = {
+  setTHead: function() {
     /// <summary>Identifies the head row (the last row in the table head). Creates a thead element if necessary.</summary>
     var tHead = this._table.tHead;
-    if (!tHead)
-    {
+    if (!tHead) {
       tHead = this._table.createTHead();
       tHead.appendChild(this._table.rows[0]);
     }
     this._tHeadRow = tHead.rows[tHead.rows.length - 1];
   },
 
-  addSortLinks: function()
-  {
+  addSortLinks: function() {
     /// <summary>Adds sort links and sort icons (abbr elements) to the table headers.</summary>
     var hasSortableColumns = false;
-    for (var i = 0, n = this._tHeadRow.cells.length; i < n; i++)
-    {
+    for (var i = 0, n = this._tHeadRow.cells.length; i < n; i++) {
       var th = this._tHeadRow.cells[i];
       // check for sort type class and that header has content
-      if (th.dataset.sorttype != this._sortTypeNone && Utility.getInnerText(th).length > 0)
-      {
+      if (th.dataset.sorttype != this._sortTypeNone && Utility.getInnerText(th).length > 0) {
         // check that header does not contain block or focusable elements (which can't be embedded in a link)
         var containsBlockOrFocusableElement = false;
         var blockAndFocusableElementsRegExp = new RegExp(this._blockAndFocusableElementsPattern, "i");
         var descendents = th.getElementsByTagName("*"); // To Do: Check IE 5
-        for (var j = 0, m = descendents.length; j < m; j++)
-        {
-          if (descendents[j].tagName && blockAndFocusableElementsRegExp.test(descendents[j].tagName))
-          {
+        for (var j = 0, m = descendents.length; j < m; j++) {
+          if (descendents[j].tagName && blockAndFocusableElementsRegExp.test(descendents[j].tagName)) {
             containsBlockOrFocusableElement = true;
             break;
           }
         }
         // add sort link & sort icon
-        if (!containsBlockOrFocusableElement)
-        {
+        if (!containsBlockOrFocusableElement) {
           hasSortableColumns = true;
           // create sort link
           var sortLink = document.createElement("a");
@@ -128,19 +118,16 @@ SortableTable.prototype =
           sortLink.href = "#" + sortLink.id; // link must have href to be clickable from the keyboard
           sortLink.onclick = Utility.createDelegate(this, this.sort, [i]);
           // move contents of header into sort link
-          while (th.childNodes.length > 0)
-          {
+          while (th.childNodes.length > 0) {
             sortLink.appendChild(th.childNodes[0]);
           }
           // create sort icon
           var sortIcon = document.createElement(this._sortIconTagName);
-          if (this._sortIconTagName == "img")
-          {
+          if (this._sortIconTagName == "img") {
             sortIcon.src = this._unsortedIcon;
             sortIcon.alt = this._unsortedText;
           }
-          else
-          {
+          else {
             sortIcon.appendChild(document.createTextNode(this._unsortedIcon));
           }
           sortIcon.title = this._unsortedText;
@@ -152,60 +139,49 @@ SortableTable.prototype =
         }
       }
     }
-    if (hasSortableColumns)
-    {
+    if (hasSortableColumns) {
       // add summary
-      if (this._summary.length > 0)
-      {
+      if (this._summary.length > 0) {
         this._table.summary += " " + this._summary;
       }
     }
   },
 
-  sort: function(columnIndex)
-  {
+  sort: function(columnIndex) {
     /// <summary>Sorts the table on the selected column.</summary>
     /// <param name="columnIndex" type="Number">Index of the column on which to sort the table.</param>
     /// <returns type="Boolean">False, to cancel associated click event.</returns>
     var th = this._tHeadRow.cells[columnIndex];
     var rows = this._tBody.rows;
-    if (th && rows[0].cells[columnIndex])
-    {
+    if (th && rows[0].cells[columnIndex]) {
       var rowArray = [];
       // sort on a new column
-      if (columnIndex != this._sortedColumnIndex)
-      {
+      if (columnIndex != this._sortedColumnIndex) {
         // get sort type
         var sortType = th.dataset.sorttype;
 
         var numberCleanUpRegExp = new RegExp(this._numberCleanUpPattern, "ig"); // non-numeric characters allowed before or within numbers (e.g. dollar sign and comma)
-        for (var i = 0, n = rows.length; i < n; i++)
-        {
+        for (var i = 0, n = rows.length; i < n; i++) {
           var cell = rows[i].cells[columnIndex];
           var sortKey = cell.dataset.sortkey;
-          if (sortKey == null || sortKey == "")
-          {
+          if (sortKey == null || sortKey == "") {
             sortKey = Utility.getInnerText(cell);
           }
 
           // convert to date
-          if (sortType == this._sortTypeDate)
-          {
+          if (sortType == this._sortTypeDate) {
             sortKey = Date.parse(sortKey) || this._minDate;
           }
           // convert to number
-          else if (sortType == this._sortTypeNumber)
-          {
+          else if (sortType == this._sortTypeNumber) {
             sortKey = parseFloat(sortKey.replace(numberCleanUpRegExp, "")) || 0;
           }
           // convert to string (left-trimmed, lowercase)
-          else if (sortKey.length > 0)
-          {
+          else if (sortKey.length > 0) {
             sortKey = sortKey.replace(/^\s+/, "").toLowerCase();
           }
           // add object to rowArray
-          rowArray[rowArray.length] =
-          {
+          rowArray[rowArray.length] = {
             sortKey: sortKey,
             row: rows[i]
           };
@@ -215,37 +191,30 @@ SortableTable.prototype =
         this._isAscending = true;
       }
       // sort on previously sorted column
-      else
-      {
+      else {
         // reverse rows (faster than re-sorting)
-        for (var i = rows.length - 1; i >= 0; i--)
-        {
-          rowArray[rowArray.length] =
-          {
+        for (var i = rows.length - 1; i >= 0; i--) {
+          rowArray[rowArray.length] = {
             row: rows[i]
           }
         }
         this._isAscending = !this._isAscending;
       }
       // append rows
-      for (var i = 0, n = rowArray.length; i < n; i++)
-      {
+      for (var i = 0, n = rowArray.length; i < n; i++) {
         this._tBody.appendChild(rowArray[i].row);
       }
       // clean up
       delete rowArray;
       // reset old sortIcon
-      if (this._sortedColumnIndex != null && this._sortedColumnIndex != columnIndex)
-      {
+      if (this._sortedColumnIndex != null && this._sortedColumnIndex != columnIndex) {
         this.setSortIcon(this._sortedColumnIndex, this._unsortedClassName, this._unsortedIcon, this._unsortedText);
       }
       // set new sortIcon
-      if (this._isAscending)
-      {
+      if (this._isAscending) {
         this.setSortIcon(columnIndex, this._ascendingClassName, this._ascendingIcon, this._ascendingText);
       }
-      else
-      {
+      else {
         this.setSortIcon(columnIndex, this._descendingClassName, this._descendingIcon, this._descendingText);
       }
       // set sortedColumnIndex
@@ -258,30 +227,24 @@ SortableTable.prototype =
     return false;
   },
 
-  setSortIcon: function(columnIndex, className, text, title)
-  {
+  setSortIcon: function(columnIndex, className, text, title) {
     /// <summary>Sets the sort icon to show the current sort status (ascending, descending, or unsorted).</summary>
     /// <param name="columnIndex" type="Number">Index of the column for which to set the icon.</param>
     /// <param name="className" type="String">Class name to be applied to the column header.</param>
     /// <param name="icon" type="String">Text to be used as the visible sort icon.</param>
     /// <param name="title" type="String">Text to be used for the sort icon title.</param>
     var th = this._tHeadRow.cells[columnIndex];
-    if (th)
-    {
+    if (th) {
       var sortLink = th.sortLink;
-      if (sortLink)
-      {
+      if (sortLink) {
         th.className = th.className.replace(new RegExp("\\b(" + this._unsortedClassName + "|" + this._ascendingClassName + "|" + this._descendingClassName + ")\\b"), className);
         var sortIcon = sortLink.sortIcon;
-        if (sortIcon)
-        {
-          if (this._sortIconTagName == "img")
-          {
+        if (sortIcon) {
+          if (this._sortIconTagName == "img") {
             sortIcon.src = text;
             sortIcon.alt = title;
           }
-          else
-          {
+          else {
             sortIcon.replaceChild(document.createTextNode(text), sortIcon.childNodes[0]);
           }
           sortIcon.title = title;
@@ -290,8 +253,7 @@ SortableTable.prototype =
     }
   },
 
-  sortNumber: function(a, b)
-  {
+  sortNumber: function(a, b) {
     /// <summary>Array sort compare function for number and date columns</summary>
     /// <param name="a" type="Object">rowArray element with number sortKey property</param>
     /// <param name="b" type="Object">rowArray element with number sortKey property</param>
@@ -299,8 +261,7 @@ SortableTable.prototype =
     return a.sortKey - b.sortKey;
   },
 
-  sortAlpha: function(a, b)
-  {
+  sortAlpha: function(a, b) {
     /// <summary>Array sort compare function for alpha (string) columns</summary>
     /// <param name="a" type="Object">rowArray element with string sortKey property</param>
     /// <param name="b" type="Object">rowArray element with string sortKey property</param>
@@ -309,48 +270,39 @@ SortableTable.prototype =
   }
 }
 
-SortableTable.init = function(table, settings)
-{
+SortableTable.init = function(table, settings) {
   /// <summary>Static method that initializes a single SortableTable.</summary>
   /// <param name="table" type="DomElement">Table to be made sortable</param>
   /// <param name="settings" type="object" optional="true">Optional settings in object literal notation, e.g., { className: "sortable", summary: "(Click a column header to sort)", ... }</param>
-  if (document.getElementsByTagName && document.createElement && Function.apply)
-  {
-    if (SortableTable.isSortable(table))
-    {
+  if (document.getElementsByTagName && document.createElement && Function.apply) {
+    if (SortableTable.isSortable(table)) {
       var sortableTable = new SortableTable(table, settings);
     }
   }
 }
 
-SortableTable.initAll = function(settings)
-{
+SortableTable.initAll = function(settings) {
   /// <summary>Static method that initializes all SortableTables in a document.</summary>
   /// <param name="settings" type="Object" optional="true">Optional settings in object literal notation, e.g., { summary: "(Click a column header to sort)", ...}</param>
   var tables = document.querySelectorAll("table.sortable");
-  for (var i = 0, n = tables.length; i < n; i++)
-  {
+  for (var i = 0, n = tables.length; i < n; i++) {
     SortableTable.init(tables[i], settings);
   }
 }
 
-SortableTable.isSortable = function(table)
-{
+SortableTable.isSortable = function(table) {
   /// <summary>Static method that indicates whether a table can be made sortable (has a single tbody, at least three rows, and a uniform number of columns)</summary>
   /// <param name="table" type="DomElement"></param>
   /// <returns type="Boolean"></returns>
   // check table, single tbody, three rows (including thead)
-  if (table == null || table.tBodies.length > 1 || table.rows.length < 3)
-  {
+  if (table == null || table.tBodies.length > 1 || table.rows.length < 3) {
     return false;
   }
   // check uniform columns
   var tBody = table.tBodies[0];
   var numberOfColumns = tBody.rows[0].cells.length;
-  for (var i = 0, n = tBody.rows.length; i < n; i++)
-  {
-    if (tBody.rows[i].cells.length != numberOfColumns)
-    {
+  for (var i = 0, n = tBody.rows.length; i < n; i++) {
+    if (tBody.rows[i].cells.length != numberOfColumns) {
       return false;
     }
   }
@@ -359,13 +311,11 @@ SortableTable.isSortable = function(table)
 
 // Utility Methods
 
-var Utility = Utility ||
-{
+var Utility = Utility || {
   /// <summary>Utility Class</summary>
 }
 
-Utility.getInnerText = Utility.getInnerText || function(element)
-{
+Utility.getInnerText = Utility.getInnerText || function(element) {
   /// <summary>Returns the text content of an element.</summary>
   /// <param name="element" type="DomElement"></param>
   /// <returns type="String"></returns>
@@ -373,8 +323,7 @@ Utility.getInnerText = Utility.getInnerText || function(element)
   return element.innerText || element.textContent || "";
 }
 
-Utility.getUniqueId = Utility.getUniqueId || function(prefix)
-{
+Utility.getUniqueId = Utility.getUniqueId || function(prefix) {
   /// <summary>Returns an ID value that is not currently assigned to any element in the document.</summary>
   /// <param name="prefix" type="String"></param>
   /// <returns type="String"></returns>
@@ -384,8 +333,7 @@ Utility.getUniqueId = Utility.getUniqueId || function(prefix)
   return prefix + i.toString();
 }
 
-Utility.createDelegate = Utility.createDelegate || function(instance, method, argumentsArray)
-{
+Utility.createDelegate = Utility.createDelegate || function(instance, method, argumentsArray) {
   /// <summary>Creates a delegate to allow the specified method to run in the context of the specified instance.</summary>
   /// <param name="instance" type="Object"></param>
   /// <param name="method" type="Function"></param>
@@ -396,8 +344,7 @@ Utility.createDelegate = Utility.createDelegate || function(instance, method, ar
   ///  Syntax: element.eventhandler = Utility.createDelegate(this, this.method, [optionalArgument1, optionalArgument2, ...])
   ///  Not supported in Internet Explorer 5.0 or earlier.
   /// </remarks>
-  return function()
-  {
+  return function() {
     return method.apply(instance, argumentsArray);
   }
 }
