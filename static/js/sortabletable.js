@@ -326,19 +326,11 @@ SortableTable.init = function(table, settings)
 SortableTable.initAll = function(settings)
 {
   /// <summary>Static method that initializes all SortableTables in a document.</summary>
-  /// <param name="settings" type="Object" optional="true">Optional settings in object literal notation, e.g., { className: "sortable", summary: "(Click a column header to sort)", ...}</param>
-  if (document.getElementsByTagName && document.createElement && Function.apply)
+  /// <param name="settings" type="Object" optional="true">Optional settings in object literal notation, e.g., { summary: "(Click a column header to sort)", ...}</param>
+  var tables = document.queryAllSelector("table.sortable");
+  for (var i = 0, n = tables.length; i < n; i++)
   {
-    var className = (settings && settings.ClassName) ? settings.ClassName : "sortable";
-    var classNameRegExp = new RegExp("\\b" + className + "\\b", "i"); // word-break, className, word-break
-    var tables = document.getElementsByTagName("table");
-    for (var i = 0, n = tables.length; i < n; i++)
-    {
-      if (classNameRegExp.test(tables[i].className))
-      {
-        SortableTable.init(tables[i], settings);
-      }
-    }
+    SortableTable.init(tables[i], settings);
   }
 }
 
