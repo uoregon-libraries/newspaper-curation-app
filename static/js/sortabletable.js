@@ -184,6 +184,7 @@ SortableTable.prototype = {
             row: rows[i]
           };
         }
+
         // sort
         rowArray.sort(sortType == this._sortTypeDate || sortType == this._sortTypeNumber ? this.sortNumber : this.sortAlpha);
         this._isAscending = true;
@@ -198,16 +199,20 @@ SortableTable.prototype = {
         }
         this._isAscending = !this._isAscending;
       }
+
       // append rows
       for (var i = 0, n = rowArray.length; i < n; i++) {
         this._tBody.appendChild(rowArray[i].row);
       }
+
       // clean up
       delete rowArray;
+
       // reset old sortIcon
       if (this._sortedColumnIndex != null && this._sortedColumnIndex != columnIndex) {
         this.setSortIcon(this._sortedColumnIndex, this._unsortedClassName, this._unsortedIcon, this._unsortedText);
       }
+
       // set new sortIcon
       if (this._isAscending) {
         this.setSortIcon(columnIndex, this._ascendingClassName, this._ascendingIcon, this._ascendingText);
@@ -215,6 +220,7 @@ SortableTable.prototype = {
       else {
         this.setSortIcon(columnIndex, this._descendingClassName, this._descendingIcon, this._descendingText);
       }
+
       // set sortedColumnIndex
       this._sortedColumnIndex = columnIndex;
       // re-focus sort button to cause screen reader to read new sort icon title
