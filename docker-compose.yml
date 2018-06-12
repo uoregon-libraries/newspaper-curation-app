@@ -40,7 +40,7 @@ services:
       - /mnt/news:/mnt/news:z
       - issue-cache:/var/local/news/nca/cache
     environment:
-      - NCA_WEBROOT=$APP_URL/nca
+      - NCA_WEBROOT=$APP_URL
       - NCA_DB_HOST=db
       # The redundancy here ensures we get a warning if $NCA_NEWS_WEBROOT isn't set
       - NCA_NEWS_WEBROOT=$NCA_NEWS_WEBROOT

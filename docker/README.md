@@ -14,4 +14,4 @@ Consider copying `docker-compose.override.yml-example` to
 contain decent defaults for a development setup.  (*You'll obviously need to
 change `.env` after copying it*)
 
-The application will be available at `$APP_URL/nca`.
+The application will be available at the configured `$APP_URL`.
