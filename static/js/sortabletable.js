@@ -64,7 +64,6 @@ SortableTable = function(table, settings) {
 
   // "Constants"
   this._sortButtonClassName = "sort-button";
-  this._sortIconTagName = "abbr";
   this._sortIconClassName = "sort-icon";
   this._unsortedClassName = "unsorted";
   this._ascendingClassName = "ascending";
@@ -127,14 +126,8 @@ SortableTable.prototype = {
             sortButton.appendChild(th.childNodes[0]);
           }
           // create sort icon
-          var sortIcon = document.createElement(this._sortIconTagName);
-          if (this._sortIconTagName == "img") {
-            sortIcon.src = this._unsortedIcon;
-            sortIcon.alt = this._unsortedText;
-          }
-          else {
-            sortIcon.appendChild(document.createTextNode(this._unsortedIcon));
-          }
+          var sortIcon = document.createElement("abbr");
+          sortIcon.appendChild(document.createTextNode(this._unsortedIcon));
           sortIcon.title = this._unsortedText;
           sortIcon.className = this._sortIconClassName;
           sortIcon.style.borderStyle = "none";
@@ -244,13 +237,7 @@ SortableTable.prototype = {
         th.className = th.className.replace(new RegExp("\\b(" + this._unsortedClassName + "|" + this._ascendingClassName + "|" + this._descendingClassName + ")\\b"), className);
         var sortIcon = sortButton.sortIcon;
         if (sortIcon) {
-          if (this._sortIconTagName == "img") {
-            sortIcon.src = text;
-            sortIcon.alt = title;
-          }
-          else {
-            sortIcon.replaceChild(document.createTextNode(text), sortIcon.childNodes[0]);
-          }
+          sortIcon.replaceChild(document.createTextNode(text), sortIcon.childNodes[0]);
           sortIcon.title = title;
         }
       }
