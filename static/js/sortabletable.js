@@ -4,7 +4,11 @@
 //  See: http://www.dhs.state.il.us/opensource
 //  Version Date: 2008-07-30
 //
+//  Updated 2018-06-12 by UO Libraries to simplify code for easier maintenance,
+//  remove some unnecessary magic, and improve accessibility
+//
 //  Accessible Sortable Table
+//
 //  This script makes html tables sortable in a manner that is usable with keyboard commands, large fonts, screen readers, and speech recognition tools, specifically:
 //  (1) Sorting is activated using actual links, which are focusable and clickable from the keyboard and by assistive technologies
 //  (2) The table summary includes an instruction for screen reader users explaining that the table can be sorted by clicking on table headers
@@ -33,13 +37,13 @@
 //    class="sortable addFooter-n" - where n is the number of rows to include in the footer.
 //
 //  Default settings can be overriden by passing a settings object to the constructor, e.g.:
-//    SortableTable.initAll({ className: "sortable", summary: "(Click a column header to sort)", ... })
+//    SortableTable.initAll({ summary: "(Click a column header to sort)", ... })
 
 SortableTable = function(table, settings)
 {
   /// <summary>Enables tables to be sorted dynamically</summary>
   /// <param name="table" type="DomElement">Table to be made sortable</param>
-  /// <param name="settings" type="object" optional="true">Optional settings in object literal notation, e.g., { className: "sortable", summary: "(Click a column header to sort)", ... }</param>
+  /// <param name="settings" type="object" optional="true">Optional settings in object literal notation, e.g., { summary: "(Click a column header to sort)", ... }</param>
 
   // settings
   var settings = settings || {};
