@@ -1,41 +1,48 @@
-//  Copyright (c) 2008, State of Illinois, Department of Human Services. All rights reserved.
-//  Developed by: MSF&W Accessibility Solutions, http://www.msfw.com/accessibility
-//  Subject to University of Illinois/NCSA Open Source License
-//  See: http://www.dhs.state.il.us/opensource
-//  Version Date: 2008-07-30
+// Copyright (c) 2008, State of Illinois, Department of Human Services. All rights reserved.
+// Developed by: MSF&W Accessibility Solutions, http://www.msfw.com/accessibility
+// Subject to University of Illinois/NCSA Open Source License
+// See: http://www.dhs.state.il.us/opensource
+// Version Date: 2008-07-30
 //
-//  Updated 2018-06-12 by UO Libraries to simplify code for easier maintenance,
-//  remove some unnecessary magic, and improve accessibility
+// Updated 2018-06-12 by UO Libraries to simplify code for easier maintenance,
+// remove some unnecessary magic, and improve accessibility
 //
-//  Accessible Sortable Table
+// Accessible Sortable Table
 //
-//  This script makes html tables sortable in a manner that is usable with keyboard commands, large fonts, screen readers, and speech recognition tools, specifically:
-//  (1) Sorting is activated using actual links, which are focusable and clickable from the keyboard and by assistive technologies
-//  (2) The table summary includes an instruction for screen reader users explaining that the table can be sorted by clicking on table headers
-//  (3) The sort status (ascending, descending) is indicated using an abbreviation element with a title attribute that can be read by screen readers
-//  (4) Focus is refreshed whenever sort status is changed, prompting screen readers to read the new information
+// This script makes html tables sortable in a manner that is usable with
+// keyboard commands, large fonts, screen readers, and speech recognition
+// tools, specifically:
+// (1) Sorting is activated using actual buttons, which are focusable and
+//     clickable from the keyboard and by assistive technologies
+// (2) The table summary includes an instruction for screen reader users
+//     explaining that the table can be sorted by clicking on table headers
+// (3) The sort status (ascending, descending) is indicated using an
+//     abbreviation element with a title attribute that can be read by screen
+//     readers
+// (4) Focus is refreshed whenever sort status is changed, prompting screen
+//     readers to read the new information
 //
-//  To make a table sortable, simply add the class "sortable" to the table, add
-//  a sort-type data tag to table headers (e.g., data-sorttype="alpha"), and call
-//  SortableTable.initAll().
+// To make a table sortable, simply add the class "sortable" to the table, add
+// a sort-type data tag to table headers (e.g., data-sorttype="alpha"), and call
+// SortableTable.initAll().
 //
-//  The sort type (alphabetical, numeric, date, or none) can be determined
-//  automatically or by setting a data attribute ("data-sorttype") on any column
-//  header:
-//    data-sorttype="alpha" - for case-insensitive alphabetical sorting
-//    data-sorttype="number" - for integers, decimals, money ($##.##), and percents (##%)
-//    data-sorttype="date" - for "mm/dd/yyyy" and "month dd, yyyy" format dates (use alpha for "yyyy-mm-dd")
-//    data-sorttype="none"
+// The sort type (alphabetical, numeric, date, or none) can be determined
+// automatically or by setting a data attribute ("data-sorttype") on any column
+// header:
+//   data-sorttype="alpha" - for case-insensitive alphabetical sorting
+//   data-sorttype="number" - for integers, decimals, money ($##.##), and percents (##%)
+//   data-sorttype="date" - for "mm/dd/yyyy" and "month dd, yyyy" format dates (use alpha for "yyyy-mm-dd")
+//   data-sorttype="none"
 //
-//  A custom sort key (value to use for sorting) can be indicated for any data
-//  cell by setting a data attribute on the cell:
-//    data-sortkey="<value>" - where value is the value to use for sorting
+// A custom sort key (value to use for sorting) can be indicated for any data
+// cell by setting a data attribute on the cell:
+//   data-sortkey="<value>" - where value is the value to use for sorting
 //
-//  Table head (thead) and footer (tfoot) rows are not sorted.
-//  If no table head is present, one will be created around the first row.
+// Table head (thead) and footer (tfoot) rows are not sorted.
+// If no table head is present, one will be created around the first row.
 //
-//  Default settings can be overriden by passing a settings object to the constructor, e.g.:
-//    SortableTable.initAll({ summary: "(Click a column header to sort)", ... })
+// Default settings can be overriden by passing a settings object to the constructor, e.g.:
+//   SortableTable.initAll({ summary: "(Click a column header to sort)", ... })
 
 SortableTable = function(table, settings) {
   /// <summary>Enables tables to be sorted dynamically</summary>
@@ -340,9 +347,9 @@ Utility.createDelegate = Utility.createDelegate || function(instance, method, ar
   /// <param name="argumentsArray" type="Array" optional="true">Optional arguments to pass on to the specified method.</param>
   /// <returns type="Function"></returns>
   /// <remarks>
-  ///  Allows "this" in event handlers to reference a specific object rather than the event source element.
-  ///  Syntax: element.eventhandler = Utility.createDelegate(this, this.method, [optionalArgument1, optionalArgument2, ...])
-  ///  Not supported in Internet Explorer 5.0 or earlier.
+  /// Allows "this" in event handlers to reference a specific object rather than the event source element.
+  /// Syntax: element.eventhandler = Utility.createDelegate(this, this.method, [optionalArgument1, optionalArgument2, ...])
+  /// Not supported in Internet Explorer 5.0 or earlier.
   /// </remarks>
   return function() {
     return method.apply(instance, argumentsArray);
