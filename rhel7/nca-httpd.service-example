@@ -7,7 +7,6 @@
 	Type=simple
 	ExecStart=/usr/local/nca/server \
 		-c /usr/local/nca/settings \
-		--parent-webroot=/odnp-admin
 	SyslogIdentifier=nca-httpd
 
 [Install]
