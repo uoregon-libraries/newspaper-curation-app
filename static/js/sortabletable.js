@@ -63,7 +63,7 @@ SortableTable = function(table, settings) {
   this._minDate = typeof settings.minDate != "undefined" && Date.parse(settings.minDate) ? Date.parse(settings.minDate) : Date.parse("1/1/1900");
 
   // "Constants"
-  this._sortLinkClassName = "sort-link";
+  this._sortButtonClassName = "sort-button";
   this._sortIconTagName = "abbr";
   this._sortIconClassName = "sort-icon";
   this._unsortedClassName = "unsorted";
@@ -84,7 +84,7 @@ SortableTable = function(table, settings) {
 
   // initialization
   this.setTHead();
-  this.addSortLinks();
+  this.addSortButtons();
 }
 
 SortableTable.prototype = {
@@ -98,14 +98,14 @@ SortableTable.prototype = {
     this._tHeadRow = tHead.rows[tHead.rows.length - 1];
   },
 
-  addSortLinks: function() {
-    /// <summary>Adds sort links and sort icons (abbr elements) to the table headers.</summary>
+  addSortButtons: function() {
+    /// <summary>Adds sort buttons and sort icons (abbr elements) to the table headers.</summary>
     var hasSortableColumns = false;
     for (var i = 0, n = this._tHeadRow.cells.length; i < n; i++) {
       var th = this._tHeadRow.cells[i];
       // check for sort type class and that header has content
       if (th.dataset.sorttype != this._sortTypeNone && Utility.getInnerText(th).length > 0) {
-        // check that header does not contain block or focusable elements (which can't be embedded in a link)
+        // check that header does not contain block or focusable elements (which can't be embedded in a button)
         var containsBlockOrFocusableElement = false;
         var blockAndFocusableElementsRegExp = new RegExp(this._blockAndFocusableElementsPattern, "i");
         var descendents = th.getElementsByTagName("*"); // To Do: Check IE 5
@@ -115,18 +115,16 @@ SortableTable.prototype = {
             break;
           }
         }
-        // add sort link & sort icon
+        // add sort button & sort icon
         if (!containsBlockOrFocusableElement) {
           hasSortableColumns = true;
-          // create sort link
-          var sortLink = document.createElement("a");
-          sortLink.className = this._sortLinkClassName;
-          sortLink.id = Utility.getUniqueId("sortLink");
-          sortLink.href = "#" + sortLink.id; // link must have href to be clickable from the keyboard
-          sortLink.onclick = Utility.createDelegate(this, this.sort, [i]);
-          // move contents of header into sort link
+          // create sort button
+          var sortButton = document.createElement("button");
+          sortButton.className = this._sortButtonClassName;
+          sortButton.onclick = Utility.createDelegate(this, this.sort, [i]);
+          // move contents of header into sort button
           while (th.childNodes.length > 0) {
-            sortLink.appendChild(th.childNodes[0]);
+            sortButton.appendChild(th.childNodes[0]);
           }
           // create sort icon
           var sortIcon = document.createElement(this._sortIconTagName);
@@ -140,9 +138,9 @@ SortableTable.prototype = {
           sortIcon.title = this._unsortedText;
           sortIcon.className = this._sortIconClassName;
           sortIcon.style.borderStyle = "none";
-          // append sort link & sort icon
-          sortLink.sortIcon = sortLink.appendChild(sortIcon);
-          th.sortLink = th.appendChild(sortLink);
+          // append sort button & sort icon
+          sortButton.sortIcon = sortButton.appendChild(sortIcon);
+          th.sortButton = th.appendChild(sortButton);
         }
       }
     }
@@ -226,9 +224,8 @@ SortableTable.prototype = {
       }
       // set sortedColumnIndex
       this._sortedColumnIndex = columnIndex;
-      // re-focus sort link to cause screen reader to read new sort icon title
-      //th.sortLink.blur();
-      th.sortLink.focus();
+      // re-focus sort button to cause screen reader to read new sort icon title
+      th.sortButton.focus();
     }
     // cancel click event
     return false;
@@ -242,10 +239,10 @@ SortableTable.prototype = {
     /// <param name="title" type="String">Text to be used for the sort icon title.</param>
     var th = this._tHeadRow.cells[columnIndex];
     if (th) {
-      var sortLink = th.sortLink;
-      if (sortLink) {
+      var sortButton = th.sortButton;
+      if (sortButton) {
         th.className = th.className.replace(new RegExp("\\b(" + this._unsortedClassName + "|" + this._ascendingClassName + "|" + this._descendingClassName + ")\\b"), className);
-        var sortIcon = sortLink.sortIcon;
+        var sortIcon = sortButton.sortIcon;
         if (sortIcon) {
           if (this._sortIconTagName == "img") {
             sortIcon.src = text;
@@ -328,16 +325,6 @@ Utility.getInnerText = Utility.getInnerText || function(element) {
   /// <returns type="String"></returns>
   /// <remarks>This method is a cross-browser alternative to innerText.</remarks>
   return element.innerText || element.textContent || "";
-}
-
-Utility.getUniqueId = Utility.getUniqueId || function(prefix) {
-  /// <summary>Returns an ID value that is not currently assigned to any element in the document.</summary>
-  /// <param name="prefix" type="String"></param>
-  /// <returns type="String"></returns>
-  /// <remarks>To be valid, prefix must begin with a letter and contain only letters, digits, hyphens, and/or underscores.</remarks>
-  var i = 0;
-  while (document.getElementById(prefix + i.toString())) { i++; }
-  return prefix + i.toString();
 }
 
 Utility.createDelegate = Utility.createDelegate || function(instance, method, argumentsArray) {
