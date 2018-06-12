@@ -26,13 +26,11 @@
 // a sort-type data tag to table headers (e.g., data-sorttype="alpha"), and call
 // SortableTable.initAll().
 //
-// The sort type (alphabetical, numeric, date, or none) can be determined
-// automatically or by setting a data attribute ("data-sorttype") on any column
-// header:
+// The sort type (alphabetical, numeric, date) is determined by setting a data
+// attribute ("data-sorttype") on any column header:
 //   data-sorttype="alpha" - for case-insensitive alphabetical sorting
 //   data-sorttype="number" - for integers, decimals, money ($##.##), and percents (##%)
 //   data-sorttype="date" - for "mm/dd/yyyy" and "month dd, yyyy" format dates (use alpha for "yyyy-mm-dd")
-//   data-sorttype="none"
 //
 // A custom sort key (value to use for sorting) can be indicated for any data
 // cell by setting a data attribute on the cell:
@@ -71,7 +69,6 @@ SortableTable = function(table, settings) {
   this._sortTypeDate = "date";
   this._sortTypeNumber = "number";
   this._sortTypeAlpha = "alpha";
-  this._sortTypeNone = "none";
   this._blockAndFocusableElementsPattern = "^[DIV|P|H1|H2|H3|H4|H5|H6|HR|UL|OL|DL|BLOCKQUOTE|PRE|ADDRESS|TABLE|FORM|FIELDSET|INPUT|SELECT|TEXTAREA|BUTTON|A]$";
 
   // class variables
@@ -104,7 +101,7 @@ SortableTable.prototype = {
       var th = this._tHeadRow.cells[i];
       // check for sort type class and that header has content
       var st = th.dataset.sorttype;
-      if (st == this._sortTypeNone) {
+      if (st != this._sortTypeDate && st != this._sortTypeAlpha && st != this._sortTypeNumber) {
         continue;
       }
       if (th.innerText.length == 0) {
