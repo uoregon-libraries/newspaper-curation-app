@@ -112,6 +112,7 @@ SortableTable.prototype = {
       var sortButton = document.createElement("button");
       sortButton.className = this._sortButtonClassName;
       sortButton.onclick = Utility.createDelegate(this, this.sort, [i]);
+
       // move contents of header into sort button
       while (th.childNodes.length > 0) {
         sortButton.appendChild(th.childNodes[0]);
@@ -153,7 +154,7 @@ SortableTable.prototype = {
           var cell = rows[i].cells[columnIndex];
           var sortKey = cell.dataset.sortkey;
           if (sortKey == null || sortKey == "") {
-            sortKey = Utility.getInnerText(cell);
+            sortKey = cell.innerText;
           }
 
           // convert to date
@@ -298,14 +299,6 @@ SortableTable.isSortable = function(table) {
 
 var Utility = Utility || {
   /// <summary>Utility Class</summary>
-}
-
-Utility.getInnerText = Utility.getInnerText || function(element) {
-  /// <summary>Returns the text content of an element.</summary>
-  /// <param name="element" type="DomElement"></param>
-  /// <returns type="String"></returns>
-  /// <remarks>This method is a cross-browser alternative to innerText.</remarks>
-  return element.innerText || element.textContent || "";
 }
 
 Utility.createDelegate = Utility.createDelegate || function(instance, method, argumentsArray) {
