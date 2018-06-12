@@ -223,8 +223,6 @@ SortableTable.prototype = {
 
       // set sortedColumnIndex
       this._sortedColumnIndex = columnIndex;
-      // re-focus sort button to cause screen reader to read new sort icon title
-      th.sortButton.focus();
     }
     // cancel click event
     return false;
