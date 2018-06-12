@@ -78,7 +78,6 @@ SortableTable = function(table, settings)
 
   // initialization
   this.setTHead();
-  this.setSortTypes();
   this.addSortLinks();
 }
 
@@ -94,51 +93,6 @@ SortableTable.prototype =
       tHead.appendChild(this._table.rows[0]);
     }
     this._tHeadRow = tHead.rows[tHead.rows.length - 1];
-  },
-
-  setSortTypes: function()
-  {
-    /// <summary>Adds a sortType className (e.g., class="sort-date") to each header that does not already have one.</summary>
-    /// <remarks>
-    ///  SortType is determined by analyzing patterns in data cell contents; if not identifiable as date or number, alpha is used.
-    ///  Note: It is faster and more reliable to specify sortType classNames in the HTML.
-    /// </remarks>
-    var sortTypeRegExp = new RegExp("\\b" + this._sortTypePrefix + "\\b", "i"); // word-break, sortTypePrefix, word-break
-    var numberRegExp = new RegExp(this._numberPattern);
-    var tHeadRow = this._tHeadRow;
-    var tBodyRows = this._tBody.rows;
-    for (var i = 0, n = tHeadRow.cells.length; i < n; i++)
-    {
-      if (!sortTypeRegExp.test(tHeadRow.cells[i].className))
-      {
-        var isDateColumn = true;
-        var isNumberColumn = true;
-        for (var j = 0, m = tBodyRows.length; j < m; j++)
-        {
-          var innerText = Utility.getInnerText(tBodyRows[j].cells[i]).replace(/^[\s\u00A0]+/, ""); // whitespace and non-breaking spaces
-          // check for date
-          if (isDateColumn)
-          {
-            if (innerText.length > 0 && (innerText.length < 6 || !isFinite(Date.parse(innerText)))) // shortest date string = m/d/yy
-            {
-              isDateColumn = false;
-              j = -1; // restart loop
-            }
-          }
-          // check for number
-          else
-          {
-            if (innerText.length > 0 && !numberRegExp.test(innerText))
-            {
-              isNumberColumn = false;
-              break;
-            }
-          }
-        }
-        var sortType = isDateColumn ? this._sortTypeDate : isNumberColumn ? this._sortTypeNumber : this._sortTypeAlpha;
-        tHeadRow.cells[i].className += " " + this._sortTypePrefix + "-" + sortType + " " + this._unsortedClassName;
-      }
-    }
   },
 
   addSortLinks: function()
