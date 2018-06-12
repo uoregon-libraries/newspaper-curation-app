@@ -24,8 +24,11 @@ var IIIFBaseURL string
 // FullPath uses the webroot, if not empty, to join together all the path parts
 // with a slash, returning an absolute path to something
 func FullPath(parts ...string) string {
-	if Webroot != "" {
-		parts = append([]string{Webroot}, parts...)
+	parts = append([]string{Webroot}, parts...)
+	if Webroot == "" {
+		parts[0] = "/"
+	} else if Webroot[0] != '/' {
+		parts[0] = "/" + parts[0]
 	}
 	return path.Join(parts...)
 }

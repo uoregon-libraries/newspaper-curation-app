@@ -78,8 +78,11 @@ func startServer() {
 	var r = mux.NewRouter()
 	var hp = webutil.HomePath()
 
-	// Make sure homepath/ isn't considered the canonical path
-	r.Handle(hp+"/", makeRedirect(hp, http.StatusMovedPermanently))
+	// Make sure homepath/ isn't considered the canonical path unless the base
+	// path is empty
+	if hp != "/" {
+		r.Handle(hp+"/", makeRedirect(hp, http.StatusMovedPermanently))
+	}
 
 	// The static handler doesn't check permissions.  Right now this is okay, as
 	// what we serve isn't valuable beyond page layout, but this may warrant a
