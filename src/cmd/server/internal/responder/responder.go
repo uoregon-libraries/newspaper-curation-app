@@ -13,7 +13,6 @@ import (
 	"time"
 	"version"
 	"web/tmpl"
-	"web/webutil"
 
 	"github.com/uoregon-libraries/gopkg/logger"
 )
@@ -26,7 +25,6 @@ type GenericVars map[string]interface{}
 type PageVars struct {
 	Title   string
 	Version string
-	Webroot string
 	Alert   template.HTML
 	Info    template.HTML
 	User    *user.User
@@ -50,7 +48,6 @@ func Response(w http.ResponseWriter, req *http.Request) *Responder {
 
 // injectDefaultTemplateVars sets up default variables used in multiple templates
 func (r *Responder) injectDefaultTemplateVars() {
-	r.Vars.Webroot = webutil.Webroot
 	r.Vars.Version = version.Version
 	if r.Vars.Title == "" {
 		r.Vars.Title = "Newspaper Curation App"

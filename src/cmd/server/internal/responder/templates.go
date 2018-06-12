@@ -41,6 +41,8 @@ func InitRootTemplate(templatePath string) {
 		"IncludeJS":  webutil.IncludeJS,
 		"RawJS":      webutil.RawJS,
 		"ImageURL":   webutil.ImageURL,
+		"HomePath":   webutil.HomePath,
+		"FullPath":   webutil.FullPath,
 		"Comment":    HTMLComment,
 		"TimeString": func(t time.Time) string { return t.Format("2006-01-02 15:04") },
 		"nl2br": func(s string) template.HTML {

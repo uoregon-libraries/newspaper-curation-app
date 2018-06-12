@@ -24,33 +24,33 @@
               <span class="icon-bar"></span>
               <span class="icon-bar"></span>
             </button>
-            <a class="navbar-brand" href="{{.Webroot}}">NCA</a>
+            <a class="navbar-brand" href="{{HomePath}}">NCA</a>
           </div>
 
           <div class="collapse navbar-collapse" id="navbar-collapse">
             <ul class="nav navbar-nav">
               {{if .User.PermittedTo ListTitles}}
-                <li><a href="{{.Webroot}}/titles">Titles</a></li>
+                <li><a href="{{FullPath "titles"}}">Titles</a></li>
               {{end}}
 
               {{if .User.PermittedTo ViewUploadedIssues}}
-              <li><a href="{{.Webroot}}/uploadedissues">Uploaded Issues</a></li>
+              <li><a href="{{FullPath "uploadedissues"}}">Uploaded Issues</a></li>
               {{end}}
 
               {{if .User.PermittedTo ViewMetadataWorkflow}}
-                <li><a href="{{.Webroot}}/workflow">Workflow</a></li>
+                <li><a href="{{FullPath "workflow"}}">Workflow</a></li>
               {{end}}
 
               {{if .User.PermittedTo SearchIssues}}
-                <li><a href="{{.Webroot}}/find">Find Issues</a></li>
+                <li><a href="{{FullPath "find"}}">Find Issues</a></li>
               {{end}}
 
               {{if .User.PermittedTo ManageMOCs}}
-                <li><a href="{{.Webroot}}/mocs">MARC Org Codes</a></li>
+                <li><a href="{{FullPath "mocs"}}">MARC Org Codes</a></li>
               {{end}}
 
               {{if .User.PermittedTo ListUsers}}
-                <li><a href="{{.Webroot}}/users">Users</a></li>
+                <li><a href="{{FullPath "users"}}">Users</a></li>
               {{end}}
             </ul>
             <p class="navbar-text navbar-right">
