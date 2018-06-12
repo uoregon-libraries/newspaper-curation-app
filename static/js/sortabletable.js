@@ -45,33 +45,34 @@ SortableTable = function(table, settings)
   /// <param name="table" type="DomElement">Table to be made sortable</param>
   /// <param name="settings" type="object" optional="true">Optional settings in object literal notation, e.g., { summary: "(Click a column header to sort)", ... }</param>
 
-  // settings
+  // Configurable settings
   var settings = settings || {};
-  // settings.className (used in initAll)
   this._summary = typeof settings.summary != "undefined" ? settings.summary : "(Click a column header to sort)";
-  this._sortLinkClassName = typeof settings.sortLinkClassName != "undefined" ? settings.sortLinkClassName : "sortLink";
-  this._sortIconTagName = typeof settings.sortIconTagName != "undefined" ? settings.sortIconTagName : "abbr";
-  this._sortIconClassName = typeof settings.sortIconClassName != "undefined" ? settings.sortIconClassName : "sortIcon";
-  this._unsortedClassName = typeof settings.unsortedClassName != "undefined" ? settings.unsortedClassName : "unsorted";
   this._unsortedIcon = typeof settings.unsortedIcon != "undefined" ? settings.unsortedIcon : "\u2195"; // up down arrow
   this._unsortedText = typeof settings.unsortedText != "undefined" ? settings.unsortedText : "";
-  this._ascendingClassName = typeof settings.ascendingClassName != "undefined" ? settings.ascendingClassName : "ascending";
   this._ascendingIcon = typeof settings.ascendingIcon != "undefined" ? settings.ascendingIcon : "\u2193"; // downwards arrow
   this._ascendingText = typeof settings.ascendingText != "undefined" ? settings.ascendingText : "(sorted ascending)";
-  this._descendingClassName = typeof settings.descendingClassName != "undefined" ? settings.descendingClassName : "descending";
   this._descendingIcon = typeof settings.descendingIcon != "undefined" ? settings.descendingIcon : "\u2191"; // upwards arrow
   this._descendingText = typeof settings.descendingText != "undefined" ? settings.descendingText : "(sorted descending)";
-  this._sortTypePrefix = typeof settings.sortTypePrefix != "undefined" ? settings.sortTypePrefix : "sort";
-  this._sortTypeDate = typeof settings.sortTypeDate != "undefined" ? settings.sortTypeDate : "date";
-  this._sortTypeNumber = typeof settings.sortTypeNumber != "undefined" ? settings.sortTypeNumber : "number";
-  this._sortTypeAlpha = typeof settings.sortTypeAlpha != "undefined" ? settings.sortTypeAlpha : "alpha";
-  this._sortTypeNone = typeof settings.sortTypeNone != "undefined" ? settings.sortTypeNone : "none";
-  this._sortKeyPrefix = typeof settings.sortKeyPrefix != "undefined" ? settings.sortKeyPrefix : "sortkey";
-  this._addTFootClassName = typeof settings.addTFootClassName != "undefined" ? settings.addTFootClassName : "addFooter";
   this._numberPattern = typeof settings.numberPattern != "undefined" ? settings.numberPattern : "^\\s*-?\\$?[\\d,]*\\.?\\d*%?$"; // any number of whitespace characters, optional negative sign (hyphen), optional dollar sign, any number of digits/commas, optional period, any number of digits (note: will match all white-space or empty-string)
   this._numberCleanUpPattern = typeof settings.numberCleanUpPattern != "undefined" ? settings.numberCleanUpPattern : "[$,]"; // dollar sign or comma
-  this._blockAndFocusableElementsPattern = typeof settings.blockAndFocusableElementsPattern != "undefined" ? settings.blockAndFocusableElementsPattern : "^[DIV|P|H1|H2|H3|H4|H5|H6|HR|UL|OL|DL|BLOCKQUOTE|PRE|ADDRESS|TABLE|FORM|FIELDSET|INPUT|SELECT|TEXTAREA|BUTTON|A]$";
   this._minDate = typeof settings.minDate != "undefined" && Date.parse(settings.minDate) ? Date.parse(settings.minDate) : Date.parse("1/1/1900");
+
+  // "Constants"
+  this._sortLinkClassName = "sort-link";
+  this._sortIconTagName = "abbr";
+  this._sortIconClassName = "sort-icon";
+  this._unsortedClassName = "unsorted";
+  this._ascendingClassName = "ascending";
+  this._descendingClassName = "descending";
+  this._sortTypePrefix = "sort";
+  this._sortTypeDate = "date";
+  this._sortTypeNumber = "number";
+  this._sortTypeAlpha = "alpha";
+  this._sortTypeNone = "none";
+  this._sortKeyPrefix = "sortkey";
+  this._addTFootClassName = "add-footer";
+  this._blockAndFocusableElementsPattern = "^[DIV|P|H1|H2|H3|H4|H5|H6|HR|UL|OL|DL|BLOCKQUOTE|PRE|ADDRESS|TABLE|FORM|FIELDSET|INPUT|SELECT|TEXTAREA|BUTTON|A]$";
 
   // class variables
   this._table = table;
