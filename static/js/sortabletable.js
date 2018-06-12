@@ -111,7 +111,7 @@ SortableTable.prototype = {
       // create sort button
       var sortButton = document.createElement("button");
       sortButton.className = this._sortButtonClassName;
-      sortButton.onclick = Utility.createDelegate(this, this.sort, [i]);
+      sortButton.onclick = createDelegate(this, this.sort, [i]);
 
       // move contents of header into sort button
       while (th.childNodes.length > 0) {
@@ -295,23 +295,9 @@ SortableTable.isSortable = function(table) {
   return true;
 }
 
-// Utility Methods
-
-var Utility = Utility || {
-  /// <summary>Utility Class</summary>
-}
-
-Utility.createDelegate = Utility.createDelegate || function(instance, method, argumentsArray) {
-  /// <summary>Creates a delegate to allow the specified method to run in the context of the specified instance.</summary>
-  /// <param name="instance" type="Object"></param>
-  /// <param name="method" type="Function"></param>
-  /// <param name="argumentsArray" type="Array" optional="true">Optional arguments to pass on to the specified method.</param>
-  /// <returns type="Function"></returns>
-  /// <remarks>
-  /// Allows "this" in event handlers to reference a specific object rather than the event source element.
-  /// Syntax: element.eventhandler = Utility.createDelegate(this, this.method, [optionalArgument1, optionalArgument2, ...])
-  /// Not supported in Internet Explorer 5.0 or earlier.
-  /// </remarks>
+// Creates a delegate to allow the specified method to run in the context of
+// the specified instance
+function createDelegate(instance, method, argumentsArray) {
   return function() {
     return method.apply(instance, argumentsArray);
   }
