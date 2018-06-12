@@ -34,16 +34,6 @@
 //
 //  Default settings can be overriden by passing a settings object to the constructor, e.g.:
 //    SortableTable.initAll({ className: "sortable", summary: "(Click a column header to sort)", ... })
-//
-//  The following style rules are suggested:
-//    table.sortable .sortLink { display: block; *margin-bottom: 1px; color: #000; text-decoration: none;  }
-//    table.sortable .sortIcon { padding-left: 3px; vertical-align: 1px; }
-//    table.sortable .unsorted { }
-//    table.sortable .unsorted .sortIcon { }
-//    table.sortable .ascending { }
-//    table.sortable .ascending .sortIcon { }
-//    table.sortable .descending { }
-//    table.sortable .descending .sortIcon { }
 
 SortableTable = function(table, settings)
 {
