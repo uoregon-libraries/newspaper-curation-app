@@ -15,19 +15,21 @@
 //  (3) The sort status (ascending, descending) is indicated using an abbreviation element with a title attribute that can be read by screen readers
 //  (4) Focus is refreshed whenever sort status is changed, prompting screen readers to read the new information
 //
-//  To make a table sortable, simply add the class:
-//    class="sortable"
-//  And call:
-//    SortableTable.initAll()
+//  To make a table sortable, simply add the class "sortable" to the table, add
+//  a sort-type data tag to table headers (e.g., data-sorttype="alpha"), and call
+//  SortableTable.initAll().
 //
-//  The sort type (alphabetical, numeric, date, or none) can be determined automatically or by setting a class on any column header:
-//    class="sort-alpha" - for case-insensitive alphabetical sorting
-//    class="sort-number" - for integers, decimals, money ($##.##), and percents (##%)
-//    class="sort-date" - for "mm/dd/yyyy" and "month dd, yyyy" format dates (use alpha for "yyyy-mm-dd")
-//    class="sort-none"
+//  The sort type (alphabetical, numeric, date, or none) can be determined
+//  automatically or by setting a data attribute ("data-sorttype") on any column
+//  header:
+//    data-sorttype="alpha" - for case-insensitive alphabetical sorting
+//    data-sorttype="number" - for integers, decimals, money ($##.##), and percents (##%)
+//    data-sorttype="date" - for "mm/dd/yyyy" and "month dd, yyyy" format dates (use alpha for "yyyy-mm-dd")
+//    data-sorttype="none"
 //
-//  A custom sort key (value to use for sorting) can be indicated for any data cell by setting a class on the cell:
-//    class="sortkey-value" - where value is the value to use for sorting
+//  A custom sort key (value to use for sorting) can be indicated for any data
+//  cell by setting a data attribute on the cell:
+//    data-sortkey="<value>" - where value is the value to use for sorting
 //
 //  Table head (thead) and footer (tfoot) rows are not sorted.
 //  If no table head is present, one will be created around the first row.
@@ -61,12 +63,10 @@ SortableTable = function(table, settings)
   this._unsortedClassName = "unsorted";
   this._ascendingClassName = "ascending";
   this._descendingClassName = "descending";
-  this._sortTypePrefix = "sort";
   this._sortTypeDate = "date";
   this._sortTypeNumber = "number";
   this._sortTypeAlpha = "alpha";
   this._sortTypeNone = "none";
-  this._sortKeyPrefix = "sortkey";
   this._blockAndFocusableElementsPattern = "^[DIV|P|H1|H2|H3|H4|H5|H6|HR|UL|OL|DL|BLOCKQUOTE|PRE|ADDRESS|TABLE|FORM|FIELDSET|INPUT|SELECT|TEXTAREA|BUTTON|A]$";
 
   // class variables
@@ -99,12 +99,11 @@ SortableTable.prototype =
   {
     /// <summary>Adds sort links and sort icons (abbr elements) to the table headers.</summary>
     var hasSortableColumns = false;
-    var sortTypeNoneRegExp = new RegExp("\\b" + this._sortTypePrefix + "-" + this._sortTypeNone + "\\b", "i"); // word-break, sortTypePrefix, hyphen, sortTypeNone, word-break
     for (var i = 0, n = this._tHeadRow.cells.length; i < n; i++)
     {
       var th = this._tHeadRow.cells[i];
       // check for sort type class and that header has content
-      if (!sortTypeNoneRegExp.test(th.className) && Utility.getInnerText(th).length > 0)
+      if (th.dataset.sorttype != this._sortTypeNone && Utility.getInnerText(th).length > 0)
       {
         // check that header does not contain block or focusable elements (which can't be embedded in a link)
         var containsBlockOrFocusableElement = false;
@@ -176,18 +175,19 @@ SortableTable.prototype =
       // sort on a new column
       if (columnIndex != this._sortedColumnIndex)
       {
-        // get sortType
-        var sortTypeRegExp = new RegExp("\\b" + this._sortTypePrefix + "-(\\S*)\\b", "i"); // word-break, sortTypePrefix, hyphen, one or more non-whitespace characters (captured), word-break
-        var sortTypeMatch = th.className.match(sortTypeRegExp);
-        var sortType = sortTypeMatch ? sortTypeMatch[1] : this.sortTypeAlpha;
-        // get sortKey
-        var sortKeyRegExp = new RegExp("\\b" + this._sortKeyPrefix + "-(\\S*)\\b", "i"); // word-break, sortKeyPrefix, hyphen, any number of non-whitespace characters (captured), word-break
+        // get sort type
+        var sortType = th.dataset.sorttype;
+
         var numberCleanUpRegExp = new RegExp(this._numberCleanUpPattern, "ig"); // non-numeric characters allowed before or within numbers (e.g. dollar sign and comma)
         for (var i = 0, n = rows.length; i < n; i++)
         {
           var cell = rows[i].cells[columnIndex];
-          var sortKeyMatch = cell.className.match(sortKeyRegExp);
-          var sortKey = sortKeyMatch ? sortKeyMatch[1] : Utility.getInnerText(cell);
+          var sortKey = cell.dataset.sortkey;
+          if (sortKey == null || sortKey == "")
+          {
+            sortKey = Utility.getInnerText(cell);
+          }
+
           // convert to date
           if (sortType == this._sortTypeDate)
           {
@@ -327,7 +327,7 @@ SortableTable.initAll = function(settings)
 {
   /// <summary>Static method that initializes all SortableTables in a document.</summary>
   /// <param name="settings" type="Object" optional="true">Optional settings in object literal notation, e.g., { summary: "(Click a column header to sort)", ...}</param>
-  var tables = document.queryAllSelector("table.sortable");
+  var tables = document.querySelectorAll("table.sortable");
   for (var i = 0, n = tables.length; i < n; i++)
   {
     SortableTable.init(tables[i], settings);
