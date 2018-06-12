@@ -42,6 +42,8 @@ services:
       - ./settings-example:/usr/local/nca/settings:z
       - ./db/migrations:/usr/local/nca/db/migrations:z
       - ./db/dbconf-example.yml:/usr/local/nca/db/dbconf.yml:z
+    # Make sure the server always runs in debug mode
+    command: ./bin/server -c ./settings --debug
 
   # Expose port 80 to the host's port 80
   proxy:
