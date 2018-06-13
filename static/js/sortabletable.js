@@ -199,43 +199,38 @@ SortableTable.prototype = {
       // clean up
       delete rowArray;
 
-      // reset old sortIcon
-      if (this._sortedColumnIndex != null && this._sortedColumnIndex != columnIndex) {
-        this.setSortIcon(this._sortedColumnIndex, this._unsortedClassName, this._unsortedIcon, this._unsortedText);
-      }
-
-      // set new sortIcon
-      if (this._isAscending) {
-        this.setSortIcon(columnIndex, this._ascendingClassName, this._ascendingIcon, this._ascendingText);
-      }
-      else {
-        this.setSortIcon(columnIndex, this._descendingClassName, this._descendingIcon, this._descendingText);
-      }
-
-      // set sortedColumnIndex
-      this._sortedColumnIndex = columnIndex;
+      this.setSortColumn(columnIndex);
     }
     // cancel click event
     return false;
   },
 
-  setSortIcon: function(columnIndex, className, text, title) {
-    /// <summary>Sets the sort icon to show the current sort status (ascending, descending, or unsorted).</summary>
-    /// <param name="columnIndex" type="Number">Index of the column for which to set the icon.</param>
-    /// <param name="className" type="String">Class name to be applied to the column header.</param>
-    /// <param name="icon" type="String">Text to be used as the visible sort icon.</param>
-    /// <param name="title" type="String">Text to be used for the sort icon title.</param>
-    var th = this._tHeadRow.cells[columnIndex];
-    if (th) {
-      var sortButton = th.sortButton;
-      if (sortButton) {
-        th.className = th.className.replace(new RegExp("\\b(" + this._unsortedClassName + "|" + this._ascendingClassName + "|" + this._descendingClassName + ")\\b"), className);
-        var sortIcon = sortButton.sortIcon;
-        if (sortIcon) {
-          sortIcon.replaceChild(document.createTextNode(text), sortIcon.childNodes[0]);
-          sortIcon.title = title;
-        }
-      }
+  setSortColumn: function(idx) {
+    var oldIdx = this._sortedColumnIndex;
+    this._sortedColumnIndex = idx;
+
+    // Reset old column's sort icon
+    var oldTH = this._tHeadRow.cells[oldIdx];
+    var th = this._tHeadRow.cells[idx];
+    if (oldIdx != null && oldIdx != idx) {
+      oldTH.classList.remove(this._ascendingClassName);
+      oldTH.classList.remove(this._descendingClassName);
+      oldTH.classList.add(this._unsortedClassName);
+      oldTH.sortButton.sortIcon.innerText = this._unsortedIcon;
+      th.classList.remove(this._unsortedClassName);
+    }
+    else {
+      th.classList.remove(this._ascendingClassName);
+      th.classList.remove(this._descendingClassName);
+    }
+
+    if (this._isAscending) {
+      th.classList.add(this._ascendingClassName);
+      th.sortButton.sortIcon.innerText = this._ascendingIcon;
+    }
+    else {
+      th.classList.add(this._descendingClassName);
+      th.sortButton.sortIcon.innerText = this._descendingIcon;
     }
   },
 
