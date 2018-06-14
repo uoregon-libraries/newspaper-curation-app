@@ -51,11 +51,8 @@ SortableTable = function(table, settings) {
   var settings = settings || {};
   this._summary = typeof settings.summary != "undefined" ? settings.summary : "(Click a column header to sort)";
   this._unsortedIcon = typeof settings.unsortedIcon != "undefined" ? settings.unsortedIcon : "\u2195"; // up down arrow
-  this._unsortedText = typeof settings.unsortedText != "undefined" ? settings.unsortedText : "";
   this._ascendingIcon = typeof settings.ascendingIcon != "undefined" ? settings.ascendingIcon : "\u2193"; // downwards arrow
-  this._ascendingText = typeof settings.ascendingText != "undefined" ? settings.ascendingText : "(sorted ascending)";
   this._descendingIcon = typeof settings.descendingIcon != "undefined" ? settings.descendingIcon : "\u2191"; // upwards arrow
-  this._descendingText = typeof settings.descendingText != "undefined" ? settings.descendingText : "(sorted descending)";
   this._numberPattern = typeof settings.numberPattern != "undefined" ? settings.numberPattern : "^\\s*-?\\$?[\\d,]*\\.?\\d*%?$"; // any number of whitespace characters, optional negative sign (hyphen), optional dollar sign, any number of digits/commas, optional period, any number of digits (note: will match all white-space or empty-string)
   this._numberCleanUpPattern = typeof settings.numberCleanUpPattern != "undefined" ? settings.numberCleanUpPattern : "[$,]"; // dollar sign or comma
   this._minDate = typeof settings.minDate != "undefined" && Date.parse(settings.minDate) ? Date.parse(settings.minDate) : Date.parse("1/1/1900");
@@ -121,7 +118,6 @@ SortableTable.prototype = {
       var sortIcon = document.createElement("span");
       sortIcon.classList.add("sort-icon");
       sortIcon.appendChild(document.createTextNode(this._unsortedIcon));
-      sortIcon.title = this._unsortedText;
       sortIcon.className = this._sortIconClassName;
       sortIcon.setAttribute("aria-hidden", "true");
 
