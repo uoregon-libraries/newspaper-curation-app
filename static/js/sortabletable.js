@@ -118,11 +118,13 @@ SortableTable.prototype = {
         sortButton.appendChild(th.childNodes[0]);
       }
       // create sort icon
-      var sortIcon = document.createElement("abbr");
+      var sortIcon = document.createElement("span");
+      sortIcon.classList.add("sort-icon");
       sortIcon.appendChild(document.createTextNode(this._unsortedIcon));
       sortIcon.title = this._unsortedText;
       sortIcon.className = this._sortIconClassName;
-      sortIcon.style.borderStyle = "none";
+      sortIcon.setAttribute("aria-hidden", "true");
+
       // append sort button & sort icon
       sortButton.sortIcon = sortButton.appendChild(sortIcon);
       th.sortButton = th.appendChild(sortButton);
@@ -212,6 +214,9 @@ SortableTable.prototype = {
     // Reset old column's sort icon
     var oldTH = this._tHeadRow.cells[oldIdx];
     var th = this._tHeadRow.cells[idx];
+    if (oldTH != null) {
+      oldTH.removeAttribute("aria-sort");
+    }
     if (oldIdx != null && oldIdx != idx) {
       oldTH.classList.remove(this._ascendingClassName);
       oldTH.classList.remove(this._descendingClassName);
@@ -225,10 +230,12 @@ SortableTable.prototype = {
     }
 
     if (this._isAscending) {
+      th.setAttribute("aria-sort", "ascending");
       th.classList.add(this._ascendingClassName);
       th.sortButton.sortIcon.innerText = this._ascendingIcon;
     }
     else {
+      th.setAttribute("aria-sort", "descending");
       th.classList.add(this._descendingClassName);
       th.sortButton.sortIcon.innerText = this._descendingIcon;
     }
