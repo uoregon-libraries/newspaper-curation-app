@@ -198,7 +198,7 @@ func setTitleData(r *responder.Responder, t *Title) (vErrors []string, handled b
 // data for users who can't edit it (sftp credentials)
 func saveHandler(w http.ResponseWriter, req *http.Request) {
 	var r = responder.Response(w, req)
-	var t = &Title{}
+	var t = WrapTitle(&db.Title{})
 	var handled bool
 
 	if r.Request.FormValue("id") != "" {
