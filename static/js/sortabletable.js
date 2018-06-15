@@ -14,13 +14,12 @@
 // tools, specifically:
 // (1) Sorting is activated using actual buttons, which are focusable and
 //     clickable from the keyboard and by assistive technologies
-// (2) The table summary includes an instruction for screen reader users
-//     explaining that the table can be sorted by clicking on table headers
+// (2) Adds a div above the table with information about how to sort as well as
+//     the current sort, using aria-describedby and aria-live
 // (3) The sort status (ascending, descending) is indicated using an
-//     abbreviation element with a title attribute that can be read by screen
-//     readers
-// (4) Focus is refreshed whenever sort status is changed, prompting screen
-//     readers to read the new information
+//     element with aria attributes that can be read by screen readers
+// (4) When sort status changes, the aria-live region also changes, so users
+//     know something happened
 //
 // To make a table sortable, simply add the class "sortable" to the table, add
 // a sort-type data tag to table headers (e.g., data-sorttype="alpha"), and call
@@ -49,7 +48,7 @@ SortableTable = function(table, settings) {
 
   // Configurable settings
   var settings = settings || {};
-  this._summary = typeof settings.summary != "undefined" ? settings.summary : "(Click a column header to sort)";
+  this._desc = typeof settings.desc != "undefined" ? settings.desc : "Click a column header to sort";
   this._unsortedIcon = typeof settings.unsortedIcon != "undefined" ? settings.unsortedIcon : "\u2195"; // up down arrow
   this._ascendingIcon = typeof settings.ascendingIcon != "undefined" ? settings.ascendingIcon : "\u2193"; // downwards arrow
   this._descendingIcon = typeof settings.descendingIcon != "undefined" ? settings.descendingIcon : "\u2191"; // upwards arrow
@@ -91,7 +90,7 @@ SortableTable.prototype = {
   },
 
   addSortButtons: function() {
-    /// <summary>Adds sort buttons and sort icons (abbr elements) to the table headers.</summary>
+    /// <summary>Adds sort buttons to the table headers.</summary>
     var hasSortableColumns = false;
     for (var i = 0, n = this._tHeadRow.cells.length; i < n; i++) {
       var th = this._tHeadRow.cells[i];
@@ -126,11 +125,28 @@ SortableTable.prototype = {
       th.sortButton = th.appendChild(sortButton);
     }
 
+    // Add table description and live region if the table was found to be sortable
     if (hasSortableColumns) {
-      // add summary
-      if (this._summary.length > 0) {
-        this._table.summary += " " + this._summary;
-      }
+      // Wrapper div
+      var info = document.createElement("div");
+      info.classList.add("sortable-info-wrapper")
+      this._table.parentElement.insertBefore(info, this._table);
+
+      // Inner description div
+      var desc = document.createElement("div");
+      info.appendChild(desc)
+      desc.classList.add("description");
+      desc.id = uuidv4();
+      desc.innerText = this._desc;
+      this._table.setAttribute("aria-describedby", desc.id);
+
+      // The live region for letting people know sorting has changed
+      var liveregion = document.createElement("div");
+      info.appendChild(liveregion)
+      liveregion.classList.add("status");
+      liveregion.id = uuidv4();
+      liveregion.setAttribute("aria-live", "polite");
+      this._table.dataset.sortstatus = liveregion.id;
     }
   },
 
@@ -225,13 +241,18 @@ SortableTable.prototype = {
       th.classList.remove(this._descendingClassName);
     }
 
+    var liveregion = document.getElementById(this._table.dataset.sortstatus);
+    // Clear the sort icon so we can use the table header's innerText to label the live region
+    th.sortButton.sortIcon.innerText = "";
+    var direction = this._isAscending ? "ascending" : "descending";
+    liveregion.innerText = "(sorted by " + th.innerText + ", " + direction + ")";
+    th.setAttribute("aria-sort", direction);
+
     if (this._isAscending) {
-      th.setAttribute("aria-sort", "ascending");
       th.classList.add(this._ascendingClassName);
       th.sortButton.sortIcon.innerText = this._ascendingIcon;
     }
     else {
-      th.setAttribute("aria-sort", "descending");
       th.classList.add(this._descendingClassName);
       th.sortButton.sortIcon.innerText = this._descendingIcon;
     }
@@ -299,4 +320,13 @@ function createDelegate(instance, method, argumentsArray) {
   return function() {
     return method.apply(instance, argumentsArray);
   }
+}
+
+// Returns a valid v4 uuid... according to stackoverflow, anyway....
+//
+// See the bottom part of https://stackoverflow.com/a/2117523/468391
+function uuidv4() {
+  return ([1e7] + -1e3 + -4e3 + -8e3 + -1e11).replace(/[018]/g, function (c) {
+    return (c ^ crypto.getRandomValues(new Uint8Array(1))[0] & 15 >> c / 4).toString(16);
+  });
 }
