@@ -56,22 +56,19 @@
 //   - If a prior header was sorted, its arrow is replaced with the up-down unicode arrow
 //   - If a prior header was sorted, its aria-sort attribute is removed
 
-SortableTable = function(table, settings) {
+SortableTable = function(table) {
   /// <summary>Enables tables to be sorted dynamically</summary>
   /// <param name="table" type="DomElement">Table to be made sortable</param>
-  /// <param name="settings" type="object" optional="true">Optional settings in object literal notation, e.g., { summary: "(Click a column header to sort)", ... }</param>
-
-  // Configurable settings
-  var settings = settings || {};
-  this._desc = typeof settings.desc != "undefined" ? settings.desc : "Click a column header to sort";
-  this._unsortedIcon = typeof settings.unsortedIcon != "undefined" ? settings.unsortedIcon : "\u2195"; // up down arrow
-  this._ascendingIcon = typeof settings.ascendingIcon != "undefined" ? settings.ascendingIcon : "\u2193"; // downwards arrow
-  this._descendingIcon = typeof settings.descendingIcon != "undefined" ? settings.descendingIcon : "\u2191"; // upwards arrow
-  this._numberPattern = typeof settings.numberPattern != "undefined" ? settings.numberPattern : "^\\s*-?\\$?[\\d,]*\\.?\\d*%?$"; // any number of whitespace characters, optional negative sign (hyphen), optional dollar sign, any number of digits/commas, optional period, any number of digits (note: will match all white-space or empty-string)
-  this._numberCleanUpPattern = typeof settings.numberCleanUpPattern != "undefined" ? settings.numberCleanUpPattern : "[$,]"; // dollar sign or comma
-  this._minDate = typeof settings.minDate != "undefined" && Date.parse(settings.minDate) ? Date.parse(settings.minDate) : Date.parse("1/1/1900");
 
   // "Constants"
+  this._desc = "Click a column header to sort";
+  this._unsortedIcon = "\u2195"; // up down arrow
+  this._ascendingIcon = "\u2193"; // downwards arrow
+  this._descendingIcon = "\u2191"; // upwards arrow
+  this._numberPattern = "^\\s*-?\\$?[\\d,]*\\.?\\d*%?$"; // any number of whitespace characters, optional negative sign (hyphen), optional dollar sign, any number of digits/commas, optional period, any number of digits (note: will match all white-space or empty-string)
+  this._numberCleanUpPattern = "[$,]"; // dollar sign or comma
+  this._minDate = Date.parse("1/1/1900");
+
   this._sortButtonClassName = "sort-button";
   this._sortIconClassName = "sort-icon";
   this._unsortedClassName = "unsorted";
@@ -290,23 +287,21 @@ SortableTable.prototype = {
   }
 }
 
-SortableTable.init = function(table, settings) {
+SortableTable.init = function(table) {
   /// <summary>Static method that initializes a single SortableTable.</summary>
   /// <param name="table" type="DomElement">Table to be made sortable</param>
-  /// <param name="settings" type="object" optional="true">Optional settings in object literal notation, e.g., { className: "sortable", summary: "(Click a column header to sort)", ... }</param>
   if (document.getElementsByTagName && document.createElement && Function.apply) {
     if (SortableTable.isSortable(table)) {
-      var sortableTable = new SortableTable(table, settings);
+      var sortableTable = new SortableTable(table);
     }
   }
 }
 
-SortableTable.initAll = function(settings) {
+SortableTable.initAll = function() {
   /// <summary>Static method that initializes all SortableTables in a document.</summary>
-  /// <param name="settings" type="Object" optional="true">Optional settings in object literal notation, e.g., { summary: "(Click a column header to sort)", ...}</param>
   var tables = document.querySelectorAll("table.sortable");
   for (var i = 0, n = tables.length; i < n; i++) {
-    SortableTable.init(tables[i], settings);
+    SortableTable.init(tables[i]);
   }
 }
 
