@@ -68,15 +68,10 @@ SortableTable = function(table) {
   this._numberPattern = "^\\s*-?\\$?[\\d,]*\\.?\\d*%?$"; // any number of whitespace characters, optional negative sign (hyphen), optional dollar sign, any number of digits/commas, optional period, any number of digits (note: will match all white-space or empty-string)
   this._numberCleanUpPattern = "[$,]"; // dollar sign or comma
   this._minDate = Date.parse("1/1/1900");
-
-  this._sortButtonClassName = "sort-button";
-  this._sortIconClassName = "sort-icon";
-  this._unsortedClassName = "unsorted";
-  this._ascendingClassName = "ascending";
-  this._descendingClassName = "descending";
   this._sortTypeDate = "date";
   this._sortTypeNumber = "number";
   this._sortTypeAlpha = "alpha";
+
 
   // class variables
   this._table = table;
@@ -116,12 +111,13 @@ SortableTable.prototype = {
       }
 
       hasSortableColumns = true;
-      // create sort button
+
+      // Create sort button
       var sortButton = document.createElement("button");
-      sortButton.className = this._sortButtonClassName;
+      sortButton.classList.add("sort-button");
       sortButton.onclick = createDelegate(this, this.sort, [i]);
 
-      // move contents of header into sort button
+      // Move contents of header into sort button
       while (th.childNodes.length > 0) {
         sortButton.appendChild(th.childNodes[0]);
       }
@@ -129,7 +125,6 @@ SortableTable.prototype = {
       var sortIcon = document.createElement("span");
       sortIcon.classList.add("sort-icon");
       sortIcon.appendChild(document.createTextNode(this._unsortedIcon));
-      sortIcon.className = this._sortIconClassName;
       sortIcon.setAttribute("aria-hidden", "true");
 
       // append sort button & sort icon
@@ -235,23 +230,23 @@ SortableTable.prototype = {
     var oldIdx = this._sortedColumnIndex;
     this._sortedColumnIndex = idx;
 
-    // Reset old column's sort icon
+    // Reset old column's sort icon and classlist
     var oldTH = this._tHeadRow.cells[oldIdx];
     var th = this._tHeadRow.cells[idx];
     if (oldTH != null) {
       oldTH.removeAttribute("aria-sort");
+      if (oldIdx != idx) {
+        oldTH.classList.remove("ascending");
+        oldTH.classList.remove("descending");
+        oldTH.classList.add("unsorted");
+        oldTH.sortButton.sortIcon.innerText = this._unsortedIcon;
+      }
     }
-    if (oldIdx != null && oldIdx != idx) {
-      oldTH.classList.remove(this._ascendingClassName);
-      oldTH.classList.remove(this._descendingClassName);
-      oldTH.classList.add(this._unsortedClassName);
-      oldTH.sortButton.sortIcon.innerText = this._unsortedIcon;
-      th.classList.remove(this._unsortedClassName);
-    }
-    else {
-      th.classList.remove(this._ascendingClassName);
-      th.classList.remove(this._descendingClassName);
-    }
+
+    // For simplicity, we just remove all sort classes from the new header
+    th.classList.remove("unsorted");
+    th.classList.remove("ascending");
+    th.classList.remove("descending");
 
     var liveregion = document.getElementById(this._table.dataset.sortstatus);
     // Clear the sort icon so we can use the table header's innerText to label the live region
@@ -259,15 +254,8 @@ SortableTable.prototype = {
     var direction = this._isAscending ? "ascending" : "descending";
     liveregion.innerText = "(sorted by " + th.innerText + ", " + direction + ")";
     th.setAttribute("aria-sort", direction);
-
-    if (this._isAscending) {
-      th.classList.add(this._ascendingClassName);
-      th.sortButton.sortIcon.innerText = this._ascendingIcon;
-    }
-    else {
-      th.classList.add(this._descendingClassName);
-      th.sortButton.sortIcon.innerText = this._descendingIcon;
-    }
+    th.classList.add(direction);
+    th.sortButton.sortIcon.innerText = this._isAscending ? this._ascendingIcon : this._descendingIcon;
   },
 
   sortNumber: function(a, b) {
