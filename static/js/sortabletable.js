@@ -38,8 +38,23 @@
 // Table head (thead) and footer (tfoot) rows are not sorted.
 // If no table head is present, one will be created around the first row.
 //
-// Default settings can be overriden by passing a settings object to the constructor, e.g.:
-//   SortableTable.initAll({ summary: "(Click a column header to sort)", ... })
+// Details on the precise HTML fiddling which occurs:
+//
+// - <div class="sortable-info-wrapper"> is added above the table
+// - <div class="description"> is added inside this wrapper
+//   - This element is referenced by the table via an aria-describedby attribute
+//   - This element is used to explain that clicking column headers sort the table
+// - <div class="status" aria-live="polite"> is added inside this wrapper
+//   - This element is initially blank
+// - The table headers which are sortable get wrapped in buttons
+// - A screen-reader-hidden unicode "up-down arrow" is appended to each button
+// - When a sort button is clicked:
+//   - The table rows are sorted (obviously)
+//   - The sort status icon changes to an up or down arrow
+//   - The live region is updated, e.g., "(sorted by Login, ascending)"
+//   - The header's aria-sort attribute is set to ascending or descending
+//   - If a prior header was sorted, its arrow is replaced with the up-down unicode arrow
+//   - If a prior header was sorted, its aria-sort attribute is removed
 
 SortableTable = function(table, settings) {
   /// <summary>Enables tables to be sorted dynamically</summary>
