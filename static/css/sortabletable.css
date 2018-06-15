@@ -1,0 +1,13 @@
+th button .sort-icon {
+  padding-left: 0.5em;
+}
+
+.sortable-info-wrapper {
+  font-size: 90%;
+  font-style: italic;
+}
+
+.sortable-info-wrapper .description, .sortable-info-wrapper .status {
+  display: inline-block;
+  padding-left: 1.5em;
+}
