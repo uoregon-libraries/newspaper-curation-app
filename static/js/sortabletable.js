@@ -61,19 +61,34 @@ SortableTable = function(table) {
   /// <param name="table" type="DomElement">Table to be made sortable</param>
 
   // "Constants"
+
+  // Description associated to the table
   this._desc = "Click a column header to sort.  Click a second time to reverse the sort.";
-  this._unsortedIcon = "\u2195"; // up down arrow
-  this._ascendingIcon = "\u2193"; // downwards arrow
-  this._descendingIcon = "\u2191"; // upwards arrow
-  this._numberPattern = "^\\s*-?\\$?[\\d,]*\\.?\\d*%?$"; // any number of whitespace characters, optional negative sign (hyphen), optional dollar sign, any number of digits/commas, optional period, any number of digits (note: will match all white-space or empty-string)
-  this._numberCleanUpPattern = "[$,]"; // dollar sign or comma
+
+  // Up/down arrow icon (↕): column is unsorted
+  this._unsortedIcon = "\u2195";
+
+  // Downwards arrow icon (↓): column is sorted ascending
+  this._ascendingIcon = "\u2193";
+
+  // Upwards arrow icon (↑): column is sorted descending
+  this._descendingIcon = "\u2191";
+
+  // Anything matching this is considered a valid number
+  this._numberPattern = "^\\s*-?\\$?[\\d,]*\\.?\\d*%?$";
+
+  // Characters allowed in numbers, but stripped prior to parsing
+  this._numberCleanUpPattern = "[$,]";
+
+  // Default date assigned to unparseable cells in columns sorted as dates
   this._minDate = Date.parse("1/1/1900");
+
+  // Our three sort types
   this._sortTypeDate = "date";
   this._sortTypeNumber = "number";
   this._sortTypeAlpha = "alpha";
 
-
-  // class variables
+  // Variables defining this object's sort state
   this._table = table;
   this._tBody = this._table.tBodies[0];
   this._tHeadRow = null;
@@ -121,7 +136,8 @@ SortableTable.prototype = {
       while (th.childNodes.length > 0) {
         sortButton.appendChild(th.childNodes[0]);
       }
-      // create sort icon
+
+      // Create sort icon for sighted users
       var sortIcon = document.createElement("span");
       sortIcon.classList.add("sort-icon");
       sortIcon.appendChild(document.createTextNode(this._unsortedIcon));
@@ -170,7 +186,7 @@ SortableTable.prototype = {
         // get sort type
         var sortType = th.dataset.sorttype;
 
-        var numberCleanUpRegExp = new RegExp(this._numberCleanUpPattern, "ig"); // non-numeric characters allowed before or within numbers (e.g. dollar sign and comma)
+        var numberCleanUpRegExp = new RegExp(this._numberCleanUpPattern, "ig");
         for (var i = 0, n = rows.length; i < n; i++) {
           var cell = rows[i].cells[columnIndex];
           var sortKey = cell.dataset.sortkey;
