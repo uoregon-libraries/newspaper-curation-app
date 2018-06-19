@@ -16,5 +16,7 @@ jobs:
       - run: go get -u bitbucket.org/liamstask/goose/cmd/goose
       - run: go get -u github.com/golang/lint/golint
       - run: go get -u github.com/constabulary/gb/...
-      - run: make
+      - run: gb env
+      - run: make vendor/src
+      - run: make validate
       - run: gb test
