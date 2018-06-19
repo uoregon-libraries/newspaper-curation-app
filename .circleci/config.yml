@@ -8,7 +8,7 @@ jobs:
       # specify the version
       - image: circleci/golang:1.10
       
-    working_directory: /go/src/github.com:uoregon-libraries/newspaper-curation-app
+    working_directory: /go/src/github.com/uoregon-libraries/newspaper-curation-app
     steps:
       - checkout
 
