@@ -61,7 +61,7 @@ SortableTable = function(table) {
   /// <param name="table" type="DomElement">Table to be made sortable</param>
 
   // "Constants"
-  this._desc = "Click a column header to sort";
+  this._desc = "Click a column header to sort.  Click a second time to reverse the sort.";
   this._unsortedIcon = "\u2195"; // up down arrow
   this._ascendingIcon = "\u2193"; // downwards arrow
   this._descendingIcon = "\u2191"; // upwards arrow
