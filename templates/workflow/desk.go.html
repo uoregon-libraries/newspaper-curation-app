@@ -45,20 +45,20 @@
 
 {{if .Data.MyDeskIssues}}
   <table class="table">
+    <caption>Tasks</caption>
     <thead>
-      <caption>Tasks</caption>
+      <tr>
+        <th scope="col">Title</th>
+        <th scope="col">Date</th>
+        <th scope="col">Task / Expiration</th>
+        <th scope="col">Actions</th>
+      </tr>
     </thead>
 
     <tbody>
-    <tr>
-      <th scope="col">Title</th>
-      <th scope="col">Date</th>
-      <th scope="col">Task / Expiration</th>
-      <th scope="col">Actions</th>
-    </tr>
-  {{range .Data.MyDeskIssues}}
-    {{template "MyDeskIssue" .}}
-  {{end}}
+    {{range .Data.MyDeskIssues}}
+      {{template "MyDeskIssue" .}}
+    {{end}}
     </tbody>
   </table>
 {{else}}
@@ -77,19 +77,19 @@
 
   {{if .Data.PendingMetadataIssues}}
     <table class="table">
+      <caption>Issues Needing Metadata Entry</caption>
       <thead>
-        <caption>Issues Needing Metadata Entry</caption>
+        <tr>
+          <th scope="col">Title</th>
+          <th scope="col">Date</th>
+          <th scope="col">Actions</th>
+        </tr>
       </thead>
 
       <tbody>
-      <tr>
-        <th scope="col">Title</th>
-        <th scope="col">Date</th>
-        <th scope="col">Actions</th>
-      </tr>
-    {{range .Data.PendingMetadataIssues}}
-      {{template "PendingMetadataIssues" .}}
-    {{end}}
+      {{range .Data.PendingMetadataIssues}}
+        {{template "PendingMetadataIssues" .}}
+      {{end}}
       </tbody>
     </table>
   {{else}}
@@ -105,19 +105,19 @@
 
   {{if .Data.PendingReviewIssues}}
     <table class="table">
+      <caption>Issues Needing Metadata Review</caption>
       <thead>
-        <caption>Issues Needing Metadata Review</caption>
+        <tr>
+          <th scope="col">Title</th>
+          <th scope="col">Date</th>
+          <th scope="col">Actions</th>
+        </tr>
       </thead>
 
       <tbody>
-      <tr>
-        <th scope="col">Title</th>
-        <th scope="col">Date</th>
-        <th scope="col">Actions</th>
-      </tr>
-    {{range .Data.PendingReviewIssues}}
-      {{template "PendingReviewIssues" .}}
-    {{end}}
+      {{range .Data.PendingReviewIssues}}
+        {{template "PendingReviewIssues" .}}
+      {{end}}
       </tbody>
     </table>
   {{else}}
