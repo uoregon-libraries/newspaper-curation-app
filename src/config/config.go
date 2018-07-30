@@ -31,6 +31,9 @@ type Config struct {
 	IIIFBaseURL string `setting:"IIIF_BASE_URL" type:"url"`
 	NewsWebroot string `setting:"NEWS_WEBROOT" type:"url"`
 
+	// MARC location for getting XML for unknown titles
+	MARCLocation string `setting:"MARC_LOCATION"`
+
 	// Paths to the various places we expect to find files
 	MasterPDFUploadPath  string `setting:"MASTER_PDF_UPLOAD_PATH" type:"path"`
 	MasterScanUploadPath string `setting:"MASTER_SCAN_UPLOAD_PATH" type:"path"`
