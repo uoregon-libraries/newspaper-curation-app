@@ -2,9 +2,12 @@ package titlehandler
 
 import (
 	"encoding/xml"
+	"io"
 	"io/ioutil"
 	"net/http"
+	"os"
 	"regexp"
+	"strings"
 
 	"github.com/uoregon-libraries/gopkg/logger"
 )
@@ -34,21 +37,29 @@ func pullMARCForTitle(t *Title) {
 	t.MARCTitle = ""
 	t.MARCLocation = ""
 
-	var marcURL = "https://chroniclingamerica.loc.gov/lccn/" + t.LCCN + "/marc.xml"
-	var resp, err = http.Get(marcURL)
+	var marcLoc = strings.Replace(conf.MARCLocation, "{{lccn}}", t.LCCN, -1)
+	var reader io.ReadCloser
+	var err error
+
+	if marcLoc[:4] == "http" {
+		reader, err = getMarcHTTP(marcLoc)
+	} else {
+		reader, err = getMarcLocal(marcLoc)
+	}
+
 	// An error from the Get call is not a deal-breaker, though we do want to
 	// report it
 	if err != nil {
-		logger.Errorf("Unable to pull MARC XML from %q: %s", marcURL, err)
+		logger.Errorf("Unable to pull MARC XML from %q: %s", marcLoc, err)
 		return
 	}
-	defer resp.Body.Close()
+	defer reader.Close()
 
 	var data []byte
-	data, err = ioutil.ReadAll(resp.Body)
+	data, err = ioutil.ReadAll(reader)
 	// An error reading the response is also not a deal-breaker, but a bit weirder
 	if err != nil {
-		logger.Errorf("Unable to read response body while pulling MARC XML from %q: %s", marcURL, err)
+		logger.Errorf("Unable to read response body while pulling MARC XML from %q: %s", marcLoc, err)
 		return
 	}
 
@@ -74,6 +85,8 @@ func pullMARCForTitle(t *Title) {
 
 	if t.MARCTitle != "" && t.MARCLocation != "" {
 		t.ValidLCCN = true
+	} else {
+		logger.Errorf("Got XML response, but it isn't valid!")
 	}
 
 	// Hopefully this saves, but if not we're not losing irreplacable data, so we just log the error and move on
@@ -81,4 +94,16 @@ func pullMARCForTitle(t *Title) {
 	if err != nil {
 		logger.Errorf("Unable to save title (id %d) after MARC data pull: %s", t.ID, err)
 	}
+}
+
+func getMarcHTTP(uri string) (io.ReadCloser, error) {
+	var resp, err = http.Get(uri)
+	if err != nil {
+		return nil, err
+	}
+	return resp.Body, nil
+}
+
+func getMarcLocal(loc string) (io.ReadCloser, error) {
+	return os.Open(loc)
 }
