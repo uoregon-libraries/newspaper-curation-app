@@ -98,7 +98,10 @@ func pullMARCForTitle(t *Title) {
 
 func getMarcHTTP(uri string) (io.ReadCloser, error) {
 	var resp, err = http.Get(uri)
-	return resp.Body, err
+	if err != nil {
+		return nil, err
+	}
+	return resp.Body, nil
 }
 
 func getMarcLocal(loc string) (io.ReadCloser, error) {
