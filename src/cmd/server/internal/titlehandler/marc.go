@@ -85,6 +85,8 @@ func pullMARCForTitle(t *Title) {
 
 	if t.MARCTitle != "" && t.MARCLocation != "" {
 		t.ValidLCCN = true
+	} else {
+		logger.Errorf("Got XML response, but it isn't valid!")
 	}
 
 	// Hopefully this saves, but if not we're not losing irreplacable data, so we just log the error and move on
