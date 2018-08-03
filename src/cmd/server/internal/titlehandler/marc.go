@@ -2,6 +2,7 @@ package titlehandler
 
 import (
 	"encoding/xml"
+	"fmt"
 	"io"
 	"io/ioutil"
 	"net/http"
@@ -37,7 +38,30 @@ func pullMARCForTitle(t *Title) {
 	t.MARCTitle = ""
 	t.MARCLocation = ""
 
-	var marcLoc = strings.Replace(conf.MARCLocation, "{{lccn}}", t.LCCN, -1)
+	var marcLocs = []string{
+		strings.Replace(conf.MARCLocation1, "{{lccn}}", t.LCCN, -1),
+		strings.Replace(conf.MARCLocation2, "{{lccn}}", t.LCCN, -1),
+	}
+
+	var last = len(marcLocs) - 1
+	for i := 0; i < last; i++ {
+		var err = lookupMARC(t, marcLocs[i])
+		if err == nil {
+			return
+		}
+		var msg = "Unable to pull MARC XML from %q: %s"
+		if i < last {
+			logger.Warnf(msg+" -- trying next location", marcLocs[i], err)
+		} else {
+			logger.Errorf(msg, marcLocs[i], err)
+			return
+		}
+	}
+}
+
+func lookupMARC(t *Title, marcLoc string) error {
+	logger.Infof("Looking up MARC for %q in configured location %q", t.LCCN, marcLoc)
+
 	var reader io.ReadCloser
 	var err error
 
@@ -50,8 +74,7 @@ func pullMARCForTitle(t *Title) {
 	// An error from the Get call is not a deal-breaker, though we do want to
 	// report it
 	if err != nil {
-		logger.Errorf("Unable to pull MARC XML from %q: %s", marcLoc, err)
-		return
+		return err
 	}
 	defer reader.Close()
 
@@ -59,8 +82,7 @@ func pullMARCForTitle(t *Title) {
 	data, err = ioutil.ReadAll(reader)
 	// An error reading the response is also not a deal-breaker, but a bit weirder
 	if err != nil {
-		logger.Errorf("Unable to read response body while pulling MARC XML from %q: %s", marcLoc, err)
-		return
+		return fmt.Errorf("reading response body: %s", err)
 	}
 
 	var m marc
@@ -86,14 +108,16 @@ func pullMARCForTitle(t *Title) {
 	if t.MARCTitle != "" && t.MARCLocation != "" {
 		t.ValidLCCN = true
 	} else {
-		logger.Errorf("Got XML response, but it isn't valid!")
+		return fmt.Errorf("invalid xml response: title and location must not be blank")
 	}
 
 	// Hopefully this saves, but if not we're not losing irreplacable data, so we just log the error and move on
 	err = t.Save()
 	if err != nil {
-		logger.Errorf("Unable to save title (id %d) after MARC data pull: %s", t.ID, err)
+		return fmt.Errorf("unable to save title (id %d) after MARC data pull: %s", t.ID, err)
 	}
+
+	return nil
 }
 
 func getMarcHTTP(uri string) (io.ReadCloser, error) {

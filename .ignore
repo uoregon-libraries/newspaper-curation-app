@@ -1,0 +1,7 @@
+/bin/
+/test/sources/
+/static/bootstrap/
+/static/openseadragon/
+/static/js/jquery-1.12.1.min.js
+/pkg/
+/vendor/src/

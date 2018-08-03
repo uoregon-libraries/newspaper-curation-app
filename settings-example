@@ -32,11 +32,13 @@ IIIF_BASE_URL="https://my.server.com/iiif"
 # live batches' / issues' detail pages
 NEWS_WEBROOT="https://news.somewhere.edu"
 
-# Location (usually a URL) to pull marc records when a new newspaper title is
-# added.  If this begins with http/https, an HTTP request is made, otherwise it
-# is treated as a path to a file.  The string "{{lccn}}" is replaced with the
-# LCCN being looked up.
-MARC_LOCATION="https://chroniclingamerica.loc.gov/lccn/{{lccn}}/marc.xml"
+# Locations (usually a URL) to pull marc records when a new newspaper title is
+# added.  If a location begins with http/https, an HTTP request is made,
+# otherwise it is treated as a path to a file.  The string "{{lccn}}" is
+# replaced with the LCCN being looked up.  The second location is only
+# considered if the first has no XML.
+MARC_LOCATION_1="/var/local/marc/{{lccn}}/marc.xml"
+MARC_LOCATION_2="https://chroniclingamerica.loc.gov/lccn/{{lccn}}/marc.xml"
 
 ###
 # Database settings
