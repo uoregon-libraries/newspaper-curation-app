@@ -159,7 +159,7 @@ func (t *Transformer) makeJP2() {
 		return
 	}
 
-	t.err = fmt.Errorf("default rate does not create a valid JP2")
+	t.err = fmt.Errorf("could not create a valid JP2")
 	return
 }
 
