@@ -83,7 +83,7 @@ func (t *Transformer) pdfToText() {
 	}
 	defer os.Remove(tmpfile)
 
-	if !shell.ExecSubgroup("pdftotext", t.PDFFilename, "-bbox-layout", tmpfile) {
+	if !shell.ExecSubgroupWithContext("pdftotext", t.Context, t.PDFFilename, "-bbox-layout", tmpfile) {
 		t.err = fmt.Errorf("unable to run pdftotext")
 		return
 	}
