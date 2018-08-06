@@ -39,7 +39,7 @@ func main() {
 		usageFail("%q does not exist", sourceFile)
 	}
 
-	var t = jp2.New(sourceFile, jp2File, config.Quality, config.DPI)
+	var t = jp2.New(sourceFile, "ONE-OFF", jp2File, config.Quality, config.DPI)
 	t.GhostScript = config.GhostScript
 	t.OPJCompress = config.OPJCompress
 	t.OPJDecompress = config.OPJDecompress

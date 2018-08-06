@@ -47,7 +47,7 @@ func main() {
 		usageFail("%q is not a valid page number (not a number)", os.Args[4])
 	}
 
-	var t = alto.New(pdfFile, xmlFile, dpi, pageNumber)
+	var t = alto.New(pdfFile, xmlFile, dpi, pageNumber, "ONE-OFF")
 	var err = t.Transform()
 	if err != nil {
 		fmt.Printf("Unable to run ALTO transform: %s\n", err)
