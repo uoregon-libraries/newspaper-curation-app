@@ -40,3 +40,11 @@ func ExecSubgroup(binary string, args ...string) (ok bool) {
 	cmd.SysProcAttr = &syscall.SysProcAttr{Setpgid: true}
 	return _exec(cmd, binary, args...)
 }
+
+// ExecSubgroupWithContext is just like ExecSubgroup, but with a string context
+func ExecSubgroupWithContext(binary string, context string, args ...string) (ok bool) {
+	var cmd = exec.Command(binary, args...)
+	cmd.SysProcAttr = &syscall.SysProcAttr{Setpgid: true}
+	args = append(args, context)
+	return _exec(cmd, binary, args...)
+}
