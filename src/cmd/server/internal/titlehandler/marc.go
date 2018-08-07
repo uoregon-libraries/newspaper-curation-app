@@ -2,9 +2,13 @@ package titlehandler
 
 import (
 	"encoding/xml"
+	"fmt"
+	"io"
 	"io/ioutil"
 	"net/http"
+	"os"
 	"regexp"
+	"strings"
 
 	"github.com/uoregon-libraries/gopkg/logger"
 )
@@ -34,22 +38,51 @@ func pullMARCForTitle(t *Title) {
 	t.MARCTitle = ""
 	t.MARCLocation = ""
 
-	var marcURL = "https://chroniclingamerica.loc.gov/lccn/" + t.LCCN + "/marc.xml"
-	var resp, err = http.Get(marcURL)
+	var marcLocs = []string{
+		strings.Replace(conf.MARCLocation1, "{{lccn}}", t.LCCN, -1),
+		strings.Replace(conf.MARCLocation2, "{{lccn}}", t.LCCN, -1),
+	}
+
+	var last = len(marcLocs) - 1
+	for i := 0; i < last; i++ {
+		var err = lookupMARC(t, marcLocs[i])
+		if err == nil {
+			return
+		}
+		var msg = "Unable to pull MARC XML from %q: %s"
+		if i < last {
+			logger.Warnf(msg+" -- trying next location", marcLocs[i], err)
+		} else {
+			logger.Errorf(msg, marcLocs[i], err)
+			return
+		}
+	}
+}
+
+func lookupMARC(t *Title, marcLoc string) error {
+	logger.Infof("Looking up MARC for %q in configured location %q", t.LCCN, marcLoc)
+
+	var reader io.ReadCloser
+	var err error
+
+	if marcLoc[:4] == "http" {
+		reader, err = getMarcHTTP(marcLoc)
+	} else {
+		reader, err = getMarcLocal(marcLoc)
+	}
+
 	// An error from the Get call is not a deal-breaker, though we do want to
 	// report it
 	if err != nil {
-		logger.Errorf("Unable to pull MARC XML from %q: %s", marcURL, err)
-		return
+		return err
 	}
-	defer resp.Body.Close()
+	defer reader.Close()
 
 	var data []byte
-	data, err = ioutil.ReadAll(resp.Body)
+	data, err = ioutil.ReadAll(reader)
 	// An error reading the response is also not a deal-breaker, but a bit weirder
 	if err != nil {
-		logger.Errorf("Unable to read response body while pulling MARC XML from %q: %s", marcURL, err)
-		return
+		return fmt.Errorf("reading response body: %s", err)
 	}
 
 	var m marc
@@ -74,11 +107,27 @@ func pullMARCForTitle(t *Title) {
 
 	if t.MARCTitle != "" && t.MARCLocation != "" {
 		t.ValidLCCN = true
+	} else {
+		return fmt.Errorf("invalid xml response: title and location must not be blank")
 	}
 
 	// Hopefully this saves, but if not we're not losing irreplacable data, so we just log the error and move on
 	err = t.Save()
 	if err != nil {
-		logger.Errorf("Unable to save title (id %d) after MARC data pull: %s", t.ID, err)
+		return fmt.Errorf("unable to save title (id %d) after MARC data pull: %s", t.ID, err)
 	}
+
+	return nil
+}
+
+func getMarcHTTP(uri string) (io.ReadCloser, error) {
+	var resp, err = http.Get(uri)
+	if err != nil {
+		return nil, err
+	}
+	return resp.Body, nil
+}
+
+func getMarcLocal(loc string) (io.ReadCloser, error) {
+	return os.Open(loc)
 }
