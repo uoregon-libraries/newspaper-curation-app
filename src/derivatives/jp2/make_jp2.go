@@ -37,9 +37,8 @@ type Transformer struct {
 	Quality        float64
 	PDFResolution  int
 
-	err         error
-	testedRates map[int]bool
-	Logger      *logger.Logger
+	err    error
+	Logger *logger.Logger
 }
 
 // New creates a new PDF/TIFF-to-JP2 transformer with default values for the
@@ -156,52 +155,11 @@ func (t *Transformer) makeJP2() {
 	// floats really aren't)
 	var baseRate = int(t.getRate() * RateFactor)
 
-	var rangeQueue = &RangeQueue{}
-	t.testedRates = make(map[int]bool)
-
-	// First "range" is just the base rate since that's the ideal value
-	rangeQueue.Append(baseRate, baseRate)
-
-	// 2/3 * x to try something semi-distant but not super expensive in terms of storage
-	rangeQueue.Append(baseRate*2/3, baseRate)
-
-	for i := 0; len(rangeQueue.queue) > 0; i++ {
-		var r = rangeQueue.Shift()
-		if r == EmptyRange {
-			continue
-		}
-
-		if t.testRate(r.start) {
-			return
-		}
-		if t.testRate(r.end) {
-			return
-		}
-
-		var midPoint = (r.start + r.end) / 2
-		rangeQueue.Append(r.start, midPoint)
-		rangeQueue.Append(midPoint, r.end)
-
-		// After a while we are willing to lose a little quality
-		if i == 5 {
-			rangeQueue.Append(baseRate, baseRate*5/4)
-		}
-
-		// Later on, we expand the search further.  This can cost a good deal of
-		// space, but we're getting desperate.
-		if i == 50 {
-			rangeQueue.Append(baseRate/3, baseRate*2/3)
-		}
-
-		// If we had no successes after exhausting all those options above, we're
-		// willing to sacrifice a lot more quality or space
-		if i > 50 && len(rangeQueue.queue) == 0 {
-			rangeQueue.Append(baseRate/6, baseRate/3)
-			rangeQueue.Append(baseRate*5/4, baseRate*3/2)
-		}
+	if t.testRate(baseRate) {
+		return
 	}
 
-	t.err = fmt.Errorf("no rate found for creating a valid JP2")
+	t.err = fmt.Errorf("could not create a valid JP2")
 	return
 }
 
@@ -230,12 +188,6 @@ func (t *Transformer) testRate(rate int) bool {
 	}
 
 	var rateFloat = float64(rate) / RateFactor
-	if t.testedRates[rate] {
-		t.Logger.Debugf("Skipping already-tested rate %d", rate)
-		return false
-	}
-	t.testedRates[rate] = true
-
 	t.makeJP2FromPNG(rateFloat)
 	if t.testJP2Decompress() {
 		t.Logger.Debugf("Success with rate %g", rateFloat)
