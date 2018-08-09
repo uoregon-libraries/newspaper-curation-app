@@ -32,6 +32,13 @@ $(document).ready(function() {
     return false;
   });
 
+  // Make sure page labels are saved on main form submission
+  $("#metadata-form").submit(function(e) {
+    var currentPage = parseInt($("#osd-image-number").text()) - 1;
+    pageLabels[currentPage] = $("#page-label").val();
+    $("#page-labels-csv").val(pageLabels.join(","));
+  });
+
   // Don't validate when saving as a draft
   $("#savedraft").on("click", function() {
     $("#metadata-form").attr("novalidate", "novalidate");
