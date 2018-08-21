@@ -299,12 +299,6 @@ func deserializeIssues(list []*Issue) {
 // issue as a schema.Issue instance for ensuring consistent representation of
 // things like issue keys
 func (i *Issue) SchemaIssue() (*schema.Issue, error) {
-	// An issue shouldn't be able to get into the database if it has an invalid date
-	var _, err = time.Parse("2006-01-02", i.Date)
-	if err != nil {
-		return nil, fmt.Errorf("invalid time format (%s) in database issue", i.Date)
-	}
-
 	var si = &schema.Issue{
 		RawDate:      i.Date,
 		Edition:      i.Edition,
@@ -313,5 +307,15 @@ func (i *Issue) SchemaIssue() (*schema.Issue, error) {
 		MARCOrgCode:  i.MARCOrgCode,
 		WorkflowStep: schema.WorkflowStep(i.WorkflowStep),
 	}
-	return si, nil
+
+	// Bad metadata can happen when saving an issue without validation, either
+	// via autosaves that happen when looking through pages, or saving a draft.
+	// Therefore, on bad dates, we return an error, but also a semi-usable issue
+	// for situations where we don't care if the metadata isn't quite right.
+	var _, err = time.Parse("2006-01-02", i.Date)
+	if err != nil {
+		err = fmt.Errorf("invalid time format (%s) in database issue", i.Date)
+	}
+
+	return si, err
 }
