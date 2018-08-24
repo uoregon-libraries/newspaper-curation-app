@@ -183,15 +183,15 @@ func retryJob(idString string) {
 		return
 	}
 	var failStatus = jobs.JobStatusFailed
-	if j.Status != string(failStatus) {
-		logger.Errorf("Cannot requeue job id %d: status is %s (it must be %s to requeue)", id, j.Status, failStatus)
+	if j.DBJob().Status != string(failStatus) {
+		logger.Errorf("Cannot requeue job id %d: status is %s (it must be %s to requeue)", id, j.DBJob().Status, failStatus)
 		return
 	}
 
-	logger.Infof("Requeuing job %d", j.ID)
+	logger.Infof("Requeuing job %d", j.DBJob().ID)
 	var err = j.Requeue()
 	if err != nil {
-		logger.Errorf("Unable to requeue job %d: %s", j.ID, err)
+		logger.Errorf("Unable to requeue job %d: %s", j.DBJob().ID, err)
 	}
 }
 

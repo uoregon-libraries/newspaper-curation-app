@@ -13,7 +13,7 @@ func moveIssue(ij *IssueJob, path string) bool {
 	var iKey = ij.Issue.Key()
 
 	// Verify new path will work
-	var oldLocation = ij.Location
+	var oldLocation = ij.db.Location
 	var newLocation = filepath.Join(path, ij.Subdir())
 	if !fileutil.MustNotExist(newLocation) {
 		ij.Logger.Errorf("Destination %q already exists for issue %q", newLocation, iKey)
