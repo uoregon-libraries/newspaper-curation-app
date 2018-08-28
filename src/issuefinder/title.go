@@ -8,6 +8,8 @@ import (
 	"httpcache"
 	"path/filepath"
 	"schema"
+
+	"github.com/uoregon-libraries/gopkg/logger"
 )
 
 // findOrCreateFilesystemTitle looks up the title by its given path and returns
@@ -76,7 +78,16 @@ func (s *Searcher) findOrCreateWebTitle(c *httpcache.Client, uri string) (*schem
 // future lookup
 func (s *Searcher) findOrCreateDatabaseTitle(issue *db.Issue) *schema.Title {
 	var t = s.dbTitles.Find(issue.LCCN)
-	var fakeLocation = t.LCCN
+	var fakeLocation string
+	if t == nil {
+		logger.Warnf("Invalid LCCN %q: no title in db matches this LCCN", issue.LCCN)
+		fakeLocation = issue.LCCN
+		var st = &schema.Title{Name: "**Unknown Title**", LCCN: issue.LCCN}
+		st.AddError(apperr.New("No title with LCCN (or SFTP Directory) of %q exists"))
+		s.titleByLoc[fakeLocation] = st
+	} else {
+		fakeLocation = t.LCCN
+	}
 	if s.titleByLoc[fakeLocation] == nil {
 		var st = t.SchemaTitle()
 		st.Location = fakeLocation
