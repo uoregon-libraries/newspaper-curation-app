@@ -1,7 +1,5 @@
 // Package jp2 converts a PDF or TIFF into a JP2.  The resulting JP2 is then
-// verified as being readable and re-encoded at various rate values if not.
-// This is a huge hack to try and centralize the combination of PDF- and
-// TIFF-to-JP2 conversion, testing, and fixing.
+// verified as being readable to avoid catching encoding problems "too late".
 package jp2
 
 import (
