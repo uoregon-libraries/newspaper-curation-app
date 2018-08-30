@@ -1,10 +1,14 @@
 {{define "titleitem"}}
       <li>
-        {{if .HasErrors}}
+        {{if or .HasIssueErrors .HasErrors}}
           <div class="title-with-errors">
             <div class="title-link">{{.Link}}</div>
             <span class="glyphicon glyphicon-exclamation-sign" aria-hidden="true"></span>
-            <span class="count">One or more errors detected on this title or its issues</span>
+            {{if .HasErrors}}
+            <span class="count">One or more errors detected</span>
+            {{else}}
+            <span class="count">Errors detected on one or more of this title's issues</span>
+            {{end}}
           </div>
         {{- else}}
           {{.Link}}
