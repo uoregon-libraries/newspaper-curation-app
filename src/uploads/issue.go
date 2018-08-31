@@ -52,6 +52,9 @@ func (i *Issue) ValidateFast() {
 	if time.Since(i.LastModified()) < time.Hour*time.Duration(hrs) {
 		i.ErrTooNew(hrs)
 	}
+	if len(i.Title.Errors) > 0 {
+		i.ErrBadTitle()
+	}
 
 	i.CheckDupes(i.scanner.Lookup)
 }

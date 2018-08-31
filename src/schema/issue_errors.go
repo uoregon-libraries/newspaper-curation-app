@@ -97,3 +97,13 @@ func (i *Issue) ErrDuped(dupe *Issue) {
 		IsLive:   dupe.WorkflowStep == WSInProduction,
 	})
 }
+
+// ErrBadTitle adds an error to the issue indicating that its title is invalid
+// and therefore the issue cannot be processed even if all its data is good
+func (i *Issue) ErrBadTitle() {
+	i.addError(&IssueError{
+		Err:  "issue linked to invalid title",
+		Msg:  "Title is invalid",
+		Prop: false,
+	})
+}
