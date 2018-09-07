@@ -42,14 +42,9 @@ type Issue struct {
 }
 
 func wrapDBIssue(dbIssue *db.Issue) *Issue {
-	var si, err = dbIssue.SchemaIssue()
-
-	// This shouldn't realistically happen, so we log and return nothing
-	if err != nil {
-		logger.Errorf("Unable to get schema.Issue for issue id %d: %s", dbIssue.ID, err)
-		return nil
-	}
-
+	// For workflow presentation, we don't really care if the issue isn't valid
+	// so long as we can show its raw data to the user
+	var si, _ = dbIssue.SchemaIssue()
 	return &Issue{Issue: dbIssue, si: si, MetadataAuthorLogin: user.FindByID(dbIssue.MetadataEntryUserID).Login}
 }
 

@@ -160,13 +160,16 @@ func (t *Title) AddError(err apperr.Error) {
 	t.Errors = append(t.Errors, err)
 }
 
-// addChildError notes that this title has at least one issue with errors
+// addChildError notes that this title has at least one issue with errors.
+// Issue errors don't make a title invalid, so we don't add an error to the
+// title itself.
 func (t *Title) addChildError() {
-	if t.hasChildErrors {
-		return
-	}
-	t.AddError(apperr.New("one or more issues are invalid"))
 	t.hasChildErrors = true
+}
+
+// HasIssueErrors reports whether any of this title's issues have errors
+func (t *Title) HasIssueErrors() bool {
+	return t.hasChildErrors
 }
 
 // TitleList is a simple slice of titles for easier built-in sorting and
