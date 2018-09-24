@@ -149,7 +149,7 @@ func (i *Issue) decorateFiles(fileList []*uploads.File) {
 func (i *Issue) decoratePriorJobLogs() {
 	var dbi, err = db.FindIssueByKey(i.Key())
 	if err != nil {
-		logger.Errorf("Unable to look up issue for decorating queue messages: %s", err)
+		logger.Warnf("Unable to look up issue for decorating queue messages: %s", err)
 		return
 	}
 	if dbi == nil {
