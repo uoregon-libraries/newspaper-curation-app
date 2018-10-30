@@ -61,7 +61,7 @@ func (ij *IssueJob) WIPDir() string {
 // then the issue job is saved.  At this point, however, the job is complete,
 // so all we can do is loudly log failures.
 func (ij *IssueJob) UpdateWorkflow() {
-	var ws = schema.WorkflowStep(ij.ExtraData)
+	var ws = schema.WorkflowStep(ij.db.ExtraData)
 	if ws != schema.WSNil {
 		ij.DBIssue.WorkflowStep = ws
 	}

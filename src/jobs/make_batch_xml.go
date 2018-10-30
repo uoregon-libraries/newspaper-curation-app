@@ -19,7 +19,7 @@ func (j *MakeBatchXML) Process(c *config.Config) bool {
 
 	// Set up variables
 	var templatePath = c.BatchXMLTemplatePath
-	var outputXMLPath = filepath.Join(j.Location, "data", "batch.xml")
+	var outputXMLPath = filepath.Join(j.db.Location, "data", "batch.xml")
 
 	var issues, err = j.DBBatch.Issues()
 	if err != nil {
