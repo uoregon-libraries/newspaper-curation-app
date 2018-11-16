@@ -95,7 +95,5 @@ sudo systemctl start nca-workers
 sudo systemctl start nca-httpd
 sudo systemctl restart rsyslog
 
-echo Waiting 30 seconds for NCA to finish scanning issues
-sleep 30
 sudo systemctl start httpd
 sudo rm -rf $tmpdir
