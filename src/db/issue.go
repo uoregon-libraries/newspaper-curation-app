@@ -10,8 +10,7 @@ import (
 	"github.com/Nerdmaster/magicsql"
 )
 
-// Workflow steps in-process issues may have - these MUST match the allowed
-// values in the database
+// Workflow steps in-process issues may have
 var allowedWorkflowSteps = []schema.WorkflowStep{
 	schema.WSAwaitingProcessing,
 	schema.WSAwaitingPageReview,
