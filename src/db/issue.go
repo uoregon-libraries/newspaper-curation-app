@@ -12,6 +12,7 @@ import (
 
 // Workflow steps in-process issues may have
 var allowedWorkflowSteps = []schema.WorkflowStep{
+	schema.WSUnfixableMetadataError,
 	schema.WSAwaitingProcessing,
 	schema.WSAwaitingPageReview,
 	schema.WSReadyForMetadataEntry,
