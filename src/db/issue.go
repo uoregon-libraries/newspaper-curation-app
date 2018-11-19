@@ -245,6 +245,15 @@ func (i *Issue) RejectMetadata(reviewerID int, notes string) {
 	i.RejectedByUserID = reviewerID
 }
 
+// ReportError adds an error message to the issue and flags it as being in the
+// "unfixable" state.  That state basically says that nobody can use NCA to fix
+// the problem, and it needs to be pulled and processed by hand.
+func (i *Issue) ReportError(message string) {
+	i.Error = message
+	i.WorkflowStep = schema.WSUnfixableMetadataError
+	i.Unclaim()
+}
+
 // Save creates or updates the Issue in the issues table
 func (i *Issue) Save() error {
 	var op = DB.Operation()

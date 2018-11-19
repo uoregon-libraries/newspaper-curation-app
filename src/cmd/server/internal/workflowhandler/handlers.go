@@ -239,14 +239,14 @@ func enterErrorHandler(resp *responder.Responder, i *Issue) {
 // saveErrorHandler records the error in the database, unclaims the issue, and
 // flags it as needing admin attention
 func saveErrorHandler(resp *responder.Responder, i *Issue) {
-	i.Error = resp.Request.FormValue("error")
-	if i.Error == "" {
+	var emsg = resp.Request.FormValue("error")
+	if emsg == "" {
 		http.SetCookie(resp.Writer, &http.Cookie{Name: "Info", Value: "Error report empty; no action taken", Path: "/"})
 		http.Redirect(resp.Writer, resp.Request, i.Path("metadata"), http.StatusFound)
 		return
 	}
 
-	i.Unclaim()
+	i.ReportError(emsg)
 	var err = i.Save()
 	if err != nil {
 		logger.Errorf("Unable to save issue id %d's error (POST: %#v): %s", i.ID, resp.Request.Form, err)
