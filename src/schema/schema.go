@@ -403,8 +403,12 @@ func (i *Issue) CheckDupes(lookup *Lookup) {
 }
 
 // before tells us if wsa is logically before wsb in terms of issues flowing
-// through the system.  A step is before another if it represents data that's
-// less certain; e.g., an uploaded issue is completely unknown and is therefore
+// through the system.  This helps determine what to report if there's
+// duplicated data: anything that's earlier in the process is the dupe, as the
+// later something is, the more metadata scrutiny has gone into it.
+//
+// In other words, A step is before another if it represents data that's less
+// certain; e.g., an uploaded issue is completely unknown and is therefore
 // before all other steps, but a live issue is considered done and wouldn't be
 // before anything else.
 func (wsa WorkflowStep) before(wsb WorkflowStep) bool {
