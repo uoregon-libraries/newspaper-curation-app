@@ -1,5 +1,5 @@
 -- +goose Up
-ALTER TABLE `issues` MODIFY `workflow_step` TINYTEXT COLLATE utf8_bin DEFAULT 'AwaitingProcessing';
+ALTER TABLE `issues` MODIFY `workflow_step` TINYTEXT COLLATE utf8_bin;
 
 -- +goose Down
 ALTER TABLE `issues` MODIFY `workflow_step` ENUM(
