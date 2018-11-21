@@ -201,7 +201,7 @@ func FindAvailableIssuesByWorkflowStep(ws schema.WorkflowStep) ([]*Issue, error)
 // FindIssuesWithErrors returns all issues with an error reported by metadata
 // entry personnel
 func FindIssuesWithErrors() ([]*Issue, error) {
-	return findIssues("error <> ''")
+	return findIssues("workflow_step = ?", string(schema.WSUnfixableMetadataError))
 }
 
 // Key returns the standardized issue key for this DB issue
