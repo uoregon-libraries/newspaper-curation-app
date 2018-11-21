@@ -10,9 +10,9 @@ import (
 	"github.com/Nerdmaster/magicsql"
 )
 
-// Workflow steps in-process issues may have - these MUST match the allowed
-// values in the database
+// Workflow steps in-process issues may have
 var allowedWorkflowSteps = []schema.WorkflowStep{
+	schema.WSUnfixableMetadataError,
 	schema.WSAwaitingProcessing,
 	schema.WSAwaitingPageReview,
 	schema.WSReadyForMetadataEntry,
@@ -243,6 +243,15 @@ func (i *Issue) RejectMetadata(reviewerID int, notes string) {
 	i.WorkflowStep = schema.WSReadyForMetadataEntry
 	i.RejectionNotes = notes
 	i.RejectedByUserID = reviewerID
+}
+
+// ReportError adds an error message to the issue and flags it as being in the
+// "unfixable" state.  That state basically says that nobody can use NCA to fix
+// the problem, and it needs to be pulled and processed by hand.
+func (i *Issue) ReportError(message string) {
+	i.Error = message
+	i.WorkflowStep = schema.WSUnfixableMetadataError
+	i.Unclaim()
 }
 
 // Save creates or updates the Issue in the issues table
