@@ -6,6 +6,8 @@ import (
 	"jobs"
 	"os"
 	"sort"
+
+	"github.com/uoregon-libraries/gopkg/fileutil"
 )
 
 // Batch extends a db.Batch with functionality for fixing, re-queueing, etc.
@@ -39,6 +41,10 @@ func FindBatch(id int) (*Batch, error) {
 // is cleared, and its status is then set to "failed_qc" so it's clear it needs
 // to be reprocessed in some way.
 func (b *Batch) Fail() error {
+	if !fileutil.IsDir(b.db.Location) {
+		return fmt.Errorf("removing batch files: %q does not exist", b.db.Location)
+	}
+
 	var err = os.RemoveAll(b.db.Location)
 	if err != nil {
 		return fmt.Errorf("removing batch files: %s", err)
