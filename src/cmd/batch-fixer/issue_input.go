@@ -14,7 +14,7 @@ func (i *Input) makeIssueMenu() (*menu, string) {
 	m.add("info", "Displays some detailed information about the issue", i.issueInfoHandler)
 	m.add("quit", "Return to the batch menu", i.issueQuitHandler)
 
-	return m, fmt.Sprintf("Batch %q, issue %q.  Enter a command:", i.batch.db.Name, i.issue.db.Key())
+	return m, fmt.Sprintf("issue %q (batch %q).  Enter a command:", i.issue.db.Key(), i.batch.db.Name)
 }
 
 func (i *Input) loadIssueHandler(args []string) {
