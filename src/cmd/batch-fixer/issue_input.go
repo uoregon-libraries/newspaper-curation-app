@@ -51,7 +51,7 @@ func (i *Input) loadIssueHandler(args []string) {
 
 func (i *Input) issueQuitHandler([]string) {
 	i.issue = nil
-	i.menuFn = i.topMenu
+	i.menuFn = i.makeBatchMenu
 	i.println("Unloaded issue")
 }
 
