@@ -64,7 +64,18 @@ func (i *Input) errorIssueHandler([]string) {
 }
 
 func (i *Input) issueInfoHandler([]string) {
-	i.printerrln("not implemented")
+	var dbi = i.issue.db
+	i.printDataList(
+		datum{"Key", dbi.Key()},
+		datum{"Title", dbi.Title.Name},
+		datum{"Page Labels", dbi.PageLabelsCSV},
+		datum{"Date", dbi.Date},
+		datum{"Date as labeled", dbi.DateAsLabeled},
+		datum{"Volume Label", dbi.Volume},
+		datum{"Issue Label", dbi.Issue},
+		datum{"Edition Label", dbi.EditionLabel},
+		datum{"Location", dbi.Location},
+	)
 }
 
 func (i *Input) confirmBadIssue(issue *db.Issue) {
