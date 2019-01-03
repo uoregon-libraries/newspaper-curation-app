@@ -60,7 +60,7 @@ func (i *Input) listIssueHandler([]string) {
 
 func (i *Input) printIssueList(list IssueList) {
 	for _, issue := range list {
-		i.println(fmt.Sprintf("- id: %d, title: %s, key: %s", issue.db.ID, issue.db.Title.Name, issue.db.Key()))
+		i.println(fmt.Sprintf("  - id: %d, title: %s, key: %s", issue.db.ID, issue.db.Title.Name, issue.db.Key()))
 	}
 }
 

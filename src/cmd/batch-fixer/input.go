@@ -159,7 +159,7 @@ func (i *Input) makeHelpHandler(m *menu) handler {
 	return func([]string) {
 		i.println("Available commands:")
 		for _, cmd := range m.commands {
-			i.println(fmt.Sprintf("- %s%s%s: %s", ansiIntense, cmd.command, ansiReset, cmd.help))
+			i.println(fmt.Sprintf("  - %s%s%s: %s", ansiIntense, cmd.command, ansiReset, cmd.help))
 		}
 	}
 }
