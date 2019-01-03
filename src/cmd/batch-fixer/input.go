@@ -1,6 +1,7 @@
 package main
 
 import (
+	"db"
 	"fmt"
 	"io"
 	"os"
@@ -25,6 +26,7 @@ func (i *Input) makeMenu() *menu {
 func (i *Input) topMenu() (*menu, string) {
 	var m = i.makeMenu()
 	m.add("load", "Loads a batch by id", i.loadBatchHandler)
+	m.add("list", "Lists all batches that haven't gone live", i.listBatchesHandler)
 	m.add("quit", "Ends the batch modification session", i.quitHandler)
 	return m, "No batch or issue loaded.  Enter a command:"
 }
@@ -166,6 +168,17 @@ func (i *Input) makeHelpHandler(m *menu) handler {
 
 func (i *Input) quitHandler([]string) {
 	i.done = true
+}
+
+func (i *Input) listBatchesHandler([]string) {
+	var batches, err = db.InProcessBatches()
+	if err != nil {
+		i.println("unable to read batches: " + err.Error())
+		return
+	}
+	for _, batch := range batches {
+		i.println(fmt.Sprintf("  - id: %d, status: %s, name: %s", batch.ID, batch.Status, batch.FullName()))
+	}
 }
 
 func (i *Input) close() {
