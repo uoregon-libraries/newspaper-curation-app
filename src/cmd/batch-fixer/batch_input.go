@@ -99,10 +99,6 @@ func (i *Input) searchIssuesHandler(args []string) {
 	i.printIssueList(matches)
 }
 
-func (i *Input) purgeBatchHandler([]string) {
-	i.printerrln("not implemented")
-}
-
 func (i *Input) batchInfoHandler([]string) {
 	i.printDataList(
 		datum{"Name", i.batch.db.FullName()},
