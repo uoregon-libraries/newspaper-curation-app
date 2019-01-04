@@ -79,6 +79,7 @@ func (i *Input) errorIssueHandler(args []string) {
 
 	// Save the issue's metadata
 	i.issue.db.ReportError(msg)
+	i.issue.db.BatchID = 0
 	err = i.issue.db.Save()
 	if err != nil {
 		i.printerrln("unable to update issue: " + err.Error())
