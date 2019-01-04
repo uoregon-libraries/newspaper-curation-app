@@ -48,6 +48,19 @@ func (i *Input) loadBatchHandler(args []string) {
 	i.menuFn = i.makeBatchMenu
 }
 
+func (i *Input) reloadBatch() bool {
+	var err error
+	i.batch, err = FindBatch(i.batch.db.ID)
+	if err != nil {
+		i.printerrln(fmt.Sprintf("unable to reload batch %d: %s", i.batch.db.ID, err))
+		i.batch = nil
+		i.menuFn = i.topMenu
+		return false
+	}
+
+	return true
+}
+
 func (i *Input) batchQuitHandler([]string) {
 	i.batch = nil
 	i.menuFn = i.topMenu

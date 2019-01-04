@@ -4,6 +4,7 @@ import (
 	"db"
 	"fmt"
 	"strconv"
+	"strings"
 )
 
 func (i *Input) makeIssueMenu() (*menu, string) {
@@ -59,8 +60,37 @@ func (i *Input) rejectIssueHandler([]string) {
 	i.printerrln("not implemented")
 }
 
-func (i *Input) errorIssueHandler([]string) {
-	i.printerrln("not implemented")
+func (i *Input) errorIssueHandler(args []string) {
+	var msg = strings.Join(args, " ")
+	i.println(fmt.Sprintf("%q will be removed from the batch *and* the "+
+		"workflow, with an error message of %q.", i.issue.db.Key(), msg))
+	if !i.confirmYN() {
+		return
+	}
+
+	// Remove the METS file first - if this works, but the DB operation fails,
+	// it's a lot easier to fix than if the DB operation succeeds but the METS
+	// file is still around.
+	var err = i.issue.RemoveMETS()
+	if err != nil {
+		i.printerrln("couldn't remove METS XML file: " + err.Error())
+		return
+	}
+
+	// Save the issue's metadata
+	i.issue.db.ReportError(msg)
+	err = i.issue.db.Save()
+	if err != nil {
+		i.printerrln("unable to update issue: " + err.Error())
+	}
+
+	if !i.reloadBatch() {
+		return
+	}
+
+	i.issue = nil
+	i.menuFn = i.makeBatchMenu
+	i.println("Issue has been removed and flagged as needing manual fixes")
 }
 
 func (i *Input) issueInfoHandler([]string) {
@@ -76,12 +106,4 @@ func (i *Input) issueInfoHandler([]string) {
 		datum{"Edition Label", dbi.EditionLabel},
 		datum{"Location", dbi.Location},
 	)
-}
-
-func (i *Input) confirmBadIssue(issue *db.Issue) {
-	var msg = fmt.Sprintf("Issue %q will be removed from the batch.  Proceed (Y/N)?", issue.Key())
-	var yn = i.confirm(msg, []string{"Y", "N"}, "N")
-	if yn != "Y" {
-		return
-	}
 }

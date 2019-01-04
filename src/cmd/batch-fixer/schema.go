@@ -91,6 +91,30 @@ type Issue struct {
 	db *db.Issue
 }
 
+// RemoveMETS attempts to remove the METS XML file, returning an error if any
+// problems occur *except* the file already being gone, since that may be a
+// sign this was called previously, or somebody had to handle it manually.  We
+// verify sanity first by checking that the issue's directory does indeed
+// exist (and is a directory as opposed to a file).
+func (i *Issue) RemoveMETS() error {
+	var si, err = i.db.SchemaIssue()
+	if err != nil {
+		return fmt.Errorf("unable to get a schema.Issue from the db.Issue: %s", err)
+	}
+
+	// Make sure the dir exists, since lack of a mets file isn't a failure
+	if !fileutil.IsDir(i.db.Location) {
+		return fmt.Errorf("issue directory %q does not exist; aborting", i.db.Location)
+	}
+
+	err = os.Remove(si.METSFile())
+	if !os.IsNotExist(err) && err != nil {
+		return fmt.Errorf("unable to remove METS file: %s", err)
+	}
+
+	return nil
+}
+
 // IssueList is a simple wrapper around a slice of issues to add functionality
 // for easier sorting
 type IssueList []*Issue

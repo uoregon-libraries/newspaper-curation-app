@@ -103,6 +103,10 @@ func (i *Input) confirm(message string, valid []string, defaultValue string) str
 	}
 }
 
+func (i *Input) confirmYN() bool {
+	return i.confirm("Proceed?  (y/N)", []string{"Y", "N"}, "N") == "Y"
+}
+
 type datum struct {
 	name string
 	val  interface{}
