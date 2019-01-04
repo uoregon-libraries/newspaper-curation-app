@@ -14,6 +14,7 @@ const csi = "\033["
 const ansiReset = csi + "0m"
 const ansiIntenseYellow = csi + "33;1m"
 const ansiIntenseRed = csi + "31;1m"
+const ansiImportant = csi + "48;5;52;37;1;5m"
 const ansiIntense = csi + "1m"
 const errtxt = ansiIntenseRed + "Error:" + ansiReset + " "
 
