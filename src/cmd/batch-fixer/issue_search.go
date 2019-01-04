@@ -8,12 +8,13 @@ import (
 
 // Valid search fields
 const (
-	fLCCN = "lccn"
-	fDate = "date"
-	fKey  = "key"
+	fLCCN  = "lccn"
+	fDate  = "date"
+	fKey   = "key"
+	fTitle = "title"
 )
 
-var validFields = []string{fLCCN, fDate, fKey}
+var validFields = []string{fLCCN, fDate, fKey, fTitle}
 
 type query struct {
 	field     string
@@ -44,12 +45,14 @@ func newQuery(field, condition string) (*query, error) {
 func (q *query) match(i *Issue) bool {
 	var val string
 	switch q.field {
-	case "date":
+	case fDate:
 		val = i.db.Date
-	case "lccn":
+	case fLCCN:
 		val = i.db.LCCN
-	case "key":
+	case fKey:
 		val = i.db.Key()
+	case fTitle:
+		val = i.db.Title.Name
 	}
 	return q.condition.MatchString(val)
 }
