@@ -28,7 +28,7 @@ func newQuery(field, condition string) (*query, error) {
 	if condition[len(condition)-1] != '$' {
 		condition += "$"
 	}
-	var re, err = regexp.Compile(condition)
+	var re, err = regexp.Compile("(?i)" + condition)
 	if err != nil {
 		return nil, fmt.Errorf("malformed condition %q: %s", condition, err)
 	}
