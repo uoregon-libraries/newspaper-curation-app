@@ -56,8 +56,38 @@ func (i *Input) issueQuitHandler([]string) {
 	i.println("Unloaded issue")
 }
 
-func (i *Input) rejectIssueHandler([]string) {
-	i.printerrln("not implemented")
+func (i *Input) rejectIssueHandler(args []string) {
+	var msg = strings.Join(args, " ")
+	i.println(fmt.Sprintf("%q will be removed from the batch and put back "+
+		"into the metadata entry queue with a rejection message of %q.", i.issue.db.Key(), msg))
+	if !i.confirmYN() {
+		return
+	}
+
+	// Remove the METS file first - if this works, but the DB operation fails,
+	// it's a lot easier to fix than if the DB operation succeeds but the METS
+	// file is still around.
+	var err = i.issue.RemoveMETS()
+	if err != nil {
+		i.printerrln("couldn't remove METS XML file: " + err.Error())
+		return
+	}
+
+	// Save the issue's metadata
+	i.issue.db.RejectMetadata(0, msg)
+	i.issue.db.BatchID = 0
+	err = i.issue.db.Save()
+	if err != nil {
+		i.printerrln("unable to update issue: " + err.Error())
+	}
+
+	if !i.reloadBatch() {
+		return
+	}
+
+	i.issue = nil
+	i.menuFn = i.makeBatchMenu
+	i.println("Issue has been rejected and put back on the metadata entry person's desk")
 }
 
 func (i *Input) errorIssueHandler(args []string) {
