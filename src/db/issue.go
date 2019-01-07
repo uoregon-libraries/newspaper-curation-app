@@ -238,6 +238,9 @@ func (i *Issue) ApproveMetadata(reviewerID int) {
 
 // RejectMetadata sends the issue back to the metadata entry user and saves the
 // reviewer's notes
+//
+// TODO: if we ever display rejection user, bear in mind that 0 means it's
+// rejected by a system process rather than a person
 func (i *Issue) RejectMetadata(reviewerID int, notes string) {
 	i.Claim(i.MetadataEntryUserID)
 	i.WorkflowStep = schema.WSReadyForMetadataEntry
