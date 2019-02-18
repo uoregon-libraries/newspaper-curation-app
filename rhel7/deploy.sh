@@ -77,6 +77,7 @@ goose --env production up
 echo Copying in the new stuff
 sudo cp $src/bin/server $ncadir/
 sudo cp $src/bin/run-jobs $ncadir/
+sudo cp $src/bin/batch-fixer $ncadir/
 sudo cp $src/bin/queue-batches $ncadir/
 sudo cp $src/bin/bulk-issue-queue $ncadir/
 sudo cp $src/bin/requeue-batch $ncadir/
