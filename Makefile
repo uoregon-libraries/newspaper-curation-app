@@ -1,17 +1,17 @@
-.PHONY: all fast validate build lint format clean
+.PHONY: all deps fast validate build lint format clean
 
-all: vendor/src validate build
+all: deps validate build
 
-fast: vendor/src build
+deps:
+	go mod download
+
+fast: deps build
 
 validate:
 	./validate.sh
 
 build:
-	gb build
-
-vendor/src:
-	gb vendor restore
+	./makeall.sh
 
 lint:
 	golint src/...
@@ -20,8 +20,4 @@ format:
 	find src/ -name "*.go" | xargs gofmt -l -w -s
 
 clean:
-	rm -rf bin/* pkg/*
-
-cleanall: clean
-	rm -rf vendor/src
-	rm -rf ${HOME}/.gb/cache
+	rm bin/* -f
