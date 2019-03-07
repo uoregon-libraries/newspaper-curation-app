@@ -1,17 +1,16 @@
 package jobs
 
 import (
-	"config"
-
 	"fmt"
 	"io/ioutil"
 	"os"
 	"path/filepath"
 	"regexp"
-	"shell"
 	"strconv"
 
 	"github.com/uoregon-libraries/gopkg/fileutil"
+	"github.com/uoregon-libraries/newspaper-curation-app/src/config"
+	"github.com/uoregon-libraries/newspaper-curation-app/src/shell"
 )
 
 var splitPageFilenames = regexp.MustCompile(`^seq-(\d+).pdf$`)

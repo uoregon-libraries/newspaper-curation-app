@@ -1,13 +1,13 @@
 package main
 
 import (
-	"db"
 	"fmt"
-	"jobs"
 	"os"
 	"sort"
 
 	"github.com/uoregon-libraries/gopkg/fileutil"
+	"github.com/uoregon-libraries/newspaper-curation-app/src/db"
+	"github.com/uoregon-libraries/newspaper-curation-app/src/jobs"
 )
 
 // Batch extends a db.Batch with functionality for fixing, re-queueing, etc.

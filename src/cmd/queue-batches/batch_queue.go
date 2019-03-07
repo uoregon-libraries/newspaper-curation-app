@@ -1,10 +1,10 @@
 package main
 
 import (
-	"db"
 	"sort"
 
 	"github.com/uoregon-libraries/gopkg/logger"
+	"github.com/uoregon-libraries/newspaper-curation-app/src/db"
 )
 
 // issueQueue is a list of issues for a given MOC to ease batching.  It acts as

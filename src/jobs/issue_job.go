@@ -1,11 +1,11 @@
 package jobs
 
 import (
-	"db"
 	"fmt"
-	"schema"
 
 	"github.com/uoregon-libraries/gopkg/logger"
+	"github.com/uoregon-libraries/newspaper-curation-app/src/db"
+	"github.com/uoregon-libraries/newspaper-curation-app/src/schema"
 )
 
 // IssueJob wraps the Job type to add things needed in all jobs tied to

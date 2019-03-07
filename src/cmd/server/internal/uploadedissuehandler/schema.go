@@ -1,19 +1,18 @@
 package uploadedissuehandler
 
 import (
-	"apperr"
-	"db"
 	"fmt"
 	"html/template"
-	"jobs"
-	"uploads"
-
 	"path/filepath"
-	"schema"
 	"strings"
 	"time"
 
 	"github.com/uoregon-libraries/gopkg/logger"
+	"github.com/uoregon-libraries/newspaper-curation-app/src/apperr"
+	"github.com/uoregon-libraries/newspaper-curation-app/src/db"
+	"github.com/uoregon-libraries/newspaper-curation-app/src/jobs"
+	"github.com/uoregon-libraries/newspaper-curation-app/src/schema"
+	"github.com/uoregon-libraries/newspaper-curation-app/src/uploads"
 )
 
 // DaysIssueConsideredNew is how long we warn users that the issue is new - but

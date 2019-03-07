@@ -1,13 +1,13 @@
 package main
 
 import (
-	"db"
 	"fmt"
 	"io"
 	"os"
 	"strings"
 
 	"github.com/Nerdmaster/terminal"
+	"github.com/uoregon-libraries/newspaper-curation-app/src/db"
 )
 
 const csi = "\033["

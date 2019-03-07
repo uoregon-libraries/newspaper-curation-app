@@ -1,8 +1,6 @@
 package jobs
 
 import (
-	"config"
-	"db"
 	"fmt"
 	"os"
 	"path"
@@ -10,6 +8,8 @@ import (
 	"strings"
 
 	"github.com/uoregon-libraries/gopkg/fileutil"
+	"github.com/uoregon-libraries/newspaper-curation-app/src/config"
+	"github.com/uoregon-libraries/newspaper-curation-app/src/db"
 )
 
 // CreateBatchStructure wraps a BatchJob and implements Processor

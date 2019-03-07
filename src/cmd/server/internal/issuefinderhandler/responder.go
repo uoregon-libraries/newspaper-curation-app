@@ -1,16 +1,16 @@
 package issuefinderhandler
 
 import (
-	"cmd/server/internal/responder"
-	"db"
 	"html/template"
 	"net/http"
 	"path"
-	"schema"
 	"strconv"
-	"web/tmpl"
 
 	"github.com/uoregon-libraries/gopkg/logger"
+	"github.com/uoregon-libraries/newspaper-curation-app/src/cmd/server/internal/responder"
+	"github.com/uoregon-libraries/newspaper-curation-app/src/db"
+	"github.com/uoregon-libraries/newspaper-curation-app/src/schema"
+	"github.com/uoregon-libraries/newspaper-curation-app/src/web/tmpl"
 )
 
 type respError struct {

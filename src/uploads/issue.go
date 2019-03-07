@@ -1,10 +1,11 @@
 package uploads
 
 import (
-	"config"
-	"issuewatcher"
-	"schema"
 	"time"
+
+	"github.com/uoregon-libraries/newspaper-curation-app/src/config"
+	"github.com/uoregon-libraries/newspaper-curation-app/src/issuewatcher"
+	"github.com/uoregon-libraries/newspaper-curation-app/src/schema"
 )
 
 // DaysIssueConsideredDangerous is how long we require an issue to be untouched

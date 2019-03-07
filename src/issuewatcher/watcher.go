@@ -5,14 +5,13 @@
 package issuewatcher
 
 import (
-	"config"
 	"os"
-
 	"strings"
 	"sync"
 	"time"
 
 	"github.com/uoregon-libraries/gopkg/logger"
+	"github.com/uoregon-libraries/newspaper-curation-app/src/config"
 )
 
 // A Watcher wraps the Scanner to provide a long-running issue watcher which

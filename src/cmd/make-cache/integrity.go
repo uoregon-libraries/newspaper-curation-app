@@ -2,11 +2,11 @@ package main
 
 import (
 	"fmt"
-	"issuefinder"
-	"issuewatcher"
 	"sort"
 
 	"github.com/uoregon-libraries/gopkg/logger"
+	"github.com/uoregon-libraries/newspaper-curation-app/src/issuefinder"
+	"github.com/uoregon-libraries/newspaper-curation-app/src/issuewatcher"
 )
 
 var fails int

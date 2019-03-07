@@ -3,16 +3,14 @@ package alto
 import (
 	"bytes"
 	"encoding/xml"
-
 	"fmt"
 	"io/ioutil"
-
 	"os"
 	"regexp"
-	"shell"
 
 	"github.com/uoregon-libraries/gopkg/fileutil"
 	"github.com/uoregon-libraries/gopkg/logger"
+	"github.com/uoregon-libraries/newspaper-curation-app/src/shell"
 )
 
 // lowASCIIRegex strips all low-ASCII that isn't printable

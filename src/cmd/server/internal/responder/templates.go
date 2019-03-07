@@ -1,14 +1,15 @@
 package responder
 
 import (
-	"cmd/server/internal/settings"
-	"db/user"
 	"fmt"
 	"html/template"
 	"strings"
 	"time"
-	"web/tmpl"
-	"web/webutil"
+
+	"github.com/uoregon-libraries/newspaper-curation-app/src/cmd/server/internal/settings"
+	"github.com/uoregon-libraries/newspaper-curation-app/src/db/user"
+	"github.com/uoregon-libraries/newspaper-curation-app/src/web/tmpl"
+	"github.com/uoregon-libraries/newspaper-curation-app/src/web/webutil"
 )
 
 var (

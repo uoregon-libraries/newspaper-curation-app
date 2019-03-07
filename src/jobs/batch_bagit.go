@@ -1,9 +1,8 @@
 package jobs
 
 import (
-	"config"
-
 	"github.com/uoregon-libraries/gopkg/bagit"
+	"github.com/uoregon-libraries/newspaper-curation-app/src/config"
 )
 
 // WriteBagitManifest runs our bag tag-file generator

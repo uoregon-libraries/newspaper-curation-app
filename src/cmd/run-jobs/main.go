@@ -5,12 +5,8 @@
 package main
 
 import (
-	"config"
-	"db"
 	"fmt"
-	"jobs"
 	"os"
-	"schema"
 	"strconv"
 	"strings"
 	"sync"
@@ -21,6 +17,10 @@ import (
 	"github.com/uoregon-libraries/gopkg/interrupts"
 	"github.com/uoregon-libraries/gopkg/logger"
 	"github.com/uoregon-libraries/gopkg/wordutils"
+	"github.com/uoregon-libraries/newspaper-curation-app/src/config"
+	"github.com/uoregon-libraries/newspaper-curation-app/src/db"
+	"github.com/uoregon-libraries/newspaper-curation-app/src/jobs"
+	"github.com/uoregon-libraries/newspaper-curation-app/src/schema"
 )
 
 var runners struct {

@@ -1,11 +1,10 @@
 package main
 
 import (
-	"cmd/server/internal/responder"
-
 	"net/http"
 
 	"github.com/uoregon-libraries/gopkg/logger"
+	"github.com/uoregon-libraries/newspaper-curation-app/src/cmd/server/internal/responder"
 )
 
 // nocache is a Middleware function to send back no-cache header

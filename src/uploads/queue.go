@@ -1,13 +1,13 @@
 package uploads
 
 import (
-	"apperr"
-	"db"
 	"fmt"
-	"jobs"
-	"schema"
 
 	"github.com/uoregon-libraries/gopkg/logger"
+	"github.com/uoregon-libraries/newspaper-curation-app/src/apperr"
+	"github.com/uoregon-libraries/newspaper-curation-app/src/db"
+	"github.com/uoregon-libraries/newspaper-curation-app/src/jobs"
+	"github.com/uoregon-libraries/newspaper-curation-app/src/schema"
 )
 
 func dbErr() apperr.Error {

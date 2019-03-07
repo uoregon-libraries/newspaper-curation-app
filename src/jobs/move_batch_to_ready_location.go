@@ -1,9 +1,10 @@
 package jobs
 
 import (
-	"config"
 	"os"
 	"path"
+
+	"github.com/uoregon-libraries/newspaper-curation-app/src/config"
 )
 
 // MoveBatchToReadyLocation is a very simple job that just renames a batch from

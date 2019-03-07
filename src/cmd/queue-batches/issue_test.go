@@ -1,9 +1,10 @@
 package main
 
 import (
-	"db"
 	"testing"
 	"time"
+
+	"github.com/uoregon-libraries/newspaper-curation-app/src/db"
 )
 
 var (

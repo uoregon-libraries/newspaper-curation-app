@@ -1,10 +1,11 @@
 package issuefinder
 
 import (
-	"apperr"
 	"path/filepath"
-	"schema"
 	"strings"
+
+	"github.com/uoregon-libraries/newspaper-curation-app/src/apperr"
+	"github.com/uoregon-libraries/newspaper-curation-app/src/schema"
 )
 
 // verifyIssueFiles looks for errors in any files within a given issue.  With

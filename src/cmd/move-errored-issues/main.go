@@ -1,9 +1,6 @@
 package main
 
 import (
-	"cli"
-	"config"
-	"db"
 	"fmt"
 	"io/ioutil"
 	"os"
@@ -11,6 +8,9 @@ import (
 
 	"github.com/uoregon-libraries/gopkg/fileutil"
 	"github.com/uoregon-libraries/gopkg/logger"
+	"github.com/uoregon-libraries/newspaper-curation-app/src/cli"
+	"github.com/uoregon-libraries/newspaper-curation-app/src/config"
+	"github.com/uoregon-libraries/newspaper-curation-app/src/db"
 )
 
 // Command-line options

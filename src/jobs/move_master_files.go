@@ -2,7 +2,6 @@ package jobs
 
 import (
 	"archive/tar"
-	"config"
 	"fmt"
 	"io"
 	"io/ioutil"
@@ -10,6 +9,7 @@ import (
 	"path/filepath"
 
 	"github.com/uoregon-libraries/gopkg/fileutil"
+	"github.com/uoregon-libraries/newspaper-curation-app/src/config"
 )
 
 // MoveMasterFilesToIssueLocation is the job which finds backed-up master files

@@ -1,10 +1,11 @@
 package jobs
 
 import (
-	"config"
-	"db"
-	"derivatives/mets"
 	"time"
+
+	"github.com/uoregon-libraries/newspaper-curation-app/src/config"
+	"github.com/uoregon-libraries/newspaper-curation-app/src/db"
+	"github.com/uoregon-libraries/newspaper-curation-app/src/derivatives/mets"
 )
 
 // BuildMETS creates the final file needed for an issue to be able to be
