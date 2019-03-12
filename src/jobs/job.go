@@ -1,14 +1,14 @@
 package jobs
 
 import (
-	"config"
-	"db"
 	"fmt"
 	"os"
 	"path/filepath"
 	"time"
 
 	"github.com/uoregon-libraries/gopkg/logger"
+	"github.com/uoregon-libraries/newspaper-curation-app/src/config"
+	"github.com/uoregon-libraries/newspaper-curation-app/src/db"
 )
 
 // A Processor is a general interface for all database-driven jobs that process something

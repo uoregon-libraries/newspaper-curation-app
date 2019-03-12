@@ -2,7 +2,6 @@ package mets
 
 import (
 	"bytes"
-	"db"
 	"encoding/xml"
 	"fmt"
 	"html/template"
@@ -11,6 +10,7 @@ import (
 	"time"
 
 	"github.com/uoregon-libraries/gopkg/fileutil"
+	"github.com/uoregon-libraries/newspaper-curation-app/src/db"
 )
 
 // TimeFormat is the standard format used in our METS header - it's basically

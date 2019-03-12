@@ -4,7 +4,8 @@ import (
 	"encoding/xml"
 	"fmt"
 	"io/ioutil"
-	"mods"
+
+	"github.com/uoregon-libraries/newspaper-curation-app/src/mods"
 )
 
 // A METSIssue stores deserialized issue XML, but at this time it *cannot* be

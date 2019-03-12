@@ -1,9 +1,10 @@
 package main
 
 import (
-	"db"
 	"fmt"
 	"time"
+
+	"github.com/uoregon-libraries/newspaper-curation-app/src/db"
 )
 
 // issue wraps a db Issue but gives us a page count as well as how old this

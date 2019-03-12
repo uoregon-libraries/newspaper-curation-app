@@ -1,11 +1,12 @@
 package titlehandler
 
 import (
-	"db"
 	"regexp"
-	"schema"
 	"sort"
 	"strings"
+
+	"github.com/uoregon-libraries/newspaper-curation-app/src/db"
+	"github.com/uoregon-libraries/newspaper-curation-app/src/schema"
 )
 
 var re = regexp.MustCompile(`[^A-Za-z0-9]+`)

@@ -1,18 +1,18 @@
 package titlehandler
 
 import (
-	"cmd/server/internal/responder"
-	"config"
-	"db"
-	"db/user"
 	"fmt"
 	"net/http"
 	"path"
 	"strconv"
-	"web/tmpl"
 
 	"github.com/gorilla/mux"
 	"github.com/uoregon-libraries/gopkg/logger"
+	"github.com/uoregon-libraries/newspaper-curation-app/src/cmd/server/internal/responder"
+	"github.com/uoregon-libraries/newspaper-curation-app/src/config"
+	"github.com/uoregon-libraries/newspaper-curation-app/src/db"
+	"github.com/uoregon-libraries/newspaper-curation-app/src/db/user"
+	"github.com/uoregon-libraries/newspaper-curation-app/src/web/tmpl"
 )
 
 var (

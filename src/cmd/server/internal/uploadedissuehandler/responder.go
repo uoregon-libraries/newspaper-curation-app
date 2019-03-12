@@ -1,12 +1,12 @@
 package uploadedissuehandler
 
 import (
-	"cmd/server/internal/responder"
 	"fmt"
 	"net/http"
-	"web/tmpl"
 
 	"github.com/gorilla/mux"
+	"github.com/uoregon-libraries/newspaper-curation-app/src/cmd/server/internal/responder"
+	"github.com/uoregon-libraries/newspaper-curation-app/src/web/tmpl"
 )
 
 type respError struct {

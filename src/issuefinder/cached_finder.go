@@ -4,9 +4,8 @@
 package issuefinder
 
 import (
-	"apperr"
-
 	"github.com/uoregon-libraries/gopkg/fileutil"
+	"github.com/uoregon-libraries/newspaper-curation-app/src/apperr"
 )
 
 // cacheID is just a uint used to make it clear there's a relationship being expressed

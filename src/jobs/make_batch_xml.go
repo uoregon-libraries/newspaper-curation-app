@@ -1,9 +1,10 @@
 package jobs
 
 import (
-	"config"
-	"derivatives/batchxml"
 	"path/filepath"
+
+	"github.com/uoregon-libraries/newspaper-curation-app/src/config"
+	"github.com/uoregon-libraries/newspaper-curation-app/src/derivatives/batchxml"
 )
 
 // MakeBatchXML wraps a BatchJob and implements Processor to create the

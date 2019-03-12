@@ -4,17 +4,16 @@
 package responder
 
 import (
-	"db"
 	"encoding/base64"
 	"html/template"
-
-	"db/user"
 	"net/http"
 	"time"
-	"version"
-	"web/tmpl"
 
 	"github.com/uoregon-libraries/gopkg/logger"
+	"github.com/uoregon-libraries/newspaper-curation-app/src/db"
+	"github.com/uoregon-libraries/newspaper-curation-app/src/db/user"
+	"github.com/uoregon-libraries/newspaper-curation-app/src/version"
+	"github.com/uoregon-libraries/newspaper-curation-app/src/web/tmpl"
 )
 
 // GenericVars holds anything specialized that doesn't make sense to have in PageVars

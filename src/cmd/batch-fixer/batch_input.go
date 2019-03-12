@@ -1,9 +1,10 @@
 package main
 
 import (
-	"db"
 	"fmt"
 	"strconv"
+
+	"github.com/uoregon-libraries/newspaper-curation-app/src/db"
 )
 
 func (i *Input) makeBatchMenu() (*menu, string) {

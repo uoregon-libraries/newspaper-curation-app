@@ -1,10 +1,9 @@
 package main
 
 import (
-	"cli"
-	"db"
-
 	"github.com/uoregon-libraries/gopkg/logger"
+	"github.com/uoregon-libraries/newspaper-curation-app/src/cli"
+	"github.com/uoregon-libraries/newspaper-curation-app/src/db"
 )
 
 // Command-line options

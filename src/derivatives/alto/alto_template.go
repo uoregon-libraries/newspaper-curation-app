@@ -1,6 +1,6 @@
 package alto
 
-import "version"
+import "github.com/uoregon-libraries/newspaper-curation-app/src/version"
 
 var altoTemplateString = `
 <alto xmlns="http://schema.ccs-gmbh.com/ALTO">

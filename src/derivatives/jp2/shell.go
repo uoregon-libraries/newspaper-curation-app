@@ -4,7 +4,8 @@ package jp2
 
 import (
 	"fmt"
-	"shell"
+
+	"github.com/uoregon-libraries/newspaper-curation-app/src/shell"
 )
 
 func (t *Transformer) makePNGFromPDF() bool {

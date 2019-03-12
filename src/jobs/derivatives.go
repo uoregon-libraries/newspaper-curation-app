@@ -1,16 +1,15 @@
 package jobs
 
 import (
-	"config"
-	"derivatives/alto"
-	"derivatives/jp2"
-
 	"os"
 	"path/filepath"
 	"regexp"
 	"strings"
 
 	"github.com/uoregon-libraries/gopkg/fileutil"
+	"github.com/uoregon-libraries/newspaper-curation-app/src/config"
+	"github.com/uoregon-libraries/newspaper-curation-app/src/derivatives/alto"
+	"github.com/uoregon-libraries/newspaper-curation-app/src/derivatives/jp2"
 )
 
 var allowedFilesRegex = regexp.MustCompile(`(?i:^([0-9]{4}.(pdf|jp2|xml|tiff?))|[0-9]{10}.xml|master.tar)`)

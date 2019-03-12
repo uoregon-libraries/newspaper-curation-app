@@ -1,21 +1,20 @@
 package workflowhandler
 
 import (
-	"apperr"
-	"db"
-	"db/user"
 	"encoding/base64"
 	"fmt"
 	"html/template"
-
 	"path"
 	"path/filepath"
-	"schema"
 	"strconv"
 	"strings"
 	"time"
 
 	"github.com/uoregon-libraries/gopkg/logger"
+	"github.com/uoregon-libraries/newspaper-curation-app/src/apperr"
+	"github.com/uoregon-libraries/newspaper-curation-app/src/db"
+	"github.com/uoregon-libraries/newspaper-curation-app/src/db/user"
+	"github.com/uoregon-libraries/newspaper-curation-app/src/schema"
 )
 
 // encodedErrors creates a base64 alert for validation errors to be displayed

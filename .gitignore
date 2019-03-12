@@ -1,7 +1,4 @@
 /bin
-/pkg
-/vendor
-!/vendor/manifest
 /tmp
 /settings*
 !/settings-example

@@ -1,9 +1,10 @@
 package titlehandler
 
 import (
-	"cmd/server/internal/responder"
-	"db/user"
 	"net/http"
+
+	"github.com/uoregon-libraries/newspaper-curation-app/src/cmd/server/internal/responder"
+	"github.com/uoregon-libraries/newspaper-curation-app/src/db/user"
 )
 
 // canView verifies the user can view the user list

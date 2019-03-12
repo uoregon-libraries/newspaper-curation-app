@@ -1,14 +1,13 @@
 package issuefinder
 
 import (
-	"apperr"
 	"encoding/gob"
-
 	"fmt"
 	"os"
-	"schema"
 
 	"github.com/uoregon-libraries/gopkg/fileutil"
+	"github.com/uoregon-libraries/newspaper-curation-app/src/apperr"
+	"github.com/uoregon-libraries/newspaper-curation-app/src/schema"
 )
 
 // cachedSearcher internally converts a Searcher into a cachedSearcher for serialization

@@ -3,13 +3,12 @@
 package main
 
 import (
-	"derivatives/alto"
-
 	"fmt"
 	"os"
 	"strconv"
 
 	"github.com/uoregon-libraries/gopkg/fileutil"
+	"github.com/uoregon-libraries/newspaper-curation-app/src/derivatives/alto"
 )
 
 func usageFail(format string, args ...interface{}) {

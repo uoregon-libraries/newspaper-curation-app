@@ -5,17 +5,18 @@
 package main
 
 import (
-	"chronam"
-	"cli"
-	"config"
-	"db"
-	"derivatives/mets"
 	"fmt"
-	"mods"
 	"os"
 	"strconv"
 	"strings"
 	"time"
+
+	"github.com/uoregon-libraries/newspaper-curation-app/src/chronam"
+	"github.com/uoregon-libraries/newspaper-curation-app/src/cli"
+	"github.com/uoregon-libraries/newspaper-curation-app/src/config"
+	"github.com/uoregon-libraries/newspaper-curation-app/src/db"
+	"github.com/uoregon-libraries/newspaper-curation-app/src/derivatives/mets"
+	"github.com/uoregon-libraries/newspaper-curation-app/src/mods"
 )
 
 func fail(format string, args ...interface{}) {

@@ -1,17 +1,17 @@
 package main
 
 import (
-	"cli"
-	"config"
-	"db"
 	"fmt"
-	"issuewatcher"
 	"os"
-	"schema"
 	"strings"
-	"uploads"
 
 	"github.com/uoregon-libraries/gopkg/logger"
+	"github.com/uoregon-libraries/newspaper-curation-app/src/cli"
+	"github.com/uoregon-libraries/newspaper-curation-app/src/config"
+	"github.com/uoregon-libraries/newspaper-curation-app/src/db"
+	"github.com/uoregon-libraries/newspaper-curation-app/src/issuewatcher"
+	"github.com/uoregon-libraries/newspaper-curation-app/src/schema"
+	"github.com/uoregon-libraries/newspaper-curation-app/src/uploads"
 )
 
 // Command-line options

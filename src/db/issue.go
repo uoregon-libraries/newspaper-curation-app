@@ -2,12 +2,12 @@ package db
 
 import (
 	"fmt"
-	"schema"
 	"strconv"
 	"strings"
 	"time"
 
 	"github.com/Nerdmaster/magicsql"
+	"github.com/uoregon-libraries/newspaper-curation-app/src/schema"
 )
 
 // Workflow steps in-process issues may have

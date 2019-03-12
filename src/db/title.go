@@ -1,7 +1,7 @@
 package db
 
 import (
-	"schema"
+	"github.com/uoregon-libraries/newspaper-curation-app/src/schema"
 )
 
 // Title holds records from the titles table

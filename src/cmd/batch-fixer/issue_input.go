@@ -1,10 +1,11 @@
 package main
 
 import (
-	"db"
 	"fmt"
 	"strconv"
 	"strings"
+
+	"github.com/uoregon-libraries/newspaper-curation-app/src/db"
 )
 
 func (i *Input) makeIssueMenu() (*menu, string) {

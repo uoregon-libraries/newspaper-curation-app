@@ -4,7 +4,6 @@
 package schema
 
 import (
-	"apperr"
 	"fmt"
 	"math"
 	"os"
@@ -16,6 +15,7 @@ import (
 
 	"github.com/uoregon-libraries/gopkg/fileutil"
 	"github.com/uoregon-libraries/gopkg/logger"
+	"github.com/uoregon-libraries/newspaper-curation-app/src/apperr"
 )
 
 // WorkflowStep describes the location within the workflow any issue can exist

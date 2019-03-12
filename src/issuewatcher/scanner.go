@@ -1,10 +1,11 @@
 package issuewatcher
 
 import (
-	"config"
 	"fmt"
-	"issuefinder"
-	"schema"
+
+	"github.com/uoregon-libraries/newspaper-curation-app/src/config"
+	"github.com/uoregon-libraries/newspaper-curation-app/src/issuefinder"
+	"github.com/uoregon-libraries/newspaper-curation-app/src/schema"
 )
 
 // Scanner sets up all the necessary data to run issuefinders across all our
