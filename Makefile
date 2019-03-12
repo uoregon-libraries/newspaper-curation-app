@@ -1,4 +1,4 @@
-.PHONY: all deps fast validate build lint format clean distclean
+.PHONY: all deps fast validate build lint format test clean distclean
 
 all: deps validate build
 
@@ -18,6 +18,9 @@ lint:
 
 format:
 	find src/ -name "*.go" | xargs gofmt -l -w -s
+
+test:
+	go test ./src/...
 
 clean:
 	rm bin/* -f
