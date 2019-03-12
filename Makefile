@@ -1,4 +1,4 @@
-.PHONY: all deps fast validate build lint format clean
+.PHONY: all deps fast validate build lint format clean distclean
 
 all: deps validate build
 
@@ -21,3 +21,6 @@ format:
 
 clean:
 	rm bin/* -f
+
+distclean: clean
+	go clean -modcache -testcache -cache
