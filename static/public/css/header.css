@@ -1,0 +1,16 @@
+/* UO Libraries logo bar */
+#uo-topbar {
+  background-color: #124734;
+  position: relative;
+  height: 52px;
+}
+#uolib-logo {
+  display: inline-block;
+  height: 40px;
+  position: relative;
+  top: 7px;
+}
+#uolib-logo img {
+  height: 36px;
+}
+
