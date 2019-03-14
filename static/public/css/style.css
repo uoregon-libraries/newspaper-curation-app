@@ -1,0 +1,19 @@
+#main {
+  font-family: sans-serif;
+  min-height: 600px;
+}
+
+@media screen and (min-width: 480px) {
+  .userlogin {
+    color: hsl(60, 100%, 50%);
+    font-weight: bold;
+    font-size: 1.3em;
+    padding-top: 0.6em;
+  }
+}
+
+@media screen and (max-width: 479px) {
+  .userlogin {
+    display: none;
+  }
+}

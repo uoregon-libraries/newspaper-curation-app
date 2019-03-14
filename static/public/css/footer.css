@@ -1,0 +1,45 @@
+.main_content {
+  padding-bottom: 45px;
+  min-height: 300px;
+}
+
+#uobannerandfooter-uoankle {
+  color: white;
+  font-size: 16px;
+  background: #222;
+}
+.uoankle-container {
+  padding-top: 45px;
+  padding-bottom: 45px;
+}
+
+#uobannerandfooter-uofooter {
+  color: white;
+  font-size: 16px;
+  background: black;
+  text-transform: uppercase;
+}
+#uobannerandfooter-uofooter a {
+  font-weight: normal;
+  color: #bbb;
+}
+.uofooter-container {
+  padding-top: 30px;
+  padding-bottom: 30px;
+}
+.uofooter-link {
+  padding: 0 40px 0 0;
+}
+.uofooter-logo-container {
+  top: -12px;
+  text-align: right;
+}
+
+.social-icons a {
+  text-decoration: none;
+}
+
+.social-icons img {
+  width:40px;
+  height:40px;
+}
