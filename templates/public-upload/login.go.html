@@ -1,0 +1,25 @@
+{{block "content" .}}
+
+<form class="form-horizontal" role="form" method="post" action="{{LoginURL}}">
+  <div class="form-group">
+    <label class="col-sm-4 control-label" for="name">Login Name</label>
+    <div class="col-sm-8">
+      <input id="loginname" name="loginname" value="{{.LoginName}}" required="required" class="form-control" />
+    </div>
+  </div>
+
+  <div class="form-group">
+    <label class="col-sm-4 control-label" for="name">Password</label>
+    <div class="col-sm-8">
+      <input id="password" name="password" type="password" value="" required="required" class="form-control" />
+    </div>
+  </div>
+
+  <div class="form-group">
+    <div class="col-sm-8 col-sm-offset-4">
+      <button class="btn btn-default" type="Submit">Log In</button>
+    </div>
+  </div>
+</form>
+
+{{end}}
