@@ -1,0 +1,127 @@
+{{define "layout"}}
+<!DOCTYPE html>
+<html lang="en">
+
+  <head>
+    <title>{{block "metatitle" .}}Oregon Digital Newspaper Program - Public Uploads{{end}}</title>
+
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1, shrink-to-fit=no">
+
+    {{RawCSS "bootstrap/css/bootstrap.min.css"}}
+    {{IncludeCSS "header"}}
+    {{IncludeCSS "footer"}}
+    {{IncludeCSS "a11y"}}
+    {{IncludeCSS "style"}}
+  </head>
+
+  <body>
+    <div id="uo-topbar">
+      <div class="container">
+        <a href="https://library.uoregon.edu/" rel="home" id="uolib-logo">
+          <img src="{{ImageURL "libraries.svg"}}" alt="University of Oregon Libraries" />
+        </a>
+        {{if .User}}
+        <div class="float-right userlogin">Logged in as {{.User}}</div>
+        {{end}}
+      </div>
+    </div>
+
+    <div class="container" id="main">
+      {{if Debug}}
+        <div class="alert alert-warning">
+          Warning: This site is in DEBUG mode and is <strong>NOT SAFE</strong> for production
+        </div>
+      {{end}}
+
+      <h1>{{block "title" .}}ODNP Upload{{end}}</h1>
+
+      {{- if .Alert}}
+        <div class="alert alert-danger">
+          {{.Alert}}
+        </div>
+      {{- end}}
+      {{- if .Info}}
+        <div class="alert alert-info">
+          {{.Info}}
+        </div>
+      {{- end}}
+
+      {{block "content" .}}{{end}}
+    </div>
+
+    <footer>
+      <div class="region region-page-bottom">
+        <section id="uobannerandfooter-uoankle">
+          <div class="uoankle-container container" style="margin: 0 auto;">
+            <div class="row">
+              <div class="col-md-3">
+                <address>
+                  <div itemprop="name">
+                    <strong>University of Oregon Libraries</strong>
+                  </div>
+                  <div itemprop="address" itemscope="" itemtype="https://schema.org/PostalAddress">
+                    <div>
+                      <span itemprop="streetAddress">1501 Kincaid Street</span>
+                      <span itemprop="addressLocality">Eugene</span>,
+                      <span itemprop="addressRegion">OR</span>
+                    </div>
+                    <div>
+                      <span itemprop="postalCode">97403-1299</span>
+                    </div>
+                  </div>
+                </address>
+              </div>
+              <div class="col-md-push-3 col-md-3">
+                <a href="https://securelb.imodules.com/s/1540/foundation/2col.aspx?sid=1540&gid=1&pgid=408&bledit=1&dids=292" target="_blank">
+                  <img alt="Give now" src="{{ImageURL "givenow-sm.png"}}" />
+                </a>
+              </div>
+              <div class="col-md-3 col-md-push-3 social-icons">
+                <a href="http://www.facebook.com/uolibraries">
+                  <img alt="Facebook" src="{{ImageURL "icon-facebook.png"}}" />
+                </a>
+                <a href="http://twitter.com/uolibraries">
+                  <img alt="Twitter" src="{{ImageURL "icon-twitter.png"}}" />
+                </a>
+                <a href="https://www.youtube.com/c/uolibrarieseugene">
+                  <img alt="YouTube Channel" src="{{ImageURL "icon-youtube.png"}}" />
+                </a>
+                <a href="https://www.instagram.com/uolibraries/">
+                  <img alt="Instagram" src="{{ImageURL "icon-instagram.png"}}" />
+                </a>
+              </div>
+            </div>
+          </div>
+        </section>
+
+        <section id="uobannerandfooter-uofooter">
+          <div class="uofooter-container container">
+            <div class="row">
+              <div class="col-md-5 offset-md-5">
+                <div class="uofooter-copyright-container">
+                  <span class="copyright">
+                    &copy;
+                    <a href="http://uoregon.edu">University of Oregon</a>.
+                  </span>
+                  <span class="all-rights-reserved">All Rights Reserved.</span>
+                </div>
+              </div>
+              <div class="col-md-2 uofooter-logo-container">
+                <a href="http://uoregon.edu">
+                  <img src="{{ImageURL "footer-logo.png"}}" alt="University of Oregon" width="53" height="44" />
+                </a>
+              </div>
+            </div>
+          </div>
+        </section>
+      </div>
+    </footer>
+
+    {{IncludeJS "prevent_double_submit"}}
+    {{RawJS "bootstrap/js/bootstrap.min.js"}}
+    {{block "extrajs" .}}{{end}}
+  </body>
+</html>
+{{Comment (printf "v%s" Version)}}
+{{end}}
