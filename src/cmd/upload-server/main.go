@@ -15,6 +15,7 @@ import (
 	"github.com/jessevdk/go-flags"
 	"github.com/uoregon-libraries/gopkg/logger"
 	"github.com/uoregon-libraries/gopkg/middleware"
+	"github.com/uoregon-libraries/gopkg/session"
 	"github.com/uoregon-libraries/newspaper-curation-app/src/db"
 )
 
@@ -27,6 +28,7 @@ var opts struct {
 
 var l *logger.Logger
 var dbconn string
+var store *session.Store
 
 func getConf() {
 	var p = flags.NewParser(&opts, flags.HelpFlag|flags.PassDoubleDash)
@@ -56,6 +58,17 @@ func getConf() {
 		p.WriteHelp(os.Stderr)
 		os.Exit(1)
 	}
+
+	var secret = os.Getenv("NCA_SECRET")
+	if secret == "" {
+		fmt.Fprintln(os.Stderr, "Error: NCA_SECRET environment variable must be set")
+		fmt.Fprintln(os.Stderr, `(e.g., NCA_SECRET="hQG02hqZUdLb$E@cZa~e")`)
+		fmt.Fprintln(os.Stderr)
+		p.WriteHelp(os.Stderr)
+		os.Exit(1)
+	}
+
+	store = session.NewCookieStore("ncaupload", secret)
 }
 
 func newsrv() *srv {
