@@ -102,6 +102,17 @@ services:
     networks:
       nca:
 
+  upload:
+    extends: web
+    command: ./bin/upload-server
+    environment:
+      - NCA_DBCONNECT=nca:nca@tcp(db:3306)/nca
+      - NCA_SECRET=shhhhhhh!
+    expose:
+      - 8080
+    depends_on:
+      - db
+
   proxy:
     image: nginx:1.15
     volumes:
@@ -110,6 +121,7 @@ services:
       - web
       - iiif
       - sftpgo
+      - upload
     networks:
       nca:
 
