@@ -82,11 +82,24 @@ services:
       - db
     command: ./bin/run-jobs -c ./settings watchall
 
+  upload:
+    build:
+      context: .
+      dockerfile: ./docker/Dockerfile-app
+    volumes: *ncavols
+    environment: *ncaenv
+    expose:
+      - 8080
+    depends_on:
+      - db
+    command: ./bin/upload-server
+
   proxy:
     image: nginx:1.15
     volumes:
       - ./docker/nginx/nca.conf:/etc/nginx/conf.d/default.conf:ro
     depends_on:
       - web
+      - upload
       - iiif
       - sftpgo

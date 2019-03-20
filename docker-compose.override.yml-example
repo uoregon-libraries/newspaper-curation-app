@@ -10,7 +10,7 @@ services:
 
   # Workers needs all workflow directories
   workers:
-    volumes:
+    volumes: &development_volumes
       # Workflow directories
       - ./test/fakemount:/mnt/news:z
       # Entrypoint
@@ -22,16 +22,7 @@ services:
       - ./settings-example:/usr/local/nca/settings:z
 
   web:
-    volumes:
-      # Workflow directories
-      - ./test/fakemount:/mnt/news:z
-      # Entrypoint
-      - ./docker/entrypoint.sh:/entrypoint.sh
-      # Mount in the binaries, templates, and static files for easier debugging
-      - ./bin:/usr/local/nca/bin:z
-      - ./static:/usr/local/nca/static:z
-      - ./templates:/usr/local/nca/templates:z
-      - ./settings-example:/usr/local/nca/settings:z
+    volumes: *development_volumes
     # Make sure the server always runs in debug mode
     command: ./bin/server -c ./settings --debug
 
@@ -46,6 +37,13 @@ services:
     ports:
       - 8080:8080
       - 2022:2022
+
+  upload:
+    volumes: *development_volumes
+    environment:
+      - NCA_DBCONNECT=nca:nca@tcp(db:3306)/nca
+      - NCA_SECRET=shhhhh!
+    command: ./bin/upload-server --webroot $APP_URL/publicuploads --debug
 
   # Expose port 80 to the host's port 80
   proxy:
