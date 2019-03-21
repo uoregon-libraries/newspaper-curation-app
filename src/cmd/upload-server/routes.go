@@ -20,10 +20,10 @@ func (s *srv) routes() {
 	var appRouter = s.router.NewRoute().PathPrefix(s.webroot.Path).Subrouter()
 	appRouter.Use(s.middleware.NoCache)
 	appRouter.Use(s.middleware.RequestLog)
-	appRouter.Path("").HandlerFunc(s.redirectSubpathHandler("login", http.StatusMovedPermanently))
-	appRouter.Path("/").HandlerFunc(s.redirectSubpathHandler("login", http.StatusMovedPermanently))
-	appRouter.Path("/login").Methods("get").HandlerFunc(s.loginFormHandler())
-	appRouter.Path("/login").Methods("post").HandlerFunc(s.loginSubmitHandler())
+	appRouter.Path("").Handler(s.redirectSubpathHandler("login", http.StatusMovedPermanently))
+	appRouter.Path("/").Handler(s.redirectSubpathHandler("login", http.StatusMovedPermanently))
+	appRouter.Path("/login").Methods("get").Handler(s.loginFormHandler())
+	appRouter.Path("/login").Methods("post").Handler(s.loginSubmitHandler())
 
 	appRouter.NotFoundHandler = s.notFoundHandler()
 }
