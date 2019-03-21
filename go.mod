@@ -8,6 +8,6 @@ require (
 	github.com/jessevdk/go-flags v1.4.0
 	github.com/mattn/go-sqlite3 v1.10.0 // indirect
 	github.com/uoregon-libraries/gopkg v0.0.0-20180517231339-9730fddd79fb
-	golang.org/x/crypto v0.0.0-20170307004051-728b753d0135
+	golang.org/x/crypto v0.0.0-20190320223903-b7391e95e576
 	golang.org/x/sys v0.0.0-20190321052220-f7bb7a8bee54 // indirect
 )
