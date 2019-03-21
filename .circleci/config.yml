@@ -13,5 +13,5 @@ jobs:
 
       # specify any bash command here prefixed with `run: `
       - run: go get -u bitbucket.org/liamstask/goose/cmd/goose
-      - run: go get -u github.com/golang/lint/golint
+      - run: go get -u golang.org/x/lint/golint
       - run: make deps validate test
