@@ -13,7 +13,7 @@ docker-compose down
 
 # Remove the finder cache, but *not* the cached web data - this gives us a
 # quicker upstart since we'll only have to rescan the filesystem
-docker-compose run --rm workers rm /var/local/news/nca/cache/finder.cache
+docker-compose run --rm workers rm -f /var/local/news/nca/cache/finder.cache
 
 popd
 ./makemine.sh
