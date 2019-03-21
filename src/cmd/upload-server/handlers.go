@@ -46,11 +46,12 @@ func (s *srv) loginSubmitHandler() http.Handler {
 
 		if t.ID == 0 {
 			r.server.logger.Infof("Invalid login attempt for %q", name)
+			r.sess.SetAlertFlash("Invalid login: username or password are incorrect")
 			r.redirectSubpath("login", http.StatusSeeOther)
 			return
 		}
 
-		// TODO: Store user info in session
+		r.sess.SetString("user", name)
 		r.server.logger.Infof("%q authenticated for title %#v", name, t)
 		r.redirectSubpath("upload", http.StatusSeeOther)
 	})

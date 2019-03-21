@@ -5,6 +5,7 @@ import (
 	"net/http"
 	"path"
 
+	"github.com/uoregon-libraries/gopkg/session"
 	"github.com/uoregon-libraries/gopkg/tmpl"
 )
 
@@ -14,6 +15,7 @@ import (
 type responder struct {
 	w       http.ResponseWriter
 	req     *http.Request
+	sess    *session.Session
 	err     error
 	server  *srv
 	handler func(r *responder)
@@ -27,8 +29,16 @@ func (s *srv) respond(handler func(r *responder)) *responder {
 // ServeHTTP implements http.Handler so a responder can act as an arbitrary
 // request handler
 func (r *responder) ServeHTTP(w http.ResponseWriter, req *http.Request) {
+	var sess, err = store.Session(w, req)
+	if err != nil {
+		r.server.logger.Errorf("Unable to instantiate session: %s", err)
+		r.internalServerError()
+		return
+	}
+
 	r.w = w
 	r.req = req
+	r.sess = sess
 	r.handler(r)
 }
 
@@ -47,6 +57,17 @@ func (r *responder) internalServerError() {
 
 func (r *responder) render(t *tmpl.Template, data map[string]interface{}) {
 	var b = new(bytes.Buffer)
+
+	var sessAlert = r.sess.GetAlertFlash()
+	var sessInfo = r.sess.GetInfoFlash()
+	var sessUser = r.sess.GetString("user")
+	if data == nil {
+		data = make(map[string]interface{})
+	}
+	data["Alert"] = sessAlert
+	data["Info"] = sessInfo
+	data["User"] = sessUser
+
 	var err = t.Execute(b, data)
 	if err != nil {
 		r.server.logger.Errorf("Unable to render template %s: %s", t.Name, err)
