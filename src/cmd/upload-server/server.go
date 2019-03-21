@@ -1,7 +1,6 @@
 package main
 
 import (
-	"bytes"
 	"net/http"
 	"net/url"
 	"path"
@@ -41,18 +40,6 @@ func (s *srv) setupTemplates(templatePath string) {
 	s.layout.Funcs(templateFunctions)
 	s.layout.MustReadPartials("layout.go.html")
 	s.empty = s.layout.MustBuild("empty.go.html")
-}
-
-func (s *srv) render(w http.ResponseWriter, req *http.Request, t *tmpl.Template, data map[string]interface{}) {
-	var b = new(bytes.Buffer)
-	var err = t.Execute(b, data)
-	if err != nil {
-		s.logger.Errorf("Unable to render template %s: %s", t.Name, err)
-		s.internalServerError(w, req)
-		return
-	}
-
-	b.WriteTo(w)
 }
 
 func (s *srv) listen() error {
