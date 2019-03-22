@@ -122,9 +122,11 @@ func startServer() {
 	// Any unknown paths get a semi-friendly 404
 	r.NotFoundHandler = http.HandlerFunc(notFound)
 
+	// TODO: Get rid of this use of global http package state
 	http.Handle("/", nocache(logMiddleware(r)))
 
 	logger.Infof("Listening on %s", conf.BindAddress)
+	// TODO: Get rid of this use of global http package state
 	if err := http.ListenAndServe(conf.BindAddress, nil); err != nil {
 		logger.Fatalf("Error starting listener: %s", err)
 	}
