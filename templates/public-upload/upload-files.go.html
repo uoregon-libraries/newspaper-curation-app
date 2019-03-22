@@ -1,0 +1,58 @@
+{{block "content" .}}
+
+<!-- the hidden uploader inputs aren't part of the form since we upload async -->
+<input id="file-upload" type="file" multiple="" accept="application/pdf" data-uid="{{.Form.UID}}" style="display: none" />
+<input id="folder-upload" type="file" directory="" webkitdirectory="" data-uid="{{.Form.UID}}" style="display: none" />
+
+<h2>Upload PDFs</h2>
+
+<p class="issue-info">
+  <strong>Step 2 of 3</strong>:
+  uploading files for the <em>{{.Form.Date.Format "Monday, January 2, 2006"}}</em>
+  edition of <em>{{.Title.MARCTitle}}</em>
+</p>
+
+<p class="form-instructions">
+  Select individual PDFs or entire folders to upload this issue to ODNP's
+  server for publishing.  Please be aware of the following:
+  <ul>
+    <li>Any files that are over 100 megabytes will be skipped</li>
+    <li>Uploaded files must be PDF format</li>
+    <li>
+      All uploaded PDFs will be processed as a part of the
+      <em>{{.Form.Date.Format "Monday, January 2, 2006"}}</em> edition of
+      <em>{{.Title.MARCTitle}}</em>
+    </li>
+  </ul>
+</p>
+
+<div>
+  <div id="file-list" class="container"></div>
+</div>
+
+<div class="upload-buttons">
+  <button class="btn btn-secondary" id="file-select">Upload PDF files</button>
+  <button class="btn btn-secondary" id="folder-select">Upload a folder containing your PDFs</button>
+</div>
+
+<form id="uploadform" class="form-horizontal" role="form" method="post" action="{{UploadURL}}">
+  <!-- this hack makes sure the default button moves us forward to the next step -->
+  <button type="Submit" name="nextstep" value="confirm" style="display:none;">Next</button>
+  <input type="hidden" name="date" value="{{.Form.Date.Format "2006-01-02"}}" />
+  <input type="hidden" name="uid" value="{{.Form.UID}}" />
+
+  <div class="row">
+    <div class="col-sm-3">
+      <button class="btn btn-danger" type="Submit" name="nextstep" value="metadata">Go Back</button>
+    </div>
+    <div class="col-sm-3">
+      <button class="btn btn-primary" type="Submit" name="nextstep" value="confirm">Next</button>
+    </div>
+  </div>
+</form>
+
+{{end}}
+
+{{block "extrajs" .}}
+{{IncludeJS "file"}}
+{{end}}

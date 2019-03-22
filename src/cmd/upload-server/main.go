@@ -104,6 +104,9 @@ func main() {
 		l.Warnf("Debug mode has been enabled")
 	}
 
+	// Make sure we routinely purge old form data from memory
+	go cleanForms()
+
 	l.Infof("Listening for %q on %q", opts.Webroot, opts.BindAddress)
 	var err = listen()
 	if err != nil {

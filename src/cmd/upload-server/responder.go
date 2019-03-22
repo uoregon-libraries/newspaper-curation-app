@@ -7,6 +7,7 @@ import (
 
 	"github.com/uoregon-libraries/gopkg/session"
 	"github.com/uoregon-libraries/gopkg/tmpl"
+	"github.com/uoregon-libraries/newspaper-curation-app/src/db"
 )
 
 // responder wraps the server, request, and response writer to simplify common
@@ -67,6 +68,23 @@ func (r *responder) render(t *tmpl.Template, data map[string]interface{}) {
 	data["Alert"] = sessAlert
 	data["Info"] = sessInfo
 	data["User"] = sessUser
+
+	if sessUser != "" {
+		var t, err = db.FindTitle("sftp_user = ?", sessUser)
+		if err != nil {
+			r.server.logger.Errorf("Unable to look up sftp user %q: %s", sessUser, err)
+			r.internalServerError()
+			return
+		}
+
+		if t.ID == 0 {
+			r.server.logger.Errorf("Authenticated user %q somehow has no title in the database", sessUser)
+			r.internalServerError()
+			return
+		}
+
+		data["Title"] = t
+	}
 
 	var err = t.Execute(b, data)
 	if err != nil {

@@ -25,5 +25,8 @@ func (s *srv) routes() {
 	appRouter.Path("/login").Methods("get").Handler(s.loginFormHandler())
 	appRouter.Path("/login").Methods("post").Handler(s.loginSubmitHandler())
 
+	// TODO: Add login-required middleware
+	appRouter.Path("/upload").Handler(s.uploadFormHandler())
+
 	appRouter.NotFoundHandler = s.notFoundHandler()
 }

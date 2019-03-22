@@ -28,9 +28,10 @@ type srv struct {
 // setupTemplates sets up pre-parsed templates
 func (s *srv) setupTemplates(templatePath string) {
 	var templateFunctions = tmpl.FuncMap{
-		"Version":  func() string { return version.Version },
-		"Debug":    func() bool { return s.debug },
-		"LoginURL": func() string { return path.Join(s.webroot.Path, "login") },
+		"Version":   func() string { return version.Version },
+		"Debug":     func() bool { return s.debug },
+		"LoginURL":  func() string { return path.Join(s.webroot.Path, "login") },
+		"UploadURL": func() string { return path.Join(s.webroot.Path, "upload") },
 	}
 
 	// Set up the layout and then our global templates

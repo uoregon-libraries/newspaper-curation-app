@@ -3,6 +3,10 @@
   min-height: 600px;
 }
 
+footer {
+  margin-top: 1em;
+}
+
 @media screen and (min-width: 480px) {
   .userlogin {
     color: hsl(60, 100%, 50%);
@@ -16,4 +20,31 @@
   .userlogin {
     display: none;
   }
+}
+
+.issue-info {
+  font-size: 1.1em;
+}
+
+.form-instructions {
+  font-size: 0.9em;
+  padding-left: 1em;
+}
+
+.upload-buttons button {
+  margin: 1em;
+}
+
+@keyframes fadeSkipped {
+  0%, 100% {
+    background-color: hsl(0, 50%, 90%);
+  }
+  40% {
+    background-color: hsl(0, 50%, 50%);
+  }
+}
+
+.row.upload.skipping {
+  animation: 2s fadeSkipped;
+  background-color: hsl(0, 50%, 90%);
 }
