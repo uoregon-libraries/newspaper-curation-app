@@ -13,7 +13,7 @@ type issue struct {
 	*db.Issue
 	title     *db.Title
 	pages     int
-	daysStale int
+	daysStale float64
 	embargoed bool
 }
 
@@ -31,7 +31,7 @@ func wrapIssue(dbIssue *db.Issue, embargoedDays int) (*issue, error) {
 	}
 
 	// How many days has this issue been waiting to be batched?
-	i.daysStale = int(time.Since(i.MetadataApprovedAt).Hours() / 24.0)
+	i.daysStale = time.Since(i.MetadataApprovedAt).Hours() / 24.0
 
 	if i.title.Embargoed {
 		var embargoLiftDate = issueDate.Add(time.Hour * time.Duration(24*embargoedDays))
@@ -43,7 +43,7 @@ func wrapIssue(dbIssue *db.Issue, embargoedDays int) (*issue, error) {
 		// lifted, so we have to consider them stale based on the newer date:
 		// metadata approval or embargo lifting.
 		if i.MetadataApprovedAt.Before(embargoLiftDate) {
-			i.daysStale = int(time.Since(embargoLiftDate).Hours() / 24.0)
+			i.daysStale = time.Since(embargoLiftDate).Hours() / 24.0
 		}
 	}
 

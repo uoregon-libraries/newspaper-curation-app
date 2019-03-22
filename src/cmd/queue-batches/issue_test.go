@@ -1,6 +1,7 @@
 package main
 
 import (
+	"math"
 	"testing"
 	"time"
 
@@ -83,41 +84,41 @@ func TestWrapIssue(t *testing.T) {
 	var twentyDaysAgo = time.Now().AddDate(0, 0, -20)
 	dbi.MetadataApprovedAt = twentyDaysAgo
 	i = mustWrap(dbi, t)
-	if i.daysStale != 20 {
-		t.Errorf("Unembargoed issue's days stale is %d; should have been twenty", i.daysStale)
+	if math.Round(i.daysStale) != 20 {
+		t.Errorf("Unembargoed issue's days stale is %g; should have been twenty", i.daysStale)
 	}
 
 	dbi = makeIssue(lccnEmbargoed, tooRecent)
 	dbi.MetadataApprovedAt = twentyDaysAgo
 	i = mustWrap(dbi, t)
 	if i.daysStale > 0 {
-		t.Errorf("Embargoed issue's days stale is %d; should have been negative due to embargo", i.daysStale)
+		t.Errorf("Embargoed issue's days stale is %g; should have been negative due to embargo", i.daysStale)
 	}
 
 	dbi = makeIssue(lccnEmbargoed, goodDate)
 	i = mustWrap(dbi, t)
-	if i.daysStale != 0 {
+	if math.Round(i.daysStale) != 0 {
 		t.Errorf("Embargoed issue (with old date) should have been stale for 0 days")
 	}
 
 	var gdt, _ = time.Parse("2006-01-02", goodDate)
-	var expectedStale = int(now.Sub(gdt).Hours()/24) - embargoedDays
+	var expectedStale = now.Sub(gdt).Hours()/24 - float64(embargoedDays)
 	dbi = makeIssue(lccnEmbargoed, goodDate)
 	dbi.MetadataApprovedAt = now.AddDate(-10, 0, 0)
 	i = mustWrap(dbi, t)
-	t.Logf("Expecting %d stale days", expectedStale)
-	if i.daysStale != expectedStale {
-		t.Errorf("Embargoed issue (with old date and extremely old approval date) was stale for %d days, "+
-			"but should have been stale for %d days", i.daysStale, expectedStale)
+	t.Logf("Expecting %g stale days", expectedStale)
+	if math.Round(i.daysStale) != math.Round(expectedStale) {
+		t.Errorf("Embargoed issue (with old date and extremely old approval date) was stale for %g days, "+
+			"but should have been stale for %g days", i.daysStale, expectedStale)
 	}
 
 	dbi = makeIssue(lccnSimple, goodDate)
 	dbi.MetadataApprovedAt = now.AddDate(-10, 0, 0)
-	expectedStale = int(now.Sub(dbi.MetadataApprovedAt).Hours() / 24)
+	expectedStale = now.Sub(dbi.MetadataApprovedAt).Hours() / 24
 	i = mustWrap(dbi, t)
-	t.Logf("Expecting %d stale days", expectedStale)
-	if i.daysStale != expectedStale {
-		t.Errorf("Unembargoed issue (with extremely old approval date) was stale for %d days, "+
-			"but should have been stale for %d days", i.daysStale, expectedStale)
+	t.Logf("Expecting %g stale days", expectedStale)
+	if math.Round(i.daysStale) != math.Round(expectedStale) {
+		t.Errorf("Unembargoed issue (with extremely old approval date) was stale for %g days, "+
+			"but should have been stale for %g days", i.daysStale, expectedStale)
 	}
 }
