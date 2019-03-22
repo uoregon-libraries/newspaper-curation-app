@@ -1,0 +1,37 @@
+{{block "content" .}}
+
+<h2>Enter Issue Metadata</h2>
+
+<p class="issue-info">
+  <strong>Step 1 of 3</strong>:
+  entering metadata to upload a new issue for <em>{{.Title.MARCTitle}}</em>
+</p>
+
+<p class="form-instructions">
+  To start the creation of a new issue on ODNP, first enter the issue's date
+  and then click "Next".
+</p>
+
+<form class="form-horizontal" role="form" method="post" action="{{UploadURL}}">
+  <!-- this hack makes sure the default button moves us forward to the next step -->
+  <button type="Submit" name="nextstep" value="upload" style="display:none;">Next</button>
+  <input name="uid" type="hidden" value="{{.Form.UID}}" />
+  <div class="form-group">
+    <label class="col-sm-4 control-label" for="issue-date">Issue Date</label>
+    <div class="col-sm-8">
+      <input id="issue-date" name="date" type="date" class="form-control" required=""
+              {{if not .Form.Date.IsZero}}value="{{.Form.Date.Format "2006-01-02"}}"{{end}} />
+    </div>
+  </div>
+
+  <div class="row">
+    <div class="col-sm-3">
+      <button class="btn btn-danger" type="Submit" name="nextstep" value="metadata" disabled="">Go Back</button>
+    </div>
+    <div class="col-sm-3">
+      <button class="btn btn-primary" type="Submit" name="nextstep" value="upload">Next</button>
+    </div>
+  </div>
+</form>
+
+{{end}}
