@@ -56,7 +56,7 @@ ENV GOPATH /go
 ENV PATH $PATH:$GOROOT/bin:$GOPATH/bin
 
 # Golang dependencies
-RUN go get -u bitbucket.org/liamstask/goose/cmd/goose
+RUN go get github.com/pressly/goose/cmd/goose
 RUN go get -u golang.org/x/lint/golint
 
 WORKDIR /usr/local/src/nca

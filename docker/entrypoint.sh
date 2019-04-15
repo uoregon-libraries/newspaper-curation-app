@@ -11,7 +11,7 @@ wait_for_database
 
 echo "Running migrations"
 lockfile=/mnt/news/goose-running
-flock $lockfile -c "goose up"
+source settings && flock $lockfile -c "goose -dir ./db/migrations mysql '$DB_USER:$DB_PASSWORD@tcp(db:3306)/$DB_DATABASE' up"
 
 echo "Ensuring directories are present"
 source settings && mkdir -p $MASTER_PDF_UPLOAD_PATH
