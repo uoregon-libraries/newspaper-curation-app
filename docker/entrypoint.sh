@@ -9,6 +9,10 @@ fi
 echo "Waiting for database connectivity"
 wait_for_database
 
+echo "Running migrations"
+lockfile=/mnt/news/goose-running
+flock $lockfile -c "goose up"
+
 echo "Ensuring directories are present"
 source settings && mkdir -p $MASTER_PDF_UPLOAD_PATH
 source settings && mkdir -p $MASTER_SCAN_UPLOAD_PATH

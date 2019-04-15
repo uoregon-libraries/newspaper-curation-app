@@ -47,26 +47,19 @@ services:
       - NCA_IIIF_BASE_URL=$APP_URL/images/iiif
     command: /usr/bin/true
 
-  db-migrate:
-    extends: app
-    restart: on-failure
-    command: goose up
-    depends_on:
-      - db
-
   # Web runs the binary for nca's GUI
   web:
     extends: app
     expose:
       - 8080
     depends_on:
-      - db-migrate
+      - db
     command: ./bin/server -c ./settings
 
   workers:
     extends: app
     depends_on:
-      - db-migrate
+      - db
     command: ./bin/run-jobs -c ./settings watchall
 
   proxy:

@@ -8,12 +8,6 @@ services:
     volumes:
       - ./test/fakemount/workflow:/var/local/images:z
 
-  # DB Migrate needs all the DB stuff
-  db-migrate:
-    volumes:
-      - ./db/migrations:/usr/local/nca/db/migrations:Z
-      - ./db/dbconf-example.yml:/usr/local/nca/db/dbconf.yml:z
-
   # Workers needs all workflow directories
   workers:
     volumes:
