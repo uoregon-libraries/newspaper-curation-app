@@ -30,26 +30,21 @@ services:
     expose:
       - 12415
 
-  # App defines a static image with all binaries precompiled
-  app:
+  # Web runs the binary for nca's GUI
+  web:
     image: uolibraries/nca_app
     build:
       context: .
       dockerfile: ./docker/Dockerfile-app
-    volumes:
+    volumes: &ncavols
       - /mnt/news:/mnt/news:z
       - issue-cache:/var/local/news/nca/cache
-    environment:
+    environment: &ncaenv
       - NCA_WEBROOT=$APP_URL
       - NCA_DB_HOST=db
       # The redundancy here ensures we get a warning if $NCA_NEWS_WEBROOT isn't set
       - NCA_NEWS_WEBROOT=$NCA_NEWS_WEBROOT
       - NCA_IIIF_BASE_URL=$APP_URL/images/iiif
-    entrypoint: /usr/bin/true
-
-  # Web runs the binary for nca's GUI
-  web:
-    extends: app
     expose:
       - 8080
     depends_on:
@@ -57,7 +52,9 @@ services:
     command: ./bin/server -c ./settings
 
   workers:
-    extends: app
+    image: uolibraries/nca_app
+    volumes: *ncavols
+    environment: *ncaenv
     depends_on:
       - db
     command: ./bin/run-jobs -c ./settings watchall
