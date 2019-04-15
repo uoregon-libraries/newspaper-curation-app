@@ -45,7 +45,7 @@ services:
       # The redundancy here ensures we get a warning if $NCA_NEWS_WEBROOT isn't set
       - NCA_NEWS_WEBROOT=$NCA_NEWS_WEBROOT
       - NCA_IIIF_BASE_URL=$APP_URL/images/iiif
-    command: /usr/bin/true
+    entrypoint: /usr/bin/true
 
   # Web runs the binary for nca's GUI
   web:
