@@ -111,6 +111,21 @@ func (t *Title) CalculateEmbargoLiftDate(dt time.Time) (time.Time, error) {
 	return dt.AddDate(d.Years, d.Months, d.Weeks*7+d.Days), nil
 }
 
+// NormalizedEmbargoPeriod returns a less generic message to describe the
+// embargo duration
+func (t *Title) NormalizedEmbargoPeriod() string {
+	var d, err = duration.Parse(t.EmbargoPeriod)
+	if err != nil {
+		return "Invalid Embargo!"
+	}
+
+	if d.Zero() {
+		return "None"
+	}
+
+	return d.String()
+}
+
 // SchemaTitle converts a database Title to a schema.Title instance
 func (t *Title) SchemaTitle() *schema.Title {
 	// Check for self being nil so we can safely chain this function
