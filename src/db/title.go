@@ -6,17 +6,17 @@ import (
 
 // Title holds records from the titles table
 type Title struct {
-	ID           int `sql:",primary"`
-	Name         string
-	LCCN         string
-	Embargoed    bool
-	Rights       string
-	ValidLCCN    bool
-	SFTPDir      string
-	SFTPUser     string
-	SFTPPass     string
-	MARCTitle    string
-	MARCLocation string
+	ID            int `sql:",primary"`
+	Name          string
+	LCCN          string
+	EmbargoPeriod string
+	Rights        string
+	ValidLCCN     bool
+	SFTPDir       string
+	SFTPUser      string
+	SFTPPass      string
+	MARCTitle     string
+	MARCLocation  string
 }
 
 // FindTitle searches the database for a single title
