@@ -16,13 +16,13 @@ var (
 	lccnSimple    = "lccn1"
 	lccnEmbargoed = "lccn2"
 	badlccn       = "badlccn"
-	embargoedDays = 30
+	embargoPeriod = "30 days"
 )
 
 func overrideLookup() {
 	titles = db.TitleList{
 		&db.Title{LCCN: lccnSimple},
-		&db.Title{LCCN: lccnEmbargoed, Embargoed: true},
+		&db.Title{LCCN: lccnEmbargoed, EmbargoPeriod: embargoPeriod},
 	}
 }
 
@@ -33,7 +33,7 @@ func makeIssue(lccn, date string) *db.Issue {
 }
 
 func mustWrap(dbi *db.Issue, t *testing.T) *issue {
-	var i, err = wrapIssue(dbi, embargoedDays)
+	var i, err = wrapIssue(dbi)
 	if err != nil {
 		t.Errorf("Error wrapping issue: %s", err)
 	}
@@ -49,14 +49,14 @@ func TestWrapIssue(t *testing.T) {
 	var err error
 
 	dbi = makeIssue(badlccn, goodDate)
-	i, err = wrapIssue(dbi, embargoedDays)
+	i, err = wrapIssue(dbi)
 	if err == nil {
 		t.Errorf("Issue with bad lccn shouldn't have worked")
 	}
 	t.Logf("Got error (this is expected): %s", err)
 
 	dbi = makeIssue(lccnSimple, invalidDate)
-	i, err = wrapIssue(dbi, embargoedDays)
+	i, err = wrapIssue(dbi)
 	if err == nil {
 		t.Errorf("Issue with bad date shouldn't have worked")
 	}
@@ -102,7 +102,7 @@ func TestWrapIssue(t *testing.T) {
 	}
 
 	var gdt, _ = time.Parse("2006-01-02", goodDate)
-	var expectedStale = now.Sub(gdt).Hours()/24 - float64(embargoedDays)
+	var expectedStale = now.Sub(gdt).Hours()/24 - 30
 	dbi = makeIssue(lccnEmbargoed, goodDate)
 	dbi.MetadataApprovedAt = now.AddDate(-10, 0, 0)
 	i = mustWrap(dbi, t)

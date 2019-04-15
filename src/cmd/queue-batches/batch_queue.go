@@ -106,7 +106,7 @@ func (q *batchQueue) FindReadyIssues(embargoedDays int) {
 	}
 
 	for _, dbIssue := range issues {
-		var i, err = wrapIssue(dbIssue, embargoedDays)
+		var i, err = wrapIssue(dbIssue)
 		if err != nil {
 			logger.Errorf("Issue %d (%s) is invalid: %s", i.ID, i.Key(), err)
 			continue
