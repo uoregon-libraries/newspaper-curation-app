@@ -116,3 +116,15 @@ func TestZero(t *testing.T) {
 		t.Errorf("Duration of one year should have Zero() == false")
 	}
 }
+
+func TestInvalidFormats(t *testing.T) {
+	var _, err = Parse("one year")
+	if err == nil {
+		t.Errorf("Expected parsing error, but got nil")
+	}
+
+	_, err = Parse("1")
+	if err == nil {
+		t.Errorf("Expected parsing error, but got nil")
+	}
+}

@@ -66,6 +66,10 @@ func Parse(s string) (Duration, error) {
 	}
 
 	var groups = reg.FindAllStringSubmatch(s, -1)
+	if len(groups) == 0 {
+		return d, fmt.Errorf("invalid time period")
+	}
+
 	for _, group := range groups {
 		var numStr, unit = group[1], group[2]
 		var num, _ = strconv.Atoi(numStr)
