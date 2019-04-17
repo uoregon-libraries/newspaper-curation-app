@@ -59,7 +59,7 @@ func findForm(uid string) *uploadForm {
 func cleanForms() {
 	for {
 		purgeOldForms()
-		time.Sleep(time.Minute)
+		time.Sleep(time.Hour * 6)
 	}
 }
 
