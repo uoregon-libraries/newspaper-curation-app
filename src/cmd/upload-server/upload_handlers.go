@@ -65,16 +65,16 @@ func cleanForms() {
 
 func purgeOldForms() {
 	var expired = time.Now().Add(-48 * time.Hour)
-	logger.Infof("Purging old forms from before %s", expired)
+	logger.Debugf("Purging old forms from before %s", expired)
 	forml.Lock()
 	var keysToPurge []string
 	for key, f := range forms {
-		logger.Infof("Looking at form %s", f)
+		logger.Debugf("Looking at form %s", f)
 		if f.lastAccessed.Before(expired) {
-			logger.Infof("Will purge")
+			logger.Debugf("Will purge")
 			keysToPurge = append(keysToPurge, key)
 		} else {
-			logger.Infof("Will *not* purge")
+			logger.Debugf("Will *not* purge")
 		}
 	}
 
