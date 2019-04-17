@@ -6,6 +6,7 @@ import (
 	"strings"
 
 	"github.com/uoregon-libraries/newspaper-curation-app/src/db"
+	"github.com/uoregon-libraries/newspaper-curation-app/src/duration"
 	"github.com/uoregon-libraries/newspaper-curation-app/src/schema"
 )
 
@@ -46,4 +47,16 @@ func (t *Title) TitlesDiffer() bool {
 	var mt = noWordRE.ReplaceAllString(t.MARCTitle+t.MARCLocation, "")
 	var n = noWordRE.ReplaceAllString(t.Name, "")
 	return mt != n
+}
+
+// EmbargoSortValue is a hack that gets a close enough version of the embargo
+// in a sortable way.  I say "close enough" because it's possible, depending on
+// an issue's publication date, that this will be incorrect.  If something has
+// a one month embargo and is published in February, that's actually less time
+// than a 30-day embargo, but the 30-day embargo is less than a one-month
+// embargo that's based in December.
+func (t *Title) EmbargoSortValue() float64 {
+	// We ignore errors here, since this is strictly for sorting purposes
+	var d, _ = duration.Parse(t.EmbargoPeriod)
+	return float64(d.Days) + float64(d.Weeks*7) + (float64(d.Months)/12.0+float64(d.Years))*365.25
 }

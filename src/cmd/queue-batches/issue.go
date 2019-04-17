@@ -17,7 +17,7 @@ type issue struct {
 	embargoed bool
 }
 
-func wrapIssue(dbIssue *db.Issue, embargoedDays int) (*issue, error) {
+func wrapIssue(dbIssue *db.Issue) (*issue, error) {
 	var issueDate, err = time.Parse("2006-01-02", dbIssue.Date)
 	if err != nil {
 		return nil, fmt.Errorf("%q is an invalid date: %s", dbIssue.Date, err)
@@ -30,21 +30,23 @@ func wrapIssue(dbIssue *db.Issue, embargoedDays int) (*issue, error) {
 		return nil, fmt.Errorf("LCCN %q has no database title", i.LCCN)
 	}
 
-	// How many days has this issue been waiting to be batched?
-	i.daysStale = time.Since(i.MetadataApprovedAt).Hours() / 24.0
+	var embargoLiftDate time.Time
+	embargoLiftDate, err = i.title.CalculateEmbargoLiftDate(issueDate)
+	if err != nil {
+		return nil, fmt.Errorf("Unable to parse title's embargo duration: %s", err)
+	}
 
-	if i.title.Embargoed {
-		var embargoLiftDate = issueDate.Add(time.Hour * time.Duration(24*embargoedDays))
-		if embargoLiftDate.After(time.Now()) {
-			i.embargoed = true
-		}
+	if embargoLiftDate.After(time.Now()) {
+		i.embargoed = true
+	}
 
-		// Embargoed issues can be waiting for a while before their embargo is
-		// lifted, so we have to consider them stale based on the newer date:
-		// metadata approval or embargo lifting.
-		if i.MetadataApprovedAt.Before(embargoLiftDate) {
-			i.daysStale = time.Since(embargoLiftDate).Hours() / 24.0
-		}
+	// Embargoed issues can be waiting for a while before their embargo is
+	// lifted, so we have to consider them stale based on the newer date:
+	// metadata approval or embargo lifting.
+	if i.MetadataApprovedAt.Before(embargoLiftDate) {
+		i.daysStale = time.Since(embargoLiftDate).Hours() / 24.0
+	} else {
+		i.daysStale = time.Since(i.MetadataApprovedAt).Hours() / 24.0
 	}
 
 	return i, nil

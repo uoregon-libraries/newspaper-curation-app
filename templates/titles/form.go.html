@@ -43,13 +43,14 @@
   </div>
 
   <div class="form-group">
-    <label class="col-sm-4 control-label" for="embargoed">Embargoed?</label>
+    <label class="col-sm-4 control-label" for="embargo_period">Embargo Period</label>
     <div class="col-sm-8">
-      <select id="embargoed" name="embargoed" required="required">
-        <option value="">-- Select Embargo Status --</option>
-        <option value="0"{{if not .Data.Title.Embargoed}} selected="selected"{{end}}>No</option>
-        <option value="1"{{if .Data.Title.Embargoed}} selected="selected"{{end}}>Yes</option>
-      </select>
+      <input id="embargo_period" name="embargo_period" value="{{.Data.Title.EmbargoPeriod}}" class="form-control" />
+      <p class="help-block">
+        Enter the duration of embargo for this title.  Blank and "0" set it to
+        no embargo, though "0 days" is valid as well.  Other valid values
+        include: "1 year", "3 years", "6 months", etc.
+      </p>
     </div>
   </div>
 

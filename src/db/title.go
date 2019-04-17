@@ -1,22 +1,26 @@
 package db
 
 import (
+	"fmt"
+	"time"
+
+	"github.com/uoregon-libraries/newspaper-curation-app/src/duration"
 	"github.com/uoregon-libraries/newspaper-curation-app/src/schema"
 )
 
 // Title holds records from the titles table
 type Title struct {
-	ID           int `sql:",primary"`
-	Name         string
-	LCCN         string
-	Embargoed    bool
-	Rights       string
-	ValidLCCN    bool
-	SFTPDir      string
-	SFTPUser     string
-	SFTPPass     string
-	MARCTitle    string
-	MARCLocation string
+	ID            int `sql:",primary"`
+	Name          string
+	LCCN          string
+	EmbargoPeriod string
+	Rights        string
+	ValidLCCN     bool
+	SFTPDir       string
+	SFTPUser      string
+	SFTPPass      string
+	MARCTitle     string
+	MARCLocation  string
 }
 
 // FindTitle searches the database for a single title
@@ -88,6 +92,38 @@ func (t *Title) Save() error {
 	op.Dbg = Debug
 	op.Save("titles", t)
 	return op.Err()
+}
+
+// CalculateEmbargoLiftDate returns the date an embargo will lift relative to
+// the given time (usually this would be an issue's publication date)
+func (t *Title) CalculateEmbargoLiftDate(dt time.Time) (time.Time, error) {
+	var d, err = duration.Parse(t.EmbargoPeriod)
+	if err != nil {
+		return time.Time{}, fmt.Errorf("invalid duration: %s", err)
+	}
+
+	// If there's no embargo period, the issue's embargo lift date is essentially
+	// the beginning of time
+	if d.Zero() {
+		return time.Time{}, nil
+	}
+
+	return dt.AddDate(d.Years, d.Months, d.Weeks*7+d.Days), nil
+}
+
+// NormalizedEmbargoPeriod returns a less generic message to describe the
+// embargo duration
+func (t *Title) NormalizedEmbargoPeriod() string {
+	var d, err = duration.Parse(t.EmbargoPeriod)
+	if err != nil {
+		return "Invalid Embargo!"
+	}
+
+	if d.Zero() {
+		return "None"
+	}
+
+	return d.String()
 }
 
 // SchemaTitle converts a database Title to a schema.Title instance
