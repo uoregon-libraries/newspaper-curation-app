@@ -134,6 +134,35 @@ func (d Duration) String() string {
 	return strings.Join(out, " ")
 }
 
+// RFC3339 returns an unambiguous, machine-friendly string containing one or
+// more groups of number + single-letter unit, uppercased
+func (d Duration) RFC3339() string {
+	if d.Zero() {
+		return "P0D"
+	}
+
+	if d.Weeks > 0 && d.Years == 0 && d.Months == 0 && d.Days == 0 {
+		return "P" + strconv.Itoa(d.Weeks) + "W"
+	}
+
+	var s = "P"
+	var inf = []struct {
+		num  int
+		unit string
+	}{
+		{d.Years, "Y"},
+		{d.Months, "M"},
+		{d.Days + d.Weeks*7, "D"},
+	}
+	for _, i := range inf {
+		if i.num > 0 {
+			s += strconv.Itoa(i.num) + i.unit
+		}
+	}
+
+	return s
+}
+
 // Zero returns true if the duration represents precisely zero
 func (d Duration) Zero() bool {
 	return d.Years == 0 && d.Months == 0 && d.Weeks == 0 && d.Days == 0

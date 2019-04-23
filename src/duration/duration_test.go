@@ -128,3 +128,22 @@ func TestInvalidFormats(t *testing.T) {
 		t.Errorf("Expected parsing error, but got nil")
 	}
 }
+
+func TestRFC3339(t *testing.T) {
+	var tests = []struct {
+		d        Duration
+		expected string
+	}{
+		{Duration{}, "P0D"},
+		{Duration{Years: 1, Weeks: 5}, "P1Y35D"},
+		{Duration{Months: 1}, "P1M"},
+		{Duration{Years: 4, Months: 5, Days: 8, Weeks: 3}, "P4Y5M29D"},
+		{Duration{Weeks: 3}, "P3W"},
+	}
+
+	for _, test := range tests {
+		if test.d.RFC3339() != test.expected {
+			t.Errorf("Expected %#v to be normalized to %q, but got %q", test.d, test.expected, test.d.RFC3339())
+		}
+	}
+}
