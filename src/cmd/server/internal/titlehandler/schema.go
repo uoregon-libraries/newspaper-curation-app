@@ -60,3 +60,11 @@ func (t *Title) EmbargoSortValue() float64 {
 	var d, _ = duration.Parse(t.EmbargoPeriod)
 	return float64(d.Days) + float64(d.Weeks*7) + (float64(d.Months)/12.0+float64(d.Years))*365.25
 }
+
+// EmbargoRFC3339 returns the more machine-friendly version of the embargo string
+func (t *Title) EmbargoRFC3339() string {
+	// We ignore errors here, since a bad string would be the same as no embargo
+	// for the purposes of any machine-readable value
+	var d, _ = duration.Parse(t.EmbargoPeriod)
+	return d.RFC3339()
+}
