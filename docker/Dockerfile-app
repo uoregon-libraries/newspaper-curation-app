@@ -47,7 +47,7 @@ RUN dnf install -y git
 RUN dnf install -y mariadb
 
 # Install Go
-RUN curl https://dl.google.com/go/go1.10.linux-amd64.tar.gz >/tmp/go.tgz
+RUN curl https://dl.google.com/go/go1.12.linux-amd64.tar.gz >/tmp/go.tgz
 RUN cd /opt && tar -xzf /tmp/go.tgz
 
 # Go ENV setup
@@ -56,9 +56,8 @@ ENV GOPATH /go
 ENV PATH $PATH:$GOROOT/bin:$GOPATH/bin
 
 # Golang dependencies
-RUN go get -u bitbucket.org/liamstask/goose/cmd/goose
-RUN go get -u github.com/golang/lint/golint
-RUN go get -u github.com/constabulary/gb/...
+RUN go get github.com/pressly/goose/cmd/goose
+RUN go get -u golang.org/x/lint/golint
 
 WORKDIR /usr/local/src/nca
 
@@ -68,11 +67,11 @@ WORKDIR /usr/local/src/nca
 # TODO: When we have a public repo, just pull that instead of this pain
 RUN mkdir -p /usr/local/nca
 COPY ./Makefile /usr/local/src/nca/Makefile
+COPY ./makeall.sh /usr/local/src/nca/makeall.sh
 COPY ./validate.sh /usr/local/src/nca/validate.sh
 COPY ./src /usr/local/src/nca/src
-COPY ./depfile /usr/local/src/nca/depfile
-COPY ./vendor/manifest /usr/local/src/nca/vendor/manifest
-COPY ./gopath /usr/local/src/nca/gopath
+COPY ./go.mod /usr/local/src/nca/go.mod
+COPY ./go.sum /usr/local/src/nca/go.sum
 RUN make
 RUN cp -r ./bin /usr/local/nca/bin
 

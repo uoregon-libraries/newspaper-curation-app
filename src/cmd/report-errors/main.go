@@ -3,12 +3,12 @@
 package main
 
 import (
-	"apperr"
-	"cli"
 	"fmt"
-	"issuewatcher"
 
 	"github.com/uoregon-libraries/gopkg/logger"
+	"github.com/uoregon-libraries/newspaper-curation-app/src/apperr"
+	"github.com/uoregon-libraries/newspaper-curation-app/src/cli"
+	"github.com/uoregon-libraries/newspaper-curation-app/src/issuewatcher"
 )
 
 func main() {

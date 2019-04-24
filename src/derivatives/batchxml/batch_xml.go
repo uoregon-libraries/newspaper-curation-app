@@ -2,7 +2,6 @@ package batchxml
 
 import (
 	"bytes"
-	"db"
 	"encoding/xml"
 	"fmt"
 	"html/template"
@@ -10,6 +9,7 @@ import (
 	"os"
 
 	"github.com/uoregon-libraries/gopkg/fileutil"
+	"github.com/uoregon-libraries/newspaper-curation-app/src/db"
 )
 
 // Transformer takes a db.Batch and a list of db.Issues, and generates the XML

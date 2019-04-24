@@ -6,17 +6,17 @@
 package main
 
 import (
-	"cli"
-	"config"
-	"db"
 	"fmt"
 	"io/ioutil"
-	"issuewatcher"
-	"schema"
 	"strings"
 
 	"github.com/uoregon-libraries/gopkg/fileutil"
 	"github.com/uoregon-libraries/gopkg/logger"
+	"github.com/uoregon-libraries/newspaper-curation-app/src/cli"
+	"github.com/uoregon-libraries/newspaper-curation-app/src/config"
+	"github.com/uoregon-libraries/newspaper-curation-app/src/db"
+	"github.com/uoregon-libraries/newspaper-curation-app/src/issuewatcher"
+	"github.com/uoregon-libraries/newspaper-curation-app/src/schema"
 )
 
 var issueSearchKeys []*schema.Key

@@ -4,7 +4,6 @@ package jp2
 
 import (
 	"fmt"
-
 	"os"
 	"path/filepath"
 

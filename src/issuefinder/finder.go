@@ -5,9 +5,9 @@
 package issuefinder
 
 import (
-	"apperr"
-	"db"
-	"schema"
+	"github.com/uoregon-libraries/newspaper-curation-app/src/apperr"
+	"github.com/uoregon-libraries/newspaper-curation-app/src/db"
+	"github.com/uoregon-libraries/newspaper-curation-app/src/schema"
 )
 
 // Namespace is a special type of identifier for searchers to have well-defined

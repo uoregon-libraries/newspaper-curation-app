@@ -4,17 +4,15 @@
 package main
 
 import (
-	"config"
-	"db"
-
 	"fmt"
-	"issuewatcher"
-
 	"os"
 
 	flags "github.com/jessevdk/go-flags"
 	"github.com/uoregon-libraries/gopkg/logger"
 	"github.com/uoregon-libraries/gopkg/wordutils"
+	"github.com/uoregon-libraries/newspaper-curation-app/src/config"
+	"github.com/uoregon-libraries/newspaper-curation-app/src/db"
+	"github.com/uoregon-libraries/newspaper-curation-app/src/issuewatcher"
 )
 
 // Command-line options

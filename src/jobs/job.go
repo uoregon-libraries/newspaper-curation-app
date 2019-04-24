@@ -1,14 +1,14 @@
 package jobs
 
 import (
-	"config"
-	"db"
 	"fmt"
 	"os"
 	"path/filepath"
 	"time"
 
 	"github.com/uoregon-libraries/gopkg/logger"
+	"github.com/uoregon-libraries/newspaper-curation-app/src/config"
+	"github.com/uoregon-libraries/newspaper-curation-app/src/db"
 )
 
 // A Processor is a general interface for all database-driven jobs that process something
@@ -31,13 +31,13 @@ type Processor interface {
 // Job wraps the DB job data and provides business logic for things like
 // logging to the database
 type Job struct {
-	*db.Job
+	db     *db.Job
 	Logger *logger.Logger
 }
 
 // NewJob wraps the given db.Job and sets up a logger
 func NewJob(dbj *db.Job) *Job {
-	var j = &Job{Job: dbj}
+	var j = &Job{db: dbj}
 	j.Logger = &logger.Logger{Loggable: &jobLogger{Job: j, AppName: filepath.Base(os.Args[0])}}
 	return j
 }
@@ -55,9 +55,9 @@ func Find(id int) *Job {
 	return NewJob(dbJob)
 }
 
-// DBJob returns the database job
+// DBJob implements job.Processor, returning the low-level database structure
 func (j *Job) DBJob() *db.Job {
-	return j.Job
+	return j.db
 }
 
 // RunWhileTrue simplifies the common operation processors deal with when
@@ -79,20 +79,20 @@ func (j *Job) Requeue() error {
 	op.BeginTransaction()
 
 	var clone = &db.Job{
-		Type:       j.Type,
-		ObjectID:   j.ObjectID,
-		ObjectType: j.ObjectType,
-		Location:   j.Location,
+		Type:       j.db.Type,
+		ObjectID:   j.db.ObjectID,
+		ObjectType: j.db.ObjectType,
+		Location:   j.db.Location,
 		Status:     string(JobStatusPending),
-		RunAt:      j.RunAt,
-		ExtraData:  j.ExtraData,
-		QueueJobID: j.QueueJobID,
+		RunAt:      j.db.RunAt,
+		ExtraData:  j.db.ExtraData,
+		QueueJobID: j.db.QueueJobID,
 	}
 
 	clone.SaveOp(op)
 
-	j.Status = string(JobStatusFailedDone)
-	j.SaveOp(op)
+	j.db.Status = string(JobStatusFailedDone)
+	j.db.SaveOp(op)
 
 	op.EndTransaction()
 	return op.Err()
@@ -110,7 +110,7 @@ type jobLogger struct {
 func (l *jobLogger) Log(level logger.LogLevel, message string) {
 	var timeString = time.Now().Format(logger.TimeFormat)
 	var msg = fmt.Sprintf("%s - %s - %s - [job %s:%d] %s\n",
-		timeString, l.AppName, level.String(), l.Job.Type, l.Job.ID, message)
+		timeString, l.AppName, level.String(), l.db.Type, l.db.ID, message)
 	var _, err = os.Stderr.WriteString(msg)
 	if err != nil {
 		_, err = fmt.Printf("ERROR: unable to write log message %q to STDERR: %s", msg, err)
@@ -120,7 +120,7 @@ func (l *jobLogger) Log(level logger.LogLevel, message string) {
 		}
 	}
 
-	err = l.Job.WriteLog(level.String(), message)
+	err = l.db.WriteLog(level.String(), message)
 	if err != nil {
 		logger.Criticalf("Unable to write log message: %s", err)
 		return

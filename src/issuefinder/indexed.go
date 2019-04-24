@@ -1,8 +1,8 @@
 package issuefinder
 
 import (
-	"apperr"
-	"db"
+	"github.com/uoregon-libraries/newspaper-curation-app/src/apperr"
+	"github.com/uoregon-libraries/newspaper-curation-app/src/db"
 )
 
 // FindInProcessIssues aggregates all issues which have been indexed in the database

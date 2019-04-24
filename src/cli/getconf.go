@@ -2,15 +2,15 @@
 package cli
 
 import (
-	"config"
 	"fmt"
 	"os"
 	"reflect"
-	"version"
 
 	flags "github.com/jessevdk/go-flags"
 	"github.com/uoregon-libraries/gopkg/logger"
 	"github.com/uoregon-libraries/gopkg/wordutils"
+	"github.com/uoregon-libraries/newspaper-curation-app/src/config"
+	"github.com/uoregon-libraries/newspaper-curation-app/src/version"
 )
 
 // CLI centralizes the CLI parser as well as functionality around it

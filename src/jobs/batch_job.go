@@ -1,9 +1,8 @@
 package jobs
 
 import (
-	"db"
-
 	"github.com/uoregon-libraries/gopkg/logger"
+	"github.com/uoregon-libraries/newspaper-curation-app/src/db"
 )
 
 // BatchJob wraps the Job type to add things needed in all jobs tied to
@@ -40,8 +39,8 @@ func nilWorkflowCB() {
 // "ExtraData" is set.  updateWorkflowCB is then called, and the batch data
 // saved back to the database.
 func (j *BatchJob) UpdateWorkflow() {
-	if j.ExtraData != "" {
-		j.DBBatch.Status = j.ExtraData
+	if j.db.ExtraData != "" {
+		j.DBBatch.Status = j.db.ExtraData
 	}
 
 	j.updateWorkflowCB()

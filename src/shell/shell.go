@@ -3,7 +3,6 @@ package shell
 
 import (
 	"bytes"
-
 	"os/exec"
 	"strings"
 	"syscall"

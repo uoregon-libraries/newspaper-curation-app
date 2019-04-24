@@ -43,12 +43,22 @@
   </div>
 
   <div class="form-group">
-    <label class="col-sm-4 control-label" for="embargoed">Embargoed?</label>
+    <label class="col-sm-4 control-label" for="embargo_period">Embargo Period</label>
     <div class="col-sm-8">
-      <select id="embargoed" name="embargoed" required="required">
-        <option value="">-- Select Embargo Status --</option>
-        <option value="0"{{if not .Data.Title.Embargoed}} selected="selected"{{end}}>No</option>
-        <option value="1"{{if .Data.Title.Embargoed}} selected="selected"{{end}}>Yes</option>
+      <select id="embargo_period" name="embargo_period">
+        <option value="">Not embargoed</option>
+        <option value="3M"
+          {{if eq .Data.Title.EmbargoRFC3339 "3M"}} selected="selected"{{end}}
+        >3 months</option>
+        <option value="1Y"
+          {{if eq .Data.Title.EmbargoRFC3339 "1Y"}} selected="selected"{{end}}
+        >1 year</option>
+        <option value="2Y"
+          {{if eq .Data.Title.EmbargoRFC3339 "2Y"}} selected="selected"{{end}}
+        >2 years</option>
+        <option value="3Y"
+          {{if eq .Data.Title.EmbargoRFC3339 "3Y"}} selected="selected"{{end}}
+        >3 years</option>
       </select>
     </div>
   </div>

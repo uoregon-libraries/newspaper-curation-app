@@ -1,15 +1,15 @@
 package workflowhandler
 
 import (
-	"cmd/server/internal/responder"
-	"db"
-	"db/user"
 	"net/http"
-	"schema"
 	"strconv"
 
 	"github.com/gorilla/mux"
 	"github.com/uoregon-libraries/gopkg/logger"
+	"github.com/uoregon-libraries/newspaper-curation-app/src/cmd/server/internal/responder"
+	"github.com/uoregon-libraries/newspaper-curation-app/src/db"
+	"github.com/uoregon-libraries/newspaper-curation-app/src/db/user"
+	"github.com/uoregon-libraries/newspaper-curation-app/src/schema"
 )
 
 // Handler is our version of http.Handler for sending extra context to

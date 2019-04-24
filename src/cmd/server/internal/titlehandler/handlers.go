@@ -1,18 +1,19 @@
 package titlehandler
 
 import (
-	"cmd/server/internal/responder"
-	"config"
-	"db"
-	"db/user"
 	"fmt"
 	"net/http"
 	"path"
 	"strconv"
-	"web/tmpl"
 
 	"github.com/gorilla/mux"
 	"github.com/uoregon-libraries/gopkg/logger"
+	"github.com/uoregon-libraries/newspaper-curation-app/src/cmd/server/internal/responder"
+	"github.com/uoregon-libraries/newspaper-curation-app/src/config"
+	"github.com/uoregon-libraries/newspaper-curation-app/src/db"
+	"github.com/uoregon-libraries/newspaper-curation-app/src/db/user"
+	"github.com/uoregon-libraries/newspaper-curation-app/src/duration"
+	"github.com/uoregon-libraries/newspaper-curation-app/src/web/tmpl"
 )
 
 var (
@@ -141,13 +142,13 @@ func setTitleData(r *responder.Responder, t *Title) (vErrors []string, handled b
 	t.Name = form.Get("name")
 	t.Rights = form.Get("rights")
 
-	switch form.Get("embargoed") {
-	case "0":
-		t.Embargoed = false
-	case "1":
-		t.Embargoed = true
-	default:
-		vErrors = append(vErrors, "You must declare whether this title embargoes its issues")
+	t.EmbargoPeriod = form.Get("embargo_period")
+	var embargoPeriod duration.Duration
+	embargoPeriod, err = duration.Parse(t.EmbargoPeriod)
+	if err != nil {
+		vErrors = append(vErrors, fmt.Sprintf("Embargo period is invalid: %s", err))
+	} else {
+		t.EmbargoPeriod = embargoPeriod.String()
 	}
 
 	if r.Vars.User.PermittedTo(user.ModifyTitleSFTP) {

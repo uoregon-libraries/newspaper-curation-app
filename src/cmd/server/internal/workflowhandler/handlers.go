@@ -1,21 +1,21 @@
 package workflowhandler
 
 import (
-	"cmd/server/internal/responder"
-	"config"
-	"db"
-	"db/user"
 	"fmt"
 	"html/template"
-	"issuewatcher"
-	"jobs"
 	"net/http"
 	"path"
-	"schema"
-	"web/tmpl"
 
 	"github.com/gorilla/mux"
 	"github.com/uoregon-libraries/gopkg/logger"
+	"github.com/uoregon-libraries/newspaper-curation-app/src/cmd/server/internal/responder"
+	"github.com/uoregon-libraries/newspaper-curation-app/src/config"
+	"github.com/uoregon-libraries/newspaper-curation-app/src/db"
+	"github.com/uoregon-libraries/newspaper-curation-app/src/db/user"
+	"github.com/uoregon-libraries/newspaper-curation-app/src/issuewatcher"
+	"github.com/uoregon-libraries/newspaper-curation-app/src/jobs"
+	"github.com/uoregon-libraries/newspaper-curation-app/src/schema"
+	"github.com/uoregon-libraries/newspaper-curation-app/src/web/tmpl"
 )
 
 var (
@@ -239,14 +239,14 @@ func enterErrorHandler(resp *responder.Responder, i *Issue) {
 // saveErrorHandler records the error in the database, unclaims the issue, and
 // flags it as needing admin attention
 func saveErrorHandler(resp *responder.Responder, i *Issue) {
-	i.Error = resp.Request.FormValue("error")
-	if i.Error == "" {
+	var emsg = resp.Request.FormValue("error")
+	if emsg == "" {
 		http.SetCookie(resp.Writer, &http.Cookie{Name: "Info", Value: "Error report empty; no action taken", Path: "/"})
 		http.Redirect(resp.Writer, resp.Request, i.Path("metadata"), http.StatusFound)
 		return
 	}
 
-	i.Unclaim()
+	i.ReportError(emsg)
 	var err = i.Save()
 	if err != nil {
 		logger.Errorf("Unable to save issue id %d's error (POST: %#v): %s", i.ID, resp.Request.Form, err)

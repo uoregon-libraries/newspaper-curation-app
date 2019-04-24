@@ -1,15 +1,14 @@
 package workflowhandler
 
 import (
-	"cmd/server/internal/responder"
 	"fmt"
-	"schema"
-
 	"net/http"
 	"strconv"
 	"strings"
 
 	"github.com/uoregon-libraries/gopkg/logger"
+	"github.com/uoregon-libraries/newspaper-curation-app/src/cmd/server/internal/responder"
+	"github.com/uoregon-libraries/newspaper-curation-app/src/schema"
 )
 
 // storeIssueMetadata centralizes the logic for storing a metadata form's data

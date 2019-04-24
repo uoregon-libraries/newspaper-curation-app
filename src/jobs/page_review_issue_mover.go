@@ -1,7 +1,7 @@
 package jobs
 
 import (
-	"config"
+	"github.com/uoregon-libraries/newspaper-curation-app/src/config"
 )
 
 // PageReviewIssueMover is a job that gets queued up when an issue needs to get
