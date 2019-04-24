@@ -99,7 +99,7 @@ func newBatchQueue(minPages, maxPages int) *batchQueue {
 // TODO: Ensure files haven't changed (add sha checksums when issues first move
 // to the metadata entry phase; store file-level info in the database so we
 // have an easy checksum that's 100% separate from the filesystem)
-func (q *batchQueue) FindReadyIssues(embargoedDays int) {
+func (q *batchQueue) FindReadyIssues() {
 	var issues, err = db.FindIssuesReadyForBatching()
 	if err != nil {
 		logger.Fatalf("Error trying to find issues: %s", err)

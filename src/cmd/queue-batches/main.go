@@ -41,7 +41,7 @@ func main() {
 	logger.Infof("Scanning ready issues for batchability")
 
 	var q = newBatchQueue(conf.MinBatchSize, conf.MaxBatchSize)
-	q.FindReadyIssues(conf.EmbargoDays)
+	q.FindReadyIssues()
 	for {
 		var batch, ok = q.NextBatch()
 		if !ok {

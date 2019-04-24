@@ -136,10 +136,6 @@ MAX_BATCH_SIZE=10000
 # long in order to avoid issues being "stranded"
 MIN_BATCH_SIZE=5000
 
-# How many days does an issue have to wait after its publish date if it's
-# listed as an embargoed publication?
-EMBARGO_DAYS=92
-
 ###
 # Derivative settings
 ###
