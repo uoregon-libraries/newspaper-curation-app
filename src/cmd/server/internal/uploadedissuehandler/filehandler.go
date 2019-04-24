@@ -1,7 +1,6 @@
 package uploadedissuehandler
 
 import (
-	"cmd/server/internal/responder"
 	"fmt"
 	"html/template"
 	"io"
@@ -13,6 +12,7 @@ import (
 
 	"github.com/uoregon-libraries/gopkg/fileutil"
 	"github.com/uoregon-libraries/gopkg/logger"
+	"github.com/uoregon-libraries/newspaper-curation-app/src/cmd/server/internal/responder"
 )
 
 // FileHandler attempts to find and display a file to the browser

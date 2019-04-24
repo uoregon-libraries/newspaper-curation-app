@@ -1,9 +1,10 @@
 package jobs
 
 import (
-	"config"
-	"derivatives/batchxml"
 	"path/filepath"
+
+	"github.com/uoregon-libraries/newspaper-curation-app/src/config"
+	"github.com/uoregon-libraries/newspaper-curation-app/src/derivatives/batchxml"
 )
 
 // MakeBatchXML wraps a BatchJob and implements Processor to create the
@@ -19,7 +20,7 @@ func (j *MakeBatchXML) Process(c *config.Config) bool {
 
 	// Set up variables
 	var templatePath = c.BatchXMLTemplatePath
-	var outputXMLPath = filepath.Join(j.Location, "data", "batch.xml")
+	var outputXMLPath = filepath.Join(j.db.Location, "data", "batch.xml")
 
 	var issues, err = j.DBBatch.Issues()
 	if err != nil {

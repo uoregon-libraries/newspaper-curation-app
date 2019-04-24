@@ -2,7 +2,7 @@
 set -eu
 
 curref=$(git b | grep "^\*" | sed "s|^\* ||")
-tag=$(git tag | grep "^v[0-9.]\+$" | sort -V | tail -1)
+tag=$(git describe --abbrev=0)
 dname=uolibraries/nca_app
 
 git co $tag

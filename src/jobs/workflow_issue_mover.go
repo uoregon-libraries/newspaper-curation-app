@@ -1,10 +1,10 @@
 package jobs
 
 import (
-	"config"
 	"os"
 
 	"github.com/uoregon-libraries/gopkg/fileutil"
+	"github.com/uoregon-libraries/newspaper-curation-app/src/config"
 )
 
 // WorkflowIssueMover is a job that gets queued up when an issue needs to get

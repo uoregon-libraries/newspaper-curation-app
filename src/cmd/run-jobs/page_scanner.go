@@ -1,15 +1,15 @@
 package main
 
 import (
-	"config"
-	"db"
-	"jobs"
 	"os"
 	"path/filepath"
-	"schema"
 	"time"
 
 	"github.com/uoregon-libraries/gopkg/logger"
+	"github.com/uoregon-libraries/newspaper-curation-app/src/config"
+	"github.com/uoregon-libraries/newspaper-curation-app/src/db"
+	"github.com/uoregon-libraries/newspaper-curation-app/src/jobs"
+	"github.com/uoregon-libraries/newspaper-curation-app/src/schema"
 )
 
 func scanPageReviewIssues(c *config.Config) {

@@ -4,7 +4,6 @@
 package schema
 
 import (
-	"apperr"
 	"fmt"
 	"math"
 	"os"
@@ -16,6 +15,7 @@ import (
 
 	"github.com/uoregon-libraries/gopkg/fileutil"
 	"github.com/uoregon-libraries/gopkg/logger"
+	"github.com/uoregon-libraries/newspaper-curation-app/src/apperr"
 )
 
 // WorkflowStep describes the location within the workflow any issue can exist
@@ -34,6 +34,7 @@ const (
 	WSAwaitingPageReview                  = "AwaitingPageReview"
 	WSReadyForMetadataEntry               = "ReadyForMetadataEntry"
 	WSAwaitingMetadataReview              = "AwaitingMetadataReview"
+	WSUnfixableMetadataError              = "UnfixableMetadataError"
 	WSReadyForMETSXML                     = "ReadyForMETSXML"
 	WSReadyForBatching                    = "ReadyForBatching"
 	WSInProduction                        = "InProduction"
@@ -299,6 +300,11 @@ func (i *Issue) IsLive() bool {
 // WorkflowIdentification returns a human-readable explanation of where an
 // issue lives currently is in the workflow - currently used for adding to
 // "likely duplicate of ..."
+//
+// Several of the values below won't make sense in dupe reporting, but are in
+// this list becuause (a) if some logic changes and a dupe report does happen,
+// they need something more than "an unknown issue" describing them, and (b)
+// this function may eventually be useful beyond explanation of duped issues.
 func (i *Issue) WorkflowIdentification() string {
 	switch i.WorkflowStep {
 	case WSSFTP:
@@ -306,6 +312,9 @@ func (i *Issue) WorkflowIdentification() string {
 
 	case WSScan:
 		return "a scanned issue waiting for processing"
+
+	case WSUnfixableMetadataError:
+		return "an issue with errors, awaiting remediation"
 
 	case WSAwaitingProcessing:
 		return "a pending issue"
@@ -382,6 +391,11 @@ func (i *Issue) LastModified() time.Time {
 	return modified
 }
 
+// METSFile returns the canonical path to an issue's METS file
+func (i *Issue) METSFile() string {
+	return filepath.Join(i.Location, i.DateEdition()+".xml")
+}
+
 // CheckDupes centralizes the logic for seeing if an issue has a duplicate in a
 // given lookup, adding a duplication error if there is a dupe and that dupe is
 // considered to be more "canonical" than this issue.  e.g., if there's an
@@ -403,8 +417,12 @@ func (i *Issue) CheckDupes(lookup *Lookup) {
 }
 
 // before tells us if wsa is logically before wsb in terms of issues flowing
-// through the system.  A step is before another if it represents data that's
-// less certain; e.g., an uploaded issue is completely unknown and is therefore
+// through the system.  This helps determine what to report if there's
+// duplicated data: anything that's earlier in the process is the dupe, as the
+// later something is, the more metadata scrutiny has gone into it.
+//
+// In other words, A step is before another if it represents data that's less
+// certain; e.g., an uploaded issue is completely unknown and is therefore
 // before all other steps, but a live issue is considered done and wouldn't be
 // before anything else.
 func (wsa WorkflowStep) before(wsb WorkflowStep) bool {
@@ -412,9 +430,13 @@ func (wsa WorkflowStep) before(wsb WorkflowStep) bool {
 		// Nil is before literally everything except another nil
 		WSNil: 0,
 
+		// Issues that are broken in some way have metadata we can't rely on, so we
+		// declare them as being "before" everything else
+		WSUnfixableMetadataError: 10,
+
 		// The uploads come before anything that isn't another upload, or nil
-		WSSFTP: 1,
-		WSScan: 1,
+		WSSFTP: 20,
+		WSScan: 20,
 
 		// Awaiting processing is a meaningless step that just says something
 		// automated needs to happen.  Because of this we can't say where it should
@@ -429,16 +451,16 @@ func (wsa WorkflowStep) before(wsb WorkflowStep) bool {
 		// previous upload.  But this could cause false dupe flags if an old upload
 		// had the wrong folder name, so I could see a case for changing this to the
 		// same value as uploads.
-		WSAwaitingPageReview: 2,
+		WSAwaitingPageReview: 30,
 
-		WSReadyForMetadataEntry:  3,
-		WSAwaitingMetadataReview: 4,
+		WSReadyForMetadataEntry:  40,
+		WSAwaitingMetadataReview: 50,
 
 		// When an issue is waiting for METS XML, its metadata is in exactly the
 		// same state as when it's ready for batching, and no dupe checking occurs
 		// here anyway, so these are considered equal
-		WSReadyForMETSXML:  5,
-		WSReadyForBatching: 5,
+		WSReadyForMETSXML:  60,
+		WSReadyForBatching: 60,
 
 		// Let's just make sure in-production always comes after everything else,
 		// even the unknown awaiting-processing issues

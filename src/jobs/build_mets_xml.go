@@ -1,11 +1,11 @@
 package jobs
 
 import (
-	"config"
-	"db"
-	"derivatives/mets"
-	"path/filepath"
 	"time"
+
+	"github.com/uoregon-libraries/newspaper-curation-app/src/config"
+	"github.com/uoregon-libraries/newspaper-curation-app/src/db"
+	"github.com/uoregon-libraries/newspaper-curation-app/src/derivatives/mets"
 )
 
 // BuildMETS creates the final file needed for an issue to be able to be
@@ -25,7 +25,8 @@ func (job *BuildMETS) Process(c *config.Config) bool {
 
 	// Set up variables
 	job.templatePath = c.METSXMLTemplatePath
-	job.outputXMLPath = filepath.Join(job.Issue.Location, job.Issue.DateEdition()+".xml")
+	job.outputXMLPath = job.Issue.METSFile()
+
 	var err error
 	job.Title, err = db.FindTitle("lccn = ?", job.DBIssue.LCCN)
 	if err != nil {

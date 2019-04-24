@@ -1,18 +1,17 @@
 package uploadedissuehandler
 
 import (
-	"apperr"
-	"cmd/server/internal/responder"
-	"config"
 	"encoding/base64"
 	"fmt"
-	"issuewatcher"
-
 	"net/http"
 	"path"
-	"web/tmpl"
 
 	"github.com/gorilla/mux"
+	"github.com/uoregon-libraries/newspaper-curation-app/src/apperr"
+	"github.com/uoregon-libraries/newspaper-curation-app/src/cmd/server/internal/responder"
+	"github.com/uoregon-libraries/newspaper-curation-app/src/config"
+	"github.com/uoregon-libraries/newspaper-curation-app/src/issuewatcher"
+	"github.com/uoregon-libraries/newspaper-curation-app/src/web/tmpl"
 )
 
 var (

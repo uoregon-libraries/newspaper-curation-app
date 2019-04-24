@@ -1,11 +1,11 @@
 package jobs
 
 import (
-	"db"
 	"fmt"
-	"schema"
 
 	"github.com/uoregon-libraries/gopkg/logger"
+	"github.com/uoregon-libraries/newspaper-curation-app/src/db"
+	"github.com/uoregon-libraries/newspaper-curation-app/src/schema"
 )
 
 // IssueJob wraps the Job type to add things needed in all jobs tied to
@@ -61,7 +61,7 @@ func (ij *IssueJob) WIPDir() string {
 // then the issue job is saved.  At this point, however, the job is complete,
 // so all we can do is loudly log failures.
 func (ij *IssueJob) UpdateWorkflow() {
-	var ws = schema.WorkflowStep(ij.ExtraData)
+	var ws = schema.WorkflowStep(ij.db.ExtraData)
 	if ws != schema.WSNil {
 		ij.DBIssue.WorkflowStep = ws
 	}

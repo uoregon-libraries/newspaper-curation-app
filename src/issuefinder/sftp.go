@@ -2,11 +2,11 @@ package issuefinder
 
 import (
 	"path/filepath"
-	"schema"
 	"strings"
 	"time"
 
 	"github.com/uoregon-libraries/gopkg/fileutil"
+	"github.com/uoregon-libraries/newspaper-curation-app/src/schema"
 )
 
 // FindSFTPIssues aggregates all the uploaded born-digital PDFs

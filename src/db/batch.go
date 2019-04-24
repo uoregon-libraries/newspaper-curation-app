@@ -44,6 +44,20 @@ func FindBatch(id int) (*Batch, error) {
 	return b, op.Err()
 }
 
+// InProcessBatches returns the full list of in-process batches (not live, not pending)
+func InProcessBatches() ([]*Batch, error) {
+	var op = DB.Operation()
+	op.Dbg = Debug
+
+	var list []*Batch
+	op.Select("batches", &Batch{}).Where(
+		"status IN (?, ?, ?, ?)",
+		BatchStatusQCReady, BatchStatusOnStaging, BatchStatusFailedQC, BatchStatusPassedQC,
+	).AllObjects(&list)
+
+	return list, op.Err()
+}
+
 // CreateBatch creates a batch in the database, using its ID to generate a
 // unique batch name, and associating the given list of issues.  This is
 // inefficient, but it gets the job done.

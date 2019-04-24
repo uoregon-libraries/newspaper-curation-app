@@ -3,13 +3,12 @@
 package main
 
 import (
-	"config"
-	"derivatives/jp2"
-
 	"fmt"
 	"os"
 
 	"github.com/uoregon-libraries/gopkg/fileutil"
+	"github.com/uoregon-libraries/newspaper-curation-app/src/config"
+	"github.com/uoregon-libraries/newspaper-curation-app/src/derivatives/jp2"
 )
 
 func usageFail(format string, args ...interface{}) {

@@ -1,12 +1,13 @@
 package issuefinder
 
 import (
-	"apperr"
 	"bytes"
 	"encoding/gob"
 	"fmt"
 	"io/ioutil"
-	"schema"
+
+	"github.com/uoregon-libraries/newspaper-curation-app/src/apperr"
+	"github.com/uoregon-libraries/newspaper-curation-app/src/schema"
 )
 
 // Deserialize attempts to read and deserialize the given filename into a

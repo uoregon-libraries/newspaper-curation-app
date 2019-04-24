@@ -2,17 +2,17 @@ package db
 
 import (
 	"fmt"
-	"schema"
 	"strconv"
 	"strings"
 	"time"
 
 	"github.com/Nerdmaster/magicsql"
+	"github.com/uoregon-libraries/newspaper-curation-app/src/schema"
 )
 
-// Workflow steps in-process issues may have - these MUST match the allowed
-// values in the database
+// Workflow steps in-process issues may have
 var allowedWorkflowSteps = []schema.WorkflowStep{
+	schema.WSUnfixableMetadataError,
 	schema.WSAwaitingProcessing,
 	schema.WSAwaitingPageReview,
 	schema.WSReadyForMetadataEntry,
@@ -201,7 +201,7 @@ func FindAvailableIssuesByWorkflowStep(ws schema.WorkflowStep) ([]*Issue, error)
 // FindIssuesWithErrors returns all issues with an error reported by metadata
 // entry personnel
 func FindIssuesWithErrors() ([]*Issue, error) {
-	return findIssues("error <> ''")
+	return findIssues("workflow_step = ?", string(schema.WSUnfixableMetadataError))
 }
 
 // Key returns the standardized issue key for this DB issue
@@ -238,11 +238,23 @@ func (i *Issue) ApproveMetadata(reviewerID int) {
 
 // RejectMetadata sends the issue back to the metadata entry user and saves the
 // reviewer's notes
+//
+// TODO: if we ever display rejection user, bear in mind that 0 means it's
+// rejected by a system process rather than a person
 func (i *Issue) RejectMetadata(reviewerID int, notes string) {
 	i.Claim(i.MetadataEntryUserID)
 	i.WorkflowStep = schema.WSReadyForMetadataEntry
 	i.RejectionNotes = notes
 	i.RejectedByUserID = reviewerID
+}
+
+// ReportError adds an error message to the issue and flags it as being in the
+// "unfixable" state.  That state basically says that nobody can use NCA to fix
+// the problem, and it needs to be pulled and processed by hand.
+func (i *Issue) ReportError(message string) {
+	i.Error = message
+	i.WorkflowStep = schema.WSUnfixableMetadataError
+	i.Unclaim()
 }
 
 // Save creates or updates the Issue in the issues table

@@ -1,15 +1,16 @@
 package issuefinder
 
 import (
-	"apperr"
-	"chronam"
 	"fmt"
-	"httpcache"
 	"net/url"
 	"path"
-	"schema"
 	"strconv"
 	"time"
+
+	"github.com/uoregon-libraries/newspaper-curation-app/src/apperr"
+	"github.com/uoregon-libraries/newspaper-curation-app/src/chronam"
+	"github.com/uoregon-libraries/newspaper-curation-app/src/httpcache"
+	"github.com/uoregon-libraries/newspaper-curation-app/src/schema"
 )
 
 // FindWebBatches reads through the JSON from the batch API URL (using

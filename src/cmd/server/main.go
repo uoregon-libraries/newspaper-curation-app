@@ -1,29 +1,29 @@
 package main
 
 import (
-	"cmd/server/internal/issuefinderhandler"
-	"cmd/server/internal/mochandler"
-	"cmd/server/internal/responder"
-	"cmd/server/internal/settings"
-	"cmd/server/internal/titlehandler"
-	"cmd/server/internal/uploadedissuehandler"
-	"cmd/server/internal/userhandler"
-	"cmd/server/internal/workflowhandler"
-	"config"
-	"db"
 	"fmt"
-	"issuewatcher"
 	"net/http"
 	"net/url"
 	"os"
 	"path"
 	"path/filepath"
 	"time"
-	"web/webutil"
 
 	"github.com/gorilla/mux"
 	flags "github.com/jessevdk/go-flags"
 	"github.com/uoregon-libraries/gopkg/logger"
+	"github.com/uoregon-libraries/newspaper-curation-app/src/cmd/server/internal/issuefinderhandler"
+	"github.com/uoregon-libraries/newspaper-curation-app/src/cmd/server/internal/mochandler"
+	"github.com/uoregon-libraries/newspaper-curation-app/src/cmd/server/internal/responder"
+	"github.com/uoregon-libraries/newspaper-curation-app/src/cmd/server/internal/settings"
+	"github.com/uoregon-libraries/newspaper-curation-app/src/cmd/server/internal/titlehandler"
+	"github.com/uoregon-libraries/newspaper-curation-app/src/cmd/server/internal/uploadedissuehandler"
+	"github.com/uoregon-libraries/newspaper-curation-app/src/cmd/server/internal/userhandler"
+	"github.com/uoregon-libraries/newspaper-curation-app/src/cmd/server/internal/workflowhandler"
+	"github.com/uoregon-libraries/newspaper-curation-app/src/config"
+	"github.com/uoregon-libraries/newspaper-curation-app/src/db"
+	"github.com/uoregon-libraries/newspaper-curation-app/src/issuewatcher"
+	"github.com/uoregon-libraries/newspaper-curation-app/src/web/webutil"
 )
 
 var opts struct {
@@ -122,9 +122,11 @@ func startServer() {
 	// Any unknown paths get a semi-friendly 404
 	r.NotFoundHandler = http.HandlerFunc(notFound)
 
+	// TODO: Get rid of this use of global http package state
 	http.Handle("/", nocache(logMiddleware(r)))
 
 	logger.Infof("Listening on %s", conf.BindAddress)
+	// TODO: Get rid of this use of global http package state
 	if err := http.ListenAndServe(conf.BindAddress, nil); err != nil {
 		logger.Fatalf("Error starting listener: %s", err)
 	}

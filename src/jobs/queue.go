@@ -1,9 +1,10 @@
 package jobs
 
 import (
-	"db"
-	"schema"
 	"time"
+
+	"github.com/uoregon-libraries/newspaper-curation-app/src/db"
+	"github.com/uoregon-libraries/newspaper-curation-app/src/schema"
 )
 
 // PrepareJobAdvanced gets a job of any kind set up with sensible defaults

@@ -1,11 +1,11 @@
 package responder
 
 import (
-	"cmd/server/internal/settings"
-
-	"db/user"
 	"net/http"
 	"time"
+
+	"github.com/uoregon-libraries/newspaper-curation-app/src/cmd/server/internal/settings"
+	"github.com/uoregon-libraries/newspaper-curation-app/src/db/user"
 )
 
 // GetUserLogin returns the Apache-auth user or the debuguser argument if

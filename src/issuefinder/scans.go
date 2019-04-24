@@ -1,19 +1,19 @@
 package issuefinder
 
 import (
-	"apperr"
-	"db"
 	"fmt"
 	"os"
 	"path/filepath"
 	"regexp"
-	"schema"
 	"sort"
 	"strconv"
 	"strings"
 	"time"
 
 	"github.com/uoregon-libraries/gopkg/fileutil"
+	"github.com/uoregon-libraries/newspaper-curation-app/src/apperr"
+	"github.com/uoregon-libraries/newspaper-curation-app/src/db"
+	"github.com/uoregon-libraries/newspaper-curation-app/src/schema"
 )
 
 var pdfFilenameRegex = regexp.MustCompile(`(?i:^[0-9]{4}.pdf)`)

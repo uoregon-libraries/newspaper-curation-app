@@ -1,11 +1,11 @@
 package issuewatcher
 
 import (
-	"issuefinder"
 	"path/filepath"
-	"schema"
 
 	"github.com/uoregon-libraries/gopkg/fileutil"
+	"github.com/uoregon-libraries/newspaper-curation-app/src/issuefinder"
+	"github.com/uoregon-libraries/newspaper-curation-app/src/schema"
 )
 
 // CacheFile returns the standard path to the cache file based on the

@@ -4,11 +4,11 @@
 package main
 
 import (
-	"cli"
 	"fmt"
-	"issuefinder"
 
 	"github.com/uoregon-libraries/gopkg/logger"
+	"github.com/uoregon-libraries/newspaper-curation-app/src/cli"
+	"github.com/uoregon-libraries/newspaper-curation-app/src/issuefinder"
 )
 
 func main() {

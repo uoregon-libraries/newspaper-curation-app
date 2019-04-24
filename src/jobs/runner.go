@@ -1,8 +1,6 @@
 package jobs
 
 import (
-	"config"
-	"db"
 	"fmt"
 	"os"
 	"path/filepath"
@@ -11,6 +9,8 @@ import (
 	"time"
 
 	"github.com/uoregon-libraries/gopkg/logger"
+	"github.com/uoregon-libraries/newspaper-curation-app/src/config"
+	"github.com/uoregon-libraries/newspaper-curation-app/src/db"
 )
 
 // runnerLogger implements logger.Loggable for logging runner-level information

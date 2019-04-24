@@ -1,14 +1,14 @@
 package issuefinderhandler
 
 import (
-	"cmd/server/internal/responder"
-	"config"
-	"issuewatcher"
 	"net/http"
 	"path"
-	"web/tmpl"
 
 	"github.com/gorilla/mux"
+	"github.com/uoregon-libraries/newspaper-curation-app/src/cmd/server/internal/responder"
+	"github.com/uoregon-libraries/newspaper-curation-app/src/config"
+	"github.com/uoregon-libraries/newspaper-curation-app/src/issuewatcher"
+	"github.com/uoregon-libraries/newspaper-curation-app/src/web/tmpl"
 )
 
 var (

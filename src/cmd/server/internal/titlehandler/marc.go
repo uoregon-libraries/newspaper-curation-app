@@ -44,7 +44,7 @@ func pullMARCForTitle(t *Title) {
 	}
 
 	var last = len(marcLocs) - 1
-	for i := 0; i < last; i++ {
+	for i := 0; i <= last; i++ {
 		var err = lookupMARC(t, marcLocs[i])
 		if err == nil {
 			return

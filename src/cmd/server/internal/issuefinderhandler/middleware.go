@@ -1,9 +1,10 @@
 package issuefinderhandler
 
 import (
-	"cmd/server/internal/responder"
-	"db/user"
 	"net/http"
+
+	"github.com/uoregon-libraries/newspaper-curation-app/src/cmd/server/internal/responder"
+	"github.com/uoregon-libraries/newspaper-curation-app/src/db/user"
 )
 
 // canSearch verifies the user can search issues

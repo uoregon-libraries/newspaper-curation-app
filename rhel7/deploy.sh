@@ -77,6 +77,7 @@ goose --env production up
 echo Copying in the new stuff
 sudo cp $src/bin/server $ncadir/
 sudo cp $src/bin/run-jobs $ncadir/
+sudo cp $src/bin/batch-fixer $ncadir/
 sudo cp $src/bin/queue-batches $ncadir/
 sudo cp $src/bin/bulk-issue-queue $ncadir/
 sudo cp $src/bin/requeue-batch $ncadir/
@@ -95,7 +96,5 @@ sudo systemctl start nca-workers
 sudo systemctl start nca-httpd
 sudo systemctl restart rsyslog
 
-echo Waiting 30 seconds for NCA to finish scanning issues
-sleep 30
 sudo systemctl start httpd
 sudo rm -rf $tmpdir
