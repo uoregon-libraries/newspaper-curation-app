@@ -32,7 +32,6 @@ services:
 
   # Web runs the binary for nca's GUI
   web:
-    image: uolibraries/nca_app
     build:
       context: .
       dockerfile: ./docker/Dockerfile-app
@@ -52,7 +51,9 @@ services:
     command: ./bin/server -c ./settings
 
   workers:
-    image: uolibraries/nca_app
+    build:
+      context: .
+      dockerfile: ./docker/Dockerfile-app
     volumes: *ncavols
     environment: *ncaenv
     depends_on:
