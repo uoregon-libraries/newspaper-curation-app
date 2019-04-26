@@ -29,7 +29,6 @@ type Transformer struct {
 	tmpPNG     string
 	tmpPNGTest string
 	tmpJP2     string
-	Context    string
 
 	OPJCompress    string
 	OPJDecompress  string
@@ -45,11 +44,10 @@ type Transformer struct {
 
 // New creates a new PDF/TIFF-to-JP2 transformer with default values for the
 // various binaries and use of the default logger
-func New(source, output string, context string, quality float64, resolution int) *Transformer {
+func New(source, output string, quality float64, resolution int) *Transformer {
 	return &Transformer{
 		SourceFile:     source,
 		OutputJP2:      output,
-		Context:        context,
 		OPJCompress:    "opj_compress",
 		OPJDecompress:  "opj_decompress",
 		GhostScript:    "gs",

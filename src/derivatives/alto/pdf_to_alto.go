@@ -25,7 +25,6 @@ type Transformer struct {
 	ALTOOutputFilename string
 	ScaleFactor        float64
 	ImageNumber        int
-	Context            string
 
 	// Logger can be set up manually for customized logging, otherwise it just
 	// gets set to the default logger
@@ -37,14 +36,13 @@ type Transformer struct {
 }
 
 // New sets up a new transformer to convert a PDF to ALTO XML
-func New(pdfFile, altoFile string, pdfDPI int, imgNo int, context string) *Transformer {
+func New(pdfFile, altoFile string, pdfDPI int, imgNo int) *Transformer {
 	return &Transformer{
 		PDFFilename:        pdfFile,
 		ALTOOutputFilename: altoFile,
 		ScaleFactor:        float64(pdfDPI) / 72.0,
 		ImageNumber:        imgNo,
-		Logger:             logger.DefaultLogger,
-		Context:            context,
+		Logger:             logger.DefaultLogger
 	}
 }
 
@@ -83,7 +81,7 @@ func (t *Transformer) pdfToText() {
 	}
 	defer os.Remove(tmpfile)
 
-	if !shell.ExecSubgroupWithContext("pdftotext", t.Context, t.PDFFilename, "-bbox-layout", tmpfile) {
+	if !shell.ExecSubgroup("pdftotext", t.Logger, t.PDFFilename, "-bbox-layout", tmpfile) {
 		t.err = fmt.Errorf("unable to run pdftotext")
 		return
 	}
