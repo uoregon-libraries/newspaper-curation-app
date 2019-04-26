@@ -8,7 +8,6 @@ import (
 	"os"
 	"path/filepath"
 	"regexp"
-	"strconv"
 	"strings"
 
 	"github.com/uoregon-libraries/gopkg/fileutil"
@@ -179,7 +178,7 @@ func (md *MakeDerivatives) generateDerivatives() (ok bool) {
 // createAltoXML produces ALTO XML from the given PDF file
 func (md *MakeDerivatives) createAltoXML(file string, pageno int) (ok bool) {
 	var outputFile = strings.Replace(file, filepath.Ext(file), ".xml", 1)
-	var transformer = alto.New(file, outputFile, md.AltoDPI, pageno, "JobID:"+strconv.Itoa(md.Job.ID))
+	var transformer = alto.New(file, outputFile, md.AltoDPI, pageno, md.Logger)
 	transformer.Logger = md.Logger
 	var err = transformer.Transform()
 
@@ -193,7 +192,7 @@ func (md *MakeDerivatives) createAltoXML(file string, pageno int) (ok bool) {
 
 func (md *MakeDerivatives) createJP2(file string) (ok bool) {
 	var outputJP2 = strings.Replace(file, filepath.Ext(file), ".jp2", 1)
-	var transformer = jp2.New(file, outputJP2, "JobID:"+strconv.Itoa(md.Job.ID), md.JP2Quality, md.JP2DPI)
+	var transformer = jp2.New(file, outputJP2, md.JP2Quality, md.JP2DPI)
 	transformer.Logger = md.Logger
 	transformer.OPJCompress = md.OPJCompress
 	transformer.OPJDecompress = md.OPJDecompress
