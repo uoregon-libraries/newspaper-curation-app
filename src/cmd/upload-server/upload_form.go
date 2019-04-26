@@ -85,23 +85,28 @@ func purgeOldForms() {
 	forml.Unlock()
 }
 
-// parseRequest takes the request and parses its data, returning an error if
-// any data was invalid
-func (f *uploadForm) parseRequest(r *http.Request) error {
-	// Apply request form values if any are present
-	var rawDate = r.FormValue("date")
+func (f *uploadForm) parseMetadata(r *http.Request) error {
+	return f.parseDate(r.FormValue("date"))
+}
+
+func (f *uploadForm) parseDate(rawDate string) error {
+	f.Lock()
+	defer f.Unlock()
+
+	if rawDate == "" {
+		return nil
+	}
+
 	var date, err = time.Parse("2006-01-02", rawDate)
 	if err != nil {
 		date, err = time.Parse("01-02-2006", rawDate)
-		if err != nil {
-			return errInvalidDate
-		}
 	}
 
-	// Lock the form and assign the data
-	f.Lock()
+	if err != nil {
+		return errInvalidDate
+	}
+
 	f.Date = date
-	f.Unlock()
 
 	return nil
 }
