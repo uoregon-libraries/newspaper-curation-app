@@ -2,63 +2,91 @@ package main
 
 import (
 	"net/http"
-	"time"
 
 	"github.com/uoregon-libraries/gopkg/tmpl"
 )
+
+// Error is just a string that returns itself when its Error method is
+// called so that const strings can implement the error interface
+type Error string
+
+func (e Error) Error() string {
+	return string(e)
+}
+
+// errInvalidFormUID is used when a user is trying to load a form that
+// doesn't exist (it may have expired or the server restarted or something)
+const errInvalidFormUID = Error("invalid form uid")
+
+// errUnownedForm occurs when a user has a form uid associated with a
+// different user
+const errUnownedForm = Error("user doesn't own requested form uid")
 
 // Templates are global here because we need them accessible from multiple functions
 var metadata *tmpl.Template
 var upload *tmpl.Template
 
-// uploadForm gets the form from the session and overwrites it with any request
-// data.  If any data is invalid, we automatically redirect the client and
-// return ok==false so the caller knows to just exit, not handle anything
-// further.
+// uploadForm gets the form data from parseUploadForm.  On any errors, we
+// automatically redirect the client and return ok==false so the caller knows
+// to just exit, not handle anything further.
 func (r *responder) uploadForm() (f *uploadForm, ok bool) {
+	var err error
+	f, err = r.getUploadForm()
+	if err == nil {
+		return f, true
+	}
+
+	switch err {
+	case errInvalidFormUID:
+		r.sess.SetAlertFlash("Unable to find session data - your form may have timed out")
+		r.redirectSubpath("upload", http.StatusSeeOther)
+
+	case errUnownedForm:
+		r.redirectSubpath("upload", http.StatusSeeOther)
+
+	case errInvalidDate:
+		r.render(metadata, map[string]interface{}{
+			"Form":  f,
+			"Alert": "Invalid date.  If you are typing the date manually, please use MM-DD-YYYY or YYYY-MM-DD for formatting.",
+		})
+
+	default:
+		r.server.logger.Errorf("Unknown error parsing form data: %#v", err)
+		r.sess.SetAlertFlash("Unknown error parsing your form data.  Please reload and try again.")
+		r.redirectSubpath("upload", http.StatusSeeOther)
+	}
+
+	return f, false
+}
+
+// getUploadForm retrieves the user's form from their session and populates it
+// with their request data.  On backend or validation problems, an error is
+// returned.
+func (r *responder) getUploadForm() (*uploadForm, error) {
 	var user = r.sess.GetString("user")
 
 	// Retrieve form or register a new one
 	var uid = r.req.FormValue("uid")
-	if uid != "" {
-		f = findForm(uid)
-		if f == nil {
-			r.server.logger.Errorf("Session user %q trying to claim invalid form uid %q", user, uid)
-			r.sess.SetAlertFlash("Unable to find session data - your form may have timed out")
-			r.redirectSubpath("upload", http.StatusSeeOther)
-			return nil, false
-		}
 
-		// Validate ownership
-		if f != nil && f.Owner != user {
-			r.server.logger.Errorf("Session user %q trying to claim form owned by %q", user, f.Owner)
-			r.redirectSubpath("upload", http.StatusSeeOther)
-			return nil, false
-		}
-	} else {
-		f = registerForm(r.sess.GetString("user"))
+	// If the form is new, there can be no errors
+	if uid == "" {
+		return registerForm(user), nil
 	}
 
-	// Apply request form values if any are present
-	var rawDate = r.req.FormValue("date")
-	var date, err = time.Parse("2006-01-02", rawDate)
-	if err != nil {
-		date, err = time.Parse("01-02-2006", rawDate)
-		if err != nil {
-			r.render(metadata, map[string]interface{}{
-				"Form":  f,
-				"Alert": "Invalid date.  If you are typing the date manually, please use MM-DD-YYYY or YYYY-MM-DD for formatting.",
-			})
-			return f, false
-		}
+	var f = findForm(uid)
+	if f == nil {
+		r.server.logger.Warnf("Session user %q trying to claim invalid form uid %q", user, uid)
+		return nil, errInvalidFormUID
 	}
 
-	// Lock the form and assign the data
-	f.Lock()
-	f.Date = date
-	f.Unlock()
+	// Validate ownership
+	if f != nil && f.Owner != user {
+		r.server.logger.Errorf("Session user %q trying to claim form owned by %q", user, f.Owner)
+		return nil, errUnownedForm
+	}
 
-	return f, true
+	var err = f.parseRequest(r.req)
+	return f, err
 }
 
 func (s *srv) uploadFormHandler() http.Handler {

@@ -2,11 +2,14 @@ package main
 
 import (
 	"fmt"
+	"net/http"
 	"sync"
 	"time"
 
 	"github.com/uoregon-libraries/gopkg/logger"
 )
+
+const errInvalidDate = Error("invalid date")
 
 // uploadForm holds onto all validated data the form has already handled.  Form
 // parameters will overwrite anything previously validated to account for going
@@ -80,4 +83,25 @@ func purgeOldForms() {
 		delete(forms, key)
 	}
 	forml.Unlock()
+}
+
+// parseRequest takes the request and parses its data, returning an error if
+// any data was invalid
+func (f *uploadForm) parseRequest(r *http.Request) error {
+	// Apply request form values if any are present
+	var rawDate = r.FormValue("date")
+	var date, err = time.Parse("2006-01-02", rawDate)
+	if err != nil {
+		date, err = time.Parse("01-02-2006", rawDate)
+		if err != nil {
+			return errInvalidDate
+		}
+	}
+
+	// Lock the form and assign the data
+	f.Lock()
+	f.Date = date
+	f.Unlock()
+
+	return nil
 }
