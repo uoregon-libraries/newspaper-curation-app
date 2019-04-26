@@ -11,15 +11,14 @@ import (
 	"github.com/uoregon-libraries/gopkg/logger"
 )
 
-func _exec(cmd *exec.Cmd, binary string, jobLogger Logger, args ...string) (ok bool) {
-	logger.Debugf(`Running "%s %s"`, binary, strings.Replace(strings.Join(args, " "), "%", "%%", -1))
+func _exec(cmd *exec.Cmd, binary string, jobLogger *logger.Logger, args ...string) (ok bool) {
+	jobLogger.Debugf(`Running "%s %s"`, binary, strings.Replace(strings.Join(args, " "), "%", "%%", -1))
 	var output, err = cmd.CombinedOutput()
 	if err != nil {
-		logger.Errorf(`Failed to run "%s %s": %s`, binary, strings.Join(args, " "), err)
-		for _, line := range bytes.Split(output, []byte("\n")) {
-			logger.Debugf("--> %s", line)
-		}
 		jobLogger.Log.Errorf(`Failed to run "%s %s": %s`, binary, strings.Join(args, " "), err)
+		for _, line := range bytes.Split(output, []byte("\n")) {
+			jobLogger.Debugf("--> %s", line)
+		}
 
 		return false
 	}
@@ -29,14 +28,14 @@ func _exec(cmd *exec.Cmd, binary string, jobLogger Logger, args ...string) (ok b
 
 // Exec attempts to run the given command, using logger to give consistent
 // formatting to whatever the command spits out if an error occurs
-func Exec(binary string, jobLogger Logger, args ...string) (ok bool) {
+func Exec(binary string, jobLogger *logger.Logger, args ...string) (ok bool) {
 	var cmd = exec.Command(binary, args...)
 	return _exec(cmd, binary, jobLogger, args...)
 }
 
 // ExecSubgroup is just like Exec, but sets the process to run in its own group
 // so it doesn't get killed on CTRL+C
-func ExecSubgroup(binary string, jobLogger Logger, args ...string) (ok bool) {
+func ExecSubgroup(binary string, jobLogger *logger.Logger, args ...string) (ok bool) {
 	var cmd = exec.Command(binary, args...)
 	cmd.SysProcAttr = &syscall.SysProcAttr{Setpgid: true}
 	return _exec(cmd, binary, jobLogger, args...)
