@@ -178,7 +178,7 @@ func (md *MakeDerivatives) generateDerivatives() (ok bool) {
 // createAltoXML produces ALTO XML from the given PDF file
 func (md *MakeDerivatives) createAltoXML(file string, pageno int) (ok bool) {
 	var outputFile = strings.Replace(file, filepath.Ext(file), ".xml", 1)
-	var transformer = alto.New(file, outputFile, md.AltoDPI, pageno, md.Logger)
+	var transformer = alto.New(file, outputFile, md.AltoDPI, pageno)
 	transformer.Logger = md.Logger
 	var err = transformer.Transform()
 
