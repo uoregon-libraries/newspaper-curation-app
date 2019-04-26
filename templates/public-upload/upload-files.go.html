@@ -38,7 +38,6 @@
 <form id="uploadform" class="form-horizontal" role="form" method="post" action="{{UploadURL}}">
   <!-- this hack makes sure the default button moves us forward to the next step -->
   <button type="Submit" name="nextstep" value="confirm" style="display:none;">Next</button>
-  <input type="hidden" name="date" value="{{.Form.Date.Format "2006-01-02"}}" />
   <input type="hidden" name="uid" value="{{.Form.UID}}" />
 
   <div class="row">

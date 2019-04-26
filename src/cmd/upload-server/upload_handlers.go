@@ -26,10 +26,11 @@ const errUnownedForm = Error("user doesn't own requested form uid")
 var metadata *tmpl.Template
 var upload *tmpl.Template
 
-// uploadForm gets the form data from parseUploadForm.  On any errors, we
-// automatically redirect the client and return ok==false so the caller knows
-// to just exit, not handle anything further.
-func (r *responder) uploadForm() (f *uploadForm, ok bool) {
+// getFormNonAJAX gets the form data from getUploadForm.  On any errors (not
+// validation of data, but form errors), we automatically redirect the client
+// and return ok==false so the caller knows to just exit, not handle anything
+// further.
+func (r *responder) getFormNonAJAX() (f *uploadForm, ok bool) {
 	var err error
 	f, err = r.getUploadForm()
 	if err == nil {
@@ -43,12 +44,6 @@ func (r *responder) uploadForm() (f *uploadForm, ok bool) {
 
 	case errUnownedForm:
 		r.redirectSubpath("upload", http.StatusSeeOther)
-
-	case errInvalidDate:
-		r.render(metadata, map[string]interface{}{
-			"Form":  f,
-			"Alert": "Invalid date.  If you are typing the date manually, please use MM-DD-YYYY or YYYY-MM-DD for formatting.",
-		})
 
 	default:
 		r.server.logger.Errorf("Unknown error parsing form data: %#v", err)
@@ -85,8 +80,7 @@ func (r *responder) getUploadForm() (*uploadForm, error) {
 		return nil, errUnownedForm
 	}
 
-	var err = f.parseRequest(r.req)
-	return f, err
+	return f, nil
 }
 
 func (s *srv) uploadFormHandler() http.Handler {
@@ -94,18 +88,36 @@ func (s *srv) uploadFormHandler() http.Handler {
 	upload = s.layout.MustBuild("upload-files.go.html")
 
 	return s.respond(func(r *responder) {
-		// We always process all form data since any form step can go backwards
-		var form, ok = r.uploadForm()
+		var form, ok = r.getFormNonAJAX()
 		if !ok {
 			return
 		}
 
-		switch r.req.FormValue("nextstep") {
+		var next = r.req.FormValue("nextstep")
+		var data = map[string]interface{}{"Form": form}
+
+		switch next {
+		// If we're on the metadata step, we don't try to parse incoming fields or
+		// validate the form
 		case "", "metadata":
-			r.render(metadata, map[string]interface{}{"Form": form})
+			r.render(metadata, data)
+
 		case "upload":
-			r.render(upload, map[string]interface{}{"Form": form})
-		case "confirm":
+			var err = form.parseMetadata(r.req)
+			switch err {
+			case nil:
+				r.render(upload, data)
+			case errInvalidDate:
+				data["Alert"] = "Invalid date: make sure you use YYYY-MM-DD format"
+				r.render(metadata, data)
+			default:
+				s.logger.Errorf("Unhandled form parse error: %s", err)
+				data["Alert"] = "Invalid metadata"
+				r.render(metadata, data)
+			}
+
+		default:
+			s.logger.Warnf("Invalid next step: %q", next)
 		}
 	})
 }
