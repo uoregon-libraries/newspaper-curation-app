@@ -15,7 +15,7 @@ func _exec(cmd *exec.Cmd, binary string, jobLogger *logger.Logger, args ...strin
 	jobLogger.Debugf(`Running "%s %s"`, binary, strings.Replace(strings.Join(args, " "), "%", "%%", -1))
 	var output, err = cmd.CombinedOutput()
 	if err != nil {
-		jobLogger.Log.Errorf(`Failed to run "%s %s": %s`, binary, strings.Join(args, " "), err)
+		jobLogger.Errorf(`Failed to run "%s %s": %s`, binary, strings.Join(args, " "), err)
 		for _, line := range bytes.Split(output, []byte("\n")) {
 			jobLogger.Debugf("--> %s", line)
 		}
