@@ -42,7 +42,7 @@ func New(pdfFile, altoFile string, pdfDPI int, imgNo int) *Transformer {
 		ALTOOutputFilename: altoFile,
 		ScaleFactor:        float64(pdfDPI) / 72.0,
 		ImageNumber:        imgNo,
-		Logger:             logger.DefaultLogger
+		Logger:             logger.DefaultLogger,
 	}
 }
 
