@@ -22,11 +22,14 @@ func (s *srv) routes() {
 	appRouter.Use(s.middleware.RequestLog)
 	appRouter.Path("").Handler(s.redirectSubpathHandler("login", http.StatusMovedPermanently))
 	appRouter.Path("/").Handler(s.redirectSubpathHandler("login", http.StatusMovedPermanently))
+
+	// TODO: Add redirect middleware if already logged in
 	appRouter.Path("/login").Methods("get").Handler(s.loginFormHandler())
 	appRouter.Path("/login").Methods("post").Handler(s.loginSubmitHandler())
 
 	// TODO: Add login-required middleware
 	appRouter.Path("/upload").Handler(s.uploadFormHandler())
+	appRouter.Path("/upload/ajax").Handler(s.uploadAJAXReceiver())
 
 	appRouter.NotFoundHandler = s.notFoundHandler()
 }

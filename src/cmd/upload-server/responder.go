@@ -47,6 +47,11 @@ func (r *responder) redirectSubpath(subpath string, code int) {
 	http.Redirect(r.w, r.req, path.Join(r.server.webroot.Path, subpath), code)
 }
 
+func (r *responder) ajaxError(msg string, code int) {
+	r.w.WriteHeader(code)
+	r.w.Write([]byte(msg))
+}
+
 func (r *responder) error(msg string, code int) {
 	r.w.WriteHeader(code)
 	r.server.empty.Execute(r.w, map[string]string{"Alert": msg})
