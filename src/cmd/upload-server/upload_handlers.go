@@ -1,7 +1,11 @@
 package main
 
 import (
+	"fmt"
+	"io"
+	"io/ioutil"
 	"net/http"
+	"os"
 
 	"github.com/uoregon-libraries/gopkg/tmpl"
 )
@@ -120,4 +124,68 @@ func (s *srv) uploadFormHandler() http.Handler {
 			s.logger.Warnf("Invalid next step: %q", next)
 		}
 	})
+}
+
+func (s *srv) uploadAJAXReceiver() http.Handler {
+	return s.respond(func(r *responder) {
+		var uid = r.req.FormValue("uid")
+		if uid == "" {
+			s.logger.Errorf("AJAX request with no form uid!")
+			r.ajaxError("upload error: no form", http.StatusBadRequest)
+			return
+		}
+
+		var form, err = r.getUploadForm()
+		if err != nil {
+			s.logger.Errorf("Error processing form for AJAX request: %s", err)
+			r.ajaxError("upload error: invalid form", http.StatusBadRequest)
+			return
+		}
+
+		err = r.getAJAXUpload(form)
+		if err != nil {
+			s.logger.Errorf("Error reading file upload for AJAX request: %s", err)
+			r.ajaxError("file upload error", http.StatusInternalServerError)
+			return
+		}
+
+		r.w.Write([]byte("ok"))
+	})
+}
+
+// getAJAXUpload pulls the AJAX upload and stores it into a temporary file.
+// The path to the temp file is returned as well as any errors which occurred
+// during the read/copy.
+func (r *responder) getAJAXUpload(form *uploadForm) error {
+	var file, header, err = r.req.FormFile("myfile")
+	if err != nil {
+		return err
+	}
+	r.server.logger.Infof("File upload: %q %d", header.Filename, header.Size)
+
+	var out *os.File
+	out, err = ioutil.TempFile(os.TempDir(), form.UID+"-")
+	if err != nil {
+		return fmt.Errorf("unable to create temp file for file upload: %s", err)
+	}
+
+	var n int64
+	n, err = io.Copy(out, file)
+	if n != header.Size {
+		r.server.logger.Errorf("Wrote %d bytes to tempfile, but expected %d", n, header.Size)
+		return fmt.Errorf("only wrote partial file")
+	}
+	if err != nil {
+		r.server.logger.Errorf("Error writing to tempfile: %s", err)
+		return fmt.Errorf("unable to write to tempfile")
+	}
+
+	err = out.Close()
+	if err != nil {
+		r.server.logger.Errorf("Error closing tempfile: %s", err)
+		return fmt.Errorf("unable to close tempfile")
+	}
+
+	r.server.logger.Infof("Wrote %q to %q", header.Filename, out.Name())
+	return nil
 }
