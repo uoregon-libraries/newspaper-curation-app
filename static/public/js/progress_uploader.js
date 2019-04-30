@@ -1,4 +1,5 @@
 var uploadList = [];
+
 function haveFile(file) {
   for (var i = 0; i < uploadList.length; i++) {
     var uf = uploadList[i];
@@ -11,12 +12,15 @@ function haveFile(file) {
 }
 
 class ProgressUploader {
-  constructor(file) {
+  constructor(file, fileList) {
     this.file = file;
-    this.ui = new Object();
+    this.progress = new ProgressBar(this.file.name);
+    this.fileList = fileList;
   }
 
   start() {
+    this.progress.makeUI(this.fileList);
+    this.progress.setValue(0);
     var err = this.fileErrors();
     if (err != null) {
       this.skip(err);
@@ -41,54 +45,8 @@ class ProgressUploader {
     return null;
   }
 
-  setupUI(el) {
-    this.ui.row = document.createElement("div");
-    this.ui.row.classList.add("row");
-    this.ui.row.classList.add("upload");
-    el.appendChild(this.ui.row);
-
-    this.ui.fileDiv = document.createElement("div");
-    this.ui.fileDiv.classList.add("col-sm-3");
-    this.ui.fileDiv.classList.add("fileinfo");
-    this.ui.fileDiv.innerHTML = this.file.name;
-    this.ui.row.appendChild(this.ui.fileDiv);
-
-    this.ui.progressWrapper = document.createElement("div");
-    this.ui.progressWrapper.classList.add("col-sm-6");
-    this.ui.row.appendChild(this.ui.progressWrapper);
-    this.ui.progressDiv = document.createElement("div");
-    this.ui.progressWrapper.appendChild(this.ui.progressDiv);
-
-    this.ui.actionsDiv = document.createElement("div");
-    this.ui.actionsDiv.classList.add("col-sm-3");
-    this.ui.actionsDiv.classList.add("actions");
-    this.ui.row.appendChild(this.ui.actionsDiv);
-
-    this.ui.row.classList.add("in-progress");
-    this.ui.progressDiv.classList.add("progress");
-
-    this.ui.bar = document.createElement("div");
-    this.ui.bar.classList.add("progress-bar");
-    this.ui.bar.classList.add("progress-bar-striped");
-    this.ui.bar.classList.add("progress-bar-animated");
-    this.ui.bar.setAttribute("role", "progressbar");
-    this.ui.bar.setAttribute("aria-valuemin", 0);
-    this.ui.bar.setAttribute("aria-valuemax", 100);
-    this.ui.bar.setAttribute("aria-valuenow", 0);
-    this.ui.bar.setAttribute("style", "width: 0%");
-
-    this.ui.cancel = document.createElement("button");
-    this.ui.cancel.classList.add("btn");
-    this.ui.cancel.classList.add("btn-danger");
-    this.ui.cancel.innerHTML = "Cancel";
-  }
-
   skip(err) {
-    this.ui.row.classList.remove("in-progress");
-    this.ui.progressDiv.classList.remove("progress");
-
-    this.ui.progressDiv.innerHTML = "Skipping " + this.file.name + ": " + err;
-    this.ui.row.classList.add("skipping");
+    this.progress.skip("Skipping " + this.file.name + ": " + err);
   }
 
   startUpload() {
@@ -98,27 +56,19 @@ class ProgressUploader {
     var fileUploader = new Object();
     this.xhr = new XMLHttpRequest();
 
-    this.ui.cancel.onclick = function() {
+    this.progress.action("Cancel", "btn-danger", function() {
       self.xhr.abort();
-    }
-
-    // Attach progress-related components to their respective divs
-    this.ui.actionsDiv.appendChild(this.ui.cancel);
-    this.ui.progressDiv.appendChild(this.ui.bar);
+    });
 
     this.xhr.upload.addEventListener("progress", function(e) {
       if (e.lengthComputable) {
         const percentage = Math.round((e.loaded * 100) / e.total);
-        self.ui.bar.setAttribute("style", "width: " + percentage + "%");
-        self.ui.bar.setAttribute("aria-valuenow", percentage);
+        self.progress.setValue(percentage);
       }
     }, false);
 
     this.xhr.upload.addEventListener("load", function(e) {
-      self.ui.bar.setAttribute("style", "width: 100%");
-      self.ui.bar.setAttribute("aria-valuenow", 100);
-      self.ui.bar.classList.remove("progress-bar-striped");
-      self.ui.bar.classList.remove("progress-bar-animated");
+      self.progress.done();
     }, false);
 
     const form = document.getElementById("uploadform");

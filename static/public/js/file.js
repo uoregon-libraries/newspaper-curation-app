@@ -29,8 +29,7 @@ function handleFiles() {
 }
 
 function processPDF(file) {
-  var uploader = new ProgressUploader(file);
-  uploader.setupUI(fileList);
+  var uploader = new ProgressUploader(file, fileList);
   uploader.start();
 }
 
