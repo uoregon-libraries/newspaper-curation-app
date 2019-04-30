@@ -6,27 +6,27 @@ import (
 	"github.com/uoregon-libraries/newspaper-curation-app/src/db"
 )
 
-func (s *srv) notFoundHandler() *responder {
-	return s.respond(func(r *responder) {
+func (s *srv) notFoundHandler() *router {
+	return s.route(func(r *responder) {
 		s.middleware.Log(r.w, r.req, http.HandlerFunc(http.NotFound), s.logger.Debugf, "Unrouted request")
 	})
 }
 
-func (s *srv) redirectSubpathHandler(subpath string, code int) *responder {
-	return s.respond(func(r *responder) {
+func (s *srv) redirectSubpathHandler(subpath string, code int) *router {
+	return s.route(func(r *responder) {
 		r.redirectSubpath(subpath, code)
 	})
 }
 
 func (s *srv) loginFormHandler() http.Handler {
 	var t = s.layout.MustBuild("login.go.html")
-	return s.respond(func(r *responder) {
+	return s.route(func(r *responder) {
 		r.render(t, nil)
 	})
 }
 
 func (s *srv) loginSubmitHandler() http.Handler {
-	return s.respond(func(r *responder) {
+	return s.route(func(r *responder) {
 		var t *db.Title
 		var err error
 

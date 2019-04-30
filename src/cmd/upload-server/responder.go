@@ -14,33 +14,38 @@ import (
 // operations which need this data.  A responder will automatically render our
 // 500 page if any errors occur, bypassing other application logic.
 type responder struct {
-	w       http.ResponseWriter
-	req     *http.Request
-	sess    *session.Session
-	err     error
+	w      http.ResponseWriter
+	req    *http.Request
+	sess   *session.Session
+	err    error
+	server *srv
+}
+
+// router holds the server context and handler, and implements http.Handler,
+// generating a request-wrapping responder for each incoming request to the
+// router
+type router struct {
 	server  *srv
 	handler func(r *responder)
 }
 
-// respond returns a responder for handling HTTP requests
-func (s *srv) respond(handler func(r *responder)) *responder {
-	return &responder{server: s, handler: handler}
+// route returns a router for handling HTTP requests
+func (s *srv) route(handler func(r *responder)) *router {
+	return &router{server: s, handler: handler}
 }
 
 // ServeHTTP implements http.Handler so a responder can act as an arbitrary
 // request handler
-func (r *responder) ServeHTTP(w http.ResponseWriter, req *http.Request) {
+func (r *router) ServeHTTP(w http.ResponseWriter, req *http.Request) {
 	var sess, err = store.Session(w, req)
+	var response = &responder{w: w, req: req, sess: sess, server: r.server}
 	if err != nil {
 		r.server.logger.Errorf("Unable to instantiate session: %s", err)
-		r.internalServerError()
+		response.internalServerError()
 		return
 	}
 
-	r.w = w
-	r.req = req
-	r.sess = sess
-	r.handler(r)
+	r.handler(response)
 }
 
 func (r *responder) redirectSubpath(subpath string, code int) {
