@@ -44,6 +44,10 @@ footer {
   }
 }
 
+#file-list .row {
+  margin-top: 0.25em;
+}
+
 .row.upload.skipping {
   animation: 2s fadeSkipped;
   background-color: hsl(0, 50%, 90%);
