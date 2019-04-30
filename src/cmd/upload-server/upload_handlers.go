@@ -91,7 +91,7 @@ func (s *srv) uploadFormHandler() http.Handler {
 	metadata = s.layout.MustBuild("upload-metadata.go.html")
 	upload = s.layout.MustBuild("upload-files.go.html")
 
-	return s.respond(func(r *responder) {
+	return s.route(func(r *responder) {
 		var form, ok = r.getFormNonAJAX()
 		if !ok {
 			return
@@ -127,7 +127,7 @@ func (s *srv) uploadFormHandler() http.Handler {
 }
 
 func (s *srv) uploadAJAXReceiver() http.Handler {
-	return s.respond(func(r *responder) {
+	return s.route(func(r *responder) {
 		var uid = r.req.FormValue("uid")
 		if uid == "" {
 			s.logger.Errorf("AJAX request with no form uid!")
