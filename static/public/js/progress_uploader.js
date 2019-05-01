@@ -60,14 +60,24 @@ class ProgressUploader {
       self.xhr.abort();
     });
 
-    this.xhr.upload.addEventListener("progress", function(e) {
+    var up = this.xhr.upload;
+
+    up.addEventListener("progress", function(e) {
       if (e.lengthComputable) {
         const percentage = Math.round((e.loaded * 100) / e.total);
         self.progress.setValue(percentage);
       }
     }, false);
 
-    this.xhr.upload.addEventListener("load", function(e) {
+    up.addEventListener("abort", function(e) {
+      console.log(e)
+      self.progress.abort("Canceled");
+    }, false);
+    up.addEventListener("error", function(e) {
+      console.log(e)
+      self.progress.error();
+    }, false);
+    up.addEventListener("load", function(e) {
       self.progress.done();
     }, false);
 
@@ -75,9 +85,6 @@ class ProgressUploader {
     const fd = new FormData();
     fd.append("uid", form.elements["uid"].value);
     this.xhr.open("POST", form.action+"/ajax", true);
-    this.xhr.onreadystatechange = function() {
-      console.log("Changed state for uploader " + self.file.name + ": " + self.xhr.readyState + ", status " + self.xhr.status);
-    };
     fd.append("myfile", this.file);
     this.xhr.send(fd);
   }

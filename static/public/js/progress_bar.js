@@ -63,8 +63,17 @@ class ProgressBar {
 
   done() {
     this.setValue(100);
-    this.bar.classList.remove("progress-bar-striped");
-    this.bar.classList.remove("progress-bar-animated");
+    this.progressDiv.classList.remove("progress");
+    this.progressDiv.innerHTML = "Successfully uploaded";
+    this.clearAction()
+  }
+
+  error(msg) {
+    this.row.classList.remove("in-progress");
+    this.progressDiv.classList.remove("progress");
+    this.progressDiv.innerHTML = "<strong>Error, unable to upload</strong>: " + msg;
+    this.row.classList.add("errored");
+    this.clearAction()
   }
 
   skip(msg) {
