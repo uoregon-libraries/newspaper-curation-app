@@ -45,6 +45,7 @@ class ProgressBar {
     this.button.innerHTML = label
     this.button.classList.add("btn")
     this.button.classList.add(classname)
+    this.button.addEventListener("click", onclick);
     this.actions.appendChild(this.button);
   }
 
