@@ -28,6 +28,13 @@ function handleFiles() {
   }
 }
 
+// Set up completed progress bar elements for files that were already loaded
+for (var x = 0; x < loadedFiles.length; x++) {
+  var pb = new ProgressBar(loadedFiles[x].Name);
+  pb.makeUI(fileList);
+  pb.done();
+}
+
 function processPDF(file) {
   var uploader = new ProgressUploader(file, fileList);
   uploader.start();
