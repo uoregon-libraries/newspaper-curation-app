@@ -3,6 +3,7 @@ package main
 import (
 	"fmt"
 	"net/http"
+	"os"
 	"sync"
 	"time"
 
@@ -10,6 +11,13 @@ import (
 )
 
 const errInvalidDate = Error("invalid date")
+
+// uploadedFile ties a bit of file metadata to an uploaded file
+type uploadedFile struct {
+	Name string
+	Size int64
+	path string
+}
 
 // uploadForm holds onto all validated data the form has already handled.  Form
 // parameters will overwrite anything previously validated to account for going
@@ -20,6 +28,7 @@ type uploadForm struct {
 	Date         time.Time
 	UID          string
 	lastAccessed time.Time
+	Files        []*uploadedFile
 }
 
 func (f *uploadForm) access() {
@@ -37,7 +46,7 @@ var forml sync.Mutex
 var forms = make(map[string]*uploadForm)
 
 func registerForm(owner string) *uploadForm {
-	var f = &uploadForm{Owner: owner, lastAccessed: time.Now(), UID: genid()}
+	var f = &uploadForm{Owner: owner, lastAccessed: time.Now(), UID: genid(), Files: make([]*uploadedFile, 0)}
 	forml.Lock()
 	forms[f.UID] = f
 	forml.Unlock()
@@ -80,6 +89,7 @@ func purgeOldForms() {
 	}
 
 	for _, key := range keysToPurge {
+		forms[key].destroy()
 		delete(forms, key)
 	}
 	forml.Unlock()
@@ -109,4 +119,14 @@ func (f *uploadForm) parseDate(rawDate string) error {
 	f.Date = date
 
 	return nil
+}
+
+func (f *uploadForm) destroy() {
+	var err error
+	for _, file := range f.Files {
+		err = os.Remove(file.path)
+		if err != nil {
+			l.Errorf("Unable to remove file %q (form %#v): %s", file.path, f, err)
+		}
+	}
 }

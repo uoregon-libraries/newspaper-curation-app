@@ -187,5 +187,11 @@ func (r *responder) getAJAXUpload(form *uploadForm) error {
 	}
 
 	r.server.logger.Infof("Wrote %q to %q", header.Filename, out.Name())
+	var f = &uploadedFile{
+		path: out.Name(),
+		Name: header.Filename,
+		Size: header.Size,
+	}
+	form.Files = append(form.Files, f)
 	return nil
 }
