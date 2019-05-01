@@ -46,7 +46,7 @@ class ProgressUploader {
   }
 
   skip(err) {
-    this.progress.skip("Skipping " + this.file.name + ": " + err);
+    this.progress.skip(err);
   }
 
   startUpload() {

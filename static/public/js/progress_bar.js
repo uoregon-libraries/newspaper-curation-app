@@ -69,7 +69,7 @@ class ProgressBar {
   skip(msg) {
     this.row.classList.remove("in-progress");
     this.progressDiv.classList.remove("progress");
-    this.progressDiv.innerHTML = msg;
+    this.progressDiv.innerHTML = "<strong>Skipping: </strong>" + msg;
     this.row.classList.add("skipping");
     this.clearAction()
   }
