@@ -6,30 +6,27 @@ class ProgressBar {
   }
 
   makeUI(parent) {
-    this.row = document.createElement("div");
-    this.row.classList.add("row");
+    this.row = document.createElement("tr");
     this.row.classList.add("upload");
     this.row.classList.add("in-progress");
     parent.appendChild(this.row);
 
-    this.fileDiv = document.createElement("div");
-    this.fileDiv.classList.add("col-sm-3");
-    this.fileDiv.classList.add("fileinfo");
-    this.fileDiv.innerHTML = this.fileInfoMessage;
-    this.row.appendChild(this.fileDiv);
+    this.fileInfo = document.createElement("td");
+    this.fileInfo.setAttribute("scope", "row");
+    this.fileInfo.classList.add("fileinfo");
+    this.fileInfo.innerHTML = this.fileInfoMessage;
+    this.row.appendChild(this.fileInfo);
 
-    this.progressWrapper = document.createElement("div");
-    this.progressWrapper.classList.add("col-sm-6");
+    this.progressWrapper = document.createElement("td");
     this.row.appendChild(this.progressWrapper);
 
     this.progressDiv = document.createElement("div");
     this.progressDiv.classList.add("progress");
     this.progressWrapper.appendChild(this.progressDiv);
 
-    this.actionsDiv = document.createElement("div");
-    this.actionsDiv.classList.add("col-sm-3");
-    this.actionsDiv.classList.add("actions");
-    this.row.appendChild(this.actionsDiv);
+    this.actions = document.createElement("td");
+    this.actions.classList.add("actions");
+    this.row.appendChild(this.actions);
 
     this.bar = document.createElement("div");
     this.bar.classList.add("progress-bar");
@@ -48,7 +45,7 @@ class ProgressBar {
     this.button.innerHTML = label
     this.button.classList.add("btn")
     this.button.classList.add(classname)
-    this.actionsDiv.appendChild(this.button);
+    this.actions.appendChild(this.button);
   }
 
   clearAction() {

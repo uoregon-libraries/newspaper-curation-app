@@ -44,11 +44,10 @@ footer {
   }
 }
 
-#file-list .row {
-  margin-top: 0.25em;
+.file-box {
 }
 
-.row.upload.skipping {
+#file-list tr.skipping {
   animation: 2s fadeSkipped;
   background-color: hsl(0, 50%, 90%);
 }

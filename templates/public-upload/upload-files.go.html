@@ -26,8 +26,19 @@
   </ul>
 </p>
 
-<div>
-  <div id="file-list" class="container"></div>
+<div class="file-box">
+  <table class="table table-striped">
+    <caption>Uploaded files will be listed here</caption>
+    <thead>
+    <tr>
+      <th scope="col">Filename</th>
+      <th scope="col" style="width: 50%">Progress / Status</th>
+      <th scope="col">Actions</th>
+    </tr>
+    </thead>
+
+    <tbody id="file-list"></tbody>
+  </table>
 </div>
 
 <div class="upload-buttons">
