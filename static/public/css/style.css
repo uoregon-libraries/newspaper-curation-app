@@ -32,7 +32,7 @@ footer {
 }
 
 .upload-buttons button {
-  margin: 1em;
+  margin: 1em 1em 1em 0;
 }
 
 @keyframes fadeSkipped {
