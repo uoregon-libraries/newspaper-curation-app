@@ -161,7 +161,6 @@ func (r *responder) getAJAXUpload(form *uploadForm) error {
 	if err != nil {
 		return err
 	}
-	r.server.logger.Infof("File upload: %q %d", header.Filename, header.Size)
 
 	var out *os.File
 	out, err = ioutil.TempFile(os.TempDir(), form.UID+"-")
@@ -186,7 +185,6 @@ func (r *responder) getAJAXUpload(form *uploadForm) error {
 		return fmt.Errorf("unable to close tempfile")
 	}
 
-	r.server.logger.Infof("Wrote %q to %q", header.Filename, out.Name())
 	var f = &uploadedFile{
 		path: out.Name(),
 		Name: header.Filename,
