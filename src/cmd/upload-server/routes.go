@@ -12,10 +12,15 @@ import (
 func (s *srv) routes() {
 	s.router = mux.NewRouter()
 
+	var staticPath = path.Join(s.webroot.Path, "static")
+	if staticPath[0] != '/' {
+		staticPath = "/" + staticPath
+	}
+
 	var fileServer = http.FileServer(http.Dir(filepath.Join(s.approot, "static", "public")))
-	var staticRouter = s.router.NewRoute().PathPrefix(path.Join(s.webroot.Path, "static")).Subrouter()
+	var staticRouter = s.router.NewRoute().PathPrefix(staticPath).Subrouter()
 	staticRouter.Use(s.middleware.RequestStaticAssetLog)
-	staticRouter.NewRoute().Handler(http.StripPrefix(path.Join(s.webroot.Path, "static"), fileServer))
+	staticRouter.NewRoute().Handler(http.StripPrefix(staticPath, fileServer))
 
 	var appRouter = s.router.NewRoute().PathPrefix(s.webroot.Path).Subrouter()
 	appRouter.Use(s.middleware.NoCache)
