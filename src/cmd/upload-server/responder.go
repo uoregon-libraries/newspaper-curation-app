@@ -38,11 +38,12 @@ func (s *srv) route(handler func(r *responder)) *router {
 // request handler
 func (r *router) ServeHTTP(w http.ResponseWriter, req *http.Request) {
 	var sess, err = store.Session(w, req)
+	if err != nil {
+		sess, err = store.NewSession(w, req)
+	}
 	var response = &responder{w: w, req: req, sess: sess, server: r.server}
 	if err != nil {
-		r.server.logger.Errorf("Unable to instantiate session: %s", err)
-		response.internalServerError()
-		return
+		r.server.logger.Warnf("Unable to instantiate session: %s", err)
 	}
 
 	r.handler(response)
