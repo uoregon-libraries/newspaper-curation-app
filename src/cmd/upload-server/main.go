@@ -13,6 +13,7 @@ import (
 	"path/filepath"
 
 	"github.com/jessevdk/go-flags"
+	"github.com/uoregon-libraries/gopkg/interrupts"
 	"github.com/uoregon-libraries/gopkg/logger"
 	"github.com/uoregon-libraries/gopkg/middleware"
 	"github.com/uoregon-libraries/gopkg/session"
@@ -97,6 +98,13 @@ func listen() error {
 }
 
 func main() {
+	interrupts.TrapIntTerm(func() {
+		for _, f := range forms {
+			f.destroy()
+		}
+		os.Exit(0)
+	})
+
 	l = logger.Named("nca-upload-server", logger.Debug)
 
 	getConf()
