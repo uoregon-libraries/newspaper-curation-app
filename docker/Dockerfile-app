@@ -4,7 +4,7 @@
 # files and templates.  The worker system would need a bit more, like the
 # openjpeg tools, poppler, etc., but still wouldn't need the whole Go stack or
 # a Maria DB client.
-FROM fedora:27
+FROM fedora:30
 MAINTAINER Jeremy Echols <jechols@uoregon.edu>
 
 RUN dnf update -y
@@ -30,10 +30,10 @@ RUN ln /usr/local/poppler-0.22.5/utils/pdftotext /usr/local/bin/
 # Oh, right, and openjpeg2 is painful as well because it has to be installed
 # *from source* in order to recognize libpng
 WORKDIR /usr/local/
-RUN curl -sL "https://github.com/uclouvain/openjpeg/archive/v2.3.0.tar.gz" | tar -xz
+RUN curl -sL "https://github.com/uclouvain/openjpeg/archive/v2.3.1.tar.gz" | tar -xz
 RUN dnf install -y libtiff-devel libpng-devel cmake
-RUN mkdir /usr/local/openjpeg-2.3.0/build
-WORKDIR /usr/local/openjpeg-2.3.0/build
+RUN mkdir /usr/local/openjpeg-2.3.1/build
+WORKDIR /usr/local/openjpeg-2.3.1/build
 RUN cmake ..
 RUN make
 RUN make install
