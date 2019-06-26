@@ -3,6 +3,7 @@ package issuefinderhandler
 import (
 	"fmt"
 	"html/template"
+	"net/url"
 	"path"
 	"strconv"
 
@@ -36,7 +37,12 @@ func (i *Issue) Link() template.HTML {
 
 	case schema.WSInProduction:
 		contents = "Production page list"
-		href = path.Join(webutil.ProductionURL, "lccn", i.Title.LCCN, i.RawDate, "ed-"+strconv.Itoa(i.Edition))
+		var u, err = url.Parse(webutil.ProductionURL)
+		if err != nil {
+			return template.HTML(fmt.Sprintf("Error: misconfigured production url %q: %s", webutil.ProductionURL, err))
+		}
+		u.Path = path.Join(u.Path, "lccn", i.Title.LCCN, i.RawDate, "ed-"+strconv.Itoa(i.Edition))
+		href = u.String()
 
 	default:
 		contents = "NCA Read-only page viewer"
