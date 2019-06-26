@@ -224,6 +224,7 @@ func (list TitleList) Unique() TitleList {
 
 // Issue is an extremely basic encapsulation of an issue's high-level data
 type Issue struct {
+	DatabaseID     int // This will be zero for issues which aren't instantiated from the database conversion
 	MARCOrgCode    string
 	Title          *Title
 	RawDate        string // This is the date as seen on the filesystem when the issue was uploaded
