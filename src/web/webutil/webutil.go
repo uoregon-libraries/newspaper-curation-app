@@ -15,6 +15,9 @@ import (
 // handlers and site assets
 var Webroot string
 
+// ProductionURL must be set to tell us where to find the live site, e.g., https://oregonnews.uoregon.edu
+var ProductionURL string
+
 // WorkflowPath is the path to the workflow directory for serving IIIF images
 var WorkflowPath string
 

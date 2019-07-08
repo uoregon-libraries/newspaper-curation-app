@@ -312,6 +312,7 @@ func deserializeIssues(list []*Issue) {
 // things like issue keys
 func (i *Issue) SchemaIssue() (*schema.Issue, error) {
 	var si = &schema.Issue{
+		DatabaseID:   i.ID,
 		RawDate:      i.Date,
 		Edition:      i.Edition,
 		Title:        i.Title.SchemaTitle(),

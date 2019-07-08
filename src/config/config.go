@@ -52,7 +52,6 @@ type Config struct {
 	PDFBatchMARCOrgCode string `setting:"PDF_BATCH_MARC_ORG_CODE"`
 	MaxBatchSize        int    `setting:"MAX_BATCH_SIZE" type:"int"`
 	MinBatchSize        int    `setting:"MIN_BATCH_SIZE" type:"int"`
-	EmbargoDays         int    `setting:"EMBARGO_DAYS" type:"int"`
 
 	// Derivative generation rules
 	DPI           int     `setting:"DPI" type:"int"`

@@ -3,4 +3,4 @@
 package version
 
 // Version is the raw version string
-const Version = "2.6.0"
+const Version = "2.7.0"

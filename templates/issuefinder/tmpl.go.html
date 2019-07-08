@@ -44,6 +44,7 @@
   <tr>
     <th scope="col" data-sorttype="alpha">Date / Edition</th>
     <th scope="col" data-sorttype="alpha">Workflow Step</th>
+    <th scope="col" data-sorttype="">Link</th>
     <th scope="col" data-sorttype="alpha">Raw File / Web Location</th>
   </tr>
   </thead>
@@ -53,6 +54,7 @@
   <tr>
     <td>{{.DateEdition}}</td>
     <td>{{.WorkflowStep}}</td>
+    <td>{{.Link}}</td>
     <td>
       {{if .Batch}}
         <p>{{.Location}}</p>

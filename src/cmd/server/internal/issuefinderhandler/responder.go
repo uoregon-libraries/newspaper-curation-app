@@ -123,7 +123,7 @@ func (r *resp) Render(t *tmpl.Template) {
 
 	// Copy all the typesafe data into our awful untyped structure
 	r.Vars.Data["Titles"] = r.Titles
-	r.Vars.Data["Issues"] = r.Issues
+	r.Vars.Data["Issues"] = wrapIssues(r.Issues)
 	r.Vars.Data["LCCN"] = r.LCCN
 	r.Vars.Data["Year"] = r.Year
 	r.Vars.Data["Month"] = r.Month
