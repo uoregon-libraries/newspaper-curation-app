@@ -5,5 +5,5 @@ set -eu
 
 for dir in $(find src/cmd -mindepth 1 -maxdepth 1 -type d); do
   binname=${dir##*/}
-	go build -ldflags="-s -w" -o ./bin/$binname github.com/uoregon-libraries/newspaper-curation-app/src/cmd/$binname
+  echo bin/$binname
 done
