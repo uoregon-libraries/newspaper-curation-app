@@ -17,6 +17,7 @@ type uploadedFile struct {
 	Name string
 	Size int64
 	path string
+	sum  []byte
 }
 
 // uploadForm holds onto all validated data the form has already handled.  Form

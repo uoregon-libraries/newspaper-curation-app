@@ -1,6 +1,8 @@
 package main
 
 import (
+	"bytes"
+	"crypto/sha256"
 	"fmt"
 	"io"
 	"io/ioutil"
@@ -179,8 +181,12 @@ func (r *responder) getAJAXUpload(form *uploadForm) *uploadError {
 		return &uploadError{error: fmt.Errorf("unable to create temp file for file upload: %s", err)}
 	}
 
+	// Compute and check checksum while writing the file
+	var h = sha256.New()
+	var reader = io.TeeReader(file, h)
+
 	var n int64
-	n, err = io.Copy(out, file)
+	n, err = io.Copy(out, reader)
 	if n != header.Size {
 		os.Remove(out.Name())
 		return &uploadError{error: fmt.Errorf("only wrote partial file")}
@@ -196,11 +202,24 @@ func (r *responder) getAJAXUpload(form *uploadForm) *uploadError {
 		return &uploadError{error: fmt.Errorf("unable to close tempfile")}
 	}
 
+	var checksum = h.Sum(nil)
+	for _, file := range form.Files {
+		if bytes.Equal(file.sum, checksum) {
+			os.Remove(out.Name())
+			return &uploadError{
+				error:   nil,
+				message: "Skipping: this is a duplicate of " + file.Name,
+			}
+		}
+	}
+
 	var f = &uploadedFile{
 		path: out.Name(),
 		Name: header.Filename,
 		Size: header.Size,
+		sum:  checksum,
 	}
+
 	form.Files = append(form.Files, f)
 	return nil
 }
