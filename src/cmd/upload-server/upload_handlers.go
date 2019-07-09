@@ -8,6 +8,7 @@ import (
 	"io/ioutil"
 	"net/http"
 	"os"
+	"path/filepath"
 
 	"github.com/uoregon-libraries/gopkg/tmpl"
 )
@@ -220,7 +221,7 @@ func (r *responder) getAJAXUpload(form *uploadForm) *uploadError {
 
 	var f = &uploadedFile{
 		path: out.Name(),
-		Name: header.Filename,
+		Name: filepath.Base(header.Filename),
 		Size: header.Size,
 		sum:  checksum,
 	}
