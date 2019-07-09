@@ -152,7 +152,10 @@ func (s *srv) uploadAJAXReceiver() http.Handler {
 			if uerr.message == "" {
 				uerr.message = "unable to process your upload - please try again"
 			}
-			r.ajaxError(uerr.message, http.StatusInternalServerError)
+			if uerr.code == 0 {
+				uerr.code = http.StatusInternalServerError
+			}
+			r.ajaxError(uerr.message, uerr.code)
 			return
 		}
 
@@ -164,6 +167,7 @@ func (s *srv) uploadAJAXReceiver() http.Handler {
 // in logs separately from how we want to present it to the user
 type uploadError struct {
 	error
+	code    int
 	message string
 }
 
@@ -208,6 +212,7 @@ func (r *responder) getAJAXUpload(form *uploadForm) *uploadError {
 			os.Remove(out.Name())
 			return &uploadError{
 				error:   nil,
+				code:    http.StatusBadRequest,
 				message: "Skipping: this is a duplicate of " + file.Name,
 			}
 		}
