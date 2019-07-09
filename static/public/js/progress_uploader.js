@@ -57,11 +57,11 @@ class ProgressUploader {
     this.xhr = new XMLHttpRequest();
 
     this.progress.action("Cancel", "btn-danger", function() {
+      self.xhr.upload.userCanceled = true;
       self.xhr.abort();
     });
 
     var up = this.xhr.upload;
-
     up.addEventListener("progress", function(e) {
       if (e.lengthComputable) {
         const percentage = Math.round((e.loaded * 100) / e.total);
@@ -69,16 +69,32 @@ class ProgressUploader {
       }
     }, false);
 
+    this.xhr.addEventListener('readystatechange', function(e) {
+      if (this.readyState != 4) {
+        return;
+      }
+
+      // Don't modify state on abort
+      if (this.upload.userCanceled) {
+        return;
+      }
+
+      if (this.status == 200) {
+        self.progress.done();
+        uploadQueue.push(this.file);
+        console.log("TODO: Add delete button");
+        return;
+      }
+
+      self.progress.error(this.response);
+    });
+
     up.addEventListener("abort", function(e) {
-      console.log(e)
       self.progress.abort("Canceled");
     }, false);
+
     up.addEventListener("error", function(e) {
-      console.log(e)
-      self.progress.error();
-    }, false);
-    up.addEventListener("load", function(e) {
-      self.progress.done();
+      self.progress.error("Network failure");
     }, false);
 
     const form = document.getElementById("uploadform");
