@@ -66,6 +66,13 @@ class ProgressUploader {
       if (e.lengthComputable) {
         const percentage = Math.round((e.loaded * 100) / e.total);
         self.progress.setValue(percentage);
+
+        // Don't allow cancellation once we're nearly done - sometimes Firefox
+        // sits near 100% a while even though the server is in the middle of
+        // processing the file.
+        if (percentage > 98) {
+          self.progress.clearAction();
+        }
       }
     }, false);
 
