@@ -73,6 +73,7 @@ class ProgressBar {
     this.progressDiv.classList.remove("progress");
     this.progressDiv.innerHTML = "<strong>Error, unable to upload</strong>: " + msg;
     this.row.classList.add("errored");
+    this.row.classList.add("skipping");
     this.clearAction()
   }
 
@@ -89,6 +90,7 @@ class ProgressBar {
     this.progressDiv.classList.remove("progress");
     this.progressDiv.innerHTML = msg;
     this.row.classList.add("aborted");
+    this.row.classList.add("skipping");
     this.clearAction()
   }
 }
