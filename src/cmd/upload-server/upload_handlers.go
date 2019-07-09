@@ -130,7 +130,7 @@ func (s *srv) uploadAJAXReceiver() http.Handler {
 	return s.route(func(r *responder) {
 		var uid = r.req.FormValue("uid")
 		if uid == "" {
-			s.logger.Errorf("AJAX request with no form uid!")
+			// This can actually happen on a canceled upload, so we respond, but don't log anything
 			r.ajaxError("upload error: no form", http.StatusBadRequest)
 			return
 		}
@@ -142,10 +142,15 @@ func (s *srv) uploadAJAXReceiver() http.Handler {
 			return
 		}
 
-		err = r.getAJAXUpload(form)
-		if err != nil {
-			s.logger.Errorf("Error reading file upload for AJAX request: %s", err)
-			r.ajaxError("file upload error", http.StatusInternalServerError)
+		var uerr = r.getAJAXUpload(form)
+		if uerr != nil {
+			if uerr.error != nil {
+				s.logger.Errorf("Error reading file upload for AJAX request: %s", uerr.error)
+			}
+			if uerr.message == "" {
+				uerr.message = "unable to process your upload - please try again"
+			}
+			r.ajaxError(uerr.message, http.StatusInternalServerError)
 			return
 		}
 
@@ -153,36 +158,42 @@ func (s *srv) uploadAJAXReceiver() http.Handler {
 	})
 }
 
+// uploadError gives us an error value that can tell us how to report the error
+// in logs separately from how we want to present it to the user
+type uploadError struct {
+	error
+	message string
+}
+
 // getAJAXUpload pulls the AJAX upload and stores it into a temporary file.
-// The path to the temp file is returned as well as any errors which occurred
-// during the read/copy.
-func (r *responder) getAJAXUpload(form *uploadForm) error {
+// The file is stored in the form's Files list or else an error is returned.
+func (r *responder) getAJAXUpload(form *uploadForm) *uploadError {
 	var file, header, err = r.req.FormFile("myfile")
 	if err != nil {
-		return err
+		return &uploadError{error: err}
 	}
 
 	var out *os.File
 	out, err = ioutil.TempFile(os.TempDir(), form.UID+"-")
 	if err != nil {
-		return fmt.Errorf("unable to create temp file for file upload: %s", err)
+		return &uploadError{error: fmt.Errorf("unable to create temp file for file upload: %s", err)}
 	}
 
 	var n int64
 	n, err = io.Copy(out, file)
 	if n != header.Size {
-		r.server.logger.Errorf("Wrote %d bytes to tempfile, but expected %d", n, header.Size)
-		return fmt.Errorf("only wrote partial file")
+		os.Remove(out.Name())
+		return &uploadError{error: fmt.Errorf("only wrote partial file")}
 	}
 	if err != nil {
-		r.server.logger.Errorf("Error writing to tempfile: %s", err)
-		return fmt.Errorf("unable to write to tempfile")
+		os.Remove(out.Name())
+		return &uploadError{error: fmt.Errorf("unable to write to tempfile")}
 	}
 
 	err = out.Close()
 	if err != nil {
-		r.server.logger.Errorf("Error closing tempfile: %s", err)
-		return fmt.Errorf("unable to close tempfile")
+		os.Remove(out.Name())
+		return &uploadError{error: fmt.Errorf("unable to close tempfile")}
 	}
 
 	var f = &uploadedFile{
