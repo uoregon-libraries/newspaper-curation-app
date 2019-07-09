@@ -7,8 +7,7 @@ class ProgressBar {
 
   makeUI(parent) {
     this.row = document.createElement("tr");
-    this.row.classList.add("upload");
-    this.row.classList.add("in-progress");
+    this.row.classList.add("upload", "in-progress");
     parent.appendChild(this.row);
 
     this.fileInfo = document.createElement("td");
@@ -29,9 +28,7 @@ class ProgressBar {
     this.row.appendChild(this.actions);
 
     this.bar = document.createElement("div");
-    this.bar.classList.add("progress-bar");
-    this.bar.classList.add("progress-bar-striped");
-    this.bar.classList.add("progress-bar-animated");
+    this.bar.classList.add("progress-bar", "progress-bar-striped", "progress-bar-animated");
     this.bar.setAttribute("role", "progressbar");
     this.bar.setAttribute("aria-valuemax", 100);
     this.progressDiv.appendChild(this.bar);
@@ -43,8 +40,7 @@ class ProgressBar {
     this.clearAction();
     this.button = document.createElement("button");
     this.button.innerHTML = label
-    this.button.classList.add("btn")
-    this.button.classList.add(classname)
+    this.button.classList.add("btn", classname)
     this.button.addEventListener("click", onclick);
     this.actions.appendChild(this.button);
   }
@@ -72,8 +68,7 @@ class ProgressBar {
     this.row.classList.remove("in-progress");
     this.progressDiv.classList.remove("progress");
     this.progressDiv.innerHTML = "<strong>Error, unable to upload</strong>: " + msg;
-    this.row.classList.add("errored");
-    this.row.classList.add("skipping");
+    this.row.classList.add("errored", "skipping");
     this.clearAction()
   }
 
@@ -89,8 +84,7 @@ class ProgressBar {
     this.row.classList.remove("in-progress");
     this.progressDiv.classList.remove("progress");
     this.progressDiv.innerHTML = msg;
-    this.row.classList.add("aborted");
-    this.row.classList.add("skipping");
+    this.row.classList.add("aborted", "skipping");
     this.clearAction()
   }
 }
