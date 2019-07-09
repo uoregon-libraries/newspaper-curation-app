@@ -3,5 +3,6 @@
 /static/bootstrap/
 /static/openseadragon/
 /static/js/jquery-1.12.1.min.js
+/static/public/bootstrap/
 /pkg/
 /vendor/src/
