@@ -48,16 +48,16 @@
       <select id="embargo_period" name="embargo_period">
         <option value="">Not embargoed</option>
         <option value="3M"
-          {{if eq .Data.Title.EmbargoRFC3339 "3M"}} selected="selected"{{end}}
+          {{if eq .Data.Title.EmbargoRFC3339 "P3M"}} selected="selected"{{end}}
         >3 months</option>
         <option value="1Y"
-          {{if eq .Data.Title.EmbargoRFC3339 "1Y"}} selected="selected"{{end}}
+          {{if eq .Data.Title.EmbargoRFC3339 "P1Y"}} selected="selected"{{end}}
         >1 year</option>
         <option value="2Y"
-          {{if eq .Data.Title.EmbargoRFC3339 "2Y"}} selected="selected"{{end}}
+          {{if eq .Data.Title.EmbargoRFC3339 "P2Y"}} selected="selected"{{end}}
         >2 years</option>
         <option value="3Y"
-          {{if eq .Data.Title.EmbargoRFC3339 "3Y"}} selected="selected"{{end}}
+          {{if eq .Data.Title.EmbargoRFC3339 "P3Y"}} selected="selected"{{end}}
         >3 years</option>
       </select>
     </div>
