@@ -107,16 +107,16 @@ func copyLists() [][]string {
 // component's values have all been used.  The full names are guaranteed not to
 // duplicate until the longest list has been used up, at which point all lists
 // will be reshuffled.
-func RandomBatchName(seq int) string {
+func RandomBatchName(seq uint32) string {
 	var lists = copyLists()
 
 	// Find the longest list so we know when it's time to reshuffle - this is our
 	// shortcut for the sequence number.  By dividing seq by iterations, we only
 	// run through a single list instead of potentially reshuffling hundreds of
 	// times to get to the right sequence.
-	var iterations int
+	var iterations uint32
 	for _, list := range lists {
-		var l = len(list)
+		var l = uint32(len(list))
 		if l > iterations {
 			iterations = l
 		}
@@ -138,7 +138,7 @@ func RandomBatchName(seq int) string {
 	// Now grab the items at seq
 	var nameParts = make([]string, len(lists))
 	for i, list := range lists {
-		var l = len(list)
+		var l = uint32(len(list))
 		nameParts[i] = list[seq%l]
 	}
 

@@ -2,6 +2,7 @@ package db
 
 import (
 	"fmt"
+	"hash/crc32"
 	"time"
 
 	"github.com/Nerdmaster/magicsql"
@@ -58,10 +59,18 @@ func InProcessBatches() ([]*Batch, error) {
 	return list, op.Err()
 }
 
-// CreateBatch creates a batch in the database, using its ID to generate a
-// unique batch name, and associating the given list of issues.  This is
-// inefficient, but it gets the job done.
-func CreateBatch(moc string, issues []*Issue) (*Batch, error) {
+// CreateBatch creates a batch in the database, using its ID combined with the
+// hash of the site's web root string to generate a unique batch name, and
+// associating the given list of issues.  This is inefficient, but it gets the
+// job done.
+//
+// Background: the batch name is deterministic because we need to be sure we
+// don't reuse the various components (e.g., "Jade", "Pine", "Maple", etc.) too
+// frequently.  But if NCA is used for two different sites, batch names really
+// shouldn't be exactly the same.  Adding the CRC32 of the webroot string
+// ensures that we stick with a sequence, keeping collisions unlikely, but a
+// different site would have a totally different sequence.
+func CreateBatch(webroot, moc string, issues []*Issue) (*Batch, error) {
 	var op = DB.Operation()
 	op.Dbg = Debug
 	op.BeginTransaction()
@@ -78,7 +87,8 @@ func CreateBatch(moc string, issues []*Issue) (*Batch, error) {
 		i.SaveOp(op)
 	}
 
-	b.Name = RandomBatchName(b.ID)
+	var chksum = crc32.ChecksumIEEE([]byte(webroot))
+	b.Name = RandomBatchName(uint32(b.ID) + chksum)
 	err = b.SaveOp(op)
 	return b, err
 }
