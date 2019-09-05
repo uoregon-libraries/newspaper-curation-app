@@ -10,6 +10,7 @@ import (
 
 // These are all possible batch status values
 const (
+	BatchStatusDeleted   = "deleted"    // Batch wasn't fixable and had to be removed
 	BatchStatusPending   = "pending"    // Not yet built or in the process of being built
 	BatchStatusQCReady   = "qc_ready"   // Ready for ingest onto staging
 	BatchStatusOnStaging = "on_staging" // On the staging server awaiting QC
@@ -134,5 +135,33 @@ func (b *Batch) Save() error {
 // easier transactions
 func (b *Batch) SaveOp(op *magicsql.Operation) error {
 	op.Save("batches", b)
+	return op.Err()
+}
+
+// Delete removes all issues from this batch and sets its status to "deleted".
+// Caller must clean up the filesystem.
+func (b *Batch) Delete() error {
+	var op = DB.Operation()
+	op.Dbg = Debug
+	op.BeginTransaction()
+	defer op.EndTransaction()
+
+	b.Status = BatchStatusDeleted
+	b.Location = ""
+	var err = b.SaveOp(op)
+	if err != nil {
+		return err
+	}
+
+	var issues []*Issue
+	issues, err = b.Issues()
+	if err != nil {
+		return err
+	}
+
+	for _, i := range issues {
+		i.BatchID = 0
+		i.SaveOp(op)
+	}
 	return op.Err()
 }
