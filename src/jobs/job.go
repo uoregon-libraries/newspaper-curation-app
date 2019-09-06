@@ -73,6 +73,21 @@ func RunWhileTrue(subProcessors ...func() bool) (ok bool) {
 	return true
 }
 
+// Rerun clones this job and runs it, stripping metadata to avoid side-effects
+// (QueueJobID and ExtraData)
+func (j *Job) Rerun() error {
+	var clone = &db.Job{
+		Type:       j.db.Type,
+		ObjectID:   j.db.ObjectID,
+		ObjectType: j.db.ObjectType,
+		Location:   j.db.Location,
+		Status:     string(JobStatusPending),
+		RunAt:      j.db.RunAt,
+	}
+
+	return clone.Save()
+}
+
 // Requeue closes out this job and queues a new, duplicate job
 func (j *Job) Requeue() error {
 	var op = db.DB.Operation()

@@ -96,6 +96,10 @@ func usageFail(format string, args ...interface{}) {
 		"(reordering or other manual processing) which are ready to be moved for " +
 		"metadata entry.  No job is associated with this action, hence it must run on " +
 		"its own, and should only have one copy running at a time.")
+	wrapBullet("* force-rerun <job id> [<job id>...]: Creates new jobs by cloning the " +
+		"given jobs and running the new clones.  Extra metadata is removed to avoid " +
+		"as many side-effects as possible.  This is NOT a good idea unless you know " +
+		"exactly what the job(s) you're cloning can affect.")
 
 	fmt.Fprintln(os.Stderr)
 	wrap(fmt.Sprintf("Valid queue names: %s", strings.Join(validQueueList, ", ")))
@@ -155,6 +159,8 @@ func main() {
 		watchPageReview(c)
 	case "watchall":
 		runAllQueues(c)
+	case "force-rerun":
+		forceRerun(args)
 	default:
 		usageFail("Error: invalid action")
 	}
@@ -170,28 +176,63 @@ func requeue(ids []string) {
 	}
 }
 
-func retryJob(idString string) {
+func findJob(idString string) *jobs.Job {
 	var id, _ = strconv.Atoi(idString)
 	if id == 0 {
 		logger.Errorf("Invalid job id %q", idString)
-		return
+		return nil
 	}
 
 	var j = jobs.Find(id)
 	if j == nil {
-		logger.Errorf("Cannot requeue job id %d: no such job", id)
-		return
+		logger.Errorf("No job found with id %d", id)
+		return nil
 	}
-	var failStatus = jobs.JobStatusFailed
-	if j.DBJob().Status != string(failStatus) {
-		logger.Errorf("Cannot requeue job id %d: status is %s (it must be %s to requeue)", id, j.DBJob().Status, failStatus)
+
+	return j
+}
+
+func retryJob(idString string) {
+	var j = findJob(idString)
+	if j == nil {
 		return
 	}
 
-	logger.Infof("Requeuing job %d", j.DBJob().ID)
+	var failStatus = jobs.JobStatusFailed
+	var dj = j.DBJob()
+	if dj.Status != string(failStatus) {
+		logger.Errorf("Cannot requeue job id %d: status is %s (it must be %s to requeue)", dj.ID, dj.Status, failStatus)
+		return
+	}
+
+	logger.Infof("Requeuing job %d", dj.ID)
 	var err = j.Requeue()
 	if err != nil {
-		logger.Errorf("Unable to requeue job %d: %s", j.DBJob().ID, err)
+		logger.Errorf("Unable to requeue job %d: %s", dj.ID, err)
+	}
+}
+
+func forceRerun(ids []string) {
+	if len(ids) == 0 {
+		usageFail("Error: the force-rerun action requires at least one job id")
+	}
+
+	for _, idString := range ids {
+		rerunJob(idString)
+	}
+}
+
+func rerunJob(idString string) {
+	var j = findJob(idString)
+	if j == nil {
+		return
+	}
+
+	var dj = j.DBJob()
+	logger.Infof("Rerunning job %d", dj.ID)
+	var err = j.Rerun()
+	if err != nil {
+		logger.Errorf("Unable to rerun job %d: %s", dj.ID, err)
 	}
 }
 
