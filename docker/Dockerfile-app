@@ -67,8 +67,7 @@ WORKDIR /usr/local/src/nca
 # TODO: When we have a public repo, just pull that instead of this pain
 RUN mkdir -p /usr/local/nca
 COPY ./Makefile /usr/local/src/nca/Makefile
-COPY ./makeall.sh /usr/local/src/nca/makeall.sh
-COPY ./validate.sh /usr/local/src/nca/validate.sh
+COPY ./scripts /usr/local/src/nca/scripts
 COPY ./src /usr/local/src/nca/src
 COPY ./go.mod /usr/local/src/nca/go.mod
 COPY ./go.sum /usr/local/src/nca/go.sum
