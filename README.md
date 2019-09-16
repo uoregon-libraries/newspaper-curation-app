@@ -12,13 +12,17 @@ fixed by the scanning team, etc.
 
 There are also improvements which need to be made to automate more parts of the
 process.  For instance, right now if an issue has errors, but manages to slip
-through to the batching phase, fixing the batch requires low-level database
-fixing and running a command-line utility.
+through to the batching phase, fixing the batch requires the use of a somewhat
+archaic command-line utility that isn't terribly well-documented.
 
 In general, there are undocumented problems which can happen out of the
 application's scope, and which can only be fixed by manual intervention due to
 features we haven't had time to build and/or general human error inherent in
 publisher-uploaded PDFs and scanned+OCRed historic titles.
+
+**Note 2**: NCA isn't meant as an out-of-the-box solution for anybody but us.
+Some of the tools may be generic, but there is no customization of things like
+workflow rules, template theming, etc.
 
 Ye be warned.
 
@@ -31,10 +35,6 @@ well as scanned newspapers, into a one-batch
 [bag](https://en.wikipedia.org/wiki/BagIt) which can be ingested into
 [ONI](https://github.com/open-oni/open-oni) and
 [chronam](https://github.com/LibraryOfCongress/chronam).
-
-*Apologies*: this toolsuite was built to meet our needs.  It's very likely some
-of our assumptions won't work for everybody, and it's certain that there are
-pieces of the suite which need better documentation.
 
 Please refer to the
 [wiki](https://github.com/uoregon-libraries/newspaper-curation-app/wiki) for

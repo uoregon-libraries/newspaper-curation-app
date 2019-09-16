@@ -15,6 +15,10 @@ func (i *Input) makeBatchMenu() (*menu, string) {
 	}
 	if st == db.BatchStatusFailedQC {
 		m.add("load", "Loads an issue by its id, allowing removal from the batch", i.loadIssueHandler)
+		m.add("delete", "Deletes the entire batch from disk and resets associated issues in "+
+			"the database to their 'ready for batching' state, for cases where a full rebatch "+
+			"is easier than pulling individual issues (e.g., bad org code, dozens of bad issues, "+
+			"etc.)", i.deleteBatchHandler)
 	}
 	if st != db.BatchStatusLive && st != db.BatchStatusLiveDone {
 		m.add("list", "Lists all issues associated with this batch", i.listIssueHandler)
@@ -121,4 +125,18 @@ func (i *Input) batchInfoHandler([]string) {
 		datum{"Status", i.batch.db.Status},
 		datum{"Creation", i.batch.db.CreatedAt.Format("2006-01-02 15:04:05")},
 	)
+}
+
+func (i *Input) deleteBatchHandler([]string) {
+	i.println(ansiImportant + "Warning" + ansiReset + ": deleting a batch is irreversible!")
+	if !i.confirmYN() {
+		i.println("Aborted...")
+		return
+	}
+
+	i.println("Deleting batch from DB and un-associating issues")
+	var err = i.batch.db.Delete()
+	if err != nil {
+		i.printerrln(fmt.Sprintf("Unable to update batch / issue data: %s", err))
+	}
 }

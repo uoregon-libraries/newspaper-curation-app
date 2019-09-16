@@ -8,13 +8,20 @@ import (
 	"github.com/uoregon-libraries/gopkg/logger"
 	"github.com/uoregon-libraries/newspaper-curation-app/src/apperr"
 	"github.com/uoregon-libraries/newspaper-curation-app/src/cli"
+	"github.com/uoregon-libraries/newspaper-curation-app/src/db"
 	"github.com/uoregon-libraries/newspaper-curation-app/src/issuewatcher"
 )
 
 func main() {
 	var conf = cli.Simple().GetConf()
+
+	var err = db.Connect(conf.DatabaseConnect)
+	if err != nil {
+		logger.Fatalf("Error trying to connect to database: %s", err)
+	}
+
 	var scanner = issuewatcher.NewScanner(conf)
-	var err = scanner.Deserialize()
+	err = scanner.Deserialize()
 	if err != nil {
 		logger.Fatalf("Unable to deserialize the scanner: %s", err)
 	}
@@ -22,14 +29,14 @@ func main() {
 	// Report all errors
 	reportErrors("Root", scanner.Finder.Errors)
 	for _, b := range scanner.Finder.Batches {
-		reportErrors(fmt.Sprintf("Batch %q", b.Fullname()), b.Errors)
+		reportErrors(fmt.Sprintf("Batch %q (%q)", b.Fullname(), b.Location), b.Errors)
 	}
 	for _, t := range scanner.Finder.Titles {
 		reportErrors(fmt.Sprintf("Title %q (%s)", t.Name, t.LCCN), t.Errors)
 		for _, i := range t.Issues {
-			reportErrors(fmt.Sprintf("Issue %s", i.Key()), i.Errors)
+			reportErrors(fmt.Sprintf("Issue %s", i.Location), i.Errors)
 			for _, f := range i.Files {
-				reportErrors(fmt.Sprintf("File %s/%s", i.Key(), f.Name), f.Errors)
+				reportErrors(fmt.Sprintf("File %s/%s", i.Location, f.Name), f.Errors)
 			}
 		}
 	}

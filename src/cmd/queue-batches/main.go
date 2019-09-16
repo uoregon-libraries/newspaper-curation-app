@@ -36,8 +36,10 @@ func getOpts() *config.Config {
 	return conf
 }
 
+var conf *config.Config
+
 func main() {
-	var conf = getOpts()
+	conf = getOpts()
 	logger.Infof("Scanning ready issues for batchability")
 
 	var q = newBatchQueue(conf.MinBatchSize, conf.MaxBatchSize)

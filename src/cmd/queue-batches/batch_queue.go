@@ -182,7 +182,7 @@ func (q *batchQueue) NextBatch() (*db.Batch, bool) {
 		dbIssues[i] = issue.Issue
 	}
 
-	var batch, err = db.CreateBatch(q.currentMOC, dbIssues)
+	var batch, err = db.CreateBatch(conf.Webroot, q.currentMOC, dbIssues)
 	if err != nil {
 		logger.Fatalf("Unable to create a new batch: %s", err)
 	}

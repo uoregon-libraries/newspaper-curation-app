@@ -26,8 +26,9 @@ type Transformer struct {
 }
 
 type data struct {
-	*db.Issue
-	*db.Title
+	Issue      *db.Issue
+	Pages      []*Page
+	Title      *db.Title
 	NowRFC3339 string
 }
 
@@ -37,8 +38,22 @@ type data struct {
 // unknowns, and allow for unsaved / faked data
 func New(templatePath string, outputFileName string, issue *db.Issue, title *db.Title, createDate time.Time) *Transformer {
 	var tmpl = template.New("metsxml")
-	tmpl.Funcs(template.FuncMap{"incr": func(i int) int { return i + 1 }})
-	var t = &Transformer{tmpl, outputFileName, &data{issue, title, createDate.Format(TimeFormat)}, nil}
+	var pgs, err = pages(issue)
+	var t = &Transformer{
+		tmpl:    tmpl,
+		outFile: outputFileName,
+		d: &data{
+			Issue:      issue,
+			Pages:      pgs,
+			Title:      title,
+			NowRFC3339: createDate.Format(TimeFormat),
+		},
+	}
+	if err != nil {
+		t.err = fmt.Errorf("unable to aggregate issue's pages: %s", err)
+		return t
+	}
+
 	t.tmpl, t.err = tmpl.ParseFiles(templatePath)
 	return t
 }

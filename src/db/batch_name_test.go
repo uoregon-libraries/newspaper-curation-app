@@ -28,7 +28,7 @@ func TestRandomBatchName(t *testing.T) {
 func verifyUniqueness(t *testing.T, start, end int) {
 	var names = make([]string, end-start)
 	for i := start; i < end; i++ {
-		names[i-start] = RandomBatchName(i)
+		names[i-start] = RandomBatchName(uint32(i))
 	}
 
 	var seen = make(map[string]bool)

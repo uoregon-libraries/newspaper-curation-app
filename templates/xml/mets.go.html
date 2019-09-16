@@ -64,19 +64,18 @@
       </xmlData>
     </mdWrap>
   </dmdSec>
-  {{range $index, $label := .Issue.PageLabels}}
-  {{$pageno := incr $index}}
-  <dmdSec ID="pageModsBib{{$pageno}}">
+  {{range .Pages}}
+  <dmdSec ID="pageModsBib{{.Number}}">
     <mdWrap MDTYPE="MODS" LABEL="Page metadata">
       <xmlData>
         <mods:mods>
           <mods:part>
             <mods:extent unit="pages">
-              <mods:start>{{$pageno}}</mods:start>
+              <mods:start>{{.Number}}</mods:start>
             </mods:extent>
-            {{if and ((ne $label "0") $label)}}
+            {{if and ((ne .Label "0") .Label)}}
             <mods:detail type="page number">
-              <mods:number>{{$label}}</mods:number>
+              <mods:number>{{.Number}}</mods:number>
             </mods:detail>
             {{end}}
           </mods:part>
@@ -96,29 +95,27 @@
   </dmdSec>
   {{end}}
   <fileSec>
-    {{range $index, $label := .Issue.PageLabels}}
-    {{$pageno := incr $index}}
-    <fileGrp ID="pageFileGrp{{$pageno}}">
-      <file ID="serviceFile{{$pageno}}" USE="service">
-        <FLocat LOCTYPE="OTHER" OTHERLOCTYPE="file" xlink:href="{{printf "%04d" $pageno}}.jp2" />
+    {{range .Pages}}
+    <fileGrp ID="pageFileGrp{{.Number}}">
+      <file ID="serviceFile{{.Number}}" USE="service">
+        <FLocat LOCTYPE="OTHER" OTHERLOCTYPE="file" xlink:href="{{.Prefix}}.jp2" />
       </file>
-      <file ID="otherDerivativeFile{{$pageno}}" USE="derivative">
-        <FLocat LOCTYPE="OTHER" OTHERLOCTYPE="file" xlink:href="{{printf "%04d" $pageno}}.pdf" />
+      <file ID="otherDerivativeFile{{.Number}}" USE="derivative">
+        <FLocat LOCTYPE="OTHER" OTHERLOCTYPE="file" xlink:href="{{.Prefix}}.pdf" />
       </file>
-      <file ID="ocrFile{{$pageno}}" USE="ocr">
-        <FLocat LOCTYPE="OTHER" OTHERLOCTYPE="file" xlink:href="{{printf "%04d" $pageno}}.xml" />
+      <file ID="ocrFile{{.Number}}" USE="ocr">
+        <FLocat LOCTYPE="OTHER" OTHERLOCTYPE="file" xlink:href="{{.Prefix}}.xml" />
       </file>
     </fileGrp>
     {{end}}
   </fileSec>
   <structMap>
     <div DMDID="issueModsBib" TYPE="np:issue">
-      {{range $index, $label := .Issue.PageLabels}}
-      {{$pageno := incr $index}}
-      <div DMDID="pageModsBib{{$pageno}}" TYPE="np:page">
-        <fptr FILEID="serviceFile{{$pageno}}" />
-        <fptr FILEID="otherDerivativeFile{{$pageno}}" />
-        <fptr FILEID="ocrFile{{$pageno}}" />
+      {{range .Pages}}
+      <div DMDID="pageModsBib{{.Number}}" TYPE="np:page">
+        <fptr FILEID="serviceFile{{.Number}}" />
+        <fptr FILEID="otherDerivativeFile{{.Number}}" />
+        <fptr FILEID="ocrFile{{.Number}}" />
       </div>
       {{end}}
     </div>
