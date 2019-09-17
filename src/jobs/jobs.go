@@ -1,8 +1,8 @@
 package jobs
 
 import (
-	"github.com/uoregon-libraries/gopkg/logger"
 	"github.com/uoregon-libraries/newspaper-curation-app/src/db"
+	"github.com/uoregon-libraries/newspaper-curation-app/src/internal/logger"
 )
 
 // JobType represents all possible jobs the system queues and processes
