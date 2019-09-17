@@ -37,6 +37,7 @@ func Setup(r *mux.Router, baseWebPath string, c *config.Config) {
 	var s = r.PathPrefix(basePath).Subrouter()
 	s.Path("").Handler(canView(listHandler))
 	s.Path("/new").Handler(canAdd(newHandler))
+	s.Path("/edit").Handler(canEdit(editHandler))
 	s.Path("/save").Methods("POST").Handler(canAdd(saveHandler))
 	s.Path("/delete").Methods("POST").Handler(canDelete(deleteHandler))
 
@@ -72,7 +73,17 @@ func newHandler(w http.ResponseWriter, req *http.Request) {
 // saveHandler writes the new MOC to the db
 func saveHandler(w http.ResponseWriter, req *http.Request) {
 	var r = responder.Response(w, req)
-	var code = req.FormValue("code")
+
+	if r.Request.FormValue("id") != "" {
+		updateMOC(r)
+		return
+	}
+
+	createMOC(r)
+}
+
+func createMOC(r *responder.Responder) {
+	var code = r.Request.FormValue("code")
 	if db.ValidMOC(code) {
 		r.Vars.Alert = template.HTML(fmt.Sprintf("MOC %q already exists", code))
 		r.Render(formTmpl)
@@ -88,8 +99,32 @@ func saveHandler(w http.ResponseWriter, req *http.Request) {
 	}
 
 	r.Audit("create-moc", code)
-	http.SetCookie(w, &http.Cookie{Name: "Info", Value: "New MOC created", Path: "/"})
-	http.Redirect(w, req, basePath, http.StatusFound)
+	http.SetCookie(r.Writer, &http.Cookie{Name: "Info", Value: "New MOC created", Path: "/"})
+	http.Redirect(r.Writer, r.Request, basePath, http.StatusFound)
+}
+
+func updateMOC(r *responder.Responder) {
+	var moc, handled = getMOC(r)
+	if handled {
+		return
+	}
+	var oldMOC = &db.MOC{
+		ID:   moc.ID,
+		Code: moc.Code,
+	}
+	var code = r.Request.FormValue("code")
+	moc.Code = code
+	var err = moc.Save()
+
+	if err != nil {
+		logger.Errorf("Unable to save MOC %q: %s", moc, err)
+		r.Error(http.StatusInternalServerError, "Error trying to save MOC - try again or contact support")
+		return
+	}
+
+	r.Audit("update-moc", fmt.Sprintf("previous: %#v, new: %#v", oldMOC, moc))
+	http.SetCookie(r.Writer, &http.Cookie{Name: "Info", Value: "MOC updated", Path: "/"})
+	http.Redirect(r.Writer, r.Request, basePath, http.StatusFound)
 }
 
 // deleteHandler removes the given MOC from the db
@@ -110,6 +145,18 @@ func deleteHandler(w http.ResponseWriter, req *http.Request) {
 	r.Audit("delete-moc", fmt.Sprintf("%#v", moc))
 	http.SetCookie(w, &http.Cookie{Name: "Info", Value: "Deleted MOC", Path: "/"})
 	http.Redirect(w, req, basePath, http.StatusFound)
+}
+
+func editHandler(w http.ResponseWriter, req *http.Request) {
+	var r = responder.Response(w, req)
+	var moc, handled = getMOC(r)
+	if handled {
+		return
+	}
+
+	r.Vars.Data["MOC"] = moc
+	r.Vars.Title = "Editing MARC organization code"
+	r.Render(formTmpl)
 }
 
 func getMOC(r *responder.Responder) (moc *db.MOC, handled bool) {

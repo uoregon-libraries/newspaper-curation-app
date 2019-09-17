@@ -1,10 +1,14 @@
 {{block "content" .}}
 
 <form class="form-horizontal" role="form" method="post" action="{{MOCHomeURL}}/save">
+  {{if .Data.MOC}}
+    <input id="id" name="id" type="hidden" value="{{.Data.MOC.ID}}" />
+  {{end}}
+
   <div class="form-group">
     <label class="col-sm-4 control-label" for="code">Code</label>
     <div class="col-sm-8">
-      <input id="code" name="code" required="required" class="form-control" pattern="[a-z]+"/>
+      <input id="code" name="code" required="required" class="form-control" pattern="[a-z]+" value="{{.Data.MOC.Code}}" />
       <p class="help-block">
         Enter the <em>normalized</em> MARC Org Code; e.g., "orul", <strong>not</strong> "OrU-L".
       </p>
