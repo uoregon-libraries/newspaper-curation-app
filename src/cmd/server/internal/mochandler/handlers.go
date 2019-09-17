@@ -79,7 +79,8 @@ func saveHandler(w http.ResponseWriter, req *http.Request) {
 		return
 	}
 
-	var moc, err = db.CreateMOC(code)
+	var moc = &db.MOC{Code: code}
+	var err = moc.Save()
 	if err != nil {
 		logger.Errorf("Unable to create new MOC %q: %s", moc, err)
 		r.Error(http.StatusInternalServerError, "Error trying to create new MOC - try again or contact support")
@@ -94,22 +95,43 @@ func saveHandler(w http.ResponseWriter, req *http.Request) {
 // deleteHandler removes the given MOC from the db
 func deleteHandler(w http.ResponseWriter, req *http.Request) {
 	var r = responder.Response(w, req)
-	var idString = req.FormValue("id")
-	var id, _ = strconv.Atoi(idString)
-	if id < 1 {
-		logger.Errorf("Invalid MOC id to delete (%s)", idString)
-		r.Error(http.StatusInternalServerError, "Error trying to delete MOC - try again or contact support")
+	var moc, handled = getMOC(r)
+	if handled {
 		return
 	}
 
-	var err = db.DeleteMOC(id)
+	var err = moc.Delete()
 	if err != nil {
-		logger.Errorf("Unable to delete MOC (id %d): %s", id, err)
+		logger.Errorf("Unable to delete MOC (%#v): %s", moc, err)
 		r.Error(http.StatusInternalServerError, "Error trying to delete MOC - try again or contact support")
 		return
 	}
 
-	r.Audit("delete-moc", idString)
+	r.Audit("delete-moc", fmt.Sprintf("%#v", moc))
 	http.SetCookie(w, &http.Cookie{Name: "Info", Value: "Deleted MOC", Path: "/"})
 	http.Redirect(w, req, basePath, http.StatusFound)
+}
+
+func getMOC(r *responder.Responder) (moc *db.MOC, handled bool) {
+	var idStr = r.Request.FormValue("id")
+	var id, _ = strconv.Atoi(idStr)
+	if id < 1 {
+		logger.Warnf("Invalid MOC id for request %q (%s)", r.Request.URL.Path, idStr)
+		r.Error(http.StatusBadRequest, "Invalid MOC id - try again or contact support")
+		return nil, true
+	}
+
+	var err error
+	moc, err = db.FindMOCByID(id)
+	if err != nil {
+		logger.Errorf("Unable to find MOC by id %d: %s", id, err)
+		r.Error(http.StatusInternalServerError, "Unable to find MOC - try again or contact support")
+		return nil, true
+	}
+	if moc == nil {
+		r.Error(http.StatusNotFound, "Unable to find MOC - try again or contact support")
+		return nil, true
+	}
+
+	return moc, false
 }
