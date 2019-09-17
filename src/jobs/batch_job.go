@@ -1,8 +1,8 @@
 package jobs
 
 import (
-	"github.com/uoregon-libraries/gopkg/logger"
 	"github.com/uoregon-libraries/newspaper-curation-app/src/db"
+	"github.com/uoregon-libraries/newspaper-curation-app/src/internal/logger"
 )
 
 // BatchJob wraps the Job type to add things needed in all jobs tied to

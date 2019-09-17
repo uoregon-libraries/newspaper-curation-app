@@ -7,10 +7,10 @@ import (
 	"path/filepath"
 
 	"github.com/uoregon-libraries/gopkg/fileutil"
-	"github.com/uoregon-libraries/gopkg/logger"
 	"github.com/uoregon-libraries/newspaper-curation-app/src/cli"
 	"github.com/uoregon-libraries/newspaper-curation-app/src/config"
 	"github.com/uoregon-libraries/newspaper-curation-app/src/db"
+	"github.com/uoregon-libraries/newspaper-curation-app/src/internal/logger"
 )
 
 // Command-line options
@@ -67,7 +67,7 @@ func moveIssue(issue *db.Issue, dest string) (ok bool) {
 	var dateEdition = fmt.Sprintf("%s_%02d", issue.Date, issue.Edition)
 	var contentDest = filepath.Join(dest, "content", issue.LCCN, dateEdition)
 	var derivDest = filepath.Join(dest, "derivatives", issue.LCCN, dateEdition)
-	var masterDest = filepath.Join(dest, "master", issue.LCCN, dateEdition)
+	var masterDest = filepath.Join(contentDest, "master")
 
 	logger.Debugf("Moving content files from %q to %q", issue.Location, contentDest)
 	var err = moveDir(issue.Location, contentDest)
