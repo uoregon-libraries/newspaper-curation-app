@@ -4,6 +4,7 @@ package db
 type MOC struct {
 	ID   int `sql:",primary"`
 	Code string
+	Name string
 }
 
 // FindMOCByCode searches the database for the given MOC and returns it if it's

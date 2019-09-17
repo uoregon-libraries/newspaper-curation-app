@@ -84,13 +84,14 @@ func saveHandler(w http.ResponseWriter, req *http.Request) {
 
 func createMOC(r *responder.Responder) {
 	var code = r.Request.FormValue("code")
+	var name = r.Request.FormValue("name")
 	if db.ValidMOC(code) {
 		r.Vars.Alert = template.HTML(fmt.Sprintf("MOC %q already exists", code))
 		r.Render(formTmpl)
 		return
 	}
 
-	var moc = &db.MOC{Code: code}
+	var moc = &db.MOC{Code: code, Name: name}
 	var err = moc.Save()
 	if err != nil {
 		logger.Errorf("Unable to create new MOC %q: %s", moc, err)
@@ -111,9 +112,12 @@ func updateMOC(r *responder.Responder) {
 	var oldMOC = &db.MOC{
 		ID:   moc.ID,
 		Code: moc.Code,
+		Name: moc.Name,
 	}
 	var code = r.Request.FormValue("code")
+	var name = r.Request.FormValue("name")
 	moc.Code = code
+	moc.Name = name
 	var err = moc.Save()
 
 	if err != nil {

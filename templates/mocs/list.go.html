@@ -10,6 +10,7 @@
   <thead>
     <tr>
       <th scope="col" data-sorttype="alpha">Code</th>
+      <th scope="col" data-sorttype="alpha">Name</th>
       <th>Actions</th>
     </tr>
   </thead>
@@ -21,11 +22,14 @@
           {{.Code}}
         </td>
         <td>
+          {{.Name}}
+        </td>
+        <td>
           <a href="{{MOCHomeURL}}/edit?id={{.ID}}" class="btn btn-default">Edit</a>
 
           <form class="actions" action="{{MOCHomeURL}}/delete" method="post">
             <input type="hidden" name="id" value="{{.ID}}" />
-            <button type="submit">Delete</button>
+            <button class="btn btn-danger" type="submit">Delete</button>
           </form>
         </td>
       </tr>
