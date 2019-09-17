@@ -11,7 +11,6 @@ import (
 	"github.com/uoregon-libraries/newspaper-curation-app/src/cmd/server/internal/responder"
 	"github.com/uoregon-libraries/newspaper-curation-app/src/config"
 	"github.com/uoregon-libraries/newspaper-curation-app/src/db"
-	"github.com/uoregon-libraries/newspaper-curation-app/src/db/user"
 	"github.com/uoregon-libraries/newspaper-curation-app/src/internal/logger"
 	"github.com/uoregon-libraries/newspaper-curation-app/src/web/tmpl"
 )
@@ -113,22 +112,4 @@ func deleteHandler(w http.ResponseWriter, req *http.Request) {
 	r.Audit("delete-moc", idString)
 	http.SetCookie(w, &http.Cookie{Name: "Info", Value: "Deleted MOC", Path: "/"})
 	http.Redirect(w, req, basePath, http.StatusFound)
-}
-
-// canView verifies the user can view MOCs - right now this just checks a
-// single MOC permission, but we're splitting it out just in case that changes
-func canView(h http.HandlerFunc) http.Handler {
-	return responder.MustHavePrivilege(user.ManageMOCs, h)
-}
-
-// canAdd verifies the user can create new MOCs - right now this just checks a
-// single MOC permission, but we're splitting it out just in case that changes
-func canAdd(h http.HandlerFunc) http.Handler {
-	return responder.MustHavePrivilege(user.ManageMOCs, h)
-}
-
-// canDelete verifies the user can create new MOCs - right now this just checks
-// a single MOC permission, but we're splitting it out just in case that changes
-func canDelete(h http.HandlerFunc) http.Handler {
-	return responder.MustHavePrivilege(user.ManageMOCs, h)
 }
