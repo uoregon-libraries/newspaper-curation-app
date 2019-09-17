@@ -90,7 +90,7 @@ func (i *Input) failQCHandler([]string) {
 		return
 	}
 	i.println(`Batch removed and marked "failed_qc".  New actions are available.`)
-	i.println(ansiImportant + "Right now: purge the batch from staging!")
+	i.println(ansiImportant + "Right now: purge the batch from staging!" + ansiReset)
 }
 
 func (i *Input) searchIssuesHandler(args []string) {

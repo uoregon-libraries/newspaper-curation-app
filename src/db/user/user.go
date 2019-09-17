@@ -3,8 +3,8 @@ package user
 import (
 	"strings"
 
-	"github.com/uoregon-libraries/gopkg/logger"
 	"github.com/uoregon-libraries/newspaper-curation-app/src/db"
+	"github.com/uoregon-libraries/newspaper-curation-app/src/internal/logger"
 )
 
 // User identifies a person who has logged in via Apache's auth

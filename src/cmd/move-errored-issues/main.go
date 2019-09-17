@@ -7,10 +7,10 @@ import (
 	"path/filepath"
 
 	"github.com/uoregon-libraries/gopkg/fileutil"
-	"github.com/uoregon-libraries/gopkg/logger"
 	"github.com/uoregon-libraries/newspaper-curation-app/src/cli"
 	"github.com/uoregon-libraries/newspaper-curation-app/src/config"
 	"github.com/uoregon-libraries/newspaper-curation-app/src/db"
+	"github.com/uoregon-libraries/newspaper-curation-app/src/internal/logger"
 )
 
 // Command-line options
@@ -64,13 +64,17 @@ func moveIssue(issue *db.Issue, dest string) (ok bool) {
 	// (to get the data as "good" as possible), but still report "not okay"
 	var failure = false
 
-	var finalDest = filepath.Join(dest, issue.HumanName)
-	logger.Debugf("Moving %q to %q", issue.Location, finalDest)
-	var err = moveDir(issue.Location, finalDest)
+	var dateEdition = fmt.Sprintf("%s_%02d", issue.Date, issue.Edition)
+	var contentDest = filepath.Join(dest, "content", issue.LCCN, dateEdition)
+	var derivDest = filepath.Join(dest, "derivatives", issue.LCCN, dateEdition)
+	var masterDest = filepath.Join(contentDest, "master")
+
+	logger.Debugf("Moving content files from %q to %q", issue.Location, contentDest)
+	var err = moveDir(issue.Location, contentDest)
 	if err != nil {
 		var merr, ok = err.(*moveError)
 		if !ok || !merr.didCopy {
-			logger.Errorf("Unable to copy issue from %q to %q: %s", issue.Location, finalDest, err)
+			logger.Errorf("Unable to copy issue from %q to %q: %s", issue.Location, contentDest, err)
 			return false
 		}
 
@@ -78,8 +82,15 @@ func moveIssue(issue *db.Issue, dest string) (ok bool) {
 		failure = true
 	}
 
+	logger.Debugf("Moving all other files from %q to %q", issue.Location, derivDest)
+	err = moveDerivativeFiles(contentDest, derivDest)
+	if err != nil {
+		logger.Errorf("Unable to move derivatives from %q to %q: %s", contentDest, derivDest, err)
+		failure = true
+	}
+
 	// Drop a file into the copied directory with the error notes
-	var errFile = filepath.Join(finalDest, "error.txt")
+	var errFile = filepath.Join(contentDest, "error.txt")
 	logger.Debugf("Writing errors to %q", errFile)
 	err = ioutil.WriteFile(errFile, []byte(issue.Error), 0660)
 	if err != nil {
@@ -89,13 +100,12 @@ func moveIssue(issue *db.Issue, dest string) (ok bool) {
 
 	// Now we want to move the master files (if they exist)
 	if issue.MasterBackupLocation != "" {
-		var backupDest = filepath.Join(finalDest, "master")
-		logger.Debugf("Moving masters from %q to %q", issue.MasterBackupLocation, backupDest)
-		err = moveDir(issue.MasterBackupLocation, backupDest)
+		logger.Debugf("Moving masters from %q to %q", issue.MasterBackupLocation, masterDest)
+		err = moveDir(issue.MasterBackupLocation, masterDest)
 		// Errors while moving the master are very annoying, because the issue's
 		// files are already copied.  We just report the error and move on....
 		if err != nil {
-			logger.Errorf("Unable to move master backup from %q to %q: %s", issue.MasterBackupLocation, backupDest, err)
+			logger.Errorf("Unable to move master backup from %q to %q: %s", issue.MasterBackupLocation, masterDest, err)
 			failure = true
 		}
 	}
@@ -133,6 +143,7 @@ type moveError struct {
 
 // moveDir runs the copy / remove logic, returning an error where applicable
 func moveDir(src, dst string) error {
+	os.MkdirAll(filepath.Dir(dst), 0700)
 	var err = fileutil.CopyDirectory(src, dst)
 	if err != nil {
 		return &moveError{err, false}
@@ -141,6 +152,40 @@ func moveDir(src, dst string) error {
 	err = os.RemoveAll(src)
 	if err != nil {
 		return &moveError{err, true}
+	}
+
+	return nil
+}
+
+// moveDerivativeFiles tries to get all non-primary content moved to the
+// destination dir, creating it if necessary
+func moveDerivativeFiles(src, dst string) error {
+	if !fileutil.MustNotExist(dst) {
+		return fmt.Errorf("destination %q already exists", dst)
+	}
+	var err = os.MkdirAll(dst, 0700)
+	if err != nil {
+		return fmt.Errorf("unable to create directory %q: %s", dst, err)
+	}
+
+	var infos []os.FileInfo
+	infos, err = fileutil.Readdir(src)
+	if err != nil {
+		return fmt.Errorf("unable to read source directory %q: %s", src, err)
+	}
+
+	for _, info := range infos {
+		var ext = filepath.Ext(info.Name())
+		if ext != ".xml" && ext != ".jp2" {
+			continue
+		}
+
+		var srcFull = filepath.Join(src, info.Name())
+		var dstFull = filepath.Join(dst, info.Name())
+		err = os.Rename(srcFull, dstFull)
+		if err != nil {
+			return err
+		}
 	}
 
 	return nil

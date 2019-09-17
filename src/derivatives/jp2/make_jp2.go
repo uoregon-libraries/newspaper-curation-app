@@ -8,7 +8,8 @@ import (
 	"path/filepath"
 
 	"github.com/uoregon-libraries/gopkg/fileutil"
-	"github.com/uoregon-libraries/gopkg/logger"
+	ltype "github.com/uoregon-libraries/gopkg/logger"
+	"github.com/uoregon-libraries/newspaper-curation-app/src/internal/logger"
 )
 
 // RateFactor is our constant divisor / multiplier for rates.  We store
@@ -35,7 +36,7 @@ type Transformer struct {
 	PDFResolution  int
 
 	err    error
-	Logger *logger.Logger
+	Logger *ltype.Logger
 }
 
 // New creates a new PDF/TIFF-to-JP2 transformer with default values for the
@@ -50,7 +51,7 @@ func New(source, output string, quality float64, resolution int) *Transformer {
 		GraphicsMagick: "gm",
 		Quality:        quality,
 		PDFResolution:  resolution,
-		Logger:         logger.DefaultLogger,
+		Logger:         logger.Logger,
 	}
 }
 

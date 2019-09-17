@@ -17,6 +17,8 @@ github.com/uoregon-libraries/gopkg v0.0.0-20180517231339-9730fddd79fb h1:MQsZHG3
 github.com/uoregon-libraries/gopkg v0.0.0-20180517231339-9730fddd79fb/go.mod h1:KatIECqGk8WQe3IvA7h8JcODrAyEwpEfhsxF2bYrKw8=
 github.com/uoregon-libraries/gopkg v0.5.0 h1:rwJibPLClAZMKb0gl5QIrkX+hx1r4EB15ZL1gPIiw5M=
 github.com/uoregon-libraries/gopkg v0.5.0/go.mod h1:y/L6WynpDaTyjszOLLqdHYYoF5ac2TVi1KsfTicyg/4=
+github.com/uoregon-libraries/gopkg v0.7.2 h1:MK9DPIG+JYDVkKrTQG7AVzQB5OOJDSHs2qKd3X79JlY=
+github.com/uoregon-libraries/gopkg v0.7.2/go.mod h1:y/L6WynpDaTyjszOLLqdHYYoF5ac2TVi1KsfTicyg/4=
 golang.org/x/crypto v0.0.0-20190320223903-b7391e95e576 h1:aUX/1G2gFSs4AsJJg2cL3HuoRhCSCz733FE5GUSuaT4=
 golang.org/x/crypto v0.0.0-20190320223903-b7391e95e576/go.mod h1:djNgcEr1/C05ACkg1iLfiJU5Ep61QUkGW8qpdssI0+w=
 golang.org/x/sys v0.0.0-20190215142949-d0b11bdaac8a/go.mod h1:STP8DvDyc/dI5b8T5hshtkjS+E42TnysNCUPdjciGhY=
