@@ -4,6 +4,7 @@ package db
 type MOC struct {
 	ID   int `sql:",primary"`
 	Code string
+	Name string
 }
 
 // FindMOCByCode searches the database for the given MOC and returns it if it's
@@ -13,6 +14,18 @@ func FindMOCByCode(code string) (*MOC, error) {
 	op.Dbg = Debug
 	var moc = &MOC{}
 	var ok = op.Select("mocs", &MOC{}).Where("code = ?", code).First(moc)
+	if !ok {
+		return nil, op.Err()
+	}
+	return moc, op.Err()
+}
+
+// FindMOCByID finds the MOC by its id
+func FindMOCByID(id int) (*MOC, error) {
+	var op = DB.Operation()
+	op.Dbg = Debug
+	var moc = &MOC{}
+	var ok = op.Select("mocs", &MOC{}).Where("id = ?", id).First(moc)
 	if !ok {
 		return nil, op.Err()
 	}
@@ -34,19 +47,18 @@ func ValidMOC(code string) bool {
 	return moc != nil && err == nil
 }
 
-// CreateMOC adds a new MOC to the database with the given code
-func CreateMOC(code string) (*MOC, error) {
+// Save creates or updates the MOC
+func (moc *MOC) Save() error {
 	var op = DB.Operation()
 	op.Dbg = Debug
-	var moc = &MOC{Code: code}
 	op.Save("mocs", moc)
-	return moc, op.Err()
+	return op.Err()
 }
 
-// DeleteMOC removes the MOC with the given id
-func DeleteMOC(id int) error {
+// Delete removes this MOC from the database
+func (moc *MOC) Delete() error {
 	var op = DB.Operation()
 	op.Dbg = Debug
-	op.Exec("DELETE FROM mocs WHERE id = ?", id)
+	op.Exec("DELETE FROM mocs WHERE id = ?", moc.ID)
 	return op.Err()
 }
