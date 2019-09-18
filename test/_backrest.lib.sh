@@ -8,13 +8,6 @@ dcdown() {
   popd
 }
 
-dcup() {
-  pushd .
-  cd ..
-  docker-compose up -d
-  popd
-}
-
 dobackup() {
   rm -f ./nca.tgz
   rm -f ./fakemount.tar
@@ -28,8 +21,6 @@ dobackup() {
 
   mv /var/lib/docker/volumes/nca_db/_data/nca.tgz ./nca.tgz
   tar -cf ./fakemount.tar ./fakemount
-
-  dcup
 }
 
 dorestore() {
@@ -45,6 +36,4 @@ dorestore() {
 
   rm fakemount -rf
   tar -xf ./fakemount.tar
-
-  dcup
 }
