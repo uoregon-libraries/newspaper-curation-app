@@ -6,7 +6,24 @@
   </li>
 </ul>
 
-<table class="table table-striped table-bordered table-condensed sortable">
+<div id="moc-link-info">
+  <p>
+    <strong>Note</strong>: The codes link out to the production awardee
+    information pages.  These links may be broken (resulting in a "Not Found"
+    page) if any of the following are true:
+  </p>
+
+  <ul>
+    <li>
+      The code is entered incorrectly, e.g., "rou" instead of "oru"
+    </li>
+    <li>
+      The production ONI instance doesn't have the awardee loaded yet (this is a manual database change)
+    </li>
+  </ul>
+</p>
+
+<table class="table table-striped table-bordered table-condensed sortable" aria-describedy="moc-link-info">
   <thead>
     <tr>
       <th scope="col" data-sorttype="alpha">Code</th>
@@ -19,11 +36,13 @@
     {{range .Data.MOCs}}
       <tr>
         <td>
-          {{.Code}}
+          <a href="{{ProdURL}}/awardees/{{.Code}}/">{{.Code}}</a>
         </td>
+
         <td>
           {{.Name}}
         </td>
+
         <td>
           <a href="{{MOCHomeURL}}/edit?id={{.ID}}" class="btn btn-default">Edit</a>
 
