@@ -23,6 +23,7 @@ type Transformer struct {
 	ALTOOutputFilename string
 	ScaleFactor        float64
 	ImageNumber        int
+	LangCode3          string
 
 	// Logger can be set up manually for customized logging, otherwise it just
 	// gets set to the default logger
