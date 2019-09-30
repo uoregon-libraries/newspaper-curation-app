@@ -332,3 +332,17 @@ func (i *Issue) SchemaIssue() (*schema.Issue, error) {
 
 	return si, err
 }
+
+// FindCompletedIssuesReadyForRemoval returns all issues which are be complete
+// and no longer needed in our workflow: tied to a closed (live_done) batch and
+// ignored by NCA, but still contain a location
+func FindCompletedIssuesReadyForRemoval() ([]*Issue, error) {
+	var op = DB.Operation()
+	op.Dbg = Debug
+
+	var list []*Issue
+	var cond = "batch_id IN (SELECT id FROM batches WHERE status = ?) AND ignored = 1 AND location <> ''"
+	op.Select("issues", &Issue{}).Where(cond, BatchStatusLiveDone).AllObjects(&list)
+	deserializeIssues(list)
+	return list, op.Err()
+}
