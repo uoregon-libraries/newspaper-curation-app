@@ -32,6 +32,8 @@ import (
 	"github.com/uoregon-libraries/gopkg/wordutils"
 )
 
+var l = logger.New(logger.Debug)
+
 func wrap(msg string) {
 	fmt.Fprint(os.Stderr, wordutils.Wrap(msg, 80))
 	fmt.Fprintln(os.Stderr)
@@ -100,11 +102,11 @@ func refreshFakemount(testDir string) {
 	for _, dir := range []string{"backup/master", "outgoing", "page-review", "scans", "sftp", "workflow", "errors"} {
 		var fullPath = filepath.Join(testDir, "fakemount", dir)
 		if err := os.RemoveAll(fullPath); err != nil {
-			logger.Criticalf("Unable to delete %q: %s", fullPath, err)
+			l.Criticalf("Unable to delete %q: %s", fullPath, err)
 			os.Exit(255)
 		}
 		if err := os.MkdirAll(fullPath, 0775); err != nil {
-			logger.Criticalf("Unable to create %q: %s", fullPath, err)
+			l.Criticalf("Unable to create %q: %s", fullPath, err)
 			os.Exit(255)
 		}
 	}
@@ -115,28 +117,28 @@ func moveSFTPs(testDir string) {
 	var sftpDestPath = filepath.Join(testDir, "fakemount", "sftp")
 	var infos, err = fileutil.Readdir(sftpSourcePath)
 	if err != nil {
-		logger.Fatalf("Unable to read ./sources/sftp: %s", err)
+		l.Fatalf("Unable to read ./sources/sftp: %s", err)
 	}
 	for _, info := range infos {
 		var dirName = info.Name()
-		logger.Infof("Processing SFTP directory %q", info.Name())
+		l.Infof("Processing SFTP directory %q", info.Name())
 		var issue, err = getDirParts(dirName)
 		if err != nil {
-			logger.Fatalf("Unable to parse directory %q: %s", dirName, err)
+			l.Fatalf("Unable to parse directory %q: %s", dirName, err)
 		}
 		if issue.moc != "" {
-			logger.Fatalf("Unable to parse directory %q: too many hyphens", dirName)
+			l.Fatalf("Unable to parse directory %q: too many hyphens", dirName)
 		}
 
 		var outPath = filepath.Join(sftpDestPath, issue.lccn, issue.date)
 		err = os.RemoveAll(outPath)
 		if err != nil {
-			logger.Fatalf("Unable to clear SFTP destination directory %q: %s", outPath, err)
+			l.Fatalf("Unable to clear SFTP destination directory %q: %s", outPath, err)
 		}
 
 		err = os.MkdirAll(outPath, 0775)
 		if err != nil {
-			logger.Fatalf("Unable to create SFTP destination directory %q: %s", outPath, err)
+			l.Fatalf("Unable to create SFTP destination directory %q: %s", outPath, err)
 		}
 
 		// Now use fake-randomness to decide if we're building a fake master pdf
@@ -151,9 +153,9 @@ func moveSFTPs(testDir string) {
 }
 
 func getFiles(dir string, exts ...string) ([]string, error) {
-	logger.Debugf("getFiles(%q, %q)", dir, exts)
+	l.Debugf("getFiles(%q, %q)", dir, exts)
 	var fileList, err = fileutil.FindIf(dir, func(i os.FileInfo) bool {
-		logger.Debugf("Scanning %q", i.Name())
+		l.Debugf("Scanning %q", i.Name())
 		for _, ext := range exts {
 			if filepath.Ext(i.Name()) == ext {
 				return true
@@ -172,7 +174,7 @@ func makeMaster(src, dst string) {
 	// Find all PDF files
 	var pdfs, err = getFiles(src, ".pdf")
 	if err != nil {
-		logger.Fatalf("Unable to scan for PDF files in %q: %s", src, err)
+		l.Fatalf("Unable to scan for PDF files in %q: %s", src, err)
 	}
 
 	var args = append(pdfs, filepath.Join(dst, "master.pdf"))
@@ -182,22 +184,22 @@ func makeMaster(src, dst string) {
 	cmd.Stdout = stdout
 	cmd.Stderr = stderr
 
-	logger.Infof("Running %q %q to generate a master PDF", cmd.Path, cmd.Args)
+	l.Infof("Running %q %q to generate a master PDF", cmd.Path, cmd.Args)
 	err = cmd.Run()
 
 	if len(stdout.Bytes()) > 0 {
 		for _, line := range strings.Split(string(stdout.Bytes()), "\n") {
-			logger.Debugf("pdfunite out: %q", line)
+			l.Debugf("pdfunite out: %q", line)
 		}
 	}
 
 	if len(stderr.Bytes()) > 0 {
 		for _, line := range strings.Split(string(stderr.Bytes()), "\n") {
-			logger.Warnf("pdfunite err: %q", line)
+			l.Warnf("pdfunite err: %q", line)
 		}
 	}
 	if err != nil {
-		logger.Fatalf("Unable to create a master PDF: %s", err)
+		l.Fatalf("Unable to create a master PDF: %s", err)
 	}
 }
 
@@ -207,13 +209,13 @@ func linkFiles(src, dst string, extensions ...string) {
 	// Find all files
 	var fileList, err = getFiles(src, extensions...)
 	if err != nil {
-		logger.Fatalf("Unable to scan for %q files in %q: %s", extensions, src, err)
+		l.Fatalf("Unable to scan for %q files in %q: %s", extensions, src, err)
 	}
 
 	for _, file := range fileList {
 		var fileBase = filepath.Base(file)
 		var outFile = filepath.Join(dst, fileBase)
-		logger.Debugf("Hard-linking %q to %q", file, outFile)
+		l.Debugf("Hard-linking %q to %q", file, outFile)
 		os.Link(file, outFile)
 	}
 }
@@ -223,28 +225,28 @@ func moveScans(testDir string) {
 	var scansDestPath = filepath.Join(testDir, "fakemount", "scans")
 	var infos, err = fileutil.Readdir(scansSourcePath)
 	if err != nil {
-		logger.Fatalf("Unable to read %q: %s", scansSourcePath, err)
+		l.Fatalf("Unable to read %q: %s", scansSourcePath, err)
 	}
 	for _, info := range infos {
 		var dirName = info.Name()
-		logger.Infof("Processing scans directory %q", info.Name())
+		l.Infof("Processing scans directory %q", info.Name())
 		var issue, err = getDirParts(dirName)
 		if err != nil {
-			logger.Fatalf("Unable to parse directory %q: %s", dirName, err)
+			l.Fatalf("Unable to parse directory %q: %s", dirName, err)
 		}
 		if issue.moc == "" {
-			logger.Fatalf("Unable to parse directory %q: too few hyphens", dirName)
+			l.Fatalf("Unable to parse directory %q: too few hyphens", dirName)
 		}
 
 		var outPath = filepath.Join(scansDestPath, issue.moc, issue.lccn, issue.date+"_"+issue.edition)
 		err = os.RemoveAll(outPath)
 		if err != nil {
-			logger.Fatalf("Unable to clear scans destination directory %q: %s", outPath, err)
+			l.Fatalf("Unable to clear scans destination directory %q: %s", outPath, err)
 		}
 
 		err = os.MkdirAll(outPath, 0775)
 		if err != nil {
-			logger.Fatalf("Unable to create scans destination directory %q: %s", outPath, err)
+			l.Fatalf("Unable to create scans destination directory %q: %s", outPath, err)
 		}
 
 		var issueSrcPath = filepath.Join(scansSourcePath, info.Name())

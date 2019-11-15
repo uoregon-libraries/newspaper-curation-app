@@ -11,7 +11,6 @@ import (
 	"github.com/uoregon-libraries/newspaper-curation-app/src/cmd/server/internal/responder"
 	"github.com/uoregon-libraries/newspaper-curation-app/src/config"
 	"github.com/uoregon-libraries/newspaper-curation-app/src/db"
-	"github.com/uoregon-libraries/newspaper-curation-app/src/db/user"
 	"github.com/uoregon-libraries/newspaper-curation-app/src/internal/logger"
 	"github.com/uoregon-libraries/newspaper-curation-app/src/web/tmpl"
 )
@@ -38,6 +37,7 @@ func Setup(r *mux.Router, baseWebPath string, c *config.Config) {
 	var s = r.PathPrefix(basePath).Subrouter()
 	s.Path("").Handler(canView(listHandler))
 	s.Path("/new").Handler(canAdd(newHandler))
+	s.Path("/edit").Handler(canEdit(editHandler))
 	s.Path("/save").Methods("POST").Handler(canAdd(saveHandler))
 	s.Path("/delete").Methods("POST").Handler(canDelete(deleteHandler))
 
@@ -73,14 +73,26 @@ func newHandler(w http.ResponseWriter, req *http.Request) {
 // saveHandler writes the new MOC to the db
 func saveHandler(w http.ResponseWriter, req *http.Request) {
 	var r = responder.Response(w, req)
-	var code = req.FormValue("code")
+
+	if r.Request.FormValue("id") != "" {
+		updateMOC(r)
+		return
+	}
+
+	createMOC(r)
+}
+
+func createMOC(r *responder.Responder) {
+	var code = r.Request.FormValue("code")
+	var name = r.Request.FormValue("name")
 	if db.ValidMOC(code) {
 		r.Vars.Alert = template.HTML(fmt.Sprintf("MOC %q already exists", code))
 		r.Render(formTmpl)
 		return
 	}
 
-	var moc, err = db.CreateMOC(code)
+	var moc = &db.MOC{Code: code, Name: name}
+	var err = moc.Save()
 	if err != nil {
 		logger.Errorf("Unable to create new MOC %q: %s", moc, err)
 		r.Error(http.StatusInternalServerError, "Error trying to create new MOC - try again or contact support")
@@ -88,47 +100,89 @@ func saveHandler(w http.ResponseWriter, req *http.Request) {
 	}
 
 	r.Audit("create-moc", code)
-	http.SetCookie(w, &http.Cookie{Name: "Info", Value: "New MOC created", Path: "/"})
-	http.Redirect(w, req, basePath, http.StatusFound)
+	http.SetCookie(r.Writer, &http.Cookie{Name: "Info", Value: "New MOC created", Path: "/"})
+	http.Redirect(r.Writer, r.Request, basePath, http.StatusFound)
+}
+
+func updateMOC(r *responder.Responder) {
+	var moc, handled = getMOC(r)
+	if handled {
+		return
+	}
+	var oldMOC = &db.MOC{
+		ID:   moc.ID,
+		Code: moc.Code,
+		Name: moc.Name,
+	}
+	var code = r.Request.FormValue("code")
+	var name = r.Request.FormValue("name")
+	moc.Code = code
+	moc.Name = name
+	var err = moc.Save()
+
+	if err != nil {
+		logger.Errorf("Unable to save MOC %q: %s", moc, err)
+		r.Error(http.StatusInternalServerError, "Error trying to save MOC - try again or contact support")
+		return
+	}
+
+	r.Audit("update-moc", fmt.Sprintf("previous: %#v, new: %#v", oldMOC, moc))
+	http.SetCookie(r.Writer, &http.Cookie{Name: "Info", Value: "MOC updated", Path: "/"})
+	http.Redirect(r.Writer, r.Request, basePath, http.StatusFound)
 }
 
 // deleteHandler removes the given MOC from the db
 func deleteHandler(w http.ResponseWriter, req *http.Request) {
 	var r = responder.Response(w, req)
-	var idString = req.FormValue("id")
-	var id, _ = strconv.Atoi(idString)
-	if id < 1 {
-		logger.Errorf("Invalid MOC id to delete (%s)", idString)
-		r.Error(http.StatusInternalServerError, "Error trying to delete MOC - try again or contact support")
+	var moc, handled = getMOC(r)
+	if handled {
 		return
 	}
 
-	var err = db.DeleteMOC(id)
+	var err = moc.Delete()
 	if err != nil {
-		logger.Errorf("Unable to delete MOC (id %d): %s", id, err)
+		logger.Errorf("Unable to delete MOC (%#v): %s", moc, err)
 		r.Error(http.StatusInternalServerError, "Error trying to delete MOC - try again or contact support")
 		return
 	}
 
-	r.Audit("delete-moc", idString)
+	r.Audit("delete-moc", fmt.Sprintf("%#v", moc))
 	http.SetCookie(w, &http.Cookie{Name: "Info", Value: "Deleted MOC", Path: "/"})
 	http.Redirect(w, req, basePath, http.StatusFound)
 }
 
-// canView verifies the user can view MOCs - right now this just checks a
-// single MOC permission, but we're splitting it out just in case that changes
-func canView(h http.HandlerFunc) http.Handler {
-	return responder.MustHavePrivilege(user.ManageMOCs, h)
+func editHandler(w http.ResponseWriter, req *http.Request) {
+	var r = responder.Response(w, req)
+	var moc, handled = getMOC(r)
+	if handled {
+		return
+	}
+
+	r.Vars.Data["MOC"] = moc
+	r.Vars.Title = "Editing MARC organization code"
+	r.Render(formTmpl)
 }
 
-// canAdd verifies the user can create new MOCs - right now this just checks a
-// single MOC permission, but we're splitting it out just in case that changes
-func canAdd(h http.HandlerFunc) http.Handler {
-	return responder.MustHavePrivilege(user.ManageMOCs, h)
-}
+func getMOC(r *responder.Responder) (moc *db.MOC, handled bool) {
+	var idStr = r.Request.FormValue("id")
+	var id, _ = strconv.Atoi(idStr)
+	if id < 1 {
+		logger.Warnf("Invalid MOC id for request %q (%s)", r.Request.URL.Path, idStr)
+		r.Error(http.StatusBadRequest, "Invalid MOC id - try again or contact support")
+		return nil, true
+	}
 
-// canDelete verifies the user can create new MOCs - right now this just checks
-// a single MOC permission, but we're splitting it out just in case that changes
-func canDelete(h http.HandlerFunc) http.Handler {
-	return responder.MustHavePrivilege(user.ManageMOCs, h)
+	var err error
+	moc, err = db.FindMOCByID(id)
+	if err != nil {
+		logger.Errorf("Unable to find MOC by id %d: %s", id, err)
+		r.Error(http.StatusInternalServerError, "Unable to find MOC - try again or contact support")
+		return nil, true
+	}
+	if moc == nil {
+		r.Error(http.StatusNotFound, "Unable to find MOC - try again or contact support")
+		return nil, true
+	}
+
+	return moc, false
 }
