@@ -9,9 +9,8 @@ import (
 )
 
 func (t *Transformer) makePNGFromPDF() bool {
-	return shell.ExecSubgroup(t.GhostScript, t.Logger, "-dNumRenderingThreads=4", "-dNOPAUSE",
-		"-sDEVICE=png16m", "-dFirstPage=1", "-dLastPage=1",
-		"-dBackgroundColor=16#ffffff", "-sOutputFile="+t.tmpPNG,
+	return shell.ExecSubgroup(t.GhostScript, t.Logger, "-dNOPAUSE", "-dUseCropBox",
+		"-sDEVICE=png16m", "-dBackgroundColor=16#ffffff", "-sOutputFile="+t.tmpPNG,
 		fmt.Sprintf("-r%d", t.PDFResolution), "-q", t.SourceFile, "-c", "quit")
 }
 

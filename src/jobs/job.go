@@ -6,9 +6,10 @@ import (
 	"path/filepath"
 	"time"
 
-	"github.com/uoregon-libraries/gopkg/logger"
+	ltype "github.com/uoregon-libraries/gopkg/logger"
 	"github.com/uoregon-libraries/newspaper-curation-app/src/config"
 	"github.com/uoregon-libraries/newspaper-curation-app/src/db"
+	"github.com/uoregon-libraries/newspaper-curation-app/src/internal/logger"
 )
 
 // A Processor is a general interface for all database-driven jobs that process something
@@ -32,13 +33,13 @@ type Processor interface {
 // logging to the database
 type Job struct {
 	db     *db.Job
-	Logger *logger.Logger
+	Logger *ltype.Logger
 }
 
 // NewJob wraps the given db.Job and sets up a logger
 func NewJob(dbj *db.Job) *Job {
 	var j = &Job{db: dbj}
-	j.Logger = &logger.Logger{Loggable: &jobLogger{Job: j, AppName: filepath.Base(os.Args[0])}}
+	j.Logger = &ltype.Logger{Loggable: &jobLogger{Job: j, AppName: filepath.Base(os.Args[0])}}
 	return j
 }
 
@@ -71,6 +72,21 @@ func RunWhileTrue(subProcessors ...func() bool) (ok bool) {
 	}
 
 	return true
+}
+
+// Rerun clones this job and runs it, stripping metadata to avoid side-effects
+// (QueueJobID and ExtraData)
+func (j *Job) Rerun() error {
+	var clone = &db.Job{
+		Type:       j.db.Type,
+		ObjectID:   j.db.ObjectID,
+		ObjectType: j.db.ObjectType,
+		Location:   j.db.Location,
+		Status:     string(JobStatusPending),
+		RunAt:      j.db.RunAt,
+	}
+
+	return clone.Save()
 }
 
 // Requeue closes out this job and queues a new, duplicate job
@@ -107,8 +123,8 @@ type jobLogger struct {
 // Log writes the pertinent data to stderr and the database so we can
 // immediately see logs if we're watching for them, or search later against a
 // specific job id's logs
-func (l *jobLogger) Log(level logger.LogLevel, message string) {
-	var timeString = time.Now().Format(logger.TimeFormat)
+func (l *jobLogger) Log(level ltype.LogLevel, message string) {
+	var timeString = time.Now().Format(ltype.TimeFormat)
 	var msg = fmt.Sprintf("%s - %s - %s - [job %s:%d] %s\n",
 		timeString, l.AppName, level.String(), l.db.Type, l.db.ID, message)
 	var _, err = os.Stderr.WriteString(msg)

@@ -20,8 +20,3 @@ popd
 rm fakemount/* -rf
 go run copy-sources.go .
 ./make-older.sh
-
-pushd .
-cd ..
-docker-compose up -d
-popd

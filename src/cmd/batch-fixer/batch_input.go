@@ -5,6 +5,7 @@ import (
 	"strconv"
 
 	"github.com/uoregon-libraries/newspaper-curation-app/src/db"
+	"github.com/uoregon-libraries/newspaper-curation-app/src/jobs"
 )
 
 func (i *Input) makeBatchMenu() (*menu, string) {
@@ -19,6 +20,7 @@ func (i *Input) makeBatchMenu() (*menu, string) {
 			"the database to their 'ready for batching' state, for cases where a full rebatch "+
 			"is easier than pulling individual issues (e.g., bad org code, dozens of bad issues, "+
 			"etc.)", i.deleteBatchHandler)
+		m.add("requeue", "Creates a job in the database to requeue this batch", i.requeueBatchHandler)
 	}
 	if st != db.BatchStatusLive && st != db.BatchStatusLiveDone {
 		m.add("list", "Lists all issues associated with this batch", i.listIssueHandler)
@@ -90,7 +92,7 @@ func (i *Input) failQCHandler([]string) {
 		return
 	}
 	i.println(`Batch removed and marked "failed_qc".  New actions are available.`)
-	i.println(ansiImportant + "Right now: purge the batch from staging!")
+	i.println(ansiImportant + "Right now: purge the batch from staging!" + ansiReset)
 }
 
 func (i *Input) searchIssuesHandler(args []string) {
@@ -138,5 +140,30 @@ func (i *Input) deleteBatchHandler([]string) {
 	var err = i.batch.db.Delete()
 	if err != nil {
 		i.printerrln(fmt.Sprintf("Unable to update batch / issue data: %s", err))
+	}
+}
+
+func (i *Input) requeueBatchHandler([]string) {
+	i.println(fmt.Sprintf("Are you sure you want to requeue %s?", i.batch.db.Name))
+	i.println(ansiIntenseYellow + "  (Note:" + ansiReset + " only requeue after you've removed all problem issues)")
+	if !i.confirmYN() {
+		i.println("Aborted...")
+		return
+	}
+
+	var b = i.batch.db
+
+	// Flag the batch as pending again to avoid confusion
+	b.Status = db.BatchStatusPending
+	var err = b.Save()
+	if err != nil {
+		i.printerrln("Unable to update batch status to 'pending' - operation aborted")
+		return
+	}
+
+	// Finally: requeue
+	err = jobs.QueueMakeBatch(b)
+	if err != nil {
+		i.printerrln(fmt.Sprintf("Error queueing batch regeneration: %s", err))
 	}
 }

@@ -9,7 +9,8 @@ import (
 	"regexp"
 
 	"github.com/uoregon-libraries/gopkg/fileutil"
-	"github.com/uoregon-libraries/gopkg/logger"
+	ltype "github.com/uoregon-libraries/gopkg/logger"
+	"github.com/uoregon-libraries/newspaper-curation-app/src/internal/logger"
 	"github.com/uoregon-libraries/newspaper-curation-app/src/shell"
 )
 
@@ -27,7 +28,7 @@ type Transformer struct {
 
 	// Logger can be set up manually for customized logging, otherwise it just
 	// gets set to the default logger
-	Logger *logger.Logger
+	Logger *ltype.Logger
 
 	err  error
 	html []byte
@@ -41,7 +42,7 @@ func New(pdfFile, altoFile string, pdfDPI int, imgNo int) *Transformer {
 		ALTOOutputFilename: altoFile,
 		ScaleFactor:        float64(pdfDPI) / 72.0,
 		ImageNumber:        imgNo,
-		Logger:             logger.DefaultLogger,
+		Logger:             logger.Logger,
 	}
 }
 

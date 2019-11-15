@@ -10,7 +10,7 @@ import (
 	"regexp"
 	"strings"
 
-	"github.com/uoregon-libraries/gopkg/logger"
+	"github.com/uoregon-libraries/newspaper-curation-app/src/internal/logger"
 )
 
 var marcStripLocRE = regexp.MustCompile(`[ /:,]+$`)
