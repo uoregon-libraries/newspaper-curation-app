@@ -4,6 +4,7 @@ import (
 	"path/filepath"
 	"strings"
 
+	"github.com/uoregon-libraries/gopkg/logger"
 	"github.com/uoregon-libraries/gopkg/pdf"
 	"github.com/uoregon-libraries/newspaper-curation-app/src/apperr"
 	"github.com/uoregon-libraries/newspaper-curation-app/src/schema"
@@ -24,6 +25,8 @@ func (f *File) ValidateDPI(expected int) {
 	var maxDPI = float64(expected) * 1.15
 	var minDPI = float64(expected) * 0.85
 
+	// Let's not spam logs with debug nonsense from the pdf package
+	pdf.Logger = logger.Named("gopkg/pdf.ImageDPIs", logger.Warn)
 	var dpis = pdf.ImageDPIs(f.Location)
 	if len(dpis) == 0 {
 		f.AddError(apperr.Errorf("contains no images or is invalid PDF"))
