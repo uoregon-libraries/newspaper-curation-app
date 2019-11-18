@@ -120,3 +120,31 @@ func TestValidateDPIBadLargeImage(t *testing.T) {
 		t.Errorf("Expected 1 error.  Got: %q", strings.Join(elist, ","))
 	}
 }
+
+func TestValidateDPIBadNoImages(t *testing.T) {
+	reset()
+	var f = fakeFile()
+	f.Name = "fake.pdf"
+	f.ValidateDPI(100)
+	if len(f.Errors) != 1 {
+		var elist []string
+		for _, err := range f.Errors {
+			elist = append(elist, err.Message())
+		}
+		t.Errorf("Expected an error.  Got: %q", strings.Join(elist, ","))
+	}
+}
+func TestValidateDPINonPDF(t *testing.T) {
+	reset()
+	add(0, 0)
+	var f = fakeFile()
+	f.Name = "fake.tiff"
+	f.ValidateDPI(100)
+	if len(f.Errors) != 0 {
+		var elist []string
+		for _, err := range f.Errors {
+			elist = append(elist, err.Message())
+		}
+		t.Errorf("Expected no errors.  Got: %q", strings.Join(elist, ","))
+	}
+}
