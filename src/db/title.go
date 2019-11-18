@@ -21,6 +21,7 @@ type Title struct {
 	SFTPPass      string
 	MARCTitle     string
 	MARCLocation  string
+	LangCode3     string
 }
 
 // FindTitle searches the database for a single title
@@ -146,4 +147,14 @@ func (t *Title) SchemaTitle() *schema.Title {
 		Name:               name,
 		PlaceOfPublication: loc,
 	}
+}
+
+// LangCode ensures that the default is returned in case
+// nothing has been retrieved from the MARC record
+func (t *Title) LangCode() string {
+	if t.LangCode3 == "" {
+		return "eng"
+	}
+
+	return t.LangCode3
 }

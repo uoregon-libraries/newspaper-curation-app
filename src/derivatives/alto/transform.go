@@ -14,6 +14,7 @@ type templateVars struct {
 	PageHeight  int
 	ImageNumber int
 	Flows       []Flow
+	LangCode3   string
 }
 
 // scale uses ScaleFactor to multiply various x/y/width/height values so the
@@ -62,6 +63,7 @@ func (t *Transformer) transform() {
 		PageHeight:  int(t.scale(html.Page.Height)),
 		ImageNumber: t.ImageNumber,
 		Flows:       html.Page.Flows,
+		LangCode3:   t.LangCode3,
 	}
 
 	var buf = &bytes.Buffer{}

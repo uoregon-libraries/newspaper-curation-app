@@ -179,6 +179,7 @@ func (md *MakeDerivatives) createAltoXML(file string, pageno int) (ok bool) {
 	var outputFile = strings.Replace(file, filepath.Ext(file), ".xml", 1)
 	var transformer = alto.New(file, outputFile, md.AltoDPI, pageno)
 	transformer.Logger = md.Logger
+	transformer.LangCode3 = md.IssueJob.DBIssue.Title.LangCode()
 	var err = transformer.Transform()
 
 	if err != nil {

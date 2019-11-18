@@ -27,8 +27,14 @@ type datafield struct {
 	Tag       string     `xml:"tag,attr"`
 }
 
+type controlfield struct {
+	Tag  string `xml:"tag,attr"`
+	Data string `xml:",innerxml"`
+}
+
 type marc struct {
-	Datafields []datafield `xml:"datafield"`
+	Datafields    []datafield    `xml:"datafield"`
+	Controlfields []controlfield `xml:"controlfield"`
 }
 
 // pullMARCForTitle pulls the MARC record from the library of congress and sets the
@@ -104,7 +110,12 @@ func lookupMARC(t *Title, marcLoc string) error {
 			}
 		}
 	}
-
+	for _, cf := range m.Controlfields {
+		if cf.Tag == "008" {
+			runes := []rune(cf.Data)
+			t.LangCode3 = string(runes[35:38])
+		}
+	}
 	if t.MARCTitle != "" && t.MARCLocation != "" {
 		t.ValidLCCN = true
 	} else {
