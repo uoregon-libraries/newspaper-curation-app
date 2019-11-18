@@ -40,6 +40,9 @@ func moveIssue(ij *IssueJob, path string) bool {
 	}
 	ij.Issue.Location = newLocation
 
+	// Make sure non-NCA apps can read the new location
+	os.Chmod(newLocation, 0755)
+
 	// The issue has been moved, so a failure updating the record isn't a failure
 	// and can only be logged loudly
 	ij.DBIssue.Location = ij.Issue.Location
