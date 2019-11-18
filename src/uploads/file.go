@@ -32,9 +32,23 @@ func (f *File) ValidateDPI(expected int) {
 		f.AddError(apperr.Errorf("contains no images or is invalid PDF"))
 	}
 
+	// We're willing to accept small DPIs sometimes, because we need to allow
+	// for Abbyy's odd "mask"-like images it embeds.  This is extremely imperfect
+	// and could easily let weird images through, but we can't really help that
+	// without manual checks to isolate images which are relevant.  We try to
+	// categorize the DPI oddities in a way that will make more sense - too-small
+	// is annoying but doesn't actually give us problems, whereas too-big means
+	// we may waste a lot of disk, so it's more critical.
+	var tooSmall int
 	for _, dpi := range dpis {
-		if dpi.X > maxDPI || dpi.Y > maxDPI || dpi.X < minDPI || dpi.Y < minDPI {
+		if dpi.X > maxDPI || dpi.Y > maxDPI {
 			f.AddError(apperr.Errorf("has an image with a bad DPI (%g x %g; expected DPI %d)", dpi.X, dpi.Y, expected))
 		}
+		if dpi.X < minDPI || dpi.Y < minDPI {
+			tooSmall++
+		}
+	}
+	if tooSmall >= len(dpis)/2 {
+		f.AddError(apperr.Errorf("has too many images with a DPI below %d", expected))
 	}
 }
