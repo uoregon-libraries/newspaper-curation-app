@@ -15,6 +15,11 @@ type File struct {
 	*schema.File
 }
 
+// Overridable PDF DPI function for testing
+var _dpifunc = func(loc string) []pdf.ImageDPI {
+	return pdf.ImageDPIs(loc)
+}
+
 // ValidateDPI adds errors to the file if its embedded images' DPIs are not
 // within 15% of the expected value.  This does nothing if the file isn't a pdf.
 func (f *File) ValidateDPI(expected int) {
@@ -27,7 +32,7 @@ func (f *File) ValidateDPI(expected int) {
 
 	// Let's not spam logs with debug nonsense from the pdf package
 	pdf.Logger = logger.Named("gopkg/pdf.ImageDPIs", logger.Warn)
-	var dpis = pdf.ImageDPIs(f.Location)
+	var dpis = _dpifunc(f.Location)
 	if len(dpis) == 0 {
 		f.AddError(apperr.Errorf("contains no images or is invalid PDF"))
 	}
@@ -48,7 +53,7 @@ func (f *File) ValidateDPI(expected int) {
 			tooSmall++
 		}
 	}
-	if tooSmall >= len(dpis)/2 {
+	if tooSmall > len(dpis)/2 {
 		f.AddError(apperr.Errorf("has too many images with a DPI below %d", expected))
 	}
 }
