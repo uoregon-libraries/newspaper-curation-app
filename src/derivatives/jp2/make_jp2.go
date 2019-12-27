@@ -176,6 +176,10 @@ func (t *Transformer) moveTempJP2() {
 			return
 		}
 	}
+
+	// Make sure the JP2 can be read by non-NCA apps!  The output is very
+	// restricted, likely due to temp file security.
+	os.Chmod(t.OutputJP2, 0644)
 }
 
 // testRate is a simple helper to create a JP2 and then try to read it
