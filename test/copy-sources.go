@@ -21,6 +21,7 @@ import (
 	"errors"
 	"fmt"
 	"hash/crc32"
+	"io/ioutil"
 	"os"
 	"os/exec"
 	"path/filepath"
@@ -115,7 +116,7 @@ func refreshFakemount(testDir string) {
 func moveSFTPs(testDir string) {
 	var sftpSourcePath = filepath.Join(testDir, "sources", "sftp")
 	var sftpDestPath = filepath.Join(testDir, "fakemount", "sftp")
-	var infos, err = fileutil.Readdir(sftpSourcePath)
+	var infos, err = ioutil.ReadDir(sftpSourcePath)
 	if err != nil {
 		l.Fatalf("Unable to read ./sources/sftp: %s", err)
 	}
@@ -223,7 +224,7 @@ func linkFiles(src, dst string, extensions ...string) {
 func moveScans(testDir string) {
 	var scansSourcePath = filepath.Join(testDir, "sources", "scans")
 	var scansDestPath = filepath.Join(testDir, "fakemount", "scans")
-	var infos, err = fileutil.Readdir(scansSourcePath)
+	var infos, err = ioutil.ReadDir(scansSourcePath)
 	if err != nil {
 		l.Fatalf("Unable to read %q: %s", scansSourcePath, err)
 	}

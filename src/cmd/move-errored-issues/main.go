@@ -169,7 +169,7 @@ func moveDerivativeFiles(src, dst string) error {
 	}
 
 	var infos []os.FileInfo
-	infos, err = fileutil.Readdir(src)
+	infos, err = ioutil.ReadDir(src)
 	if err != nil {
 		return fmt.Errorf("unable to read source directory %q: %s", src, err)
 	}

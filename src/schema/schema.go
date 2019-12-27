@@ -5,6 +5,7 @@ package schema
 
 import (
 	"fmt"
+	"io/ioutil"
 	"math"
 	"os"
 	"path/filepath"
@@ -376,7 +377,7 @@ func (i *Issue) LastModified() time.Time {
 	var modified = info.ModTime()
 
 	var files []os.FileInfo
-	files, err = fileutil.Readdir(i.Location)
+	files, err = ioutil.ReadDir(i.Location)
 	if err != nil {
 		logger.Warnf("Unable to read dir %q: %s", i.Location, err)
 		return time.Now()
