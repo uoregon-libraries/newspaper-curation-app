@@ -88,12 +88,6 @@ func QueueMoveIssueForDerivatives(issue *db.Issue, path string) error {
 	)
 }
 
-// QueueMakeDerivatives creates and queues a job to generate ALTO XML and JP2s
-// for an issue
-func QueueMakeDerivatives(issue *db.Issue, path string) error {
-	return queueIssueJob(JobTypeMakeDerivatives, issue, path, schema.WSReadyForMetadataEntry)
-}
-
 // QueueFinalizeIssue creates and queues jobs that get an issue ready for
 // batching.  Currently this means generating the METS XML file and copying
 // master PDFs (if born-digital) into the issue directory.
