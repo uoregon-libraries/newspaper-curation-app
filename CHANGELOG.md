@@ -23,6 +23,25 @@ Brief description, if necessary
 ### Removed
 -->
 
+<!-- Unreleased: finalize and uncomment this in the release/* branch
+
+## (Unreleased)
+
+Brief description, if necessary
+
+### Fixed
+
+- Uploads list is now a table, making it a lot easier to read, and fixing the
+  odd flow problems for titles with long names
+
+### Added
+
+### Changed
+
+### Removed
+
+-->
+
 ## v2.10.0
 
 The big change here is that we don't force all titles to claim they're in
