@@ -1,6 +1,7 @@
 package uploads
 
 import (
+	"strconv"
 	"strings"
 	"testing"
 
@@ -9,7 +10,7 @@ import (
 	"github.com/uoregon-libraries/newspaper-curation-app/src/schema"
 )
 
-var dpis []pdf.ImageDPI
+var dpis []*pdf.Image
 
 // reset clears the DPI list
 func reset() {
@@ -18,13 +19,18 @@ func reset() {
 }
 
 // add puts the given floats into the dpi list
-func add(x, y float64) {
-	dpis = append(dpis, pdf.ImageDPI{X: x, Y: y})
+func add(x, y, w, h int) {
+	dpis = append(dpis, &pdf.Image{
+		XPPI:   strconv.Itoa(x),
+		YPPI:   strconv.Itoa(y),
+		Width:  strconv.Itoa(w),
+		Height: strconv.Itoa(h),
+	})
 }
 
 // testDPIFunc overrides the dpi function to return the list of DPIs generated above
-func testDPIFunc(loc string) []pdf.ImageDPI {
-	return dpis
+func testDPIFunc(loc string) ([]*pdf.Image, error) {
+	return dpis, nil
 }
 
 // fakeFile just returns a File with enough data to make tests work.  The need
@@ -42,9 +48,9 @@ func fakeFile() *File {
 
 func TestValidateDPIGood(t *testing.T) {
 	reset()
-	add(85, 85)
-	add(100, 100)
-	add(114, 114)
+	add(85, 85, 100, 100)
+	add(100, 100, 100, 100)
+	add(114, 114, 100, 100)
 
 	var f = fakeFile()
 	f.ValidateDPI(100)
@@ -58,11 +64,11 @@ func TestValidateDPIGood(t *testing.T) {
 }
 
 // TestValidateDPIGoodSmallImages verifies that the image is still considered
-// okay when half (or more) images are fine
+// okay when a very tiny image is too small
 func TestValidateDPIGoodSmallImages(t *testing.T) {
 	reset()
-	add(1, 1)
-	add(100, 100)
+	add(1, 1, 1, 1)
+	add(100, 100, 100, 100)
 
 	var f = fakeFile()
 	f.ValidateDPI(100)
@@ -75,12 +81,12 @@ func TestValidateDPIGoodSmallImages(t *testing.T) {
 	}
 }
 
-// TestValidateDPIBadSmallImages verifies we have failures if there are too many small images
+// TestValidateDPIBadSmallImages verifies we have failures if there are any
+// low-res images that aren't trivially small
 func TestValidateDPIBadSmallImages(t *testing.T) {
 	reset()
-	add(1, 1)
-	add(1, 1)
-	add(100, 100)
+	add(1, 1, 50, 50)
+	add(100, 100, 100, 100)
 
 	var f = fakeFile()
 	f.ValidateDPI(100)
@@ -96,19 +102,19 @@ func TestValidateDPIBadSmallImages(t *testing.T) {
 // TestValidateDPIBadLargeImage verifies we fail on a single too-large image
 func TestValidateDPIBadLargeImage(t *testing.T) {
 	reset()
-	add(100, 100)
-	add(100, 100)
-	add(100, 100)
-	add(100, 100)
-	add(100, 100)
-	add(100, 100)
-	add(100, 100)
-	add(100, 100)
-	add(100, 100)
-	add(100, 100)
-	add(100, 100)
-	add(100, 100)
-	add(116, 100)
+	add(100, 100, 100, 100)
+	add(100, 100, 100, 100)
+	add(100, 100, 100, 100)
+	add(100, 100, 100, 100)
+	add(100, 100, 100, 100)
+	add(100, 100, 100, 100)
+	add(100, 100, 100, 100)
+	add(100, 100, 100, 100)
+	add(100, 100, 100, 100)
+	add(100, 100, 100, 100)
+	add(100, 100, 100, 100)
+	add(100, 100, 100, 100)
+	add(116, 100, 100, 100)
 
 	var f = fakeFile()
 	f.ValidateDPI(100)
@@ -136,7 +142,7 @@ func TestValidateDPIBadNoImages(t *testing.T) {
 }
 func TestValidateDPINonPDF(t *testing.T) {
 	reset()
-	add(0, 0)
+	add(0, 0, 100, 100)
 	var f = fakeFile()
 	f.Name = "fake.tiff"
 	f.ValidateDPI(100)
