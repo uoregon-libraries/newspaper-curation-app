@@ -36,6 +36,9 @@ Brief description, if necessary
 
 ### Added
 
+- Uploads list now shows a count of issues as well as an explanation of what
+  the quick error scan actually means
+
 ### Changed
 
 ### Removed
