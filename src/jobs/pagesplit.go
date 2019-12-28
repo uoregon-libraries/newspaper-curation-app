@@ -235,9 +235,7 @@ func (ps *PageSplit) moveIssue() (ok bool) {
 	return true
 }
 
-// updateIssueWorkflow sets the Issue's location and flips the "awaiting manual
-// ordering" flag so we can track the issue with our "move manually ordered
-// issues" scanner
+// updateIssueWorkflow sets the Issue's master backup location
 func (ps *PageSplit) updateIssueWorkflow() {
 	ps.DBIssue.MasterBackupLocation = ps.MasterBackup
 }
