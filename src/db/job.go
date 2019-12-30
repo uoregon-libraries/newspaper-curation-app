@@ -1,6 +1,8 @@
 package db
 
 import (
+	"fmt"
+	"strings"
 	"time"
 
 	"github.com/Nerdmaster/magicsql"
@@ -109,6 +111,37 @@ func findJobs(where string, args ...interface{}) ([]*Job, error) {
 	var list []*Job
 	op.Select("jobs", &Job{}).Where(where, args...).AllObjects(&list)
 	return list, op.Err()
+}
+
+// PopNextPendingJob is a helper for locking the database to pull the oldest
+// job with one of the given types and set it to in-process
+func PopNextPendingJob(types []JobType) (*Job, error) {
+	var op = DB.Operation()
+	op.Dbg = Debug
+
+	op.BeginTransaction()
+	defer op.EndTransaction()
+
+	// Wrangle the IN pain...
+	var j = &Job{}
+	var args []interface{}
+	var placeholders []string
+	args = append(args, string(JobStatusPending), time.Now())
+	for _, t := range types {
+		args = append(args, string(t))
+		placeholders = append(placeholders, "?")
+	}
+
+	var clause = fmt.Sprintf("status = ? AND run_at <= ? AND job_type IN (%s)", strings.Join(placeholders, ","))
+	if !op.Select("jobs", &Job{}).Where(clause, args...).Order("created_at").First(j) {
+		return nil, op.Err()
+	}
+
+	j.Status = string(JobStatusInProcess)
+	j.StartedAt = time.Now()
+	j.SaveOp(op)
+
+	return j, op.Err()
 }
 
 // FindJobsByStatus returns all jobs that have the given status

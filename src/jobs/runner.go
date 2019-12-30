@@ -4,7 +4,6 @@ import (
 	"fmt"
 	"os"
 	"path/filepath"
-	"strings"
 	"sync/atomic"
 	"time"
 
@@ -103,7 +102,7 @@ func (r *Runner) Stop() {
 // in-process, and processes it.  If no processor was found, the return is
 // false and nothing happens.
 func (r *Runner) processNext() bool {
-	var dbJob, err = popNextPendingJob(r.jobTypes)
+	var dbJob, err = db.PopNextPendingJob(r.jobTypes)
 
 	if err != nil {
 		r.logger.Errorf("Unable to pull next pending job: %s", err)
@@ -119,37 +118,6 @@ func (r *Runner) processNext() bool {
 	}
 	r.process(j)
 	return true
-}
-
-// popNextPendingJob is a helper for locking the database to pull the oldest
-// job with one of the given types and set it to in-process
-func popNextPendingJob(types []db.JobType) (*db.Job, error) {
-	var op = db.DB.Operation()
-	op.Dbg = db.Debug
-
-	op.BeginTransaction()
-	defer op.EndTransaction()
-
-	// Wrangle the IN pain...
-	var j = &db.Job{}
-	var args []interface{}
-	var placeholders []string
-	args = append(args, string(db.JobStatusPending), time.Now())
-	for _, t := range types {
-		args = append(args, string(t))
-		placeholders = append(placeholders, "?")
-	}
-
-	var clause = fmt.Sprintf("status = ? AND run_at <= ? AND job_type IN (%s)", strings.Join(placeholders, ","))
-	if !op.Select("jobs", &db.Job{}).Where(clause, args...).Order("created_at").First(j) {
-		return nil, op.Err()
-	}
-
-	j.Status = string(db.JobStatusInProcess)
-	j.StartedAt = time.Now()
-	j.SaveOp(op)
-
-	return j, op.Err()
 }
 
 func (r *Runner) process(pr Processor) {
