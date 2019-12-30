@@ -84,23 +84,20 @@ func (j *Job) Rerun() error {
 	return clone.Save()
 }
 
-// Requeue closes out this job and queues a new, duplicate job
+// Requeue closes out this job and queues a new, duplicate job ready for
+// processing.  We do this instead of just rerunning a job so that the job logs
+// can be tied to a distinct instance of a job, making it easier to debug
+// things like command-line failures for a particular run.
 func (j *Job) Requeue() error {
 	var op = db.DB.Operation()
 	op.BeginTransaction()
 
-	var clone = &db.Job{
-		Type:       j.db.Type,
-		ObjectID:   j.db.ObjectID,
-		ObjectType: j.db.ObjectType,
-		Status:     string(JobStatusPending),
-		RunAt:      j.db.RunAt,
-		ExtraData:  j.db.ExtraData,
-		QueueJobID: j.db.QueueJobID,
-	}
-
+	// This is a shallow clone, but that should be fine since it's only the
+	// top-level data that gets serialized to the database
+	var clone db.Job = *j.db
+	clone.ID = 0
+	clone.Status = string(JobStatusPending)
 	clone.SaveOp(op)
-
 	j.db.Status = string(JobStatusFailedDone)
 	j.db.SaveOp(op)
 
