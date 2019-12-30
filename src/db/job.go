@@ -94,14 +94,11 @@ type Job struct {
 
 // FindJob gets a job by its id
 func FindJob(id int) (*Job, error) {
-	var op = DB.Operation()
-	op.Dbg = Debug
-	var j = &Job{}
-	var ok = op.Select("jobs", &Job{}).Where("id = ?", id).First(j)
-	if !ok {
-		return nil, op.Err()
+	var jobs, err = findJobs("id = ?", id)
+	if len(jobs) == 0 {
+		return nil, err
 	}
-	return j, op.Err()
+	return jobs[0], err
 }
 
 // findJobs wraps all the job finding functionality so helpers can be
