@@ -8,10 +8,10 @@ import (
 )
 
 // PrepareJobAdvanced gets a job of any kind set up with sensible defaults
-func PrepareJobAdvanced(t JobType) *db.Job {
+func PrepareJobAdvanced(t db.JobType) *db.Job {
 	return &db.Job{
 		Type:   string(t),
-		Status: string(JobStatusPending),
+		Status: string(db.JobStatusPending),
 		RunAt:  time.Now(),
 	}
 }
@@ -21,7 +21,7 @@ func PrepareJobAdvanced(t JobType) *db.Job {
 // advanced job semantics: specifying that the job shouldn't run immediately,
 // should queue a specific job ID after completion, should set the WorkflowStep
 // to a custom value rather than whatever the job would normally do, etc.
-func PrepareIssueJobAdvanced(t JobType, issue *db.Issue, nextWS schema.WorkflowStep) *db.Job {
+func PrepareIssueJobAdvanced(t db.JobType, issue *db.Issue, nextWS schema.WorkflowStep) *db.Job {
 	var j = PrepareJobAdvanced(t)
 	j.ObjectID = issue.ID
 	j.ObjectType = db.JobObjectTypeIssue
@@ -30,14 +30,14 @@ func PrepareIssueJobAdvanced(t JobType, issue *db.Issue, nextWS schema.WorkflowS
 }
 
 // PrepareBatchJobAdvanced gets a batch job ready for being used elsewhere
-func PrepareBatchJobAdvanced(t JobType, batch *db.Batch) *db.Job {
+func PrepareBatchJobAdvanced(t db.JobType, batch *db.Batch) *db.Job {
 	var j = PrepareJobAdvanced(t)
 	j.ObjectID = batch.ID
 	j.ObjectType = db.JobObjectTypeBatch
 	return j
 }
 
-func queueIssueJob(t JobType, issue *db.Issue, nextWS schema.WorkflowStep) error {
+func queueIssueJob(t db.JobType, issue *db.Issue, nextWS schema.WorkflowStep) error {
 	return PrepareIssueJobAdvanced(t, issue, nextWS).Save()
 }
 
@@ -56,7 +56,7 @@ func QueueSerial(jobs ...*db.Job) error {
 		var j = jobs[i]
 		j.QueueJobID = lastJobID
 		if i != 0 {
-			j.Status = string(JobStatusOnHold)
+			j.Status = string(db.JobStatusOnHold)
 		}
 		var err = j.SaveOp(op)
 		if err != nil {
@@ -72,9 +72,9 @@ func QueueSerial(jobs ...*db.Job) error {
 // by a page-split and then a move to the page review area
 func QueueSFTPIssueMove(issue *db.Issue) error {
 	return QueueSerial(
-		PrepareIssueJobAdvanced(JobTypeMoveIssueToWorkflow, issue, schema.WSNil),
-		PrepareIssueJobAdvanced(JobTypePageSplit, issue, schema.WSNil),
-		PrepareIssueJobAdvanced(JobTypeMoveIssueToPageReview, issue, schema.WSAwaitingPageReview),
+		PrepareIssueJobAdvanced(db.JobTypeMoveIssueToWorkflow, issue, schema.WSNil),
+		PrepareIssueJobAdvanced(db.JobTypePageSplit, issue, schema.WSNil),
+		PrepareIssueJobAdvanced(db.JobTypeMoveIssueToPageReview, issue, schema.WSAwaitingPageReview),
 	)
 }
 
@@ -82,8 +82,8 @@ func QueueSFTPIssueMove(issue *db.Issue) error {
 // and then immediately generate derivatives
 func QueueMoveIssueForDerivatives(issue *db.Issue) error {
 	return QueueSerial(
-		PrepareIssueJobAdvanced(JobTypeMoveIssueToWorkflow, issue, schema.WSNil),
-		PrepareIssueJobAdvanced(JobTypeMakeDerivatives, issue, schema.WSReadyForMetadataEntry),
+		PrepareIssueJobAdvanced(db.JobTypeMoveIssueToWorkflow, issue, schema.WSNil),
+		PrepareIssueJobAdvanced(db.JobTypeMakeDerivatives, issue, schema.WSReadyForMetadataEntry),
 	)
 }
 
@@ -92,8 +92,8 @@ func QueueMoveIssueForDerivatives(issue *db.Issue) error {
 // master PDFs (if born-digital) into the issue directory.
 func QueueFinalizeIssue(issue *db.Issue) error {
 	return QueueSerial(
-		PrepareIssueJobAdvanced(JobTypeBuildMETS, issue, schema.WSNil),
-		PrepareIssueJobAdvanced(JobTypeMoveMasterFiles, issue, schema.WSReadyForBatching),
+		PrepareIssueJobAdvanced(db.JobTypeBuildMETS, issue, schema.WSNil),
+		PrepareIssueJobAdvanced(db.JobTypeMoveMasterFiles, issue, schema.WSReadyForBatching),
 	)
 }
 
@@ -104,12 +104,12 @@ func QueueFinalizeIssue(issue *db.Issue) error {
 // on staging.
 func QueueMakeBatch(batch *db.Batch) error {
 	// Ensure the batch is flagged properly after it's ready
-	var moveJob = PrepareBatchJobAdvanced(JobTypeMoveBatchToReadyLocation, batch)
+	var moveJob = PrepareBatchJobAdvanced(db.JobTypeMoveBatchToReadyLocation, batch)
 	moveJob.ExtraData = string(db.BatchStatusQCReady)
 
 	return QueueSerial(
-		PrepareBatchJobAdvanced(JobTypeCreateBatchStructure, batch),
-		PrepareBatchJobAdvanced(JobTypeMakeBatchXML, batch),
-		moveJob, PrepareBatchJobAdvanced(JobTypeWriteBagitManifest, batch),
+		PrepareBatchJobAdvanced(db.JobTypeCreateBatchStructure, batch),
+		PrepareBatchJobAdvanced(db.JobTypeMakeBatchXML, batch),
+		moveJob, PrepareBatchJobAdvanced(db.JobTypeWriteBagitManifest, batch),
 	)
 }

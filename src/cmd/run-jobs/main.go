@@ -131,7 +131,7 @@ func getOpts() (*config.Config, []string) {
 
 // setupValidQueueNames copies in the list of valid queues for easier validation
 func setupValidQueueNames() {
-	for _, jType := range jobs.ValidJobTypes {
+	for _, jType := range db.ValidJobTypes {
 		var jt = string(jType)
 		validQueues[jt] = true
 		validQueueList = append(validQueueList, jt)
@@ -196,7 +196,7 @@ func retryJob(idString string) {
 		return
 	}
 
-	var failStatus = jobs.JobStatusFailed
+	var failStatus = db.JobStatusFailed
 	var dj = j.DBJob()
 	if dj.Status != string(failStatus) {
 		logger.Errorf("Cannot requeue job id %d: status is %s (it must be %s to requeue)", dj.ID, dj.Status, failStatus)
@@ -221,15 +221,15 @@ func watch(c *config.Config, queues ...string) {
 		usageFail("Error: you must specify one or more queues to watch")
 	}
 
-	var jobTypes = make([]jobs.JobType, len(queues))
+	var jobTypes = make([]db.JobType, len(queues))
 	for i, queue := range queues {
 		validateJobQueue(queue)
-		jobTypes[i] = jobs.JobType(queue)
+		jobTypes[i] = db.JobType(queue)
 	}
 	watchJobTypes(c, jobTypes...)
 }
 
-func watchJobTypes(c *config.Config, jobTypes ...jobs.JobType) {
+func watchJobTypes(c *config.Config, jobTypes ...db.JobType) {
 	var r = jobs.NewRunner(c, jobTypes...)
 	addRunner(r)
 	r.Watch(time.Second * 10)
@@ -259,27 +259,27 @@ func runAllQueues(c *config.Config) {
 		func() {
 			// Potentially slow filesystem moves
 			watchJobTypes(c,
-				jobs.JobTypeMoveIssueToWorkflow,
-				jobs.JobTypeMoveIssueToPageReview,
-				jobs.JobTypeMoveMasterFiles,
+				db.JobTypeMoveIssueToWorkflow,
+				db.JobTypeMoveIssueToPageReview,
+				db.JobTypeMoveMasterFiles,
 			)
 		},
 		func() {
 			// Slow jobs: expensive process spawning or file crunching
 			watchJobTypes(c,
-				jobs.JobTypePageSplit,
-				jobs.JobTypeMakeDerivatives,
-				jobs.JobTypeWriteBagitManifest,
+				db.JobTypePageSplit,
+				db.JobTypeMakeDerivatives,
+				db.JobTypeWriteBagitManifest,
 			)
 		},
 		func() {
 			// Fast jobs: file renaming, hard-linking, running templates for very
 			// simple XML output, etc.
 			watchJobTypes(c,
-				jobs.JobTypeBuildMETS,
-				jobs.JobTypeCreateBatchStructure,
-				jobs.JobTypeMakeBatchXML,
-				jobs.JobTypeMoveBatchToReadyLocation,
+				db.JobTypeBuildMETS,
+				db.JobTypeCreateBatchStructure,
+				db.JobTypeMakeBatchXML,
+				db.JobTypeMoveBatchToReadyLocation,
 			)
 		},
 	)

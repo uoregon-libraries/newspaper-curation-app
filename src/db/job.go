@@ -12,6 +12,51 @@ const (
 	JobObjectTypeIssue = "issue"
 )
 
+// JobType represents all possible jobs the system queues and processes
+type JobType string
+
+// The full list of job types
+const (
+	JobTypePageSplit                JobType = "page_split"
+	JobTypeMoveIssueToWorkflow      JobType = "move_issue_to_workflow"
+	JobTypeMoveIssueToPageReview    JobType = "move_issue_to_page_review"
+	JobTypeMakeDerivatives          JobType = "make_derivatives"
+	JobTypeBuildMETS                JobType = "build_mets"
+	JobTypeMoveMasterFiles          JobType = "move_master_files"
+	JobTypeCreateBatchStructure     JobType = "create_batch_structure"
+	JobTypeMakeBatchXML             JobType = "make_batch_xml"
+	JobTypeMoveBatchToReadyLocation JobType = "move_batch_to_ready_location"
+	JobTypeWriteBagitManifest       JobType = "write_bagit_manifest"
+)
+
+// ValidJobTypes is the full list of job types which can exist in the jobs
+// table, for use in validating command-line job queue processing
+var ValidJobTypes = []JobType{
+	JobTypePageSplit,
+	JobTypeMoveIssueToWorkflow,
+	JobTypeMoveIssueToPageReview,
+	JobTypeMakeDerivatives,
+	JobTypeBuildMETS,
+	JobTypeMoveMasterFiles,
+	JobTypeCreateBatchStructure,
+	JobTypeMakeBatchXML,
+	JobTypeMoveBatchToReadyLocation,
+	JobTypeWriteBagitManifest,
+}
+
+// JobStatus represents the different states in which a job can exist
+type JobStatus string
+
+// The full list of job statuses
+const (
+	JobStatusOnHold     JobStatus = "on_hold"     // Jobs waiting for another job to complete
+	JobStatusPending    JobStatus = "pending"     // Jobs needing to be processed
+	JobStatusInProcess  JobStatus = "in_process"  // Jobs which have been taken by a worker but aren't done
+	JobStatusSuccessful JobStatus = "success"     // Jobs which were successful
+	JobStatusFailed     JobStatus = "failed"      // Jobs which are complete, but did not succeed
+	JobStatusFailedDone JobStatus = "failed_done" // Jobs we ignore - e.g., failed jobs which were rerun
+)
+
 // JobLog is a single log entry attached to a job
 type JobLog struct {
 	ID        int `sql:",primary"`
@@ -70,33 +115,27 @@ func findJobs(where string, args ...interface{}) ([]*Job, error) {
 }
 
 // FindJobsByStatus returns all jobs that have the given status
-func FindJobsByStatus(st string) ([]*Job, error) {
+func FindJobsByStatus(st JobStatus) ([]*Job, error) {
 	return findJobs("status = ?", st)
 }
 
 // FindJobsByStatusAndType returns all jobs of the given status and type
-func FindJobsByStatusAndType(st string, t string) ([]*Job, error) {
+func FindJobsByStatusAndType(st JobStatus, t JobType) ([]*Job, error) {
 	return findJobs("status = ? AND job_type = ?", st, t)
 }
 
 // FindRecentJobsByType grabs all jobs of the given type which were created
 // within the given duration or are still pending, for use in pulling lists of
 // issues which are in the process of doing something
-func FindRecentJobsByType(t string, d time.Duration) ([]*Job, error) {
+func FindRecentJobsByType(t JobType, d time.Duration) ([]*Job, error) {
 	var pendingJobs, otherJobs []*Job
 	var err error
 
-	// HACK: this hard-coded "pending" crap is awful, but the jobs package is
-	// where the constants live, and jobs depends on db, so we can't have db
-	// depend on jobs.  We need a nicer approach for constants that multiple
-	// modules need.
-	var pending = "pending"
-
-	pendingJobs, err = FindJobsByStatusAndType(pending, t)
+	pendingJobs, err = FindJobsByStatusAndType(JobStatusPending, t)
 	if err != nil {
 		return nil, err
 	}
-	otherJobs, err = findJobs("status <> ? AND job_type = ? AND created_at > ?", pending, t, time.Now().Add(-d))
+	otherJobs, err = findJobs("status <> ? AND job_type = ? AND created_at > ?", string(JobStatusPending), t, time.Now().Add(-d))
 	if err != nil {
 		return nil, err
 	}

@@ -82,9 +82,9 @@ func (j *Job) Requeue() error {
 	// top-level data that gets serialized to the database
 	var clone db.Job = *j.db
 	clone.ID = 0
-	clone.Status = string(JobStatusPending)
+	clone.Status = string(db.JobStatusPending)
 	clone.SaveOp(op)
-	j.db.Status = string(JobStatusFailedDone)
+	j.db.Status = string(db.JobStatusFailedDone)
 	j.db.SaveOp(op)
 
 	op.EndTransaction()

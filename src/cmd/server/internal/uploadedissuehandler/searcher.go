@@ -12,7 +12,6 @@ import (
 	"github.com/uoregon-libraries/newspaper-curation-app/src/db"
 	"github.com/uoregon-libraries/newspaper-curation-app/src/internal/logger"
 	"github.com/uoregon-libraries/newspaper-curation-app/src/issuewatcher"
-	"github.com/uoregon-libraries/newspaper-curation-app/src/jobs"
 	"github.com/uoregon-libraries/newspaper-curation-app/src/schema"
 )
 
@@ -152,7 +151,7 @@ func (s *Searcher) swapTitleData(nextTitles []*Title, nextTitleLookup map[string
 func (s *Searcher) BuildInProcessList() error {
 	var nextInProcessIssues = make(map[string]bool)
 
-	var jobs, err = db.FindRecentJobsByType(string(jobs.JobTypeMoveIssueToWorkflow), time.Second*secondsBetweenIssueReload)
+	var jobs, err = db.FindRecentJobsByType(db.JobTypeMoveIssueToWorkflow, time.Second*secondsBetweenIssueReload)
 	if err != nil {
 		return fmt.Errorf("unable to find recent issue move jobs: %s", err)
 	}

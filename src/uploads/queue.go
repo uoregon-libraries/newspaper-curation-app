@@ -78,15 +78,15 @@ func (i *Issue) Queue() apperr.Error {
 		return dbErr()
 	}
 	for _, job := range jobList {
-		switch jobs.JobStatus(job.Status) {
-		case jobs.JobStatusFailed:
-			job.Status = string(jobs.JobStatusFailedDone)
+		switch db.JobStatus(job.Status) {
+		case db.JobStatusFailed:
+			job.Status = string(db.JobStatusFailedDone)
 			err = job.Save()
 			if err != nil {
 				logger.Criticalf("Unable to close failed job!  Manually fix this!  Job id %d; error: %s", job.ID, err)
 				return dbErr()
 			}
-		case jobs.JobStatusFailedDone:
+		case db.JobStatusFailedDone:
 			continue
 		default:
 			logger.Criticalf("Unexpected job detected for issue %q (db id %d): job id %d, status %q",
