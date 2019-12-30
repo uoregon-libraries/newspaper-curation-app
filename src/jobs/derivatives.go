@@ -67,7 +67,7 @@ func (md *MakeDerivatives) Process(c *config.Config) bool {
 
 // findPDFs builds the list of Alto and JP2 derivative sources
 func (md *MakeDerivatives) findPDFs() (ok bool) {
-	var pdfs, err = fileutil.FindIf(md.db.Location, func(i os.FileInfo) bool {
+	var pdfs, err = fileutil.FindIf(md.DBIssue.Location, func(i os.FileInfo) bool {
 		return pdfFilenameRegex.MatchString(i.Name())
 	})
 
@@ -93,7 +93,7 @@ func (md *MakeDerivatives) findPDFs() (ok bool) {
 // _findTIFFs looks for any TIFF files in the issue directory.  This is only
 // called for scanned issues, so there *must* be TIFFs or this is a failure.
 func (md *MakeDerivatives) _findTIFFs() (ok bool) {
-	var tiffs, err = fileutil.FindIf(md.db.Location, func(i os.FileInfo) bool {
+	var tiffs, err = fileutil.FindIf(md.DBIssue.Location, func(i os.FileInfo) bool {
 		return tiffFilenameRegex.MatchString(i.Name())
 	})
 
@@ -120,7 +120,7 @@ func (md *MakeDerivatives) _findTIFFs() (ok bool) {
 // checks are redundant, but it's clear that with the complexity of our
 // process, more failsafes are better than fewer.
 func (md *MakeDerivatives) validateSourceFiles() (ok bool) {
-	var infos, err = fileutil.ReaddirSorted(md.db.Location)
+	var infos, err = fileutil.ReaddirSorted(md.DBIssue.Location)
 	if err != nil {
 		md.Logger.Errorf("Unable to scan all files: %s", err)
 		return false

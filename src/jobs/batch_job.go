@@ -25,11 +25,6 @@ func NewBatchJob(dbJob *db.Job) *BatchJob {
 	return &BatchJob{Job: NewJob(dbJob), DBBatch: batch, updateWorkflowCB: nilWorkflowCB}
 }
 
-// ObjectLocation implements the Processor interface
-func (j *BatchJob) ObjectLocation() string {
-	return j.DBBatch.Location
-}
-
 // nilWorkflowCB just lets us have a placeholder for the workflow callback in
 // cases the implementor doesn't set one
 func nilWorkflowCB() {

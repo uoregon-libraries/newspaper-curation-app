@@ -189,8 +189,8 @@ func (r *Runner) queueNextJob(pr Processor) {
 		r.logger.Criticalf("Unable to find next job in the database (dbid %d)", qid)
 		return
 	}
+
 	nextJob.Status = string(JobStatusPending)
-	nextJob.Location = pr.ObjectLocation()
 	err = nextJob.Save()
 	if err != nil {
 		r.logger.Criticalf("Unable to mark next job pending (dbid %d): %s", qid, err)

@@ -47,5 +47,5 @@ func queueIssueForDerivatives(dbIssue *db.Issue) {
 	}
 
 	// Queue up move to workflow dir
-	jobs.QueueMoveIssueForDerivatives(dbIssue, newDir)
+	jobs.QueueMoveIssueForDerivatives(dbIssue)
 }

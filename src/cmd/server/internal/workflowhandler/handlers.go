@@ -291,7 +291,7 @@ func approveIssueMetadataHandler(resp *responder.Responder, i *Issue) {
 	// We queue the issue finalization job, but whether it succeeds or not, the
 	// issue was already successfully approved, so we just have to hope for the
 	// best and log loudly if it doesn't work
-	err = jobs.QueueFinalizeIssue(i.Issue, i.Location)
+	err = jobs.QueueFinalizeIssue(i.Issue)
 	if err != nil {
 		logger.Criticalf("Unable to queue issue finalization for issue id %d: %s", i.ID, err)
 	}

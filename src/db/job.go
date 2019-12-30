@@ -30,7 +30,6 @@ type Job struct {
 	Type        string    `sql:"job_type"`
 	ObjectID    int
 	ObjectType  string
-	Location    string
 	Status      string
 	logs        []*JobLog
 

@@ -21,12 +21,11 @@ func PrepareJobAdvanced(t JobType) *db.Job {
 // advanced job semantics: specifying that the job shouldn't run immediately,
 // should queue a specific job ID after completion, should set the WorkflowStep
 // to a custom value rather than whatever the job would normally do, etc.
-func PrepareIssueJobAdvanced(t JobType, issue *db.Issue, path string, nextWS schema.WorkflowStep) *db.Job {
+func PrepareIssueJobAdvanced(t JobType, issue *db.Issue, nextWS schema.WorkflowStep) *db.Job {
 	var j = PrepareJobAdvanced(t)
 	j.ObjectID = issue.ID
 	j.ObjectType = db.JobObjectTypeIssue
 	j.ExtraData = string(nextWS)
-	j.Location = path
 	return j
 }
 
@@ -38,8 +37,8 @@ func PrepareBatchJobAdvanced(t JobType, batch *db.Batch) *db.Job {
 	return j
 }
 
-func queueIssueJob(t JobType, issue *db.Issue, path string, nextWS schema.WorkflowStep) error {
-	return PrepareIssueJobAdvanced(t, issue, path, nextWS).Save()
+func queueIssueJob(t JobType, issue *db.Issue, nextWS schema.WorkflowStep) error {
+	return PrepareIssueJobAdvanced(t, issue, nextWS).Save()
 }
 
 // QueueSerial attempts to save the jobs (in a transaction), setting the first
@@ -71,30 +70,30 @@ func QueueSerial(jobs ...*db.Job) error {
 
 // QueueSFTPIssueMove queues up an issue move into the workflow area followed
 // by a page-split and then a move to the page review area
-func QueueSFTPIssueMove(issue *db.Issue, path string) error {
+func QueueSFTPIssueMove(issue *db.Issue) error {
 	return QueueSerial(
-		PrepareIssueJobAdvanced(JobTypeMoveIssueToWorkflow, issue, path, schema.WSNil),
-		PrepareIssueJobAdvanced(JobTypePageSplit, issue, path, schema.WSNil),
-		PrepareIssueJobAdvanced(JobTypeMoveIssueToPageReview, issue, path, schema.WSAwaitingPageReview),
+		PrepareIssueJobAdvanced(JobTypeMoveIssueToWorkflow, issue, schema.WSNil),
+		PrepareIssueJobAdvanced(JobTypePageSplit, issue, schema.WSNil),
+		PrepareIssueJobAdvanced(JobTypeMoveIssueToPageReview, issue, schema.WSAwaitingPageReview),
 	)
 }
 
 // QueueMoveIssueForDerivatives creates jobs to move issues into the workflow
 // and then immediately generate derivatives
-func QueueMoveIssueForDerivatives(issue *db.Issue, path string) error {
+func QueueMoveIssueForDerivatives(issue *db.Issue) error {
 	return QueueSerial(
-		PrepareIssueJobAdvanced(JobTypeMoveIssueToWorkflow, issue, path, schema.WSNil),
-		PrepareIssueJobAdvanced(JobTypeMakeDerivatives, issue, path, schema.WSReadyForMetadataEntry),
+		PrepareIssueJobAdvanced(JobTypeMoveIssueToWorkflow, issue, schema.WSNil),
+		PrepareIssueJobAdvanced(JobTypeMakeDerivatives, issue, schema.WSReadyForMetadataEntry),
 	)
 }
 
 // QueueFinalizeIssue creates and queues jobs that get an issue ready for
 // batching.  Currently this means generating the METS XML file and copying
 // master PDFs (if born-digital) into the issue directory.
-func QueueFinalizeIssue(issue *db.Issue, path string) error {
+func QueueFinalizeIssue(issue *db.Issue) error {
 	return QueueSerial(
-		PrepareIssueJobAdvanced(JobTypeBuildMETS, issue, path, schema.WSNil),
-		PrepareIssueJobAdvanced(JobTypeMoveMasterFiles, issue, path, schema.WSReadyForBatching),
+		PrepareIssueJobAdvanced(JobTypeBuildMETS, issue, schema.WSNil),
+		PrepareIssueJobAdvanced(JobTypeMoveMasterFiles, issue, schema.WSReadyForBatching),
 	)
 }
 
