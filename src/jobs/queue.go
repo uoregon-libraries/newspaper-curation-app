@@ -1,19 +1,13 @@
 package jobs
 
 import (
-	"time"
-
 	"github.com/uoregon-libraries/newspaper-curation-app/src/db"
 	"github.com/uoregon-libraries/newspaper-curation-app/src/schema"
 )
 
 // PrepareJobAdvanced gets a job of any kind set up with sensible defaults
 func PrepareJobAdvanced(t db.JobType) *db.Job {
-	return &db.Job{
-		Type:   string(t),
-		Status: string(db.JobStatusPending),
-		RunAt:  time.Now(),
-	}
+	return db.NewJob(t)
 }
 
 // PrepareIssueJobAdvanced is a way to get an issue job ready with the

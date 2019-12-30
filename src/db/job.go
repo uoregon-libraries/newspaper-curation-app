@@ -94,6 +94,16 @@ type Job struct {
 	QueueJobID int
 }
 
+// NewJob sets up a job of the given type as a pending job that's ready to run
+// right away
+func NewJob(t JobType) *Job {
+	return &Job{
+		Type:   string(t),
+		Status: string(JobStatusPending),
+		RunAt:  time.Now(),
+	}
+}
+
 // FindJob gets a job by its id
 func FindJob(id int) (*Job, error) {
 	var jobs, err = findJobs("id = ?", id)
