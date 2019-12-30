@@ -159,8 +159,6 @@ func main() {
 		watchPageReview(c)
 	case "watchall":
 		runAllQueues(c)
-	case "force-rerun":
-		forceRerun(args)
 	default:
 		usageFail("Error: invalid action")
 	}
@@ -209,30 +207,6 @@ func retryJob(idString string) {
 	var err = j.Requeue()
 	if err != nil {
 		logger.Errorf("Unable to requeue job %d: %s", dj.ID, err)
-	}
-}
-
-func forceRerun(ids []string) {
-	if len(ids) == 0 {
-		usageFail("Error: the force-rerun action requires at least one job id")
-	}
-
-	for _, idString := range ids {
-		rerunJob(idString)
-	}
-}
-
-func rerunJob(idString string) {
-	var j = findJob(idString)
-	if j == nil {
-		return
-	}
-
-	var dj = j.DBJob()
-	logger.Infof("Rerunning job %d", dj.ID)
-	var err = j.Rerun()
-	if err != nil {
-		logger.Errorf("Unable to rerun job %d: %s", dj.ID, err)
 	}
 }
 
