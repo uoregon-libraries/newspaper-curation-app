@@ -99,9 +99,9 @@ func (ps *PageSplit) process() (ok bool) {
 func (ps *PageSplit) createMasterPDF() (ok bool) {
 	ps.Logger.Debugf("Preprocessing with ghostscript")
 
-	var fileinfos, err = fileutil.ReaddirSorted(ps.db.Location)
+	var fileinfos, err = fileutil.ReaddirSorted(ps.DBIssue.Location)
 	if err != nil {
-		ps.Logger.Errorf("Unable to list files in %q: %s", ps.db.Location, err)
+		ps.Logger.Errorf("Unable to list files in %q: %s", ps.DBIssue.Location, err)
 		return false
 	}
 
@@ -111,7 +111,7 @@ func (ps *PageSplit) createMasterPDF() (ok bool) {
 		"-dCompressFonts=true", "-r150", "-sOutputFile=" + ps.FakeMasterFile,
 	}
 	for _, fi := range fileinfos {
-		args = append(args, filepath.Join(ps.db.Location, fi.Name()))
+		args = append(args, filepath.Join(ps.DBIssue.Location, fi.Name()))
 	}
 	return shell.ExecSubgroup(ps.GhostScript, ps.Logger, args...)
 }
@@ -202,13 +202,13 @@ func (ps *PageSplit) backupOriginals() (ok bool) {
 		return false
 	}
 
-	err = fileutil.CopyDirectory(ps.db.Location, ps.MasterBackup)
+	err = fileutil.CopyDirectory(ps.DBIssue.Location, ps.MasterBackup)
 	if err != nil {
-		ps.Logger.Criticalf("Unable to copy master file(s) from %q to %q: %s", ps.db.Location, ps.MasterBackup, err)
+		ps.Logger.Criticalf("Unable to copy master file(s) from %q to %q: %s", ps.DBIssue.Location, ps.MasterBackup, err)
 		return false
 	}
 
-	err = os.RemoveAll(ps.db.Location)
+	err = os.RemoveAll(ps.DBIssue.Location)
 	if err != nil {
 		ps.Logger.Criticalf("Unable to remove original files after making master backup: %s", err)
 		return false
@@ -227,9 +227,9 @@ func (ps *PageSplit) moveIssue() (ok bool) {
 		ps.Logger.Criticalf("Unable to move temporary directory %q to %q: %s", ps.TempDir, ps.WIPDir, err)
 		return false
 	}
-	err = os.Rename(ps.WIPDir, ps.db.Location)
+	err = os.Rename(ps.WIPDir, ps.DBIssue.Location)
 	if err != nil {
-		ps.Logger.Criticalf("Unable to move WIP directory %q to %q: %s", ps.WIPDir, ps.db.Location, err)
+		ps.Logger.Criticalf("Unable to move WIP directory %q to %q: %s", ps.WIPDir, ps.DBIssue.Location, err)
 		return false
 	}
 	return true

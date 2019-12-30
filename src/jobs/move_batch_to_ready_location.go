@@ -16,9 +16,9 @@ type MoveBatchToReadyLocation struct {
 // Process implements Processor by renaming the batch directory
 func (j *MoveBatchToReadyLocation) Process(c *config.Config) bool {
 	var newPath = path.Join(c.BatchOutputPath, j.DBBatch.FullName())
-	var err = os.Rename(j.db.Location, newPath)
+	var err = os.Rename(j.DBBatch.Location, newPath)
 	if err != nil {
-		j.Logger.Errorf("Unable to rename WIP batch directory (%q -> %q): %s", j.db.Location, newPath, err)
+		j.Logger.Errorf("Unable to rename WIP batch directory (%q -> %q): %s", j.DBBatch.Location, newPath, err)
 		return false
 	}
 	j.DBBatch.Location = newPath

@@ -74,9 +74,3 @@ func (ij *IssueJob) UpdateWorkflow() {
 		ij.Logger.Criticalf("Unable to update issue (dbid %d) workflow post-job: %s", ij.DBIssue.ID, err)
 	}
 }
-
-// ObjectLocation implements the Processor interface, returning the issue's
-// current location
-func (ij *IssueJob) ObjectLocation() string {
-	return ij.DBIssue.Location
-}

@@ -23,10 +23,6 @@ type Processor interface {
 
 	// DBJob returns the low-level database Job for updating status, etc.
 	DBJob() *db.Job
-
-	// ObjectLocation returns the job's object location, such as the directory in
-	// which an issue resides, for the runner to use when updating future jobs
-	ObjectLocation() string
 }
 
 // Job wraps the DB job data and provides business logic for things like
@@ -81,7 +77,6 @@ func (j *Job) Rerun() error {
 		Type:       j.db.Type,
 		ObjectID:   j.db.ObjectID,
 		ObjectType: j.db.ObjectType,
-		Location:   j.db.Location,
 		Status:     string(JobStatusPending),
 		RunAt:      j.db.RunAt,
 	}
@@ -98,7 +93,6 @@ func (j *Job) Requeue() error {
 		Type:       j.db.Type,
 		ObjectID:   j.db.ObjectID,
 		ObjectType: j.db.ObjectType,
-		Location:   j.db.Location,
 		Status:     string(JobStatusPending),
 		RunAt:      j.db.RunAt,
 		ExtraData:  j.db.ExtraData,
