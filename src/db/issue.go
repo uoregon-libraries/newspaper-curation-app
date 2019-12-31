@@ -54,7 +54,6 @@ type Issue struct {
 	MasterBackupLocation   string              // Where is the master backup located?  (born-digital only)
 	HumanName              string              // What is the issue's "human" name (for consistent folder naming)?
 	IsFromScanner          bool                // Is the issue scanned in-house?  (Born-digital == false)
-	HasDerivatives         bool                // Does the issue have derivatives done?
 	WorkflowStepString     string              `sql:"workflow_step"` // If set, tells us what "human workflow" step we're on
 	WorkflowStep           schema.WorkflowStep `sql:"-"`
 	WorkflowOwnerID        int                 // Whose "desk" is this currently on?

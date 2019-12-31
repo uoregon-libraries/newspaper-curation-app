@@ -38,7 +38,6 @@ type MakeDerivatives struct {
 func (md *MakeDerivatives) Process(c *config.Config) bool {
 	md.Logger.Debugf("Starting make-derivatives job for issue id %d", md.DBIssue.ID)
 
-	md.updateWorkflowCB = md.updateIssueWorkflow
 	md.OPJCompress = c.OPJCompress
 	md.OPJDecompress = c.OPJDecompress
 	md.GhostScript = c.GhostScript
@@ -205,8 +204,4 @@ func (md *MakeDerivatives) createJP2(file string) (ok bool) {
 	}
 
 	return true
-}
-
-func (md *MakeDerivatives) updateIssueWorkflow() {
-	md.DBIssue.HasDerivatives = true
 }
