@@ -13,8 +13,8 @@ const (
 )
 
 // PrepareJobAdvanced gets a job of any kind set up with sensible defaults
-func PrepareJobAdvanced(t db.JobType) *db.Job {
-	return db.NewJob(t)
+func PrepareJobAdvanced(t db.JobType, args map[string]string) *db.Job {
+	return db.NewJob(t, args)
 }
 
 // PrepareIssueJobAdvanced is a way to get an issue job ready with the
@@ -22,19 +22,16 @@ func PrepareJobAdvanced(t db.JobType) *db.Job {
 // advanced job semantics: specifying that the job shouldn't run immediately,
 // should queue a specific job ID after completion, should set the WorkflowStep
 // to a custom value rather than whatever the job would normally do, etc.
-func PrepareIssueJobAdvanced(t db.JobType, issue *db.Issue, nextWS schema.WorkflowStep) *db.Job {
-	var j = PrepareJobAdvanced(t)
+func PrepareIssueJobAdvanced(t db.JobType, issue *db.Issue, args map[string]string) *db.Job {
+	var j = PrepareJobAdvanced(t, args)
 	j.ObjectID = issue.ID
 	j.ObjectType = db.JobObjectTypeIssue
-	if nextWS != schema.WSNil {
-		j.Args[wsArg] = string(nextWS)
-	}
 	return j
 }
 
 // PrepareBatchJobAdvanced gets a batch job ready for being used elsewhere
-func PrepareBatchJobAdvanced(t db.JobType, batch *db.Batch) *db.Job {
-	var j = PrepareJobAdvanced(t)
+func PrepareBatchJobAdvanced(t db.JobType, batch *db.Batch, args map[string]string) *db.Job {
+	var j = PrepareJobAdvanced(t, args)
 	j.ObjectID = batch.ID
 	j.ObjectType = db.JobObjectTypeBatch
 	return j
@@ -67,13 +64,23 @@ func QueueSerial(jobs ...*db.Job) error {
 	return op.Err()
 }
 
+func makeWSArgs(ws schema.WorkflowStep) map[string]string {
+	return map[string]string{wsArg: string(ws)}
+}
+
+func makeBSArgs(bs string) map[string]string {
+	return map[string]string{bsArg: string(bs)}
+}
+
 // QueueSFTPIssueMove queues up an issue move into the workflow area followed
 // by a page-split and then a move to the page review area
 func QueueSFTPIssueMove(issue *db.Issue) error {
 	return QueueSerial(
-		PrepareIssueJobAdvanced(db.JobTypeMoveIssueToWorkflow, issue, schema.WSNil),
-		PrepareIssueJobAdvanced(db.JobTypePageSplit, issue, schema.WSNil),
-		PrepareIssueJobAdvanced(db.JobTypeMoveIssueToPageReview, issue, schema.WSAwaitingPageReview),
+		PrepareIssueJobAdvanced(db.JobTypeSetIssueWS, issue, makeWSArgs(schema.WSAwaitingProcessing)),
+		PrepareIssueJobAdvanced(db.JobTypeMoveIssueToWorkflow, issue, nil),
+		PrepareIssueJobAdvanced(db.JobTypePageSplit, issue, nil),
+		PrepareIssueJobAdvanced(db.JobTypeMoveIssueToPageReview, issue, nil),
+		PrepareIssueJobAdvanced(db.JobTypeSetIssueWS, issue, makeWSArgs(schema.WSAwaitingPageReview)),
 	)
 }
 
@@ -81,8 +88,10 @@ func QueueSFTPIssueMove(issue *db.Issue) error {
 // and then immediately generate derivatives
 func QueueMoveIssueForDerivatives(issue *db.Issue) error {
 	return QueueSerial(
-		PrepareIssueJobAdvanced(db.JobTypeMoveIssueToWorkflow, issue, schema.WSNil),
-		PrepareIssueJobAdvanced(db.JobTypeMakeDerivatives, issue, schema.WSReadyForMetadataEntry),
+		PrepareIssueJobAdvanced(db.JobTypeSetIssueWS, issue, makeWSArgs(schema.WSAwaitingProcessing)),
+		PrepareIssueJobAdvanced(db.JobTypeMoveIssueToWorkflow, issue, nil),
+		PrepareIssueJobAdvanced(db.JobTypeMakeDerivatives, issue, nil),
+		PrepareIssueJobAdvanced(db.JobTypeSetIssueWS, issue, makeWSArgs(schema.WSReadyForMetadataEntry)),
 	)
 }
 
@@ -91,8 +100,9 @@ func QueueMoveIssueForDerivatives(issue *db.Issue) error {
 // master PDFs (if born-digital) into the issue directory.
 func QueueFinalizeIssue(issue *db.Issue) error {
 	return QueueSerial(
-		PrepareIssueJobAdvanced(db.JobTypeBuildMETS, issue, schema.WSNil),
-		PrepareIssueJobAdvanced(db.JobTypeMoveMasterFiles, issue, schema.WSReadyForBatching),
+		PrepareIssueJobAdvanced(db.JobTypeBuildMETS, issue, nil),
+		PrepareIssueJobAdvanced(db.JobTypeMoveMasterFiles, issue, nil),
+		PrepareIssueJobAdvanced(db.JobTypeSetIssueWS, issue, makeWSArgs(schema.WSReadyForBatching)),
 	)
 }
 
@@ -102,13 +112,11 @@ func QueueFinalizeIssue(issue *db.Issue) error {
 // Nothing can happen automatically after all this until the batch is verified
 // on staging.
 func QueueMakeBatch(batch *db.Batch) error {
-	// Ensure the batch is flagged properly after it's ready
-	var moveJob = PrepareBatchJobAdvanced(db.JobTypeMoveBatchToReadyLocation, batch)
-	moveJob.Args[bsArg] = string(db.BatchStatusQCReady)
-
 	return QueueSerial(
-		PrepareBatchJobAdvanced(db.JobTypeCreateBatchStructure, batch),
-		PrepareBatchJobAdvanced(db.JobTypeMakeBatchXML, batch),
-		moveJob, PrepareBatchJobAdvanced(db.JobTypeWriteBagitManifest, batch),
+		PrepareBatchJobAdvanced(db.JobTypeCreateBatchStructure, batch, nil),
+		PrepareBatchJobAdvanced(db.JobTypeMakeBatchXML, batch, nil),
+		PrepareBatchJobAdvanced(db.JobTypeMoveBatchToReadyLocation, batch, nil),
+		PrepareBatchJobAdvanced(db.JobTypeSetBatchStatus, batch, makeBSArgs(db.BatchStatusQCReady)),
+		PrepareBatchJobAdvanced(db.JobTypeWriteBagitManifest, batch, nil),
 	)
 }

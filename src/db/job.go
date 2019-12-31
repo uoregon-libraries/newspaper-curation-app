@@ -20,6 +20,8 @@ type JobType string
 
 // The full list of job types
 const (
+	JobTypeSetIssueWS               JobType = "set_issue_workflow_step"
+	JobTypeSetBatchStatus           JobType = "set_batch_status"
 	JobTypePageSplit                JobType = "page_split"
 	JobTypeMoveIssueToWorkflow      JobType = "move_issue_to_workflow"
 	JobTypeMoveIssueToPageReview    JobType = "move_issue_to_page_review"
@@ -35,6 +37,8 @@ const (
 // ValidJobTypes is the full list of job types which can exist in the jobs
 // table, for use in validating command-line job queue processing
 var ValidJobTypes = []JobType{
+	JobTypeSetIssueWS,
+	JobTypeSetBatchStatus,
 	JobTypePageSplit,
 	JobTypeMoveIssueToWorkflow,
 	JobTypeMoveIssueToPageReview,
@@ -102,12 +106,15 @@ type Job struct {
 
 // NewJob sets up a job of the given type as a pending job that's ready to run
 // right away
-func NewJob(t JobType) *Job {
+func NewJob(t JobType, args map[string]string) *Job {
+	if args == nil {
+		args = make(map[string]string)
+	}
 	return &Job{
 		Type:   string(t),
 		Status: string(JobStatusPending),
 		RunAt:  time.Now(),
-		Args:   make(map[string]string),
+		Args:   args,
 	}
 }
 

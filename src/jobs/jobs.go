@@ -9,6 +9,8 @@ import (
 // database job's processor set up
 func DBJobToProcessor(dbJob *db.Job) Processor {
 	switch db.JobType(dbJob.Type) {
+	case db.JobTypeSetIssueWS:
+		return &SetIssueWS{IssueJob: NewIssueJob(dbJob)}
 	case db.JobTypeMoveIssueToWorkflow:
 		return &WorkflowIssueMover{IssueJob: NewIssueJob(dbJob)}
 	case db.JobTypeMoveIssueToPageReview:
@@ -21,6 +23,8 @@ func DBJobToProcessor(dbJob *db.Job) Processor {
 		return &BuildMETS{IssueJob: NewIssueJob(dbJob)}
 	case db.JobTypeMoveMasterFiles:
 		return &MoveMasterFilesToIssueLocation{IssueJob: NewIssueJob(dbJob)}
+	case db.JobTypeSetBatchStatus:
+		return &SetBatchStatus{BatchJob: NewBatchJob(dbJob)}
 	case db.JobTypeCreateBatchStructure:
 		return &CreateBatchStructure{BatchJob: NewBatchJob(dbJob)}
 	case db.JobTypeMakeBatchXML:

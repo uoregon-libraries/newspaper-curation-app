@@ -282,6 +282,12 @@ func runAllQueues(c *config.Config) {
 				db.JobTypeMoveBatchToReadyLocation,
 			)
 		},
+		func() {
+			// The fastest jobs, which need to be nearly real-time
+			var r = jobs.NewRunner(c, db.JobTypeSetIssueWS, db.JobTypeSetBatchStatus)
+			addRunner(r)
+			r.Watch(time.Second * 1)
+		},
 	)
 }
 
