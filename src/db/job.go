@@ -156,12 +156,12 @@ func PopNextPendingJob(types []JobType) (*Job, error) {
 
 // FindJobsByStatus returns all jobs that have the given status
 func FindJobsByStatus(st JobStatus) ([]*Job, error) {
-	return findJobs("status = ?", st)
+	return findJobs("status = ?", string(st))
 }
 
 // FindJobsByStatusAndType returns all jobs of the given status and type
 func FindJobsByStatusAndType(st JobStatus, t JobType) ([]*Job, error) {
-	return findJobs("status = ? AND job_type = ?", st, t)
+	return findJobs("status = ? AND job_type = ?", string(st), string(t))
 }
 
 // FindRecentJobsByType grabs all jobs of the given type which were created
@@ -175,7 +175,8 @@ func FindRecentJobsByType(t JobType, d time.Duration) ([]*Job, error) {
 	if err != nil {
 		return nil, err
 	}
-	otherJobs, err = findJobs("status <> ? AND job_type = ? AND created_at > ?", string(JobStatusPending), t, time.Now().Add(-d))
+	otherJobs, err = findJobs("status <> ? AND job_type = ? AND created_at > ?",
+		string(JobStatusPending), string(t), time.Now().Add(-d))
 	if err != nil {
 		return nil, err
 	}
