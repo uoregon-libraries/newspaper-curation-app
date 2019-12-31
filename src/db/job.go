@@ -1,6 +1,7 @@
 package db
 
 import (
+	"encoding/json"
 	"fmt"
 	"strings"
 	"time"
@@ -85,9 +86,14 @@ type Job struct {
 	// take a little bit
 	RunAt time.Time
 
-	// Extra information any job might need - e.g., the issue's next workflow
-	// step if the job is successful
-	ExtraData string
+	// XDat holds extra information, encoded as JSON, any job might need - e.g.,
+	// the issue's next workflow step if the job is successful.  This shouldn't
+	// be modified directly; use Args instead (which is why we've chosen such an
+	// odd name for this field).
+	XDat string `sql:"extra_data"`
+
+	// Args contains the decoded values from XDat
+	Args map[string]string `sql:"-"`
 
 	// QueueJobID tells us which job (if any) should be queued up after this one
 	// completes successfully
@@ -101,6 +107,7 @@ func NewJob(t JobType) *Job {
 		Type:   string(t),
 		Status: string(JobStatusPending),
 		RunAt:  time.Now(),
+		Args:   make(map[string]string),
 	}
 }
 
@@ -115,11 +122,20 @@ func FindJob(id int) (*Job, error) {
 
 // findJobs wraps all the job finding functionality so helpers can be
 // one-liners.  This is purposely *not* exported to enforce a stricter API.
+//
+// NOTE: All instantiations from the database must go through this function to
+// properly set up their args map!
 func findJobs(where string, args ...interface{}) ([]*Job, error) {
 	var op = DB.Operation()
 	op.Dbg = Debug
 	var list []*Job
 	op.Select("jobs", &Job{}).Where(where, args...).AllObjects(&list)
+	for _, j := range list {
+		var err = j.decodeXDat()
+		if err != nil {
+			return nil, fmt.Errorf("error decoding job %d: %s", j.ID, err)
+		}
+	}
 	return list, op.Err()
 }
 
@@ -147,6 +163,7 @@ func PopNextPendingJob(types []JobType) (*Job, error) {
 		return nil, op.Err()
 	}
 
+	j.decodeXDat()
 	j.Status = string(JobStatusInProcess)
 	j.StartedAt = time.Now()
 	j.SaveOp(op)
@@ -209,6 +226,37 @@ func (j *Job) WriteLog(level string, message string) error {
 	return op.Err()
 }
 
+// decodeXDat attempts to parse XDat
+func (j *Job) decodeXDat() error {
+	// Special case 1: no extra data means we don't try to decode it
+	if j.XDat == "" {
+		return nil
+	}
+
+	// Special case 2: raw extra data - we hard-code whatever is in XDat as
+	// being a "legacy" value so the app at least doesn't crash, and we could
+	// convert the data if necessary.
+	if j.XDat[0:3] != "v.2" {
+		j.Args = make(map[string]string)
+		j.Args["legacy"] = j.XDat
+		return nil
+	}
+
+	return json.Unmarshal([]byte(j.XDat[3:]), &j.Args)
+}
+
+// encodeArgs turns our args map into JSON.  We ignore errors here because it's
+// not actually possible for Go's built-in JSON encoder to fail when we're just
+// encoding a map of string->string.
+func (j *Job) encodeArgs() {
+	if len(j.Args) == 0 {
+		j.XDat = ""
+		return
+	}
+	var b, _ = json.Marshal(j.Args)
+	j.XDat = "v.2" + string(b)
+}
+
 // Save creates or updates the Job in the jobs table
 func (j *Job) Save() error {
 	var op = DB.Operation()
@@ -218,6 +266,7 @@ func (j *Job) Save() error {
 
 // SaveOp creates or updates the job in the jobs table using a custom operation
 func (j *Job) SaveOp(op *magicsql.Operation) error {
+	j.encodeArgs()
 	op.Save("jobs", j)
 	return op.Err()
 }

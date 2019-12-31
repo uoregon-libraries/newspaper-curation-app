@@ -5,6 +5,13 @@ import (
 	"github.com/uoregon-libraries/newspaper-curation-app/src/schema"
 )
 
+// These constants let us define arg names in a way that ensures we don't screw
+// up by setting an arg and then misspelling the reader of said arg
+const (
+	wsArg = "WorkflowStep"
+	bsArg = "BatchStatus"
+)
+
 // PrepareJobAdvanced gets a job of any kind set up with sensible defaults
 func PrepareJobAdvanced(t db.JobType) *db.Job {
 	return db.NewJob(t)
@@ -19,7 +26,9 @@ func PrepareIssueJobAdvanced(t db.JobType, issue *db.Issue, nextWS schema.Workfl
 	var j = PrepareJobAdvanced(t)
 	j.ObjectID = issue.ID
 	j.ObjectType = db.JobObjectTypeIssue
-	j.ExtraData = string(nextWS)
+	if nextWS != schema.WSNil {
+		j.Args[wsArg] = string(nextWS)
+	}
 	return j
 }
 
@@ -99,7 +108,7 @@ func QueueFinalizeIssue(issue *db.Issue) error {
 func QueueMakeBatch(batch *db.Batch) error {
 	// Ensure the batch is flagged properly after it's ready
 	var moveJob = PrepareBatchJobAdvanced(db.JobTypeMoveBatchToReadyLocation, batch)
-	moveJob.ExtraData = string(db.BatchStatusQCReady)
+	moveJob.Args[bsArg] = string(db.BatchStatusQCReady)
 
 	return QueueSerial(
 		PrepareBatchJobAdvanced(db.JobTypeCreateBatchStructure, batch),
