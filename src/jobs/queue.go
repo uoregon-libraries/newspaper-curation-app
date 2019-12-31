@@ -40,10 +40,6 @@ func PrepareBatchJobAdvanced(t db.JobType, batch *db.Batch) *db.Job {
 	return j
 }
 
-func queueIssueJob(t db.JobType, issue *db.Issue, nextWS schema.WorkflowStep) error {
-	return PrepareIssueJobAdvanced(t, issue, nextWS).Save()
-}
-
 // QueueSerial attempts to save the jobs (in a transaction), setting the first
 // one as ready to run while the others become effectively dependent on the
 // prior job in the list
