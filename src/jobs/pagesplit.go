@@ -37,8 +37,8 @@ func (ps *PageSplit) Process(config *config.Config) bool {
 	}
 	defer ps.removeTempFiles()
 
-	ps.WIPDir = filepath.Join(config.WorkflowPath, ps.IssueJob.WIPDir())
-	ps.MasterBackup = filepath.Join(config.MasterPDFBackupPath, ps.Subdir())
+	ps.WIPDir = filepath.Join(config.WorkflowPath, ".wip-"+ps.DBIssue.HumanName)
+	ps.MasterBackup = filepath.Join(config.MasterPDFBackupPath, ps.DBIssue.HumanName)
 
 	if !fileutil.MustNotExist(ps.WIPDir) {
 		ps.Logger.Errorf("WIP dir %q already exists", ps.WIPDir)

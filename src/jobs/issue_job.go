@@ -38,18 +38,6 @@ func NewIssueJob(dbJob *db.Job) *IssueJob {
 	}
 }
 
-// Subdir returns a subpath to the job issue's directory for consistent
-// directory naming and single-level paths
-func (ij *IssueJob) Subdir() string {
-	return ij.DBIssue.HumanName
-}
-
-// WIPDir returns a hidden name for a work-in-progress directory to allow
-// processing / copying to occur in a way that won't mess up end users
-func (ij *IssueJob) WIPDir() string {
-	return ".wip-" + ij.Subdir()
-}
-
 // UpdateWorkflow calls updateWorkflowCB if defined, and then the issue job is
 // saved.  At this point, however, the job is complete, so all we can do is
 // loudly log failures.

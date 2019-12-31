@@ -14,14 +14,14 @@ func moveIssue(ij *IssueJob, path string) bool {
 
 	// Verify new path will work
 	var oldLocation = ij.DBIssue.Location
-	var newLocation = filepath.Join(path, ij.Subdir())
+	var newLocation = filepath.Join(path, ij.DBIssue.HumanName)
 	if !fileutil.MustNotExist(newLocation) {
 		ij.Logger.Errorf("Destination %q already exists for issue %q", newLocation, iKey)
 		return false
 	}
 
 	// Move the issue directory to the workflow path
-	var wipLocation = filepath.Join(path, ij.WIPDir())
+	var wipLocation = filepath.Join(path, ".wip-"+ij.DBIssue.HumanName)
 	ij.Logger.Infof("Copying %q to %q", oldLocation, wipLocation)
 	var err = fileutil.CopyDirectory(oldLocation, wipLocation)
 	if err != nil {
