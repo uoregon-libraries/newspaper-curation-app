@@ -30,18 +30,9 @@ func NewBatchJob(dbJob *db.Job) *BatchJob {
 func nilWorkflowCB() {
 }
 
-// UpdateWorkflow implements Processor, setting the batch's status if the arg
-// "BatchStatus" or "legacy" is set.  updateWorkflowCB is then called, and the
-// batch data saved back to the database.
+// UpdateWorkflow implements Processor, calling the updateWorkflowCB if any,
+// then saving the batch back to the database
 func (j *BatchJob) UpdateWorkflow() {
-	var arg = j.db.Args[bsArg]
-	if arg == "" {
-		arg = j.db.Args["legacy"]
-	}
-	if arg != "" {
-		j.DBBatch.Status = arg
-	}
-
 	j.updateWorkflowCB()
 	var err = j.DBBatch.Save()
 	if err != nil {
