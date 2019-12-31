@@ -151,26 +151,13 @@ func (s *Searcher) swapTitleData(nextTitles []*Title, nextTitleLookup map[string
 func (s *Searcher) BuildInProcessList() error {
 	var nextInProcessIssues = make(map[string]bool)
 
-	var jobs, err = db.FindRecentJobsByType(db.JobTypeMoveIssueToWorkflow, time.Second*secondsBetweenIssueReload)
+	var issues, err = db.FindIssuesAwaitingProcessing()
 	if err != nil {
-		return fmt.Errorf("unable to find recent issue move jobs: %s", err)
+		return fmt.Errorf("unable to find in-process issues: %s", err)
 	}
 
-	for _, job := range jobs {
-		var dbi, err = db.FindIssue(job.ObjectID)
-		if err != nil {
-			return fmt.Errorf("unable to get issue for job id %d: %s", job.ID, err)
-		}
-		if dbi == nil {
-			return fmt.Errorf("no issue with id %d exists", job.ObjectID)
-		}
-
-		var si *schema.Issue
-		si, err = dbi.SchemaIssue()
-		if err != nil {
-			return err
-		}
-		nextInProcessIssues[si.Key()] = true
+	for _, issue := range issues {
+		nextInProcessIssues[issue.Key()] = true
 	}
 
 	s.Lock()

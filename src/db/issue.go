@@ -164,6 +164,13 @@ func FindInProcessIssues() ([]*Issue, error) {
 	return findIssues("")
 }
 
+// FindIssuesAwaitingProcessing returns all issues which should be considered
+// "invisible" to the UI - these are untouchable until some automated process
+// is complete
+func FindIssuesAwaitingProcessing() ([]*Issue, error) {
+	return findIssues("workflow_step = ?", string(schema.WSAwaitingProcessing))
+}
+
 // FindIssuesByBatchID returns all issues associated with the given batch id
 func FindIssuesByBatchID(batchID int) ([]*Issue, error) {
 	return findIssues("batch_id = ?", batchID)
