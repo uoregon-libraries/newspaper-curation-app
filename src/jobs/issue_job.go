@@ -1,8 +1,6 @@
 package jobs
 
 import (
-	"fmt"
-
 	"github.com/uoregon-libraries/newspaper-curation-app/src/db"
 	"github.com/uoregon-libraries/newspaper-curation-app/src/internal/logger"
 	"github.com/uoregon-libraries/newspaper-curation-app/src/schema"
@@ -43,10 +41,6 @@ func NewIssueJob(dbJob *db.Job) *IssueJob {
 // Subdir returns a subpath to the job issue's directory for consistent
 // directory naming and single-level paths
 func (ij *IssueJob) Subdir() string {
-	if ij.DBIssue.HumanName == "" {
-		ij.DBIssue.HumanName = fmt.Sprintf("%s-%s-%d",
-			ij.Issue.Title.LCCN, ij.Issue.DateEdition(), ij.DBIssue.ID)
-	}
 	return ij.DBIssue.HumanName
 }
 

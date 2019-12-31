@@ -300,6 +300,10 @@ func (i *Issue) serialize() {
 func (i *Issue) deserialize() {
 	i.PageLabels = strings.Split(i.PageLabelsCSV, ",")
 	i.WorkflowStep = schema.WorkflowStep(i.WorkflowStepString)
+	if i.HumanName == "" {
+		var dte = schema.IssueDateEdition(i.Date, i.Edition)
+		i.HumanName = fmt.Sprintf("%s-%s-%d", i.LCCN, dte, i.ID)
+	}
 }
 
 // deserializeIssues runs deserialize() against all issues in the list
