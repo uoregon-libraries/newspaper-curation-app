@@ -1,6 +1,9 @@
 package jobs
 
 import (
+	"path/filepath"
+
+	"github.com/uoregon-libraries/newspaper-curation-app/src/config"
 	"github.com/uoregon-libraries/newspaper-curation-app/src/db"
 	"github.com/uoregon-libraries/newspaper-curation-app/src/schema"
 )
@@ -8,8 +11,11 @@ import (
 // These constants let us define arg names in a way that ensures we don't screw
 // up by setting an arg and then misspelling the reader of said arg
 const (
-	wsArg = "WorkflowStep"
-	bsArg = "BatchStatus"
+	wsArg   = "WorkflowStep"
+	bsArg   = "BatchStatus"
+	locArg  = "Location"
+	srcArg  = "Source"
+	destArg = "Destination"
 )
 
 // PrepareJobAdvanced gets a job of any kind set up with sensible defaults
@@ -72,6 +78,17 @@ func makeBSArgs(bs string) map[string]string {
 	return map[string]string{bsArg: string(bs)}
 }
 
+func makeLocArgs(loc string) map[string]string {
+	return map[string]string{locArg: loc}
+}
+
+func makeRenameArgs(src, dest string) map[string]string {
+	return map[string]string{
+		srcArg:  src,
+		destArg: dest,
+	}
+}
+
 // QueueSFTPIssueMove queues up an issue move into the workflow area followed
 // by a page-split and then a move to the page review area
 func QueueSFTPIssueMove(issue *db.Issue) error {
@@ -111,11 +128,16 @@ func QueueFinalizeIssue(issue *db.Issue) error {
 // where it can be loaded onto staging, and generating the bagit manifest.
 // Nothing can happen automatically after all this until the batch is verified
 // on staging.
-func QueueMakeBatch(batch *db.Batch) error {
+func QueueMakeBatch(batch *db.Batch, c *config.Config) error {
+	var root = c.BatchOutputPath
+	var wipDir = filepath.Join(root, ".wip-"+batch.FullName())
+	var finalDir = filepath.Join(root, batch.FullName())
 	return QueueSerial(
-		PrepareBatchJobAdvanced(db.JobTypeCreateBatchStructure, batch, nil),
+		PrepareBatchJobAdvanced(db.JobTypeCreateBatchStructure, batch, makeLocArgs(wipDir)),
+		PrepareBatchJobAdvanced(db.JobTypeSetBatchLocation, batch, makeLocArgs(wipDir)),
 		PrepareBatchJobAdvanced(db.JobTypeMakeBatchXML, batch, nil),
-		PrepareBatchJobAdvanced(db.JobTypeMoveBatchToReadyLocation, batch, nil),
+		PrepareJobAdvanced(db.JobTypeRenameDir, makeRenameArgs(wipDir, finalDir)),
+		PrepareBatchJobAdvanced(db.JobTypeSetBatchLocation, batch, makeLocArgs(finalDir)),
 		PrepareBatchJobAdvanced(db.JobTypeSetBatchStatus, batch, makeBSArgs(db.BatchStatusQCReady)),
 		PrepareBatchJobAdvanced(db.JobTypeWriteBagitManifest, batch, nil),
 	)

@@ -279,12 +279,12 @@ func runAllQueues(c *config.Config) {
 				db.JobTypeBuildMETS,
 				db.JobTypeCreateBatchStructure,
 				db.JobTypeMakeBatchXML,
-				db.JobTypeMoveBatchToReadyLocation,
+				db.JobTypeRenameDir,
 			)
 		},
 		func() {
 			// The fastest jobs, which need to be nearly real-time
-			var r = jobs.NewRunner(c, db.JobTypeSetIssueWS, db.JobTypeSetBatchStatus)
+			var r = jobs.NewRunner(c, db.JobTypeSetIssueWS, db.JobTypeSetBatchStatus, db.JobTypeSetBatchLocation)
 			addRunner(r)
 			r.Watch(time.Second * 1)
 		},

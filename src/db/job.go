@@ -20,18 +20,19 @@ type JobType string
 
 // The full list of job types
 const (
-	JobTypeSetIssueWS               JobType = "set_issue_workflow_step"
-	JobTypeSetBatchStatus           JobType = "set_batch_status"
-	JobTypePageSplit                JobType = "page_split"
-	JobTypeMoveIssueToWorkflow      JobType = "move_issue_to_workflow"
-	JobTypeMoveIssueToPageReview    JobType = "move_issue_to_page_review"
-	JobTypeMakeDerivatives          JobType = "make_derivatives"
-	JobTypeBuildMETS                JobType = "build_mets"
-	JobTypeMoveMasterFiles          JobType = "move_master_files"
-	JobTypeCreateBatchStructure     JobType = "create_batch_structure"
-	JobTypeMakeBatchXML             JobType = "make_batch_xml"
-	JobTypeMoveBatchToReadyLocation JobType = "move_batch_to_ready_location"
-	JobTypeWriteBagitManifest       JobType = "write_bagit_manifest"
+	JobTypeSetIssueWS            JobType = "set_issue_workflow_step"
+	JobTypeSetBatchStatus        JobType = "set_batch_status"
+	JobTypePageSplit             JobType = "page_split"
+	JobTypeMoveIssueToWorkflow   JobType = "move_issue_to_workflow"
+	JobTypeMoveIssueToPageReview JobType = "move_issue_to_page_review"
+	JobTypeMakeDerivatives       JobType = "make_derivatives"
+	JobTypeBuildMETS             JobType = "build_mets"
+	JobTypeMoveMasterFiles       JobType = "move_master_files"
+	JobTypeSetBatchLocation      JobType = "set_batch_location"
+	JobTypeCreateBatchStructure  JobType = "create_batch_structure"
+	JobTypeMakeBatchXML          JobType = "make_batch_xml"
+	JobTypeWriteBagitManifest    JobType = "write_bagit_manifest"
+	JobTypeRenameDir             JobType = "rename_directory"
 )
 
 // ValidJobTypes is the full list of job types which can exist in the jobs
@@ -45,10 +46,11 @@ var ValidJobTypes = []JobType{
 	JobTypeMakeDerivatives,
 	JobTypeBuildMETS,
 	JobTypeMoveMasterFiles,
+	JobTypeSetBatchLocation,
 	JobTypeCreateBatchStructure,
 	JobTypeMakeBatchXML,
-	JobTypeMoveBatchToReadyLocation,
 	JobTypeWriteBagitManifest,
+	JobTypeRenameDir,
 }
 
 // JobStatus represents the different states in which a job can exist

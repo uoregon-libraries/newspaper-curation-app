@@ -25,14 +25,16 @@ func DBJobToProcessor(dbJob *db.Job) Processor {
 		return &MoveMasterFilesToIssueLocation{IssueJob: NewIssueJob(dbJob)}
 	case db.JobTypeSetBatchStatus:
 		return &SetBatchStatus{BatchJob: NewBatchJob(dbJob)}
+	case db.JobTypeSetBatchLocation:
+		return &SetBatchLocation{BatchJob: NewBatchJob(dbJob)}
 	case db.JobTypeCreateBatchStructure:
 		return &CreateBatchStructure{BatchJob: NewBatchJob(dbJob)}
 	case db.JobTypeMakeBatchXML:
 		return &MakeBatchXML{BatchJob: NewBatchJob(dbJob)}
-	case db.JobTypeMoveBatchToReadyLocation:
-		return &MoveBatchToReadyLocation{BatchJob: NewBatchJob(dbJob)}
 	case db.JobTypeWriteBagitManifest:
 		return &WriteBagitManifest{BatchJob: NewBatchJob(dbJob)}
+	case db.JobTypeRenameDir:
+		return &RenameDir{Job: NewJob(dbJob)}
 	default:
 		logger.Errorf("Unknown job type %q for job id %d", dbJob.Type, dbJob.ID)
 	}
