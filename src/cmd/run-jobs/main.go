@@ -261,7 +261,8 @@ func runAllQueues(c *config.Config) {
 			watchJobTypes(c,
 				db.JobTypeMoveIssueToWorkflow,
 				db.JobTypeMoveIssueToPageReview,
-				db.JobTypeMoveMasterFiles,
+				db.JobTypeArchiveMasterFiles,
+				db.JobTypeKillDir,
 			)
 		},
 		func() {
@@ -284,7 +285,12 @@ func runAllQueues(c *config.Config) {
 		},
 		func() {
 			// The fastest jobs, which need to be nearly real-time
-			var r = jobs.NewRunner(c, db.JobTypeSetIssueWS, db.JobTypeSetBatchStatus, db.JobTypeSetBatchLocation)
+			var r = jobs.NewRunner(c,
+				db.JobTypeSetIssueWS,
+				db.JobTypeSetIssueMasterLoc,
+				db.JobTypeSetBatchStatus,
+				db.JobTypeSetBatchLocation,
+			)
 			addRunner(r)
 			r.Watch(time.Second * 1)
 		},

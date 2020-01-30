@@ -21,17 +21,19 @@ type JobType string
 // The full list of job types
 const (
 	JobTypeSetIssueWS            JobType = "set_issue_workflow_step"
+	JobTypeSetIssueMasterLoc     JobType = "set_issue_master_backup_location"
 	JobTypeSetBatchStatus        JobType = "set_batch_status"
 	JobTypePageSplit             JobType = "page_split"
 	JobTypeMoveIssueToWorkflow   JobType = "move_issue_to_workflow"
 	JobTypeMoveIssueToPageReview JobType = "move_issue_to_page_review"
 	JobTypeMakeDerivatives       JobType = "make_derivatives"
 	JobTypeBuildMETS             JobType = "build_mets"
-	JobTypeMoveMasterFiles       JobType = "move_master_files"
+	JobTypeArchiveMasterFiles    JobType = "archive_master_files"
 	JobTypeSetBatchLocation      JobType = "set_batch_location"
 	JobTypeCreateBatchStructure  JobType = "create_batch_structure"
 	JobTypeMakeBatchXML          JobType = "make_batch_xml"
 	JobTypeWriteBagitManifest    JobType = "write_bagit_manifest"
+	JobTypeKillDir               JobType = "delete_directory"
 	JobTypeRenameDir             JobType = "rename_directory"
 )
 
@@ -39,17 +41,19 @@ const (
 // table, for use in validating command-line job queue processing
 var ValidJobTypes = []JobType{
 	JobTypeSetIssueWS,
+	JobTypeSetIssueMasterLoc,
 	JobTypeSetBatchStatus,
 	JobTypePageSplit,
 	JobTypeMoveIssueToWorkflow,
 	JobTypeMoveIssueToPageReview,
 	JobTypeMakeDerivatives,
 	JobTypeBuildMETS,
-	JobTypeMoveMasterFiles,
+	JobTypeArchiveMasterFiles,
 	JobTypeSetBatchLocation,
 	JobTypeCreateBatchStructure,
 	JobTypeMakeBatchXML,
 	JobTypeWriteBagitManifest,
+	JobTypeKillDir,
 	JobTypeRenameDir,
 }
 

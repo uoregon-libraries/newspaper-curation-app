@@ -118,7 +118,9 @@ func QueueMoveIssueForDerivatives(issue *db.Issue) error {
 func QueueFinalizeIssue(issue *db.Issue) error {
 	return QueueSerial(
 		PrepareIssueJobAdvanced(db.JobTypeBuildMETS, issue, nil),
-		PrepareIssueJobAdvanced(db.JobTypeMoveMasterFiles, issue, nil),
+		PrepareIssueJobAdvanced(db.JobTypeArchiveMasterFiles, issue, nil),
+		PrepareJobAdvanced(db.JobTypeKillDir, makeLocArgs(issue.MasterBackupLocation)),
+		PrepareIssueJobAdvanced(db.JobTypeSetIssueMasterLoc, issue, makeLocArgs("")),
 		PrepareIssueJobAdvanced(db.JobTypeSetIssueWS, issue, makeWSArgs(schema.WSReadyForBatching)),
 	)
 }

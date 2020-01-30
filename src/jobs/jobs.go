@@ -11,6 +11,8 @@ func DBJobToProcessor(dbJob *db.Job) Processor {
 	switch db.JobType(dbJob.Type) {
 	case db.JobTypeSetIssueWS:
 		return &SetIssueWS{IssueJob: NewIssueJob(dbJob)}
+	case db.JobTypeSetIssueMasterLoc:
+		return &SetIssueMasterLoc{IssueJob: NewIssueJob(dbJob)}
 	case db.JobTypeMoveIssueToWorkflow:
 		return &WorkflowIssueMover{IssueJob: NewIssueJob(dbJob)}
 	case db.JobTypeMoveIssueToPageReview:
@@ -21,8 +23,8 @@ func DBJobToProcessor(dbJob *db.Job) Processor {
 		return &MakeDerivatives{IssueJob: NewIssueJob(dbJob)}
 	case db.JobTypeBuildMETS:
 		return &BuildMETS{IssueJob: NewIssueJob(dbJob)}
-	case db.JobTypeMoveMasterFiles:
-		return &MoveMasterFilesToIssueLocation{IssueJob: NewIssueJob(dbJob)}
+	case db.JobTypeArchiveMasterFiles:
+		return &ArchiveMasterFiles{IssueJob: NewIssueJob(dbJob)}
 	case db.JobTypeSetBatchStatus:
 		return &SetBatchStatus{BatchJob: NewBatchJob(dbJob)}
 	case db.JobTypeSetBatchLocation:
@@ -33,6 +35,8 @@ func DBJobToProcessor(dbJob *db.Job) Processor {
 		return &MakeBatchXML{BatchJob: NewBatchJob(dbJob)}
 	case db.JobTypeWriteBagitManifest:
 		return &WriteBagitManifest{BatchJob: NewBatchJob(dbJob)}
+	case db.JobTypeKillDir:
+		return &KillDir{Job: NewJob(dbJob)}
 	case db.JobTypeRenameDir:
 		return &RenameDir{Job: NewJob(dbJob)}
 	default:

@@ -27,6 +27,22 @@ func (j *SetIssueWS) Process(*config.Config) bool {
 	return err == nil
 }
 
+// SetIssueMasterLoc is another metadata job that just sets a single field for
+// an issue: master backup location
+type SetIssueMasterLoc struct {
+	*IssueJob
+}
+
+// Process updates the issue's master backup location and attempts to save it
+func (j *SetIssueMasterLoc) Process(*config.Config) bool {
+	j.DBIssue.MasterBackupLocation = j.db.Args[locArg]
+	var err = j.DBIssue.Save()
+	if err != nil {
+		j.Logger.Errorf("Unable to update master backup location for issue %d: %s", j.DBIssue.ID, err)
+	}
+	return err == nil
+}
+
 // SetBatchStatus is another simple job which... wait for it... sets the status
 // of the job's batch!
 type SetBatchStatus struct {
