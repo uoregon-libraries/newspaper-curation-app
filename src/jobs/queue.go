@@ -116,13 +116,20 @@ func QueueMoveIssueForDerivatives(issue *db.Issue) error {
 // batching.  Currently this means generating the METS XML file and copying
 // master PDFs (if born-digital) into the issue directory.
 func QueueFinalizeIssue(issue *db.Issue) error {
-	return QueueSerial(
-		PrepareIssueJobAdvanced(db.JobTypeBuildMETS, issue, nil),
-		PrepareIssueJobAdvanced(db.JobTypeArchiveMasterFiles, issue, nil),
-		PrepareJobAdvanced(db.JobTypeKillDir, makeLocArgs(issue.MasterBackupLocation)),
-		PrepareIssueJobAdvanced(db.JobTypeSetIssueMasterLoc, issue, makeLocArgs("")),
-		PrepareIssueJobAdvanced(db.JobTypeSetIssueWS, issue, makeWSArgs(schema.WSReadyForBatching)),
-	)
+	// Some jobs aren't queued up unless there's a master backup, so we actually
+	// generate a list of jobs programatically insteadc of inline
+	var jobs []*db.Job
+	jobs = append(jobs, PrepareIssueJobAdvanced(db.JobTypeBuildMETS, issue, nil))
+
+	if issue.MasterBackupLocation != "" {
+		jobs = append(jobs, PrepareIssueJobAdvanced(db.JobTypeArchiveMasterFiles, issue, nil))
+		jobs = append(jobs, PrepareJobAdvanced(db.JobTypeKillDir, makeLocArgs(issue.MasterBackupLocation)))
+		jobs = append(jobs, PrepareIssueJobAdvanced(db.JobTypeSetIssueMasterLoc, issue, makeLocArgs("")))
+	}
+
+	jobs = append(jobs, PrepareIssueJobAdvanced(db.JobTypeSetIssueWS, issue, makeWSArgs(schema.WSReadyForBatching)))
+
+	return QueueSerial(jobs...)
 }
 
 // QueueMakeBatch sets up the jobs for generating a batch on disk: generating
