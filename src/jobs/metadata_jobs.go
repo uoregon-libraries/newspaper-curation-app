@@ -1,3 +1,9 @@
+// metadata_jobs.go holds various very small jobs to update bits of metadata on
+// issues and batches.  These mini-jobs allow us to do what was previously not
+// an option: handle a failure to update statuses / states / location metadata.
+// Jobs which aren't using this stuff yet will still have comments like "the
+// job completed so all we can do here is loudly log failures".
+
 package jobs
 
 import (
@@ -35,4 +41,22 @@ func (j *SetBatchStatus) Process(*config.Config) bool {
 		j.Logger.Errorf("Unable to update status for batch %d: %s", j.DBBatch.ID, err)
 	}
 	return err == nil
+}
+
+// SetBatchLocation is a simple job to update a batch location after files are
+// copied or movied somewhere
+type SetBatchLocation struct {
+	*BatchJob
+}
+
+// Process just updates the batch's location field
+func (j *SetBatchLocation) Process(c *config.Config) bool {
+	j.DBBatch.Location = j.db.Args[locArg]
+	var err = j.DBBatch.Save()
+	if err != nil {
+		j.Logger.Errorf("Error setting batch.location for id %d: %s", j.DBBatch.ID, err)
+		return false
+	}
+
+	return true
 }
