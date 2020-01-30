@@ -262,6 +262,7 @@ func runAllQueues(c *config.Config) {
 				db.JobTypeMoveIssueToWorkflow,
 				db.JobTypeMoveIssueToPageReview,
 				db.JobTypeArchiveMasterFiles,
+				db.JobTypeSyncDir,
 				db.JobTypeKillDir,
 			)
 		},

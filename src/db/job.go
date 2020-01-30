@@ -33,6 +33,7 @@ const (
 	JobTypeCreateBatchStructure  JobType = "create_batch_structure"
 	JobTypeMakeBatchXML          JobType = "make_batch_xml"
 	JobTypeWriteBagitManifest    JobType = "write_bagit_manifest"
+	JobTypeSyncDir               JobType = "sync_directory"
 	JobTypeKillDir               JobType = "delete_directory"
 	JobTypeRenameDir             JobType = "rename_directory"
 )
@@ -53,6 +54,7 @@ var ValidJobTypes = []JobType{
 	JobTypeCreateBatchStructure,
 	JobTypeMakeBatchXML,
 	JobTypeWriteBagitManifest,
+	JobTypeSyncDir,
 	JobTypeKillDir,
 	JobTypeRenameDir,
 }

@@ -35,6 +35,8 @@ func DBJobToProcessor(dbJob *db.Job) Processor {
 		return &MakeBatchXML{BatchJob: NewBatchJob(dbJob)}
 	case db.JobTypeWriteBagitManifest:
 		return &WriteBagitManifest{BatchJob: NewBatchJob(dbJob)}
+	case db.JobTypeSyncDir:
+		return &SyncDir{Job: NewJob(dbJob)}
 	case db.JobTypeKillDir:
 		return &KillDir{Job: NewJob(dbJob)}
 	case db.JobTypeRenameDir:

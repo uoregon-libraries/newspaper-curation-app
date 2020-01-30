@@ -9,6 +9,26 @@ import (
 	"github.com/uoregon-libraries/newspaper-curation-app/src/config"
 )
 
+// SyncDir is a job strictly for copying everything from one directory to
+// another.  This is typically meant to be used as the first step in a "move"
+// operation.  It's idempotent as well as being efficient, as it syncs files
+// much like a mini-rsync, rather than doing a full copy of everything
+// regardless of existing files.
+type SyncDir struct {
+	*Job
+}
+
+// Process does a sync from j.Source to j.Dest, only writing files that don't
+// exist in j.Dest or which are different
+func (j *SyncDir) Process(c *config.Config) bool {
+	j.Logger.Warnf("SyncDir.Process is not implemented")
+	return false
+}
+
+// UpdateWorkflow is a no-op for syncing dirs
+func (j *SyncDir) UpdateWorkflow() {
+}
+
 // KillDir is a job to clean up an old directory, typically after a sync job
 // has succeeded.
 type KillDir struct {
