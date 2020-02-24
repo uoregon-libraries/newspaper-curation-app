@@ -9,6 +9,7 @@ import (
 	"github.com/uoregon-libraries/newspaper-curation-app/src/cli"
 	"github.com/uoregon-libraries/newspaper-curation-app/src/db"
 	"github.com/uoregon-libraries/newspaper-curation-app/src/internal/logger"
+	"github.com/uoregon-libraries/newspaper-curation-app/src/schema"
 )
 
 const csi = "\033["
@@ -49,10 +50,6 @@ func main() {
 	op.Dbg = db.Debug
 	op.BeginTransaction()
 
-	if opts.Live {
-		warning(batches)
-	}
-
 	for _, b := range batches {
 		logger.Infof("Closing batch %q", b.FullName())
 		b.Close()
@@ -64,12 +61,28 @@ func main() {
 	}
 }
 
-func warning(batches []*db.Batch) {
-	fmt.Println(ansiIntenseRed + "Warning!" + ansiReset + "  The following batches " +
-		"will be closed out, and their issues " + ansiIntenseRed +
-		"permanently removed from local disk" + ansiReset + ":")
+func warning(issues []*db.Issue) {
+	fmt.Printf(ansiIntenseRed+"Warning!"+ansiReset+
+		"  %d issue(s) tied to batches which are 'closed' will be "+
+		ansiIntenseRed+"permanently removed from local disk"+ansiReset+".\n", len(issues))
+
+	var seenBatch = make(map[int]bool)
+	var batches []*db.Batch
+	for _, i := range issues {
+		if !seenBatch[i.BatchID] {
+			seenBatch[i.BatchID] = true
+			var b, err = db.FindBatch(i.BatchID)
+			if err != nil {
+				logger.Fatalf("Error trying to look up batch by id %d: %s", i.BatchID, err)
+			}
+			batches = append(batches, b)
+		}
+	}
+
+	fmt.Println()
+	fmt.Println("The following batches are affected:")
 	for _, b := range batches {
-		fmt.Printf("- %q\n", b.FullName())
+		fmt.Printf("  - %s\n", b.FullName())
 	}
 
 	fmt.Println()
@@ -86,8 +99,16 @@ func purgeIssues() error {
 	if err != nil {
 		return fmt.Errorf("error looking for issues in live_done batches: %s", err)
 	}
+	if opts.Live {
+		warning(issues)
+	}
 
 	for _, issue := range issues {
+		if issue.WorkflowStep != schema.WSInProduction {
+			return fmt.Errorf("issue %d has workflow step %q, expected %q",
+				issue.ID, issue.WorkflowStep, schema.WSInProduction)
+		}
+
 		if !opts.Live {
 			fmt.Printf("(DRY RUN) Would remove %q\n", issue.Location)
 			continue

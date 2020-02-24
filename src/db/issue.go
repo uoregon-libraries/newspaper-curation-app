@@ -19,6 +19,7 @@ var allowedWorkflowSteps = []schema.WorkflowStep{
 	schema.WSAwaitingMetadataReview,
 	schema.WSReadyForMETSXML,
 	schema.WSReadyForBatching,
+	schema.WSInProduction,
 }
 
 // Issue contains metadata about an issue for the various workflow tools' use
@@ -274,7 +275,7 @@ func (i *Issue) SaveOp(op *magicsql.Operation) error {
 		}
 	}
 	if !valid {
-		return fmt.Errorf("issue doesn't have a valid workflow step")
+		return fmt.Errorf("issue doesn't have a valid workflow step, %q", i.WorkflowStep)
 	}
 
 	i.serialize()
