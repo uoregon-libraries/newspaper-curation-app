@@ -28,6 +28,7 @@ type Batch struct {
 	MARCOrgCode string
 	Name        string
 	CreatedAt   time.Time
+	ArchivedAt  time.Time
 	Status      string
 	Location    string
 
@@ -56,6 +57,20 @@ func InProcessBatches() ([]*Batch, error) {
 		"status IN (?, ?, ?, ?)",
 		BatchStatusQCReady, BatchStatusOnStaging, BatchStatusFailedQC, BatchStatusPassedQC,
 	).AllObjects(&list)
+
+	return list, op.Err()
+}
+
+// FindLiveArchivedBatches returns all batches that are still live, but have an
+// archived_at value
+func FindLiveArchivedBatches() ([]*Batch, error) {
+	var op = DB.Operation()
+	op.Dbg = Debug
+
+	var list []*Batch
+	op.Select("batches", &Batch{}).
+		Where("status = ? AND archived_at > ?", BatchStatusLive, time.Time{}).
+		AllObjects(&list)
 
 	return list, op.Err()
 }
@@ -164,4 +179,21 @@ func (b *Batch) Delete() error {
 		i.SaveOp(op)
 	}
 	return op.Err()
+}
+
+// Close finalizes a batch that's live and archived by setting its status to
+// BatchStatusLiveDone.  This has some of our "safety first" business logic you
+// don't get if you close the batch manually, e.g., it must be in the "live"
+// status and it must have been archived at least four weeks ago.
+func (b *Batch) Close() error {
+	if b.Status != BatchStatusLive {
+		return fmt.Errorf("cannot close batch unless its status is live")
+	}
+	var fourWeeksAgo = time.Now().Add(-time.Hour * 24 * 7 * 4)
+	if !b.ArchivedAt.Before(fourWeeksAgo) {
+		return fmt.Errorf("cannot close live batches archived fewer than four weeks ago")
+	}
+
+	b.Status = BatchStatusLiveDone
+	return b.Save()
 }

@@ -19,6 +19,7 @@ var allowedWorkflowSteps = []schema.WorkflowStep{
 	schema.WSAwaitingMetadataReview,
 	schema.WSReadyForMETSXML,
 	schema.WSReadyForBatching,
+	schema.WSInProduction,
 }
 
 // Issue contains metadata about an issue for the various workflow tools' use
@@ -274,7 +275,7 @@ func (i *Issue) SaveOp(op *magicsql.Operation) error {
 		}
 	}
 	if !valid {
-		return fmt.Errorf("issue doesn't have a valid workflow step")
+		return fmt.Errorf("issue doesn't have a valid workflow step, %q", i.WorkflowStep)
 	}
 
 	i.serialize()
@@ -331,4 +332,18 @@ func (i *Issue) SchemaIssue() (*schema.Issue, error) {
 	}
 
 	return si, err
+}
+
+// FindCompletedIssuesReadyForRemoval returns all issues which are be complete
+// and no longer needed in our workflow: tied to a closed (live_done) batch and
+// ignored by NCA, but still contain a location
+func FindCompletedIssuesReadyForRemoval() ([]*Issue, error) {
+	var op = DB.Operation()
+	op.Dbg = Debug
+
+	var list []*Issue
+	var cond = "batch_id IN (SELECT id FROM batches WHERE status = ?) AND ignored = 1 AND location <> ''"
+	op.Select("issues", &Issue{}).Where(cond, BatchStatusLiveDone).AllObjects(&list)
+	deserializeIssues(list)
+	return list, op.Err()
 }
