@@ -5,6 +5,7 @@ package jobs
 
 import (
 	"os"
+	"path/filepath"
 
 	"github.com/uoregon-libraries/gopkg/fileutil"
 	"github.com/uoregon-libraries/newspaper-curation-app/src/config"
@@ -21,9 +22,25 @@ type SyncDir struct {
 
 // Process does a sync from j.Source to j.Dest, only writing files that don't
 // exist in j.Dest or which are different
-func (j *SyncDir) Process(c *config.Config) bool {
-	j.Logger.Warnf("SyncDir.Process is not implemented")
-	return false
+func (j *SyncDir) Process(*config.Config) bool {
+	var src = j.db.Args[srcArg]
+	var dst = j.db.Args[destArg]
+
+	var parent = filepath.Dir(dst)
+	j.Logger.Infof("Creating parent dir %q", parent)
+	var err = os.MkdirAll(parent, 0700)
+	if err != nil {
+		j.Logger.Errorf("Unable to create sync dir's parent %q: %s", parent, err)
+		return false
+	}
+
+	j.Logger.Infof("Syncing %q to %q", src, dst)
+	err = fileutil.SyncDirectory(src, dst)
+	if err != nil {
+		j.Logger.Errorf("Unable to sync %q to %q: %s", src, dst, err)
+	}
+
+	return err == nil
 }
 
 // UpdateWorkflow is a no-op for syncing dirs
