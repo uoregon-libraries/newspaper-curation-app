@@ -81,7 +81,7 @@ func makeLocArgs(loc string) map[string]string {
 	return map[string]string{locArg: loc}
 }
 
-func makeRenameArgs(src, dest string) map[string]string {
+func makeSrcDstArgs(src, dest string) map[string]string {
 	return map[string]string{
 		srcArg:  src,
 		destArg: dest,
@@ -145,7 +145,7 @@ func QueueMakeBatch(batch *db.Batch, batchOutputPath string) error {
 		PrepareBatchJobAdvanced(db.JobTypeCreateBatchStructure, batch, makeLocArgs(wipDir)),
 		PrepareBatchJobAdvanced(db.JobTypeSetBatchLocation, batch, makeLocArgs(wipDir)),
 		PrepareBatchJobAdvanced(db.JobTypeMakeBatchXML, batch, nil),
-		PrepareJobAdvanced(db.JobTypeRenameDir, makeRenameArgs(wipDir, finalDir)),
+		PrepareJobAdvanced(db.JobTypeRenameDir, makeSrcDstArgs(wipDir, finalDir)),
 		PrepareBatchJobAdvanced(db.JobTypeSetBatchLocation, batch, makeLocArgs(finalDir)),
 		PrepareBatchJobAdvanced(db.JobTypeSetBatchStatus, batch, makeBSArgs(db.BatchStatusQCReady)),
 		PrepareBatchJobAdvanced(db.JobTypeWriteBagitManifest, batch, nil),
