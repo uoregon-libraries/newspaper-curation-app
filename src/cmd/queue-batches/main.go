@@ -68,7 +68,7 @@ func main() {
 		}
 
 		// Queue the batch
-		jobs.QueueMakeBatch(batch, conf)
+		jobs.QueueMakeBatch(batch, conf.BatchOutputPath)
 		logger.Infof("Sending %q to job runner for creation", batch.Name)
 	}
 }

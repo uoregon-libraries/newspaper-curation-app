@@ -162,7 +162,7 @@ func (i *Input) requeueBatchHandler([]string) {
 	}
 
 	// Finally: requeue
-	err = jobs.QueueMakeBatch(b, conf)
+	err = jobs.QueueMakeBatch(b, conf.BatchOutputPath)
 	if err != nil {
 		i.printerrln(fmt.Sprintf("Error queueing batch regeneration: %s", err))
 	}

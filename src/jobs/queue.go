@@ -3,7 +3,6 @@ package jobs
 import (
 	"path/filepath"
 
-	"github.com/uoregon-libraries/newspaper-curation-app/src/config"
 	"github.com/uoregon-libraries/newspaper-curation-app/src/db"
 	"github.com/uoregon-libraries/newspaper-curation-app/src/schema"
 )
@@ -137,10 +136,9 @@ func QueueFinalizeIssue(issue *db.Issue) error {
 // where it can be loaded onto staging, and generating the bagit manifest.
 // Nothing can happen automatically after all this until the batch is verified
 // on staging.
-func QueueMakeBatch(batch *db.Batch, c *config.Config) error {
-	var root = c.BatchOutputPath
-	var wipDir = filepath.Join(root, ".wip-"+batch.FullName())
-	var finalDir = filepath.Join(root, batch.FullName())
+func QueueMakeBatch(batch *db.Batch, batchOutputPath string) error {
+	var wipDir = filepath.Join(batchOutputPath, ".wip-"+batch.FullName())
+	var finalDir = filepath.Join(batchOutputPath, batch.FullName())
 	return QueueSerial(
 		PrepareBatchJobAdvanced(db.JobTypeCreateBatchStructure, batch, makeLocArgs(wipDir)),
 		PrepareBatchJobAdvanced(db.JobTypeSetBatchLocation, batch, makeLocArgs(wipDir)),
