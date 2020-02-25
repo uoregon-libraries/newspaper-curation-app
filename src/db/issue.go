@@ -286,6 +286,7 @@ func (i *Issue) SaveOp(op *magicsql.Operation) error {
 
 	i.serialize()
 	op.Save("issues", i)
+	i.setHumanName()
 	return op.Err()
 }
 
@@ -300,7 +301,13 @@ func (i *Issue) serialize() {
 func (i *Issue) deserialize() {
 	i.PageLabels = strings.Split(i.PageLabelsCSV, ",")
 	i.WorkflowStep = schema.WorkflowStep(i.WorkflowStepString)
-	if i.HumanName == "" {
+	i.setHumanName()
+}
+
+// setHumanName ensures the human name is set up, but only if it's blank and
+// has a DB id
+func (i *Issue) setHumanName() {
+	if i.HumanName == "" && i.ID != 0 {
 		var dte = schema.IssueDateEdition(i.Date, i.Edition)
 		i.HumanName = fmt.Sprintf("%s-%s-%d", i.LCCN, dte, i.ID)
 	}
