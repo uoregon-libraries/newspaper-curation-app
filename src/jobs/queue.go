@@ -90,13 +90,28 @@ func makeSrcDstArgs(src, dest string) map[string]string {
 
 // QueueSFTPIssueMove queues up an issue move into the workflow area followed
 // by a page-split and then a move to the page review area
-func QueueSFTPIssueMove(issue *db.Issue) error {
+func QueueSFTPIssueMove(issue *db.Issue, workflowPath, masterPDFBackupPath string) error {
+	var wipDir = filepath.Join(workflowPath, ".wip-"+issue.HumanName)
+	var masterLoc = filepath.Join(masterPDFBackupPath, issue.HumanName)
+	var finalDir = filepath.Join(workflowPath, issue.HumanName)
+
 	return QueueSerial(
 		PrepareIssueJobAdvanced(db.JobTypeSetIssueWS, issue, makeWSArgs(schema.WSAwaitingProcessing)),
 		PrepareIssueJobAdvanced(db.JobTypeMoveIssueToWorkflow, issue, nil),
-		PrepareIssueJobAdvanced(db.JobTypePageSplit, issue, nil),
+		PrepareJobAdvanced(db.JobTypeCleanFiles, makeLocArgs(finalDir)),
+		PrepareIssueJobAdvanced(db.JobTypePageSplit, issue, makeLocArgs(wipDir)),
+
+		// This gets a bit weird.  What's in the issue location dir is the original
+		// upload, which we back up since we may need to reprocess the PDFs from
+		// their masters.  Once we've backed up (syncdir + killdir), we move the
+		// WIP files back into the proper workflow folder...  which is then
+		// promptly moved out to the page review area.
+		PrepareJobAdvanced(db.JobTypeSyncDir, makeSrcDstArgs(finalDir, masterLoc)),
+		PrepareJobAdvanced(db.JobTypeKillDir, makeLocArgs(finalDir)),
+		PrepareJobAdvanced(db.JobTypeRenameDir, makeSrcDstArgs(wipDir, finalDir)),
 		PrepareIssueJobAdvanced(db.JobTypeMoveIssueToPageReview, issue, nil),
 		PrepareIssueJobAdvanced(db.JobTypeSetIssueWS, issue, makeWSArgs(schema.WSAwaitingPageReview)),
+		PrepareIssueJobAdvanced(db.JobTypeSetIssueMasterLoc, issue, makeLocArgs(masterLoc)),
 	)
 }
 

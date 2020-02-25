@@ -98,7 +98,7 @@ func (i *Issue) Queue() apperr.Error {
 	// All's well - queue up the job
 	switch i.WorkflowStep {
 	case schema.WSSFTP:
-		err = jobs.QueueSFTPIssueMove(dbi)
+		err = jobs.QueueSFTPIssueMove(dbi, i.conf.WorkflowPath, i.conf.MasterPDFBackupPath)
 	case schema.WSScan:
 		err = jobs.QueueMoveIssueForDerivatives(dbi, i.conf.WorkflowPath)
 	default:
