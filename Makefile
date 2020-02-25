@@ -16,11 +16,7 @@ validate:
 build: $(shell ./scripts/cmdslist.sh)
 
 # For quick building of binaries, you can run something like "make bin/server"
-# and still have a little bit of the vetting without running the entire
-# validation script
 bin/%: src/cmd/% $(SOURCES) $(SOURCEDIRS)
-	golint -set_exit_status $</...
-	go vet ./$<
 	go build -ldflags="-s -w" -o $@ github.com/uoregon-libraries/newspaper-curation-app/$<
 
 lint:
