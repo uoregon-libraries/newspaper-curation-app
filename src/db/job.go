@@ -36,6 +36,7 @@ const (
 	JobTypeSyncDir               JobType = "sync_directory"
 	JobTypeKillDir               JobType = "delete_directory"
 	JobTypeRenameDir             JobType = "rename_directory"
+	JobTypeCleanFiles            JobType = "clean_files"
 )
 
 // ValidJobTypes is the full list of job types which can exist in the jobs
@@ -57,6 +58,7 @@ var ValidJobTypes = []JobType{
 	JobTypeSyncDir,
 	JobTypeKillDir,
 	JobTypeRenameDir,
+	JobTypeCleanFiles,
 }
 
 // JobStatus represents the different states in which a job can exist

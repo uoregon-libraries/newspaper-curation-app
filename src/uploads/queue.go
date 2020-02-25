@@ -100,7 +100,7 @@ func (i *Issue) Queue() apperr.Error {
 	case schema.WSSFTP:
 		err = jobs.QueueSFTPIssueMove(dbi)
 	case schema.WSScan:
-		err = jobs.QueueMoveIssueForDerivatives(dbi)
+		err = jobs.QueueMoveIssueForDerivatives(dbi, i.conf.WorkflowPath)
 	default:
 		logger.Criticalf("Invalid issue %q: workflow step %q isn't allowed for issue move jobs", i.Key(), i.WorkflowStep)
 		return badStepErr()

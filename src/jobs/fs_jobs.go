@@ -6,6 +6,7 @@ package jobs
 import (
 	"os"
 
+	"github.com/uoregon-libraries/gopkg/fileutil"
 	"github.com/uoregon-libraries/newspaper-curation-app/src/config"
 )
 
@@ -76,4 +77,37 @@ func (j *RenameDir) Process(*config.Config) bool {
 
 // UpdateWorkflow is a no-op for renaming dirs
 func (j *RenameDir) UpdateWorkflow() {
+}
+
+// CleanFiles attempts to remove any cruft left behind from Bridge, Mac Finder,
+// or other sources that hate me
+type CleanFiles struct {
+	*Job
+}
+
+// Process runs the file cleaner against the job's location
+func (j *CleanFiles) Process(*config.Config) bool {
+	var loc = j.db.Args[locArg]
+
+	var dotfiles, err = fileutil.FindIf(loc, func(i os.FileInfo) bool {
+		return !i.IsDir() && i.Name() != "" && i.Name()[0] == '.'
+	})
+	if err != nil {
+		j.Logger.Errorf("Unable to scan for files to delete: %s", err)
+		return false
+	}
+
+	for _, f := range dotfiles {
+		err = os.Remove(f)
+		if err != nil {
+			j.Logger.Errorf("Unable to remove file %q: %s", f, err)
+			return false
+		}
+	}
+
+	return true
+}
+
+// UpdateWorkflow is a no-op for file cleaning
+func (j *CleanFiles) UpdateWorkflow() {
 }

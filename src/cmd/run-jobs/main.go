@@ -282,6 +282,7 @@ func runAllQueues(c *config.Config) {
 				db.JobTypeCreateBatchStructure,
 				db.JobTypeMakeBatchXML,
 				db.JobTypeRenameDir,
+				db.JobTypeCleanFiles,
 			)
 		},
 		func() {

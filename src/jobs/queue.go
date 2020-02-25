@@ -102,10 +102,12 @@ func QueueSFTPIssueMove(issue *db.Issue) error {
 
 // QueueMoveIssueForDerivatives creates jobs to move issues into the workflow
 // and then immediately generate derivatives
-func QueueMoveIssueForDerivatives(issue *db.Issue) error {
+func QueueMoveIssueForDerivatives(issue *db.Issue, workflowPath string) error {
+	var finalDir = filepath.Join(workflowPath, issue.HumanName)
 	return QueueSerial(
 		PrepareIssueJobAdvanced(db.JobTypeSetIssueWS, issue, makeWSArgs(schema.WSAwaitingProcessing)),
 		PrepareIssueJobAdvanced(db.JobTypeMoveIssueToWorkflow, issue, nil),
+		PrepareJobAdvanced(db.JobTypeCleanFiles, makeLocArgs(finalDir)),
 		PrepareIssueJobAdvanced(db.JobTypeMakeDerivatives, issue, nil),
 		PrepareIssueJobAdvanced(db.JobTypeSetIssueWS, issue, makeWSArgs(schema.WSReadyForMetadataEntry)),
 	)

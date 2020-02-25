@@ -41,6 +41,8 @@ func DBJobToProcessor(dbJob *db.Job) Processor {
 		return &KillDir{Job: NewJob(dbJob)}
 	case db.JobTypeRenameDir:
 		return &RenameDir{Job: NewJob(dbJob)}
+	case db.JobTypeCleanFiles:
+		return &CleanFiles{Job: NewJob(dbJob)}
 	default:
 		logger.Errorf("Unknown job type %q for job id %d", dbJob.Type, dbJob.ID)
 	}
