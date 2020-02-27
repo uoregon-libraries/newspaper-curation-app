@@ -184,14 +184,11 @@ func (ps *PageSplit) convertToPDFA() (ok bool) {
 	return true
 }
 
-// moveIssue moves the processed files into the recently-removed workflow
-// location.  Failures here are very not-ideal as we've already successfully
-// destroyed the original files.  They still exist in the master backup
-// location, but that's not super easy to automatically fix.
+// moveIssue moves the processed files into the "final" output directory
 func (ps *PageSplit) moveIssue() (ok bool) {
 	var err = fileutil.CopyDirectory(ps.TempDir, ps.OutputDir)
 	if err != nil {
-		ps.Logger.Criticalf("Unable to move temporary directory %q to %q: %s", ps.TempDir, ps.OutputDir, err)
+		ps.Logger.Errorf("Unable to move temporary directory %q to %q: %s", ps.TempDir, ps.OutputDir, err)
 	}
 	return err == nil
 }
