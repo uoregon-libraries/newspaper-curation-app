@@ -125,7 +125,6 @@ func (r *Runner) process(pr Processor) {
 	r.logger.Infof("Starting job id %d: %q", dbj.ID, dbj.Type)
 	if pr.Process(r.config) {
 		dbj.Status = string(db.JobStatusSuccessful)
-		pr.UpdateWorkflow()
 		r.queueNextJob(pr)
 		r.logger.Infof("Finished job id %d - success", dbj.ID)
 	} else {

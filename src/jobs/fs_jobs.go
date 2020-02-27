@@ -43,10 +43,6 @@ func (j *SyncDir) Process(*config.Config) bool {
 	return err == nil
 }
 
-// UpdateWorkflow is a no-op for syncing dirs
-func (j *SyncDir) UpdateWorkflow() {
-}
-
 // KillDir is a job to clean up an old directory, typically after a sync job
 // has succeeded.
 type KillDir struct {
@@ -69,10 +65,6 @@ func (j *KillDir) Process(c *config.Config) bool {
 	return err == nil
 }
 
-// UpdateWorkflow is a no-op for deleting dirs
-func (j *KillDir) UpdateWorkflow() {
-}
-
 // RenameDir renames a directory - for the .wip-* dirs we still have to manage
 // since a handful of dirs still have to be exposed to end users
 type RenameDir struct {
@@ -90,10 +82,6 @@ func (j *RenameDir) Process(*config.Config) bool {
 	}
 
 	return true
-}
-
-// UpdateWorkflow is a no-op for renaming dirs
-func (j *RenameDir) UpdateWorkflow() {
 }
 
 // CleanFiles attempts to remove any cruft left behind from Bridge, Mac Finder,
@@ -123,8 +111,4 @@ func (j *CleanFiles) Process(*config.Config) bool {
 	}
 
 	return true
-}
-
-// UpdateWorkflow is a no-op for file cleaning
-func (j *CleanFiles) UpdateWorkflow() {
 }

@@ -23,7 +23,3 @@ func NewBatchJob(dbJob *db.Job) *BatchJob {
 
 	return &BatchJob{Job: NewJob(dbJob), DBBatch: batch}
 }
-
-// UpdateWorkflow is a no-op for batch jobs
-func (j *BatchJob) UpdateWorkflow() {
-}

@@ -17,10 +17,6 @@ type Processor interface {
 	// Process runs the job and returns whether it was successful
 	Process(*config.Config) bool
 
-	// UpdateWorkflow does any job-specific workflow manipulation, such as
-	// changing the job's underlying object.  Only called on success.
-	UpdateWorkflow()
-
 	// DBJob returns the low-level database Job for updating status, etc.
 	DBJob() *db.Job
 }
