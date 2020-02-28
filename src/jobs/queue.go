@@ -93,12 +93,12 @@ func makeSrcDstArgs(src, dest string) map[string]string {
 func QueueSFTPIssueMove(issue *db.Issue, workflowPath, masterPDFBackupPath string) error {
 	var wipDir = filepath.Join(workflowPath, ".wip-"+issue.HumanName)
 	var masterLoc = filepath.Join(masterPDFBackupPath, issue.HumanName)
-	var finalDir = filepath.Join(workflowPath, issue.HumanName)
+	var workflowDir = filepath.Join(workflowPath, issue.HumanName)
 
 	return QueueSerial(
 		PrepareIssueJobAdvanced(db.JobTypeSetIssueWS, issue, makeWSArgs(schema.WSAwaitingProcessing)),
 		PrepareIssueJobAdvanced(db.JobTypeMoveIssueToWorkflow, issue, nil),
-		PrepareJobAdvanced(db.JobTypeCleanFiles, makeLocArgs(finalDir)),
+		PrepareJobAdvanced(db.JobTypeCleanFiles, makeLocArgs(workflowDir)),
 		PrepareIssueJobAdvanced(db.JobTypePageSplit, issue, makeLocArgs(wipDir)),
 
 		// This gets a bit weird.  What's in the issue location dir is the original
@@ -106,9 +106,9 @@ func QueueSFTPIssueMove(issue *db.Issue, workflowPath, masterPDFBackupPath strin
 		// their masters.  Once we've backed up (syncdir + killdir), we move the
 		// WIP files back into the proper workflow folder...  which is then
 		// promptly moved out to the page review area.
-		PrepareJobAdvanced(db.JobTypeSyncDir, makeSrcDstArgs(finalDir, masterLoc)),
-		PrepareJobAdvanced(db.JobTypeKillDir, makeLocArgs(finalDir)),
-		PrepareJobAdvanced(db.JobTypeRenameDir, makeSrcDstArgs(wipDir, finalDir)),
+		PrepareJobAdvanced(db.JobTypeSyncDir, makeSrcDstArgs(workflowDir, masterLoc)),
+		PrepareJobAdvanced(db.JobTypeKillDir, makeLocArgs(workflowDir)),
+		PrepareJobAdvanced(db.JobTypeRenameDir, makeSrcDstArgs(wipDir, workflowDir)),
 		PrepareIssueJobAdvanced(db.JobTypeMoveIssueToPageReview, issue, nil),
 		PrepareIssueJobAdvanced(db.JobTypeSetIssueWS, issue, makeWSArgs(schema.WSAwaitingPageReview)),
 		PrepareIssueJobAdvanced(db.JobTypeSetIssueMasterLoc, issue, makeLocArgs(masterLoc)),
