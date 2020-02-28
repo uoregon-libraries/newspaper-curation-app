@@ -43,6 +43,23 @@ func (j *SetIssueMasterLoc) Process(*config.Config) bool {
 	return err == nil
 }
 
+// SetIssueLocation just updates issues.location in the database
+type SetIssueLocation struct {
+	*IssueJob
+}
+
+// Process just updates the issue's location field
+func (j *SetIssueLocation) Process(c *config.Config) bool {
+	j.DBIssue.Location = j.db.Args[locArg]
+	var err = j.DBIssue.Save()
+	if err != nil {
+		j.Logger.Errorf("Error setting issue.location for id %d: %s", j.DBIssue.ID, err)
+		return false
+	}
+
+	return true
+}
+
 // SetBatchStatus is another simple job which... wait for it... sets the status
 // of the job's batch!
 type SetBatchStatus struct {

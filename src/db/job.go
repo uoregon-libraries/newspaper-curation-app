@@ -20,23 +20,23 @@ type JobType string
 
 // The full list of job types
 const (
-	JobTypeSetIssueWS            JobType = "set_issue_workflow_step"
-	JobTypeSetIssueMasterLoc     JobType = "set_issue_master_backup_location"
-	JobTypeSetBatchStatus        JobType = "set_batch_status"
-	JobTypePageSplit             JobType = "page_split"
-	JobTypeMoveIssueToWorkflow   JobType = "move_issue_to_workflow"
-	JobTypeMoveIssueToPageReview JobType = "move_issue_to_page_review"
-	JobTypeMakeDerivatives       JobType = "make_derivatives"
-	JobTypeBuildMETS             JobType = "build_mets"
-	JobTypeArchiveMasterFiles    JobType = "archive_master_files"
-	JobTypeSetBatchLocation      JobType = "set_batch_location"
-	JobTypeCreateBatchStructure  JobType = "create_batch_structure"
-	JobTypeMakeBatchXML          JobType = "make_batch_xml"
-	JobTypeWriteBagitManifest    JobType = "write_bagit_manifest"
-	JobTypeSyncDir               JobType = "sync_directory"
-	JobTypeKillDir               JobType = "delete_directory"
-	JobTypeRenameDir             JobType = "rename_directory"
-	JobTypeCleanFiles            JobType = "clean_files"
+	JobTypeSetIssueWS           JobType = "set_issue_workflow_step"
+	JobTypeSetIssueMasterLoc    JobType = "set_issue_master_backup_location"
+	JobTypeSetIssueLocation     JobType = "set_issue_location"
+	JobTypeSetBatchStatus       JobType = "set_batch_status"
+	JobTypePageSplit            JobType = "page_split"
+	JobTypeMoveIssueToWorkflow  JobType = "move_issue_to_workflow"
+	JobTypeMakeDerivatives      JobType = "make_derivatives"
+	JobTypeBuildMETS            JobType = "build_mets"
+	JobTypeArchiveMasterFiles   JobType = "archive_master_files"
+	JobTypeSetBatchLocation     JobType = "set_batch_location"
+	JobTypeCreateBatchStructure JobType = "create_batch_structure"
+	JobTypeMakeBatchXML         JobType = "make_batch_xml"
+	JobTypeWriteBagitManifest   JobType = "write_bagit_manifest"
+	JobTypeSyncDir              JobType = "sync_directory"
+	JobTypeKillDir              JobType = "delete_directory"
+	JobTypeRenameDir            JobType = "rename_directory"
+	JobTypeCleanFiles           JobType = "clean_files"
 )
 
 // ValidJobTypes is the full list of job types which can exist in the jobs
@@ -44,10 +44,10 @@ const (
 var ValidJobTypes = []JobType{
 	JobTypeSetIssueWS,
 	JobTypeSetIssueMasterLoc,
+	JobTypeSetIssueLocation,
 	JobTypeSetBatchStatus,
 	JobTypePageSplit,
 	JobTypeMoveIssueToWorkflow,
-	JobTypeMoveIssueToPageReview,
 	JobTypeMakeDerivatives,
 	JobTypeBuildMETS,
 	JobTypeArchiveMasterFiles,

@@ -3,6 +3,7 @@ package jobs
 import (
 	"path/filepath"
 
+	"github.com/uoregon-libraries/newspaper-curation-app/src/config"
 	"github.com/uoregon-libraries/newspaper-curation-app/src/db"
 	"github.com/uoregon-libraries/newspaper-curation-app/src/schema"
 )
@@ -90,16 +91,21 @@ func makeSrcDstArgs(src, dest string) map[string]string {
 
 // QueueSFTPIssueMove queues up an issue move into the workflow area followed
 // by a page-split and then a move to the page review area
-func QueueSFTPIssueMove(issue *db.Issue, workflowPath, masterPDFBackupPath string) error {
-	var wipDir = filepath.Join(workflowPath, ".wip-"+issue.HumanName)
-	var masterLoc = filepath.Join(masterPDFBackupPath, issue.HumanName)
-	var workflowDir = filepath.Join(workflowPath, issue.HumanName)
+func QueueSFTPIssueMove(issue *db.Issue, c *config.Config) error {
+	var workflowDir = filepath.Join(c.WorkflowPath, issue.HumanName)
+	var workflowWIPDir = filepath.Join(c.WorkflowPath, ".wip-"+issue.HumanName)
+	var pageReviewDir = filepath.Join(c.PDFPageReviewPath, issue.HumanName)
+	var pageReviewWIPDir = filepath.Join(c.PDFPageReviewPath, ".wip-"+issue.HumanName)
+	var masterLoc = filepath.Join(c.MasterPDFBackupPath, issue.HumanName)
 
 	return QueueSerial(
 		PrepareIssueJobAdvanced(db.JobTypeSetIssueWS, issue, makeWSArgs(schema.WSAwaitingProcessing)),
+
+		// Move the issue to the workflow location
 		PrepareIssueJobAdvanced(db.JobTypeMoveIssueToWorkflow, issue, nil),
+
 		PrepareJobAdvanced(db.JobTypeCleanFiles, makeLocArgs(workflowDir)),
-		PrepareIssueJobAdvanced(db.JobTypePageSplit, issue, makeLocArgs(wipDir)),
+		PrepareIssueJobAdvanced(db.JobTypePageSplit, issue, makeLocArgs(workflowWIPDir)),
 
 		// This gets a bit weird.  What's in the issue location dir is the original
 		// upload, which we back up since we may need to reprocess the PDFs from
@@ -108,10 +114,17 @@ func QueueSFTPIssueMove(issue *db.Issue, workflowPath, masterPDFBackupPath strin
 		// promptly moved out to the page review area.
 		PrepareJobAdvanced(db.JobTypeSyncDir, makeSrcDstArgs(workflowDir, masterLoc)),
 		PrepareJobAdvanced(db.JobTypeKillDir, makeLocArgs(workflowDir)),
-		PrepareJobAdvanced(db.JobTypeRenameDir, makeSrcDstArgs(wipDir, workflowDir)),
-		PrepareIssueJobAdvanced(db.JobTypeMoveIssueToPageReview, issue, nil),
-		PrepareIssueJobAdvanced(db.JobTypeSetIssueWS, issue, makeWSArgs(schema.WSAwaitingPageReview)),
 		PrepareIssueJobAdvanced(db.JobTypeSetIssueMasterLoc, issue, makeLocArgs(masterLoc)),
+		PrepareJobAdvanced(db.JobTypeRenameDir, makeSrcDstArgs(workflowWIPDir, workflowDir)),
+
+		// Now we move the issue data to the page review area for manual
+		// processing, again in multiple idempotent steps
+		PrepareJobAdvanced(db.JobTypeSyncDir, makeSrcDstArgs(workflowDir, pageReviewWIPDir)),
+		PrepareJobAdvanced(db.JobTypeKillDir, makeLocArgs(workflowDir)),
+		PrepareJobAdvanced(db.JobTypeRenameDir, makeSrcDstArgs(pageReviewWIPDir, pageReviewDir)),
+		PrepareJobAdvanced(db.JobTypeSetIssueLocation, makeLocArgs(pageReviewDir)),
+
+		PrepareIssueJobAdvanced(db.JobTypeSetIssueWS, issue, makeWSArgs(schema.WSAwaitingPageReview)),
 	)
 }
 
