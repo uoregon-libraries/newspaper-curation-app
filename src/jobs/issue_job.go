@@ -22,6 +22,10 @@ func NewIssueJob(dbJob *db.Job) *IssueJob {
 		logger.Criticalf("Unable to find issue for job %d: %s", dbJob.ID, err)
 		return nil
 	}
+	if dbi == nil {
+		logger.Criticalf("No issue exists for job %d (issue id %d)", dbJob.ID, dbJob.ObjectID)
+		return nil
+	}
 
 	var si *schema.Issue
 	si, err = dbi.SchemaIssue()
