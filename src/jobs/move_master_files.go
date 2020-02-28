@@ -12,24 +12,24 @@ import (
 	"github.com/uoregon-libraries/newspaper-curation-app/src/config"
 )
 
-// MoveMasterFilesToIssueLocation is the job which finds backed-up master files
-// (if any exist), creates an archive from them, copies them into the issue
-// location, and then removes the masters from disk.  This only matters to
-// born-digital issues; the scanned issues aren't pre-processed like PDFs are.
-type MoveMasterFilesToIssueLocation struct {
+// ArchiveMasterFiles is the job which finds backed-up master files (if any
+// exist), creates an archive from them, and copies them into the issue
+// location.  This only matters to born-digital issues; the scanned issues
+// aren't pre-processed like PDFs are.
+type ArchiveMasterFiles struct {
 	*IssueJob
 	tarfile string
 }
 
 // Process implements Processor, moving the issue's master files
-func (j *MoveMasterFilesToIssueLocation) Process(c *config.Config) bool {
+func (j *ArchiveMasterFiles) Process(*config.Config) bool {
 	if j.DBIssue.MasterBackupLocation == "" {
-		j.Logger.Debugf("Master file move job for issue id %d skipped - no master files stored", j.DBIssue.ID)
+		j.Logger.Debugf("Master file archive job for issue id %d skipped - no master files stored", j.DBIssue.ID)
 		return true
 	}
 
 	j.tarfile = filepath.Join(j.DBIssue.Location, "master.tar")
-	j.Logger.Debugf("Starting master file move for issue id %d", j.DBIssue.ID)
+	j.Logger.Debugf("Starting master file archive for issue id %d", j.DBIssue.ID)
 	var err = j.makeMasterTar()
 	if err != nil {
 		j.Logger.Errorf("Unable to produce tarfile from master PDF(s): %s", err)
@@ -49,29 +49,10 @@ func (j *MoveMasterFilesToIssueLocation) Process(c *config.Config) bool {
 		return false
 	}
 
-	// Errors in the cleanup phase are tricky - we've already succeeded at
-	// getting the master into the right location, so we don't want to call the
-	// job a failure, but we do need to alert somebody to manually clean up the
-	// master files
-	err = os.RemoveAll(j.DBIssue.MasterBackupLocation)
-	if err != nil {
-		j.Logger.Errorf("Unable to remove master files after copy: %s.  Job is "+
-			"successful, but master files need manual cleanup.", err)
-	}
-
-	// In case the issue has to be pushed back to metadata entry/review, we don't
-	// want to be trying to re-archive the master files
-	j.DBIssue.MasterBackupLocation = ""
-	err = j.DBIssue.Save()
-	if err != nil {
-		j.Logger.Criticalf("Unable to update issue master backup location to '': %s", err)
-	}
-
-	j.Logger.Debugf("Master files moved successfully")
 	return true
 }
 
-func (j *MoveMasterFilesToIssueLocation) makeMasterTar() error {
+func (j *ArchiveMasterFiles) makeMasterTar() error {
 	var src = j.DBIssue.MasterBackupLocation
 
 	var f = fileutil.NewSafeFile(j.tarfile)

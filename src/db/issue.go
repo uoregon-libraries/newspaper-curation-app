@@ -54,7 +54,6 @@ type Issue struct {
 	MasterBackupLocation   string              // Where is the master backup located?  (born-digital only)
 	HumanName              string              // What is the issue's "human" name (for consistent folder naming)?
 	IsFromScanner          bool                // Is the issue scanned in-house?  (Born-digital == false)
-	HasDerivatives         bool                // Does the issue have derivatives done?
 	WorkflowStepString     string              `sql:"workflow_step"` // If set, tells us what "human workflow" step we're on
 	WorkflowStep           schema.WorkflowStep `sql:"-"`
 	WorkflowOwnerID        int                 // Whose "desk" is this currently on?
@@ -162,6 +161,13 @@ func FindIssueByLocation(location string) (*Issue, error) {
 // being batched and approved for production
 func FindInProcessIssues() ([]*Issue, error) {
 	return findIssues("")
+}
+
+// FindIssuesAwaitingProcessing returns all issues which should be considered
+// "invisible" to the UI - these are untouchable until some automated process
+// is complete
+func FindIssuesAwaitingProcessing() ([]*Issue, error) {
+	return findIssues("workflow_step = ?", string(schema.WSAwaitingProcessing))
 }
 
 // FindIssuesByBatchID returns all issues associated with the given batch id
@@ -280,6 +286,7 @@ func (i *Issue) SaveOp(op *magicsql.Operation) error {
 
 	i.serialize()
 	op.Save("issues", i)
+	i.setHumanName()
 	return op.Err()
 }
 
@@ -294,6 +301,16 @@ func (i *Issue) serialize() {
 func (i *Issue) deserialize() {
 	i.PageLabels = strings.Split(i.PageLabelsCSV, ",")
 	i.WorkflowStep = schema.WorkflowStep(i.WorkflowStepString)
+	i.setHumanName()
+}
+
+// setHumanName ensures the human name is set up, but only if it's blank and
+// has a DB id
+func (i *Issue) setHumanName() {
+	if i.HumanName == "" && i.ID != 0 {
+		var dte = schema.IssueDateEdition(i.Date, i.Edition)
+		i.HumanName = fmt.Sprintf("%s-%s-%d", i.LCCN, dte, i.ID)
+	}
 }
 
 // deserializeIssues runs deserialize() against all issues in the list

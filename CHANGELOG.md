@@ -29,6 +29,19 @@ Brief description, if necessary
 
 Brief description, if necessary
 
+### Migration
+
+- All jobs have to be finished before you can upgrade from previous versions,
+  because many major changes happened to the jobs subsystem.  This will require
+  a few manual steps:
+  - Turn off the server and worker processes.  This ensures that nobody is
+    changing data, and no uploads will be processed.
+  - Check the list of job types in the database:
+    `SELECT DISTINCT job_type FROM jobs WHERE status NOT IN ('success', 'failed_done');`
+  - Run workers for each outstanding job type, e.g., `./bin/run-jobs -c ./settings watch build_mets`
+  - Repeat until no more outstanding jobs are in the database
+- Run migrations prior to starting the services again
+
 ### Fixed
 
 - Uploads list is now a table, making it a lot easier to read, and fixing the
@@ -40,6 +53,12 @@ Brief description, if necessary
   the quick error scan actually means
 
 ### Changed
+
+- Background jobs are split up into more, but smaller, pieces.  When (not if)
+  something goes wrong, it should be a lot easier to debug and fix it.  This
+  also paves the way for a more resilient and automated retry when jobs fail
+  due to something temporary like an openjpeg upgrade going wrong, the database
+  being restarted, NFS mounts failing, etc.
 
 ### Removed
 

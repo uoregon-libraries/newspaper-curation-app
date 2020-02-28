@@ -10,7 +10,6 @@ import (
 	"github.com/uoregon-libraries/newspaper-curation-app/src/apperr"
 	"github.com/uoregon-libraries/newspaper-curation-app/src/db"
 	"github.com/uoregon-libraries/newspaper-curation-app/src/internal/logger"
-	"github.com/uoregon-libraries/newspaper-curation-app/src/jobs"
 	"github.com/uoregon-libraries/newspaper-curation-app/src/schema"
 	"github.com/uoregon-libraries/newspaper-curation-app/src/uploads"
 )
@@ -165,7 +164,7 @@ func (i *Issue) decoratePriorJobLogs() {
 	var subErrors []string
 	for _, j := range dbJobs {
 		// We only care to report on the failed jobs, as those haven't been requeued
-		if j.Status != string(jobs.JobStatusFailed) {
+		if j.Status != string(db.JobStatusFailed) {
 			continue
 		}
 

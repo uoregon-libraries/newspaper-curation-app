@@ -12,7 +12,7 @@ type WriteBagitManifest struct {
 
 // Process implements Processor, writing out the data manifest, bagit.txt, and
 // the tag manifest
-func (j *WriteBagitManifest) Process(c *config.Config) bool {
+func (j *WriteBagitManifest) Process(*config.Config) bool {
 	var b = bagit.New(j.DBBatch.Location)
 	var err = b.WriteTagFiles()
 	if err != nil {
