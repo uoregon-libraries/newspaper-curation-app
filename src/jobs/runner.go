@@ -124,20 +124,53 @@ func (r *Runner) process(pr Processor) {
 	var dbj = pr.DBJob()
 	r.logger.Infof("Starting job id %d: %q", dbj.ID, dbj.Type)
 	if pr.Process(r.config) {
-		dbj.Status = string(db.JobStatusSuccessful)
-		r.queueNextJob(pr)
-		r.logger.Infof("Finished job id %d - success", dbj.ID)
+		r.handleSuccess(pr)
 	} else {
-		dbj.Status = string(db.JobStatusFailed)
-		r.logger.Infof("Job id %d **failed** (see job logs)", dbj.ID)
+		r.attemptRetry(pr)
 	}
+}
 
+func (r *Runner) handleSuccess(pr Processor) {
+	var dbj = pr.DBJob()
+	dbj.Status = string(db.JobStatusSuccessful)
 	dbj.CompletedAt = time.Now()
+
 	var err = dbj.Save()
 	if err != nil {
-		r.logger.Criticalf("Unable to update job status after completion (job: %d): %s",
-			dbj.ID, err)
+		r.logger.Criticalf("Unable to update job status after success (job: %d): %s", dbj.ID, err)
+		return
 	}
+
+	r.logger.Infof("Finished job id %d - success", dbj.ID)
+	r.queueNextJob(pr)
+}
+
+func (r *Runner) attemptRetry(pr Processor) {
+	var dbj = pr.DBJob()
+	if dbj.RetryCount >= pr.MaxRetries() {
+		r.handleFailure(pr)
+		return
+	}
+
+	var retryJob, err = dbj.Requeue()
+	if err != nil {
+		r.logger.Criticalf("Unable to requeue failed job (job: %d): %s", dbj.ID, err)
+		return
+	}
+	r.logger.Warnf("Failed job %d: retrying via job %d at %s (try #%d)",
+		dbj.ID, retryJob.ID, retryJob.RunAt, retryJob.RetryCount)
+}
+
+func (r *Runner) handleFailure(pr Processor) {
+	var dbj = pr.DBJob()
+	dbj.Status = string(db.JobStatusFailed)
+
+	var err = dbj.Save()
+	if err != nil {
+		r.logger.Criticalf("Unable to update job status after failure (job: %d): %s", dbj.ID, err)
+		return
+	}
+	r.logger.Infof("Job id %d **failed** (see job logs)", dbj.ID)
 }
 
 // queueNextJob starts the next job if one was set on the current database job

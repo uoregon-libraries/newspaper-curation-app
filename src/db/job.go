@@ -91,6 +91,7 @@ type Job struct {
 	ObjectID    int
 	ObjectType  string
 	Status      string
+	RetryCount  int
 	logs        []*JobLog
 
 	// The job won't be run until sometime after RunAt; usually it's very close,
@@ -301,6 +302,15 @@ func (j *Job) Requeue() (*Job, error) {
 	clone = &temp
 	clone.ID = 0
 	clone.Status = string(JobStatusPending)
+	clone.RetryCount++
+
+	// Calculate the delay - essentially exponential backoff but with a cap of 24 hours
+	var delay = time.Second << uint(clone.RetryCount)
+	var maxDelay = time.Hour * 24
+	if delay > maxDelay {
+		delay = maxDelay
+	}
+	clone.RunAt = time.Now().Add(delay)
 	clone.SaveOp(op)
 
 	j.Status = string(JobStatusFailedDone)

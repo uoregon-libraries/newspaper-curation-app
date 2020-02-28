@@ -17,6 +17,10 @@ type Processor interface {
 	// Process runs the job and returns whether it was successful
 	Process(*config.Config) bool
 
+	// MaxRetries tells the processor how many times this job may attempt to
+	// re-run if it fails
+	MaxRetries() int
+
 	// DBJob returns the low-level database Job for updating status, etc.
 	DBJob() *db.Job
 }
@@ -24,13 +28,20 @@ type Processor interface {
 // Job wraps the DB job data and provides business logic for things like
 // logging to the database
 type Job struct {
-	db     *db.Job
-	Logger *ltype.Logger
+	db         *db.Job
+	Logger     *ltype.Logger
+	maxRetries int
+}
+
+// MaxRetries allows all jobs to implement the Processor interface without
+// having to write this specific function
+func (j *Job) MaxRetries() int {
+	return j.maxRetries
 }
 
 // NewJob wraps the given db.Job and sets up a logger
 func NewJob(dbj *db.Job) *Job {
-	var j = &Job{db: dbj}
+	var j = &Job{db: dbj, maxRetries: 25}
 	j.Logger = &ltype.Logger{Loggable: &jobLogger{Job: j, AppName: filepath.Base(os.Args[0])}}
 	return j
 }
