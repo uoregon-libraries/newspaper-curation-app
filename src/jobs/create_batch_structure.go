@@ -20,7 +20,7 @@ type CreateBatchStructure struct {
 
 // Process implements Processor by creating the batch directory structure and
 // hard-linking the necessary issue files
-func (j *CreateBatchStructure) Process(c *config.Config) bool {
+func (j *CreateBatchStructure) Process(*config.Config) bool {
 	var err error
 
 	// Configure the paths

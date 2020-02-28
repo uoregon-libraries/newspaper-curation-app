@@ -50,7 +50,7 @@ type KillDir struct {
 }
 
 // Process removes files from j.Dir
-func (j *KillDir) Process(c *config.Config) bool {
+func (j *KillDir) Process(*config.Config) bool {
 	var loc = j.db.Args[locArg]
 	j.Logger.Debugf("KillDir: attempting to remove %q", loc)
 

@@ -22,7 +22,7 @@ type ArchiveMasterFiles struct {
 }
 
 // Process implements Processor, moving the issue's master files
-func (j *ArchiveMasterFiles) Process(c *config.Config) bool {
+func (j *ArchiveMasterFiles) Process(*config.Config) bool {
 	if j.DBIssue.MasterBackupLocation == "" {
 		j.Logger.Debugf("Master file archive job for issue id %d skipped - no master files stored", j.DBIssue.ID)
 		return true

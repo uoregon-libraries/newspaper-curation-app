@@ -49,7 +49,7 @@ type SetIssueLocation struct {
 }
 
 // Process just updates the issue's location field
-func (j *SetIssueLocation) Process(c *config.Config) bool {
+func (j *SetIssueLocation) Process(*config.Config) bool {
 	j.DBIssue.Location = j.db.Args[locArg]
 	var err = j.DBIssue.Save()
 	if err != nil {
@@ -83,7 +83,7 @@ type SetBatchLocation struct {
 }
 
 // Process just updates the batch's location field
-func (j *SetBatchLocation) Process(c *config.Config) bool {
+func (j *SetBatchLocation) Process(*config.Config) bool {
 	j.DBBatch.Location = j.db.Args[locArg]
 	var err = j.DBBatch.Save()
 	if err != nil {
