@@ -122,7 +122,7 @@ func QueueSFTPIssueMove(issue *db.Issue, c *config.Config) error {
 		PrepareJobAdvanced(db.JobTypeSyncDir, makeSrcDstArgs(workflowDir, pageReviewWIPDir)),
 		PrepareJobAdvanced(db.JobTypeKillDir, makeLocArgs(workflowDir)),
 		PrepareJobAdvanced(db.JobTypeRenameDir, makeSrcDstArgs(pageReviewWIPDir, pageReviewDir)),
-		PrepareJobAdvanced(db.JobTypeSetIssueLocation, makeLocArgs(pageReviewDir)),
+		PrepareIssueJobAdvanced(db.JobTypeSetIssueLocation, issue, makeLocArgs(pageReviewDir)),
 
 		PrepareIssueJobAdvanced(db.JobTypeSetIssueWS, issue, makeWSArgs(schema.WSAwaitingPageReview)),
 	)
