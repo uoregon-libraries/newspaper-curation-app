@@ -25,7 +25,6 @@ const (
 	JobTypeSetIssueLocation     JobType = "set_issue_location"
 	JobTypeSetBatchStatus       JobType = "set_batch_status"
 	JobTypePageSplit            JobType = "page_split"
-	JobTypeMoveIssueToWorkflow  JobType = "move_issue_to_workflow"
 	JobTypeMakeDerivatives      JobType = "make_derivatives"
 	JobTypeBuildMETS            JobType = "build_mets"
 	JobTypeArchiveMasterFiles   JobType = "archive_master_files"
@@ -47,7 +46,6 @@ var ValidJobTypes = []JobType{
 	JobTypeSetIssueLocation,
 	JobTypeSetBatchStatus,
 	JobTypePageSplit,
-	JobTypeMoveIssueToWorkflow,
 	JobTypeMakeDerivatives,
 	JobTypeBuildMETS,
 	JobTypeArchiveMasterFiles,

@@ -259,7 +259,6 @@ func runAllQueues(c *config.Config) {
 		func() {
 			// Potentially slow filesystem moves
 			watchJobTypes(c,
-				db.JobTypeMoveIssueToWorkflow,
 				db.JobTypeArchiveMasterFiles,
 				db.JobTypeSyncDir,
 				db.JobTypeKillDir,

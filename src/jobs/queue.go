@@ -102,8 +102,12 @@ func QueueSFTPIssueMove(issue *db.Issue, c *config.Config) error {
 		PrepareIssueJobAdvanced(db.JobTypeSetIssueWS, issue, makeWSArgs(schema.WSAwaitingProcessing)),
 
 		// Move the issue to the workflow location
-		PrepareIssueJobAdvanced(db.JobTypeMoveIssueToWorkflow, issue, nil),
+		PrepareJobAdvanced(db.JobTypeSyncDir, makeSrcDstArgs(issue.Location, workflowWIPDir)),
+		PrepareJobAdvanced(db.JobTypeKillDir, makeLocArgs(issue.Location)),
+		PrepareJobAdvanced(db.JobTypeRenameDir, makeSrcDstArgs(workflowWIPDir, workflowDir)),
+		PrepareIssueJobAdvanced(db.JobTypeSetIssueLocation, issue, makeLocArgs(workflowDir)),
 
+		// Clean dotfiles and then kick off the page splitter
 		PrepareJobAdvanced(db.JobTypeCleanFiles, makeLocArgs(workflowDir)),
 		PrepareIssueJobAdvanced(db.JobTypePageSplit, issue, makeLocArgs(workflowWIPDir)),
 
@@ -131,11 +135,18 @@ func QueueSFTPIssueMove(issue *db.Issue, c *config.Config) error {
 // QueueMoveIssueForDerivatives creates jobs to move issues into the workflow
 // and then immediately generate derivatives
 func QueueMoveIssueForDerivatives(issue *db.Issue, workflowPath string) error {
-	var finalDir = filepath.Join(workflowPath, issue.HumanName)
+	var workflowDir = filepath.Join(workflowPath, issue.HumanName)
+	var workflowWIPDir = filepath.Join(workflowPath, ".wip-"+issue.HumanName)
+
 	return QueueSerial(
 		PrepareIssueJobAdvanced(db.JobTypeSetIssueWS, issue, makeWSArgs(schema.WSAwaitingProcessing)),
-		PrepareIssueJobAdvanced(db.JobTypeMoveIssueToWorkflow, issue, nil),
-		PrepareJobAdvanced(db.JobTypeCleanFiles, makeLocArgs(finalDir)),
+
+		PrepareJobAdvanced(db.JobTypeSyncDir, makeSrcDstArgs(issue.Location, workflowWIPDir)),
+		PrepareJobAdvanced(db.JobTypeKillDir, makeLocArgs(issue.Location)),
+		PrepareJobAdvanced(db.JobTypeRenameDir, makeSrcDstArgs(workflowWIPDir, workflowDir)),
+		PrepareIssueJobAdvanced(db.JobTypeSetIssueLocation, issue, makeLocArgs(workflowDir)),
+
+		PrepareJobAdvanced(db.JobTypeCleanFiles, makeLocArgs(workflowDir)),
 		PrepareIssueJobAdvanced(db.JobTypeMakeDerivatives, issue, nil),
 		PrepareIssueJobAdvanced(db.JobTypeSetIssueWS, issue, makeWSArgs(schema.WSReadyForMetadataEntry)),
 	)

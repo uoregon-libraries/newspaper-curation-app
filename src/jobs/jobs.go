@@ -15,8 +15,6 @@ func DBJobToProcessor(dbJob *db.Job) Processor {
 		return &SetIssueMasterLoc{IssueJob: NewIssueJob(dbJob)}
 	case db.JobTypeSetIssueLocation:
 		return &SetIssueLocation{IssueJob: NewIssueJob(dbJob)}
-	case db.JobTypeMoveIssueToWorkflow:
-		return &WorkflowIssueMover{IssueJob: NewIssueJob(dbJob)}
 	case db.JobTypePageSplit:
 		return &PageSplit{IssueJob: NewIssueJob(dbJob)}
 	case db.JobTypeMakeDerivatives:
