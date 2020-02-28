@@ -257,24 +257,28 @@ func runAllQueues(c *config.Config) {
 	waitFor(
 		func() { watchPageReview(c) },
 		func() {
-			// Potentially slow filesystem moves
+			// Jobs which are exclusively disk IO are in the first runner to avoid
+			// too much FS stuff hapenning concurrently
 			watchJobTypes(c,
 				db.JobTypeArchiveMasterFiles,
 				db.JobTypeSyncDir,
 				db.JobTypeKillDir,
-			)
-		},
-		func() {
-			// Slow jobs: expensive process spawning or file crunching
-			watchJobTypes(c,
-				db.JobTypePageSplit,
-				db.JobTypeMakeDerivatives,
 				db.JobTypeWriteBagitManifest,
 			)
 		},
 		func() {
-			// Fast jobs: file renaming, hard-linking, running templates for very
-			// simple XML output, etc.
+			// Jobs which primarily use CPU are grouped next, so we aren't trying to
+			// share CPU too much
+			watchJobTypes(c,
+				db.JobTypePageSplit,
+				db.JobTypeMakeDerivatives,
+			)
+		},
+		func() {
+			// Fast - but not instant - jobs are here: file renaming, hard-linking,
+			// running templates for very simple XML output, etc.  These typically
+			// take very little CPU or disk IO, but they aren't "critical" jobs that
+			// need to be real-time.
 			watchJobTypes(c,
 				db.JobTypeBuildMETS,
 				db.JobTypeCreateBatchStructure,
@@ -284,7 +288,9 @@ func runAllQueues(c *config.Config) {
 			)
 		},
 		func() {
-			// The fastest jobs, which need to be nearly real-time
+			// Extremely fast data-setting jobs get a custom runner that operates
+			// every second to ensure nearly real-time updates to things like a job's
+			// workflow state
 			var r = jobs.NewRunner(c,
 				db.JobTypeSetIssueWS,
 				db.JobTypeSetIssueMasterLoc,
