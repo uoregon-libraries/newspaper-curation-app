@@ -10,8 +10,8 @@ import (
 // specific issues
 type IssueJob struct {
 	*Job
-	Issue            *schema.Issue
-	DBIssue          *db.Issue
+	Issue   *schema.Issue
+	DBIssue *db.Issue
 }
 
 // NewIssueJob setups up an IssueJob from a database Job, centralizing the
