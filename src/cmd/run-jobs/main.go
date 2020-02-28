@@ -204,7 +204,7 @@ func retryJob(idString string) {
 	}
 
 	logger.Infof("Requeuing job %d", dj.ID)
-	var err = j.Requeue()
+	var _, err = dj.Requeue()
 	if err != nil {
 		logger.Errorf("Unable to requeue job %d: %s", dj.ID, err)
 	}

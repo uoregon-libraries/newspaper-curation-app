@@ -66,27 +66,6 @@ func RunWhileTrue(subProcessors ...func() bool) (ok bool) {
 	return true
 }
 
-// Requeue closes out this job and queues a new, duplicate job ready for
-// processing.  We do this instead of just rerunning a job so that the job logs
-// can be tied to a distinct instance of a job, making it easier to debug
-// things like command-line failures for a particular run.
-func (j *Job) Requeue() error {
-	var op = db.DB.Operation()
-	op.BeginTransaction()
-
-	// This is a shallow clone, but that should be fine since it's only the
-	// top-level data that gets serialized to the database
-	var clone db.Job = *j.db
-	clone.ID = 0
-	clone.Status = string(db.JobStatusPending)
-	clone.SaveOp(op)
-	j.db.Status = string(db.JobStatusFailedDone)
-	j.db.SaveOp(op)
-
-	op.EndTransaction()
-	return op.Err()
-}
-
 // jobLogger implements logger.Loggable to write to stderr and the database
 type jobLogger struct {
 	*Job
