@@ -21,7 +21,7 @@ func scanPageReviewIssues(c *config.Config) {
 
 	for _, dbIssue := range list {
 		if pageReviewIssueReady(dbIssue.Location, time.Hour) {
-			queueIssueForDerivatives(dbIssue)
+			queueIssueForDerivatives(dbIssue, c.WorkflowPath)
 		}
 	}
 }
@@ -29,7 +29,7 @@ func scanPageReviewIssues(c *config.Config) {
 // queueIssueForDerivatives first renames the directory so no more
 // modifications are likely to take place, then queues the directory for being
 // moved to the workflow space
-func queueIssueForDerivatives(dbIssue *db.Issue) {
+func queueIssueForDerivatives(dbIssue *db.Issue, workflowPath string) {
 	var oldDir = dbIssue.Location
 	var newDir = filepath.Join(filepath.Dir(oldDir), ".notouchie-"+filepath.Base(oldDir))
 	logger.Infof("Renaming %q to %q to prepare for derivative processing", oldDir, newDir)
@@ -47,5 +47,5 @@ func queueIssueForDerivatives(dbIssue *db.Issue) {
 	}
 
 	// Queue up move to workflow dir
-	jobs.QueueMoveIssueForDerivatives(dbIssue, newDir)
+	jobs.QueueMoveIssueForDerivatives(dbIssue, workflowPath)
 }

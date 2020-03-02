@@ -2,6 +2,7 @@ package jobs
 
 import (
 	"fmt"
+	"io/ioutil"
 	"os"
 	"path"
 	"path/filepath"
@@ -15,24 +16,20 @@ import (
 // CreateBatchStructure wraps a BatchJob and implements Processor
 type CreateBatchStructure struct {
 	*BatchJob
-	wipPath string
 }
 
 // Process implements Processor by creating the batch directory structure and
 // hard-linking the necessary issue files
-func (j *CreateBatchStructure) Process(c *config.Config) bool {
+func (j *CreateBatchStructure) Process(*config.Config) bool {
 	var err error
 
 	// Configure the paths
-	j.wipPath = path.Join(c.BatchOutputPath, ".wip-"+j.DBBatch.FullName())
-	if !fileutil.MustNotExist(j.wipPath) {
-		j.Logger.Errorf("Directory %q already exists", j.wipPath)
+	var wipPath = j.db.Args[locArg]
+	if !fileutil.MustNotExist(wipPath) {
+		j.Logger.Errorf("Directory %q already exists", wipPath)
 		return false
 	}
-	var dataPath = path.Join(j.wipPath, "data")
-
-	// Override the placeholder callback with our real one
-	j.updateWorkflowCB = j.updateBatchWorkflow
+	var dataPath = path.Join(wipPath, "data")
 
 	// Create the top-level directories
 	err = os.MkdirAll(dataPath, 0755)
@@ -67,7 +64,7 @@ func (j *CreateBatchStructure) Process(c *config.Config) bool {
 
 // linkFiles hard-links all regular, non-hidden files from src into dest
 func linkFiles(src string, dest string) error {
-	var files, err = fileutil.Readdir(src)
+	var files, err = ioutil.ReadDir(src)
 	if err != nil {
 		return fmt.Errorf("couldn't scan for source files: %s", err)
 	}
@@ -85,9 +82,4 @@ func linkFiles(src string, dest string) error {
 		}
 	}
 	return nil
-}
-
-// updateWorkflow modifies the underlying batch's location to the WIP path
-func (j *CreateBatchStructure) updateBatchWorkflow() {
-	j.DBBatch.Location = j.wipPath
 }

@@ -7,7 +7,6 @@ import (
 
 	"github.com/uoregon-libraries/gopkg/fileutil"
 	"github.com/uoregon-libraries/newspaper-curation-app/src/db"
-	"github.com/uoregon-libraries/newspaper-curation-app/src/jobs"
 )
 
 // Batch extends a db.Batch with functionality for fixing, re-queueing, etc.
@@ -58,19 +57,6 @@ func (b *Batch) Fail() error {
 	}
 
 	return nil
-}
-
-// Requeue puts the batch back into the processor queue for being rebuilt.
-// This doesn't do anything to the associated issue list: requeuing will simply
-// result in a new batch on disk with the issues currently assigned to it.
-func (b *Batch) Requeue() error {
-	if b.db.Status != db.BatchStatusPending {
-		return fmt.Errorf("status must be %s", db.BatchStatusPending)
-	}
-	if b.db.Location != "" {
-		return fmt.Errorf("batch location field must be empty")
-	}
-	return jobs.QueueMakeBatch(b.db)
 }
 
 func (b *Batch) loadIssues() error {

@@ -9,8 +9,7 @@ import (
 // specific batches
 type BatchJob struct {
 	*Job
-	DBBatch          *db.Batch
-	updateWorkflowCB func()
+	DBBatch *db.Batch
 }
 
 // NewBatchJob setups up a BatchJob from a database Job, centralizing the
@@ -22,30 +21,5 @@ func NewBatchJob(dbJob *db.Job) *BatchJob {
 		return nil
 	}
 
-	return &BatchJob{Job: NewJob(dbJob), DBBatch: batch, updateWorkflowCB: nilWorkflowCB}
-}
-
-// ObjectLocation implements the Processor interface
-func (j *BatchJob) ObjectLocation() string {
-	return j.DBBatch.Location
-}
-
-// nilWorkflowCB just lets us have a placeholder for the workflow callback in
-// cases the implementor doesn't set one
-func nilWorkflowCB() {
-}
-
-// UpdateWorkflow implements Processor, setting the batch's status if
-// "ExtraData" is set.  updateWorkflowCB is then called, and the batch data
-// saved back to the database.
-func (j *BatchJob) UpdateWorkflow() {
-	if j.db.ExtraData != "" {
-		j.DBBatch.Status = j.db.ExtraData
-	}
-
-	j.updateWorkflowCB()
-	var err = j.DBBatch.Save()
-	if err != nil {
-		j.Logger.Criticalf("Unable to update batch (dbid %d) post-job: %s", j.DBBatch.ID, err)
-	}
+	return &BatchJob{Job: NewJob(dbJob), DBBatch: batch}
 }

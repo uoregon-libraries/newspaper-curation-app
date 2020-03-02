@@ -1,19 +1,38 @@
-{{define "titleitem"}}
-      <li>
-        {{if or .HasIssueErrors .HasErrors}}
-          <div class="title-with-errors">
-            <div class="title-link">{{.Link}}</div>
-            <span class="glyphicon glyphicon-exclamation-sign" aria-hidden="true"></span>
-            {{if .HasErrors}}
-            <span class="count">One or more errors detected</span>
-            {{else}}
-            <span class="count">Errors detected on one or more of this title's issues</span>
-            {{end}}
-          </div>
-        {{- else}}
-          {{.Link}}
-        {{- end}}
-      </li>
+{{define "titlelist"}}
+<table class="table table-striped table-bordered table-condensed sortable">
+  <thead>
+    <tr>
+      <th scope="col">Title</th>
+      <th scope="col">Issue Count</th>
+      <th scope="col">Errors</th>
+    </tr>
+  </thead>
+
+  <tbody>
+    {{range .}}
+      {{if .Show}}{{template "titlerow" .}}{{end}}
+    {{end}}
+  </tbody>
+</table>
+{{end}}
+
+{{define "titlerow"}}
+<tr>
+  <th scope="row">{{.Link}}</th>
+  <td>{{len .Issues}}</td>
+  <td>
+    {{if or .HasIssueErrors .HasErrors}}
+      <span class="glyphicon glyphicon-exclamation-sign" aria-hidden="true"></span>
+      {{if .HasErrors}}
+      <span class="count">One or more errors detected on this title</span>
+      {{else}}
+      <span class="count">Errors detected on one or more of this title's issues</span>
+      {{end}}
+    {{- else}}
+      No errors detected by <a href="#quick-scan">Quick-Scan</a>
+    {{- end}}
+  </td>
+</tr>
 {{end}}
 
 {{block "content" .}}
@@ -35,21 +54,21 @@
 {{end}}
 
 <h2>Born-Digital Titles</h2>
-<ul>
-  {{range .Data.BornDigitalTitles}}
-    {{if .Show}}
-      {{template "titleitem" .}}
-    {{end}}
-  {{end}}
-</ul>
+{{template "titlelist" .Data.BornDigitalTitles}}
 
 <h2>Scanned Titles</h2>
-<ul>
-  {{range .Data.ScannedTitles}}
-    {{if .Show}}
-      {{template "titleitem" .}}
-    {{end}}
-  {{end}}
-</ul>
+{{template "titlelist" .Data.ScannedTitles}}
 
+<h2 id="quick-scan">Quick-Scan</h2>
+<p>
+  Due to the time involved in running detailed scans over a large volume of
+  issues, this view can only find the simple errors an issue may have.  As
+  such, it's possible for a title to be displayed here as having no errors, but
+  the queue-issue page (reached by clicking a title and then an issue's date)
+  will show them.
+</p>
+
+<p>
+  Errors <strong>will</strong> be detected in these cases, just not in bulk.
+</p>
 {{end}}

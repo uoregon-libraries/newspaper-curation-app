@@ -17,28 +17,31 @@ type Processor interface {
 	// Process runs the job and returns whether it was successful
 	Process(*config.Config) bool
 
-	// UpdateWorkflow does any job-specific workflow manipulation, such as
-	// changing the job's underlying object.  Only called on success.
-	UpdateWorkflow()
+	// MaxRetries tells the processor how many times this job may attempt to
+	// re-run if it fails
+	MaxRetries() int
 
 	// DBJob returns the low-level database Job for updating status, etc.
 	DBJob() *db.Job
-
-	// ObjectLocation returns the job's object location, such as the directory in
-	// which an issue resides, for the runner to use when updating future jobs
-	ObjectLocation() string
 }
 
 // Job wraps the DB job data and provides business logic for things like
 // logging to the database
 type Job struct {
-	db     *db.Job
-	Logger *ltype.Logger
+	db         *db.Job
+	Logger     *ltype.Logger
+	maxRetries int
+}
+
+// MaxRetries allows all jobs to implement the Processor interface without
+// having to write this specific function
+func (j *Job) MaxRetries() int {
+	return j.maxRetries
 }
 
 // NewJob wraps the given db.Job and sets up a logger
 func NewJob(dbj *db.Job) *Job {
-	var j = &Job{db: dbj}
+	var j = &Job{db: dbj, maxRetries: 25}
 	j.Logger = &ltype.Logger{Loggable: &jobLogger{Job: j, AppName: filepath.Base(os.Args[0])}}
 	return j
 }
@@ -72,46 +75,6 @@ func RunWhileTrue(subProcessors ...func() bool) (ok bool) {
 	}
 
 	return true
-}
-
-// Rerun clones this job and runs it, stripping metadata to avoid side-effects
-// (QueueJobID and ExtraData)
-func (j *Job) Rerun() error {
-	var clone = &db.Job{
-		Type:       j.db.Type,
-		ObjectID:   j.db.ObjectID,
-		ObjectType: j.db.ObjectType,
-		Location:   j.db.Location,
-		Status:     string(JobStatusPending),
-		RunAt:      j.db.RunAt,
-	}
-
-	return clone.Save()
-}
-
-// Requeue closes out this job and queues a new, duplicate job
-func (j *Job) Requeue() error {
-	var op = db.DB.Operation()
-	op.BeginTransaction()
-
-	var clone = &db.Job{
-		Type:       j.db.Type,
-		ObjectID:   j.db.ObjectID,
-		ObjectType: j.db.ObjectType,
-		Location:   j.db.Location,
-		Status:     string(JobStatusPending),
-		RunAt:      j.db.RunAt,
-		ExtraData:  j.db.ExtraData,
-		QueueJobID: j.db.QueueJobID,
-	}
-
-	clone.SaveOp(op)
-
-	j.db.Status = string(JobStatusFailedDone)
-	j.db.SaveOp(op)
-
-	op.EndTransaction()
-	return op.Err()
 }
 
 // jobLogger implements logger.Loggable to write to stderr and the database

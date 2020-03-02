@@ -131,7 +131,7 @@ func getOpts() (*config.Config, []string) {
 
 // setupValidQueueNames copies in the list of valid queues for easier validation
 func setupValidQueueNames() {
-	for _, jType := range jobs.ValidJobTypes {
+	for _, jType := range db.ValidJobTypes {
 		var jt = string(jType)
 		validQueues[jt] = true
 		validQueueList = append(validQueueList, jt)
@@ -159,8 +159,6 @@ func main() {
 		watchPageReview(c)
 	case "watchall":
 		runAllQueues(c)
-	case "force-rerun":
-		forceRerun(args)
 	default:
 		usageFail("Error: invalid action")
 	}
@@ -198,7 +196,7 @@ func retryJob(idString string) {
 		return
 	}
 
-	var failStatus = jobs.JobStatusFailed
+	var failStatus = db.JobStatusFailed
 	var dj = j.DBJob()
 	if dj.Status != string(failStatus) {
 		logger.Errorf("Cannot requeue job id %d: status is %s (it must be %s to requeue)", dj.ID, dj.Status, failStatus)
@@ -206,33 +204,9 @@ func retryJob(idString string) {
 	}
 
 	logger.Infof("Requeuing job %d", dj.ID)
-	var err = j.Requeue()
+	var _, err = dj.Requeue()
 	if err != nil {
 		logger.Errorf("Unable to requeue job %d: %s", dj.ID, err)
-	}
-}
-
-func forceRerun(ids []string) {
-	if len(ids) == 0 {
-		usageFail("Error: the force-rerun action requires at least one job id")
-	}
-
-	for _, idString := range ids {
-		rerunJob(idString)
-	}
-}
-
-func rerunJob(idString string) {
-	var j = findJob(idString)
-	if j == nil {
-		return
-	}
-
-	var dj = j.DBJob()
-	logger.Infof("Rerunning job %d", dj.ID)
-	var err = j.Rerun()
-	if err != nil {
-		logger.Errorf("Unable to rerun job %d: %s", dj.ID, err)
 	}
 }
 
@@ -247,15 +221,15 @@ func watch(c *config.Config, queues ...string) {
 		usageFail("Error: you must specify one or more queues to watch")
 	}
 
-	var jobTypes = make([]jobs.JobType, len(queues))
+	var jobTypes = make([]db.JobType, len(queues))
 	for i, queue := range queues {
 		validateJobQueue(queue)
-		jobTypes[i] = jobs.JobType(queue)
+		jobTypes[i] = db.JobType(queue)
 	}
 	watchJobTypes(c, jobTypes...)
 }
 
-func watchJobTypes(c *config.Config, jobTypes ...jobs.JobType) {
+func watchJobTypes(c *config.Config, jobTypes ...db.JobType) {
 	var r = jobs.NewRunner(c, jobTypes...)
 	addRunner(r)
 	r.Watch(time.Second * 10)
@@ -283,30 +257,49 @@ func runAllQueues(c *config.Config) {
 	waitFor(
 		func() { watchPageReview(c) },
 		func() {
-			// Potentially slow filesystem moves
+			// Jobs which are exclusively disk IO are in the first runner to avoid
+			// too much FS stuff hapenning concurrently
 			watchJobTypes(c,
-				jobs.JobTypeMoveIssueToWorkflow,
-				jobs.JobTypeMoveIssueToPageReview,
-				jobs.JobTypeMoveMasterFiles,
+				db.JobTypeArchiveMasterFiles,
+				db.JobTypeSyncDir,
+				db.JobTypeKillDir,
+				db.JobTypeWriteBagitManifest,
 			)
 		},
 		func() {
-			// Slow jobs: expensive process spawning or file crunching
+			// Jobs which primarily use CPU are grouped next, so we aren't trying to
+			// share CPU too much
 			watchJobTypes(c,
-				jobs.JobTypePageSplit,
-				jobs.JobTypeMakeDerivatives,
-				jobs.JobTypeWriteBagitManifest,
+				db.JobTypePageSplit,
+				db.JobTypeMakeDerivatives,
 			)
 		},
 		func() {
-			// Fast jobs: file renaming, hard-linking, running templates for very
-			// simple XML output, etc.
+			// Fast - but not instant - jobs are here: file renaming, hard-linking,
+			// running templates for very simple XML output, etc.  These typically
+			// take very little CPU or disk IO, but they aren't "critical" jobs that
+			// need to be real-time.
 			watchJobTypes(c,
-				jobs.JobTypeBuildMETS,
-				jobs.JobTypeCreateBatchStructure,
-				jobs.JobTypeMakeBatchXML,
-				jobs.JobTypeMoveBatchToReadyLocation,
+				db.JobTypeBuildMETS,
+				db.JobTypeCreateBatchStructure,
+				db.JobTypeMakeBatchXML,
+				db.JobTypeRenameDir,
+				db.JobTypeCleanFiles,
 			)
+		},
+		func() {
+			// Extremely fast data-setting jobs get a custom runner that operates
+			// every second to ensure nearly real-time updates to things like a job's
+			// workflow state
+			var r = jobs.NewRunner(c,
+				db.JobTypeSetIssueWS,
+				db.JobTypeSetIssueMasterLoc,
+				db.JobTypeSetIssueLocation,
+				db.JobTypeSetBatchStatus,
+				db.JobTypeSetBatchLocation,
+			)
+			addRunner(r)
+			r.Watch(time.Second * 1)
 		},
 	)
 }

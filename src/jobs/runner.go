@@ -4,7 +4,6 @@ import (
 	"fmt"
 	"os"
 	"path/filepath"
-	"strings"
 	"sync/atomic"
 	"time"
 
@@ -37,7 +36,7 @@ func nextRunnerID() int32 {
 // regular intervals for those types of jobs.
 type Runner struct {
 	config     *config.Config
-	jobTypes   []JobType
+	jobTypes   []db.JobType
 	identifier int32
 	isDone     int32
 	logger     *logger.Logger
@@ -49,7 +48,7 @@ type Runner struct {
 // it easier to know when a runner died and needs to have its jobs restarted.
 
 // NewRunner creates a Runner set up to look for a given list of job types
-func NewRunner(c *config.Config, jobTypes ...JobType) *Runner {
+func NewRunner(c *config.Config, jobTypes ...db.JobType) *Runner {
 	var rid = nextRunnerID()
 	return &Runner{
 		config:     c,
@@ -103,7 +102,7 @@ func (r *Runner) Stop() {
 // in-process, and processes it.  If no processor was found, the return is
 // false and nothing happens.
 func (r *Runner) processNext() bool {
-	var dbJob, err = popNextPendingJob(r.jobTypes)
+	var dbJob, err = db.PopNextPendingJob(r.jobTypes)
 
 	if err != nil {
 		r.logger.Errorf("Unable to pull next pending job: %s", err)
@@ -121,56 +120,57 @@ func (r *Runner) processNext() bool {
 	return true
 }
 
-// popNextPendingJob is a helper for locking the database to pull the oldest
-// job with one of the given types and set it to in-process
-func popNextPendingJob(types []JobType) (*db.Job, error) {
-	var op = db.DB.Operation()
-	op.Dbg = db.Debug
-
-	op.BeginTransaction()
-	defer op.EndTransaction()
-
-	// Wrangle the IN pain...
-	var j = &db.Job{}
-	var args []interface{}
-	var placeholders []string
-	args = append(args, string(JobStatusPending), time.Now())
-	for _, t := range types {
-		args = append(args, string(t))
-		placeholders = append(placeholders, "?")
-	}
-
-	var clause = fmt.Sprintf("status = ? AND run_at <= ? AND job_type IN (%s)", strings.Join(placeholders, ","))
-	if !op.Select("jobs", &db.Job{}).Where(clause, args...).Order("created_at").First(j) {
-		return nil, op.Err()
-	}
-
-	j.Status = string(JobStatusInProcess)
-	j.StartedAt = time.Now()
-	j.SaveOp(op)
-
-	return j, op.Err()
-}
-
 func (r *Runner) process(pr Processor) {
 	var dbj = pr.DBJob()
 	r.logger.Infof("Starting job id %d: %q", dbj.ID, dbj.Type)
 	if pr.Process(r.config) {
-		dbj.Status = string(JobStatusSuccessful)
-		pr.UpdateWorkflow()
-		r.queueNextJob(pr)
-		r.logger.Infof("Finished job id %d - success", dbj.ID)
+		r.handleSuccess(pr)
 	} else {
-		dbj.Status = string(JobStatusFailed)
-		r.logger.Infof("Job id %d **failed** (see job logs)", dbj.ID)
+		r.attemptRetry(pr)
 	}
+}
 
+func (r *Runner) handleSuccess(pr Processor) {
+	var dbj = pr.DBJob()
+	dbj.Status = string(db.JobStatusSuccessful)
 	dbj.CompletedAt = time.Now()
+
 	var err = dbj.Save()
 	if err != nil {
-		r.logger.Criticalf("Unable to update job status after completion (job: %d): %s",
-			dbj.ID, err)
+		r.logger.Criticalf("Unable to update job status after success (job: %d): %s", dbj.ID, err)
+		return
 	}
+
+	r.logger.Infof("Finished job id %d - success", dbj.ID)
+	r.queueNextJob(pr)
+}
+
+func (r *Runner) attemptRetry(pr Processor) {
+	var dbj = pr.DBJob()
+	if dbj.RetryCount >= pr.MaxRetries() {
+		r.handleFailure(pr)
+		return
+	}
+
+	var retryJob, err = dbj.Requeue()
+	if err != nil {
+		r.logger.Criticalf("Unable to requeue failed job (job: %d): %s", dbj.ID, err)
+		return
+	}
+	r.logger.Warnf("Failed job %d: retrying via job %d at %s (try #%d)",
+		dbj.ID, retryJob.ID, retryJob.RunAt, retryJob.RetryCount)
+}
+
+func (r *Runner) handleFailure(pr Processor) {
+	var dbj = pr.DBJob()
+	dbj.Status = string(db.JobStatusFailed)
+
+	var err = dbj.Save()
+	if err != nil {
+		r.logger.Criticalf("Unable to update job status after failure (job: %d): %s", dbj.ID, err)
+		return
+	}
+	r.logger.Infof("Job id %d **failed** (see job logs)", dbj.ID)
 }
 
 // queueNextJob starts the next job if one was set on the current database job
@@ -189,8 +189,8 @@ func (r *Runner) queueNextJob(pr Processor) {
 		r.logger.Criticalf("Unable to find next job in the database (dbid %d)", qid)
 		return
 	}
-	nextJob.Status = string(JobStatusPending)
-	nextJob.Location = pr.ObjectLocation()
+
+	nextJob.Status = string(db.JobStatusPending)
 	err = nextJob.Save()
 	if err != nil {
 		r.logger.Criticalf("Unable to mark next job pending (dbid %d): %s", qid, err)

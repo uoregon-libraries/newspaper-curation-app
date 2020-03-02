@@ -2,6 +2,7 @@ package main
 
 import (
 	"github.com/uoregon-libraries/newspaper-curation-app/src/cli"
+	"github.com/uoregon-libraries/newspaper-curation-app/src/config"
 	"github.com/uoregon-libraries/newspaper-curation-app/src/db"
 	"github.com/uoregon-libraries/newspaper-curation-app/src/internal/logger"
 )
@@ -12,6 +13,7 @@ type _opts struct {
 }
 
 var opts _opts
+var conf *config.Config
 
 func getConfig() {
 	var c = cli.New(&opts)
@@ -19,7 +21,7 @@ func getConfig() {
 		"pushed to staging, pushed to production, requeued with problematic " +
 		"issues removed, etc.")
 
-	var conf = c.GetConf()
+	conf = c.GetConf()
 	var err = db.Connect(conf.DatabaseConnect)
 	if err != nil {
 		logger.Fatalf("Error trying to connect to database: %s", err)
