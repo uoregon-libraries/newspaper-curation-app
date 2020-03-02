@@ -21,13 +21,43 @@ Brief description, if necessary
 ### Changed
 
 ### Removed
+
+### Migration
 -->
 
-<!-- Unreleased: finalize and uncomment this in the release/* branch
+## v2.11.0
 
-## (Unreleased)
+2.11 includes a major rewrite to the jobs engine, with a few other updates
+sprinkled in.
 
-Brief description, if necessary
+### Fixed
+
+- The uploads list in the front-end part of the application is now an HTML
+  table, making it a lot easier to read, and fixing the odd flow problems for
+  titles with long names
+- Varous job-related problems have been addressed by the rewrite; see the
+  "Changed" section below.
+
+### Added
+
+- The uploads list now shows a count of issues as well as an explanation of
+  what the quick error scan actually means
+- There's a new command to remove issues from disk that are associated with
+  old `live_done` batches (batches which have been archived 4+ weeks ago) to
+  avoid the risks of trying to identify and manually remove unneeded issues.
+- There's a new, terrible, janky script: `test/report.sh`.  This script allows
+  rudimentary testing of the database and filesystem states in order to act
+  something like end-to-end testing for major refactors.
+
+### Changed
+
+- Background jobs are split up into more, but smaller, pieces.  When (not if)
+  something goes wrong, it should be a lot easier to debug and fix it.
+- Due to the jobs now being idempotent, all will attempt to auto-retry on
+  failure.  This should mean no more having to monitor for temporary failures
+  like an openjpeg upgrade going wrong, the database being restarted, NFS
+  mounts failing, etc.
+- `make bin/*` runs are a bit faster now, and `make` is much faster
 
 ### Migration
 
@@ -41,28 +71,6 @@ Brief description, if necessary
   - Run workers for each outstanding job type, e.g., `./bin/run-jobs -c ./settings watch build_mets`
   - Repeat until no more outstanding jobs are in the database
 - Run migrations prior to starting the services again
-
-### Fixed
-
-- Uploads list is now a table, making it a lot easier to read, and fixing the
-  odd flow problems for titles with long names
-
-### Added
-
-- Uploads list now shows a count of issues as well as an explanation of what
-  the quick error scan actually means
-
-### Changed
-
-- Background jobs are split up into more, but smaller, pieces.  When (not if)
-  something goes wrong, it should be a lot easier to debug and fix it.  This
-  also paves the way for a more resilient and automated retry when jobs fail
-  due to something temporary like an openjpeg upgrade going wrong, the database
-  being restarted, NFS mounts failing, etc.
-
-### Removed
-
--->
 
 ## v2.10.0
 
