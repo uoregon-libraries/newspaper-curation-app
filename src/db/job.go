@@ -91,6 +91,7 @@ type Job struct {
 	ObjectID    int
 	ObjectType  string
 	Status      string
+	RetryCount  int
 	logs        []*JobLog
 
 	// The job won't be run until sometime after RunAt; usually it's very close,
@@ -284,4 +285,37 @@ func (j *Job) SaveOp(op *magicsql.Operation) error {
 	j.encodeArgs()
 	op.Save("jobs", j)
 	return op.Err()
+}
+
+// Requeue closes out this job and queues a new, duplicate job ready for
+// processing.  We do this instead of just rerunning a job so that the job logs
+// can be tied to a distinct instance of a job, making it easier to debug
+// things like command-line failures for a particular run.
+func (j *Job) Requeue() (*Job, error) {
+	var op = DB.Operation()
+	op.BeginTransaction()
+
+	// This is a shallow clone, but that should be fine since it's only the
+	// top-level data that gets serialized to the database
+	var clone *Job
+	var temp = *j
+	clone = &temp
+	clone.ID = 0
+	clone.Status = string(JobStatusPending)
+	clone.RetryCount++
+
+	// Calculate the delay - essentially exponential backoff but with a cap of 24 hours
+	var delay = time.Second << uint(clone.RetryCount)
+	var maxDelay = time.Hour * 24
+	if delay > maxDelay {
+		delay = maxDelay
+	}
+	clone.RunAt = time.Now().Add(delay)
+	clone.SaveOp(op)
+
+	j.Status = string(JobStatusFailedDone)
+	j.SaveOp(op)
+
+	op.EndTransaction()
+	return clone, op.Err()
 }
