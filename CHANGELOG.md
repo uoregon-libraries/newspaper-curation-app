@@ -25,6 +25,15 @@ Brief description, if necessary
 ### Migration
 -->
 
+## v2.11.1
+
+Hotfix for UI issues
+
+### Fixed
+
+- No more JS errors when tabs aren't present
+- All tables that have sortable attributes will get sort buttons
+
 ## v2.11.0
 
 2.11 includes a major rewrite to the jobs engine, with a few other updates

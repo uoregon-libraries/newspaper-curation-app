@@ -4,6 +4,9 @@
 */
 (function () {
   var tablist = document.querySelectorAll('[role="tablist"]')[0];
+  if (tablist == null) {
+    return;
+  }
   var tabs;
   var panels;
   var delay = determineDelay();
