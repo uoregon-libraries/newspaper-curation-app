@@ -94,6 +94,8 @@
     {{RawJS "bootstrap/js/bootstrap.min.js"}}
     {{IncludeJS "tabs"}}
     {{block "extrajs" .}}{{end}}
+
+    <script>SortableTable.initAll()</script>
   </body>
 </html>
 {{Comment (printf "v%s" .Version)}}
