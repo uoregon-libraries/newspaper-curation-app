@@ -32,7 +32,7 @@ func (s *Searcher) verifyIssueFiles(issue *schema.Issue, allowedExtensions []str
 			continue
 		}
 
-		if file.Name[0] == '.' {
+		if file.Name[0] == '.' || strings.ToLower(file.Name) == "thumbs.db" {
 			continue
 		}
 

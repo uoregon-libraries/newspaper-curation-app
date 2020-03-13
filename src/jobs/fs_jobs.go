@@ -6,6 +6,7 @@ package jobs
 import (
 	"os"
 	"path/filepath"
+	"strings"
 
 	"github.com/uoregon-libraries/gopkg/fileutil"
 	"github.com/uoregon-libraries/newspaper-curation-app/src/config"
@@ -90,19 +91,48 @@ type CleanFiles struct {
 	*Job
 }
 
+// isFraggable returns true if the given file can be removed without anybody
+// noticing.  This includes dotFiles, Thumbs.db, and maybe a few other random
+// tidbits that get auto-created and which don't belong in an issue/batch.
+func isFraggable(i os.FileInfo) bool {
+	// Dirs never get fried even if they're totally useless - we can't count on
+	// them being safe to delete
+	if i.IsDir() {
+		return false
+	}
+
+	// Can this actually happen?  Filesystems are too weird for me to discount
+	// the possibility...
+	if i.Name() == "" {
+		return false
+	}
+
+	// Dotfiles are always removed - this isn't super-safe, but there are too
+	// many cases where we get dotfiles we absolutely do not want.  Bridge
+	// files, Mac files, heck I've even seen vim swapfiles once or twice.
+	if i.Name()[0] == '.' {
+		return true
+	}
+
+	// Thumbs.db has to be its own case.  Thanks, Windows.
+	if strings.ToLower(i.Name()) == "thumbs.db" {
+		return true
+	}
+
+	return false
+}
+
 // Process runs the file cleaner against the job's location
 func (j *CleanFiles) Process(*config.Config) bool {
 	var loc = j.db.Args[locArg]
 
-	var dotfiles, err = fileutil.FindIf(loc, func(i os.FileInfo) bool {
-		return !i.IsDir() && i.Name() != "" && i.Name()[0] == '.'
-	})
+	var fraggables, err = fileutil.FindIf(loc, isFraggable)
 	if err != nil {
 		j.Logger.Errorf("Unable to scan for files to delete: %s", err)
 		return false
 	}
 
-	for _, f := range dotfiles {
+	for _, f := range fraggables {
 		err = os.Remove(f)
 		if err != nil {
 			j.Logger.Errorf("Unable to remove file %q: %s", f, err)
