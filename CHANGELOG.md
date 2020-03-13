@@ -25,6 +25,14 @@ Brief description, if necessary
 ### Migration
 -->
 
+## v2.11.2
+
+"Thumbs.db sucks"
+
+### Fixed
+- File validation ignores Thumbs.db
+- File cleaner removes Thumbs.db
+
 ## v2.11.1
 
 Hotfix for UI issues
