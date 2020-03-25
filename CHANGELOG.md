@@ -25,6 +25,16 @@ Brief description, if necessary
 ### Migration
 -->
 
+## v2.11.3
+
+"Thumbs.db still sucks.  So do permissions."
+
+### Fixed
+
+- Page-review mover also ignores Thumbs.db
+- Page-split job gives read/execute permissions to the world on its directory
+  to hopefully finally really really fix permissions problems
+
 ## v2.11.2
 
 "Thumbs.db sucks"
