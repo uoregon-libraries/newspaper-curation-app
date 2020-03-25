@@ -4,6 +4,7 @@ import (
 	"os"
 	"path/filepath"
 	"regexp"
+	"strings"
 	"time"
 
 	"github.com/uoregon-libraries/gopkg/fileutil"
@@ -46,6 +47,11 @@ func pageReviewIssueReady(path string, minAge time.Duration) bool {
 
 		// Ignore hidden files
 		if filepath.Base(fName)[0] == '.' {
+			continue
+		}
+
+		// Ignore thumbs.db
+		if strings.ToLower(fName) == "thumbs.db" {
 			continue
 		}
 
