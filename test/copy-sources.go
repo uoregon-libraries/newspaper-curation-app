@@ -33,7 +33,7 @@ import (
 	"github.com/uoregon-libraries/gopkg/wordutils"
 )
 
-var l = logger.New(logger.Debug)
+var l = logger.New(logger.Debug, false)
 
 func wrap(msg string) {
 	fmt.Fprint(os.Stderr, wordutils.Wrap(msg, 80))
