@@ -106,7 +106,7 @@ func (s *Searcher) decorateTitles() {
 			continue
 		}
 		nextTitles = append(nextTitles, title)
-		nextTitleLookup[title.Slug] = title
+		nextTitleLookup[title.Slug()] = title
 	}
 
 	s.swapTitleData(nextTitles, nextTitleLookup)
@@ -117,13 +117,10 @@ func (s *Searcher) makeTitle(t *schema.Title) (*Title, error) {
 
 	// Location is the only element that actually uniquely identifies a title, so
 	// we have to use that to figure out if this is a scanned issue or not
-	var slug = t.LCCN
 	if strings.HasPrefix(t.Location, s.conf.MasterPDFUploadPath) {
 		title.Type = TitleTypeBornDigital
-		title.Slug = "dig-" + slug
 	} else if strings.HasPrefix(t.Location, s.conf.MasterScanUploadPath) {
 		title.Type = TitleTypeScanned
-		title.Slug = "scan-" + slug
 	} else {
 		return nil, fmt.Errorf("unknown title location: %q", t.Location)
 	}
