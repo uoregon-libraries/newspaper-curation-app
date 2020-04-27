@@ -72,6 +72,7 @@ func (tt TitleType) String() string {
 // Title wraps a schema.Title with some extra information for web presentation.
 type Title struct {
 	*schema.Title
+	MOC         string
 	Issues      []*Issue
 	IssueLookup map[string]*Issue
 	Type        TitleType
@@ -123,7 +124,7 @@ func (t *Title) Link() template.HTML {
 
 // Slug generates a URL for the title based on its type, marc org code, and LCCN
 func (t *Title) Slug() string {
-	var parts = []string{"", t.LCCN}
+	var parts = []string{"", t.MOC, t.LCCN}
 	switch t.Type {
 	case TitleTypeBornDigital:
 		parts[0] = "dig"

@@ -112,17 +112,42 @@ func (s *Searcher) decorateTitles() {
 	s.swapTitleData(nextTitles, nextTitleLookup)
 }
 
-func (s *Searcher) makeTitle(t *schema.Title) (*Title, error) {
+// wrapTitle figures out the extra metadata to apply to a title based on its
+// location, and returns it.  If the location data can't be parsed properly, an
+// error is returned.
+func (s *Searcher) wrapTitle(t *schema.Title) (*Title, error) {
 	var title = &Title{Title: t}
 
 	// Location is the only element that actually uniquely identifies a title, so
 	// we have to use that to figure out if this is a scanned issue or not
 	if strings.HasPrefix(t.Location, s.conf.MasterPDFUploadPath) {
 		title.Type = TitleTypeBornDigital
-	} else if strings.HasPrefix(t.Location, s.conf.MasterScanUploadPath) {
+		title.MOC = s.conf.PDFBatchMARCOrgCode
+		return title, nil
+	}
+
+	if strings.HasPrefix(t.Location, s.conf.MasterScanUploadPath) {
+		var relLoc = strings.Replace(title.Location, s.conf.MasterScanUploadPath, "", 1)
+		if relLoc[0] == '/' {
+			relLoc = relLoc[1:]
+		}
+		var parts = strings.Split(relLoc, "/")
+		if len(parts) < 2 {
+			return nil, fmt.Errorf("bad title location: %q", t.Location)
+		}
+
 		title.Type = TitleTypeScanned
-	} else {
-		return nil, fmt.Errorf("unknown title location: %q", t.Location)
+		title.MOC = parts[0]
+		return title, nil
+	}
+
+	return nil, fmt.Errorf("unknown title location: %q", t.Location)
+}
+
+func (s *Searcher) makeTitle(t *schema.Title) (*Title, error) {
+	var title, err = s.wrapTitle(t)
+	if err != nil {
+		return nil, err
 	}
 
 	title.decorateIssues(t.Issues)
