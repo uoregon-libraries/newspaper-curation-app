@@ -18,6 +18,11 @@ type Page struct {
 	Label  string
 }
 
+// HasLabel is true as long as the page label has a non-zero value
+func (p *Page) HasLabel() bool {
+	return p.Label != "0" && p.Label != ""
+}
+
 func stripExt(path string) string {
 	for i := len(path) - 1; i >= 0 && !os.IsPathSeparator(path[i]); i-- {
 		if path[i] == '.' {

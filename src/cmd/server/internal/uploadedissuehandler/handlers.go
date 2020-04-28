@@ -119,7 +119,7 @@ func IssueWorkflowHandler(w http.ResponseWriter, req *http.Request) {
 
 		r.Audit("queue", fmt.Sprintf("Issue from %q, success: %#v", r.issue.Location, err == nil))
 		http.SetCookie(w, &http.Cookie{Name: cname, Value: msg, Path: "/"})
-		http.Redirect(w, req, TitlePath(r.issue.Title.Slug), http.StatusFound)
+		http.Redirect(w, req, TitlePath(r.issue.Title.Slug()), http.StatusFound)
 
 	default:
 		r.Error(http.StatusBadRequest, "")

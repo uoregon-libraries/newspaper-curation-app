@@ -14,7 +14,7 @@ import (
 
 // Logger is the global logging object for all of NCA to use.  If we need to
 // change the log level or otherwise customize it, this can be overwritten.
-var Logger = l.New(l.Debug)
+var Logger = l.New(l.Debug, false)
 
 // Debugf logs a debug-level message
 func Debugf(format string, args ...interface{}) {

@@ -72,7 +72,7 @@ func (tt TitleType) String() string {
 // Title wraps a schema.Title with some extra information for web presentation.
 type Title struct {
 	*schema.Title
-	Slug        string
+	MOC         string
 	Issues      []*Issue
 	IssueLookup map[string]*Issue
 	Type        TitleType
@@ -119,7 +119,20 @@ func (t *Title) HasErrors() bool {
 
 // Link returns a link for this title
 func (t *Title) Link() template.HTML {
-	return template.HTML(fmt.Sprintf(`<a href="%s">%s</a>`, TitlePath(t.Slug), t.Name))
+	return template.HTML(fmt.Sprintf(`<a href="%s">%s</a>`, TitlePath(t.Slug()), t.Name))
+}
+
+// Slug generates a URL for the title based on its type, marc org code, and LCCN
+func (t *Title) Slug() string {
+	var parts = []string{"", t.MOC, t.LCCN}
+	switch t.Type {
+	case TitleTypeBornDigital:
+		parts[0] = "dig"
+	case TitleTypeScanned:
+		parts[0] = "scan"
+	}
+
+	return strings.Join(parts, "-")
 }
 
 // Issue wraps uploads.Issue for web presentation
@@ -206,13 +219,13 @@ func (i *Issue) IsNew() bool {
 
 // Link returns a link for this title
 func (i *Issue) Link() template.HTML {
-	var path = IssuePath(i.Title.Slug, i.Slug)
+	var path = IssuePath(i.Title.Slug(), i.Slug)
 	return template.HTML(fmt.Sprintf(`<a href="%s">%s</a>`, path, i.RawDate))
 }
 
 // WorkflowPath returns the path to perform a workflow action against this issue
 func (i *Issue) WorkflowPath(action string) string {
-	return IssueWorkflowPath(i.Title.Slug, i.Slug, action)
+	return IssueWorkflowPath(i.Title.Slug(), i.Slug, action)
 }
 
 // HasErrors reports true if this issue has any errors - due to the way
@@ -242,7 +255,7 @@ type File struct {
 
 // Link returns a link for this title
 func (f *File) Link() template.HTML {
-	var path = FilePath(f.Issue.Title.Slug, f.Issue.Slug, f.Slug)
+	var path = FilePath(f.Issue.Title.Slug(), f.Issue.Slug, f.Slug)
 	return template.HTML(fmt.Sprintf(`<a href="%s">%s</a>`, path, f.Slug))
 }
 

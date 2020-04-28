@@ -3,6 +3,7 @@
   <thead>
     <tr>
       <th scope="col" data-sorttype="alpha">Title</th>
+      <th scope="col" data-sorttype="alpha">MARC Org Code</th>
       <th scope="col" data-sorttype="number">Issue Count</th>
       <th scope="col" data-sorttype="alpha">Errors</th>
     </tr>
@@ -19,6 +20,7 @@
 {{define "titlerow"}}
 <tr>
   <th scope="row">{{.Link}}</th>
+  <td>{{.MOC}}</td>
   <td>{{len .Issues}}</td>
   <td>
     {{if or .HasIssueErrors .HasErrors}}

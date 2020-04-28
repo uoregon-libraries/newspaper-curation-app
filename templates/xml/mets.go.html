@@ -73,7 +73,7 @@
             <mods:extent unit="pages">
               <mods:start>{{.Number}}</mods:start>
             </mods:extent>
-            {{if and ((ne .Label "0") .Label)}}
+            {{if .HasLabel}}
             <mods:detail type="page number">
               <mods:number>{{.Number}}</mods:number>
             </mods:detail>
