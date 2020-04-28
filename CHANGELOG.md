@@ -25,6 +25,28 @@ Brief description, if necessary
 ### Migration
 -->
 
+## v2.11.4
+
+Brief description, if necessary
+
+### Fixed
+
+- Updated gopkg to v0.14.1, which should further reduce permissions issues for
+  copied files/dirs
+- Scanned titles in more than one MARC Org Code directory will now be visible
+  and can be queued via the NCA UI
+- Buggy page number labeling in templates is fixed
+- Batch queueing now shows a proper error when it fails
+- Widened a DB column which was causing jobs to fail to be created (very rarely)
+
+### Added
+
+- `delete-live-done-issues` is now deployed to production
+
+### Migration
+
+- Migrate the database, e.g, with `goose`: `goose -dir ./db/migrations/ mysql "<user>:<password>@tcp(<db host>:3306)/<database name>" up`
+
 ## v2.11.3
 
 "Thumbs.db still sucks.  So do permissions."
