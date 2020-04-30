@@ -27,7 +27,7 @@ Brief description, if necessary
 
 ## v2.11.4
 
-Brief description, if necessary
+Multi-awardee titles and some fixes
 
 ### Fixed
 
