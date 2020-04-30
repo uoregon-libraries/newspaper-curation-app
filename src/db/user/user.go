@@ -14,6 +14,7 @@ type User struct {
 	RolesString string `sql:"roles"`
 	Guest       bool   `sql:"-"`
 	IP          string `sql:"-"`
+	Deactivated bool
 	roles       []*Role
 }
 
@@ -35,11 +36,11 @@ func (u *User) serialize() {
 	u.RolesString = u.makeRoleString()
 }
 
-// All returns all users in the database
-func All() ([]*User, error) {
+// Active returns all users in the database who have the "active" status
+func Active() ([]*User, error) {
 	var users []*User
 	var op = db.DB.Operation()
-	op.Select("users", &User{}).AllObjects(&users)
+	op.Select("users", &User{}).Where("deactivated = ?", false).AllObjects(&users)
 
 	for _, u := range users {
 		u.deserialize()
@@ -47,11 +48,12 @@ func All() ([]*User, error) {
 	return users, op.Err()
 }
 
-// FindByLogin looks for a user whose login name is the given string
-func FindByLogin(l string) *User {
+// FindActiveUserWithLogin looks for a user whose login name is the given string.
+// Deactivated users need not apply.
+func FindActiveUserWithLogin(l string) *User {
 	var users []*User
 	var op = db.DB.Operation()
-	op.Select("users", &User{}).Where("login = ?", l).AllObjects(&users)
+	op.Select("users", &User{}).Where("deactivated = ? AND login = ?", false, l).AllObjects(&users)
 	if op.Err() != nil {
 		logger.Errorf("Unable to query users: %s", op.Err())
 	}
@@ -64,7 +66,8 @@ func FindByLogin(l string) *User {
 	return users[0]
 }
 
-// FindByID looks up a user by the given ID
+// FindByID looks up a user by the given ID - this can return inactive users
+// since it's just using a database ID, so there's no possible ambiguity
 func FindByID(id int) *User {
 	var user = &User{}
 	var op = db.DB.Operation()
@@ -211,13 +214,12 @@ func (u *User) CanModifyUser(user *User) bool {
 	return u.PermittedTo(ModifyUsers)
 }
 
-// Delete attempts to remove this user from the database
-func (u *User) Delete() error {
+// Deactivate performs a soft-delete in order to remove a user from the visible
+// users list without causing problems if the user is tied to metadata we need
+// to reference later
+func (u *User) Deactivate() error {
 	var op = db.DB.Operation()
 	op.Dbg = db.Debug
-	op.Exec("DELETE FROM users WHERE id = ?", u.ID)
-	if op.Err() == nil {
-		u.ID = 0
-	}
+	op.Exec("UPDATE users SET deactivated = ? WHERE id = ?", true, u.ID)
 	return op.Err()
 }
