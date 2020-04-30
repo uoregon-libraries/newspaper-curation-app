@@ -266,7 +266,7 @@ func deactivateHandler(w http.ResponseWriter, req *http.Request) {
 	}
 
 	r.Audit("deactivate-user", u.Login)
-	http.SetCookie(w, &http.Cookie{Name: "Info", Value: "Deactivated user", Path: "/"})
+	http.SetCookie(w, &http.Cookie{Name: "Info", Value: fmt.Sprintf("Deactivated user '%s'", u.Login), Path: "/"})
 	http.Redirect(w, req, basePath, http.StatusFound)
 }
 
