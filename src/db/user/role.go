@@ -35,7 +35,7 @@ var (
 	RoleIssueReviewer = newRole("issue reviewer",
 		`Can modify issue metadata, push issues to the review queue, and mark issues as reviewed`)
 	RoleUserManager = newRole("user manager",
-		`Can add, edit, and delete users.  User managers can assign any rights to
+		`Can add, edit, and deactivate users.  User managers can assign any rights to
 		others which have been assigned to them.`)
 	RoleMOCManager      = newRole("marc org code manager", "Has access to add new MARC Org Codes")
 	RoleWorkflowManager = newRole("workflow manager", "Can queue SFTP and scanned issues for processing")

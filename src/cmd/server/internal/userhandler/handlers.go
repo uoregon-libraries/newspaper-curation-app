@@ -39,7 +39,7 @@ func Setup(r *mux.Router, baseWebPath string, c *config.Config) {
 	s.Path("/new").Handler(canModify(newHandler))
 	s.Path("/edit").Handler(canModify(editHandler))
 	s.Path("/save").Methods("POST").Handler(canModify(saveHandler))
-	s.Path("/delete").Methods("POST").Handler(canModify(deleteHandler))
+	s.Path("/deactivate").Methods("POST").Handler(canModify(deactivateHandler))
 
 	layout = responder.Layout.Clone()
 	layout.Funcs(tmpl.FuncMap{
@@ -81,7 +81,7 @@ func getUserForModify(r *responder.Responder) (u *user.User, handled bool) {
 func listHandler(w http.ResponseWriter, req *http.Request) {
 	var r = responder.Response(w, req)
 	r.Vars.Title = "Users"
-	var users, err = user.All()
+	var users, err = user.Active()
 	if err != nil {
 		logger.Errorf("Unable to load user list: %s", err)
 		r.Error(http.StatusInternalServerError, "Error trying to pull user list - try again or contact support")
@@ -202,7 +202,7 @@ func handleInvalidUser(r *responder.Responder, u *user.User) (handled bool) {
 	if u.Login == "" {
 		r.Vars.Alert = template.HTML("Cannot create a user with no login name")
 		handled = true
-	} else if user.FindByLogin(u.Login) != user.EmptyUser {
+	} else if user.FindActiveUserWithLogin(u.Login) != user.EmptyUser {
 		r.Vars.Alert = template.HTML("User " + u.Login + " already exists")
 		handled = true
 	}
@@ -244,8 +244,8 @@ func saveHandler(w http.ResponseWriter, req *http.Request) {
 	http.Redirect(w, req, basePath, http.StatusFound)
 }
 
-// deleteHandler removes the given user from the db
-func deleteHandler(w http.ResponseWriter, req *http.Request) {
+// deactivateHandler removes the given user from the db
+func deactivateHandler(w http.ResponseWriter, req *http.Request) {
 	var r = responder.Response(w, req)
 	var u, handled = getUserForModify(r)
 	if handled {
@@ -254,19 +254,19 @@ func deleteHandler(w http.ResponseWriter, req *http.Request) {
 
 	// Make sure the current user can actually edit the loaded user
 	if !r.Vars.User.CanModifyUser(u) {
-		r.Error(http.StatusUnauthorized, "You are not allowed to delete this user")
+		r.Error(http.StatusUnauthorized, "You are not allowed to deactivate this user")
 		return
 	}
 
-	var err = u.Delete()
+	var err = u.Deactivate()
 	if err != nil {
-		logger.Errorf("Unable to delete user (id %d): %s", u.ID, err)
-		r.Error(http.StatusInternalServerError, "Error trying to delete user - try again or contact support")
+		logger.Errorf("Unable to deactivate user (id %d): %s", u.ID, err)
+		r.Error(http.StatusInternalServerError, "Error trying to deactivate user - try again or contact support")
 		return
 	}
 
-	r.Audit("delete-user", u.Login)
-	http.SetCookie(w, &http.Cookie{Name: "Info", Value: "Deleted user", Path: "/"})
+	r.Audit("deactivate-user", u.Login)
+	http.SetCookie(w, &http.Cookie{Name: "Info", Value: fmt.Sprintf("Deactivated user '%s'", u.Login), Path: "/"})
 	http.Redirect(w, req, basePath, http.StatusFound)
 }
 
@@ -275,7 +275,7 @@ func canView(h http.HandlerFunc) http.Handler {
 	return responder.MustHavePrivilege(user.ListUsers, h)
 }
 
-// canModify verifies the user can create/edit/delete users
+// canModify verifies the user can create/edit/deactivate users
 func canModify(h http.HandlerFunc) http.Handler {
 	return responder.MustHavePrivilege(user.ModifyUsers, h)
 }

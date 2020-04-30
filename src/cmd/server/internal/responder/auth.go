@@ -45,7 +45,7 @@ func GetUserIP(req *http.Request) string {
 // there is a user but the user isn't allowed to perform a particular action
 func MustHavePrivilege(priv *user.Privilege, f http.HandlerFunc) http.Handler {
 	return http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
-		if user.FindByLogin(GetUserLogin(w, r)).PermittedTo(priv) {
+		if user.FindActiveUserWithLogin(GetUserLogin(w, r)).PermittedTo(priv) {
 			f(w, r)
 			return
 		}
