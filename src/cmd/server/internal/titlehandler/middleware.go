@@ -7,12 +7,12 @@ import (
 	"github.com/uoregon-libraries/newspaper-curation-app/src/db/user"
 )
 
-// canView verifies the user can view the user list
+// canView verifies the user can view the titles list
 func canView(h http.HandlerFunc) http.Handler {
 	return responder.MustHavePrivilege(user.ListTitles, h)
 }
 
-// canModify verifies the user can create/edit/delete users
+// canModify verifies the user can create/edit/delete titles
 func canModify(h http.HandlerFunc) http.Handler {
 	return responder.MustHavePrivilege(user.ModifyTitles, h)
 }
