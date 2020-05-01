@@ -1,12 +1,14 @@
 package responder
 
 import (
+	"errors"
 	"fmt"
 	"html/template"
 	"strings"
 	"time"
 
 	"github.com/uoregon-libraries/newspaper-curation-app/src/cmd/server/internal/settings"
+	"github.com/uoregon-libraries/newspaper-curation-app/src/models"
 	"github.com/uoregon-libraries/newspaper-curation-app/src/privilege"
 	"github.com/uoregon-libraries/newspaper-curation-app/src/web/tmpl"
 	"github.com/uoregon-libraries/newspaper-curation-app/src/web/webutil"
@@ -34,6 +36,39 @@ func HTMLComment(s string) template.HTML {
 	return template.HTML(fmt.Sprintf("<!-- %s -->", s))
 }
 
+func dict(values ...interface{}) (map[string]interface{}, error) {
+	if len(values)%2 != 0 {
+		return nil, errors.New("dict: values must be in pairs")
+	}
+	var dict = make(map[string]interface{}, len(values)/2)
+	for i := 0; i < len(values); i += 2 {
+		key, ok := values[i].(string)
+		if !ok {
+			return nil, errors.New("dict: keys must be strings")
+		}
+		dict[key] = values[i+1]
+	}
+	return dict, nil
+}
+
+// actionVerb fills in the blank when describing what happened, e.g., "kbates
+// _rejected the issue metadata_ on Jan 1, 2002 at 3:45pm" or "jdepp _wrote a
+// comment_"
+func actionVerb(at string) string {
+	switch models.ActionType(at) {
+	case models.ActionTypeMetadataEntry:
+		return "added metadata and pushed the issue to review"
+	case models.ActionTypeMetadataApproval:
+		return "approved the issue's metadata"
+	case models.ActionTypeMetadataRejection:
+		return "rejected the issue's metadata"
+	case models.ActionTypeComment:
+		return "wrote a comment"
+	default:
+		return string(at)
+	}
+}
+
 // InitRootTemplate sets up pre-parsed template data in Root
 func InitRootTemplate(templatePath string) {
 	var templateFunctions = tmpl.FuncMap{
@@ -47,6 +82,8 @@ func InitRootTemplate(templatePath string) {
 		"ProdURL":    func() string { return webutil.ProductionURL },
 		"Comment":    HTMLComment,
 		"TimeString": func(t time.Time) string { return t.Format("2006-01-02 15:04") },
+		"dtstr":      func(t time.Time) string { return t.Format("on Jan 2, 2006 at 3:04pm") },
+		"actionVerb": actionVerb,
 		"nl2br": func(s string) template.HTML {
 			var escaped = template.HTMLEscaper(s)
 			var replaced = strings.Replace(escaped, "\n", "<br />", -1)
@@ -55,6 +92,7 @@ func InitRootTemplate(templatePath string) {
 		"IIIFInfoURL": webutil.IIIFInfoURL,
 		"raw":         func(s string) template.HTML { return template.HTML(s) },
 		"debug":       func() bool { return settings.DEBUG },
+		"dict":        dict,
 
 		// We have functions for our privileges since they need to be "global" and
 		// easily verified at template compile time

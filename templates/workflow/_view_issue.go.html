@@ -1,3 +1,16 @@
+{{define "issue_action"}}
+
+<div class="action {{.Action.ActionType}} {{if eq .Action.Author.ID .User.ID}}self{{end}}">
+  <div class="metadata">
+    <em>{{.Action.Author.Login}}</em> {{.Action.ActionType|actionVerb}} {{.Action.CreatedAt|dtstr}}:
+  </div>
+  <div class="message">
+    <blockquote>{{.Action.Message|nl2br}}</blockquote>
+  </div>
+</div>
+
+{{end}}
+
 {{define "issue_page_view"}}
 <div class="row">
   <div class="col-md-12">

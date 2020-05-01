@@ -60,11 +60,14 @@ type Issue struct {
 	WorkflowOwnerID        int                 // Whose "desk" is this currently on?
 	WorkflowOwnerExpiresAt time.Time           // When does the workflow owner lose ownership?
 	MetadataEntryUserID    int                 // Who entered metadata?
-	ReviewedByUserID       int                 // Who reviewed metadata?
+	ReviewedByUserID       int                 // Who reviewed metadata last?
 	MetadataApprovedAt     time.Time           // When was metadata approved / how long has this been waiting to batch?
-	RejectionNotes         string              // If rejected (during metadata review), this tells us why
-	RejectedByUserID       int                 // Who did the rejection?
+	RejectedByUserID       int                 // If not approved, who rejected the metadata?
 	Ignored                bool                // Is the issue bad / in prod / otherwise skipped from workflow scans?
+
+	// actions holds the lazy-loaded list of actions tied to an issue, ordered
+	// by the most recent to the oldest
+	actions []*Action
 }
 
 // NewIssue creates an issue ready for saving to the issues table
@@ -222,6 +225,27 @@ func (i *Issue) DateEdition() string {
 	return schema.IssueDateEdition(i.Date, i.Edition)
 }
 
+// Actions lazy-loads all actions tied to this issue and orders them in
+// chronological order (the newest are at the end of the list)
+func (i *Issue) Actions() []*Action {
+	if i.actions == nil {
+		// Yup, we deliberately ignore errors here.  Bah.
+		i.actions, _ = FindActionsForIssue(i.ID)
+	}
+
+	return i.actions
+}
+
+// RecentActions returns the last n actions which have occurred
+func (i *Issue) RecentActions(n int) []*Action {
+	var list = i.Actions()
+	if len(list) > n {
+		return list[len(list)-n:]
+	}
+
+	return list
+}
+
 // Claim sets the workflow owner to the given user id, and sets the expiration
 // time to a week from now
 func (i *Issue) Claim(byUserID int) {
@@ -246,14 +270,15 @@ func (i *Issue) ApproveMetadata(reviewerID int) {
 
 // RejectMetadata sends the issue back to the metadata entry user and saves the
 // reviewer's notes
-//
-// TODO: if we ever display rejection user, bear in mind that 0 means it's
-// rejected by a system process rather than a person
 func (i *Issue) RejectMetadata(reviewerID int, notes string) {
 	i.Claim(i.MetadataEntryUserID)
-	i.WorkflowStep = schema.WSReadyForMetadataEntry
-	i.RejectionNotes = notes
 	i.RejectedByUserID = reviewerID
+	i.WorkflowStep = schema.WSReadyForMetadataEntry
+	var a = newIssueAction(i.ID, ActionTypeMetadataRejection)
+	a.UserID = reviewerID
+	a.Message = notes
+
+	i.actions = append(i.actions, a)
 }
 
 // ReportError adds an error message to the issue and flags it as being in the

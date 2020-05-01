@@ -10,15 +10,15 @@
   </ul>
 </p>
 
-{{if .Data.Issue.RejectionNotes}}
-<hr />
-<div class="alert alert-warning">
-  <p>This issue was rejected from the review queue:</p>
-  <blockquote>{{.Data.Issue.RejectionNotes|nl2br}}</blockquote>
-</div>
+{{if .Data.Issue.Actions}}
+  <h2>Recent Actions</h2>
+  <div class="action-list">
+    {{range .Data.Issue.RecentActions 5}}
+      {{template "issue_action" (dict "Action" . "User" $.User)}}
+    {{end}}
+  </div>
 {{end}}
 
-<hr />
 <h2>Page Numbering</h2>
 <p>
   Type a page label <strong>exactly as it's printed</strong>, or type zero

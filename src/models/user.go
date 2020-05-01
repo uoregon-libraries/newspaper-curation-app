@@ -1,6 +1,7 @@
 package models
 
 import (
+	"errors"
 	"strings"
 
 	"github.com/uoregon-libraries/newspaper-curation-app/src/dbi"
@@ -23,6 +24,10 @@ type User struct {
 // able to detect a user not being found.  Also lets us use any User functions
 // without risking a panic.
 var EmptyUser = &User{Login: "N/A", Guest: true}
+
+// SystemUser is an "internal" object we can use to represent actions the
+// system takes, comments from the processing as opposed to people, etc.
+var SystemUser = &User{ID: -1, Login: "System Process"}
 
 // NewUser returns an empty user with no roles or ID
 func NewUser(login string) *User {
@@ -70,6 +75,11 @@ func FindActiveUserWithLogin(l string) *User {
 // FindUserByID looks up a user by the given ID - this can return inactive users
 // since it's just using a database ID, so there's no possible ambiguity
 func FindUserByID(id int) *User {
+	// Hack to ensure we can just call standard finders to get the system user
+	if id == SystemUser.ID {
+		return SystemUser
+	}
+
 	var user = &User{}
 	var op = dbi.DB.Operation()
 	var ok = op.Select("users", &User{}).Where("id = ?", id).First(user)
@@ -136,6 +146,9 @@ func (u *User) IsAdmin() bool {
 
 // Save stores the user's data to the database, rewriting the roles list
 func (u *User) Save() error {
+	if u.ID < 1 {
+		return errors.New("cannot save system or guest users")
+	}
 	var op = dbi.DB.Operation()
 	op.Dbg = dbi.Debug
 	u.serialize()
