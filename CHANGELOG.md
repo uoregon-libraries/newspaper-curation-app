@@ -25,6 +25,31 @@ Brief description, if necessary
 ### Migration
 -->
 
+## v2.12.0
+
+User persistence!  Issue comments!!!!!!11!!1!1!one!!!1
+
+### Fixed
+
+- Users are now deactivated rather than deleted, which fixes a potential crash
+  when viewing rejection notes or passing an issue back to the original
+  curator's desk.  Honestly I'm not sure how this never crashed before.
+
+### Added
+
+- Issues can now have comments, and those comments are visible so long as the
+  issue is part of NCA's workflow.  They're normally optional, but are required
+  when rejecting an issue from the metadata queue (comments replace the
+  previous one-off rejection note)
+
+### Changed
+
+### Removed
+
+### Migration
+
+- Migrate the database, e.g, with `goose`: `goose -dir ./db/migrations/ mysql "<user>:<password>@tcp(<db host>:3306)/<database name>" up`
+
 ## v2.11.4
 
 Multi-awardee titles and some fixes
