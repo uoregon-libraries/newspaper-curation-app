@@ -11,7 +11,7 @@ import (
 	"github.com/uoregon-libraries/newspaper-curation-app/src/internal/logger"
 )
 
-var pdfFilenameRegex = regexp.MustCompile(`(?i:^[0-9]{4}.pdf)`)
+var pdfFilenameRegex = regexp.MustCompile(`(?i:^[0-9]+.pdf)`)
 var notRenamedRegex = regexp.MustCompile(`(?i:^seq-[0-9]{4}.pdf)`)
 
 // pageReviewIssueReady tells us if issues being manually modified are ready to
