@@ -1,13 +1,13 @@
 package main
 
 import (
+	"io/ioutil"
 	"os"
 	"path/filepath"
 	"regexp"
 	"strings"
 	"time"
 
-	"github.com/uoregon-libraries/gopkg/fileutil"
 	"github.com/uoregon-libraries/newspaper-curation-app/src/internal/logger"
 )
 
@@ -36,7 +36,7 @@ func pageReviewIssueReady(path string, minAge time.Duration) bool {
 
 	// Gather info on all items in the issue path
 	var infos []os.FileInfo
-	infos, err = fileutil.ReaddirSorted(path)
+	infos, err = ioutil.ReadDir(path)
 	if err != nil {
 		logger.Errorf("Unable to scan %q for renamed PDFs: %s", path, err)
 		return false

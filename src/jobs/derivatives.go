@@ -1,6 +1,7 @@
 package jobs
 
 import (
+	"io/ioutil"
 	"os"
 	"path/filepath"
 	"regexp"
@@ -119,7 +120,7 @@ func (md *MakeDerivatives) _findTIFFs() (ok bool) {
 // checks are redundant, but it's clear that with the complexity of our
 // process, more failsafes are better than fewer.
 func (md *MakeDerivatives) validateSourceFiles() (ok bool) {
-	var infos, err = fileutil.ReaddirSorted(md.DBIssue.Location)
+	var infos, err = ioutil.ReadDir(md.DBIssue.Location)
 	if err != nil {
 		md.Logger.Errorf("Unable to scan all files: %s", err)
 		return false
