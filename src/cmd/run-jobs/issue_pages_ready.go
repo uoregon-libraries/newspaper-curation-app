@@ -1,17 +1,17 @@
 package main
 
 import (
+	"io/ioutil"
 	"os"
 	"path/filepath"
 	"regexp"
 	"strings"
 	"time"
 
-	"github.com/uoregon-libraries/gopkg/fileutil"
 	"github.com/uoregon-libraries/newspaper-curation-app/src/internal/logger"
 )
 
-var pdfFilenameRegex = regexp.MustCompile(`(?i:^[0-9]{4}.pdf)`)
+var pdfFilenameRegex = regexp.MustCompile(`(?i:^[0-9]+.pdf)`)
 var notRenamedRegex = regexp.MustCompile(`(?i:^seq-[0-9]{4}.pdf)`)
 
 // pageReviewIssueReady tells us if issues being manually modified are ready to
@@ -36,7 +36,7 @@ func pageReviewIssueReady(path string, minAge time.Duration) bool {
 
 	// Gather info on all items in the issue path
 	var infos []os.FileInfo
-	infos, err = fileutil.ReaddirSorted(path)
+	infos, err = ioutil.ReadDir(path)
 	if err != nil {
 		logger.Errorf("Unable to scan %q for renamed PDFs: %s", path, err)
 		return false
