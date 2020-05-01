@@ -13,9 +13,9 @@ import (
 	"github.com/uoregon-libraries/newspaper-curation-app/src/derivatives/jp2"
 )
 
-var allowedFilesRegex = regexp.MustCompile(`(?i:^([0-9]{4}.(pdf|jp2|xml|tiff?))|[0-9]{10}.xml|master.tar)`)
-var pdfFilenameRegex = regexp.MustCompile(`(?i:^[0-9]{4}.pdf)`)
-var tiffFilenameRegex = regexp.MustCompile(`(?i:^[0-9]{4}.tiff?)`)
+var allowedFilesRegex = regexp.MustCompile(`(?i:^([0-9]+.(pdf|jp2|xml|tiff?))|[0-9]{10}.xml|master.tar)`)
+var pdfFilenameRegex = regexp.MustCompile(`(?i:^[0-9]+.pdf)`)
+var tiffFilenameRegex = regexp.MustCompile(`(?i:^[0-9]+.tiff?)`)
 
 // MakeDerivatives is a job which creates all necessary derivatives for a given
 // issue, detecting whether PDFs are needed and whether JP2s should be build
