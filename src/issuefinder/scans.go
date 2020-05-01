@@ -16,8 +16,8 @@ import (
 	"github.com/uoregon-libraries/newspaper-curation-app/src/schema"
 )
 
-var pdfFilenameRegex = regexp.MustCompile(`(?i:^[0-9]{4}.pdf)`)
-var tiffFilenameRegex = regexp.MustCompile(`(?i:^[0-9]{4}.tiff?)`)
+var pdfFilenameRegex = regexp.MustCompile(`(?i:^[0-9]+.pdf)`)
+var tiffFilenameRegex = regexp.MustCompile(`(?i:^[0-9]+.tiff?)`)
 
 // FindScannedIssues aggregates all the in-house scans waiting for processing
 func (s *Searcher) FindScannedIssues() error {
