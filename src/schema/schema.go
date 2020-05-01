@@ -281,7 +281,7 @@ func (i *Issue) FindFiles() {
 		return
 	}
 
-	var infos, err = fileutil.ReaddirSorted(i.Location)
+	var infos, err = fileutil.ReaddirSortedNumeric(i.Location)
 	if err != nil {
 		logger.Errorf("Error trying to open %q to read contents: %s", i.Location, err)
 		return

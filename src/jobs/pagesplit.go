@@ -90,7 +90,11 @@ func (ps *PageSplit) process() (ok bool) {
 func (ps *PageSplit) createMasterPDF() (ok bool) {
 	ps.Logger.Debugf("Preprocessing with ghostscript")
 
-	var fileinfos, err = fileutil.ReaddirSorted(ps.DBIssue.Location)
+	// Using our custom numeric sort gives us a tiny chance that publishers who
+	// upload weirdly-numbered pages won't get put out of order.  In most cases
+	// it probably won't help, because their numbers are in the middle of the
+	// filename in hard-to-predict ways, but it's worth a try.
+	var fileinfos, err = fileutil.ReaddirSortedNumeric(ps.DBIssue.Location)
 	if err != nil {
 		ps.Logger.Errorf("Unable to list files in %q: %s", ps.DBIssue.Location, err)
 		return false
@@ -116,7 +120,7 @@ func (ps *PageSplit) splitPages() (ok bool) {
 // fixPageNames converts sequenced PDFs to have 4-digit page numbers
 func (ps *PageSplit) fixPageNames() (ok bool) {
 	ps.Logger.Infof("Renaming pages so they're sortable")
-	var fileinfos, err = fileutil.ReaddirSorted(ps.TempDir)
+	var fileinfos, err = fileutil.ReaddirSortedNumeric(ps.TempDir)
 	if err != nil {
 		ps.Logger.Errorf("Unable to read seq-* files for renumbering")
 		return false
@@ -157,7 +161,7 @@ func (ps *PageSplit) fixPageNames() (ok bool) {
 // convertToPDFA finds all files in the temp dir and converts them to PDF/a
 func (ps *PageSplit) convertToPDFA() (ok bool) {
 	ps.Logger.Infof("Converting pages to PDF/A")
-	var fileinfos, err = fileutil.ReaddirSorted(ps.TempDir)
+	var fileinfos, err = fileutil.ReaddirSortedNumeric(ps.TempDir)
 	if err != nil {
 		ps.Logger.Errorf("Unable to read seq-* files for PDF/a conversion")
 		return false
