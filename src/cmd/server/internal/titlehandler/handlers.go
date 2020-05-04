@@ -12,7 +12,7 @@ import (
 	"github.com/uoregon-libraries/newspaper-curation-app/src/duration"
 	"github.com/uoregon-libraries/newspaper-curation-app/src/internal/logger"
 	"github.com/uoregon-libraries/newspaper-curation-app/src/models"
-	"github.com/uoregon-libraries/newspaper-curation-app/src/models/user"
+	"github.com/uoregon-libraries/newspaper-curation-app/src/privilege"
 	"github.com/uoregon-libraries/newspaper-curation-app/src/web/tmpl"
 )
 
@@ -151,13 +151,13 @@ func setTitleData(r *responder.Responder, t *Title) (vErrors []string, handled b
 		t.EmbargoPeriod = embargoPeriod.String()
 	}
 
-	if r.Vars.User.PermittedTo(user.ModifyTitleSFTP) {
+	if r.Vars.User.PermittedTo(privilege.ModifyTitleSFTP) {
 		t.SFTPDir = form.Get("sftpdir")
 		t.SFTPUser = form.Get("sftpuser")
 		t.SFTPPass = form.Get("sftppass")
 	}
 
-	if !t.ValidLCCN || r.Vars.User.PermittedTo(user.ModifyValidatedLCCNs) {
+	if !t.ValidLCCN || r.Vars.User.PermittedTo(privilege.ModifyValidatedLCCNs) {
 		var newLCCN = form.Get("lccn")
 		if newLCCN != t.LCCN {
 			t.LCCN = newLCCN

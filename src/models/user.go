@@ -1,10 +1,11 @@
-package user
+package models
 
 import (
 	"strings"
 
 	"github.com/uoregon-libraries/newspaper-curation-app/src/dbi"
 	"github.com/uoregon-libraries/newspaper-curation-app/src/internal/logger"
+	"github.com/uoregon-libraries/newspaper-curation-app/src/privilege"
 )
 
 // User identifies a person who has logged in via Apache's auth
@@ -15,7 +16,7 @@ type User struct {
 	Guest       bool   `sql:"-"`
 	IP          string `sql:"-"`
 	Deactivated bool
-	roles       []*Role
+	roles       []*privilege.Role
 }
 
 // EmptyUser gives us a way to avoid returning a nil *User while still being
@@ -23,8 +24,8 @@ type User struct {
 // without risking a panic.
 var EmptyUser = &User{Login: "N/A", Guest: true}
 
-// New returns an empty user with no roles or ID
-func New(login string) *User {
+// NewUser returns an empty user with no roles or ID
+func NewUser(login string) *User {
 	return &User{Login: login}
 }
 
@@ -36,8 +37,8 @@ func (u *User) serialize() {
 	u.RolesString = u.makeRoleString()
 }
 
-// Active returns all users in the database who have the "active" status
-func Active() ([]*User, error) {
+// ActiveUsers returns all users in the database who have the "active" status
+func ActiveUsers() ([]*User, error) {
 	var users []*User
 	var op = dbi.DB.Operation()
 	op.Select("users", &User{}).Where("deactivated = ?", false).AllObjects(&users)
@@ -66,9 +67,9 @@ func FindActiveUserWithLogin(l string) *User {
 	return users[0]
 }
 
-// FindByID looks up a user by the given ID - this can return inactive users
+// FindUserByID looks up a user by the given ID - this can return inactive users
 // since it's just using a database ID, so there's no possible ambiguity
-func FindByID(id int) *User {
+func FindUserByID(id int) *User {
 	var user = &User{}
 	var op = dbi.DB.Operation()
 	var ok = op.Select("users", &User{}).Where("id = ?", id).First(user)
@@ -84,7 +85,7 @@ func FindByID(id int) *User {
 }
 
 // Roles returns the split list of roles assigned to a user
-func (u *User) Roles() []*Role {
+func (u *User) Roles() []*privilege.Role {
 	if len(u.roles) == 0 {
 		u.buildRoles()
 	}
@@ -92,7 +93,7 @@ func (u *User) Roles() []*Role {
 }
 
 // HasRole returns true if the user has role in their list of roles
-func (u *User) HasRole(role *Role) bool {
+func (u *User) HasRole(role *privilege.Role) bool {
 	for _, r := range u.Roles() {
 		if r == role {
 			return true
@@ -104,12 +105,12 @@ func (u *User) HasRole(role *Role) bool {
 
 func (u *User) buildRoles() {
 	var roleStrings = strings.Split(u.RolesString, ",")
-	u.roles = make([]*Role, 0)
+	u.roles = make([]*privilege.Role, 0)
 	for _, rs := range roleStrings {
 		if rs == "" {
 			continue
 		}
-		var role = FindRole(rs)
+		var role = privilege.FindRole(rs)
 		if role == nil {
 			logger.Errorf("User %s has an invalid role: %s", u.Login, role)
 			continue
@@ -119,13 +120,13 @@ func (u *User) buildRoles() {
 }
 
 // PermittedTo returns true if this user has priv in his privilege list
-func (u *User) PermittedTo(priv *Privilege) bool {
+func (u *User) PermittedTo(priv *privilege.Privilege) bool {
 	return priv.AllowedByAny(u.Roles())
 }
 
 // IsAdmin is true if this user has the admin role
 func (u *User) IsAdmin() bool {
-	return u.HasRole(RoleAdmin)
+	return u.HasRole(privilege.RoleAdmin)
 }
 
 // Save stores the user's data to the database, rewriting the roles list
@@ -148,7 +149,7 @@ func (u *User) makeRoleString() string {
 
 // Grant adds the given role to this user's list of roles if it hasn't already
 // been set
-func (u *User) Grant(role *Role) {
+func (u *User) Grant(role *privilege.Role) {
 	u.deserialize()
 	for _, r := range u.roles {
 		if r == role {
@@ -161,7 +162,7 @@ func (u *User) Grant(role *Role) {
 }
 
 // Deny removes the given role from this user's roles list
-func (u *User) Deny(role *Role) {
+func (u *User) Deny(role *privilege.Role) {
 	for i, r := range u.roles {
 		if r == role {
 			u.roles = append(u.roles[:i], u.roles[i+1:]...)
@@ -172,9 +173,9 @@ func (u *User) Deny(role *Role) {
 }
 
 // CanGrant returns true if this user can grant the given role to other users
-func (u *User) CanGrant(role *Role) bool {
+func (u *User) CanGrant(role *privilege.Role) bool {
 	// If this person can't modify users, they cannot grant anything
-	if !u.PermittedTo(ModifyUsers) {
+	if !u.PermittedTo(privilege.ModifyUsers) {
 		return false
 	}
 
@@ -211,7 +212,7 @@ func (u *User) CanModifyUser(user *User) bool {
 		return false
 	}
 
-	return u.PermittedTo(ModifyUsers)
+	return u.PermittedTo(privilege.ModifyUsers)
 }
 
 // Deactivate performs a soft-delete in order to remove a user from the visible

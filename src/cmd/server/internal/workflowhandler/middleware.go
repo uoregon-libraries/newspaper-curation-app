@@ -8,7 +8,7 @@ import (
 	"github.com/uoregon-libraries/newspaper-curation-app/src/cmd/server/internal/responder"
 	"github.com/uoregon-libraries/newspaper-curation-app/src/internal/logger"
 	"github.com/uoregon-libraries/newspaper-curation-app/src/models"
-	"github.com/uoregon-libraries/newspaper-curation-app/src/models/user"
+	"github.com/uoregon-libraries/newspaper-curation-app/src/privilege"
 	"github.com/uoregon-libraries/newspaper-curation-app/src/schema"
 )
 
@@ -74,7 +74,7 @@ func handle(h HandlerFunc) http.Handler {
 
 // MustHavePrivilege replicates responder.MustHavePrivilege, but supports the
 // workflow handler structure's needs
-func MustHavePrivilege(priv *user.Privilege, f HandlerFunc) HandlerFunc {
+func MustHavePrivilege(priv *privilege.Privilege, f HandlerFunc) HandlerFunc {
 	return HandlerFunc(func(resp *responder.Responder, i *Issue) {
 		if resp.Vars.User.PermittedTo(priv) {
 			f(resp, i)
@@ -89,28 +89,28 @@ func MustHavePrivilege(priv *user.Privilege, f HandlerFunc) HandlerFunc {
 
 // canView verifies user can view metadata workflow information
 func canView(h HandlerFunc) HandlerFunc {
-	return MustHavePrivilege(user.ViewMetadataWorkflow, h)
+	return MustHavePrivilege(privilege.ViewMetadataWorkflow, h)
 }
 
 // canWrite verifies user can enter metadata for an issue
 func canWrite(h HandlerFunc) HandlerFunc {
-	return MustHavePrivilege(user.EnterIssueMetadata, h)
+	return MustHavePrivilege(privilege.EnterIssueMetadata, h)
 }
 
 // canReview verifies user can review metadata for an issue
 func canReview(h HandlerFunc) HandlerFunc {
-	return MustHavePrivilege(user.ReviewIssueMetadata, h)
+	return MustHavePrivilege(privilege.ReviewIssueMetadata, h)
 }
 
 // _canPerformWorkflow verifies the issue's workflow is of a type on which the
 // user can take action
-func _canPerformWorkflow(u *user.User, i *Issue) bool {
+func _canPerformWorkflow(u *models.User, i *Issue) bool {
 	switch i.WorkflowStep {
 	case schema.WSReadyForMetadataEntry:
-		return u.PermittedTo(user.EnterIssueMetadata)
+		return u.PermittedTo(privilege.EnterIssueMetadata)
 
 	case schema.WSAwaitingMetadataReview:
-		return u.PermittedTo(user.ReviewIssueMetadata)
+		return u.PermittedTo(privilege.ReviewIssueMetadata)
 	}
 
 	return false

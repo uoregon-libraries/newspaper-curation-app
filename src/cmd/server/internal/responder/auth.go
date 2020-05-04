@@ -5,7 +5,8 @@ import (
 	"time"
 
 	"github.com/uoregon-libraries/newspaper-curation-app/src/cmd/server/internal/settings"
-	"github.com/uoregon-libraries/newspaper-curation-app/src/models/user"
+	"github.com/uoregon-libraries/newspaper-curation-app/src/models"
+	"github.com/uoregon-libraries/newspaper-curation-app/src/privilege"
 )
 
 // GetUserLogin returns the Apache-auth user or the debuguser argument if
@@ -43,9 +44,9 @@ func GetUserIP(req *http.Request) string {
 
 // MustHavePrivilege denies access to pages if there's no logged-in user, or
 // there is a user but the user isn't allowed to perform a particular action
-func MustHavePrivilege(priv *user.Privilege, f http.HandlerFunc) http.Handler {
+func MustHavePrivilege(priv *privilege.Privilege, f http.HandlerFunc) http.Handler {
 	return http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
-		if user.FindActiveUserWithLogin(GetUserLogin(w, r)).PermittedTo(priv) {
+		if models.FindActiveUserWithLogin(GetUserLogin(w, r)).PermittedTo(priv) {
 			f(w, r)
 			return
 		}

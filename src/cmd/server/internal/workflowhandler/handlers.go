@@ -13,7 +13,7 @@ import (
 	"github.com/uoregon-libraries/newspaper-curation-app/src/issuewatcher"
 	"github.com/uoregon-libraries/newspaper-curation-app/src/jobs"
 	"github.com/uoregon-libraries/newspaper-curation-app/src/models"
-	"github.com/uoregon-libraries/newspaper-curation-app/src/models/user"
+	"github.com/uoregon-libraries/newspaper-curation-app/src/privilege"
 	"github.com/uoregon-libraries/newspaper-curation-app/src/schema"
 	"github.com/uoregon-libraries/newspaper-curation-app/src/web/tmpl"
 )
@@ -150,7 +150,7 @@ func homeHandler(resp *responder.Responder, i *Issue) {
 	}
 	var issuesTwo []*models.Issue
 	for _, i := range issues {
-		if i.MetadataEntryUserID != resp.Vars.User.ID || resp.Vars.User.PermittedTo(user.ReviewOwnMetadata) {
+		if i.MetadataEntryUserID != resp.Vars.User.ID || resp.Vars.User.PermittedTo(privilege.ReviewOwnMetadata) {
 			issuesTwo = append(issuesTwo, i)
 		}
 	}

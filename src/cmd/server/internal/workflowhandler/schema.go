@@ -13,7 +13,6 @@ import (
 	"github.com/uoregon-libraries/newspaper-curation-app/src/apperr"
 	"github.com/uoregon-libraries/newspaper-curation-app/src/internal/logger"
 	"github.com/uoregon-libraries/newspaper-curation-app/src/models"
-	"github.com/uoregon-libraries/newspaper-curation-app/src/models/user"
 	"github.com/uoregon-libraries/newspaper-curation-app/src/schema"
 )
 
@@ -44,7 +43,7 @@ func wrapDBIssue(dbIssue *models.Issue) *Issue {
 	// For workflow presentation, we don't really care if the issue isn't valid
 	// so long as we can show its raw data to the user
 	var si, _ = dbIssue.SchemaIssue()
-	return &Issue{Issue: dbIssue, si: si, MetadataAuthorLogin: user.FindByID(dbIssue.MetadataEntryUserID).Login}
+	return &Issue{Issue: dbIssue, si: si, MetadataAuthorLogin: models.FindUserByID(dbIssue.MetadataEntryUserID).Login}
 }
 
 func wrapDBIssues(dbIssues []*models.Issue) []*Issue {

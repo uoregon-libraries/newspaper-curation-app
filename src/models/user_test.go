@@ -1,7 +1,9 @@
-package user
+package models
 
 import (
 	"testing"
+
+	"github.com/uoregon-libraries/newspaper-curation-app/src/privilege"
 )
 
 func getu() *User {
@@ -16,10 +18,10 @@ func TestRoles(t *testing.T) {
 	if len(roles) != 2 {
 		t.Fatalf("Expected 2 roles, got %d", len(roles))
 	}
-	if roles[0] != RoleTitleManager {
+	if roles[0] != privilege.RoleTitleManager {
 		t.Errorf("Expected first role to be title manger; got %q", roles[0].Name)
 	}
-	if roles[1] != RoleUserManager {
+	if roles[1] != privilege.RoleUserManager {
 		t.Errorf("Expected second role to be user manger; got %q", roles[1].Name)
 	}
 }
@@ -27,8 +29,8 @@ func TestRoles(t *testing.T) {
 func TestGrantExisting(t *testing.T) {
 	var u = getu()
 	var oldlen = len(u.Roles())
-	u.Grant(RoleTitleManager)
-	u.Grant(RoleTitleManager)
+	u.Grant(privilege.RoleTitleManager)
+	u.Grant(privilege.RoleTitleManager)
 	var roles = u.Roles()
 
 	if len(roles) != oldlen {
@@ -38,7 +40,7 @@ func TestGrantExisting(t *testing.T) {
 
 func TestGrantReserializes(t *testing.T) {
 	var u = getu()
-	u.Grant(RoleMOCManager)
+	u.Grant(privilege.RoleMOCManager)
 	if u.RolesString != "title manager,user manager,marc org code manager" {
 		t.Errorf("Granting a new role should update the roles string (got %q)", u.RolesString)
 	}
@@ -52,12 +54,12 @@ func TestGrantReserializes(t *testing.T) {
 func TestDeny(t *testing.T) {
 	var u = getu()
 	var rs = u.RolesString
-	u.Deny(RoleMOCManager)
+	u.Deny(privilege.RoleMOCManager)
 	if u.RolesString != rs {
 		t.Errorf("Denying a not-granted role shouldn't change anything (got %q)", u.RolesString)
 	}
 
-	u.Deny(RoleTitleManager)
+	u.Deny(privilege.RoleTitleManager)
 	if u.RolesString == rs {
 		t.Errorf("Denying title manager should remove it (got %q)", u.RolesString)
 	}
@@ -65,11 +67,11 @@ func TestDeny(t *testing.T) {
 		t.Errorf("Denying title manager should remove it (got %d roles)", len(u.Roles()))
 	}
 
-	u.Grant(RoleMOCManager)
-	u.Grant(RoleIssueCurator)
-	u.Deny(RoleMOCManager)
-	u.Deny(RoleIssueCurator)
-	u.Deny(RoleUserManager)
+	u.Grant(privilege.RoleMOCManager)
+	u.Grant(privilege.RoleIssueCurator)
+	u.Deny(privilege.RoleMOCManager)
+	u.Deny(privilege.RoleIssueCurator)
+	u.Deny(privilege.RoleUserManager)
 
 	if u.RolesString != "" {
 		t.Errorf("Deny should remove roles and reserialize (got %q)", u.RolesString)
@@ -87,7 +89,7 @@ func TestCanGrant(t *testing.T) {
 		}
 	}
 
-	if u.CanGrant(RoleIssueCurator) {
+	if u.CanGrant(privilege.RoleIssueCurator) {
 		t.Error("User manager shouldn't be allowed to grant unassigned roles")
 	}
 
@@ -95,18 +97,18 @@ func TestCanGrant(t *testing.T) {
 		u.Deny(r)
 	}
 
-	if u.PermittedTo(ModifyUsers) {
+	if u.PermittedTo(privilege.ModifyUsers) {
 		t.Error("User with no roles shouldn't be allowed to modify users")
 	}
 
-	u.Grant(RoleIssueCurator)
+	u.Grant(privilege.RoleIssueCurator)
 	if u.CanGrant(u.roles[0]) {
 		t.Error("Non-user-manager shouldn't be allowed to grant any roles")
 	}
 
 	u.roles = nil
-	u.Grant(RoleAdmin)
-	if !u.CanGrant(RoleUserManager) {
+	u.Grant(privilege.RoleAdmin)
+	if !u.CanGrant(privilege.RoleUserManager) {
 		t.Errorf("Admin should be allowed to grant user manager role")
 	}
 }

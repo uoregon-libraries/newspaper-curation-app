@@ -7,7 +7,7 @@ import (
 	"time"
 
 	"github.com/uoregon-libraries/newspaper-curation-app/src/cmd/server/internal/settings"
-	"github.com/uoregon-libraries/newspaper-curation-app/src/models/user"
+	"github.com/uoregon-libraries/newspaper-curation-app/src/privilege"
 	"github.com/uoregon-libraries/newspaper-curation-app/src/web/tmpl"
 	"github.com/uoregon-libraries/newspaper-curation-app/src/web/webutil"
 )
@@ -58,21 +58,21 @@ func InitRootTemplate(templatePath string) {
 
 		// We have functions for our privileges since they need to be "global" and
 		// easily verified at template compile time
-		"ListTitles":               func() *user.Privilege { return user.ListTitles },
-		"ModifyTitles":             func() *user.Privilege { return user.ModifyTitles },
-		"ManageMOCs":               func() *user.Privilege { return user.ManageMOCs },
-		"ViewMetadataWorkflow":     func() *user.Privilege { return user.ViewMetadataWorkflow },
-		"EnterIssueMetadata":       func() *user.Privilege { return user.EnterIssueMetadata },
-		"ReviewIssueMetadata":      func() *user.Privilege { return user.ReviewIssueMetadata },
-		"ListUsers":                func() *user.Privilege { return user.ListUsers },
-		"ModifyUsers":              func() *user.Privilege { return user.ModifyUsers },
-		"ViewUploadedIssues":       func() *user.Privilege { return user.ViewUploadedIssues },
-		"ModifyUploadedIssues":     func() *user.Privilege { return user.ModifyUploadedIssues },
-		"ViewTitleSFTPCredentials": func() *user.Privilege { return user.ViewTitleSFTPCredentials },
-		"SearchIssues":             func() *user.Privilege { return user.SearchIssues },
-		"ModifyValidatedLCCNs":     func() *user.Privilege { return user.ModifyValidatedLCCNs },
-		"ModifyTitleSFTP":          func() *user.Privilege { return user.ModifyTitleSFTP },
-		"ListAuditLogs":            func() *user.Privilege { return user.ListAuditLogs },
+		"ListTitles":               func() *privilege.Privilege { return privilege.ListTitles },
+		"ModifyTitles":             func() *privilege.Privilege { return privilege.ModifyTitles },
+		"ManageMOCs":               func() *privilege.Privilege { return privilege.ManageMOCs },
+		"ViewMetadataWorkflow":     func() *privilege.Privilege { return privilege.ViewMetadataWorkflow },
+		"EnterIssueMetadata":       func() *privilege.Privilege { return privilege.EnterIssueMetadata },
+		"ReviewIssueMetadata":      func() *privilege.Privilege { return privilege.ReviewIssueMetadata },
+		"ListUsers":                func() *privilege.Privilege { return privilege.ListUsers },
+		"ModifyUsers":              func() *privilege.Privilege { return privilege.ModifyUsers },
+		"ViewUploadedIssues":       func() *privilege.Privilege { return privilege.ViewUploadedIssues },
+		"ModifyUploadedIssues":     func() *privilege.Privilege { return privilege.ModifyUploadedIssues },
+		"ViewTitleSFTPCredentials": func() *privilege.Privilege { return privilege.ViewTitleSFTPCredentials },
+		"SearchIssues":             func() *privilege.Privilege { return privilege.SearchIssues },
+		"ModifyValidatedLCCNs":     func() *privilege.Privilege { return privilege.ModifyValidatedLCCNs },
+		"ModifyTitleSFTP":          func() *privilege.Privilege { return privilege.ModifyTitleSFTP },
+		"ListAuditLogs":            func() *privilege.Privilege { return privilege.ListAuditLogs },
 	}
 
 	// Set up the layout and then our global templates
