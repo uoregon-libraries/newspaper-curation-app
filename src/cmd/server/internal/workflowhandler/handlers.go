@@ -9,11 +9,11 @@ import (
 	"github.com/gorilla/mux"
 	"github.com/uoregon-libraries/newspaper-curation-app/src/cmd/server/internal/responder"
 	"github.com/uoregon-libraries/newspaper-curation-app/src/config"
-	"github.com/uoregon-libraries/newspaper-curation-app/src/db"
-	"github.com/uoregon-libraries/newspaper-curation-app/src/db/user"
 	"github.com/uoregon-libraries/newspaper-curation-app/src/internal/logger"
 	"github.com/uoregon-libraries/newspaper-curation-app/src/issuewatcher"
 	"github.com/uoregon-libraries/newspaper-curation-app/src/jobs"
+	"github.com/uoregon-libraries/newspaper-curation-app/src/models"
+	"github.com/uoregon-libraries/newspaper-curation-app/src/models/user"
 	"github.com/uoregon-libraries/newspaper-curation-app/src/schema"
 	"github.com/uoregon-libraries/newspaper-curation-app/src/web/tmpl"
 )
@@ -118,7 +118,7 @@ func homeHandler(resp *responder.Responder, i *Issue) {
 
 	// Get issues currently on user's desk
 	var uid = resp.Vars.User.ID
-	var issues, err = db.FindIssuesOnDesk(uid)
+	var issues, err = models.FindIssuesOnDesk(uid)
 	if err != nil {
 		logger.Errorf("Unable to find issues on user %d's desk: %s", uid, err)
 		resp.Vars.Alert = template.HTML(fmt.Sprintf("Unable to search for issues; contact support or try again later."))
@@ -128,7 +128,7 @@ func homeHandler(resp *responder.Responder, i *Issue) {
 	resp.Vars.Data["MyDeskIssues"] = wrapDBIssues(issues)
 
 	// Get issues needing metadata
-	issues, err = db.FindAvailableIssuesByWorkflowStep(schema.WSReadyForMetadataEntry)
+	issues, err = models.FindAvailableIssuesByWorkflowStep(schema.WSReadyForMetadataEntry)
 	if err != nil {
 		logger.Errorf("Unable to find issues needing metadata entry: %s", err)
 		resp.Vars.Alert = template.HTML(fmt.Sprintf("Unable to search for issues; contact support or try again later."))
@@ -140,7 +140,7 @@ func homeHandler(resp *responder.Responder, i *Issue) {
 
 	// Get issues needing review which *weren't* queued by this user (unless the
 	// user is allowed to self-review)
-	issues, err = db.FindAvailableIssuesByWorkflowStep(schema.WSAwaitingMetadataReview)
+	issues, err = models.FindAvailableIssuesByWorkflowStep(schema.WSAwaitingMetadataReview)
 	if err != nil {
 		logger.Errorf("Unable to find issues needing metadata review: %s", err)
 		resp.Vars.Alert = template.HTML(fmt.Sprintf("Unable to search for issues; contact support or try again later."))
@@ -148,7 +148,7 @@ func homeHandler(resp *responder.Responder, i *Issue) {
 		resp.Render(responder.Empty)
 		return
 	}
-	var issuesTwo []*db.Issue
+	var issuesTwo []*models.Issue
 	for _, i := range issues {
 		if i.MetadataEntryUserID != resp.Vars.User.ID || resp.Vars.User.PermittedTo(user.ReviewOwnMetadata) {
 			issuesTwo = append(issuesTwo, i)

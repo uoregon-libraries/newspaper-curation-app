@@ -4,7 +4,7 @@ import (
 	"net/http"
 
 	"github.com/uoregon-libraries/newspaper-curation-app/src/cmd/server/internal/responder"
-	"github.com/uoregon-libraries/newspaper-curation-app/src/db/user"
+	"github.com/uoregon-libraries/newspaper-curation-app/src/models/user"
 )
 
 // canSearch verifies the user can search issues

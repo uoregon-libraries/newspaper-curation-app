@@ -12,7 +12,7 @@ import (
 
 	"github.com/uoregon-libraries/gopkg/fileutil"
 	"github.com/uoregon-libraries/newspaper-curation-app/src/apperr"
-	"github.com/uoregon-libraries/newspaper-curation-app/src/db"
+	"github.com/uoregon-libraries/newspaper-curation-app/src/models"
 	"github.com/uoregon-libraries/newspaper-curation-app/src/schema"
 )
 
@@ -34,7 +34,7 @@ func (s *Searcher) FindScannedIssues() error {
 	var validMOCPaths []string
 	for _, mocPath := range mocPaths {
 		var mocName = filepath.Base(mocPath)
-		if !db.ValidMOC(mocName) {
+		if !models.ValidMOC(mocName) {
 			s.Errors = append(s.Errors, apperr.Errorf("unable to find MARC Org Code %#v in database", mocName))
 			continue
 		}

@@ -9,7 +9,7 @@ import (
 
 	"github.com/uoregon-libraries/gopkg/logger"
 	"github.com/uoregon-libraries/newspaper-curation-app/src/config"
-	"github.com/uoregon-libraries/newspaper-curation-app/src/db"
+	"github.com/uoregon-libraries/newspaper-curation-app/src/models"
 )
 
 // runnerLogger implements logger.Loggable for logging runner-level information
@@ -36,7 +36,7 @@ func nextRunnerID() int32 {
 // regular intervals for those types of jobs.
 type Runner struct {
 	config     *config.Config
-	jobTypes   []db.JobType
+	jobTypes   []models.JobType
 	identifier int32
 	isDone     int32
 	logger     *logger.Logger
@@ -48,7 +48,7 @@ type Runner struct {
 // it easier to know when a runner died and needs to have its jobs restarted.
 
 // NewRunner creates a Runner set up to look for a given list of job types
-func NewRunner(c *config.Config, jobTypes ...db.JobType) *Runner {
+func NewRunner(c *config.Config, jobTypes ...models.JobType) *Runner {
 	var rid = nextRunnerID()
 	return &Runner{
 		config:     c,
@@ -102,7 +102,7 @@ func (r *Runner) Stop() {
 // in-process, and processes it.  If no processor was found, the return is
 // false and nothing happens.
 func (r *Runner) processNext() bool {
-	var dbJob, err = db.PopNextPendingJob(r.jobTypes)
+	var dbJob, err = models.PopNextPendingJob(r.jobTypes)
 
 	if err != nil {
 		r.logger.Errorf("Unable to pull next pending job: %s", err)
@@ -132,7 +132,7 @@ func (r *Runner) process(pr Processor) {
 
 func (r *Runner) handleSuccess(pr Processor) {
 	var dbj = pr.DBJob()
-	dbj.Status = string(db.JobStatusSuccessful)
+	dbj.Status = string(models.JobStatusSuccessful)
 	dbj.CompletedAt = time.Now()
 
 	var err = dbj.Save()
@@ -163,7 +163,7 @@ func (r *Runner) attemptRetry(pr Processor) {
 
 func (r *Runner) handleFailure(pr Processor) {
 	var dbj = pr.DBJob()
-	dbj.Status = string(db.JobStatusFailed)
+	dbj.Status = string(models.JobStatusFailed)
 
 	var err = dbj.Save()
 	if err != nil {
@@ -180,7 +180,7 @@ func (r *Runner) queueNextJob(pr Processor) {
 		return
 	}
 
-	var nextJob, err = db.FindJob(qid)
+	var nextJob, err = models.FindJob(qid)
 	if err != nil {
 		r.logger.Criticalf("Unable to read next job from database (dbid %d): %s", qid, err)
 		return
@@ -190,7 +190,7 @@ func (r *Runner) queueNextJob(pr Processor) {
 		return
 	}
 
-	nextJob.Status = string(db.JobStatusPending)
+	nextJob.Status = string(models.JobStatusPending)
 	err = nextJob.Save()
 	if err != nil {
 		r.logger.Criticalf("Unable to mark next job pending (dbid %d): %s", qid, err)

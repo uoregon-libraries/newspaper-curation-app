@@ -5,28 +5,28 @@ import (
 	"sort"
 	"strings"
 
-	"github.com/uoregon-libraries/newspaper-curation-app/src/db"
 	"github.com/uoregon-libraries/newspaper-curation-app/src/duration"
+	"github.com/uoregon-libraries/newspaper-curation-app/src/models"
 	"github.com/uoregon-libraries/newspaper-curation-app/src/schema"
 )
 
 var re = regexp.MustCompile(`[^A-Za-z0-9]+`)
 var noWordRE = regexp.MustCompile(`\W+`)
 
-// Title wraps a db.Title for web display
+// Title wraps a models.Title for web display
 type Title struct {
-	*db.Title
+	*models.Title
 	SortName string
 }
 
-// WrapTitle converts a db.Title to a Title, giving it a useful "SortName"
+// WrapTitle converts a models.Title to a Title, giving it a useful "SortName"
 // based on its name (stripped of common prefixes) and LCCN
-func WrapTitle(t *db.Title) *Title {
+func WrapTitle(t *models.Title) *Title {
 	return &Title{t, strings.ToLower(re.ReplaceAllString(schema.TrimCommonPrefixes(t.Name)+t.LCCN, "-"))}
 }
 
-// WrapTitles takes a db.TitleList and wraps each title individually
-func WrapTitles(list db.TitleList) []*Title {
+// WrapTitles takes a models.TitleList and wraps each title individually
+func WrapTitles(list models.TitleList) []*Title {
 	var titles = make([]*Title, len(list))
 	for i, t := range list {
 		titles[i] = WrapTitle(t)

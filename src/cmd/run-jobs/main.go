@@ -17,9 +17,10 @@ import (
 	"github.com/uoregon-libraries/gopkg/interrupts"
 	"github.com/uoregon-libraries/gopkg/wordutils"
 	"github.com/uoregon-libraries/newspaper-curation-app/src/config"
-	"github.com/uoregon-libraries/newspaper-curation-app/src/db"
+	"github.com/uoregon-libraries/newspaper-curation-app/src/dbi"
 	"github.com/uoregon-libraries/newspaper-curation-app/src/internal/logger"
 	"github.com/uoregon-libraries/newspaper-curation-app/src/jobs"
+	"github.com/uoregon-libraries/newspaper-curation-app/src/models"
 	"github.com/uoregon-libraries/newspaper-curation-app/src/schema"
 )
 
@@ -121,7 +122,7 @@ func getOpts() (*config.Config, []string) {
 		logger.Fatalf("Invalid configuration: %s", err)
 	}
 
-	err = db.Connect(c.DatabaseConnect)
+	err = dbi.Connect(c.DatabaseConnect)
 	if err != nil {
 		logger.Fatalf("Unable to connect to the database: %s", err)
 	}
@@ -131,7 +132,7 @@ func getOpts() (*config.Config, []string) {
 
 // setupValidQueueNames copies in the list of valid queues for easier validation
 func setupValidQueueNames() {
-	for _, jType := range db.ValidJobTypes {
+	for _, jType := range models.ValidJobTypes {
 		var jt = string(jType)
 		validQueues[jt] = true
 		validQueueList = append(validQueueList, jt)
@@ -196,7 +197,7 @@ func retryJob(idString string) {
 		return
 	}
 
-	var failStatus = db.JobStatusFailed
+	var failStatus = models.JobStatusFailed
 	var dj = j.DBJob()
 	if dj.Status != string(failStatus) {
 		logger.Errorf("Cannot requeue job id %d: status is %s (it must be %s to requeue)", dj.ID, dj.Status, failStatus)
@@ -221,15 +222,15 @@ func watch(c *config.Config, queues ...string) {
 		usageFail("Error: you must specify one or more queues to watch")
 	}
 
-	var jobTypes = make([]db.JobType, len(queues))
+	var jobTypes = make([]models.JobType, len(queues))
 	for i, queue := range queues {
 		validateJobQueue(queue)
-		jobTypes[i] = db.JobType(queue)
+		jobTypes[i] = models.JobType(queue)
 	}
 	watchJobTypes(c, jobTypes...)
 }
 
-func watchJobTypes(c *config.Config, jobTypes ...db.JobType) {
+func watchJobTypes(c *config.Config, jobTypes ...models.JobType) {
 	var r = jobs.NewRunner(c, jobTypes...)
 	addRunner(r)
 	r.Watch(time.Second * 10)
@@ -260,18 +261,18 @@ func runAllQueues(c *config.Config) {
 			// Jobs which are exclusively disk IO are in the first runner to avoid
 			// too much FS stuff hapenning concurrently
 			watchJobTypes(c,
-				db.JobTypeArchiveMasterFiles,
-				db.JobTypeSyncDir,
-				db.JobTypeKillDir,
-				db.JobTypeWriteBagitManifest,
+				models.JobTypeArchiveMasterFiles,
+				models.JobTypeSyncDir,
+				models.JobTypeKillDir,
+				models.JobTypeWriteBagitManifest,
 			)
 		},
 		func() {
 			// Jobs which primarily use CPU are grouped next, so we aren't trying to
 			// share CPU too much
 			watchJobTypes(c,
-				db.JobTypePageSplit,
-				db.JobTypeMakeDerivatives,
+				models.JobTypePageSplit,
+				models.JobTypeMakeDerivatives,
 			)
 		},
 		func() {
@@ -280,11 +281,11 @@ func runAllQueues(c *config.Config) {
 			// take very little CPU or disk IO, but they aren't "critical" jobs that
 			// need to be real-time.
 			watchJobTypes(c,
-				db.JobTypeBuildMETS,
-				db.JobTypeCreateBatchStructure,
-				db.JobTypeMakeBatchXML,
-				db.JobTypeRenameDir,
-				db.JobTypeCleanFiles,
+				models.JobTypeBuildMETS,
+				models.JobTypeCreateBatchStructure,
+				models.JobTypeMakeBatchXML,
+				models.JobTypeRenameDir,
+				models.JobTypeCleanFiles,
 			)
 		},
 		func() {
@@ -292,11 +293,11 @@ func runAllQueues(c *config.Config) {
 			// every second to ensure nearly real-time updates to things like a job's
 			// workflow state
 			var r = jobs.NewRunner(c,
-				db.JobTypeSetIssueWS,
-				db.JobTypeSetIssueMasterLoc,
-				db.JobTypeSetIssueLocation,
-				db.JobTypeSetBatchStatus,
-				db.JobTypeSetBatchLocation,
+				models.JobTypeSetIssueWS,
+				models.JobTypeSetIssueMasterLoc,
+				models.JobTypeSetIssueLocation,
+				models.JobTypeSetBatchStatus,
+				models.JobTypeSetBatchLocation,
 			)
 			addRunner(r)
 			r.Watch(time.Second * 1)

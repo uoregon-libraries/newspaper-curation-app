@@ -8,8 +8,8 @@ import (
 	"time"
 
 	"github.com/uoregon-libraries/newspaper-curation-app/src/apperr"
-	"github.com/uoregon-libraries/newspaper-curation-app/src/db"
 	"github.com/uoregon-libraries/newspaper-curation-app/src/internal/logger"
+	"github.com/uoregon-libraries/newspaper-curation-app/src/models"
 	"github.com/uoregon-libraries/newspaper-curation-app/src/schema"
 	"github.com/uoregon-libraries/newspaper-curation-app/src/uploads"
 )
@@ -158,7 +158,7 @@ func (i *Issue) decorateFiles(fileList []*uploads.File) {
 
 // decoratePriorJobLogs adds information to issues that have old failed jobs.
 func (i *Issue) decoratePriorJobLogs() {
-	var dbi, err = db.FindIssueByKey(i.Key())
+	var dbi, err = models.FindIssueByKey(i.Key())
 	if err != nil {
 		logger.Warnf("Unable to look up issue for decorating queue messages: %s", err)
 		return
@@ -167,8 +167,8 @@ func (i *Issue) decoratePriorJobLogs() {
 		return
 	}
 
-	var dbJobs []*db.Job
-	dbJobs, err = db.FindJobsForIssueID(dbi.ID)
+	var dbJobs []*models.Job
+	dbJobs, err = models.FindJobsForIssueID(dbi.ID)
 	if err != nil {
 		logger.Errorf("Unable to look up jobs for issue id %d (%q): %s", dbi.ID, i.Key(), err)
 		return
@@ -177,7 +177,7 @@ func (i *Issue) decoratePriorJobLogs() {
 	var subErrors []string
 	for _, j := range dbJobs {
 		// We only care to report on the failed jobs, as those haven't been requeued
-		if j.Status != string(db.JobStatusFailed) {
+		if j.Status != string(models.JobStatusFailed) {
 			continue
 		}
 

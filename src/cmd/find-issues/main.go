@@ -13,9 +13,10 @@ import (
 	"github.com/uoregon-libraries/gopkg/fileutil"
 	"github.com/uoregon-libraries/newspaper-curation-app/src/cli"
 	"github.com/uoregon-libraries/newspaper-curation-app/src/config"
-	"github.com/uoregon-libraries/newspaper-curation-app/src/db"
+	"github.com/uoregon-libraries/newspaper-curation-app/src/dbi"
 	"github.com/uoregon-libraries/newspaper-curation-app/src/internal/logger"
 	"github.com/uoregon-libraries/newspaper-curation-app/src/issuewatcher"
+	"github.com/uoregon-libraries/newspaper-curation-app/src/models"
 	"github.com/uoregon-libraries/newspaper-curation-app/src/schema"
 )
 
@@ -33,7 +34,7 @@ type _opts struct {
 }
 
 var opts _opts
-var titles db.TitleList
+var titles models.TitleList
 
 func getOpts() {
 	var c = cli.New(&opts)
@@ -45,7 +46,7 @@ func getOpts() {
 		"refine the search.")
 	conf = c.GetConf()
 
-	var err = db.Connect(conf.DatabaseConnect)
+	var err = dbi.Connect(conf.DatabaseConnect)
 	if err != nil {
 		logger.Fatalf("Error trying to connect to database: %s", err)
 	}
@@ -63,7 +64,7 @@ func getOpts() {
 		opts.IssueKeys = strings.Split(string(contents), "\n")
 	}
 
-	titles, err = db.Titles()
+	titles, err = models.Titles()
 	if err != nil {
 		c.UsageFail("Unable to read titles from the database: %s", err)
 	}

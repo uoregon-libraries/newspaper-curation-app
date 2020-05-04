@@ -1,51 +1,51 @@
 package jobs
 
 import (
-	"github.com/uoregon-libraries/newspaper-curation-app/src/db"
 	"github.com/uoregon-libraries/newspaper-curation-app/src/internal/logger"
+	"github.com/uoregon-libraries/newspaper-curation-app/src/models"
 )
 
 // DBJobToProcessor creates the appropriate structure or structures to get a
 // database job's processor set up
-func DBJobToProcessor(dbJob *db.Job) Processor {
-	switch db.JobType(dbJob.Type) {
-	case db.JobTypeSetIssueWS:
+func DBJobToProcessor(dbJob *models.Job) Processor {
+	switch models.JobType(dbJob.Type) {
+	case models.JobTypeSetIssueWS:
 		return &SetIssueWS{IssueJob: NewIssueJob(dbJob)}
-	case db.JobTypeSetIssueMasterLoc:
+	case models.JobTypeSetIssueMasterLoc:
 		return &SetIssueMasterLoc{IssueJob: NewIssueJob(dbJob)}
-	case db.JobTypeSetIssueLocation:
+	case models.JobTypeSetIssueLocation:
 		return &SetIssueLocation{IssueJob: NewIssueJob(dbJob)}
-	case db.JobTypePageSplit:
+	case models.JobTypePageSplit:
 		return &PageSplit{IssueJob: NewIssueJob(dbJob)}
-	case db.JobTypeMakeDerivatives:
+	case models.JobTypeMakeDerivatives:
 		return &MakeDerivatives{IssueJob: NewIssueJob(dbJob)}
-	case db.JobTypeBuildMETS:
+	case models.JobTypeBuildMETS:
 		return &BuildMETS{IssueJob: NewIssueJob(dbJob)}
-	case db.JobTypeArchiveMasterFiles:
+	case models.JobTypeArchiveMasterFiles:
 		return &ArchiveMasterFiles{IssueJob: NewIssueJob(dbJob)}
-	case db.JobTypeSetBatchStatus:
+	case models.JobTypeSetBatchStatus:
 		return &SetBatchStatus{BatchJob: NewBatchJob(dbJob)}
-	case db.JobTypeSetBatchLocation:
+	case models.JobTypeSetBatchLocation:
 		return &SetBatchLocation{BatchJob: NewBatchJob(dbJob)}
-	case db.JobTypeCreateBatchStructure:
+	case models.JobTypeCreateBatchStructure:
 		return &CreateBatchStructure{BatchJob: NewBatchJob(dbJob)}
-	case db.JobTypeMakeBatchXML:
+	case models.JobTypeMakeBatchXML:
 		return &MakeBatchXML{BatchJob: NewBatchJob(dbJob)}
-	case db.JobTypeWriteBagitManifest:
+	case models.JobTypeWriteBagitManifest:
 		return &WriteBagitManifest{BatchJob: NewBatchJob(dbJob)}
-	case db.JobTypeSyncDir:
+	case models.JobTypeSyncDir:
 		return &SyncDir{Job: NewJob(dbJob)}
-	case db.JobTypeKillDir:
+	case models.JobTypeKillDir:
 		return &KillDir{Job: NewJob(dbJob)}
-	case db.JobTypeRenameDir:
+	case models.JobTypeRenameDir:
 		return &RenameDir{Job: NewJob(dbJob)}
-	case db.JobTypeCleanFiles:
+	case models.JobTypeCleanFiles:
 		return &CleanFiles{Job: NewJob(dbJob)}
 	default:
 		logger.Errorf("Unknown job type %q for job id %d", dbJob.Type, dbJob.ID)
 	}
 
-	dbJob.Status = string(db.JobStatusFailed)
+	dbJob.Status = string(models.JobStatusFailed)
 	dbJob.Save()
 	return nil
 }
@@ -54,7 +54,7 @@ func DBJobToProcessor(dbJob *db.Job) Processor {
 // wrapped into IssueJobs or Processors, as failed jobs aren't meant to be
 // reprocessed (though they can be requeued by creating new jobs)
 func FindAllFailedJobs() (jobs []*Job) {
-	var dbJobs, err = db.FindJobsByStatus(db.JobStatusFailed)
+	var dbJobs, err = models.FindJobsByStatus(models.JobStatusFailed)
 	if err != nil {
 		logger.Criticalf("Unable to look up failed jobs: %s", err)
 		return

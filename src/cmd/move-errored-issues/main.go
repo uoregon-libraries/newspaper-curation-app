@@ -9,8 +9,9 @@ import (
 	"github.com/uoregon-libraries/gopkg/fileutil"
 	"github.com/uoregon-libraries/newspaper-curation-app/src/cli"
 	"github.com/uoregon-libraries/newspaper-curation-app/src/config"
-	"github.com/uoregon-libraries/newspaper-curation-app/src/db"
+	"github.com/uoregon-libraries/newspaper-curation-app/src/dbi"
 	"github.com/uoregon-libraries/newspaper-curation-app/src/internal/logger"
+	"github.com/uoregon-libraries/newspaper-curation-app/src/models"
 )
 
 // Command-line options
@@ -20,7 +21,7 @@ type _opts struct {
 }
 
 var opts _opts
-var titles db.TitleList
+var titles models.TitleList
 
 func getOpts() *config.Config {
 	var c = cli.New(&opts)
@@ -28,7 +29,7 @@ func getOpts() *config.Config {
 		"moves them out of the workflow location to the given --destination, " +
 		"and updates the database so the issues are no longer seen by NCA.")
 	var conf = c.GetConf()
-	var err = db.Connect(conf.DatabaseConnect)
+	var err = dbi.Connect(conf.DatabaseConnect)
 	if err != nil {
 		logger.Fatalf("Error trying to connect to database: %s", err)
 	}
@@ -43,7 +44,7 @@ func getOpts() *config.Config {
 func main() {
 	getOpts()
 	logger.Infof("Finding errored issues to move")
-	var issues, err = db.FindIssuesWithErrors()
+	var issues, err = models.FindIssuesWithErrors()
 	if err != nil {
 		logger.Fatalf("Unable to query the database for issues: %s", err)
 	}
@@ -58,7 +59,7 @@ func main() {
 // moveIssue attempts to move an issue from its current location to a new
 // location.  The return value tells us whether the move was successful enough
 // to continue moving other issues.
-func moveIssue(issue *db.Issue, dest string) (ok bool) {
+func moveIssue(issue *models.Issue, dest string) (ok bool) {
 	logger.Infof("Attempting to move issue %d (location: %q)", issue.ID, issue.Location)
 	// We set this to true when we want the operation on this issue to continue
 	// (to get the data as "good" as possible), but still report "not okay"

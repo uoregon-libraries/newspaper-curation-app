@@ -3,7 +3,7 @@ package user
 import (
 	"strings"
 
-	"github.com/uoregon-libraries/newspaper-curation-app/src/db"
+	"github.com/uoregon-libraries/newspaper-curation-app/src/dbi"
 	"github.com/uoregon-libraries/newspaper-curation-app/src/internal/logger"
 )
 
@@ -39,7 +39,7 @@ func (u *User) serialize() {
 // Active returns all users in the database who have the "active" status
 func Active() ([]*User, error) {
 	var users []*User
-	var op = db.DB.Operation()
+	var op = dbi.DB.Operation()
 	op.Select("users", &User{}).Where("deactivated = ?", false).AllObjects(&users)
 
 	for _, u := range users {
@@ -52,7 +52,7 @@ func Active() ([]*User, error) {
 // Deactivated users need not apply.
 func FindActiveUserWithLogin(l string) *User {
 	var users []*User
-	var op = db.DB.Operation()
+	var op = dbi.DB.Operation()
 	op.Select("users", &User{}).Where("deactivated = ? AND login = ?", false, l).AllObjects(&users)
 	if op.Err() != nil {
 		logger.Errorf("Unable to query users: %s", op.Err())
@@ -70,7 +70,7 @@ func FindActiveUserWithLogin(l string) *User {
 // since it's just using a database ID, so there's no possible ambiguity
 func FindByID(id int) *User {
 	var user = &User{}
-	var op = db.DB.Operation()
+	var op = dbi.DB.Operation()
 	var ok = op.Select("users", &User{}).Where("id = ?", id).First(user)
 	if op.Err() != nil {
 		logger.Errorf("Unable to query users: %s", op.Err())
@@ -130,8 +130,8 @@ func (u *User) IsAdmin() bool {
 
 // Save stores the user's data to the database, rewriting the roles list
 func (u *User) Save() error {
-	var op = db.DB.Operation()
-	op.Dbg = db.Debug
+	var op = dbi.DB.Operation()
+	op.Dbg = dbi.Debug
 	u.serialize()
 	op.Save("users", u)
 	return op.Err()
@@ -218,8 +218,8 @@ func (u *User) CanModifyUser(user *User) bool {
 // users list without causing problems if the user is tied to metadata we need
 // to reference later
 func (u *User) Deactivate() error {
-	var op = db.DB.Operation()
-	op.Dbg = db.Debug
+	var op = dbi.DB.Operation()
+	op.Dbg = dbi.Debug
 	op.Exec("UPDATE users SET deactivated = ? WHERE id = ?", true, u.ID)
 	return op.Err()
 }

@@ -5,7 +5,7 @@ import (
 	"testing"
 	"time"
 
-	"github.com/uoregon-libraries/newspaper-curation-app/src/db"
+	"github.com/uoregon-libraries/newspaper-curation-app/src/models"
 )
 
 var (
@@ -20,19 +20,19 @@ var (
 )
 
 func overrideLookup() {
-	titles = db.TitleList{
-		&db.Title{LCCN: lccnSimple},
-		&db.Title{LCCN: lccnEmbargoed, EmbargoPeriod: embargoPeriod},
+	titles = models.TitleList{
+		&models.Title{LCCN: lccnSimple},
+		&models.Title{LCCN: lccnEmbargoed, EmbargoPeriod: embargoPeriod},
 	}
 }
 
-func makeIssue(lccn, date string) *db.Issue {
-	var dbi = db.NewIssue("oru", lccn, date, 1)
+func makeIssue(lccn, date string) *models.Issue {
+	var dbi = models.NewIssue("oru", lccn, date, 1)
 	dbi.MetadataApprovedAt = now
 	return dbi
 }
 
-func mustWrap(dbi *db.Issue, t *testing.T) *issue {
+func mustWrap(dbi *models.Issue, t *testing.T) *issue {
 	var i, err = wrapIssue(dbi)
 	if err != nil {
 		t.Errorf("Error wrapping issue: %s", err)
@@ -44,7 +44,7 @@ func mustWrap(dbi *db.Issue, t *testing.T) *issue {
 func TestWrapIssue(t *testing.T) {
 	overrideLookup()
 
-	var dbi *db.Issue
+	var dbi *models.Issue
 	var i *issue
 	var err error
 

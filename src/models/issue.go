@@ -1,4 +1,4 @@
-package db
+package models
 
 import (
 	"fmt"
@@ -7,6 +7,7 @@ import (
 	"time"
 
 	"github.com/Nerdmaster/magicsql"
+	"github.com/uoregon-libraries/newspaper-curation-app/src/dbi"
 	"github.com/uoregon-libraries/newspaper-curation-app/src/schema"
 )
 
@@ -74,8 +75,8 @@ func NewIssue(moc, lccn, dt string, ed int) *Issue {
 // findIssues is a centralized finder that auto-skips issues flagged as ignored
 // and auto-deserializes the issues returned
 func findIssues(cond string, args ...interface{}) ([]*Issue, error) {
-	var op = DB.Operation()
-	op.Dbg = Debug
+	var op = dbi.DB.Operation()
+	op.Dbg = dbi.Debug
 
 	var list []*Issue
 	if cond == "" {
@@ -91,8 +92,8 @@ func findIssues(cond string, args ...interface{}) ([]*Issue, error) {
 
 // FindIssue looks for an issue by its id
 func FindIssue(id int) (*Issue, error) {
-	var op = DB.Operation()
-	op.Dbg = Debug
+	var op = dbi.DB.Operation()
+	op.Dbg = dbi.Debug
 	var i = &Issue{}
 	var ok = op.Select("issues", &Issue{}).Where("id = ?", id).First(i)
 	if !ok {
@@ -146,8 +147,8 @@ func FindIssueByKey(key string) (*Issue, error) {
 
 // FindIssueByLocation returns the first issue with the given location
 func FindIssueByLocation(location string) (*Issue, error) {
-	var op = DB.Operation()
-	op.Dbg = Debug
+	var op = dbi.DB.Operation()
+	op.Dbg = dbi.Debug
 	var i *Issue
 	var list, err = findIssues("location = ?", location)
 	if len(list) != 0 {
@@ -266,8 +267,8 @@ func (i *Issue) ReportError(message string) {
 
 // Save creates or updates the Issue in the issues table
 func (i *Issue) Save() error {
-	var op = DB.Operation()
-	op.Dbg = Debug
+	var op = dbi.DB.Operation()
+	op.Dbg = dbi.Debug
 	return i.SaveOp(op)
 }
 
@@ -355,8 +356,8 @@ func (i *Issue) SchemaIssue() (*schema.Issue, error) {
 // and no longer needed in our workflow: tied to a closed (live_done) batch and
 // ignored by NCA, but still contain a location
 func FindCompletedIssuesReadyForRemoval() ([]*Issue, error) {
-	var op = DB.Operation()
-	op.Dbg = Debug
+	var op = dbi.DB.Operation()
+	op.Dbg = dbi.Debug
 
 	var list []*Issue
 	var cond = "batch_id IN (SELECT id FROM batches WHERE status = ?) AND ignored = 1 AND location <> ''"

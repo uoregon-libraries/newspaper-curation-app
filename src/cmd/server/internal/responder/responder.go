@@ -9,9 +9,9 @@ import (
 	"net/http"
 	"time"
 
-	"github.com/uoregon-libraries/newspaper-curation-app/src/db"
-	"github.com/uoregon-libraries/newspaper-curation-app/src/db/user"
 	"github.com/uoregon-libraries/newspaper-curation-app/src/internal/logger"
+	"github.com/uoregon-libraries/newspaper-curation-app/src/models"
+	"github.com/uoregon-libraries/newspaper-curation-app/src/models/user"
 	"github.com/uoregon-libraries/newspaper-curation-app/src/version"
 	"github.com/uoregon-libraries/newspaper-curation-app/src/web/tmpl"
 )
@@ -85,7 +85,7 @@ func (r *Responder) Render(t *tmpl.Template) {
 // the database audit fails
 func (r *Responder) Audit(action, msg string) {
 	var u = r.Vars.User
-	var err = db.CreateAuditLog(u.IP, u.Login, action, msg)
+	var err = models.CreateAuditLog(u.IP, u.Login, action, msg)
 	if err != nil {
 		logger.Criticalf("Unable to write AuditLog{%s (%s), %q, %s}: %s", u.Login, u.IP, action, msg, err)
 	}

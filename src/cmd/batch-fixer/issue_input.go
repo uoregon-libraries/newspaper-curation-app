@@ -5,7 +5,7 @@ import (
 	"strconv"
 	"strings"
 
-	"github.com/uoregon-libraries/newspaper-curation-app/src/db"
+	"github.com/uoregon-libraries/newspaper-curation-app/src/models"
 )
 
 func (i *Input) makeIssueMenu() (*menu, string) {
@@ -31,8 +31,8 @@ func (i *Input) loadIssueHandler(args []string) {
 		return
 	}
 
-	var issue *db.Issue
-	issue, err = db.FindIssue(id)
+	var issue *models.Issue
+	issue, err = models.FindIssue(id)
 	if err != nil {
 		i.printerrln("database error: " + err.Error())
 		return

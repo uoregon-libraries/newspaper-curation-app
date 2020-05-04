@@ -1,8 +1,8 @@
 package jobs
 
 import (
-	"github.com/uoregon-libraries/newspaper-curation-app/src/db"
 	"github.com/uoregon-libraries/newspaper-curation-app/src/internal/logger"
+	"github.com/uoregon-libraries/newspaper-curation-app/src/models"
 	"github.com/uoregon-libraries/newspaper-curation-app/src/schema"
 )
 
@@ -11,13 +11,13 @@ import (
 type IssueJob struct {
 	*Job
 	Issue   *schema.Issue
-	DBIssue *db.Issue
+	DBIssue *models.Issue
 }
 
 // NewIssueJob setups up an IssueJob from a database Job, centralizing the
 // common validations and data manipulation
-func NewIssueJob(dbJob *db.Job) *IssueJob {
-	var dbi, err = db.FindIssue(dbJob.ObjectID)
+func NewIssueJob(dbJob *models.Job) *IssueJob {
+	var dbi, err = models.FindIssue(dbJob.ObjectID)
 	if err != nil {
 		logger.Criticalf("Unable to find issue for job %d: %s", dbJob.ID, err)
 		return nil

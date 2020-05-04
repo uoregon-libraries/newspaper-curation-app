@@ -8,8 +8,8 @@ import (
 
 	ltype "github.com/uoregon-libraries/gopkg/logger"
 	"github.com/uoregon-libraries/newspaper-curation-app/src/config"
-	"github.com/uoregon-libraries/newspaper-curation-app/src/db"
 	"github.com/uoregon-libraries/newspaper-curation-app/src/internal/logger"
+	"github.com/uoregon-libraries/newspaper-curation-app/src/models"
 )
 
 // A Processor is a general interface for all database-driven jobs that process something
@@ -22,13 +22,13 @@ type Processor interface {
 	MaxRetries() int
 
 	// DBJob returns the low-level database Job for updating status, etc.
-	DBJob() *db.Job
+	DBJob() *models.Job
 }
 
 // Job wraps the DB job data and provides business logic for things like
 // logging to the database
 type Job struct {
-	db         *db.Job
+	db         *models.Job
 	Logger     *ltype.Logger
 	maxRetries int
 }
@@ -39,8 +39,8 @@ func (j *Job) MaxRetries() int {
 	return j.maxRetries
 }
 
-// NewJob wraps the given db.Job and sets up a logger
-func NewJob(dbj *db.Job) *Job {
+// NewJob wraps the given models.Job and sets up a logger
+func NewJob(dbj *models.Job) *Job {
 	var j = &Job{db: dbj, maxRetries: 25}
 	j.Logger = &ltype.Logger{Loggable: &jobLogger{Job: j, AppName: filepath.Base(os.Args[0])}}
 	return j
@@ -48,7 +48,7 @@ func NewJob(dbj *db.Job) *Job {
 
 // Find looks up the job in the database and wraps it
 func Find(id int) *Job {
-	var dbJob, err = db.FindJob(id)
+	var dbJob, err = models.FindJob(id)
 	if err != nil {
 		logger.Errorf("Unable to look up job id %d: %s", id, err)
 		return nil
@@ -60,7 +60,7 @@ func Find(id int) *Job {
 }
 
 // DBJob implements job.Processor, returning the low-level database structure
-func (j *Job) DBJob() *db.Job {
+func (j *Job) DBJob() *models.Job {
 	return j.db
 }
 

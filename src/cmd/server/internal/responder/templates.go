@@ -7,7 +7,7 @@ import (
 	"time"
 
 	"github.com/uoregon-libraries/newspaper-curation-app/src/cmd/server/internal/settings"
-	"github.com/uoregon-libraries/newspaper-curation-app/src/db/user"
+	"github.com/uoregon-libraries/newspaper-curation-app/src/models/user"
 	"github.com/uoregon-libraries/newspaper-curation-app/src/web/tmpl"
 	"github.com/uoregon-libraries/newspaper-curation-app/src/web/webutil"
 )

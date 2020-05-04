@@ -14,8 +14,8 @@ import (
 	"github.com/uoregon-libraries/newspaper-curation-app/src/chronam"
 	"github.com/uoregon-libraries/newspaper-curation-app/src/cli"
 	"github.com/uoregon-libraries/newspaper-curation-app/src/config"
-	"github.com/uoregon-libraries/newspaper-curation-app/src/db"
 	"github.com/uoregon-libraries/newspaper-curation-app/src/derivatives/mets"
+	"github.com/uoregon-libraries/newspaper-curation-app/src/models"
 	"github.com/uoregon-libraries/newspaper-curation-app/src/mods"
 )
 
@@ -25,8 +25,8 @@ func fail(format string, args ...interface{}) {
 	os.Exit(1)
 }
 
-var issue = new(db.Issue)
-var title = new(db.Title)
+var issue = new(models.Issue)
+var title = new(models.Title)
 var createdAt time.Time
 var conf *config.Config
 

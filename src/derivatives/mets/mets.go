@@ -10,7 +10,7 @@ import (
 	"time"
 
 	"github.com/uoregon-libraries/gopkg/fileutil"
-	"github.com/uoregon-libraries/newspaper-curation-app/src/db"
+	"github.com/uoregon-libraries/newspaper-curation-app/src/models"
 )
 
 // TimeFormat is the standard format used in our METS header - it's basically
@@ -26,9 +26,9 @@ type Transformer struct {
 }
 
 type data struct {
-	Issue      *db.Issue
+	Issue      *models.Issue
 	Pages      []*Page
-	Title      *db.Title
+	Title      *models.Title
 	NowRFC3339 string
 }
 
@@ -36,7 +36,7 @@ type data struct {
 //
 // We need an issue as well as a title in order to avoid DB lookups, reduce
 // unknowns, and allow for unsaved / faked data
-func New(templatePath string, outputFileName string, issue *db.Issue, title *db.Title, createDate time.Time) *Transformer {
+func New(templatePath string, outputFileName string, issue *models.Issue, title *models.Title, createDate time.Time) *Transformer {
 	var tmpl = template.New("metsxml")
 	var pgs, err = pages(issue)
 	var t = &Transformer{
