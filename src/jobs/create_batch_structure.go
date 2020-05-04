@@ -10,7 +10,7 @@ import (
 
 	"github.com/uoregon-libraries/gopkg/fileutil"
 	"github.com/uoregon-libraries/newspaper-curation-app/src/config"
-	"github.com/uoregon-libraries/newspaper-curation-app/src/db"
+	"github.com/uoregon-libraries/newspaper-curation-app/src/models"
 )
 
 // CreateBatchStructure wraps a BatchJob and implements Processor
@@ -40,7 +40,7 @@ func (j *CreateBatchStructure) Process(*config.Config) bool {
 
 	// Iterate over issues to generate the issue directories and hard-link all
 	// the files
-	var iList []*db.Issue
+	var iList []*models.Issue
 	iList, err = j.DBBatch.Issues()
 	if err != nil {
 		j.Logger.Criticalf("Unable to read issues for %q: %s", j.DBBatch.FullName(), err)

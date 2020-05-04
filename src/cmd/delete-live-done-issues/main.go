@@ -7,9 +7,9 @@ import (
 	"time"
 
 	"github.com/uoregon-libraries/newspaper-curation-app/src/cli"
-	"github.com/uoregon-libraries/newspaper-curation-app/src/db"
 	"github.com/uoregon-libraries/newspaper-curation-app/src/dbi"
 	"github.com/uoregon-libraries/newspaper-curation-app/src/internal/logger"
+	"github.com/uoregon-libraries/newspaper-curation-app/src/models"
 	"github.com/uoregon-libraries/newspaper-curation-app/src/schema"
 )
 
@@ -41,7 +41,7 @@ func getConfig() {
 func main() {
 	getConfig()
 
-	var batches, err = db.FindLiveArchivedBatches()
+	var batches, err = models.FindLiveArchivedBatches()
 
 	if err != nil {
 		logger.Fatalf("Unable to query for batches needing to be closed out: %s", err)
@@ -62,17 +62,17 @@ func main() {
 	}
 }
 
-func warning(issues []*db.Issue) {
+func warning(issues []*models.Issue) {
 	fmt.Printf(ansiIntenseRed+"Warning!"+ansiReset+
 		"  %d issue(s) tied to batches which are 'closed' will be "+
 		ansiIntenseRed+"permanently removed from local disk"+ansiReset+".\n", len(issues))
 
 	var seenBatch = make(map[int]bool)
-	var batches []*db.Batch
+	var batches []*models.Batch
 	for _, i := range issues {
 		if !seenBatch[i.BatchID] {
 			seenBatch[i.BatchID] = true
-			var b, err = db.FindBatch(i.BatchID)
+			var b, err = models.FindBatch(i.BatchID)
 			if err != nil {
 				logger.Fatalf("Error trying to look up batch by id %d: %s", i.BatchID, err)
 			}
@@ -96,7 +96,7 @@ func warning(issues []*db.Issue) {
 }
 
 func purgeIssues() error {
-	var issues, err = db.FindCompletedIssuesReadyForRemoval()
+	var issues, err = models.FindCompletedIssuesReadyForRemoval()
 	if err != nil {
 		return fmt.Errorf("error looking for issues in live_done batches: %s", err)
 	}

@@ -4,17 +4,17 @@ import (
 	"fmt"
 	"strconv"
 
-	"github.com/uoregon-libraries/newspaper-curation-app/src/db"
 	"github.com/uoregon-libraries/newspaper-curation-app/src/jobs"
+	"github.com/uoregon-libraries/newspaper-curation-app/src/models"
 )
 
 func (i *Input) makeBatchMenu() (*menu, string) {
 	var m = i.makeMenu()
 	var st = i.batch.db.Status
-	if st == db.BatchStatusQCReady || st == db.BatchStatusOnStaging {
+	if st == models.BatchStatusQCReady || st == models.BatchStatusOnStaging {
 		m.add("failqc", "Marks the batch as needing work before being put into production", i.failQCHandler)
 	}
-	if st == db.BatchStatusFailedQC {
+	if st == models.BatchStatusFailedQC {
 		m.add("load", "Loads an issue by its id, allowing removal from the batch", i.loadIssueHandler)
 		m.add("delete", "Deletes the entire batch from disk and resets associated issues in "+
 			"the database to their 'ready for batching' state, for cases where a full rebatch "+
@@ -22,7 +22,7 @@ func (i *Input) makeBatchMenu() (*menu, string) {
 			"etc.)", i.deleteBatchHandler)
 		m.add("requeue", "Creates a job in the database to requeue this batch", i.requeueBatchHandler)
 	}
-	if st != db.BatchStatusLive && st != db.BatchStatusLiveDone {
+	if st != models.BatchStatusLive && st != models.BatchStatusLiveDone {
 		m.add("list", "Lists all issues associated with this batch", i.listIssueHandler)
 		m.add("search", "searches issues by various parameters.  Values are formatted as regular expressions "+
 			`for the search.  e.g., "search date=19[0-6].* lccn=sn12345678 key=.*02" would find any issue `+
@@ -154,7 +154,7 @@ func (i *Input) requeueBatchHandler([]string) {
 	var b = i.batch.db
 
 	// Flag the batch as pending again to avoid confusion
-	b.Status = db.BatchStatusPending
+	b.Status = models.BatchStatusPending
 	var err = b.Save()
 	if err != nil {
 		i.printerrln("Unable to update batch status to 'pending' - operation aborted")

@@ -9,10 +9,10 @@ import (
 	"github.com/gorilla/mux"
 	"github.com/uoregon-libraries/newspaper-curation-app/src/cmd/server/internal/responder"
 	"github.com/uoregon-libraries/newspaper-curation-app/src/config"
-	"github.com/uoregon-libraries/newspaper-curation-app/src/db"
-	"github.com/uoregon-libraries/newspaper-curation-app/src/db/user"
 	"github.com/uoregon-libraries/newspaper-curation-app/src/duration"
 	"github.com/uoregon-libraries/newspaper-curation-app/src/internal/logger"
+	"github.com/uoregon-libraries/newspaper-curation-app/src/models"
+	"github.com/uoregon-libraries/newspaper-curation-app/src/models/user"
 	"github.com/uoregon-libraries/newspaper-curation-app/src/web/tmpl"
 )
 
@@ -61,7 +61,7 @@ func getTitle(r *responder.Responder) (t *Title, handled bool) {
 		return nil, true
 	}
 
-	var dbt, err = db.FindTitleByID(id)
+	var dbt, err = models.FindTitleByID(id)
 	if err != nil {
 		logger.Errorf("Unable to find title by id %d: %s", id, err)
 		r.Error(http.StatusInternalServerError, "Unable to find title - try again or contact support")
@@ -79,7 +79,7 @@ func getTitle(r *responder.Responder) (t *Title, handled bool) {
 func listHandler(w http.ResponseWriter, req *http.Request) {
 	var r = responder.Response(w, req)
 	r.Vars.Title = "Titles"
-	var dbTitles, err = db.Titles()
+	var dbTitles, err = models.Titles()
 	if err != nil {
 		logger.Errorf("Unable to load title list: %s", err)
 		r.Error(http.StatusInternalServerError, "Error trying to pull title list - try again or contact support")
@@ -95,7 +95,7 @@ func listHandler(w http.ResponseWriter, req *http.Request) {
 // newHandler shows a form for adding a new title
 func newHandler(w http.ResponseWriter, req *http.Request) {
 	var r = responder.Response(w, req)
-	r.Vars.Data["Title"] = WrapTitle(&db.Title{})
+	r.Vars.Data["Title"] = WrapTitle(&models.Title{})
 	r.Vars.Title = "Creating a new title"
 	r.Render(formTmpl)
 }
@@ -172,8 +172,8 @@ func setTitleData(r *responder.Responder, t *Title) (vErrors []string, handled b
 		vErrors = append(vErrors, "LCCN cannot be blank")
 	}
 
-	var allTitles []*db.Title
-	allTitles, err = db.Titles()
+	var allTitles []*models.Title
+	allTitles, err = models.Titles()
 	if err != nil {
 		logger.Errorf("Unable to check database for title dupes: %s", err)
 		r.Error(http.StatusInternalServerError, "Error trying to save title data - try again or contact support")
@@ -199,7 +199,7 @@ func setTitleData(r *responder.Responder, t *Title) (vErrors []string, handled b
 // data for users who can't edit it (sftp credentials)
 func saveHandler(w http.ResponseWriter, req *http.Request) {
 	var r = responder.Response(w, req)
-	var t = WrapTitle(&db.Title{})
+	var t = WrapTitle(&models.Title{})
 	var handled bool
 
 	if r.Request.FormValue("id") != "" {

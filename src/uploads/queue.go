@@ -4,9 +4,9 @@ import (
 	"fmt"
 
 	"github.com/uoregon-libraries/newspaper-curation-app/src/apperr"
-	"github.com/uoregon-libraries/newspaper-curation-app/src/db"
 	"github.com/uoregon-libraries/newspaper-curation-app/src/internal/logger"
 	"github.com/uoregon-libraries/newspaper-curation-app/src/jobs"
+	"github.com/uoregon-libraries/newspaper-curation-app/src/models"
 	"github.com/uoregon-libraries/newspaper-curation-app/src/schema"
 )
 
@@ -54,7 +54,7 @@ func (i *Issue) Queue() apperr.Error {
 	}
 
 	// Find a DB issue or create one
-	var dbi, err = db.FindIssueByKey(i.Key())
+	var dbi, err = models.FindIssueByKey(i.Key())
 	if err != nil {
 		logger.Criticalf("Unable to search for database issue %q: %s", i.Key(), err)
 		return dbErr()
@@ -71,22 +71,22 @@ func (i *Issue) Queue() apperr.Error {
 	// Look for an existing job for this issue.  If anything exists, we have to
 	// make sure they're all failed move jobs.  We're okay closing and retrying a
 	// failed move, but anything else is a problem.
-	var jobList []*db.Job
-	jobList, err = db.FindJobsForIssueID(dbi.ID)
+	var jobList []*models.Job
+	jobList, err = models.FindJobsForIssueID(dbi.ID)
 	if err != nil {
 		logger.Criticalf("Unable to query jobs associated with issue %q: %s", i.Key(), err)
 		return dbErr()
 	}
 	for _, job := range jobList {
-		switch db.JobStatus(job.Status) {
-		case db.JobStatusFailed:
-			job.Status = string(db.JobStatusFailedDone)
+		switch models.JobStatus(job.Status) {
+		case models.JobStatusFailed:
+			job.Status = string(models.JobStatusFailedDone)
 			err = job.Save()
 			if err != nil {
 				logger.Criticalf("Unable to close failed job!  Manually fix this!  Job id %d; error: %s", job.ID, err)
 				return dbErr()
 			}
-		case db.JobStatusFailedDone:
+		case models.JobStatusFailedDone:
 			continue
 		default:
 			logger.Criticalf("Unexpected job detected for issue %q (db id %d): job id %d, status %q",
@@ -113,8 +113,8 @@ func (i *Issue) Queue() apperr.Error {
 	return nil
 }
 
-func (i *Issue) createDatabaseIssue() (*db.Issue, error) {
-	var dbi = db.NewIssue(i.MARCOrgCode, i.Title.LCCN, i.RawDate, i.Edition)
+func (i *Issue) createDatabaseIssue() (*models.Issue, error) {
+	var dbi = models.NewIssue(i.MARCOrgCode, i.Title.LCCN, i.RawDate, i.Edition)
 
 	// SFTP issues (for now) don't get their MOC set, so we have to do that here
 	if dbi.MARCOrgCode == "" && i.WorkflowStep == schema.WSSFTP {

@@ -3,8 +3,8 @@ package main
 import (
 	"sort"
 
-	"github.com/uoregon-libraries/newspaper-curation-app/src/db"
 	"github.com/uoregon-libraries/newspaper-curation-app/src/internal/logger"
+	"github.com/uoregon-libraries/newspaper-curation-app/src/models"
 )
 
 // issueQueue is a list of issues for a given MOC to ease batching.  It acts as
@@ -100,7 +100,7 @@ func newBatchQueue(minPages, maxPages int) *batchQueue {
 // to the metadata entry phase; store file-level info in the database so we
 // have an easy checksum that's 100% separate from the filesystem)
 func (q *batchQueue) FindReadyIssues() {
-	var issues, err = db.FindIssuesReadyForBatching()
+	var issues, err = models.FindIssuesReadyForBatching()
 	if err != nil {
 		logger.Fatalf("Error trying to find issues: %s", err)
 	}
@@ -155,7 +155,7 @@ func (q *batchQueue) currentQueue() (*issueQueue, bool) {
 // necessary for generating a batch on disk.  Every issue put into the batch is
 // removed from its queue so that each call to NextBatch returns a new batch.
 // ok is false when there was nothing left to batch.
-func (q *batchQueue) NextBatch() (*db.Batch, bool) {
+func (q *batchQueue) NextBatch() (*models.Batch, bool) {
 	for moc, mq := range q.mocQueue {
 		if mq.pages > 0 {
 			logger.Debugf("%q queue has %d pages left", moc, mq.pages)
@@ -177,12 +177,12 @@ func (q *batchQueue) NextBatch() (*db.Batch, bool) {
 		logger.Infof("Small batch being pushed due to age of longest-waiting issue")
 	}
 
-	var dbIssues = make([]*db.Issue, len(smallQ.list))
+	var dbIssues = make([]*models.Issue, len(smallQ.list))
 	for i, issue := range smallQ.list {
 		dbIssues[i] = issue.Issue
 	}
 
-	var batch, err = db.CreateBatch(conf.Webroot, q.currentMOC, dbIssues)
+	var batch, err = models.CreateBatch(conf.Webroot, q.currentMOC, dbIssues)
 	if err != nil {
 		logger.Fatalf("Unable to create a new batch: %s", err)
 	}

@@ -5,8 +5,8 @@ import (
 	"os"
 	"path/filepath"
 
-	"github.com/uoregon-libraries/newspaper-curation-app/src/db"
 	"github.com/uoregon-libraries/newspaper-curation-app/src/internal/logger"
+	"github.com/uoregon-libraries/newspaper-curation-app/src/models"
 	"github.com/uoregon-libraries/newspaper-curation-app/src/schema"
 )
 
@@ -33,7 +33,7 @@ func stripExt(path string) string {
 }
 
 // pages returns an ordered list of Page data
-func pages(i *db.Issue) (pages []*Page, err error) {
+func pages(i *models.Issue) (pages []*Page, err error) {
 	var labels = i.PageLabels
 
 	var si *schema.Issue

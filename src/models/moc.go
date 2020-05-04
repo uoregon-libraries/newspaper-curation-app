@@ -1,4 +1,4 @@
-package db
+package models
 
 import "github.com/uoregon-libraries/newspaper-curation-app/src/dbi"
 

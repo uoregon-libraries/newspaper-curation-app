@@ -5,7 +5,7 @@ import (
 	"time"
 
 	"github.com/uoregon-libraries/newspaper-curation-app/src/cmd/server/internal/settings"
-	"github.com/uoregon-libraries/newspaper-curation-app/src/db/user"
+	"github.com/uoregon-libraries/newspaper-curation-app/src/models/user"
 )
 
 // GetUserLogin returns the Apache-auth user or the debuguser argument if

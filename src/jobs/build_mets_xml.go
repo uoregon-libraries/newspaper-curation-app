@@ -4,8 +4,8 @@ import (
 	"time"
 
 	"github.com/uoregon-libraries/newspaper-curation-app/src/config"
-	"github.com/uoregon-libraries/newspaper-curation-app/src/db"
 	"github.com/uoregon-libraries/newspaper-curation-app/src/derivatives/mets"
+	"github.com/uoregon-libraries/newspaper-curation-app/src/models"
 )
 
 // BuildMETS creates the final file needed for an issue to be able to be
@@ -16,7 +16,7 @@ type BuildMETS struct {
 	*IssueJob
 	templatePath  string
 	outputXMLPath string
-	Title         *db.Title
+	Title         *models.Title
 }
 
 // Process generates the METS XML file for the job's issue
@@ -28,7 +28,7 @@ func (job *BuildMETS) Process(c *config.Config) bool {
 	job.outputXMLPath = job.Issue.METSFile()
 
 	var err error
-	job.Title, err = db.FindTitle("lccn = ?", job.DBIssue.LCCN)
+	job.Title, err = models.FindTitle("lccn = ?", job.DBIssue.LCCN)
 	if err != nil {
 		job.Logger.Errorf("Unable to look up title for issue id %d (LCCN %q): %s", job.DBIssue.ID, job.DBIssue.LCCN, err)
 		return false

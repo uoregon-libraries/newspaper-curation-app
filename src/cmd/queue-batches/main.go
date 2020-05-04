@@ -3,10 +3,10 @@ package main
 import (
 	"github.com/uoregon-libraries/newspaper-curation-app/src/cli"
 	"github.com/uoregon-libraries/newspaper-curation-app/src/config"
-	"github.com/uoregon-libraries/newspaper-curation-app/src/db"
 	"github.com/uoregon-libraries/newspaper-curation-app/src/dbi"
 	"github.com/uoregon-libraries/newspaper-curation-app/src/internal/logger"
 	"github.com/uoregon-libraries/newspaper-curation-app/src/jobs"
+	"github.com/uoregon-libraries/newspaper-curation-app/src/models"
 )
 
 // Command-line options
@@ -15,7 +15,7 @@ type _opts struct {
 }
 
 var opts _opts
-var titles db.TitleList
+var titles models.TitleList
 
 func getOpts() *config.Config {
 	var c = cli.New(&opts)
@@ -29,7 +29,7 @@ func getOpts() *config.Config {
 		logger.Fatalf("Error trying to connect to database: %s", err)
 	}
 
-	titles, err = db.Titles()
+	titles, err = models.Titles()
 	if err != nil {
 		logger.Fatalf("Unable to find titles in the database: %s", err)
 	}

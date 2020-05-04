@@ -7,8 +7,8 @@ import (
 	"strconv"
 
 	"github.com/uoregon-libraries/newspaper-curation-app/src/cmd/server/internal/responder"
-	"github.com/uoregon-libraries/newspaper-curation-app/src/db"
 	"github.com/uoregon-libraries/newspaper-curation-app/src/internal/logger"
+	"github.com/uoregon-libraries/newspaper-curation-app/src/models"
 	"github.com/uoregon-libraries/newspaper-curation-app/src/schema"
 	"github.com/uoregon-libraries/newspaper-curation-app/src/web/tmpl"
 )
@@ -43,7 +43,7 @@ func getResponder(w http.ResponseWriter, req *http.Request) *resp {
 // schema.Title instances, and stuffs them into a "Titles" variable
 func (r *resp) loadTitles() {
 	var titles = make(schema.TitleList, 0)
-	var dbTitles, err = db.Titles()
+	var dbTitles, err = models.Titles()
 	if err != nil {
 		logger.Errorf("Unable to look up titles from database: %s", err)
 		r.err = &respError{
