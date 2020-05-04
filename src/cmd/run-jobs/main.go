@@ -18,6 +18,7 @@ import (
 	"github.com/uoregon-libraries/gopkg/wordutils"
 	"github.com/uoregon-libraries/newspaper-curation-app/src/config"
 	"github.com/uoregon-libraries/newspaper-curation-app/src/db"
+	"github.com/uoregon-libraries/newspaper-curation-app/src/dbi"
 	"github.com/uoregon-libraries/newspaper-curation-app/src/internal/logger"
 	"github.com/uoregon-libraries/newspaper-curation-app/src/jobs"
 	"github.com/uoregon-libraries/newspaper-curation-app/src/schema"
@@ -121,7 +122,7 @@ func getOpts() (*config.Config, []string) {
 		logger.Fatalf("Invalid configuration: %s", err)
 	}
 
-	err = db.Connect(c.DatabaseConnect)
+	err = dbi.Connect(c.DatabaseConnect)
 	if err != nil {
 		logger.Fatalf("Unable to connect to the database: %s", err)
 	}

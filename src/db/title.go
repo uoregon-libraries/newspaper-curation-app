@@ -4,6 +4,7 @@ import (
 	"fmt"
 	"time"
 
+	"github.com/uoregon-libraries/newspaper-curation-app/src/dbi"
 	"github.com/uoregon-libraries/newspaper-curation-app/src/duration"
 	"github.com/uoregon-libraries/newspaper-curation-app/src/schema"
 )
@@ -26,8 +27,8 @@ type Title struct {
 
 // FindTitle searches the database for a single title
 func FindTitle(where string, args ...interface{}) (*Title, error) {
-	var op = DB.Operation()
-	op.Dbg = Debug
+	var op = dbi.DB.Operation()
+	op.Dbg = dbi.Debug
 	var t = &Title{}
 	op.Select("titles", &Title{}).Where(where, args...).First(t)
 	return t, op.Err()
@@ -45,8 +46,8 @@ type TitleList []*Title
 // Titles returns all titles in the database for bulk operations
 func Titles() (TitleList, error) {
 	var allTitles = make(TitleList, 0)
-	var op = DB.Operation()
-	op.Dbg = Debug
+	var op = dbi.DB.Operation()
+	op.Dbg = dbi.Debug
 	op.Select("titles", &Title{}).AllObjects(&allTitles)
 	return allTitles, op.Err()
 }
@@ -89,8 +90,8 @@ func (tl TitleList) Find(identifier string) *Title {
 
 // Save stores the title data in the database
 func (t *Title) Save() error {
-	var op = DB.Operation()
-	op.Dbg = Debug
+	var op = dbi.DB.Operation()
+	op.Dbg = dbi.Debug
 	op.Save("titles", t)
 	return op.Err()
 }

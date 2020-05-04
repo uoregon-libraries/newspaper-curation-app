@@ -1,6 +1,10 @@
 package db
 
-import "time"
+import (
+	"time"
+
+	"github.com/uoregon-libraries/newspaper-curation-app/src/dbi"
+)
 
 // AuditLog represents the audit_logs table
 type AuditLog struct {
@@ -14,8 +18,8 @@ type AuditLog struct {
 
 // CreateAuditLog writes the given data to audit_logs
 func CreateAuditLog(ip, user, action, message string) error {
-	var op = DB.Operation()
-	op.Dbg = Debug
+	var op = dbi.DB.Operation()
+	op.Dbg = dbi.Debug
 	op.Save("audit_logs", &AuditLog{When: time.Now(), IP: ip, User: user, Action: action, Message: message})
 	return op.Err()
 }

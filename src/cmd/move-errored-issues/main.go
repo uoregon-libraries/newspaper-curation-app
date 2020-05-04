@@ -10,6 +10,7 @@ import (
 	"github.com/uoregon-libraries/newspaper-curation-app/src/cli"
 	"github.com/uoregon-libraries/newspaper-curation-app/src/config"
 	"github.com/uoregon-libraries/newspaper-curation-app/src/db"
+	"github.com/uoregon-libraries/newspaper-curation-app/src/dbi"
 	"github.com/uoregon-libraries/newspaper-curation-app/src/internal/logger"
 )
 
@@ -28,7 +29,7 @@ func getOpts() *config.Config {
 		"moves them out of the workflow location to the given --destination, " +
 		"and updates the database so the issues are no longer seen by NCA.")
 	var conf = c.GetConf()
-	var err = db.Connect(conf.DatabaseConnect)
+	var err = dbi.Connect(conf.DatabaseConnect)
 	if err != nil {
 		logger.Fatalf("Error trying to connect to database: %s", err)
 	}

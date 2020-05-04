@@ -1,4 +1,8 @@
-package db
+// Package dbi is responsible for the low-level database interfacing objects
+// (DB and Debug) as well as the connection function.  It is isolated to avoid
+// stupid circular dependencies since it needs to be accessible from just about
+// every package.
+package dbi
 
 import (
 	"database/sql"

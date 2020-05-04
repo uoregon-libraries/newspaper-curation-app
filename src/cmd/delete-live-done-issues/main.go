@@ -8,6 +8,7 @@ import (
 
 	"github.com/uoregon-libraries/newspaper-curation-app/src/cli"
 	"github.com/uoregon-libraries/newspaper-curation-app/src/db"
+	"github.com/uoregon-libraries/newspaper-curation-app/src/dbi"
 	"github.com/uoregon-libraries/newspaper-curation-app/src/internal/logger"
 	"github.com/uoregon-libraries/newspaper-curation-app/src/schema"
 )
@@ -31,7 +32,7 @@ func getConfig() {
 		"part of a batch which has been flagged as being completely done.")
 
 	var conf = c.GetConf()
-	var err = db.Connect(conf.DatabaseConnect)
+	var err = dbi.Connect(conf.DatabaseConnect)
 	if err != nil {
 		logger.Fatalf("Error trying to connect to database: %s", err)
 	}
@@ -46,8 +47,8 @@ func main() {
 		logger.Fatalf("Unable to query for batches needing to be closed out: %s", err)
 	}
 
-	var op = db.DB.Operation()
-	op.Dbg = db.Debug
+	var op = dbi.DB.Operation()
+	op.Dbg = dbi.Debug
 	op.BeginTransaction()
 
 	for _, b := range batches {

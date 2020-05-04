@@ -6,6 +6,7 @@ import (
 	"time"
 
 	"github.com/Nerdmaster/magicsql"
+	"github.com/uoregon-libraries/newspaper-curation-app/src/dbi"
 )
 
 // These are all possible batch status values
@@ -37,8 +38,8 @@ type Batch struct {
 
 // FindBatch looks for a batch by its id
 func FindBatch(id int) (*Batch, error) {
-	var op = DB.Operation()
-	op.Dbg = Debug
+	var op = dbi.DB.Operation()
+	op.Dbg = dbi.Debug
 	var b = &Batch{}
 	var ok = op.Select("batches", b).Where("id = ?", id).First(b)
 	if !ok {
@@ -49,8 +50,8 @@ func FindBatch(id int) (*Batch, error) {
 
 // InProcessBatches returns the full list of in-process batches (not live, not pending)
 func InProcessBatches() ([]*Batch, error) {
-	var op = DB.Operation()
-	op.Dbg = Debug
+	var op = dbi.DB.Operation()
+	op.Dbg = dbi.Debug
 
 	var list []*Batch
 	op.Select("batches", &Batch{}).Where(
@@ -64,8 +65,8 @@ func InProcessBatches() ([]*Batch, error) {
 // FindLiveArchivedBatches returns all batches that are still live, but have an
 // archived_at value
 func FindLiveArchivedBatches() ([]*Batch, error) {
-	var op = DB.Operation()
-	op.Dbg = Debug
+	var op = dbi.DB.Operation()
+	op.Dbg = dbi.Debug
 
 	var list []*Batch
 	op.Select("batches", &Batch{}).
@@ -87,8 +88,8 @@ func FindLiveArchivedBatches() ([]*Batch, error) {
 // ensures that we stick with a sequence, keeping collisions unlikely, but a
 // different site would have a totally different sequence.
 func CreateBatch(webroot, moc string, issues []*Issue) (*Batch, error) {
-	var op = DB.Operation()
-	op.Dbg = Debug
+	var op = dbi.DB.Operation()
+	op.Dbg = dbi.Debug
 	op.BeginTransaction()
 	defer op.EndTransaction()
 
@@ -141,8 +142,8 @@ func (b *Batch) AwardYear() int {
 
 // Save creates or updates the Batch in the batches table
 func (b *Batch) Save() error {
-	var op = DB.Operation()
-	op.Dbg = Debug
+	var op = dbi.DB.Operation()
+	op.Dbg = dbi.Debug
 	return b.SaveOp(op)
 }
 
@@ -156,8 +157,8 @@ func (b *Batch) SaveOp(op *magicsql.Operation) error {
 // Delete removes all issues from this batch and sets its status to "deleted".
 // Caller must clean up the filesystem.
 func (b *Batch) Delete() error {
-	var op = DB.Operation()
-	op.Dbg = Debug
+	var op = dbi.DB.Operation()
+	op.Dbg = dbi.Debug
 	op.BeginTransaction()
 	defer op.EndTransaction()
 

@@ -4,6 +4,7 @@ import (
 	"github.com/uoregon-libraries/newspaper-curation-app/src/cli"
 	"github.com/uoregon-libraries/newspaper-curation-app/src/config"
 	"github.com/uoregon-libraries/newspaper-curation-app/src/db"
+	"github.com/uoregon-libraries/newspaper-curation-app/src/dbi"
 	"github.com/uoregon-libraries/newspaper-curation-app/src/internal/logger"
 	"github.com/uoregon-libraries/newspaper-curation-app/src/jobs"
 )
@@ -23,7 +24,7 @@ func getOpts() *config.Config {
 		"the MAX_BATCH_SIZE and MIN_BATCH_SIZE settings to control how many " +
 		"pages a batch may contain.")
 	var conf = c.GetConf()
-	var err = db.Connect(conf.DatabaseConnect)
+	var err = dbi.Connect(conf.DatabaseConnect)
 	if err != nil {
 		logger.Fatalf("Error trying to connect to database: %s", err)
 	}

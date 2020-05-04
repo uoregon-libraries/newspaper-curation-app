@@ -5,6 +5,7 @@ import (
 
 	"github.com/uoregon-libraries/newspaper-curation-app/src/config"
 	"github.com/uoregon-libraries/newspaper-curation-app/src/db"
+	"github.com/uoregon-libraries/newspaper-curation-app/src/dbi"
 	"github.com/uoregon-libraries/newspaper-curation-app/src/schema"
 )
 
@@ -47,7 +48,7 @@ func PrepareBatchJobAdvanced(t db.JobType, batch *db.Batch, args map[string]stri
 // one as ready to run while the others become effectively dependent on the
 // prior job in the list
 func QueueSerial(jobs ...*db.Job) error {
-	var op = db.DB.Operation()
+	var op = dbi.DB.Operation()
 	op.BeginTransaction()
 	defer op.EndTransaction()
 

@@ -10,7 +10,7 @@ import (
 	flags "github.com/jessevdk/go-flags"
 	"github.com/uoregon-libraries/gopkg/wordutils"
 	"github.com/uoregon-libraries/newspaper-curation-app/src/config"
-	"github.com/uoregon-libraries/newspaper-curation-app/src/db"
+	"github.com/uoregon-libraries/newspaper-curation-app/src/dbi"
 	"github.com/uoregon-libraries/newspaper-curation-app/src/internal/logger"
 	"github.com/uoregon-libraries/newspaper-curation-app/src/issuewatcher"
 )
@@ -49,7 +49,7 @@ func getConf() {
 		logger.Fatalf("Config error: %s", err)
 	}
 
-	err = db.Connect(conf.DatabaseConnect)
+	err = dbi.Connect(conf.DatabaseConnect)
 	if err != nil {
 		logger.Fatalf("Error trying to connect to database: %s", err)
 	}
