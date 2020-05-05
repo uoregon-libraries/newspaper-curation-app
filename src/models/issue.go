@@ -225,9 +225,9 @@ func (i *Issue) DateEdition() string {
 	return schema.IssueDateEdition(i.Date, i.Edition)
 }
 
-// Actions lazy-loads all actions tied to this issue and orders them in
+// WorkflowActions lazy-loads all actions tied to this issue and orders them in
 // chronological order (the newest are at the end of the list)
-func (i *Issue) Actions() []*Action {
+func (i *Issue) WorkflowActions() []*Action {
 	if i.actions == nil {
 		// Yup, we deliberately ignore errors here.  Bah.
 		i.actions, _ = FindActionsForIssue(i.ID)
@@ -236,9 +236,9 @@ func (i *Issue) Actions() []*Action {
 	return i.actions
 }
 
-// RecentActions returns the last n actions which have occurred
-func (i *Issue) RecentActions(n int) []*Action {
-	var list = i.Actions()
+// RecentWorkflowActions returns the last n actions which have occurred
+func (i *Issue) RecentWorkflowActions(n int) []*Action {
+	var list = i.WorkflowActions()
 	if len(list) > n {
 		return list[len(list)-n:]
 	}

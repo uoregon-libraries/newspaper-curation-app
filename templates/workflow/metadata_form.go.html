@@ -10,10 +10,10 @@
   </ul>
 </p>
 
-{{if .Data.Issue.Actions}}
-  <h2>Recent Actions</h2>
+{{if .Data.Issue.WorkflowActions}}
+  <h2>Recent Actions / Comments</h2>
   <div class="action-list">
-    {{range .Data.Issue.RecentActions 5}}
+    {{range .Data.Issue.RecentWorkflowActions 5}}
       {{template "issue_action" (dict "Action" . "User" $.User)}}
     {{end}}
   </div>
