@@ -249,13 +249,27 @@ func (i *Issue) RecentWorkflowActions(n int) []*Action {
 
 // Claim sets the workflow owner to the given user id, and sets the expiration
 // time to a week from now
-func (i *Issue) Claim(byUserID int) {
+func (i *Issue) Claim(byUserID int) error {
+	i.claim(byUserID)
+	return i.Save()
+}
+
+// claim updates metadata without writing to the database so internal
+// functions can use this as just one step of the update process
+func (i *Issue) claim(byUserID int) {
 	i.WorkflowOwnerID = byUserID
 	i.WorkflowOwnerExpiresAt = time.Now().Add(time.Hour * 24 * 7)
 }
 
 // Unclaim removes the workflow owner and resets the workflow expiration time
-func (i *Issue) Unclaim() {
+func (i *Issue) Unclaim() error {
+	i.unclaim()
+	return i.Save()
+}
+
+// unclaim updates metadata without writing to the database so internal
+// functions can use this as just one step of the update process
+func (i *Issue) unclaim() {
 	i.WorkflowOwnerID = 0
 	i.WorkflowOwnerExpiresAt = time.Time{}
 }
@@ -267,11 +281,11 @@ func (i *Issue) QueueForMetadataReview(curatorID int) error {
 	// Update workflow step and record the curator id
 	i.WorkflowStep = schema.WSAwaitingMetadataReview
 	i.MetadataEntryUserID = curatorID
-	i.Unclaim()
+	i.unclaim()
 
 	// If this was previously rejected, put it back on the reviewer's desk
 	if i.RejectedByUserID != 0 {
-		i.Claim(i.RejectedByUserID)
+		i.claim(i.RejectedByUserID)
 	}
 
 	var op = dbi.DB.Operation()
@@ -288,22 +302,24 @@ func (i *Issue) QueueForMetadataReview(curatorID int) error {
 		a.SaveOp(op)
 	}
 
-	return i.SaveOp(op)
+	i.SaveOp(op)
+	return op.Err()
 }
 
 // ApproveMetadata moves the issue to the final workflow step (e.g., no more
 // manual steps) and sets the reviewer id to that which was passed in
-func (i *Issue) ApproveMetadata(reviewerID int) {
-	i.Unclaim()
+func (i *Issue) ApproveMetadata(reviewerID int) error {
+	i.unclaim()
 	i.MetadataApprovedAt = time.Now()
 	i.ReviewedByUserID = reviewerID
 	i.WorkflowStep = schema.WSReadyForMETSXML
+	return i.Save()
 }
 
 // RejectMetadata sends the issue back to the metadata entry user and saves the
 // reviewer's notes
-func (i *Issue) RejectMetadata(reviewerID int, notes string) {
-	i.Claim(i.MetadataEntryUserID)
+func (i *Issue) RejectMetadata(reviewerID int, notes string) error {
+	i.claim(i.MetadataEntryUserID)
 	i.RejectedByUserID = reviewerID
 	i.WorkflowStep = schema.WSReadyForMetadataEntry
 	var a = newIssueAction(i.ID, ActionTypeMetadataRejection)
@@ -311,15 +327,24 @@ func (i *Issue) RejectMetadata(reviewerID int, notes string) {
 	a.Message = notes
 
 	i.actions = append(i.actions, a)
+
+	var op = dbi.DB.Operation()
+	op.Dbg = dbi.Debug
+	op.BeginTransaction()
+	defer op.EndTransaction()
+
+	i.SaveOp(op)
+	a.SaveOp(op)
+	return op.Err()
 }
 
 // ReportError adds an error message to the issue and flags it as being in the
 // "unfixable" state.  That state basically says that nobody can use NCA to fix
 // the problem, and it needs to be pulled and processed by hand.
-func (i *Issue) ReportError(message string) {
+func (i *Issue) ReportError(message string) error {
 	i.Error = message
 	i.WorkflowStep = schema.WSUnfixableMetadataError
-	i.Unclaim()
+	return i.Unclaim()
 }
 
 // Save creates or updates the Issue in the issues table

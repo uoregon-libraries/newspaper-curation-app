@@ -170,8 +170,7 @@ func viewIssueHandler(resp *responder.Responder, i *Issue) {
 // claimIssueHandler just assigns the given issue to the logged-in user and
 // sets a one-week expiration
 func claimIssueHandler(resp *responder.Responder, i *Issue) {
-	i.Claim(resp.Vars.User.ID)
-	var err = i.Save()
+	var err = i.Claim(resp.Vars.User.ID)
 	if err != nil {
 		logger.Errorf("Unable to claim issue id %d by user %s: %s", i.ID, resp.Vars.User.Login, err)
 		resp.Vars.Alert = template.HTML("Unable to claim issue; contact support or try again later.")
@@ -187,8 +186,7 @@ func claimIssueHandler(resp *responder.Responder, i *Issue) {
 
 // unclaimIssueHandler clears the issue's workflow data
 func unclaimIssueHandler(resp *responder.Responder, i *Issue) {
-	i.Unclaim()
-	var err = i.Save()
+	var err = i.Unclaim()
 	if err != nil {
 		logger.Errorf("Unable to unclaim issue id %d for user %s: %s", i.ID, resp.Vars.User.Login, err)
 		resp.Vars.Alert = template.HTML("Unable to unclaim issue; contact support or try again later.")
@@ -246,8 +244,7 @@ func saveErrorHandler(resp *responder.Responder, i *Issue) {
 		return
 	}
 
-	i.ReportError(emsg)
-	var err = i.Save()
+	var err = i.ReportError(emsg)
 	if err != nil {
 		logger.Errorf("Unable to save issue id %d's error (POST: %#v): %s", i.ID, resp.Request.Form, err)
 		resp.Vars.Alert = template.HTML("Error trying to save error report (no, the irony is not lost on us); try again or contact support")
@@ -277,8 +274,7 @@ func approveIssueMetadataHandler(resp *responder.Responder, i *Issue) {
 		return
 	}
 
-	i.ApproveMetadata(resp.Vars.User.ID)
-	var err = i.Save()
+	var err = i.ApproveMetadata(resp.Vars.User.ID)
 	if err != nil {
 		logger.Errorf("Unable to save issue id %d's workflow approval by user %d (POST: %#v): %s",
 			i.ID, resp.Vars.User.ID, resp.Request.Form, err)
@@ -314,8 +310,7 @@ func rejectIssueMetadataHandler(resp *responder.Responder, i *Issue) {
 		return
 	}
 
-	i.RejectMetadata(resp.Vars.User.ID, notes)
-	var err = i.Save()
+	var err = i.RejectMetadata(resp.Vars.User.ID, notes)
 	if err != nil {
 		logger.Errorf("Unable to save issue id %d's rejection notes (POST: %#v): %s", i.ID, resp.Request.Form, err)
 		resp.Vars.Alert = template.HTML("Error trying to save rejection notes; try again or contact support")
