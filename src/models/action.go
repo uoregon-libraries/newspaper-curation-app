@@ -3,6 +3,7 @@ package models
 import (
 	"time"
 
+	"github.com/Nerdmaster/magicsql"
 	"github.com/uoregon-libraries/newspaper-curation-app/src/dbi"
 )
 
@@ -76,4 +77,18 @@ func (a *Action) Author() *User {
 		a.user = FindUserByID(a.UserID)
 	}
 	return a.user
+}
+
+// Save creates or updates the Action in the actions table
+func (a *Action) Save() error {
+	var op = dbi.DB.Operation()
+	op.Dbg = dbi.Debug
+	return a.SaveOp(op)
+}
+
+// SaveOp creates or updates the Action with a custom operation (e.g., for
+// transaction-dependent saves)
+func (a *Action) SaveOp(op *magicsql.Operation) error {
+	op.Save("actions", a)
+	return op.Err()
 }
