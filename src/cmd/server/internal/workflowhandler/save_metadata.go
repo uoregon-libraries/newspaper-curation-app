@@ -30,6 +30,7 @@ func storeIssueMetadata(resp *responder.Responder, i *Issue) map[string]string {
 	save("date", &i.Issue.Date)
 	save("volume_number", &i.Volume)
 	save("page_labels_csv", &i.PageLabelsCSV)
+	save("draft_comment", &i.DraftComment)
 
 	var key = "edition_number"
 	var val = resp.Request.FormValue(key)
@@ -116,11 +117,9 @@ func saveQueue(resp *responder.Responder, i *Issue, changes map[string]string) {
 		i.Claim(i.RejectedByUserID)
 	}
 
-	// Mark the two changes which really matter
-	changes["workflow_owner_id"] = strconv.Itoa(i.WorkflowOwnerID)
-	changes["workflow_step"] = string(i.WorkflowStep)
-
-	if ok := saveIssue(resp, i, changes); !ok {
+	// Save the issue again, making sure to handle the draft comment if one exists
+	var err = i.QueueForMetadataReview(resp.Vars.User.ID)
+	if err != nil {
 		resp.Vars.Alert = "Unable to save issue; try again or contact support"
 		enterMetadataHandler(resp, i)
 		return

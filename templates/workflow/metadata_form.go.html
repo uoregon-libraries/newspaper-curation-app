@@ -138,6 +138,20 @@
       </div>
 
       <div class="form-group">
+        <label class="col-md-2 control-label" for="draft_comment">Comments (optional)</label>
+        <div class="col-md-10">
+          <textarea id="draft_comment" name="draft_comment" class="form-control" rows="8">{{.Data.Issue.DraftComment}}</textarea>
+          <p class="help-block">
+            Enter comments about this data, if necessary.  For instance, if
+            there is anything special or unusual about this issue the metadata
+            reviewer needs to know, it would go here.  <strong>Note</strong>:
+            draft comments aren't visible to others.  <em>i.e., This comment
+            will not be visible until you choose "Save and Queue"</em>.
+          </p>
+        </div>
+      </div>
+
+      <div class="form-group">
         <div class="col-md-9 col-md-offset-2">
           <button id="savedraft" type="Submit" name="action" value="savedraft">Save Draft</button>
           <button id="savequeue" type="Submit" name="action" value="savequeue">Save and Queue</button>

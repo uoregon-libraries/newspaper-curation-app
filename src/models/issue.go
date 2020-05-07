@@ -64,6 +64,7 @@ type Issue struct {
 	MetadataApprovedAt     time.Time           // When was metadata approved / how long has this been waiting to batch?
 	RejectedByUserID       int                 // If not approved, who rejected the metadata?
 	Ignored                bool                // Is the issue bad / in prod / otherwise skipped from workflow scans?
+	DraftComment           string              // Any comment the curator is passing on to the reviewer
 
 	// actions holds the lazy-loaded list of actions tied to an issue, ordered
 	// by the most recent to the oldest
@@ -257,6 +258,37 @@ func (i *Issue) Claim(byUserID int) {
 func (i *Issue) Unclaim() {
 	i.WorkflowOwnerID = 0
 	i.WorkflowOwnerExpiresAt = time.Time{}
+}
+
+// QueueForMetadataReview sets the issue as being ready for review, which
+// involves changing workflow metadata as well as moving any in-draft comments
+// to the real comments list
+func (i *Issue) QueueForMetadataReview(curatorID int) error {
+	// Update workflow step and record the curator id
+	i.WorkflowStep = schema.WSAwaitingMetadataReview
+	i.MetadataEntryUserID = curatorID
+	i.Unclaim()
+
+	// If this was previously rejected, put it back on the reviewer's desk
+	if i.RejectedByUserID != 0 {
+		i.Claim(i.RejectedByUserID)
+	}
+
+	var op = dbi.DB.Operation()
+	op.Dbg = dbi.Debug
+	op.BeginTransaction()
+	defer op.EndTransaction()
+
+	// Only muck with actions if we had a draft comment
+	if strings.TrimSpace(i.DraftComment) != "" {
+		var a = newIssueAction(i.ID, ActionTypeMetadataEntry)
+		a.UserID = curatorID
+		a.Message = i.DraftComment
+		i.DraftComment = ""
+		a.SaveOp(op)
+	}
+
+	return i.SaveOp(op)
 }
 
 // ApproveMetadata moves the issue to the final workflow step (e.g., no more
