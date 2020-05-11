@@ -121,6 +121,11 @@ func (u *User) buildRoles() {
 
 // PermittedTo returns true if this user has priv in his privilege list
 func (u *User) PermittedTo(priv *privilege.Privilege) bool {
+	// For extra safety, in case FindActiveUserWithLogin gets used incorrectly,
+	// we make sure deactivated users aren't permitted to do *anything*.
+	if u.Deactivated {
+		return false
+	}
 	return priv.AllowedByAny(u.Roles())
 }
 
