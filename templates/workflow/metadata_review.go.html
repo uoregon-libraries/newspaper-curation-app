@@ -12,11 +12,7 @@
 
 {{if .Data.Issue.WorkflowActions}}
   <h2>Actions / Comments</h2>
-  <div class="action-list">
-    {{range .Data.Issue.WorkflowActions}}
-      {{template "issue_action" (dict "Action" . "User" $.User)}}
-    {{end}}
-  </div>
+  {{template "issue_actions" (dict "Actions" .Data.Issue.WorkflowActions "User" .User)}}
 {{end}}
 
 <h2>Page Numbering</h2>

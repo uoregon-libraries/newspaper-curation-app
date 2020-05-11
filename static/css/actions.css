@@ -1,8 +1,41 @@
 .action-list {
   border: 1px solid #ddd;
   padding: 8px;
+  display: grid;
+  grid-template-columns: repeat(4, 1fr);
+  grid-gap: 10px;
+  overflow-y: scroll;
+  max-height: 400px;
 }
 
-.action.metadata-rejection .message {
-  background: #FFC;
+.action {
+  grid-column-start: 1;
+  grid-column-end: 4;
+}
+
+.action.self {
+  grid-column-start: 2;
+  grid-column-end: 5;
+  text-align: right;
+}
+
+.action blockquote {
+  font-style: italic;
+  border: none;
+  margin: 0px;
+  padding: 8px 20px 8px 20px;
+}
+
+.action .metadata {
+  padding: 8px 8px 0px 8px;
+}
+
+.action .wrapper {
+  background: #F7F7F7;
+  display: inline-block;
+  margin-bottom: 8px;
+}
+
+.action.metadata-rejection .wrapper {
+  background: #FEE;
 }
