@@ -293,15 +293,13 @@ func (i *Issue) QueueForMetadataReview(curatorID int) error {
 	op.BeginTransaction()
 	defer op.EndTransaction()
 
-	// Only muck with actions if we had a draft comment
-	if strings.TrimSpace(i.DraftComment) != "" {
-		var a = newIssueAction(i.ID, ActionTypeMetadataEntry)
-		a.UserID = curatorID
-		a.Message = i.DraftComment
-		i.DraftComment = ""
-		a.SaveOp(op)
-	}
-
+	// Always create a new action so the log is easier to read even when a
+	// comment wasn't explicitly added
+	var a = newIssueAction(i.ID, ActionTypeMetadataEntry)
+	a.UserID = curatorID
+	a.Message = i.DraftComment
+	i.DraftComment = ""
+	a.SaveOp(op)
 	i.SaveOp(op)
 	return op.Err()
 }
