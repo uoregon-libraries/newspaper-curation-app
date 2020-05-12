@@ -27,7 +27,11 @@ Brief description, if necessary
 
 ## v2.12.0
 
-User persistence!  Issue comments!!!!!!11!!1!1!one!!!1
+User persistence!
+
+Better handling of filenames!
+
+Issue comments!!!!!!11!!1!1!one!!!1
 
 ### Fixed
 
@@ -41,10 +45,26 @@ User persistence!  Issue comments!!!!!!11!!1!1!one!!!1
   issue is part of NCA's workflow.  They're normally optional, but are required
   when rejecting an issue from the metadata queue (comments replace the
   previous one-off rejection note)
+- New top-level `manage` script to simplify development and testing
 
 ### Changed
 
+- Filenames for scanned and renamed PDF pages no longer have to be exactly four
+  digits (e.g., `0001.pdf`).  As long as they're purely numeric, they're
+  considered usable.  This fixes a long-standing problem where pages could be
+  accidentally renamed to be three digits, and the process to get them fixed is
+  annoying and confusing to the end user.
+- Updated `uoregon-libraries/gopkg` to v0.15.0 to get a numeric file sort into NCA
+
 ### Removed
+
+- Some dead / obsolete things have been dropped:
+  - Removed a dead database table we haven't used in years
+  - Removed unused `db/dbconf-example.yml` (this isn't necessary for the new
+    fork of `goose` we've been recommending ... for a long time)
+  - Removed dead "helper" SQL for identifying issues that can be manually
+    deleted from the filesystem (now that there's a tool to handle this, the
+    helper sql was just confusing)
 
 ### Migration
 
