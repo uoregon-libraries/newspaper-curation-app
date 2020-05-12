@@ -75,7 +75,7 @@ func (i *Input) rejectIssueHandler(args []string) {
 	}
 
 	// Save the issue's metadata
-	i.issue.db.RejectMetadata(0, msg)
+	i.issue.db.RejectMetadata(models.SystemUser.ID, msg)
 	i.issue.db.BatchID = 0
 	err = i.issue.db.Save()
 	if err != nil {

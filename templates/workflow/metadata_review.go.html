@@ -10,7 +10,11 @@
   </ul>
 </p>
 
-<hr />
+{{if .Data.Issue.WorkflowActions}}
+  <h2>Actions / Comments</h2>
+  {{template "issue_actions" (dict "Actions" .Data.Issue.WorkflowActions "User" .User)}}
+{{end}}
+
 <h2>Page Numbering</h2>
 {{template "issue_page_view" .Data.Issue.JP2Files}}
 

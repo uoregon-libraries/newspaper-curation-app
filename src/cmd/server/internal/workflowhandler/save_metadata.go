@@ -8,7 +8,6 @@ import (
 
 	"github.com/uoregon-libraries/newspaper-curation-app/src/cmd/server/internal/responder"
 	"github.com/uoregon-libraries/newspaper-curation-app/src/internal/logger"
-	"github.com/uoregon-libraries/newspaper-curation-app/src/schema"
 )
 
 // storeIssueMetadata centralizes the logic for storing a metadata form's data
@@ -30,6 +29,7 @@ func storeIssueMetadata(resp *responder.Responder, i *Issue) map[string]string {
 	save("date", &i.Issue.Date)
 	save("volume_number", &i.Volume)
 	save("page_labels_csv", &i.PageLabelsCSV)
+	save("draft_comment", &i.DraftComment)
 
 	var key = "edition_number"
 	var val = resp.Request.FormValue(key)
@@ -88,39 +88,26 @@ func saveDraft(resp *responder.Responder, i *Issue, changes map[string]string) {
 
 func saveQueue(resp *responder.Responder, i *Issue, changes map[string]string) {
 	// Save the metadata changes, if any; we want this stuff preserved regardless
-	// of queueing errors from invalid metadata
+	// of errors from invalid metadata
 	if ok := saveIssue(resp, i, changes); !ok {
 		resp.Vars.Alert = "Unable to save issue; try again or contact support"
 		enterMetadataHandler(resp, i)
 		return
 	}
 
-	// Validate the metadata
+	// Validate the metadata.  If there are errors, let the user know and
+	// redisplay the form; we still keep the saved changes in order to avoid
+	// losing metadata
 	i.ValidateMetadata()
-
-	// If there are errors, let the user know and redisplay the form; we still
-	// keep the saved changes in order to avoid losing metadata
 	if len(i.Errors()) > 0 {
 		http.SetCookie(resp.Writer, &http.Cookie{Name: "Alert", Value: encodedErrors("queue", i.Errors()), Path: "/"})
 		http.Redirect(resp.Writer, resp.Request, i.Path("metadata"), http.StatusFound)
 		return
 	}
 
-	// If metadata is good, *now* we can actually update the workflow steps
-	i.WorkflowStep = schema.WSAwaitingMetadataReview
-	i.MetadataEntryUserID = resp.Vars.User.ID
-	i.Unclaim()
-
-	// If this was previously rejected, put it back on the reviewer's desk
-	if i.RejectedByUserID != 0 {
-		i.Claim(i.RejectedByUserID)
-	}
-
-	// Mark the two changes which really matter
-	changes["workflow_owner_id"] = strconv.Itoa(i.WorkflowOwnerID)
-	changes["workflow_step"] = string(i.WorkflowStep)
-
-	if ok := saveIssue(resp, i, changes); !ok {
+	// Metadata is good: queue for review
+	var err = i.QueueForMetadataReview(resp.Vars.User.ID)
+	if err != nil {
 		resp.Vars.Alert = "Unable to save issue; try again or contact support"
 		enterMetadataHandler(resp, i)
 		return
