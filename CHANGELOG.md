@@ -69,6 +69,10 @@ Issue comments!!!!!!11!!1!1!one!!!1
 ### Migration
 
 - Migrate the database, e.g, with `goose`: `goose -dir ./db/migrations/ mysql "<user>:<password>@tcp(<db host>:3306)/<database name>" up`
+- Delete the NCA cache, e.g., `rm /tmp/nca/* -rf` - this may not be necessary,
+  but with how much the data has changed and how fast NCA is to regenerate it
+  (under ten minutes when reading our 1.3 million live pages), it's worth a
+  little time for a bit of extra safety.
 
 ## v2.11.4
 
