@@ -305,8 +305,9 @@ func (j *Job) Requeue() (*Job, error) {
 	clone.Status = string(JobStatusPending)
 	clone.RetryCount++
 
-	// Calculate the delay - essentially exponential backoff but with a cap of 24 hours
-	var delay = time.Second << uint(clone.RetryCount)
+	// Calculate the delay - essentially exponential backoff but starting at ~30
+	// seconds and capping at 24 hours
+	var delay = time.Second << uint(clone.RetryCount+3)
 	var maxDelay = time.Hour * 24
 	if delay > maxDelay {
 		delay = maxDelay
