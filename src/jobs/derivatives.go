@@ -1,7 +1,6 @@
 package jobs
 
 import (
-	"io/ioutil"
 	"os"
 	"path/filepath"
 	"regexp"
@@ -13,7 +12,6 @@ import (
 	"github.com/uoregon-libraries/newspaper-curation-app/src/derivatives/jp2"
 )
 
-var allowedFilesRegex = regexp.MustCompile(`(?i:^([0-9]+.(pdf|jp2|xml|tiff?))|[0-9]{10}.xml|master.tar)`)
 var pdfFilenameRegex = regexp.MustCompile(`(?i:^[0-9]+.pdf)`)
 var tiffFilenameRegex = regexp.MustCompile(`(?i:^[0-9]+.tiff?)`)
 
@@ -120,16 +118,15 @@ func (md *MakeDerivatives) _findTIFFs() (ok bool) {
 // checks are redundant, but it's clear that with the complexity of our
 // process, more failsafes are better than fewer.
 func (md *MakeDerivatives) validateSourceFiles() (ok bool) {
-	var infos, err = ioutil.ReadDir(md.DBIssue.Location)
-	if err != nil {
-		md.Logger.Errorf("Unable to scan all files: %s", err)
+	md.Issue.FindFiles()
+	if len(md.Issue.Files) == 0 {
+		md.Logger.Errorf("No files found")
 		return false
 	}
 
-	for _, info := range infos {
-		var n = info.Name()
-		if !allowedFilesRegex.MatchString(n) {
-			md.Logger.Errorf("Unexpected file found: %q", n)
+	for _, f := range md.Issue.Files {
+		if !f.ValidName() {
+			md.Logger.Errorf("Unexpected file found: %q", f.Name)
 			return false
 		}
 	}
