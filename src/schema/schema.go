@@ -9,6 +9,7 @@ import (
 	"math"
 	"os"
 	"path/filepath"
+	"regexp"
 	"sort"
 	"strconv"
 	"strings"
@@ -489,12 +490,20 @@ func (list IssueList) SortByKey() {
 	})
 }
 
+var allowedFilesRegex = regexp.MustCompile(`(?i:^([0-9]+.(pdf|jp2|xml|tiff?))|[0-9]{10}.xml|master.tar)`)
+
 // File just gives fileutil.File a location and issue pointer
 type File struct {
 	*fileutil.File
 	Location string
 	Issue    *Issue
 	Errors   apperr.List
+}
+
+// ValidName just returns whether the filename matches what we allow to exist once
+// something has entered NCA's internal workflow
+func (f *File) ValidName() bool {
+	return allowedFilesRegex.MatchString(f.Name)
 }
 
 // AddError puts err on this file and reports to its issue that one of its
