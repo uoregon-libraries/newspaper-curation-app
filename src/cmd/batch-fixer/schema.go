@@ -6,18 +6,18 @@ import (
 	"sort"
 
 	"github.com/uoregon-libraries/gopkg/fileutil"
-	"github.com/uoregon-libraries/newspaper-curation-app/src/db"
+	"github.com/uoregon-libraries/newspaper-curation-app/src/models"
 )
 
-// Batch extends a db.Batch with functionality for fixing, re-queueing, etc.
+// Batch extends a models.Batch with functionality for fixing, re-queueing, etc.
 type Batch struct {
-	db     *db.Batch
+	db     *models.Batch
 	Issues IssueList
 }
 
 // FindBatch looks up a batch in the database, then pulls all its issues
 func FindBatch(id int) (*Batch, error) {
-	var batch, err = db.FindBatch(id)
+	var batch, err = models.FindBatch(id)
 	if err != nil {
 		return nil, fmt.Errorf("database error: %s", err.Error())
 	}
@@ -49,7 +49,7 @@ func (b *Batch) Fail() error {
 		return fmt.Errorf("removing batch files: %s", err)
 	}
 
-	b.db.Status = db.BatchStatusFailedQC
+	b.db.Status = models.BatchStatusFailedQC
 	b.db.Location = ""
 	err = b.db.Save()
 	if err != nil {
@@ -70,11 +70,11 @@ func (b *Batch) loadIssues() error {
 	return err
 }
 
-// Issue extends a db.Issue with functionality for pulling the issue off a
+// Issue extends a models.Issue with functionality for pulling the issue off a
 // batch, rejecting it (which, post-batch, means more than just rejection when
 // it's in the metadata review phase), etc.
 type Issue struct {
-	db *db.Issue
+	db *models.Issue
 }
 
 // RemoveMETS attempts to remove the METS XML file, returning an error if any
@@ -85,7 +85,7 @@ type Issue struct {
 func (i *Issue) RemoveMETS() error {
 	var si, err = i.db.SchemaIssue()
 	if err != nil {
-		return fmt.Errorf("unable to get a schema.Issue from the db.Issue: %s", err)
+		return fmt.Errorf("unable to get a schema.Issue from the models.Issue: %s", err)
 	}
 
 	// Make sure the dir exists, since lack of a mets file isn't a failure

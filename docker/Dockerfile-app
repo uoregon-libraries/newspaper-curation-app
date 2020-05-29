@@ -81,7 +81,6 @@ COPY ./db/migrations /usr/local/nca/db/migrations
 COPY ./static /usr/local/nca/static
 COPY ./templates /usr/local/nca/templates
 COPY ./settings-example /usr/local/nca/settings
-COPY ./db/dbconf-example.yml /usr/local/nca/db/dbconf.yml
 
 # Utilities
 COPY ./docker/wait_for_database /usr/local/bin/

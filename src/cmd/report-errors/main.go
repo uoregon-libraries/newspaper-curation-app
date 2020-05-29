@@ -7,7 +7,7 @@ import (
 
 	"github.com/uoregon-libraries/newspaper-curation-app/src/apperr"
 	"github.com/uoregon-libraries/newspaper-curation-app/src/cli"
-	"github.com/uoregon-libraries/newspaper-curation-app/src/db"
+	"github.com/uoregon-libraries/newspaper-curation-app/src/dbi"
 	"github.com/uoregon-libraries/newspaper-curation-app/src/internal/logger"
 	"github.com/uoregon-libraries/newspaper-curation-app/src/issuewatcher"
 )
@@ -15,7 +15,7 @@ import (
 func main() {
 	var conf = cli.Simple().GetConf()
 
-	var err = db.Connect(conf.DatabaseConnect)
+	var err = dbi.Connect(conf.DatabaseConnect)
 	if err != nil {
 		logger.Fatalf("Error trying to connect to database: %s", err)
 	}

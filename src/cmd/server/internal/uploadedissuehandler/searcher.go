@@ -9,9 +9,9 @@ import (
 
 	"github.com/uoregon-libraries/newspaper-curation-app/src/apperr"
 	"github.com/uoregon-libraries/newspaper-curation-app/src/config"
-	"github.com/uoregon-libraries/newspaper-curation-app/src/db"
 	"github.com/uoregon-libraries/newspaper-curation-app/src/internal/logger"
 	"github.com/uoregon-libraries/newspaper-curation-app/src/issuewatcher"
+	"github.com/uoregon-libraries/newspaper-curation-app/src/models"
 	"github.com/uoregon-libraries/newspaper-curation-app/src/schema"
 )
 
@@ -173,7 +173,7 @@ func (s *Searcher) swapTitleData(nextTitles []*Title, nextTitleLookup map[string
 func (s *Searcher) BuildInProcessList() error {
 	var nextInProcessIssues = make(map[string]bool)
 
-	var issues, err = db.FindIssuesAwaitingProcessing()
+	var issues, err = models.FindIssuesAwaitingProcessing()
 	if err != nil {
 		return fmt.Errorf("unable to find in-process issues: %s", err)
 	}

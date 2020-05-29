@@ -1,4 +1,4 @@
-package user
+package privilege
 
 // This is our full, hard-coded list of valid privileges
 var (

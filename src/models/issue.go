@@ -1,4 +1,4 @@
-package db
+package models
 
 import (
 	"fmt"
@@ -7,6 +7,7 @@ import (
 	"time"
 
 	"github.com/Nerdmaster/magicsql"
+	"github.com/uoregon-libraries/newspaper-curation-app/src/dbi"
 	"github.com/uoregon-libraries/newspaper-curation-app/src/schema"
 )
 
@@ -59,11 +60,15 @@ type Issue struct {
 	WorkflowOwnerID        int                 // Whose "desk" is this currently on?
 	WorkflowOwnerExpiresAt time.Time           // When does the workflow owner lose ownership?
 	MetadataEntryUserID    int                 // Who entered metadata?
-	ReviewedByUserID       int                 // Who reviewed metadata?
+	ReviewedByUserID       int                 // Who reviewed metadata last?
 	MetadataApprovedAt     time.Time           // When was metadata approved / how long has this been waiting to batch?
-	RejectionNotes         string              // If rejected (during metadata review), this tells us why
-	RejectedByUserID       int                 // Who did the rejection?
+	RejectedByUserID       int                 // If not approved, who rejected the metadata?
 	Ignored                bool                // Is the issue bad / in prod / otherwise skipped from workflow scans?
+	DraftComment           string              // Any comment the curator is passing on to the reviewer
+
+	// actions holds the lazy-loaded list of actions tied to an issue, ordered
+	// by the most recent to the oldest
+	actions []*Action
 }
 
 // NewIssue creates an issue ready for saving to the issues table
@@ -74,8 +79,8 @@ func NewIssue(moc, lccn, dt string, ed int) *Issue {
 // findIssues is a centralized finder that auto-skips issues flagged as ignored
 // and auto-deserializes the issues returned
 func findIssues(cond string, args ...interface{}) ([]*Issue, error) {
-	var op = DB.Operation()
-	op.Dbg = Debug
+	var op = dbi.DB.Operation()
+	op.Dbg = dbi.Debug
 
 	var list []*Issue
 	if cond == "" {
@@ -91,8 +96,8 @@ func findIssues(cond string, args ...interface{}) ([]*Issue, error) {
 
 // FindIssue looks for an issue by its id
 func FindIssue(id int) (*Issue, error) {
-	var op = DB.Operation()
-	op.Dbg = Debug
+	var op = dbi.DB.Operation()
+	op.Dbg = dbi.Debug
 	var i = &Issue{}
 	var ok = op.Select("issues", &Issue{}).Where("id = ?", id).First(i)
 	if !ok {
@@ -146,8 +151,8 @@ func FindIssueByKey(key string) (*Issue, error) {
 
 // FindIssueByLocation returns the first issue with the given location
 func FindIssueByLocation(location string) (*Issue, error) {
-	var op = DB.Operation()
-	op.Dbg = Debug
+	var op = dbi.DB.Operation()
+	op.Dbg = dbi.Debug
 	var i *Issue
 	var list, err = findIssues("location = ?", location)
 	if len(list) != 0 {
@@ -221,53 +226,129 @@ func (i *Issue) DateEdition() string {
 	return schema.IssueDateEdition(i.Date, i.Edition)
 }
 
+// WorkflowActions lazy-loads all actions tied to this issue and orders them in
+// chronological order (the newest are at the end of the list)
+func (i *Issue) WorkflowActions() []*Action {
+	if i.actions == nil {
+		// Yup, we deliberately ignore errors here.  Bah.
+		i.actions, _ = FindActionsForIssue(i.ID)
+	}
+
+	return i.actions
+}
+
+// RecentWorkflowActions returns the last n actions which have occurred
+func (i *Issue) RecentWorkflowActions(n int) []*Action {
+	var list = i.WorkflowActions()
+	if len(list) > n {
+		return list[len(list)-n:]
+	}
+
+	return list
+}
+
 // Claim sets the workflow owner to the given user id, and sets the expiration
 // time to a week from now
-func (i *Issue) Claim(byUserID int) {
+func (i *Issue) Claim(byUserID int) error {
+	i.claim(byUserID)
+	return i.Save()
+}
+
+// claim updates metadata without writing to the database so internal
+// functions can use this as just one step of the update process
+func (i *Issue) claim(byUserID int) {
 	i.WorkflowOwnerID = byUserID
 	i.WorkflowOwnerExpiresAt = time.Now().Add(time.Hour * 24 * 7)
 }
 
 // Unclaim removes the workflow owner and resets the workflow expiration time
-func (i *Issue) Unclaim() {
+func (i *Issue) Unclaim() error {
+	i.unclaim()
+	return i.Save()
+}
+
+// unclaim updates metadata without writing to the database so internal
+// functions can use this as just one step of the update process
+func (i *Issue) unclaim() {
 	i.WorkflowOwnerID = 0
 	i.WorkflowOwnerExpiresAt = time.Time{}
 }
 
+// QueueForMetadataReview sets the issue as being ready for review, which
+// involves changing workflow metadata as well as moving any in-draft comments
+// to the real comments list
+func (i *Issue) QueueForMetadataReview(curatorID int) error {
+	// Update workflow step and record the curator id
+	i.WorkflowStep = schema.WSAwaitingMetadataReview
+	i.MetadataEntryUserID = curatorID
+	i.unclaim()
+
+	// If this was previously rejected, put it back on the reviewer's desk
+	if i.RejectedByUserID != 0 {
+		i.claim(i.RejectedByUserID)
+	}
+
+	var op = dbi.DB.Operation()
+	op.Dbg = dbi.Debug
+	op.BeginTransaction()
+	defer op.EndTransaction()
+
+	// Always create a new action so the log is easier to read even when a
+	// comment wasn't explicitly added
+	var a = newIssueAction(i.ID, ActionTypeMetadataEntry)
+	a.UserID = curatorID
+	a.Message = i.DraftComment
+	i.DraftComment = ""
+	a.SaveOp(op)
+	i.SaveOp(op)
+	return op.Err()
+}
+
 // ApproveMetadata moves the issue to the final workflow step (e.g., no more
 // manual steps) and sets the reviewer id to that which was passed in
-func (i *Issue) ApproveMetadata(reviewerID int) {
-	i.Unclaim()
+func (i *Issue) ApproveMetadata(reviewerID int) error {
+	i.unclaim()
 	i.MetadataApprovedAt = time.Now()
 	i.ReviewedByUserID = reviewerID
 	i.WorkflowStep = schema.WSReadyForMETSXML
+	return i.Save()
 }
 
 // RejectMetadata sends the issue back to the metadata entry user and saves the
 // reviewer's notes
-//
-// TODO: if we ever display rejection user, bear in mind that 0 means it's
-// rejected by a system process rather than a person
-func (i *Issue) RejectMetadata(reviewerID int, notes string) {
-	i.Claim(i.MetadataEntryUserID)
-	i.WorkflowStep = schema.WSReadyForMetadataEntry
-	i.RejectionNotes = notes
+func (i *Issue) RejectMetadata(reviewerID int, notes string) error {
+	i.claim(i.MetadataEntryUserID)
 	i.RejectedByUserID = reviewerID
+	i.WorkflowStep = schema.WSReadyForMetadataEntry
+	var a = newIssueAction(i.ID, ActionTypeMetadataRejection)
+	a.UserID = reviewerID
+	a.Message = notes
+
+	i.actions = append(i.actions, a)
+
+	var op = dbi.DB.Operation()
+	op.Dbg = dbi.Debug
+	op.BeginTransaction()
+	defer op.EndTransaction()
+
+	i.SaveOp(op)
+	a.SaveOp(op)
+	return op.Err()
 }
 
 // ReportError adds an error message to the issue and flags it as being in the
 // "unfixable" state.  That state basically says that nobody can use NCA to fix
 // the problem, and it needs to be pulled and processed by hand.
-func (i *Issue) ReportError(message string) {
+func (i *Issue) ReportError(message string) error {
 	i.Error = message
 	i.WorkflowStep = schema.WSUnfixableMetadataError
-	i.Unclaim()
+	return i.Unclaim()
 }
 
 // Save creates or updates the Issue in the issues table
 func (i *Issue) Save() error {
-	var op = DB.Operation()
-	op.Dbg = Debug
+	var op = dbi.DB.Operation()
+	op.Dbg = dbi.Debug
 	return i.SaveOp(op)
 }
 
@@ -355,8 +436,8 @@ func (i *Issue) SchemaIssue() (*schema.Issue, error) {
 // and no longer needed in our workflow: tied to a closed (live_done) batch and
 // ignored by NCA, but still contain a location
 func FindCompletedIssuesReadyForRemoval() ([]*Issue, error) {
-	var op = DB.Operation()
-	op.Dbg = Debug
+	var op = dbi.DB.Operation()
+	op.Dbg = dbi.Debug
 
 	var list []*Issue
 	var cond = "batch_id IN (SELECT id FROM batches WHERE status = ?) AND ignored = 1 AND location <> ''"

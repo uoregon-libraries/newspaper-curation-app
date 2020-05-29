@@ -6,9 +6,9 @@ import (
 
 	"github.com/uoregon-libraries/newspaper-curation-app/src/apperr"
 	"github.com/uoregon-libraries/newspaper-curation-app/src/chronam"
-	"github.com/uoregon-libraries/newspaper-curation-app/src/db"
 	"github.com/uoregon-libraries/newspaper-curation-app/src/httpcache"
 	"github.com/uoregon-libraries/newspaper-curation-app/src/internal/logger"
+	"github.com/uoregon-libraries/newspaper-curation-app/src/models"
 	"github.com/uoregon-libraries/newspaper-curation-app/src/schema"
 )
 
@@ -73,10 +73,10 @@ func (s *Searcher) findOrCreateWebTitle(c *httpcache.Client, uri string) (*schem
 }
 
 // findOrCreateDatabaseTitle takes a database issue and returns the equivalent
-// schema.Title stored in this searcher, or else looks up the issue's db.Title,
+// schema.Title stored in this searcher, or else looks up the issue's models.Title,
 // creates an equivalent schema.Title and stores it, faking a location for
 // future lookup
-func (s *Searcher) findOrCreateDatabaseTitle(issue *db.Issue) *schema.Title {
+func (s *Searcher) findOrCreateDatabaseTitle(issue *models.Issue) *schema.Title {
 	var t = s.dbTitles.Find(issue.LCCN)
 	var fakeLocation string
 	if t == nil {

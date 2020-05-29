@@ -25,9 +25,58 @@ Brief description, if necessary
 ### Migration
 -->
 
+## v2.12.0
+
+User persistence!
+
+Better handling of filenames!
+
+Issue comments!!!!!!11!!1!1!one!!!1
+
+### Fixed
+
+- Users are now deactivated rather than deleted, which fixes a potential crash
+  when viewing rejection notes or passing an issue back to the original
+  curator's desk.  Honestly I'm not sure how this never crashed before.
+
+### Added
+
+- Issues can now have comments, and those comments are visible so long as the
+  issue is part of NCA's workflow.  They're normally optional, but are required
+  when rejecting an issue from the metadata queue (comments replace the
+  previous one-off rejection note)
+- New top-level `manage` script to simplify development and testing
+
+### Changed
+
+- Filenames for scanned and renamed PDF pages no longer have to be exactly four
+  digits (e.g., `0001.pdf`).  As long as they're purely numeric, they're
+  considered usable.  This fixes a long-standing problem where pages could be
+  accidentally renamed to be three digits, and the process to get them fixed is
+  annoying and confusing to the end user.
+- Updated `uoregon-libraries/gopkg` to v0.15.0 to get a numeric file sort into NCA
+
+### Removed
+
+- Some dead / obsolete things have been dropped:
+  - Removed a dead database table we haven't used in years
+  - Removed unused `db/dbconf-example.yml` (this isn't necessary for the new
+    fork of `goose` we've been recommending ... for a long time)
+  - Removed dead "helper" SQL for identifying issues that can be manually
+    deleted from the filesystem (now that there's a tool to handle this, the
+    helper sql was just confusing)
+
+### Migration
+
+- Migrate the database, e.g, with `goose`: `goose -dir ./db/migrations/ mysql "<user>:<password>@tcp(<db host>:3306)/<database name>" up`
+- Delete the NCA cache, e.g., `rm /tmp/nca/* -rf` - this may not be necessary,
+  but with how much the data has changed and how fast NCA is to regenerate it
+  (under ten minutes when reading our 1.3 million live pages), it's worth a
+  little time for a bit of extra safety.
+
 ## v2.11.4
 
-Brief description, if necessary
+Multi-awardee titles and some fixes
 
 ### Fixed
 

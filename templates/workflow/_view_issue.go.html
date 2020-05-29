@@ -1,3 +1,31 @@
+<!-- issue_actions needs to be given a dict of "Actions" (a list of actions to
+     render) and "User".  User is used to add a class on one's own actions. -->
+{{define "issue_actions"}}
+  <div class="action-list">
+    {{range .Actions}}
+      {{template "issue_action" (dict "Action" . "User" $.User)}}
+    {{end}}
+  </div>
+{{end}}
+
+{{define "issue_action"}}
+<div class="action {{.Action.ActionType}} {{if eq .Action.Author.ID .User.ID}}self{{end}}">
+  <div class="wrapper">
+    <div class="metadata">
+      {{if eq .Action.Author.ID .User.ID}}
+      <strong><em>You</em></strong>
+      {{else}}
+      <em>{{.Action.Author.Login}}</em>
+      {{end}}
+      {{.Action.ActionType|actionVerb}} {{.Action.CreatedAt|dtstr}}{{if .Action.Message}}:{{end}}
+    </div>
+    <div class="message">
+      <blockquote>{{.Action.Message|nl2br}}</blockquote>
+    </div>
+  </div>
+</div>
+{{end}}
+
 {{define "issue_page_view"}}
 <div class="row">
   <div class="col-md-12">

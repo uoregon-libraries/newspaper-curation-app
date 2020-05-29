@@ -9,10 +9,10 @@ import (
 	"os"
 
 	"github.com/uoregon-libraries/gopkg/fileutil"
-	"github.com/uoregon-libraries/newspaper-curation-app/src/db"
+	"github.com/uoregon-libraries/newspaper-curation-app/src/models"
 )
 
-// Transformer takes a db.Batch and a list of db.Issues, and generates the XML
+// Transformer takes a models.Batch and a list of models.Issues, and generates the XML
 // to a given file
 type Transformer struct {
 	tmpl    *template.Template
@@ -22,15 +22,15 @@ type Transformer struct {
 }
 
 type data struct {
-	*db.Batch
-	Issues []*db.Issue
+	*models.Batch
+	Issues []*models.Issue
 }
 
 // New returns a batch XML Transformer
 //
 // We need a batch as well as all issues in order to avoid DB lookups, reduce
 // unknowns, and allow for unsaved / faked data
-func New(templatePath string, outputFileName string, batch *db.Batch, issues []*db.Issue) *Transformer {
+func New(templatePath string, outputFileName string, batch *models.Batch, issues []*models.Issue) *Transformer {
 	var tmpl = template.New("batch")
 	tmpl.Funcs(
 		template.FuncMap{"incr": func(i int) int { return i + 1 }},

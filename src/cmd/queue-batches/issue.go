@@ -4,20 +4,20 @@ import (
 	"fmt"
 	"time"
 
-	"github.com/uoregon-libraries/newspaper-curation-app/src/db"
+	"github.com/uoregon-libraries/newspaper-curation-app/src/models"
 )
 
 // issue wraps a db Issue but gives us a page count as well as how old this
 // issue is *relative to embargoes*
 type issue struct {
-	*db.Issue
-	title     *db.Title
+	*models.Issue
+	title     *models.Title
 	pages     int
 	daysStale float64
 	embargoed bool
 }
 
-func wrapIssue(dbIssue *db.Issue) (*issue, error) {
+func wrapIssue(dbIssue *models.Issue) (*issue, error) {
 	var issueDate, err = time.Parse("2006-01-02", dbIssue.Date)
 	if err != nil {
 		return nil, fmt.Errorf("%q is an invalid date: %s", dbIssue.Date, err)

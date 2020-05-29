@@ -10,8 +10,8 @@ import (
 	"github.com/gorilla/mux"
 	"github.com/uoregon-libraries/newspaper-curation-app/src/cmd/server/internal/responder"
 	"github.com/uoregon-libraries/newspaper-curation-app/src/config"
-	"github.com/uoregon-libraries/newspaper-curation-app/src/db"
 	"github.com/uoregon-libraries/newspaper-curation-app/src/internal/logger"
+	"github.com/uoregon-libraries/newspaper-curation-app/src/models"
 	"github.com/uoregon-libraries/newspaper-curation-app/src/web/tmpl"
 )
 
@@ -54,7 +54,7 @@ func listHandler(w http.ResponseWriter, req *http.Request) {
 	var err error
 	var r = responder.Response(w, req)
 	r.Vars.Title = "MARC Org Code List"
-	r.Vars.Data["MOCs"], err = db.AllMOCs()
+	r.Vars.Data["MOCs"], err = models.AllMOCs()
 	if err != nil {
 		logger.Errorf("Unable to load MOC list: %s", err)
 		r.Error(http.StatusInternalServerError, "Error trying to pull MOC list - try again or contact support")
@@ -85,13 +85,13 @@ func saveHandler(w http.ResponseWriter, req *http.Request) {
 func createMOC(r *responder.Responder) {
 	var code = r.Request.FormValue("code")
 	var name = r.Request.FormValue("name")
-	if db.ValidMOC(code) {
+	if models.ValidMOC(code) {
 		r.Vars.Alert = template.HTML(fmt.Sprintf("MOC %q already exists", code))
 		r.Render(formTmpl)
 		return
 	}
 
-	var moc = &db.MOC{Code: code, Name: name}
+	var moc = &models.MOC{Code: code, Name: name}
 	var err = moc.Save()
 	if err != nil {
 		logger.Errorf("Unable to create new MOC %q: %s", moc, err)
@@ -109,7 +109,7 @@ func updateMOC(r *responder.Responder) {
 	if handled {
 		return
 	}
-	var oldMOC = &db.MOC{
+	var oldMOC = &models.MOC{
 		ID:   moc.ID,
 		Code: moc.Code,
 		Name: moc.Name,
@@ -163,7 +163,7 @@ func editHandler(w http.ResponseWriter, req *http.Request) {
 	r.Render(formTmpl)
 }
 
-func getMOC(r *responder.Responder) (moc *db.MOC, handled bool) {
+func getMOC(r *responder.Responder) (moc *models.MOC, handled bool) {
 	var idStr = r.Request.FormValue("id")
 	var id, _ = strconv.Atoi(idStr)
 	if id < 1 {
@@ -173,7 +173,7 @@ func getMOC(r *responder.Responder) (moc *db.MOC, handled bool) {
 	}
 
 	var err error
-	moc, err = db.FindMOCByID(id)
+	moc, err = models.FindMOCByID(id)
 	if err != nil {
 		logger.Errorf("Unable to find MOC by id %d: %s", id, err)
 		r.Error(http.StatusInternalServerError, "Unable to find MOC - try again or contact support")

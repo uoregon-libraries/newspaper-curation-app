@@ -1,13 +1,15 @@
 package responder
 
 import (
+	"errors"
 	"fmt"
 	"html/template"
 	"strings"
 	"time"
 
 	"github.com/uoregon-libraries/newspaper-curation-app/src/cmd/server/internal/settings"
-	"github.com/uoregon-libraries/newspaper-curation-app/src/db/user"
+	"github.com/uoregon-libraries/newspaper-curation-app/src/models"
+	"github.com/uoregon-libraries/newspaper-curation-app/src/privilege"
 	"github.com/uoregon-libraries/newspaper-curation-app/src/web/tmpl"
 	"github.com/uoregon-libraries/newspaper-curation-app/src/web/webutil"
 )
@@ -34,6 +36,39 @@ func HTMLComment(s string) template.HTML {
 	return template.HTML(fmt.Sprintf("<!-- %s -->", s))
 }
 
+func dict(values ...interface{}) (map[string]interface{}, error) {
+	if len(values)%2 != 0 {
+		return nil, errors.New("dict: values must be in pairs")
+	}
+	var dict = make(map[string]interface{}, len(values)/2)
+	for i := 0; i < len(values); i += 2 {
+		key, ok := values[i].(string)
+		if !ok {
+			return nil, errors.New("dict: keys must be strings")
+		}
+		dict[key] = values[i+1]
+	}
+	return dict, nil
+}
+
+// actionVerb fills in the blank when describing what happened, e.g., "kbates
+// _rejected the issue metadata_ on Jan 1, 2002 at 3:45pm" or "jdepp _wrote a
+// comment_"
+func actionVerb(at string) string {
+	switch models.ActionType(at) {
+	case models.ActionTypeMetadataEntry:
+		return "added metadata and pushed the issue to review"
+	case models.ActionTypeMetadataApproval:
+		return "approved the issue's metadata"
+	case models.ActionTypeMetadataRejection:
+		return "rejected the issue's metadata"
+	case models.ActionTypeComment:
+		return "wrote a comment"
+	default:
+		return string(at)
+	}
+}
+
 // InitRootTemplate sets up pre-parsed template data in Root
 func InitRootTemplate(templatePath string) {
 	var templateFunctions = tmpl.FuncMap{
@@ -47,6 +82,8 @@ func InitRootTemplate(templatePath string) {
 		"ProdURL":    func() string { return webutil.ProductionURL },
 		"Comment":    HTMLComment,
 		"TimeString": func(t time.Time) string { return t.Format("2006-01-02 15:04") },
+		"dtstr":      func(t time.Time) string { return t.Format("on Jan 2, 2006 at 3:04pm") },
+		"actionVerb": actionVerb,
 		"nl2br": func(s string) template.HTML {
 			var escaped = template.HTMLEscaper(s)
 			var replaced = strings.Replace(escaped, "\n", "<br />", -1)
@@ -55,24 +92,25 @@ func InitRootTemplate(templatePath string) {
 		"IIIFInfoURL": webutil.IIIFInfoURL,
 		"raw":         func(s string) template.HTML { return template.HTML(s) },
 		"debug":       func() bool { return settings.DEBUG },
+		"dict":        dict,
 
 		// We have functions for our privileges since they need to be "global" and
 		// easily verified at template compile time
-		"ListTitles":               func() *user.Privilege { return user.ListTitles },
-		"ModifyTitles":             func() *user.Privilege { return user.ModifyTitles },
-		"ManageMOCs":               func() *user.Privilege { return user.ManageMOCs },
-		"ViewMetadataWorkflow":     func() *user.Privilege { return user.ViewMetadataWorkflow },
-		"EnterIssueMetadata":       func() *user.Privilege { return user.EnterIssueMetadata },
-		"ReviewIssueMetadata":      func() *user.Privilege { return user.ReviewIssueMetadata },
-		"ListUsers":                func() *user.Privilege { return user.ListUsers },
-		"ModifyUsers":              func() *user.Privilege { return user.ModifyUsers },
-		"ViewUploadedIssues":       func() *user.Privilege { return user.ViewUploadedIssues },
-		"ModifyUploadedIssues":     func() *user.Privilege { return user.ModifyUploadedIssues },
-		"ViewTitleSFTPCredentials": func() *user.Privilege { return user.ViewTitleSFTPCredentials },
-		"SearchIssues":             func() *user.Privilege { return user.SearchIssues },
-		"ModifyValidatedLCCNs":     func() *user.Privilege { return user.ModifyValidatedLCCNs },
-		"ModifyTitleSFTP":          func() *user.Privilege { return user.ModifyTitleSFTP },
-		"ListAuditLogs":            func() *user.Privilege { return user.ListAuditLogs },
+		"ListTitles":               func() *privilege.Privilege { return privilege.ListTitles },
+		"ModifyTitles":             func() *privilege.Privilege { return privilege.ModifyTitles },
+		"ManageMOCs":               func() *privilege.Privilege { return privilege.ManageMOCs },
+		"ViewMetadataWorkflow":     func() *privilege.Privilege { return privilege.ViewMetadataWorkflow },
+		"EnterIssueMetadata":       func() *privilege.Privilege { return privilege.EnterIssueMetadata },
+		"ReviewIssueMetadata":      func() *privilege.Privilege { return privilege.ReviewIssueMetadata },
+		"ListUsers":                func() *privilege.Privilege { return privilege.ListUsers },
+		"ModifyUsers":              func() *privilege.Privilege { return privilege.ModifyUsers },
+		"ViewUploadedIssues":       func() *privilege.Privilege { return privilege.ViewUploadedIssues },
+		"ModifyUploadedIssues":     func() *privilege.Privilege { return privilege.ModifyUploadedIssues },
+		"ViewTitleSFTPCredentials": func() *privilege.Privilege { return privilege.ViewTitleSFTPCredentials },
+		"SearchIssues":             func() *privilege.Privilege { return privilege.SearchIssues },
+		"ModifyValidatedLCCNs":     func() *privilege.Privilege { return privilege.ModifyValidatedLCCNs },
+		"ModifyTitleSFTP":          func() *privilege.Privilege { return privilege.ModifyTitleSFTP },
+		"ListAuditLogs":            func() *privilege.Privilege { return privilege.ListAuditLogs },
 	}
 
 	// Set up the layout and then our global templates

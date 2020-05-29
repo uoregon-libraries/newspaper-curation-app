@@ -1,0 +1,125 @@
+#!/usr/bin/env bash
+set -eu
+
+nuke() {
+  echo "Deleting the stack"
+  docker-compose kill
+  docker-compose down -v
+  rm ./test/fakemount/* -rf
+  echo "Done (Deleting the stack)"
+}
+
+backup() {
+  dir=$(realpath $1)
+  mkdir -p $dir
+
+  echo "Taking down the stack gracefully"
+  docker-compose down
+  echo "Done (Taking down the stack gracefully)"
+
+  echo "Deleting old backups (if any)"
+  vols="$dir/vols.tar"
+  fakemount="$dir/fakemount.tar"
+  sudo rm -f $vols
+  sudo rm -f $fakemount
+  echo "Done (Deleting old backups (if any))"
+
+  echo "Writing new backup files"
+  sudo tar -cf $fakemount ./test/fakemount
+  sudo su -c "cd /var/lib/docker/volumes && tar -cf $vols ./nca*"
+  echo "Done (Writing new backup files)"
+}
+
+migrate() {
+  docker-compose run --rm workers wait_for_database
+}
+
+load_seed_data() {
+  docker-compose run --rm workers wait_for_database
+  docker-compose run --rm workers mysql -unca -pnca -Dnca -hdb < ./docker/mysql/nca-seed-data.sql
+}
+
+restore() {
+  nuke
+
+  dir="$1"
+  echo "Restoring from $dir"
+  vols="$dir/vols.tar"
+  fakemount="$dir/fakemount.tar"
+  sudo tar -xf $fakemount ./test/fakemount
+  sudo su -c "cd /var/lib/docker/volumes && tar -xf $vols"
+  echo "Done (Restoring from $dir)"
+}
+
+build() {
+  echo "Building NCA images"
+  docker-compose build
+  echo "Done (Building NCA images)"
+}
+
+resetfakemount() {
+  pushd .
+  cd ./test
+  ./makemine.sh
+  rm fakemount/* -rf
+  go run copy-sources.go .
+  ./make-older.sh
+  popd
+}
+
+reset() {
+  echo "Resetting the stack"
+  build
+  docker-compose down -v
+  migrate
+  load_seed_data
+  resetfakemount
+  echo "Done (Resetting the stack)"
+}
+
+# This ensures the first thing I do is type my password so I can walk away
+# without unexpected sudo prompts holding up the process
+sudo echo
+
+dir="./backup/${2:-default}"
+
+case ${1:-} in
+reset)
+  reset
+  ;;
+
+build)
+  build
+  ;;
+
+nuke)
+  nuke
+  ;;
+
+backup)
+  echo 'Backing up to "'$dir'" in two seconds....'
+  sleep 2
+  backup $dir
+  ;;
+
+restore)
+  sec=2
+  dir=$(realpath $dir)
+  if [[ ! -d $dir ]]; then
+    dirname=${dir%/*}
+    wildcard="${dir##*/}*"
+    dir=$(find $dirname -mindepth 1 -maxdepth 1 -type d -name "$wildcard")
+    sec=5
+  fi
+  echo 'Restoring from "'$dir'" in '"$sec seconds...."
+  sleep $sec
+  restore $dir
+  ;;
+
+migrate)
+  migrate
+  ;;
+
+*)
+  echo "Usage: ./manage <reset|build|nuke|backup|restore|migrate>"
+esac

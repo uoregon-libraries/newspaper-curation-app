@@ -6,14 +6,14 @@ import (
 	"time"
 
 	"github.com/uoregon-libraries/newspaper-curation-app/src/config"
-	"github.com/uoregon-libraries/newspaper-curation-app/src/db"
 	"github.com/uoregon-libraries/newspaper-curation-app/src/internal/logger"
 	"github.com/uoregon-libraries/newspaper-curation-app/src/jobs"
+	"github.com/uoregon-libraries/newspaper-curation-app/src/models"
 	"github.com/uoregon-libraries/newspaper-curation-app/src/schema"
 )
 
 func scanPageReviewIssues(c *config.Config) {
-	var list, err = db.FindIssuesInPageReview()
+	var list, err = models.FindIssuesInPageReview()
 	if err != nil {
 		logger.Errorf("Unable to query issues in page review: %s", err)
 		return
@@ -29,7 +29,7 @@ func scanPageReviewIssues(c *config.Config) {
 // queueIssueForDerivatives first renames the directory so no more
 // modifications are likely to take place, then queues the directory for being
 // moved to the workflow space
-func queueIssueForDerivatives(dbIssue *db.Issue, workflowPath string) {
+func queueIssueForDerivatives(dbIssue *models.Issue, workflowPath string) {
 	var oldDir = dbIssue.Location
 	var newDir = filepath.Join(filepath.Dir(oldDir), ".notouchie-"+filepath.Base(oldDir))
 	logger.Infof("Renaming %q to %q to prepare for derivative processing", oldDir, newDir)

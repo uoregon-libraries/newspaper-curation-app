@@ -10,15 +10,11 @@
   </ul>
 </p>
 
-{{if .Data.Issue.RejectionNotes}}
-<hr />
-<div class="alert alert-warning">
-  <p>This issue was rejected from the review queue:</p>
-  <blockquote>{{.Data.Issue.RejectionNotes|nl2br}}</blockquote>
-</div>
+{{if .Data.Issue.WorkflowActions}}
+  <h2>Recent Actions / Comments</h2>
+  {{template "issue_actions" (dict "Actions" (.Data.Issue.RecentWorkflowActions 10) "User" .User)}}
 {{end}}
 
-<hr />
 <h2>Page Numbering</h2>
 <p>
   Type a page label <strong>exactly as it's printed</strong>, or type zero
@@ -134,6 +130,20 @@
         <div class="col-md-4">
           <input type="text" id="edition_label" name="edition_label" value="{{.Data.Issue.EditionLabel}}"
             class="form-control" />
+        </div>
+      </div>
+
+      <div class="form-group">
+        <label class="col-md-2 control-label" for="draft_comment">Comments (optional)</label>
+        <div class="col-md-10">
+          <textarea id="draft_comment" name="draft_comment" class="form-control" rows="8">{{.Data.Issue.DraftComment}}</textarea>
+          <p class="help-block">
+            Enter comments about this data, if necessary.  For instance, if
+            there is anything special or unusual about this issue the metadata
+            reviewer needs to know, it would go here.  <strong>Note</strong>:
+            draft comments aren't visible to others.  <em>i.e., This comment
+            will not be visible until you choose "Save and Queue"</em>.
+          </p>
         </div>
       </div>
 

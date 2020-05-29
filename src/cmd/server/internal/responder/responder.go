@@ -9,9 +9,8 @@ import (
 	"net/http"
 	"time"
 
-	"github.com/uoregon-libraries/newspaper-curation-app/src/db"
-	"github.com/uoregon-libraries/newspaper-curation-app/src/db/user"
 	"github.com/uoregon-libraries/newspaper-curation-app/src/internal/logger"
+	"github.com/uoregon-libraries/newspaper-curation-app/src/models"
 	"github.com/uoregon-libraries/newspaper-curation-app/src/version"
 	"github.com/uoregon-libraries/newspaper-curation-app/src/web/tmpl"
 )
@@ -26,7 +25,7 @@ type PageVars struct {
 	Version string
 	Alert   template.HTML
 	Info    template.HTML
-	User    *user.User
+	User    *models.User
 	Data    GenericVars
 }
 
@@ -40,7 +39,7 @@ type Responder struct {
 // Response generates a Responder with basic data all pages will need: request,
 // response writer, and user
 func Response(w http.ResponseWriter, req *http.Request) *Responder {
-	var u = user.FindByLogin(GetUserLogin(w, req))
+	var u = models.FindActiveUserWithLogin(GetUserLogin(w, req))
 	u.IP = GetUserIP(req)
 	return &Responder{Writer: w, Request: req, Vars: &PageVars{User: u, Data: make(GenericVars)}}
 }
@@ -85,7 +84,7 @@ func (r *Responder) Render(t *tmpl.Template) {
 // the database audit fails
 func (r *Responder) Audit(action, msg string) {
 	var u = r.Vars.User
-	var err = db.CreateAuditLog(u.IP, u.Login, action, msg)
+	var err = models.CreateAuditLog(u.IP, u.Login, action, msg)
 	if err != nil {
 		logger.Criticalf("Unable to write AuditLog{%s (%s), %q, %s}: %s", u.Login, u.IP, action, msg, err)
 	}

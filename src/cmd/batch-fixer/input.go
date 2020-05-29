@@ -7,7 +7,7 @@ import (
 	"strings"
 
 	"github.com/Nerdmaster/terminal"
-	"github.com/uoregon-libraries/newspaper-curation-app/src/db"
+	"github.com/uoregon-libraries/newspaper-curation-app/src/models"
 )
 
 const csi = "\033["
@@ -176,7 +176,7 @@ func (i *Input) quitHandler([]string) {
 }
 
 func (i *Input) listBatchesHandler([]string) {
-	var batches, err = db.InProcessBatches()
+	var batches, err = models.InProcessBatches()
 	if err != nil {
 		i.println("unable to read batches: " + err.Error())
 		return

@@ -6,7 +6,7 @@ package issuefinder
 
 import (
 	"github.com/uoregon-libraries/newspaper-curation-app/src/apperr"
-	"github.com/uoregon-libraries/newspaper-curation-app/src/db"
+	"github.com/uoregon-libraries/newspaper-curation-app/src/models"
 	"github.com/uoregon-libraries/newspaper-curation-app/src/schema"
 )
 
@@ -37,7 +37,7 @@ type Searcher struct {
 
 	// dbTitles holds a temporary cache (living for the life of this Searcher) of
 	// all titles in the database
-	dbTitles db.TitleList
+	dbTitles models.TitleList
 
 	// titleByLoc holds titles keyed by their location so we don't duplicate the
 	// same title entry if it's in the same place.  This is most applicable to
@@ -91,7 +91,7 @@ func (s *Searcher) init() {
 
 	// Make sure titles are loaded from the DB, and puke on any errors
 	var err error
-	s.dbTitles, err = db.Titles()
+	s.dbTitles, err = models.Titles()
 	if err != nil {
 		panic(err)
 	}

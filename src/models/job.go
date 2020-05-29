@@ -1,4 +1,4 @@
-package db
+package models
 
 import (
 	"encoding/json"
@@ -7,6 +7,7 @@ import (
 	"time"
 
 	"github.com/Nerdmaster/magicsql"
+	"github.com/uoregon-libraries/newspaper-curation-app/src/dbi"
 )
 
 // Object types for consistently inserting into the database
@@ -142,8 +143,8 @@ func FindJob(id int) (*Job, error) {
 // NOTE: All instantiations from the database must go through this function to
 // properly set up their args map!
 func findJobs(where string, args ...interface{}) ([]*Job, error) {
-	var op = DB.Operation()
-	op.Dbg = Debug
+	var op = dbi.DB.Operation()
+	op.Dbg = dbi.Debug
 	var list []*Job
 	op.Select("jobs", &Job{}).Where(where, args...).AllObjects(&list)
 	for _, j := range list {
@@ -158,8 +159,8 @@ func findJobs(where string, args ...interface{}) ([]*Job, error) {
 // PopNextPendingJob is a helper for locking the database to pull the oldest
 // job with one of the given types and set it to in-process
 func PopNextPendingJob(types []JobType) (*Job, error) {
-	var op = DB.Operation()
-	op.Dbg = Debug
+	var op = dbi.DB.Operation()
+	op.Dbg = dbi.Debug
 
 	op.BeginTransaction()
 	defer op.EndTransaction()
@@ -225,8 +226,8 @@ func FindJobsForIssueID(id int) ([]*Job, error) {
 // Logs lazy-loads all logs for this job from the database
 func (j *Job) Logs() []*JobLog {
 	if j.logs == nil {
-		var op = DB.Operation()
-		op.Dbg = Debug
+		var op = dbi.DB.Operation()
+		op.Dbg = dbi.Debug
 		op.Select("job_logs", &JobLog{}).Where("job_id = ?", j.ID).AllObjects(&j.logs)
 	}
 
@@ -236,8 +237,8 @@ func (j *Job) Logs() []*JobLog {
 // WriteLog stores a log message on this job
 func (j *Job) WriteLog(level string, message string) error {
 	var l = &JobLog{JobID: j.ID, LogLevel: level, Message: message}
-	var op = DB.Operation()
-	op.Dbg = Debug
+	var op = dbi.DB.Operation()
+	op.Dbg = dbi.Debug
 	op.Save("job_logs", l)
 	return op.Err()
 }
@@ -275,8 +276,8 @@ func (j *Job) encodeArgs() {
 
 // Save creates or updates the Job in the jobs table
 func (j *Job) Save() error {
-	var op = DB.Operation()
-	op.Dbg = Debug
+	var op = dbi.DB.Operation()
+	op.Dbg = dbi.Debug
 	return j.SaveOp(op)
 }
 
@@ -292,7 +293,7 @@ func (j *Job) SaveOp(op *magicsql.Operation) error {
 // can be tied to a distinct instance of a job, making it easier to debug
 // things like command-line failures for a particular run.
 func (j *Job) Requeue() (*Job, error) {
-	var op = DB.Operation()
+	var op = dbi.DB.Operation()
 	op.BeginTransaction()
 
 	// This is a shallow clone, but that should be fine since it's only the
