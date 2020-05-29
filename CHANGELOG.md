@@ -25,6 +25,19 @@ Brief description, if necessary
 ### Migration
 -->
 
+## v2.12.1
+
+### Fixed
+
+- Deploy script works with the version of goose we recommend using.  Oops.
+
+### Changed
+
+- Exponential backoff of failed jobs is now smarter to give failures more time
+  to resolve before the first retry
+- Invalid filenames are now checked more carefully before issues can get into
+  NCA, to avoid dev-only manual filesystem fixing
+
 ## v2.12.0
 
 User persistence!
