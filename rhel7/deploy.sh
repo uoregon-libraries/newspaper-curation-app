@@ -73,7 +73,7 @@ sudo rm /tmp/nca/finder.cache -f
 
 echo Migrating the database
 source $ncadir/settings
-goose -dir $ncadir/db/migrations mysql "$DB_USER:$DB_PASSWORD@tcp($DB_HOST:3306)/$DB_DATABASE" up
+goose -dir $src/db/migrations mysql "$DB_USER:$DB_PASSWORD@tcp($DB_HOST:3306)/$DB_DATABASE" up
 
 echo Copying in the new stuff
 sudo cp $src/bin/server $ncadir/
