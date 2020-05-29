@@ -3,6 +3,7 @@ package uploads
 import (
 	"time"
 
+	"github.com/uoregon-libraries/newspaper-curation-app/src/apperr"
 	"github.com/uoregon-libraries/newspaper-curation-app/src/config"
 	"github.com/uoregon-libraries/newspaper-curation-app/src/issuewatcher"
 	"github.com/uoregon-libraries/newspaper-curation-app/src/schema"
@@ -56,8 +57,24 @@ func (i *Issue) ValidateFast() {
 	if len(i.Title.Errors) > 0 {
 		i.ErrBadTitle()
 	}
-
+	i.validateFilenames()
 	i.CheckDupes(i.scanner.Lookup)
+}
+
+// validateFilenames uses the issue's workflow step to decide what filename
+// patterns are allowed
+func (i *Issue) validateFilenames() {
+	// We only check in-house scans since publisher uploads have to be manually
+	// handled by staff anyway
+	if i.WorkflowStep != schema.WSScan {
+		return
+	}
+
+	for _, f := range i.Files {
+		if !f.ValidName() {
+			f.AddError(apperr.Errorf("invalid filename for scanned issue %q", f.Name))
+		}
+	}
 }
 
 // ValidateAll runs through all upload-queue-specific validations and adds
