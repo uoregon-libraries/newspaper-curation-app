@@ -146,9 +146,13 @@ func (u *User) IsAdmin() bool {
 
 // Save stores the user's data to the database, rewriting the roles list
 func (u *User) Save() error {
-	if u.ID < 1 {
-		return errors.New("cannot save system or guest users")
+	if u.ID < 0 {
+		return errors.New("cannot save system users")
 	}
+	if u.Guest {
+		return errors.New("cannot save guest users")
+	}
+
 	var op = dbi.DB.Operation()
 	op.Dbg = dbi.Debug
 	u.serialize()
