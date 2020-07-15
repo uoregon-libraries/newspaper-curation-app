@@ -17,6 +17,12 @@ type Processor interface {
 	// Process runs the job and returns whether it was successful
 	Process(*config.Config) bool
 
+	// Valid returns if the job can be processed.  This is separated from the
+	// Process function because many jobs can just say "yes" in all cases while
+	// others need to check that things like database records, which should
+	// exist, actually do.  It's clearer to centralize validity checks.
+	Valid() bool
+
 	// MaxRetries tells the processor how many times this job may attempt to
 	// re-run if it fails
 	MaxRetries() int

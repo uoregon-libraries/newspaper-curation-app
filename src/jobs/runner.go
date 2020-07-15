@@ -122,7 +122,15 @@ func (r *Runner) processNext() bool {
 
 func (r *Runner) process(pr Processor) {
 	var dbj = pr.DBJob()
-	r.logger.Infof("Starting job id %d: %q", dbj.ID, dbj.Type)
+
+	// Invalid jobs shouldn't realistically exist, but database errors have
+	// occasionally been known to happen and we don't want runners panicking
+	if !pr.Valid() {
+		r.attemptRetry(pr)
+		return
+	}
+
+	r.logger.Infof("Starting job id %d (%q)", dbj.ID, dbj.Type)
 	if pr.Process(r.config) {
 		r.handleSuccess(pr)
 	} else {
