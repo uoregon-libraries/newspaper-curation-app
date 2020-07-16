@@ -97,6 +97,9 @@ func usageFail(format string, args ...interface{}) {
 		"(reordering or other manual processing) which are ready to be moved for " +
 		"metadata entry.  No job is associated with this action, hence it must run on " +
 		"its own, and should only have one copy running at a time.")
+	wrapBullet(`* watch-scans: Watches for issues in the "scans" folder which are ` +
+		"ready to be moved for metadata entry.  No job is associated with this action, " +
+		"hence it must run on its own, and should only have one copy running at a time.")
 	wrapBullet("* force-rerun <job id> [<job id>...]: Creates new jobs by cloning the " +
 		"given jobs and running the new clones.  Extra metadata is removed to avoid " +
 		"as many side-effects as possible.  This is NOT a good idea unless you know " +
@@ -156,6 +159,8 @@ func main() {
 		requeue(args)
 	case "watch":
 		watch(c, args...)
+	case "watch-scans":
+		watchDigitizedScans(c)
 	case "watch-page-review":
 		watchPageReview(c)
 	case "watchall":
@@ -251,12 +256,28 @@ func watchPageReview(c *config.Config) {
 	}
 }
 
+func watchDigitizedScans(c *config.Config) {
+	logger.Infof("Watching in-house digitization folders")
+
+	var nextAttempt time.Time
+	for !done() {
+		if time.Now().After(nextAttempt) {
+			scanScannerIssues(c)
+			nextAttempt = time.Now().Add(time.Hour)
+		}
+
+		// Try not to eat all the CPU
+		time.Sleep(time.Second)
+	}
+}
+
 // runAllQueues fires up multiple goroutines to watch all the queues in a
 // fairly sane way so that important processes like moving SFTP issues can
 // happen quickly, while CPU-bound processes won't fight each other.
 func runAllQueues(c *config.Config) {
 	waitFor(
 		func() { watchPageReview(c) },
+		func() { watchDigitizedScans(c) },
 		func() {
 			// Jobs which are exclusively disk IO are in the first runner to avoid
 			// too much FS stuff hapenning concurrently
