@@ -29,6 +29,10 @@ type Processor interface {
 
 	// DBJob returns the low-level database Job for updating status, etc.
 	DBJob() *models.Job
+
+	// SetConsoleLogLevel changes the level filtered by console logs.  The
+	// database always gets sent all logs.
+	SetConsoleLogLevel(ltype.LogLevel)
 }
 
 // Job wraps the DB job data and provides business logic for things like
@@ -39,17 +43,34 @@ type Job struct {
 	maxRetries int
 }
 
+// SetConsoleLogLevel sets the job to only log messages of the given level or
+// higher to stderr.  All messages always get stored in the database.
+func (j *Job) SetConsoleLogLevel(level ltype.LogLevel) {
+	j.setLogger(level)
+}
+
 // MaxRetries allows all jobs to implement the Processor interface without
 // having to write this specific function
 func (j *Job) MaxRetries() int {
 	return j.maxRetries
 }
 
-// NewJob wraps the given models.Job and sets up a logger
+// NewJob wraps the given models.Job and sets up a logger with INFO as the
+// default restriction for console output (to stderr)
 func NewJob(dbj *models.Job) *Job {
 	var j = &Job{db: dbj, maxRetries: 25}
-	j.Logger = &ltype.Logger{Loggable: &jobLogger{Job: j, AppName: filepath.Base(os.Args[0])}}
+	j.setLogger(ltype.Info)
 	return j
+}
+
+func (j *Job) setLogger(level ltype.LogLevel) {
+	j.Logger = &ltype.Logger{
+		Loggable: &jobLogger{
+			Job:     j,
+			AppName: filepath.Base(os.Args[0]),
+			level:   level,
+		},
+	}
 }
 
 // Find looks up the job in the database and wraps it
@@ -87,16 +108,19 @@ func RunWhileTrue(subProcessors ...func() bool) (ok bool) {
 type jobLogger struct {
 	*Job
 	AppName string
+	level   ltype.LogLevel
 }
 
 // Log writes the pertinent data to stderr and the database so we can
 // immediately see logs if we're watching for them, or search later against a
 // specific job id's logs
 func (l *jobLogger) Log(level ltype.LogLevel, message string) {
-	var timeString = time.Now().Format(ltype.TimeFormat)
-	var msg = fmt.Sprintf("%s - %s - %s - [job %s:%d] %s\n",
-		timeString, l.AppName, level.String(), l.db.Type, l.db.ID, message)
-	os.Stderr.WriteString(msg)
+	if level >= l.level {
+		var timeString = time.Now().Format(ltype.TimeFormat)
+		var msg = fmt.Sprintf("%s - %s - %s - [job %s:%d] %s\n",
+			timeString, l.AppName, level.String(), l.db.Type, l.db.ID, message)
+		os.Stderr.WriteString(msg)
+	}
 
 	var err = l.db.WriteLog(level.String(), message)
 	if err != nil {

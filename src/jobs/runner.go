@@ -16,9 +16,14 @@ import (
 type runnerLogger struct {
 	ID      int32
 	AppName string
+	level   logger.LogLevel
 }
 
 func (l *runnerLogger) Log(level logger.LogLevel, message string) {
+	if level < l.level {
+		return
+	}
+
 	var timeString = time.Now().Format(logger.TimeFormat)
 	fmt.Fprintf(os.Stderr, "%s - %s - %s - [runner %d] %s\n",
 		timeString, l.AppName, level.String(), l.ID, message)
@@ -48,13 +53,13 @@ type Runner struct {
 // it easier to know when a runner died and needs to have its jobs restarted.
 
 // NewRunner creates a Runner set up to look for a given list of job types
-func NewRunner(c *config.Config, jobTypes ...models.JobType) *Runner {
+func NewRunner(c *config.Config, logLevel logger.LogLevel, jobTypes ...models.JobType) *Runner {
 	var rid = nextRunnerID()
 	return &Runner{
 		config:     c,
 		jobTypes:   jobTypes,
 		identifier: rid,
-		logger:     &logger.Logger{Loggable: &runnerLogger{ID: rid, AppName: filepath.Base(os.Args[0])}},
+		logger:     &logger.Logger{Loggable: &runnerLogger{ID: rid, level: logLevel, AppName: filepath.Base(os.Args[0])}},
 	}
 }
 

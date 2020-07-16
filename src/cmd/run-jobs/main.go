@@ -15,6 +15,7 @@ import (
 
 	flags "github.com/jessevdk/go-flags"
 	"github.com/uoregon-libraries/gopkg/interrupts"
+	ltype "github.com/uoregon-libraries/gopkg/logger"
 	"github.com/uoregon-libraries/gopkg/wordutils"
 	"github.com/uoregon-libraries/newspaper-curation-app/src/config"
 	"github.com/uoregon-libraries/newspaper-curation-app/src/dbi"
@@ -53,6 +54,7 @@ func done() bool {
 // Command-line options
 var opts struct {
 	ConfigFile string `short:"c" long:"config" description:"path to NCA config file" required:"true"`
+	Verbose    bool   `short:"v" long:"verbose" description:"show verbose debugging when running jobs"`
 }
 
 var p *flags.Parser
@@ -60,6 +62,7 @@ var titles = make(map[string]*schema.Title)
 
 var validQueues = make(map[string]bool)
 var validQueueList []string
+var logLevel ltype.LogLevel
 
 // wrap is a helper to wrap a usage message at 80 characters and print a
 // newline afterward
@@ -118,6 +121,15 @@ func getOpts() (*config.Config, []string) {
 	if err != nil {
 		usageFail("Error: %s", err)
 	}
+
+	// run-jobs' logging defaults to Info level logs, but "-v" can make it spit
+	// out debug logs.  Jobs' logs written to the database are never filtered.
+	if opts.Verbose {
+		logLevel = ltype.Debug
+	} else {
+		logLevel = ltype.Info
+	}
+	logger.Logger = ltype.New(logLevel, false)
 
 	var c *config.Config
 	c, err = config.Parse(opts.ConfigFile)
@@ -236,7 +248,7 @@ func watch(c *config.Config, queues ...string) {
 }
 
 func watchJobTypes(c *config.Config, jobTypes ...models.JobType) {
-	var r = jobs.NewRunner(c, jobTypes...)
+	var r = jobs.NewRunner(c, logLevel, jobTypes...)
 	addRunner(r)
 	r.Watch(time.Second * 10)
 }
@@ -313,7 +325,7 @@ func runAllQueues(c *config.Config) {
 			// Extremely fast data-setting jobs get a custom runner that operates
 			// every second to ensure nearly real-time updates to things like a job's
 			// workflow state
-			var r = jobs.NewRunner(c,
+			var r = jobs.NewRunner(c, logLevel,
 				models.JobTypeSetIssueWS,
 				models.JobTypeSetIssueMasterLoc,
 				models.JobTypeSetIssueLocation,
