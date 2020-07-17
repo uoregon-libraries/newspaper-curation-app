@@ -25,6 +25,23 @@ Brief description, if necessary
 ### Migration
 -->
 
+## v2.13.0
+
+### Fixed
+
+- Saving users works again.  Oops.
+- Extremely rare edge-case database problems no longer cause job runner to crash
+
+### Added
+
+- New "scanner scanner" in the job runner, watching for scanned issues which
+  are ready to be moved into NCA's workflow
+
+### Changed
+
+- Job runner stderr output now logs at "Info" level by default, with an option
+  to log at "Debug" level.  Database logging is still always "Debug".
+
 ## v2.12.1
 
 ### Fixed
