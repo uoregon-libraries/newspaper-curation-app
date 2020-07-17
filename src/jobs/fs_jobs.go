@@ -21,6 +21,14 @@ type SyncDir struct {
 	*Job
 }
 
+// Valid is always true since filesystem jobs identify their errors nicely, and
+// FS problems that would cause real problems in Process will also be problems
+// here (e.g., trying to validate the existence of a directory on an NFS mount
+// that dropped)
+func (j *SyncDir) Valid() bool {
+	return true
+}
+
 // Process does a sync from j.Source to j.Dest, only writing files that don't
 // exist in j.Dest or which are different
 func (j *SyncDir) Process(*config.Config) bool {
@@ -50,6 +58,14 @@ type KillDir struct {
 	*Job
 }
 
+// Valid is always true since filesystem jobs identify their errors nicely, and
+// FS problems that would cause real problems in Process will also be problems
+// here (e.g., trying to validate the existence of a directory on an NFS mount
+// that dropped)
+func (j *KillDir) Valid() bool {
+	return true
+}
+
 // Process removes files from j.Dir
 func (j *KillDir) Process(*config.Config) bool {
 	var loc = j.db.Args[locArg]
@@ -72,6 +88,14 @@ type RenameDir struct {
 	*Job
 }
 
+// Valid is always true since filesystem jobs identify their errors nicely, and
+// FS problems that would cause real problems in Process will also be problems
+// here (e.g., trying to validate the existence of a directory on an NFS mount
+// that dropped)
+func (j *RenameDir) Valid() bool {
+	return true
+}
+
 // Process moves the source dir to the destination name
 func (j *RenameDir) Process(*config.Config) bool {
 	var src = j.db.Args[srcArg]
@@ -89,6 +113,14 @@ func (j *RenameDir) Process(*config.Config) bool {
 // or other sources that hate me
 type CleanFiles struct {
 	*Job
+}
+
+// Valid is always true since filesystem jobs identify their errors nicely, and
+// FS problems that would cause real problems in Process will also be problems
+// here (e.g., trying to validate the existence of a directory on an NFS mount
+// that dropped)
+func (j *CleanFiles) Valid() bool {
+	return true
 }
 
 // isFraggable returns true if the given file can be removed without anybody

@@ -15,6 +15,7 @@ import (
 
 	flags "github.com/jessevdk/go-flags"
 	"github.com/uoregon-libraries/gopkg/interrupts"
+	ltype "github.com/uoregon-libraries/gopkg/logger"
 	"github.com/uoregon-libraries/gopkg/wordutils"
 	"github.com/uoregon-libraries/newspaper-curation-app/src/config"
 	"github.com/uoregon-libraries/newspaper-curation-app/src/dbi"
@@ -53,6 +54,7 @@ func done() bool {
 // Command-line options
 var opts struct {
 	ConfigFile string `short:"c" long:"config" description:"path to NCA config file" required:"true"`
+	Verbose    bool   `short:"v" long:"verbose" description:"show verbose debugging when running jobs"`
 }
 
 var p *flags.Parser
@@ -60,6 +62,7 @@ var titles = make(map[string]*schema.Title)
 
 var validQueues = make(map[string]bool)
 var validQueueList []string
+var logLevel ltype.LogLevel
 
 // wrap is a helper to wrap a usage message at 80 characters and print a
 // newline afterward
@@ -97,6 +100,9 @@ func usageFail(format string, args ...interface{}) {
 		"(reordering or other manual processing) which are ready to be moved for " +
 		"metadata entry.  No job is associated with this action, hence it must run on " +
 		"its own, and should only have one copy running at a time.")
+	wrapBullet(`* watch-scans: Watches for issues in the "scans" folder which are ` +
+		"ready to be moved for metadata entry.  No job is associated with this action, " +
+		"hence it must run on its own, and should only have one copy running at a time.")
 	wrapBullet("* force-rerun <job id> [<job id>...]: Creates new jobs by cloning the " +
 		"given jobs and running the new clones.  Extra metadata is removed to avoid " +
 		"as many side-effects as possible.  This is NOT a good idea unless you know " +
@@ -115,6 +121,15 @@ func getOpts() (*config.Config, []string) {
 	if err != nil {
 		usageFail("Error: %s", err)
 	}
+
+	// run-jobs' logging defaults to Info level logs, but "-v" can make it spit
+	// out debug logs.  Jobs' logs written to the database are never filtered.
+	if opts.Verbose {
+		logLevel = ltype.Debug
+	} else {
+		logLevel = ltype.Info
+	}
+	logger.Logger = ltype.New(logLevel, false)
 
 	var c *config.Config
 	c, err = config.Parse(opts.ConfigFile)
@@ -156,6 +171,8 @@ func main() {
 		requeue(args)
 	case "watch":
 		watch(c, args...)
+	case "watch-scans":
+		watchDigitizedScans(c)
 	case "watch-page-review":
 		watchPageReview(c)
 	case "watchall":
@@ -231,7 +248,7 @@ func watch(c *config.Config, queues ...string) {
 }
 
 func watchJobTypes(c *config.Config, jobTypes ...models.JobType) {
-	var r = jobs.NewRunner(c, jobTypes...)
+	var r = jobs.NewRunner(c, logLevel, jobTypes...)
 	addRunner(r)
 	r.Watch(time.Second * 10)
 }
@@ -251,12 +268,28 @@ func watchPageReview(c *config.Config) {
 	}
 }
 
+func watchDigitizedScans(c *config.Config) {
+	logger.Infof("Watching in-house digitization folders")
+
+	var nextAttempt time.Time
+	for !done() {
+		if time.Now().After(nextAttempt) {
+			scanScannerIssues(c)
+			nextAttempt = time.Now().Add(time.Hour)
+		}
+
+		// Try not to eat all the CPU
+		time.Sleep(time.Second)
+	}
+}
+
 // runAllQueues fires up multiple goroutines to watch all the queues in a
 // fairly sane way so that important processes like moving SFTP issues can
 // happen quickly, while CPU-bound processes won't fight each other.
 func runAllQueues(c *config.Config) {
 	waitFor(
 		func() { watchPageReview(c) },
+		func() { watchDigitizedScans(c) },
 		func() {
 			// Jobs which are exclusively disk IO are in the first runner to avoid
 			// too much FS stuff hapenning concurrently
@@ -292,7 +325,7 @@ func runAllQueues(c *config.Config) {
 			// Extremely fast data-setting jobs get a custom runner that operates
 			// every second to ensure nearly real-time updates to things like a job's
 			// workflow state
-			var r = jobs.NewRunner(c,
+			var r = jobs.NewRunner(c, logLevel,
 				models.JobTypeSetIssueWS,
 				models.JobTypeSetIssueMasterLoc,
 				models.JobTypeSetIssueLocation,

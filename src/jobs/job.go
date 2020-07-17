@@ -17,12 +17,22 @@ type Processor interface {
 	// Process runs the job and returns whether it was successful
 	Process(*config.Config) bool
 
+	// Valid returns if the job can be processed.  This is separated from the
+	// Process function because many jobs can just say "yes" in all cases while
+	// others need to check that things like database records, which should
+	// exist, actually do.  It's clearer to centralize validity checks.
+	Valid() bool
+
 	// MaxRetries tells the processor how many times this job may attempt to
 	// re-run if it fails
 	MaxRetries() int
 
 	// DBJob returns the low-level database Job for updating status, etc.
 	DBJob() *models.Job
+
+	// SetConsoleLogLevel changes the level filtered by console logs.  The
+	// database always gets sent all logs.
+	SetConsoleLogLevel(ltype.LogLevel)
 }
 
 // Job wraps the DB job data and provides business logic for things like
@@ -33,17 +43,34 @@ type Job struct {
 	maxRetries int
 }
 
+// SetConsoleLogLevel sets the job to only log messages of the given level or
+// higher to stderr.  All messages always get stored in the database.
+func (j *Job) SetConsoleLogLevel(level ltype.LogLevel) {
+	j.setLogger(level)
+}
+
 // MaxRetries allows all jobs to implement the Processor interface without
 // having to write this specific function
 func (j *Job) MaxRetries() int {
 	return j.maxRetries
 }
 
-// NewJob wraps the given models.Job and sets up a logger
+// NewJob wraps the given models.Job and sets up a logger with INFO as the
+// default restriction for console output (to stderr)
 func NewJob(dbj *models.Job) *Job {
 	var j = &Job{db: dbj, maxRetries: 25}
-	j.Logger = &ltype.Logger{Loggable: &jobLogger{Job: j, AppName: filepath.Base(os.Args[0])}}
+	j.setLogger(ltype.Info)
 	return j
+}
+
+func (j *Job) setLogger(level ltype.LogLevel) {
+	j.Logger = &ltype.Logger{
+		Loggable: &jobLogger{
+			Job:     j,
+			AppName: filepath.Base(os.Args[0]),
+			level:   level,
+		},
+	}
 }
 
 // Find looks up the job in the database and wraps it
@@ -81,27 +108,23 @@ func RunWhileTrue(subProcessors ...func() bool) (ok bool) {
 type jobLogger struct {
 	*Job
 	AppName string
+	level   ltype.LogLevel
 }
 
 // Log writes the pertinent data to stderr and the database so we can
 // immediately see logs if we're watching for them, or search later against a
 // specific job id's logs
 func (l *jobLogger) Log(level ltype.LogLevel, message string) {
-	var timeString = time.Now().Format(ltype.TimeFormat)
-	var msg = fmt.Sprintf("%s - %s - %s - [job %s:%d] %s\n",
-		timeString, l.AppName, level.String(), l.db.Type, l.db.ID, message)
-	var _, err = os.Stderr.WriteString(msg)
-	if err != nil {
-		_, err = fmt.Printf("ERROR: unable to write log message %q to STDERR: %s", msg, err)
-		if err != nil {
-			// Granted we probably won't see this, either, but we're out of options here....
-			panic("Unable to write to STDERR or STDOUT")
-		}
+	if level >= l.level {
+		var timeString = time.Now().Format(ltype.TimeFormat)
+		var msg = fmt.Sprintf("%s - %s - %s - [job %s:%d] %s\n",
+			timeString, l.AppName, level.String(), l.db.Type, l.db.ID, message)
+		os.Stderr.WriteString(msg)
 	}
 
-	err = l.db.WriteLog(level.String(), message)
+	var err = l.db.WriteLog(level.String(), message)
 	if err != nil {
-		logger.Criticalf("Unable to write log message: %s", err)
+		logger.Criticalf("Unable to write log message %q to the database: %s", message, err)
 		return
 	}
 }

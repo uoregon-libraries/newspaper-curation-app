@@ -67,10 +67,6 @@ func getIssues() schema.IssueList {
 		logger.Fatalf("unable to scan filesystem: %s", err)
 	}
 
-	if err != nil {
-		logger.Fatalf("unable to scan filesystem: %s", err)
-	}
-
 	var lccnIssues schema.IssueList
 	if iKey != nil {
 		lccnIssues = scanner.LookupIssues(iKey)
