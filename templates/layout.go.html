@@ -16,6 +16,10 @@
   </head>
 
   <body>
+    <a class="skiplink sr-only sr-only-focusable" href="#maincontent">
+      Skip to main content
+    </a>
+
     <div id="wrap">
       <nav class="navbar navbar-default navbar-inverse">
         <div class="container">
@@ -66,7 +70,7 @@
         </div>
       </nav>
 
-      <main class="container">
+      <main class="container" id="maincontent">
         {{if debug }}
           <div class="alert alert-warning">
             Warning: This site is in DEBUG mode and is <strong>NOT SAFE</strong> for production
