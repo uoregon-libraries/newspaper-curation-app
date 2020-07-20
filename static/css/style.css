@@ -74,3 +74,30 @@ form.actions {
 td.rights-url {
   white-space: nowrap;
 }
+
+/* Skip link that's not ugly */
+a.skiplink {
+  padding: 6px;
+  font-weight: normal;
+  position: absolute;
+  top: -40px;
+  left: 0px;
+  color: white;
+  border-right: 1px solid white;
+  border-bottom: 1px solid white;
+  border-bottom-right-radius: 8px;
+  background: transparent;
+  -webkit-transition: top 1s ease-out, background 1s linear;
+  transition: top 1s ease-out, background 1s linear;
+  z-index: 100;
+}
+a.skiplink:focus {
+  position:absolute;
+  font-weight: normal;
+  left:0px;
+  top:0px;
+  background:#333333;
+  outline:0;
+  -webkit-transition: top .1s ease-in, background .5s linear;
+  transition: top .1s ease-in, background .5s linear;
+}
