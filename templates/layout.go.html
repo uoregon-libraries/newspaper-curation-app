@@ -66,7 +66,7 @@
         </div>
       </nav>
 
-      <div class="container">
+      <main class="container">
         {{if debug }}
           <div class="alert alert-warning">
             Warning: This site is in DEBUG mode and is <strong>NOT SAFE</strong> for production
@@ -86,8 +86,8 @@
         {{- end}}
 
         {{block "content" .}}{{end}}
+      </main>
 
-      </div>
     </div>
 
     {{IncludeJS "jquery-1.12.1.min"}}
