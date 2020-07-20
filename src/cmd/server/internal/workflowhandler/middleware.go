@@ -102,20 +102,6 @@ func canReview(h HandlerFunc) HandlerFunc {
 	return MustHavePrivilege(privilege.ReviewIssueMetadata, h)
 }
 
-// _canPerformWorkflow verifies the issue's workflow is of a type on which the
-// user can take action
-func _canPerformWorkflow(u *models.User, i *Issue) bool {
-	switch i.WorkflowStep {
-	case schema.WSReadyForMetadataEntry:
-		return u.PermittedTo(privilege.EnterIssueMetadata)
-
-	case schema.WSAwaitingMetadataReview:
-		return u.PermittedTo(privilege.ReviewIssueMetadata)
-	}
-
-	return false
-}
-
 // canClaim makes sure the issue can be claimed via _canClaim
 func canClaim(h HandlerFunc) HandlerFunc {
 	return HandlerFunc(func(resp *responder.Responder, i *Issue) {
