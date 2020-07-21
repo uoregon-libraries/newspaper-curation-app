@@ -76,6 +76,10 @@ func (v *CanValidation) Claim(i *Issue) bool {
 			v.Status = http.StatusForbidden
 			return false
 		}
+	default:
+		v.Error = fmt.Errorf("invalid workflow step: %q", i.WorkflowStep)
+		v.Status = http.StatusBadRequest
+		return false
 	}
 
 	return true
