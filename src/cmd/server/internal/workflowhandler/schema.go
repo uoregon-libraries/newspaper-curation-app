@@ -2,8 +2,6 @@ package workflowhandler
 
 import (
 	"encoding/base64"
-	"fmt"
-	"html/template"
 	"path"
 	"path/filepath"
 	"strconv"
@@ -125,46 +123,10 @@ func (i *Issue) WorkflowExpiration() string {
 	return i.WorkflowOwnerExpiresAt.Format("2006-01-02 at 15:04")
 }
 
-// actionButton creates an action button wrapped by a one-off form for actions
-// related to a single issue
-func (i *Issue) actionButton(label, actionPath, classes string) template.HTML {
-	return template.HTML(fmt.Sprintf(
-		`<form action="%s" method="POST" class="actions"><button type="submit" class="btn %s">%s</button></form>`,
-		i.Path(actionPath), classes, label))
-}
-
-// actionLink creates a link to the given action; for non-destructive actions
-// like visiting a form page
-func (i *Issue) actionLink(label, actionPath, classes string) template.HTML {
-	return template.HTML(fmt.Sprintf(`<a href="%s" class="%s">%s</a>`, i.Path(actionPath), classes, label))
-}
-
 // IsOwned returns true if the owner ID is nonzero *and* the workflow owner
 // expiration time has not passed
 func (i *Issue) IsOwned() bool {
 	return i.WorkflowOwnerID != 0 && time.Now().Before(i.WorkflowOwnerExpiresAt)
-}
-
-// Actions returns the action link HTML for each possible action the owner can
-// take for this issue
-func (i *Issue) Actions() []template.HTML {
-	var actions []template.HTML
-
-	if i.IsOwned() {
-		switch i.WorkflowStep {
-		case schema.WSReadyForMetadataEntry:
-			actions = append(actions, i.actionLink("Edit", "metadata", ""))
-
-		case schema.WSAwaitingMetadataReview:
-			actions = append(actions, i.actionLink("Review", "review/metadata", ""))
-		}
-
-		actions = append(actions, i.actionButton("Unclaim", "/unclaim", "btn-danger"))
-	} else {
-		actions = append(actions, i.actionButton("Claim", "/claim", "btn-primary"))
-	}
-
-	return actions
 }
 
 // Path returns the path for any basic actions on this issue

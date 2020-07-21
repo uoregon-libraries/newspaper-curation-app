@@ -57,7 +57,7 @@
 
     <tbody>
     {{range .Data.MyDeskIssues}}
-      {{template "MyDeskIssue" .}}
+      {{template "MyDeskIssue" (dict "Issue" . "User" $.User)}}
     {{end}}
     </tbody>
   </table>
@@ -88,7 +88,7 @@
 
       <tbody>
       {{range .Data.PendingMetadataIssues}}
-        {{template "PendingMetadataIssues" .}}
+        {{template "PendingMetadataIssues" (dict "Issue" . "User" $.User)}}
       {{end}}
       </tbody>
     </table>
@@ -116,7 +116,7 @@
 
       <tbody>
       {{range .Data.PendingReviewIssues}}
-        {{template "PendingReviewIssues" .}}
+        {{template "PendingReviewIssues" (dict "Issue" . "User" $.User)}}
       {{end}}
       </tbody>
     </table>

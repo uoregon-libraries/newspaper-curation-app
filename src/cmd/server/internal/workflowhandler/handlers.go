@@ -85,6 +85,7 @@ func Setup(r *mux.Router, webPath string, c *config.Config, w *issuewatcher.Watc
 	s3.Path("/approve").Methods("POST").Handler(handle(canReviewMetadata(approveIssueMetadataHandler)))
 
 	Layout = responder.Layout.Clone()
+	Layout.Funcs(tmpl.FuncMap{"Can": Can})
 	Layout.Path = path.Join(Layout.Path, "workflow")
 	Layout.MustReadPartials("_issue_table_rows.go.html", "_osdjs.go.html", "_view_issue.go.html")
 	DeskTmpl = Layout.MustBuild("desk.go.html")
