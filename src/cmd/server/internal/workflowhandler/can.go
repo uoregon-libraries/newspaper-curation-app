@@ -116,7 +116,7 @@ func (v *CanValidation) EnterMetadata(i *Issue) bool {
 	v.Context = fmt.Sprintf("user %q trying to enter metadata for issue %d", v.User.Login, i.ID)
 
 	if !v.User.PermittedTo(privilege.EnterIssueMetadata) {
-		v.Error = errors.New("insufficient privileges (cannot enter issue metadata)")
+		v.Error = errors.New("insufficient privileges")
 		v.Status = http.StatusForbidden
 		return false
 	}
@@ -151,7 +151,7 @@ func (v *CanValidation) ReviewMetadata(i *Issue) bool {
 	v.Context = fmt.Sprintf("user %q trying to review metadata for issue %d", v.User.Login, i.ID)
 
 	if !v.User.PermittedTo(privilege.ReviewIssueMetadata) {
-		v.Error = errors.New("insufficient privileges (cannot enter issue metadata)")
+		v.Error = errors.New("insufficient privileges")
 		v.Status = http.StatusForbidden
 		return false
 	}
