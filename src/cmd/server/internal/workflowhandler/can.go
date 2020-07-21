@@ -146,7 +146,7 @@ func (v *CanValidation) ReviewMetadata(i *Issue) bool {
 	v.Prefix = "You cannot review this issue's metadata"
 	v.Context = fmt.Sprintf("user %q trying to review metadata for issue %d", v.User.Login, i.ID)
 
-	if !v.User.PermittedTo(privilege.EnterIssueMetadata) {
+	if !v.User.PermittedTo(privilege.ReviewIssueMetadata) {
 		v.Error = errors.New("insufficient privileges (cannot enter issue metadata)")
 		v.Status = http.StatusForbidden
 		return false
