@@ -102,6 +102,7 @@ func InitRootTemplate(templatePath string) {
 		"ViewMetadataWorkflow":     func() *privilege.Privilege { return privilege.ViewMetadataWorkflow },
 		"EnterIssueMetadata":       func() *privilege.Privilege { return privilege.EnterIssueMetadata },
 		"ReviewIssueMetadata":      func() *privilege.Privilege { return privilege.ReviewIssueMetadata },
+		"ReviewOwnMetadata":        func() *privilege.Privilege { return privilege.ReviewOwnMetadata },
 		"ListUsers":                func() *privilege.Privilege { return privilege.ListUsers },
 		"ModifyUsers":              func() *privilege.Privilege { return privilege.ModifyUsers },
 		"ViewUploadedIssues":       func() *privilege.Privilege { return privilege.ViewUploadedIssues },
