@@ -48,6 +48,25 @@ func (v *CanValidation) sendResponse(h HandlerFunc, resp *responder.Responder, i
 	resp.Render(responder.Empty)
 }
 
+// owns sets up error and message, and returns false, if the wrapped user
+// doesn't own the given issue.  This centralizes common validations many other
+// checks would otherwise duplicate.
+func (v *CanValidation) owns(i *Issue) bool {
+	if !i.IsOwned() {
+		v.Error = errors.New("issue must be claimed first")
+		v.Status = http.StatusBadRequest
+		return false
+	}
+
+	if i.WorkflowOwnerID != v.User.ID {
+		v.Error = errors.New("somebody else owns this issue")
+		v.Status = http.StatusBadRequest
+		return false
+	}
+
+	return true
+}
+
 // Claim returns true if a user can claim the given issue:
 //
 // - The issue must not already be owned
@@ -90,20 +109,7 @@ func (v *CanValidation) Claim(i *Issue) bool {
 func (v *CanValidation) Unclaim(i *Issue) bool {
 	v.Prefix = "You cannot unclaim this issue"
 	v.Context = fmt.Sprintf("user %q trying to unclaim issue %d", v.User.Login, i.ID)
-
-	if !i.IsOwned() {
-		v.Error = errors.New("nobody owns this issue")
-		v.Status = http.StatusBadRequest
-		return false
-	}
-
-	if i.WorkflowOwnerID != v.User.ID {
-		v.Error = errors.New("somebody else owns this issue")
-		v.Status = http.StatusBadRequest
-		return false
-	}
-
-	return true
+	return v.owns(i)
 }
 
 // EnterMetadata returns true if the user can enter metadata for the given issue:
@@ -121,13 +127,7 @@ func (v *CanValidation) EnterMetadata(i *Issue) bool {
 		return false
 	}
 
-	if i.WorkflowOwnerID != v.User.ID {
-		if i.IsOwned() {
-			v.Error = errors.New("issue claimed by somebody else")
-		} else {
-			v.Error = errors.New("issue not claimed")
-		}
-		v.Status = http.StatusBadRequest
+	if !v.owns(i) {
 		return false
 	}
 
@@ -156,13 +156,7 @@ func (v *CanValidation) ReviewMetadata(i *Issue) bool {
 		return false
 	}
 
-	if i.WorkflowOwnerID != v.User.ID {
-		if i.IsOwned() {
-			v.Error = errors.New("issue claimed by somebody else")
-		} else {
-			v.Error = errors.New("issue not claimed")
-		}
-		v.Status = http.StatusBadRequest
+	if !v.owns(i) {
 		return false
 	}
 
