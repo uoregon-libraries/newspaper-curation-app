@@ -9,7 +9,6 @@ import (
 	"github.com/uoregon-libraries/newspaper-curation-app/src/internal/logger"
 	"github.com/uoregon-libraries/newspaper-curation-app/src/models"
 	"github.com/uoregon-libraries/newspaper-curation-app/src/privilege"
-	"github.com/uoregon-libraries/newspaper-curation-app/src/schema"
 )
 
 // Handler is our version of http.Handler for sending extra context to
@@ -92,88 +91,23 @@ func canView(h HandlerFunc) HandlerFunc {
 	return MustHavePrivilege(privilege.ViewMetadataWorkflow, h)
 }
 
-// canWrite verifies user can enter metadata for an issue
-func canWrite(h HandlerFunc) HandlerFunc {
-	return MustHavePrivilege(privilege.EnterIssueMetadata, h)
+func canHandler(h HandlerFunc, canFunc func(*CanValidation, *Issue)) HandlerFunc {
+	return HandlerFunc(func(resp *responder.Responder, i *Issue) {
+		var can = Can(resp.Vars.User)
+		canFunc(can, i)
+		can.sendResponse(h, resp, i)
+	})
 }
 
-// canReview verifies user can review metadata for an issue
-func canReview(h HandlerFunc) HandlerFunc {
-	return MustHavePrivilege(privilege.ReviewIssueMetadata, h)
-}
-
-// canClaim makes sure the issue can be claimed via _canClaim
 func canClaim(h HandlerFunc) HandlerFunc {
-	return HandlerFunc(func(resp *responder.Responder, i *Issue) {
-		var u = resp.Vars.User
-		if i.IsOwned() {
-			logger.Warnf("User %s trying to perform an action on issue %d which is owned by user %d",
-				u.Login, i.ID, i.WorkflowOwnerID)
-			resp.Vars.Alert = "You cannot take action on this issue; it's been claimed by another user"
-			resp.Writer.WriteHeader(http.StatusForbidden)
-			resp.Render(responder.Empty)
-			return
-		}
-		if i.WorkflowStep != schema.WSReadyForMetadataEntry && i.WorkflowStep != schema.WSAwaitingMetadataReview {
-			logger.Warnf("User %s trying to claim issue %d which has workflow step %s",
-				resp.Vars.User.Login, i.ID, i.WorkflowStepString)
-			resp.Vars.Alert = "Error: invalid action for this issue"
-			resp.Writer.WriteHeader(http.StatusBadRequest)
-			resp.Render(responder.Empty)
-			return
-		}
-
-		h(resp, i)
-	})
+	return canHandler(h, func(can *CanValidation, i *Issue) { can.Claim(i) })
 }
-
-// issueNeedsMetadataEntry verifies that the issue's workflow step is valid for
-// entering metadata
-func issueNeedsMetadataEntry(h HandlerFunc) HandlerFunc {
-	return HandlerFunc(func(resp *responder.Responder, i *Issue) {
-		if i.WorkflowStep != schema.WSReadyForMetadataEntry {
-			logger.Warnf("User %s trying to perform a metadata entry action on issue %d which has workflow step %s",
-				resp.Vars.User.Login, i.ID, i.WorkflowStepString)
-			resp.Vars.Alert = "Error: invalid action for this issue"
-			resp.Writer.WriteHeader(http.StatusBadRequest)
-			resp.Render(responder.Empty)
-			return
-		}
-
-		h(resp, i)
-	})
+func canUnclaim(h HandlerFunc) HandlerFunc {
+	return canHandler(h, func(can *CanValidation, i *Issue) { can.Unclaim(i) })
 }
-
-// issueAwaitingMetadataReview verifies that the issue's workflow step is valid
-// for reviewing metadata
-func issueAwaitingMetadataReview(h HandlerFunc) HandlerFunc {
-	return HandlerFunc(func(resp *responder.Responder, i *Issue) {
-		if i.WorkflowStep != schema.WSAwaitingMetadataReview {
-			logger.Warnf("User %s trying to perform a metadata review action on issue %d which has workflow step %s",
-				resp.Vars.User.Login, i.ID, i.WorkflowStepString)
-			resp.Vars.Alert = "Error: invalid action for this issue"
-			resp.Writer.WriteHeader(http.StatusBadRequest)
-			resp.Render(responder.Empty)
-			return
-		}
-
-		h(resp, i)
-	})
+func canEnterMetadata(h HandlerFunc) HandlerFunc {
+	return canHandler(h, func(can *CanValidation, i *Issue) { can.EnterMetadata(i) })
 }
-
-// ownsIssue doesn't allow a page hit unless the authenticated user is also the
-// user who claimed the issue
-func ownsIssue(h HandlerFunc) HandlerFunc {
-	return HandlerFunc(func(resp *responder.Responder, i *Issue) {
-		var u = resp.Vars.User
-		if i.WorkflowOwnerID != u.ID {
-			logger.Warnf("User %s trying to perform an action on unowned issue %d", u.Login, i.ID)
-			resp.Vars.Alert = "You cannot take action on this issue; it is not claimed by you"
-			resp.Writer.WriteHeader(http.StatusForbidden)
-			resp.Render(responder.Empty)
-			return
-		}
-
-		h(resp, i)
-	})
+func canReviewMetadata(h HandlerFunc) HandlerFunc {
+	return canHandler(h, func(can *CanValidation, i *Issue) { can.ReviewMetadata(i) })
 }
