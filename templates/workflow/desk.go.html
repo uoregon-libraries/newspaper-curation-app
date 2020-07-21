@@ -4,13 +4,17 @@
   <div role="tablist" aria-label="Workflow">
     <button role="tab" aria-selected="true" aria-controls="desk-tab" id="desk">Desk</button>
 
+    {{if .User.PermittedTo EnterIssueMetadata}}
     <button role="tab" aria-selected="false" aria-controls="needs-metadata-tab" id="needs-metadata" tabindex="-1">
       Metadata Entry
     </button>
+    {{end}}
 
+    {{if .User.PermittedTo ReviewIssueMetadata}}
     <button role="tab" aria-selected="false" aria-controls="needs-review-tab" id="needs-review" tabindex="-1">
       Metadata Review
     </button>
+    {{end}}
   </div>
 
   <!-- Everybody can see their own desk -->
@@ -57,7 +61,7 @@
 
     <tbody>
     {{range .Data.MyDeskIssues}}
-      {{template "MyDeskIssue" .}}
+      {{template "MyDeskIssue" (dict "Issue" . "User" $.User)}}
     {{end}}
     </tbody>
   </table>
@@ -88,7 +92,7 @@
 
       <tbody>
       {{range .Data.PendingMetadataIssues}}
-        {{template "PendingMetadataIssues" .}}
+        {{template "PendingMetadataIssues" (dict "Issue" . "User" $.User)}}
       {{end}}
       </tbody>
     </table>
@@ -116,7 +120,7 @@
 
       <tbody>
       {{range .Data.PendingReviewIssues}}
-        {{template "PendingReviewIssues" .}}
+        {{template "PendingReviewIssues" (dict "Issue" . "User" $.User)}}
       {{end}}
       </tbody>
     </table>

@@ -69,38 +69,23 @@ func Setup(r *mux.Router, webPath string, c *config.Config, w *issuewatcher.Watc
 
 	// Claim / unclaim handlers are for both metadata and review
 	s2.Path("/claim").Methods("POST").Handler(handle(canClaim(claimIssueHandler)))
-	s2.Path("/unclaim").Methods("POST").Handler(handle(ownsIssue(unclaimIssueHandler)))
-
-	// Alias for all the middleware we call to validate issue metadata entry:
-	// - User has a role which allows entering metadata
-	// - User owns the issue
-	// - The issue is in the right workflow step
-	var canEnterMetadata = func(f HandlerFunc) http.Handler {
-		return handle(canWrite(ownsIssue(issueNeedsMetadataEntry(f))))
-	}
+	s2.Path("/unclaim").Methods("POST").Handler(handle(canUnclaim(unclaimIssueHandler)))
 
 	// Issue metadata paths
-	s2.Path("/metadata").Handler(canEnterMetadata(enterMetadataHandler))
-	s2.Path("/metadata/save").Methods("POST").Handler(canEnterMetadata(saveMetadataHandler))
-	s2.Path("/report-error").Handler(canEnterMetadata(enterErrorHandler))
-	s2.Path("/report-error/save").Methods("POST").Handler(canEnterMetadata(saveErrorHandler))
-
-	// Alias for all the middleware we call to validate issue metadata review:
-	// - User has a role which allows reviewing metadata
-	// - User owns the issue
-	// - The issue is in the right workflow step
-	var canReviewMetadata = func(f HandlerFunc) http.Handler {
-		return handle(canReview(ownsIssue(issueAwaitingMetadataReview(f))))
-	}
+	s2.Path("/metadata").Handler(handle(canEnterMetadata(enterMetadataHandler)))
+	s2.Path("/metadata/save").Methods("POST").Handler(handle(canEnterMetadata(saveMetadataHandler)))
+	s2.Path("/report-error").Handler(handle(canEnterMetadata(enterErrorHandler)))
+	s2.Path("/report-error/save").Methods("POST").Handler(handle(canEnterMetadata(saveErrorHandler)))
 
 	// Review paths
 	var s3 = s2.PathPrefix("/review").Subrouter()
-	s3.Path("/metadata").Handler(canReviewMetadata(reviewMetadataHandler))
-	s3.Path("/reject-form").Handler(canReviewMetadata(rejectIssueMetadataFormHandler))
-	s3.Path("/reject").Methods("POST").Handler(canReviewMetadata(rejectIssueMetadataHandler))
-	s3.Path("/approve").Methods("POST").Handler(canReviewMetadata(approveIssueMetadataHandler))
+	s3.Path("/metadata").Handler(handle(canReviewMetadata(reviewMetadataHandler)))
+	s3.Path("/reject-form").Handler(handle(canReviewMetadata(rejectIssueMetadataFormHandler)))
+	s3.Path("/reject").Methods("POST").Handler(handle(canReviewMetadata(rejectIssueMetadataHandler)))
+	s3.Path("/approve").Methods("POST").Handler(handle(canReviewMetadata(approveIssueMetadataHandler)))
 
 	Layout = responder.Layout.Clone()
+	Layout.Funcs(tmpl.FuncMap{"Can": Can})
 	Layout.Path = path.Join(Layout.Path, "workflow")
 	Layout.MustReadPartials("_issue_table_rows.go.html", "_osdjs.go.html", "_view_issue.go.html")
 	DeskTmpl = Layout.MustBuild("desk.go.html")
