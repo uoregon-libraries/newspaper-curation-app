@@ -123,8 +123,7 @@ func homeHandler(resp *responder.Responder, i *Issue) {
 	}
 	resp.Vars.Data["PendingMetadataIssues"] = wrapDBIssues(issues)
 
-	// Get issues needing review which *weren't* queued by this user (unless the
-	// user is allowed to self-review)
+	// Get issues needing metadata review
 	issues, err = models.FindAvailableIssuesByWorkflowStep(schema.WSAwaitingMetadataReview)
 	if err != nil {
 		logger.Errorf("Unable to find issues needing metadata review: %s", err)
@@ -133,13 +132,7 @@ func homeHandler(resp *responder.Responder, i *Issue) {
 		resp.Render(responder.Empty)
 		return
 	}
-	var issuesTwo []*models.Issue
-	for _, i := range issues {
-		if i.MetadataEntryUserID != resp.Vars.User.ID || resp.Vars.User.PermittedTo(privilege.ReviewOwnMetadata) {
-			issuesTwo = append(issuesTwo, i)
-		}
-	}
-	resp.Vars.Data["PendingReviewIssues"] = wrapDBIssues(issuesTwo)
+	resp.Vars.Data["PendingReviewIssues"] = wrapDBIssues(issues)
 
 	resp.Render(DeskTmpl)
 }
