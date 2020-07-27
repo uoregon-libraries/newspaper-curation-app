@@ -95,6 +95,14 @@ func Setup(r *mux.Router, webPath string, c *config.Config, w *issuewatcher.Watc
 	ViewIssueTmpl = Layout.MustBuild("view_issue.go.html")
 }
 
+// searchIssueError handles generic response logic for database errors which
+// can occur when searching for issues
+func searchIssueError(resp *responder.Responder) {
+	resp.Vars.Alert = template.HTML(fmt.Sprintf("Unable to search for issues; contact support or try again later."))
+	resp.Writer.WriteHeader(http.StatusInternalServerError)
+	resp.Render(responder.Empty)
+}
+
 // homeHandler shows claimed workflow items that need to be finished as well as
 // pending items which can be claimed
 func homeHandler(resp *responder.Responder, i *Issue) {
@@ -105,8 +113,7 @@ func homeHandler(resp *responder.Responder, i *Issue) {
 	var issues, err = models.FindIssuesOnDesk(uid)
 	if err != nil {
 		logger.Errorf("Unable to find issues on user %d's desk: %s", uid, err)
-		resp.Vars.Alert = template.HTML(fmt.Sprintf("Unable to search for issues; contact support or try again later."))
-		resp.Render(responder.Empty)
+		searchIssueError(resp)
 		return
 	}
 	resp.Vars.Data["MyDeskIssues"] = wrapDBIssues(issues)
@@ -115,9 +122,7 @@ func homeHandler(resp *responder.Responder, i *Issue) {
 	issues, err = models.FindAvailableIssuesByWorkflowStep(schema.WSReadyForMetadataEntry)
 	if err != nil {
 		logger.Errorf("Unable to find issues needing metadata entry: %s", err)
-		resp.Vars.Alert = template.HTML(fmt.Sprintf("Unable to search for issues; contact support or try again later."))
-		resp.Writer.WriteHeader(http.StatusInternalServerError)
-		resp.Render(responder.Empty)
+		searchIssueError(resp)
 		return
 	}
 	resp.Vars.Data["PendingMetadataIssues"] = wrapDBIssues(issues)
@@ -126,9 +131,7 @@ func homeHandler(resp *responder.Responder, i *Issue) {
 	issues, err = models.FindAvailableIssuesByWorkflowStep(schema.WSAwaitingMetadataReview)
 	if err != nil {
 		logger.Errorf("Unable to find issues needing metadata review: %s", err)
-		resp.Vars.Alert = template.HTML(fmt.Sprintf("Unable to search for issues; contact support or try again later."))
-		resp.Writer.WriteHeader(http.StatusInternalServerError)
-		resp.Render(responder.Empty)
+		searchIssueError(resp)
 		return
 	}
 	resp.Vars.Data["PendingReviewIssues"] = wrapDBIssues(issues)
