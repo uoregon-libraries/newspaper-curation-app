@@ -95,6 +95,12 @@ func (v *CanValidation) Claim(i *Issue) bool {
 			v.Status = http.StatusForbidden
 			return false
 		}
+	case schema.WSUnfixableMetadataError:
+		if !v.User.PermittedTo(privilege.ReviewUnfixableIssues) {
+			v.Error = errors.New("insufficient privileges (cannot review errored issues)")
+			v.Status = http.StatusForbidden
+			return false
+		}
 	default:
 		v.Error = fmt.Errorf("invalid workflow step: %q", i.WorkflowStep)
 		v.Status = http.StatusBadRequest

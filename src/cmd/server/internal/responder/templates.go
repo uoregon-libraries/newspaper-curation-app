@@ -105,6 +105,7 @@ func InitRootTemplate(templatePath string) {
 		"EnterIssueMetadata":       func() *privilege.Privilege { return privilege.EnterIssueMetadata },
 		"ReviewIssueMetadata":      func() *privilege.Privilege { return privilege.ReviewIssueMetadata },
 		"ReviewOwnMetadata":        func() *privilege.Privilege { return privilege.ReviewOwnMetadata },
+		"ReviewUnfixableIssues":    func() *privilege.Privilege { return privilege.ReviewUnfixableIssues },
 		"ListUsers":                func() *privilege.Privilege { return privilege.ListUsers },
 		"ModifyUsers":              func() *privilege.Privilege { return privilege.ModifyUsers },
 		"ViewUploadedIssues":       func() *privilege.Privilege { return privilege.ViewUploadedIssues },

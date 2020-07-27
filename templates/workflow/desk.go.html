@@ -16,9 +16,11 @@
     </button>
     {{end}}
 
+    {{if .User.PermittedTo ReviewUnfixableIssues}}
     <button role="tab" aria-selected="false" aria-controls="unfixable-errors-tab" id="unfixable-errors" tabindex="-1">
       Unfixable Errors
     </button>
+    {{end}}
   </div>
 
   <!-- Everybody can see their own desk -->
@@ -40,9 +42,11 @@
   </div>
   {{end}}
 
+  {{if .User.PermittedTo ReviewUnfixableIssues}}
   <div tabindex="0" role="tabpanel" id="unfixable-errors-tab" aria-labelledby="unfixable-errors" hidden="">
     {{template "unfixable-errors" .}}
   </div>
+  {{end}}
 </div>
 
 {{end}} <!-- block "content" -->
