@@ -94,7 +94,7 @@ func (i *Issue) JP2Files() []string {
 func (i *Issue) TaskDescription() string {
 	switch i.WorkflowStep {
 	case schema.WSUnfixableMetadataError:
-		return "Unfixable metadata error reported: issue is no longer in the workflow"
+		return "Unfixable metadata error reported"
 
 	case schema.WSAwaitingProcessing:
 		return "Not yet entered into the workflow"

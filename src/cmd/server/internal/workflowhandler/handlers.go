@@ -136,6 +136,14 @@ func homeHandler(resp *responder.Responder, i *Issue) {
 	}
 	resp.Vars.Data["PendingReviewIssues"] = wrapDBIssues(issues)
 
+	issues, err = models.FindIssuesWithErrors()
+	if err != nil {
+		logger.Errorf(`Unable to find issues in the "unfixable" state: %s`, err)
+		searchIssueError(resp)
+		return
+	}
+	resp.Vars.Data["UnfixableErrorIssues"] = wrapDBIssues(issues)
+
 	resp.Render(DeskTmpl)
 }
 

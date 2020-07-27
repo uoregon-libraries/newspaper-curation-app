@@ -68,3 +68,16 @@
     <td>{{template "IssueActions" .}}</td>
   </tr>
 {{end}}
+
+{{define "UnfixableErrorIssues"}}
+  <tr>
+    <!-- Issue title -->
+    <th scope="row">{{.Issue.Title}} ({{.Issue.LCCN}})</td>
+
+    <!-- Issue date -->
+    <th scope="row">{{.Issue.Date}}</td>
+
+    <!-- Actions -->
+    <td>{{template "IssueActions" .}}</td>
+  </tr>
+{{end}}
