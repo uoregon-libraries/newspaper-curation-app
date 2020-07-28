@@ -50,7 +50,6 @@ type Issue struct {
 	/* Workflow information to keep track of the issue and what it needs */
 
 	BatchID                int                 // Which batch (if any) is this issue a part of?
-	Error                  string              // If set, a metadata curator reported a problem
 	Location               string              // Where is this issue on disk?
 	MasterBackupLocation   string              // Where is the master backup located?  (born-digital only)
 	HumanName              string              // What is the issue's "human" name (for consistent folder naming)?
@@ -201,12 +200,10 @@ func FindIssuesReadyForBatching() ([]*Issue, error) {
 }
 
 // FindAvailableIssuesByWorkflowStep looks for all "available" issues with the
-// requested workflow step and returns them.  We define "available" as:
-//
-// - No owner (or owner expired)
-// - Have not been reported as having errors
+// requested workflow step and returns them.  We define "available" as
+// basically any issue without an owner.
 func FindAvailableIssuesByWorkflowStep(ws schema.WorkflowStep) ([]*Issue, error) {
-	return findIssues("workflow_step = ? AND (workflow_owner_id = 0 OR workflow_owner_expires_at < ?) AND error = ''",
+	return findIssues("workflow_step = ? AND (workflow_owner_id = 0 OR workflow_owner_expires_at < ?)",
 		string(ws), time.Now().Format("2006-01-02 15:04:05"))
 }
 
@@ -288,20 +285,9 @@ func (i *Issue) QueueForMetadataReview(curatorID int) error {
 		i.claim(i.RejectedByUserID)
 	}
 
-	var op = dbi.DB.Operation()
-	op.Dbg = dbi.Debug
-	op.BeginTransaction()
-	defer op.EndTransaction()
-
-	// Always create a new action so the log is easier to read even when a
-	// comment wasn't explicitly added
-	var a = newIssueAction(i.ID, ActionTypeMetadataEntry)
-	a.UserID = curatorID
-	a.Message = i.DraftComment
+	var message = i.DraftComment
 	i.DraftComment = ""
-	a.SaveOp(op)
-	i.SaveOp(op)
-	return op.Err()
+	return i.saveWithAction(ActionTypeMetadataEntry, curatorID, message)
 }
 
 // ApproveMetadata moves the issue to the final workflow step (e.g., no more
@@ -320,29 +306,32 @@ func (i *Issue) RejectMetadata(reviewerID int, notes string) error {
 	i.claim(i.MetadataEntryUserID)
 	i.RejectedByUserID = reviewerID
 	i.WorkflowStep = schema.WSReadyForMetadataEntry
-	var a = newIssueAction(i.ID, ActionTypeMetadataRejection)
-	a.UserID = reviewerID
-	a.Message = notes
-
-	i.actions = append(i.actions, a)
-
-	var op = dbi.DB.Operation()
-	op.Dbg = dbi.Debug
-	op.BeginTransaction()
-	defer op.EndTransaction()
-
-	i.SaveOp(op)
-	a.SaveOp(op)
-	return op.Err()
+	return i.saveWithAction(ActionTypeMetadataRejection, reviewerID, notes)
 }
 
 // ReportError adds an error message to the issue and flags it as being in the
 // "unfixable" state.  That state basically says that nobody can use NCA to fix
 // the problem, and it needs to be pulled and processed by hand.
-func (i *Issue) ReportError(message string) error {
-	i.Error = message
+func (i *Issue) ReportError(userID int, message string) error {
 	i.WorkflowStep = schema.WSUnfixableMetadataError
-	return i.Unclaim()
+	i.unclaim()
+	return i.saveWithAction(ActionTypeReportUnfixableError, userID, message)
+}
+
+func (i *Issue) saveWithAction(action ActionType, userID int, message string) error {
+	var op = dbi.DB.Operation()
+	op.Dbg = dbi.Debug
+	op.BeginTransaction()
+	defer op.EndTransaction()
+
+	var a = newIssueAction(i.ID, action)
+	a.UserID = userID
+	a.Message = message
+	i.actions = append(i.actions, a)
+
+	a.SaveOp(op)
+	i.SaveOp(op)
+	return op.Err()
 }
 
 // Save creates or updates the Issue in the issues table
