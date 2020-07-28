@@ -25,6 +25,23 @@ Brief description, if necessary
 ### Migration
 -->
 
+## v2.13.1
+
+### Fixed
+
+- "Unfixable" error reports are now actions instead of a one-off field,
+  allowing for a better history of what happened to an issue
+
+### Removed
+
+- Error issue mover is no more.  A better option is on the way.
+
+### Migration
+
+- Migrate the database, e.g, with `goose`:
+  - `goose -dir ./db/migrations/ mysql "<user>:<password>@tcp(<db host>:3306)/<database name>" up`
+- Take the server down, delete the NCA cache, e.g., `rm /tmp/nca/finder.cache`, and restart
+
 ## v2.13.0
 
 ### Fixed
