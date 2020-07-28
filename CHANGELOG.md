@@ -2,11 +2,11 @@
 
 All notable changes to NCA will be documented in this file.
 
-Starting from NCA v2.10.0, a changelog shall be kept based loosely on the
-[Keep a Changelog](https://keepachangelog.com/en/1.0.0/) format.  Since this is
-an internal project for UO, we won't be attempting to do much in the way of
-adding helpful migration notes, deprecating features, etc.  This is basically
-to help our team keep up with what's going on.  Ye be warned.  Again.
+Starting from NCA v2.10.0, a changelog shall be kept based loosely on the [Keep
+a Changelog](https://keepachangelog.com/en/1.0.0/) format.  Since this is an
+internal project for UO, we won't necessarily add helpful migration notes,
+features and public API may change without notice, etc.  This is basically to
+help our team keep up with what's going on.  Ye be warned.  Again.
 
 <!-- Template
 
