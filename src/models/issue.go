@@ -318,6 +318,29 @@ func (i *Issue) ReportError(userID int, message string) error {
 	return i.saveWithAction(ActionTypeReportUnfixableError, userID, message)
 }
 
+// returnFor implements the issue and action logic we want when returning an
+// errored issue to NCA
+func (i *Issue) returnFor(ws schema.WorkflowStep, ac ActionType, uid int, msg string) error {
+	if i.WorkflowStep != schema.WSUnfixableMetadataError {
+		return fmt.Errorf("invalid WorkflowStep %q: issue must be unfixable", i.WorkflowStep)
+	}
+	i.unclaim()
+	i.WorkflowStep = ws
+	return i.saveWithAction(ac, uid, msg)
+}
+
+// ReturnForCuration is a manager-only action which forces an issue back to the
+// metadata entry queue after it had been marked unfixable.
+func (i *Issue) ReturnForCuration(userID int, comment string) error {
+	return i.returnFor(schema.WSReadyForMetadataEntry, ActionTypeReturnCurate, userID, comment)
+}
+
+// ReturnForReview is a manager-only action which forces an issue back to the
+// metadata review queue after it had been marked unfixable.
+func (i *Issue) ReturnForReview(userID int, comment string) error {
+	return i.returnFor(schema.WSAwaitingMetadataReview, ActionTypeReturnReview, userID, comment)
+}
+
 func (i *Issue) saveWithAction(action ActionType, userID int, message string) error {
 	var op = dbi.DB.Operation()
 	op.Dbg = dbi.Debug

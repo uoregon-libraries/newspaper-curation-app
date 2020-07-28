@@ -38,6 +38,9 @@ var (
 	// ViewErrorTmpl renders the view for deciding what to do with "unfixable" issues
 	ViewErrorTmpl *tmpl.Template
 
+	// RemoveIssueFromNCATmpl renders the form to choose how/where to move the bad issue
+	RemoveIssueFromNCATmpl *tmpl.Template
+
 	// RejectIssueTmpl renders the view for reporting an issue which is rejected by the reviewer
 	RejectIssueTmpl *tmpl.Template
 
@@ -93,6 +96,7 @@ func Setup(r *mux.Router, webPath string, c *config.Config, w *issuewatcher.Watc
 	ReportErrorTmpl = Layout.MustBuild("report_error.go.html")
 	ReviewMetadataTmpl = Layout.MustBuild("metadata_review.go.html")
 	ViewErrorTmpl = Layout.MustBuild("error_review.go.html")
+	RemoveIssueFromNCATmpl = Layout.MustBuild("error_remove_form.go.html")
 	RejectIssueTmpl = Layout.MustBuild("reject_issue.go.html")
 	ViewIssueTmpl = Layout.MustBuild("view_issue.go.html")
 }

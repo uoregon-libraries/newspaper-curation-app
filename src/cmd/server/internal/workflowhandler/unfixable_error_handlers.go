@@ -47,7 +47,37 @@ func reviewUnfixableHandler(resp *responder.Responder, i *Issue) {
 }
 
 func saveUnfixableHandler(resp *responder.Responder, i *Issue) {
-	resp.Vars.Alert = template.HTML("Error: not implemented")
-	resp.Writer.WriteHeader(http.StatusInternalServerError)
-	resp.Render(responder.Empty)
+	var action = resp.Request.FormValue("action")
+	var comment = resp.Request.FormValue("comment")
+	var err error
+
+	switch action {
+	case "return-to-entry":
+		err = i.Issue.ReturnForCuration(resp.Vars.User.ID, comment)
+	case "return-to-review":
+		err = i.Issue.ReturnForReview(resp.Vars.User.ID, comment)
+	case "remove":
+		resp.Vars.Title = "Remove Issue from NCA"
+		resp.Vars.Data["Issue"] = i
+		resp.Vars.Data["Comment"] = comment
+		resp.Render(RemoveIssueFromNCATmpl)
+		return
+	default:
+		logger.Warnf("Invalid action %q for saveUnfixableHandler", action)
+		resp.Writer.WriteHeader(http.StatusBadRequest)
+		resp.Writer.Write([]byte("Bad Request"))
+		return
+	}
+
+	if err != nil {
+		logger.Errorf("Unable to act on errored issue (id %d, POST: %#v): %s", i.ID, resp.Request.Form, err)
+		resp.Vars.Alert = template.HTML("Error trying to take action on issue; try again or contact support")
+		resp.Writer.WriteHeader(http.StatusInternalServerError)
+		reviewUnfixableHandler(resp, i)
+		return
+	}
+
+	resp.Audit("save-unfixable", fmt.Sprintf("issue id: %d, form: %#v", i.ID, resp.Request.Form))
+	http.SetCookie(resp.Writer, &http.Cookie{Name: "Info", Value: "Issue moved back to NCA successfully", Path: "/"})
+	http.Redirect(resp.Writer, resp.Request, basePath, http.StatusFound)
 }

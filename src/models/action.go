@@ -23,6 +23,8 @@ const (
 	ActionTypeMetadataApproval     ActionType = "metadata-approval"
 	ActionTypeMetadataEntry        ActionType = "metadata-entry"
 	ActionTypeReportUnfixableError ActionType = "report-unfixable-error"
+	ActionTypeReturnCurate         ActionType = "return-metadata-entry"
+	ActionTypeReturnReview         ActionType = "return-metadata-review"
 )
 
 // Action holds onto information about an object (issues for now) so
