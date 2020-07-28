@@ -288,20 +288,9 @@ func (i *Issue) QueueForMetadataReview(curatorID int) error {
 		i.claim(i.RejectedByUserID)
 	}
 
-	var op = dbi.DB.Operation()
-	op.Dbg = dbi.Debug
-	op.BeginTransaction()
-	defer op.EndTransaction()
-
-	// Always create a new action so the log is easier to read even when a
-	// comment wasn't explicitly added
-	var a = newIssueAction(i.ID, ActionTypeMetadataEntry)
-	a.UserID = curatorID
-	a.Message = i.DraftComment
+	var message = i.DraftComment
 	i.DraftComment = ""
-	a.SaveOp(op)
-	i.SaveOp(op)
-	return op.Err()
+	return i.saveWithAction(ActionTypeMetadataEntry, curatorID, message)
 }
 
 // ApproveMetadata moves the issue to the final workflow step (e.g., no more
@@ -320,20 +309,7 @@ func (i *Issue) RejectMetadata(reviewerID int, notes string) error {
 	i.claim(i.MetadataEntryUserID)
 	i.RejectedByUserID = reviewerID
 	i.WorkflowStep = schema.WSReadyForMetadataEntry
-	var a = newIssueAction(i.ID, ActionTypeMetadataRejection)
-	a.UserID = reviewerID
-	a.Message = notes
-
-	i.actions = append(i.actions, a)
-
-	var op = dbi.DB.Operation()
-	op.Dbg = dbi.Debug
-	op.BeginTransaction()
-	defer op.EndTransaction()
-
-	i.SaveOp(op)
-	a.SaveOp(op)
-	return op.Err()
+	return i.saveWithAction(ActionTypeMetadataRejection, reviewerID, notes)
 }
 
 // ReportError adds an error message to the issue and flags it as being in the
@@ -343,6 +319,22 @@ func (i *Issue) ReportError(message string) error {
 	i.Error = message
 	i.WorkflowStep = schema.WSUnfixableMetadataError
 	return i.Unclaim()
+}
+
+func (i *Issue) saveWithAction(action ActionType, userID int, message string) error {
+	var op = dbi.DB.Operation()
+	op.Dbg = dbi.Debug
+	op.BeginTransaction()
+	defer op.EndTransaction()
+
+	var a = newIssueAction(i.ID, action)
+	a.UserID = userID
+	a.Message = message
+	i.actions = append(i.actions, a)
+
+	a.SaveOp(op)
+	i.SaveOp(op)
+	return op.Err()
 }
 
 // Save creates or updates the Issue in the issues table
