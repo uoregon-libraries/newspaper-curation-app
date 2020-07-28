@@ -18,10 +18,11 @@ type ActionType string
 
 // Full list of valid action types
 const (
-	ActionTypeComment           ActionType = "user-comment"
-	ActionTypeMetadataRejection ActionType = "metadata-rejection"
-	ActionTypeMetadataApproval  ActionType = "metadata-approval"
-	ActionTypeMetadataEntry     ActionType = "metadata-entry"
+	ActionTypeComment              ActionType = "user-comment"
+	ActionTypeMetadataRejection    ActionType = "metadata-rejection"
+	ActionTypeMetadataApproval     ActionType = "metadata-approval"
+	ActionTypeMetadataEntry        ActionType = "metadata-entry"
+	ActionTypeReportUnfixableError ActionType = "report-unfixable-error"
 )
 
 // Action holds onto information about an object (issues for now) so

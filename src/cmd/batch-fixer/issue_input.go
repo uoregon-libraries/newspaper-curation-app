@@ -109,7 +109,7 @@ func (i *Input) errorIssueHandler(args []string) {
 	}
 
 	// Save the issue's metadata
-	i.issue.db.ReportError(msg)
+	i.issue.db.ReportError(models.SystemUser.ID, msg)
 	i.issue.db.BatchID = 0
 	err = i.issue.db.Save()
 	if err != nil {

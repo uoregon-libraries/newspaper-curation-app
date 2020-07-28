@@ -244,7 +244,7 @@ func saveErrorHandler(resp *responder.Responder, i *Issue) {
 		return
 	}
 
-	var err = i.ReportError(emsg)
+	var err = i.ReportError(resp.Vars.User.ID, emsg)
 	if err != nil {
 		logger.Errorf("Unable to save issue id %d's error (POST: %#v): %s", i.ID, resp.Request.Form, err)
 		resp.Vars.Alert = template.HTML("Error trying to save error report (no, the irony is not lost on us); try again or contact support")
