@@ -64,6 +64,8 @@ func actionVerb(at string) string {
 		return "rejected the issue's metadata"
 	case models.ActionTypeComment:
 		return "wrote a comment"
+	case models.ActionTypeReportUnfixableError:
+		return "reported an unfixable error"
 	default:
 		return string(at)
 	}
