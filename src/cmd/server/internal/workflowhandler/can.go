@@ -180,3 +180,31 @@ func (v *CanValidation) ReviewMetadata(i *Issue) bool {
 
 	return true
 }
+
+// ReviewUnfixable returns true if the user can review the given "unfixable" issue:
+//
+// - The user's role must allow errored issue review
+// - It must be claimed by the user
+// - The issue must be in the unfixable state
+func (v *CanValidation) ReviewUnfixable(i *Issue) bool {
+	v.Prefix = "You cannot manage this issue"
+	v.Context = fmt.Sprintf("user %q trying to manage unfixable issue %d", v.User.Login, i.ID)
+
+	if !v.User.PermittedTo(privilege.ReviewUnfixableIssues) {
+		v.Error = errors.New("insufficient privileges (cannot enter issue metadata)")
+		v.Status = http.StatusForbidden
+		return false
+	}
+
+	if !v.owns(i) {
+		return false
+	}
+
+	if i.WorkflowStep != schema.WSUnfixableMetadataError {
+		v.Error = errors.New("issue doesn't have unfixable errors reported")
+		v.Status = http.StatusBadRequest
+		return false
+	}
+
+	return true
+}

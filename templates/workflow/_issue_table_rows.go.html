@@ -10,6 +10,10 @@
   <a href="{{.Issue.Path "/review/metadata"}}" class="btn btn-default">Review</a>
   {{end}}
 
+  {{if $can.ReviewUnfixable .Issue}}
+  <a href="{{.Issue.Path "/errors/view"}}" class="btn btn-default">Review</a>
+  {{end}}
+
   {{if $can.Claim .Issue}}
   <form action="{{.Issue.Path "/claim"}}" method="POST" class="actions">
     <button type="submit" class="btn btn-primary">Claim</button>

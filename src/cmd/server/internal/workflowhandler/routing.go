@@ -35,6 +35,9 @@ var (
 	// ReviewMetadataTmpl renders the view for reviewing metadata
 	ReviewMetadataTmpl *tmpl.Template
 
+	// ViewErrorTmpl renders the view for deciding what to do with "unfixable" issues
+	ViewErrorTmpl *tmpl.Template
+
 	// RejectIssueTmpl renders the view for reporting an issue which is rejected by the reviewer
 	RejectIssueTmpl *tmpl.Template
 
@@ -76,6 +79,11 @@ func Setup(r *mux.Router, webPath string, c *config.Config, w *issuewatcher.Watc
 	s3.Path("/reject").Methods("POST").Handler(handle(canReviewMetadata(rejectIssueMetadataHandler)))
 	s3.Path("/approve").Methods("POST").Handler(handle(canReviewMetadata(approveIssueMetadataHandler)))
 
+	// Error review paths
+	var s4 = s2.PathPrefix("/errors").Subrouter()
+	s4.Path("/view").Handler(handle(canReviewUnfixable(reviewUnfixableHandler)))
+	s4.Path("/save").Methods("POST").Handler(handle(canReviewUnfixable(saveUnfixableHandler)))
+
 	Layout = responder.Layout.Clone()
 	Layout.Funcs(tmpl.FuncMap{"Can": Can})
 	Layout.Path = path.Join(Layout.Path, "workflow")
@@ -84,6 +92,7 @@ func Setup(r *mux.Router, webPath string, c *config.Config, w *issuewatcher.Watc
 	MetadataFormTmpl = Layout.MustBuild("metadata_form.go.html")
 	ReportErrorTmpl = Layout.MustBuild("report_error.go.html")
 	ReviewMetadataTmpl = Layout.MustBuild("metadata_review.go.html")
+	ViewErrorTmpl = Layout.MustBuild("error_review.go.html")
 	RejectIssueTmpl = Layout.MustBuild("reject_issue.go.html")
 	ViewIssueTmpl = Layout.MustBuild("view_issue.go.html")
 }

@@ -39,3 +39,15 @@ func saveErrorHandler(resp *responder.Responder, i *Issue) {
 	http.SetCookie(resp.Writer, &http.Cookie{Name: "Info", Value: "Issue error reported", Path: "/"})
 	http.Redirect(resp.Writer, resp.Request, basePath, http.StatusFound)
 }
+
+func reviewUnfixableHandler(resp *responder.Responder, i *Issue) {
+	resp.Vars.Title = "Reviewing Issue Error(s)"
+	resp.Vars.Data["Issue"] = i
+	resp.Render(ViewErrorTmpl)
+}
+
+func saveUnfixableHandler(resp *responder.Responder, i *Issue) {
+	resp.Vars.Alert = template.HTML("Error: not implemented")
+	resp.Writer.WriteHeader(http.StatusInternalServerError)
+	resp.Render(responder.Empty)
+}
