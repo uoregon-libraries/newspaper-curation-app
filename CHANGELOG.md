@@ -25,6 +25,12 @@ Brief description, if necessary
 ### Migration
 -->
 
+## v2.13.2
+
+### Fixed
+
+- Deploy script works again
+
 ## v2.13.1
 
 ### Fixed

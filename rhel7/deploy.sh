@@ -81,7 +81,6 @@ sudo cp $src/bin/run-jobs $ncadir/
 sudo cp $src/bin/batch-fixer $ncadir/
 sudo cp $src/bin/queue-batches $ncadir/
 sudo cp $src/bin/bulk-issue-queue $ncadir/
-sudo cp $src/bin/move-errored-issues $ncadir/
 sudo cp $src/bin/delete-live-done-issues $ncadir/
 sudo cp $src/rhel7/nca-httpd.service $ncadir/
 sudo cp $src/rhel7/nca-workers.service $ncadir/
