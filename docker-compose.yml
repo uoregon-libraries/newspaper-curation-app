@@ -21,9 +21,9 @@ services:
       - db:/var/lib/mysql
 
   iiif:
-    image: uolibraries/rais
+    image: uolibraries/rais:4-alpine
     environment:
-      - RAIS_IIIFURL=$APP_URL/images/iiif
+      - RAIS_IIIFWEBPATH=/images/iiif
       - RAIS_TILECACHELEN=250
     volumes:
       - /mnt/news/workflow:/var/local/images:z

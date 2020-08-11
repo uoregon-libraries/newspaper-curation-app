@@ -16,7 +16,7 @@ RUN dnf install -y poppler-utils poppler-devel fontconfig-devel libjpeg-devel
 # Grab and patch poppler-utils: 0.22.5 (this is a known-good release for our patch)
 WORKDIR /usr/local/
 RUN curl -s "https://poppler.freedesktop.org/poppler-0.22.5.tar.gz" | tar -xz
-RUN curl -s "https://raw.githubusercontent.com/uoregon-libraries/pdftotext/master/pdftotext.cc" \
+RUN curl -s "https://raw.githubusercontent.com/uoregon-libraries/pdftotext/main/pdftotext.cc" \
          > /usr/local/poppler-0.22.5/utils/pdftotext.cc
 
 # Compile
