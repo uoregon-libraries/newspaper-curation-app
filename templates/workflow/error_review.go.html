@@ -33,9 +33,11 @@
       <button id="return-to-entry" type="Submit" name="action" value="return-to-entry" class="btn btn-default">
         Return to metadata entry
       </button>
+      {{if .Data.Issue.IsReadyForReview}}
       <button id="return-to-review" type="Submit" name="action" value="return-to-review" class="btn btn-default">
         Return to metadata review
       </button>
+      {{end}}
       <button id="move" type="Submit" name="action" value="remove" class="btn btn-danger">
         Remove from NCA...
       </button>
