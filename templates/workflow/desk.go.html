@@ -2,17 +2,22 @@
 
 <div class="tabs">
   <div role="tablist" aria-label="Workflow">
-    <button role="tab" aria-selected="true" aria-controls="desk-tab" id="desk">Desk</button>
+    <button role="tab" aria-selected="true" aria-controls="desk-tab" id="desk">
+      Desk
+      <span class="badge">{{.Data.MyDeskIssues|len}}</span>
+    </button>
 
     {{if .User.PermittedTo EnterIssueMetadata}}
     <button role="tab" aria-selected="false" aria-controls="needs-metadata-tab" id="needs-metadata" tabindex="-1">
       Metadata Entry
+      <span class="badge">{{.Data.PendingMetadataIssues|len}}</span>
     </button>
     {{end}}
 
     {{if .User.PermittedTo ReviewIssueMetadata}}
     <button role="tab" aria-selected="false" aria-controls="needs-review-tab" id="needs-review" tabindex="-1">
       Metadata Review
+      <span class="badge">{{.Data.PendingReviewIssues|len}}</span>
     </button>
     {{end}}
   </div>
