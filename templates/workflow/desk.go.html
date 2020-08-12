@@ -24,6 +24,7 @@
     {{if .User.PermittedTo ReviewUnfixableIssues}}
     <button role="tab" aria-selected="false" aria-controls="unfixable-errors-tab" id="unfixable-errors" tabindex="-1">
       Unfixable Errors
+      <span class="badge">{{.Data.UnfixableErrorIssues|len}}</span>
     </button>
     {{end}}
   </div>
