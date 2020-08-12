@@ -46,7 +46,19 @@ func reviewUnfixableHandler(resp *responder.Responder, i *Issue) {
 	resp.Render(ViewErrorTmpl)
 }
 
-func saveUnfixableHandler(resp *responder.Responder, i *Issue) {
+func viewReturnUnfixableFormHandler(resp *responder.Responder, i *Issue) {
+	resp.Vars.Title = "Return issue to NCA workflow"
+	resp.Vars.Data["Issue"] = i
+	resp.Render(ReturnIssueToNCATmpl)
+}
+
+func viewRemoveUnfixableFormHandler(resp *responder.Responder, i *Issue) {
+	resp.Vars.Title = "Remove issue from NCA"
+	resp.Vars.Data["Issue"] = i
+	resp.Render(RemoveIssueFromNCATmpl)
+}
+
+func returnErrorIssueHandler(resp *responder.Responder, i *Issue) {
 	var action = resp.Request.FormValue("action")
 	var comment = resp.Request.FormValue("comment")
 	var err error
@@ -56,28 +68,17 @@ func saveUnfixableHandler(resp *responder.Responder, i *Issue) {
 		err = i.Issue.ReturnForCuration(resp.Vars.User.ID, comment)
 	case "return-to-review":
 		err = i.Issue.ReturnForReview(resp.Vars.User.ID, comment)
-	case "remove":
-		resp.Vars.Title = "Remove Issue from NCA"
-		resp.Vars.Data["Issue"] = i
-		resp.Vars.Data["Comment"] = comment
-		resp.Render(RemoveIssueFromNCATmpl)
-		return
-	default:
-		logger.Warnf("Invalid action %q for saveUnfixableHandler", action)
-		resp.Writer.WriteHeader(http.StatusBadRequest)
-		resp.Writer.Write([]byte("Bad Request"))
-		return
 	}
 
 	if err != nil {
-		logger.Errorf("Unable to act on errored issue (id %d, POST: %#v): %s", i.ID, resp.Request.Form, err)
-		resp.Vars.Alert = template.HTML("Error trying to take action on issue; try again or contact support")
+		logger.Errorf("Unable to return errored issue (id %d, POST: %#v): %s", i.ID, resp.Request.Form, err)
+		resp.Vars.Alert = template.HTML("Error trying to return this issue to NCA; try again or contact support")
 		resp.Writer.WriteHeader(http.StatusInternalServerError)
-		reviewUnfixableHandler(resp, i)
+		resp.Render(responder.Empty)
 		return
 	}
 
-	resp.Audit("save-unfixable", fmt.Sprintf("issue id: %d, form: %#v", i.ID, resp.Request.Form))
+	resp.Audit("undo-error-issue", fmt.Sprintf("issue %d %s, comment: %q", i.ID, action, comment))
 	http.SetCookie(resp.Writer, &http.Cookie{Name: "Info", Value: "Issue moved back to NCA successfully", Path: "/"})
 	http.Redirect(resp.Writer, resp.Request, basePath, http.StatusFound)
 }

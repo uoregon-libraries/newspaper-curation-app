@@ -14,36 +14,15 @@
 
 <h2>Options</h2>
 
-<form id="metadata-form" class="form-horizontal" role="form" method="POST" action="{{"errors/save"|.Data.Issue.Path}}">
-  <div class="form-group">
-    <label class="col-md-2 control-label" for="comment">Comments (optional)</label>
-    <div class="col-md-10">
-      <textarea id="comment" name="comment" class="form-control" rows="8"></textarea>
-      <p class="help-block">
-        Enter comments to explain the action you're taking on this issue if
-        necessary.  For instance, if you send it back to metadata entry, you
-        may want to let curators know why they were mistaken to flag this as an
-        error in the first place.
-      </p>
-    </div>
-  </div>
+<ul>
+  <li>
+    <a href="{{"errors/return"|.Data.Issue.Path}}">Return issue to NCA workflow</a>
+  </li>
 
-  <div class="form-group">
-    <div class="col-md-9 col-md-offset-2">
-      <button id="return-to-entry" type="Submit" name="action" value="return-to-entry" class="btn btn-default">
-        Return to metadata entry
-      </button>
-      {{if .Data.Issue.IsReadyForReview}}
-      <button id="return-to-review" type="Submit" name="action" value="return-to-review" class="btn btn-default">
-        Return to metadata review
-      </button>
-      {{end}}
-      <button id="move" type="Submit" name="action" value="remove" class="btn btn-danger">
-        Remove from NCA...
-      </button>
-    </div>
-  </div>
-</form>
+  <li>
+    <a href="{{"errors/remove"|.Data.Issue.Path}}">Remove issue from NCA</a>
+  </li>
+</ul>
 
 {{end}}
 

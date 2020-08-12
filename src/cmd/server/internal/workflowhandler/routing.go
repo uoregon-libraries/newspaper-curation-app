@@ -38,6 +38,9 @@ var (
 	// ViewErrorTmpl renders the view for deciding what to do with "unfixable" issues
 	ViewErrorTmpl *tmpl.Template
 
+	// ReturnIssueToNCATmpl renders the form to choose options for returning an issue to NCA from the error queue
+	ReturnIssueToNCATmpl *tmpl.Template
+
 	// RemoveIssueFromNCATmpl renders the form to choose how/where to move the bad issue
 	RemoveIssueFromNCATmpl *tmpl.Template
 
@@ -85,7 +88,9 @@ func Setup(r *mux.Router, webPath string, c *config.Config, w *issuewatcher.Watc
 	// Error review paths
 	var s4 = s2.PathPrefix("/errors").Subrouter()
 	s4.Path("/view").Handler(handle(canReviewUnfixable(reviewUnfixableHandler)))
-	s4.Path("/save").Methods("POST").Handler(handle(canReviewUnfixable(saveUnfixableHandler)))
+	s4.Path("/return").Handler(handle(canReviewUnfixable(viewReturnUnfixableFormHandler)))
+	s4.Path("/return/save").Methods("POST").Handler(handle(canReviewUnfixable(returnErrorIssueHandler)))
+	s4.Path("/remove").Handler(handle(canReviewUnfixable(viewRemoveUnfixableFormHandler)))
 
 	Layout = responder.Layout.Clone()
 	Layout.Funcs(tmpl.FuncMap{"Can": Can})
@@ -96,6 +101,7 @@ func Setup(r *mux.Router, webPath string, c *config.Config, w *issuewatcher.Watc
 	ReportErrorTmpl = Layout.MustBuild("report_error.go.html")
 	ReviewMetadataTmpl = Layout.MustBuild("metadata_review.go.html")
 	ViewErrorTmpl = Layout.MustBuild("error_review.go.html")
+	ReturnIssueToNCATmpl = Layout.MustBuild("error_return_form.go.html")
 	RemoveIssueFromNCATmpl = Layout.MustBuild("error_remove_form.go.html")
 	RejectIssueTmpl = Layout.MustBuild("reject_issue.go.html")
 	ViewIssueTmpl = Layout.MustBuild("view_issue.go.html")
