@@ -59,6 +59,7 @@
 
   // Handle keydown on tabs
   function keydownEventListener (event) {
+    if (event.altKey) { return; }
     var key = event.keyCode;
 
     switch (key) {
@@ -84,6 +85,7 @@
 
   // Handle keyup on tabs
   function keyupEventListener (event) {
+    if (event.altKey) { return; }
     var key = event.keyCode;
 
     switch (key) {
@@ -101,6 +103,7 @@
   // only up and down arrow should function.
   // In all other cases only left and right arrow function.
   function determineOrientation (event) {
+    if (event.altKey) { return; }
     var key = event.keyCode;
     var vertical = tablist.getAttribute('aria-orientation') == 'vertical';
     var proceed = false;
@@ -125,6 +128,7 @@
   // Either focus the next, previous, first, or last tab
   // depening on key pressed
   function switchTabOnArrowPress (event) {
+    if (event.altKey) { return; }
     var pressed = event.keyCode;
 
     for (x = 0; x < tabs.length; x++) {
