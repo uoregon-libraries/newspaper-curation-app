@@ -42,6 +42,13 @@
     addListeners(i);
   };
 
+  // Set the active tab
+  parseTabState();
+
+  // Make sure that any history change loads the right tab, not just when the
+  // client requests a new page from the server
+  window.addEventListener("hashchange", parseTabState, false);
+
   function addListeners (index) {
     tabs[index].addEventListener('click', clickEventListener);
     tabs[index].addEventListener('keydown', keydownEventListener);
@@ -149,6 +156,11 @@
 
   // Activates any given tab panel
   function activateTab (tab, setFocus) {
+    var newHash = 'tab='+tab.id;
+    if (newHash == window.location.hash) {
+      return;
+    }
+
     setFocus = setFocus || true;
     // Deactivate all other tabs
     deactivateTabs();
@@ -164,6 +176,9 @@
 
     // Remove hidden attribute from tab panel to make it visible
     document.getElementById(controls).removeAttribute('hidden');
+
+    // Update the URL fragment (hash)
+    window.location.hash = newHash;
 
     // Set focus when required
     if (setFocus) {
@@ -259,4 +274,11 @@
       activateTab(target, false);
     };
   };
+
+  // parseTabState determines which tab should be active based on the fragment
+  function parseTabState() {
+    var hsh = new URLSearchParams(window.location.hash.substr(1));
+    var tab = document.getElementById(hsh.get("tab"));
+    activateTab(tab, false);
+  }
 }());
