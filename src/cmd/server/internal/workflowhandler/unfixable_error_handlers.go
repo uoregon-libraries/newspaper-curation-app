@@ -4,9 +4,11 @@ import (
 	"fmt"
 	"html/template"
 	"net/http"
+	"strconv"
 
 	"github.com/uoregon-libraries/newspaper-curation-app/src/cmd/server/internal/responder"
 	"github.com/uoregon-libraries/newspaper-curation-app/src/internal/logger"
+	"github.com/uoregon-libraries/newspaper-curation-app/src/models"
 )
 
 // enterErrorHandler displays the form to enter an error for the given issue
@@ -47,8 +49,18 @@ func reviewUnfixableHandler(resp *responder.Responder, i *Issue) {
 }
 
 func viewReturnUnfixableFormHandler(resp *responder.Responder, i *Issue) {
+	var list, err = models.ActiveUsers()
+	if err != nil {
+		logger.Errorf("Unable to retrieve user list for unfixable form handler: %s", err)
+		resp.Vars.Alert = template.HTML("Error trying to return this issue to NCA; try again or contact support")
+		resp.Writer.WriteHeader(http.StatusInternalServerError)
+		resp.Render(responder.Empty)
+		return
+	}
+
 	resp.Vars.Title = "Return issue to NCA workflow"
 	resp.Vars.Data["Issue"] = i
+	resp.Vars.Data["Users"] = list
 	resp.Render(ReturnIssueToNCATmpl)
 }
 
@@ -61,13 +73,14 @@ func viewRemoveUnfixableFormHandler(resp *responder.Responder, i *Issue) {
 func returnErrorIssueHandler(resp *responder.Responder, i *Issue) {
 	var action = resp.Request.FormValue("action")
 	var comment = resp.Request.FormValue("comment")
+	var wID, _ = strconv.Atoi(resp.Request.FormValue("workflow_owner_id"))
 	var err error
 
 	switch action {
 	case "return-to-entry":
-		err = i.Issue.ReturnForCuration(resp.Vars.User.ID, comment)
+		err = i.Issue.ReturnForCuration(resp.Vars.User.ID, wID, comment)
 	case "return-to-review":
-		err = i.Issue.ReturnForReview(resp.Vars.User.ID, comment)
+		err = i.Issue.ReturnForReview(resp.Vars.User.ID, wID, comment)
 	}
 
 	if err != nil {
