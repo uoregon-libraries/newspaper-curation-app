@@ -53,7 +53,7 @@ func homeHandler(resp *responder.Responder, i *Issue) {
 	}
 	resp.Vars.Data["PendingReviewIssues"] = wrapDBIssues(issues)
 
-	issues, err = models.FindIssuesWithErrors()
+	issues, err = models.FindAvailableIssuesByWorkflowStep(schema.WSUnfixableMetadataError)
 	if err != nil {
 		logger.Errorf(`Unable to find issues in the "unfixable" state: %s`, err)
 		searchIssueError(resp)
