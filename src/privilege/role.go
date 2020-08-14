@@ -33,8 +33,8 @@ var (
 	RoleIssueCurator = newRole("issue curator",
 		`Can modify issue metadata and push issues to the review queue`)
 	RoleIssueReviewer = newRole("issue reviewer", `Can review issues, rejecting or accepting a curator's metadata`)
-	RoleIssueManager  = newRole("issue manager", `Privileged curator/review who can approve their own
-		issues' metadata as well as view and modify issues that are in the "unfixable error" state`)
+	RoleIssueManager  = newRole("issue manager", `Privileged curator/review who can curate, review, approve
+		their own issues' metadata, and process issues that are in the "unfixable error" state`)
 	RoleUserManager = newRole("user manager",
 		`Can add, edit, and deactivate users.  User managers can assign any rights to
 		others which have been assigned to them.`)
