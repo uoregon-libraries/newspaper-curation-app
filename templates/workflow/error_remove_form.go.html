@@ -1,0 +1,61 @@
+{{block "content" .}}
+
+<h2>Not implemented</h2>
+
+This feature is not yet implemented!
+
+<a href="{{.Data.Issue.Path "/errors/view"}}" class="btn btn-default">Return to error view</a>
+
+<!--
+<h2>Remove Issue</h2>
+
+<div>
+  You are about to remove this issue from NCA.  <strong><em>This action is
+  irreversible.</em></strong>  Choose "Cancel" to go back to the issue view
+  page if you got here by mistake.
+</div>
+
+<form id="metadata-form" class="form-horizontal" role="form" method="POST" action="{{"errors/save"|.Data.Issue.Path}}">
+  <div class="form-group">
+    <label class="col-md-2 control-label" for="comment">Comments (optional)</label>
+    <div class="col-md-10">
+      <textarea id="comment" name="comment" class="form-control" rows="8">{{.Data.Comment}}</textarea>
+      <p class="help-block">
+        Enter comments to explain the removal, if necessary.  These will be
+        preserved even if the issue is deleted permanently.
+      </p>
+    </div>
+  </div>
+
+  <div class="form-group">
+    <div class="col-md-9 col-md-offset-2">
+      <button id="remove" type="Submit" name="action" value="remove" class="btn btn-danger">
+        Remove
+      </button>
+      <a href="{{.Data.Issue.Path "/errors/view"}}" class="btn btn-default">Cancel</a>
+    </div>
+  </div>
+</form>
+
+<h2>Issue</h2>
+
+For reference, here's the issue again:
+
+{{if .Data.Issue.WorkflowActions}}
+  <h3>Actions / Comments</h3>
+  {{template "issue_actions" (dict "Actions" .Data.Issue.WorkflowActions "User" .User)}}
+{{end}}
+
+<h3>Page Numbering</h3>
+{{template "issue_page_view" .Data.Issue.JP2Files}}
+
+<hr />
+<h3>Metadata</h3>
+{{template "issue_metadata_view" .Data.Issue}}
+-->
+
+{{end}}
+
+{{block "extrajs" .}}
+{{template "osdjs" .}}
+{{end}}

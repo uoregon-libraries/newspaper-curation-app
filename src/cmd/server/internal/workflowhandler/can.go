@@ -95,6 +95,12 @@ func (v *CanValidation) Claim(i *Issue) bool {
 			v.Status = http.StatusForbidden
 			return false
 		}
+	case schema.WSUnfixableMetadataError:
+		if !v.User.PermittedTo(privilege.ReviewUnfixableIssues) {
+			v.Error = errors.New("insufficient privileges (cannot review errored issues)")
+			v.Status = http.StatusForbidden
+			return false
+		}
 	default:
 		v.Error = fmt.Errorf("invalid workflow step: %q", i.WorkflowStep)
 		v.Status = http.StatusBadRequest
@@ -168,6 +174,34 @@ func (v *CanValidation) ReviewMetadata(i *Issue) bool {
 
 	if i.MetadataEntryUserID == v.User.ID && !v.User.PermittedTo(privilege.ReviewOwnMetadata) {
 		v.Error = fmt.Errorf("author cannot also be reviewer")
+		v.Status = http.StatusBadRequest
+		return false
+	}
+
+	return true
+}
+
+// ReviewUnfixable returns true if the user can review the given "unfixable" issue:
+//
+// - The user's role must allow errored issue review
+// - It must be claimed by the user
+// - The issue must be in the unfixable state
+func (v *CanValidation) ReviewUnfixable(i *Issue) bool {
+	v.Prefix = "You cannot manage this issue"
+	v.Context = fmt.Sprintf("user %q trying to manage unfixable issue %d", v.User.Login, i.ID)
+
+	if !v.User.PermittedTo(privilege.ReviewUnfixableIssues) {
+		v.Error = errors.New("insufficient privileges (cannot enter issue metadata)")
+		v.Status = http.StatusForbidden
+		return false
+	}
+
+	if !v.owns(i) {
+		return false
+	}
+
+	if i.WorkflowStep != schema.WSUnfixableMetadataError {
+		v.Error = errors.New("issue doesn't have unfixable errors reported")
 		v.Status = http.StatusBadRequest
 		return false
 	}

@@ -10,10 +10,11 @@ var (
 	ManageMOCs = newPrivilege(RoleMOCManager)
 
 	// Workflow
-	ViewMetadataWorkflow = newPrivilege(RoleIssueCurator, RoleIssueReviewer)
-	EnterIssueMetadata   = newPrivilege(RoleIssueCurator)
-	ReviewIssueMetadata  = newPrivilege(RoleIssueReviewer)
-	ReviewOwnMetadata    = newPrivilege()
+	ViewMetadataWorkflow  = newPrivilege(RoleIssueCurator, RoleIssueReviewer, RoleIssueManager)
+	EnterIssueMetadata    = newPrivilege(RoleIssueCurator, RoleIssueManager)
+	ReviewIssueMetadata   = newPrivilege(RoleIssueReviewer, RoleIssueManager)
+	ReviewOwnMetadata     = newPrivilege(RoleIssueManager)
+	ReviewUnfixableIssues = newPrivilege(RoleIssueManager)
 
 	// User management
 	ListUsers   = newPrivilege(RoleUserManager)

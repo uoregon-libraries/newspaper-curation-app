@@ -111,3 +111,6 @@ func canEnterMetadata(h HandlerFunc) HandlerFunc {
 func canReviewMetadata(h HandlerFunc) HandlerFunc {
 	return canHandler(h, func(can *CanValidation, i *Issue) { can.ReviewMetadata(i) })
 }
+func canReviewUnfixable(h HandlerFunc) HandlerFunc {
+	return canHandler(h, func(can *CanValidation, i *Issue) { can.ReviewUnfixable(i) })
+}

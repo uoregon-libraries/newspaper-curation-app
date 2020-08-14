@@ -4,95 +4,20 @@ import (
 	"fmt"
 	"html/template"
 	"net/http"
-	"path"
 
-	"github.com/gorilla/mux"
 	"github.com/uoregon-libraries/newspaper-curation-app/src/cmd/server/internal/responder"
-	"github.com/uoregon-libraries/newspaper-curation-app/src/config"
 	"github.com/uoregon-libraries/newspaper-curation-app/src/internal/logger"
-	"github.com/uoregon-libraries/newspaper-curation-app/src/issuewatcher"
 	"github.com/uoregon-libraries/newspaper-curation-app/src/jobs"
 	"github.com/uoregon-libraries/newspaper-curation-app/src/models"
 	"github.com/uoregon-libraries/newspaper-curation-app/src/schema"
-	"github.com/uoregon-libraries/newspaper-curation-app/src/web/tmpl"
 )
 
-var (
-	conf *config.Config
-
-	// basePath is the path to the main workflow page.  Subpages all start with this path.
-	basePath string
-
-	// watcher is used to look for dupes when queueing an issue for review
-	watcher *issuewatcher.Watcher
-
-	// Layout is the base template, cloned from the responder's layout, from
-	// which all workflow pages are built
-	Layout *tmpl.TRoot
-
-	// DeskTmpl renders the main "workflow desk" page
-	DeskTmpl *tmpl.Template
-
-	// MetadataFormTmpl renders the form for entering metadata for an issue
-	MetadataFormTmpl *tmpl.Template
-
-	// ReportErrorTmpl renders the form for reporting errors on an issue
-	ReportErrorTmpl *tmpl.Template
-
-	// ReviewMetadataTmpl renders the view for reviewing metadata
-	ReviewMetadataTmpl *tmpl.Template
-
-	// RejectIssueTmpl renders the view for reporting an issue which is rejected by the reviewer
-	RejectIssueTmpl *tmpl.Template
-
-	// ViewIssueTmpl renders a read-only display of an issue
-	ViewIssueTmpl *tmpl.Template
-)
-
-// Setup sets up all the workflow-specific routing rules and does any other
-// init necessary for workflow handling
-func Setup(r *mux.Router, webPath string, c *config.Config, w *issuewatcher.Watcher) {
-	conf = c
-	basePath = webPath
-	watcher = w
-
-	// Base path (desk view)
-	var s = r.PathPrefix(basePath).Subrouter()
-	s.Path("").Handler(handle(canView(homeHandler)))
-
-	// All other paths are centered around a specific issue
-	var s2 = s.PathPrefix("/{issue_id}").Subrouter()
-
-	// "Hidden" viewer path
-	s2.Path("/view").Handler(handle(canView(viewIssueHandler)))
-
-	// Claim / unclaim handlers are for both metadata and review
-	s2.Path("/claim").Methods("POST").Handler(handle(canClaim(claimIssueHandler)))
-	s2.Path("/unclaim").Methods("POST").Handler(handle(canUnclaim(unclaimIssueHandler)))
-
-	// Issue metadata paths
-	s2.Path("/metadata").Handler(handle(canEnterMetadata(enterMetadataHandler)))
-	s2.Path("/metadata/save").Methods("POST").Handler(handle(canEnterMetadata(saveMetadataHandler)))
-	s2.Path("/report-error").Handler(handle(canEnterMetadata(enterErrorHandler)))
-	s2.Path("/report-error/save").Methods("POST").Handler(handle(canEnterMetadata(saveErrorHandler)))
-
-	// Review paths
-	var s3 = s2.PathPrefix("/review").Subrouter()
-	s3.Path("/metadata").Handler(handle(canReviewMetadata(reviewMetadataHandler)))
-	s3.Path("/reject-form").Handler(handle(canReviewMetadata(rejectIssueMetadataFormHandler)))
-	s3.Path("/reject").Methods("POST").Handler(handle(canReviewMetadata(rejectIssueMetadataHandler)))
-	s3.Path("/approve").Methods("POST").Handler(handle(canReviewMetadata(approveIssueMetadataHandler)))
-
-	Layout = responder.Layout.Clone()
-	Layout.Funcs(tmpl.FuncMap{"Can": Can})
-	Layout.Path = path.Join(Layout.Path, "workflow")
-	Layout.MustReadPartials("_issue_table_rows.go.html", "_osdjs.go.html", "_view_issue.go.html")
-	DeskTmpl = Layout.MustBuild("desk.go.html")
-	MetadataFormTmpl = Layout.MustBuild("metadata_form.go.html")
-	ReportErrorTmpl = Layout.MustBuild("report_error.go.html")
-	ReviewMetadataTmpl = Layout.MustBuild("metadata_review.go.html")
-	RejectIssueTmpl = Layout.MustBuild("reject_issue.go.html")
-	ViewIssueTmpl = Layout.MustBuild("view_issue.go.html")
+// searchIssueError handles generic response logic for database errors which
+// can occur when searching for issues
+func searchIssueError(resp *responder.Responder) {
+	resp.Vars.Alert = template.HTML(fmt.Sprintf("Unable to search for issues; contact support or try again later."))
+	resp.Writer.WriteHeader(http.StatusInternalServerError)
+	resp.Render(responder.Empty)
 }
 
 // homeHandler shows claimed workflow items that need to be finished as well as
@@ -105,8 +30,7 @@ func homeHandler(resp *responder.Responder, i *Issue) {
 	var issues, err = models.FindIssuesOnDesk(uid)
 	if err != nil {
 		logger.Errorf("Unable to find issues on user %d's desk: %s", uid, err)
-		resp.Vars.Alert = template.HTML(fmt.Sprintf("Unable to search for issues; contact support or try again later."))
-		resp.Render(responder.Empty)
+		searchIssueError(resp)
 		return
 	}
 	resp.Vars.Data["MyDeskIssues"] = wrapDBIssues(issues)
@@ -115,9 +39,7 @@ func homeHandler(resp *responder.Responder, i *Issue) {
 	issues, err = models.FindAvailableIssuesByWorkflowStep(schema.WSReadyForMetadataEntry)
 	if err != nil {
 		logger.Errorf("Unable to find issues needing metadata entry: %s", err)
-		resp.Vars.Alert = template.HTML(fmt.Sprintf("Unable to search for issues; contact support or try again later."))
-		resp.Writer.WriteHeader(http.StatusInternalServerError)
-		resp.Render(responder.Empty)
+		searchIssueError(resp)
 		return
 	}
 	resp.Vars.Data["PendingMetadataIssues"] = wrapDBIssues(issues)
@@ -126,12 +48,18 @@ func homeHandler(resp *responder.Responder, i *Issue) {
 	issues, err = models.FindAvailableIssuesByWorkflowStep(schema.WSAwaitingMetadataReview)
 	if err != nil {
 		logger.Errorf("Unable to find issues needing metadata review: %s", err)
-		resp.Vars.Alert = template.HTML(fmt.Sprintf("Unable to search for issues; contact support or try again later."))
-		resp.Writer.WriteHeader(http.StatusInternalServerError)
-		resp.Render(responder.Empty)
+		searchIssueError(resp)
 		return
 	}
 	resp.Vars.Data["PendingReviewIssues"] = wrapDBIssues(issues)
+
+	issues, err = models.FindAvailableIssuesByWorkflowStep(schema.WSUnfixableMetadataError)
+	if err != nil {
+		logger.Errorf(`Unable to find issues in the "unfixable" state: %s`, err)
+		searchIssueError(resp)
+		return
+	}
+	resp.Vars.Data["UnfixableErrorIssues"] = wrapDBIssues(issues)
 
 	resp.Render(DeskTmpl)
 }
@@ -202,37 +130,6 @@ func saveMetadataHandler(resp *responder.Responder, i *Issue) {
 		resp.Writer.WriteHeader(http.StatusBadRequest)
 		resp.Writer.Write([]byte("Bad Request"))
 	}
-}
-
-// enterErrorHandler displays the form to enter an error for the given issue
-func enterErrorHandler(resp *responder.Responder, i *Issue) {
-	resp.Vars.Title = "Report Issue Error"
-	resp.Vars.Data["Issue"] = i
-	resp.Render(ReportErrorTmpl)
-}
-
-// saveErrorHandler records the error in the database, unclaims the issue, and
-// flags it as needing admin attention
-func saveErrorHandler(resp *responder.Responder, i *Issue) {
-	var emsg = resp.Request.FormValue("error")
-	if emsg == "" {
-		http.SetCookie(resp.Writer, &http.Cookie{Name: "Info", Value: "Error report empty; no action taken", Path: "/"})
-		http.Redirect(resp.Writer, resp.Request, i.Path("metadata"), http.StatusFound)
-		return
-	}
-
-	var err = i.ReportError(resp.Vars.User.ID, emsg)
-	if err != nil {
-		logger.Errorf("Unable to save issue id %d's error (POST: %#v): %s", i.ID, resp.Request.Form, err)
-		resp.Vars.Alert = template.HTML("Error trying to save error report (no, the irony is not lost on us); try again or contact support")
-		resp.Writer.WriteHeader(http.StatusInternalServerError)
-		resp.Render(responder.Empty)
-		return
-	}
-
-	resp.Audit("report-error", fmt.Sprintf("issue id %d", i.ID))
-	http.SetCookie(resp.Writer, &http.Cookie{Name: "Info", Value: "Issue error reported", Path: "/"})
-	http.Redirect(resp.Writer, resp.Request, basePath, http.StatusFound)
 }
 
 func reviewMetadataHandler(resp *responder.Responder, i *Issue) {

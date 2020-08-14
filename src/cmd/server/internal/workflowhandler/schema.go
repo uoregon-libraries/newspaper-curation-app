@@ -94,7 +94,7 @@ func (i *Issue) JP2Files() []string {
 func (i *Issue) TaskDescription() string {
 	switch i.WorkflowStep {
 	case schema.WSUnfixableMetadataError:
-		return "Unfixable metadata error reported: issue is no longer in the workflow"
+		return "Unfixable metadata error reported"
 
 	case schema.WSAwaitingProcessing:
 		return "Not yet entered into the workflow"
@@ -193,4 +193,13 @@ func (i *Issue) ValidateMetadata() {
 // Errors returns validation errors
 func (i *Issue) Errors() []apperr.Error {
 	return i.validationErrors
+}
+
+// IsReadyForReview returns true if the issue's metadata is valid.  This is
+// pretty specific (for now) to the process of taking an out-of-NCA issue
+// (reported as having unfixable errors) and wanting to push it straight to the
+// review queue.
+func (i *Issue) IsReadyForReview() bool {
+	i.ValidateMetadata()
+	return len(i.validationErrors) == 0
 }

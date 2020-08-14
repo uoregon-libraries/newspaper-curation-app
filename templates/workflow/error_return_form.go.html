@@ -1,0 +1,69 @@
+{{block "content" .}}
+
+<h2>Options</h2>
+
+<form id="metadata-form" class="form-horizontal" role="form" method="POST" action="{{"errors/return/save"|.Data.Issue.Path}}">
+  <div class="form-group">
+    <label class="col-md-2 control-label" for="workflow-owner-id">Move to desk</label>
+    <div class="col-md-10">
+      <select id="workflow-owner-id" name="workflow_owner_id" class="form-control">
+        <option value="0">-- Nobody --</option>
+        <option value="{{.User.ID}}">Me ({{.User.Login}})</option>
+        {{range .Data.Users}}
+          {{if ne .ID $.User.ID}}
+            <option value="{{.ID}}">{{.Login}}</option>
+          {{end}}
+        {{end}}
+      </select>
+      <p class="help-block">
+        Move this issue to the given user's desk immediately after pushing it back to NCA
+      </p>
+    </div>
+  </div>
+
+  <div class="form-group">
+    <label class="col-md-2 control-label" for="comment">Comments (optional)</label>
+    <div class="col-md-10">
+      <textarea id="comment" name="comment" class="form-control" rows="8"></textarea>
+      <p class="help-block">
+        Enter comments to explain the action you're taking on this issue if
+        necessary.  For instance, you may want to let curators know why they
+        were mistaken to flag this as an error in the first place.
+      </p>
+    </div>
+  </div>
+
+  <div class="form-group">
+    <div class="col-md-9 col-md-offset-2">
+      <button id="return-to-entry" type="Submit" name="action" value="return-to-entry" class="btn btn-default">
+        Return to metadata entry
+      </button>
+      {{if .Data.Issue.IsReadyForReview}}
+      <button id="return-to-review" type="Submit" name="action" value="return-to-review" class="btn btn-default">
+        Return to metadata review
+      </button>
+      {{end}}
+      <a href="{{.Data.Issue.Path "/errors/view"}}" class="btn btn-default">Cancel</a>
+    </div>
+  </div>
+</form>
+
+<h2>Issue</h2>
+
+{{if .Data.Issue.WorkflowActions}}
+  <h3>Actions / Comments</h3>
+  {{template "issue_actions" (dict "Actions" .Data.Issue.WorkflowActions "User" .User)}}
+{{end}}
+
+<h3>Page Numbering</h3>
+{{template "issue_page_view" .Data.Issue.JP2Files}}
+
+<hr />
+<h3>Metadata</h3>
+{{template "issue_metadata_view" .Data.Issue}}
+
+{{end}}
+
+{{block "extrajs" .}}
+{{template "osdjs" .}}
+{{end}}

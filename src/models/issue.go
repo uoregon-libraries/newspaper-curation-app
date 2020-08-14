@@ -207,12 +207,6 @@ func FindAvailableIssuesByWorkflowStep(ws schema.WorkflowStep) ([]*Issue, error)
 		string(ws), time.Now().Format("2006-01-02 15:04:05"))
 }
 
-// FindIssuesWithErrors returns all issues with an error reported by metadata
-// entry personnel
-func FindIssuesWithErrors() ([]*Issue, error) {
-	return findIssues("workflow_step = ?", string(schema.WSUnfixableMetadataError))
-}
-
 // Key returns the standardized issue key for this DB issue
 func (i *Issue) Key() string {
 	return schema.IssueKey(i.LCCN, i.Date, i.Edition)
@@ -316,6 +310,35 @@ func (i *Issue) ReportError(userID int, message string) error {
 	i.WorkflowStep = schema.WSUnfixableMetadataError
 	i.unclaim()
 	return i.saveWithAction(ActionTypeReportUnfixableError, userID, message)
+}
+
+// returnFor implements the issue and action logic we want when returning an
+// errored issue to NCA.  If deskID is nonzero, the issue is forced to the
+// given user's desk.
+func (i *Issue) returnFor(ws schema.WorkflowStep, ac ActionType, managerID, workflowOwnerID int, msg string) error {
+	if i.WorkflowStep != schema.WSUnfixableMetadataError {
+		return fmt.Errorf("invalid WorkflowStep %q: issue must be unfixable", i.WorkflowStep)
+	}
+	i.unclaim()
+	i.WorkflowStep = ws
+	if workflowOwnerID != 0 {
+		i.claim(workflowOwnerID)
+	}
+	return i.saveWithAction(ac, managerID, msg)
+}
+
+// ReturnForCuration is a manager-only action which forces an issue back to the
+// metadata entry queue after it had been marked unfixable.  If workflowOwnerID
+// is nonzero, that user becomes the new owner of the issue.
+func (i *Issue) ReturnForCuration(managerID, workflowOwnerID int, comment string) error {
+	return i.returnFor(schema.WSReadyForMetadataEntry, ActionTypeReturnCurate, managerID, workflowOwnerID, comment)
+}
+
+// ReturnForReview is a manager-only action which forces an issue back to the
+// metadata review queue after it had been marked unfixable.  If
+// workflowOwnerID is nonzero, that user becomes the new owner of the issue.
+func (i *Issue) ReturnForReview(managerID, workflowOwnerID int, comment string) error {
+	return i.returnFor(schema.WSAwaitingMetadataReview, ActionTypeReturnReview, managerID, workflowOwnerID, comment)
 }
 
 func (i *Issue) saveWithAction(action ActionType, userID int, message string) error {

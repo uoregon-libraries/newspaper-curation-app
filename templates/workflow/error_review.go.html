@@ -1,0 +1,31 @@
+{{block "content" .}}
+
+{{if .Data.Issue.WorkflowActions}}
+  <h2>Actions / Comments</h2>
+  {{template "issue_actions" (dict "Actions" .Data.Issue.WorkflowActions "User" .User)}}
+{{end}}
+
+<h2>Page Numbering</h2>
+{{template "issue_page_view" .Data.Issue.JP2Files}}
+
+<hr />
+<h2>Metadata</h2>
+{{template "issue_metadata_view" .Data.Issue}}
+
+<h2>Options</h2>
+
+<ul>
+  <li>
+    <a href="{{"errors/return"|.Data.Issue.Path}}">Return issue to NCA workflow</a>
+  </li>
+
+  <li>
+    <a href="{{"errors/remove"|.Data.Issue.Path}}">Remove issue from NCA</a>
+  </li>
+</ul>
+
+{{end}}
+
+{{block "extrajs" .}}
+{{template "osdjs" .}}
+{{end}}

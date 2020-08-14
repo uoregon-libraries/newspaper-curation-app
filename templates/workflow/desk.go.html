@@ -20,6 +20,13 @@
       <span class="badge">{{.Data.PendingReviewIssues|len}}</span>
     </button>
     {{end}}
+
+    {{if .User.PermittedTo ReviewUnfixableIssues}}
+    <button role="tab" aria-selected="false" aria-controls="unfixable-errors-tab" id="unfixable-errors" tabindex="-1">
+      Unfixable Errors
+      <span class="badge">{{.Data.UnfixableErrorIssues|len}}</span>
+    </button>
+    {{end}}
   </div>
 
   <!-- Everybody can see their own desk -->
@@ -38,6 +45,12 @@
   {{if .User.PermittedTo ReviewIssueMetadata}}
   <div tabindex="0" role="tabpanel" id="needs-review-tab" aria-labelledby="needs-review" hidden="">
     {{template "needs-review" .}}
+  </div>
+  {{end}}
+
+  {{if .User.PermittedTo ReviewUnfixableIssues}}
+  <div tabindex="0" role="tabpanel" id="unfixable-errors-tab" aria-labelledby="unfixable-errors" hidden="">
+    {{template "unfixable-errors" .}}
   </div>
   {{end}}
 </div>
@@ -133,3 +146,31 @@
     <em>There are no issues needing metadata review</em>
   {{end}}
 {{end}} <!-- block "needs-review" -->
+
+{{block "unfixable-errors" .}}
+  <p>
+    These issues have been determined by staff as having errors which
+    necessitate them being removed from NCA entirely and manually fixed
+  </p>
+
+  {{if .Data.UnfixableErrorIssues}}
+    <table class="table">
+      <caption>Issues With Unfixable Errors</caption>
+      <thead>
+        <tr>
+          <th scope="col">Title</th>
+          <th scope="col">Date</th>
+          <th scope="col">Actions</th>
+        </tr>
+      </thead>
+
+      <tbody>
+      {{range .Data.UnfixableErrorIssues}}
+        {{template "UnfixableErrorIssues" (dict "Issue" . "User" $.User)}}
+      {{end}}
+      </tbody>
+    </table>
+  {{else}}
+    <em>There are no issues with unfixable errors</em>
+  {{end}}
+{{end}} <!-- block "unfixable-errors" -->

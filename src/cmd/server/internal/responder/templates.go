@@ -62,6 +62,10 @@ func actionVerb(at string) string {
 		return "approved the issue's metadata"
 	case models.ActionTypeMetadataRejection:
 		return "rejected the issue's metadata"
+	case models.ActionTypeReturnCurate:
+		return "returned the issue for metadata entry"
+	case models.ActionTypeReturnReview:
+		return "returned the issue for metadata review"
 	case models.ActionTypeComment:
 		return "wrote a comment"
 	case models.ActionTypeReportUnfixableError:
@@ -105,6 +109,7 @@ func InitRootTemplate(templatePath string) {
 		"EnterIssueMetadata":       func() *privilege.Privilege { return privilege.EnterIssueMetadata },
 		"ReviewIssueMetadata":      func() *privilege.Privilege { return privilege.ReviewIssueMetadata },
 		"ReviewOwnMetadata":        func() *privilege.Privilege { return privilege.ReviewOwnMetadata },
+		"ReviewUnfixableIssues":    func() *privilege.Privilege { return privilege.ReviewUnfixableIssues },
 		"ListUsers":                func() *privilege.Privilege { return privilege.ListUsers },
 		"ModifyUsers":              func() *privilege.Privilege { return privilege.ModifyUsers },
 		"ViewUploadedIssues":       func() *privilege.Privilege { return privilege.ViewUploadedIssues },

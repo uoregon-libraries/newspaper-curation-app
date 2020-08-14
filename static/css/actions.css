@@ -44,6 +44,5 @@
   font-weight: bold;
 }
 .action.report-unfixable-error .wrapper {
-  background-image: repeating-linear-gradient(-45deg, #fff0f0 0 20px, #fff 20px 40px);
-  border: 1px solid red;
+  background-image: repeating-linear-gradient(-45deg, #ffffff 0 20px, #eee 20px 40px);
 }
