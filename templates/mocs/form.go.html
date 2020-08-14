@@ -8,8 +8,8 @@
   <div class="form-group">
     <label class="col-sm-4 control-label" for="code">Code</label>
     <div class="col-sm-8">
-      <input id="code" name="code" required="required" class="form-control" pattern="[a-z]+" value="{{.Data.MOC.Code}}" />
-      <p class="help-block">
+      <input id="code" name="code" required="required" class="form-control" pattern="[a-z]+" value="{{.Data.MOC.Code}}" aria-describedby="code-help" />
+      <p id="code-help" class="help-block">
         Enter the <em>normalized</em> MARC Org Code; e.g., "orul", <strong>not</strong> "OrU-L".
       </p>
     </div>
@@ -18,8 +18,8 @@
   <div class="form-group">
     <label class="col-sm-4 control-label" for="name">Name</label>
     <div class="col-sm-8">
-      <input id="name" name="name" required="required" class="form-control" value="{{.Data.MOC.Name}}" />
-      <p class="help-block">
+      <input id="name" name="name" required="required" class="form-control" value="{{.Data.MOC.Name}}" aria-describedby="name-help" />
+      <p id="name-help" class="help-block">
         Enter the organization name, usually in the form "Name of entity; City,
         State".  e.g., <i>Library of Virginia; Richmond, VA</i>
       </p>
