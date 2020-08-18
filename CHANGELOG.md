@@ -25,6 +25,45 @@ Brief description, if necessary
 ### Migration
 -->
 
+## v2.14.0
+
+Major workflow improvements and accessibility fixes.  Minor refactoring.
+
+### Fixed
+
+- Various accessibility fixes have been implemented
+  - Skip link added before nav
+  - Workflow tabs are now saved in the URL
+  - Tabs don't trap alt-back or alt-forward anymore
+  - Various elements' roles have been fixed to be more semantically correct
+  - Submit buttons always have correct and non-empty accessible text
+  - "Help blocks" are now associated to their form fields properly
+- Permissions checks should be more consistent in the workflow area
+
+### Added
+
+- New errored issues functionality
+  - Available to admins and issue managers (see below)
+  - Shows all issues which have been reported as having errors
+  - Allows returning errored issues back to NCA in cases where an issue isn't
+    broken or is good enough to go through despite errors
+  - Functionality is planned for removing an errored issue entirely
+- New role, "issue manager", who is able to curate, review, "self-review"
+  (review issues they curated), and process errored issues
+- Workflow tabs now display the number of issues in each tab so users don't
+  have to navigate to a tab just to see there's nothing there
+
+### Changed
+
+- Various workflowhandler refactoring has been done:
+  - Major changes to the permissions checks so the HTML/UI always does the same
+    thing the underlying code does
+  - The "Unable to search for issues" error is more consistent now
+  - All error reporting and processing of reported issues is in a single file
+    for better organization
+  - All routing rules live in a separate file
+- The docker setup now uses the RAIS 4 Alpine release
+
 ## v2.13.2
 
 ### Fixed
