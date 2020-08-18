@@ -19,8 +19,8 @@
   <div class="form-group">
     <label class="col-sm-4 control-label" for="name">Name</label>
     <div class="col-sm-8">
-      <input id="name" name="name" value="{{.Data.Title.Name}}" required="required" class="form-control" />
-      <p class="help-block">Enter the name as required by chronam: "title. (city, Or.)"</p>
+      <input id="name" name="name" value="{{.Data.Title.Name}}" required="required" class="form-control" aria-describedby="name-help" />
+      <p id="name-help" class="help-block">Enter the name as required by chronam: "title. (city, Or.)"</p>
     </div>
   </div>
   </table>
@@ -30,11 +30,11 @@
     <div class="col-sm-8">
       {{if .Data.Title.ValidLCCN}}
         {{if .User.PermittedTo ModifyValidatedLCCNs}}
-          <input id="lccn" name="lccn" value="{{.Data.Title.LCCN}}" class="form-control" required="required" />
-          <p class="help-block">This LCCN has been validated - only change it if you're certain this is necessary!</p>
+          <input id="lccn" name="lccn" value="{{.Data.Title.LCCN}}" class="form-control" required="required" aria-describedby="lccn-help" />
+          <p id="lccn-help" class="help-block">This LCCN has been validated - only change it if you're certain this is necessary!</p>
         {{else}}
-          <input id="lccn" value="{{.Data.Title.LCCN}}" class="form-control" disabled="disabled" />
-          <p class="help-block">This LCCN has been validated and cannot be changed</p>
+          <input id="lccn" value="{{.Data.Title.LCCN}}" class="form-control" disabled="disabled" aria-describedby="lccn-help" />
+          <p id="lccn-help" class="help-block">This LCCN has been validated and cannot be changed</p>
         {{end}}
       {{else}}
         <input id="lccn" name="lccn" value="{{.Data.Title.LCCN}}" class="form-control" required="required" />
@@ -128,7 +128,7 @@
 
   <div class="form-group">
     <div class="col-sm-8 col-sm-offset-4">
-      <input class="btn btn-default" type="Submit" value="Submit" />
+      <button class="btn btn-default" type="Submit">Submit</button>
     </div>
   </div>
 </form>

@@ -25,7 +25,7 @@
 <div class="row">
   <div class="col-md-12">
     <form id="page-label-form">
-      <label class="col-md-4 control-label" for="label">Page Label</label>
+      <label class="col-md-4 control-label" for="page-label">Page Label</label>
       <div class="col-md-4">
         <input type="text" id="page-label" name="label" class="form-control" />
       </div>
@@ -70,16 +70,18 @@
         <label class="col-md-2 control-label" for="date_as_labeled">Issue Date as labeled</label>
         <div class="col-md-4">
           <input type="text" id="date_as_labeled" name="date_as_labeled" value="{{.Data.Issue.DateAsLabeled}}"
-            class="form-control" pattern="\d\d\d\d-\d\d-\d\d" required="required" />
-          <p class="help-block">
+            class="form-control" pattern="\d\d\d\d-\d\d-\d\d" required="required"
+            aria-describedby="date-labeled-help" />
+          <p id="date-labeled-help" class="help-block">
             Enter the issue's date as it appears in the publication in YYYY-MM-DD format.
           </p>
         </div>
         <label class="col-md-2 control-label" for="date">Issue Date</label>
         <div class="col-md-4">
           <input type="text" id="date" name="date" value="{{.Data.Issue.Date}}"
-            class="form-control" pattern="\d\d\d\d-\d\d-\d\d" required="required" />
-          <p class="help-block">
+            class="form-control" pattern="\d\d\d\d-\d\d-\d\d" required="required"
+            aria-describedby="date-help" />
+          <p id="date-help" class="help-block">
             Enter the issue's date in YYYY-MM-DD format.
             <strong>Carefully</strong> check that this is valid, not just
             what's printed on the paper!
@@ -91,8 +93,8 @@
         <label class="col-md-2 control-label" for="volume_number">Volume number</label>
         <div class="col-md-4">
           <input type="text" id="volume_number" name="volume_number" value="{{.Data.Issue.Volume}}"
-            class="form-control" required="required" />
-          <p class="help-block">
+            class="form-control" required="required" aria-describedby="volnum-help" />
+          <p id="volnum-help" class="help-block">
             Enter the volume number, or "0" if no volume number is present.
             All numeric information must be converted to Arabic numerals.
             Alphabetic data used as enumeration designations shall be
@@ -103,8 +105,8 @@
         <label class="col-md-2 control-label" for="issue_number">Issue number</label>
         <div class="col-md-4">
           <input type="text" id="issue_number" name="issue_number" value="{{.Data.Issue.Issue.Issue}}"
-            class="form-control" required="required" />
-          <p class="help-block">
+            class="form-control" required="required" aria-describedby="issnum-help" />
+          <p id="issnum-help" class="help-block">
             Enter the issue number, or "0" if no issue number is present.
             All numeric information must be converted to Arabic numerals.
             Alphabetic data used as enumeration designations shall be
@@ -118,9 +120,9 @@
         <label class="col-md-2 control-label" for="edition_number">Edition number</label>
         <div class="col-md-4">
           <input type="text" id="edition_number" name="edition_number" value="{{.Data.Issue.Edition}}"
-            size="2"
-            class="form-control" pattern="[1-9][0-9]{0,1}" required="required" />
-          <p class="help-block">
+            size="2" class="form-control" pattern="[1-9][0-9]{0,1}" required="required"
+            aria-describedby="ednum-help" />
+          <p id="ednum-help" class="help-block">
             Enter the edition number.  This is usually 1 unless another edition
             of the same title was published on the same date.  This must be
             numeric and cannot have leading zeroes (e.g., "1", not "01").
@@ -136,8 +138,8 @@
       <div class="form-group">
         <label class="col-md-2 control-label" for="draft_comment">Comments (optional)</label>
         <div class="col-md-10">
-          <textarea id="draft_comment" name="draft_comment" class="form-control" rows="8">{{.Data.Issue.DraftComment}}</textarea>
-          <p class="help-block">
+          <textarea id="draft_comment" name="draft_comment" class="form-control" rows="8" aria-describedby="comment-help">{{.Data.Issue.DraftComment}}</textarea>
+          <p id="comment-help" class="help-block">
             Enter comments about this data, if necessary.  For instance, if
             there is anything special or unusual about this issue the metadata
             reviewer needs to know, it would go here.  <strong>Note</strong>:

@@ -19,8 +19,8 @@ This feature is not yet implemented!
   <div class="form-group">
     <label class="col-md-2 control-label" for="comment">Comments (optional)</label>
     <div class="col-md-10">
-      <textarea id="comment" name="comment" class="form-control" rows="8">{{.Data.Comment}}</textarea>
-      <p class="help-block">
+      <textarea id="comment" name="comment" class="form-control" rows="8" aria-describedby="comment-help">{{.Data.Comment}}</textarea>
+      <p id="comment-help" class="help-block">
         Enter comments to explain the removal, if necessary.  These will be
         preserved even if the issue is deleted permanently.
       </p>

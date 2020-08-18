@@ -6,7 +6,7 @@
   <div class="form-group">
     <label class="col-md-2 control-label" for="workflow-owner-id">Move to desk</label>
     <div class="col-md-10">
-      <select id="workflow-owner-id" name="workflow_owner_id" class="form-control">
+      <select id="workflow-owner-id" name="workflow_owner_id" class="form-control" aria-describedby="workflow-owner-id-help">
         <option value="0">-- Nobody --</option>
         <option value="{{.User.ID}}">Me ({{.User.Login}})</option>
         {{range .Data.Users}}
@@ -15,7 +15,7 @@
           {{end}}
         {{end}}
       </select>
-      <p class="help-block">
+      <p id="workflow-owner-id-help" class="help-block">
         Move this issue to the given user's desk immediately after pushing it back to NCA
       </p>
     </div>
@@ -24,8 +24,8 @@
   <div class="form-group">
     <label class="col-md-2 control-label" for="comment">Comments (optional)</label>
     <div class="col-md-10">
-      <textarea id="comment" name="comment" class="form-control" rows="8"></textarea>
-      <p class="help-block">
+      <textarea id="comment" name="comment" class="form-control" rows="8" aria-describedby="comment-help"></textarea>
+      <p id="comment-help" class="help-block">
         Enter comments to explain the action you're taking on this issue if
         necessary.  For instance, you may want to let curators know why they
         were mistaken to flag this as an error in the first place.
