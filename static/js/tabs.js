@@ -42,6 +42,13 @@
     addListeners(i);
   };
 
+  // Set the active tab
+  parseTabState();
+
+  // Make sure that any history change loads the right tab, not just when the
+  // client requests a new page from the server
+  window.addEventListener('hashchange', parseTabState, false);
+
   function addListeners (index) {
     tabs[index].addEventListener('click', clickEventListener);
     tabs[index].addEventListener('keydown', keydownEventListener);
@@ -59,6 +66,7 @@
 
   // Handle keydown on tabs
   function keydownEventListener (event) {
+    if (event.altKey) { return; }
     var key = event.keyCode;
 
     switch (key) {
@@ -84,6 +92,7 @@
 
   // Handle keyup on tabs
   function keyupEventListener (event) {
+    if (event.altKey) { return; }
     var key = event.keyCode;
 
     switch (key) {
@@ -101,6 +110,7 @@
   // only up and down arrow should function.
   // In all other cases only left and right arrow function.
   function determineOrientation (event) {
+    if (event.altKey) { return; }
     var key = event.keyCode;
     var vertical = tablist.getAttribute('aria-orientation') == 'vertical';
     var proceed = false;
@@ -125,6 +135,7 @@
   // Either focus the next, previous, first, or last tab
   // depening on key pressed
   function switchTabOnArrowPress (event) {
+    if (event.altKey) { return; }
     var pressed = event.keyCode;
 
     for (x = 0; x < tabs.length; x++) {
@@ -147,6 +158,18 @@
     };
   };
 
+  // Returns the tab as defined in the URL fragment ("hash" to javascript)
+  function getFragmentTab() {
+    var hsh = new URLSearchParams(window.location.hash.substr(1));
+    return hsh.get('tab');
+  }
+
+  function setFragmentTab(tabid) {
+    var hsh = new URLSearchParams(window.location.hash.substr(1));
+    hsh.set('tab', tabid);
+    window.location.hash = hsh.toString();
+  }
+
   // Activates any given tab panel
   function activateTab (tab, setFocus) {
     setFocus = setFocus || true;
@@ -164,6 +187,11 @@
 
     // Remove hidden attribute from tab panel to make it visible
     document.getElementById(controls).removeAttribute('hidden');
+
+    // Update the URL fragment if it's not already set properly
+    if (tab.id != getFragmentTab()) {
+      setFragmentTab(tab.id);
+    }
 
     // Set focus when required
     if (setFocus) {
@@ -259,4 +287,13 @@
       activateTab(target, false);
     };
   };
+
+  // parseTabState determines which tab should be active based on the fragment
+  function parseTabState() {
+    var tab = document.getElementById(getFragmentTab());
+    if (tab == null) {
+      tab = tabs[0];
+    }
+    activateTab(tab);
+  }
 }());
