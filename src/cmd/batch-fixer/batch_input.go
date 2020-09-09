@@ -16,6 +16,7 @@ func (i *Input) makeBatchMenu() (*menu, string) {
 	}
 	if st == models.BatchStatusFailedQC {
 		m.add("load", "Loads an issue by its id, allowing removal from the batch", i.loadIssueHandler)
+		m.add("removeissue", "Finds an issue by key and removes it with less interaction", i.removeIssue)
 		m.add("delete", "Deletes the entire batch from disk and resets associated issues in "+
 			"the database to their 'ready for batching' state, for cases where a full rebatch "+
 			"is easier than pulling individual issues (e.g., bad org code, dozens of bad issues, "+
@@ -93,6 +94,70 @@ func (i *Input) failQCHandler([]string) {
 	}
 	i.println(`Batch removed and marked "failed_qc".  New actions are available.`)
 	i.println(ansiImportant + "Right now: purge the batch from staging!" + ansiReset)
+}
+
+func (i *Input) removeIssue(args []string) {
+	var usage = func(errmsg string) {
+		i.printerrln(errmsg)
+		i.println("")
+		i.println("usage: removeissue <type> <key> <reason>")
+		i.println("")
+		i.println(`type must be either "error" or "reject"`)
+		i.println("key must be in the standard issuekey format: LCCN/YYYYMMDDEE")
+		i.println("examples:")
+		i.println("    removeissue reject sn99063854/1949012701 image 2 has a page label")
+		i.println("    removeissue error sn99063854/1949012701 pages are missing - need reupload")
+	}
+
+	if len(args) < 3 {
+		usage("Invalid invocation of removeissue")
+		return
+	}
+
+	var returnToMetadata bool
+	switch args[0] {
+	case "reject":
+		returnToMetadata = true
+	case "error":
+		returnToMetadata = false
+	default:
+		usage("Invalid type")
+		return
+	}
+
+	var key = args[1]
+
+	var search = new(queries)
+	var err = search.add("key=" + key)
+	if err != nil {
+		i.printerrln(err.Error())
+		return
+	}
+
+	var match *Issue
+	for _, issue := range i.batch.Issues {
+		if search.match(issue) {
+			if match != nil {
+				i.printerrln(fmt.Sprintf("More than one match for %q", key))
+				return
+			}
+
+			match = issue
+		}
+	}
+
+	if match == nil {
+		i.printerrln(fmt.Sprintf("No issues found for %q", key))
+		return
+	}
+
+	var reasonArgs = args[2:]
+	i.issue = match
+	if returnToMetadata {
+		i.rejectIssueHandler(reasonArgs)
+	} else {
+		i.errorIssueHandler(reasonArgs)
+	}
 }
 
 func (i *Input) searchIssuesHandler(args []string) {
