@@ -294,7 +294,7 @@ func runAllQueues(c *config.Config) {
 			// Jobs which are exclusively disk IO are in the first runner to avoid
 			// too much FS stuff hapenning concurrently
 			watchJobTypes(c,
-				models.JobTypeArchiveMasterFiles,
+				models.JobTypeArchiveBackups,
 				models.JobTypeSyncDir,
 				models.JobTypeKillDir,
 				models.JobTypeWriteBagitManifest,

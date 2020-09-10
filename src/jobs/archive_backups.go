@@ -12,17 +12,17 @@ import (
 	"github.com/uoregon-libraries/newspaper-curation-app/src/config"
 )
 
-// ArchiveMasterFiles is the job which finds backed-up master files (if any
+// ArchiveBackups is the job which finds backed-up master files (if any
 // exist), creates an archive from them, and copies them into the issue
 // location.  This only matters to born-digital issues; the scanned issues
 // aren't pre-processed like PDFs are.
-type ArchiveMasterFiles struct {
+type ArchiveBackups struct {
 	*IssueJob
 	tarfile string
 }
 
 // Process implements Processor, moving the issue's master files
-func (j *ArchiveMasterFiles) Process(*config.Config) bool {
+func (j *ArchiveBackups) Process(*config.Config) bool {
 	if j.DBIssue.MasterBackupLocation == "" {
 		j.Logger.Debugf("Master file archive job for issue id %d skipped - no master files stored", j.DBIssue.ID)
 		return true
@@ -52,7 +52,7 @@ func (j *ArchiveMasterFiles) Process(*config.Config) bool {
 	return true
 }
 
-func (j *ArchiveMasterFiles) makeMasterTar() error {
+func (j *ArchiveBackups) makeMasterTar() error {
 	var src = j.DBIssue.MasterBackupLocation
 
 	var f = fileutil.NewSafeFile(j.tarfile)

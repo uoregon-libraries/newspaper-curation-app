@@ -28,7 +28,7 @@ const (
 	JobTypePageSplit            JobType = "page_split"
 	JobTypeMakeDerivatives      JobType = "make_derivatives"
 	JobTypeBuildMETS            JobType = "build_mets"
-	JobTypeArchiveMasterFiles   JobType = "archive_master_files"
+	JobTypeArchiveBackups       JobType = "archive_backups"
 	JobTypeSetBatchLocation     JobType = "set_batch_location"
 	JobTypeCreateBatchStructure JobType = "create_batch_structure"
 	JobTypeMakeBatchXML         JobType = "make_batch_xml"
@@ -49,7 +49,7 @@ var ValidJobTypes = []JobType{
 	JobTypePageSplit,
 	JobTypeMakeDerivatives,
 	JobTypeBuildMETS,
-	JobTypeArchiveMasterFiles,
+	JobTypeArchiveBackups,
 	JobTypeSetBatchLocation,
 	JobTypeCreateBatchStructure,
 	JobTypeMakeBatchXML,
