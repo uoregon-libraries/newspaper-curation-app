@@ -97,7 +97,7 @@ func QueueSFTPIssueMove(issue *models.Issue, c *config.Config) error {
 	var workflowWIPDir = filepath.Join(c.WorkflowPath, ".wip-"+issue.HumanName)
 	var pageReviewDir = filepath.Join(c.PDFPageReviewPath, issue.HumanName)
 	var pageReviewWIPDir = filepath.Join(c.PDFPageReviewPath, ".wip-"+issue.HumanName)
-	var masterLoc = filepath.Join(c.MasterPDFBackupPath, issue.HumanName)
+	var backupLoc = filepath.Join(c.PDFBackupPath, issue.HumanName)
 
 	return QueueSerial(
 		PrepareIssueJobAdvanced(models.JobTypeSetIssueWS, issue, makeWSArgs(schema.WSAwaitingProcessing)),
@@ -117,9 +117,9 @@ func QueueSFTPIssueMove(issue *models.Issue, c *config.Config) error {
 		// their masters.  Once we've backed up (syncdir + killdir), we move the
 		// WIP files back into the proper workflow folder...  which is then
 		// promptly moved out to the page review area.
-		PrepareJobAdvanced(models.JobTypeSyncDir, makeSrcDstArgs(workflowDir, masterLoc)),
+		PrepareJobAdvanced(models.JobTypeSyncDir, makeSrcDstArgs(workflowDir, backupLoc)),
 		PrepareJobAdvanced(models.JobTypeKillDir, makeLocArgs(workflowDir)),
-		PrepareIssueJobAdvanced(models.JobTypeSetIssueMasterLoc, issue, makeLocArgs(masterLoc)),
+		PrepareIssueJobAdvanced(models.JobTypeSetIssueMasterLoc, issue, makeLocArgs(backupLoc)),
 		PrepareJobAdvanced(models.JobTypeRenameDir, makeSrcDstArgs(workflowWIPDir, workflowDir)),
 
 		// Now we move the issue data to the page review area for manual
