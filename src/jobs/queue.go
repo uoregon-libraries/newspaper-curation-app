@@ -119,7 +119,7 @@ func QueueSFTPIssueMove(issue *models.Issue, c *config.Config) error {
 		// promptly moved out to the page review area.
 		PrepareJobAdvanced(models.JobTypeSyncDir, makeSrcDstArgs(workflowDir, backupLoc)),
 		PrepareJobAdvanced(models.JobTypeKillDir, makeLocArgs(workflowDir)),
-		PrepareIssueJobAdvanced(models.JobTypeSetIssueMasterLoc, issue, makeLocArgs(backupLoc)),
+		PrepareIssueJobAdvanced(models.JobTypeSetIssueBackupLoc, issue, makeLocArgs(backupLoc)),
 		PrepareJobAdvanced(models.JobTypeRenameDir, makeSrcDstArgs(workflowWIPDir, workflowDir)),
 
 		// Now we move the issue data to the page review area for manual
@@ -165,7 +165,7 @@ func QueueFinalizeIssue(issue *models.Issue) error {
 	if issue.MasterBackupLocation != "" {
 		jobs = append(jobs, PrepareIssueJobAdvanced(models.JobTypeArchiveBackups, issue, nil))
 		jobs = append(jobs, PrepareJobAdvanced(models.JobTypeKillDir, makeLocArgs(issue.MasterBackupLocation)))
-		jobs = append(jobs, PrepareIssueJobAdvanced(models.JobTypeSetIssueMasterLoc, issue, makeLocArgs("")))
+		jobs = append(jobs, PrepareIssueJobAdvanced(models.JobTypeSetIssueBackupLoc, issue, makeLocArgs("")))
 	}
 
 	jobs = append(jobs, PrepareIssueJobAdvanced(models.JobTypeSetIssueWS, issue, makeWSArgs(schema.WSReadyForBatching)))

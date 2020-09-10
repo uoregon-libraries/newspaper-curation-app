@@ -22,7 +22,7 @@ type JobType string
 // The full list of job types
 const (
 	JobTypeSetIssueWS           JobType = "set_issue_workflow_step"
-	JobTypeSetIssueMasterLoc    JobType = "set_issue_master_backup_location"
+	JobTypeSetIssueBackupLoc    JobType = "set_issue_original_backup_location"
 	JobTypeSetIssueLocation     JobType = "set_issue_location"
 	JobTypeSetBatchStatus       JobType = "set_batch_status"
 	JobTypePageSplit            JobType = "page_split"
@@ -43,7 +43,7 @@ const (
 // table, for use in validating command-line job queue processing
 var ValidJobTypes = []JobType{
 	JobTypeSetIssueWS,
-	JobTypeSetIssueMasterLoc,
+	JobTypeSetIssueBackupLoc,
 	JobTypeSetIssueLocation,
 	JobTypeSetBatchStatus,
 	JobTypePageSplit,

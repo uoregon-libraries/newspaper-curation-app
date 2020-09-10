@@ -11,7 +11,7 @@ func DBJobToProcessor(dbJob *models.Job) Processor {
 	switch models.JobType(dbJob.Type) {
 	case models.JobTypeSetIssueWS:
 		return &SetIssueWS{IssueJob: NewIssueJob(dbJob)}
-	case models.JobTypeSetIssueMasterLoc:
+	case models.JobTypeSetIssueBackupLoc:
 		return &SetIssueMasterLoc{IssueJob: NewIssueJob(dbJob)}
 	case models.JobTypeSetIssueLocation:
 		return &SetIssueLocation{IssueJob: NewIssueJob(dbJob)}

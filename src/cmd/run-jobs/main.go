@@ -327,7 +327,7 @@ func runAllQueues(c *config.Config) {
 			// workflow state
 			var r = jobs.NewRunner(c, logLevel,
 				models.JobTypeSetIssueWS,
-				models.JobTypeSetIssueMasterLoc,
+				models.JobTypeSetIssueBackupLoc,
 				models.JobTypeSetIssueLocation,
 				models.JobTypeSetBatchStatus,
 				models.JobTypeSetBatchLocation,
