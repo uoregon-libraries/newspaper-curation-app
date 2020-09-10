@@ -35,7 +35,7 @@ type SetIssueMasterLoc struct {
 
 // Process updates the issue's master backup location and attempts to save it
 func (j *SetIssueMasterLoc) Process(*config.Config) bool {
-	j.DBIssue.MasterBackupLocation = j.db.Args[locArg]
+	j.DBIssue.BackupLocation = j.db.Args[locArg]
 	var err = j.DBIssue.Save()
 	if err != nil {
 		j.Logger.Errorf("Unable to update master backup location for issue %d: %s", j.DBIssue.ID, err)

@@ -23,7 +23,7 @@ type ArchiveBackups struct {
 
 // Process implements Processor, moving the issue's master files
 func (j *ArchiveBackups) Process(*config.Config) bool {
-	if j.DBIssue.MasterBackupLocation == "" {
+	if j.DBIssue.BackupLocation == "" {
 		j.Logger.Debugf("Master file archive job for issue id %d skipped - no master files stored", j.DBIssue.ID)
 		return true
 	}
@@ -53,7 +53,7 @@ func (j *ArchiveBackups) Process(*config.Config) bool {
 }
 
 func (j *ArchiveBackups) makeMasterTar() error {
-	var src = j.DBIssue.MasterBackupLocation
+	var src = j.DBIssue.BackupLocation
 
 	var f = fileutil.NewSafeFile(j.tarfile)
 	defer f.Close()

@@ -162,9 +162,9 @@ func QueueFinalizeIssue(issue *models.Issue) error {
 	var jobs []*models.Job
 	jobs = append(jobs, PrepareIssueJobAdvanced(models.JobTypeBuildMETS, issue, nil))
 
-	if issue.MasterBackupLocation != "" {
+	if issue.BackupLocation != "" {
 		jobs = append(jobs, PrepareIssueJobAdvanced(models.JobTypeArchiveBackups, issue, nil))
-		jobs = append(jobs, PrepareJobAdvanced(models.JobTypeKillDir, makeLocArgs(issue.MasterBackupLocation)))
+		jobs = append(jobs, PrepareJobAdvanced(models.JobTypeKillDir, makeLocArgs(issue.BackupLocation)))
 		jobs = append(jobs, PrepareIssueJobAdvanced(models.JobTypeSetIssueBackupLoc, issue, makeLocArgs("")))
 	}
 
