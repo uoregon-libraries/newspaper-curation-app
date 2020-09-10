@@ -33,10 +33,14 @@ changes have been made.
 
 ### Migration
 
+- Shut down your NCA web server
+- Wait for your NCA workers to complete *all* jobs, then shut the workers down
+- Remove the NCA "finder" cache, e.g., `rm /tmp/nca/finder.cache`
 - Update your settings file:
   - `MASTER_PDF_UPLOAD_PATH` is now `PDF_UPLOAD_PATH`
   - `MASTER_SCAN_UPLOAD_PATH` is now `SCAN_UPLOAD_PATH`
   - `MASTER_PDF_BACKUP_PATH` is now `ORIGINAL_PDF_BACKUP_PATH`
+- Start NCA workers and web daemon
 
 ## v2.14.0
 
