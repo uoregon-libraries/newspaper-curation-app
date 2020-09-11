@@ -12,7 +12,7 @@ func DBJobToProcessor(dbJob *models.Job) Processor {
 	case models.JobTypeSetIssueWS:
 		return &SetIssueWS{IssueJob: NewIssueJob(dbJob)}
 	case models.JobTypeSetIssueBackupLoc:
-		return &SetIssueMasterLoc{IssueJob: NewIssueJob(dbJob)}
+		return &SetIssueBackupLoc{IssueJob: NewIssueJob(dbJob)}
 	case models.JobTypeSetIssueLocation:
 		return &SetIssueLocation{IssueJob: NewIssueJob(dbJob)}
 	case models.JobTypePageSplit:
