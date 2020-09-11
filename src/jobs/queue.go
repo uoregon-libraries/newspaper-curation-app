@@ -114,7 +114,7 @@ func QueueSFTPIssueMove(issue *models.Issue, c *config.Config) error {
 
 		// This gets a bit weird.  What's in the issue location dir is the original
 		// upload, which we back up since we may need to reprocess the PDFs from
-		// their masters.  Once we've backed up (syncdir + killdir), we move the
+		// these originals.  Once we've backed up (syncdir + killdir), we move the
 		// WIP files back into the proper workflow folder...  which is then
 		// promptly moved out to the page review area.
 		PrepareJobAdvanced(models.JobTypeSyncDir, makeSrcDstArgs(workflowDir, backupLoc)),
@@ -155,10 +155,10 @@ func QueueMoveIssueForDerivatives(issue *models.Issue, workflowPath string) erro
 
 // QueueFinalizeIssue creates and queues jobs that get an issue ready for
 // batching.  Currently this means generating the METS XML file and copying
-// master PDFs (if born-digital) into the issue directory.
+// archived PDFs (if born-digital) into the issue directory.
 func QueueFinalizeIssue(issue *models.Issue) error {
-	// Some jobs aren't queued up unless there's a master backup, so we actually
-	// generate a list of jobs programatically insteadc of inline
+	// Some jobs aren't queued up unless there's a backup, so we actually
+	// generate a list of jobs programatically instead of inline
 	var jobs []*models.Job
 	jobs = append(jobs, PrepareIssueJobAdvanced(models.JobTypeBuildMETS, issue, nil))
 
