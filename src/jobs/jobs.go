@@ -11,8 +11,8 @@ func DBJobToProcessor(dbJob *models.Job) Processor {
 	switch models.JobType(dbJob.Type) {
 	case models.JobTypeSetIssueWS:
 		return &SetIssueWS{IssueJob: NewIssueJob(dbJob)}
-	case models.JobTypeSetIssueMasterLoc:
-		return &SetIssueMasterLoc{IssueJob: NewIssueJob(dbJob)}
+	case models.JobTypeSetIssueBackupLoc:
+		return &SetIssueBackupLoc{IssueJob: NewIssueJob(dbJob)}
 	case models.JobTypeSetIssueLocation:
 		return &SetIssueLocation{IssueJob: NewIssueJob(dbJob)}
 	case models.JobTypePageSplit:
@@ -21,8 +21,8 @@ func DBJobToProcessor(dbJob *models.Job) Processor {
 		return &MakeDerivatives{IssueJob: NewIssueJob(dbJob)}
 	case models.JobTypeBuildMETS:
 		return &BuildMETS{IssueJob: NewIssueJob(dbJob)}
-	case models.JobTypeArchiveMasterFiles:
-		return &ArchiveMasterFiles{IssueJob: NewIssueJob(dbJob)}
+	case models.JobTypeArchiveBackups:
+		return &ArchiveBackups{IssueJob: NewIssueJob(dbJob)}
 	case models.JobTypeSetBatchStatus:
 		return &SetBatchStatus{BatchJob: NewBatchJob(dbJob)}
 	case models.JobTypeSetBatchLocation:

@@ -490,7 +490,7 @@ func (list IssueList) SortByKey() {
 	})
 }
 
-var allowedFilesRegex = regexp.MustCompile(`(?i:^([0-9]+.(pdf|jp2|xml|tiff?))|[0-9]{10}.xml|master.tar)`)
+var allowedFilesRegex = regexp.MustCompile(`(?i:^([0-9]+.(pdf|jp2|xml|tiff?))|[0-9]{10}.xml|[a-z]+.tar)`)
 
 // File just gives fileutil.File a location and issue pointer
 type File struct {

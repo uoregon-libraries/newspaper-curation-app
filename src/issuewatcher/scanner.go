@@ -40,8 +40,8 @@ func NewScanner(conf *config.Config) *Scanner {
 	var s = newScanner()
 	s.Webroot = conf.NewsWebroot
 	s.Tempdir = conf.IssueCachePath
-	s.ScanUpload = conf.MasterScanUploadPath
-	s.PDFUpload = conf.MasterPDFUploadPath
+	s.ScanUpload = conf.ScanUploadPath
+	s.PDFUpload = conf.PDFUploadPath
 	s.PDFBatchMARCOrgCode = conf.PDFBatchMARCOrgCode
 
 	return s

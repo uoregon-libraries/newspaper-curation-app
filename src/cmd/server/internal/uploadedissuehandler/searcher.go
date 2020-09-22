@@ -120,14 +120,14 @@ func (s *Searcher) wrapTitle(t *schema.Title) (*Title, error) {
 
 	// Location is the only element that actually uniquely identifies a title, so
 	// we have to use that to figure out if this is a scanned issue or not
-	if strings.HasPrefix(t.Location, s.conf.MasterPDFUploadPath) {
+	if strings.HasPrefix(t.Location, s.conf.PDFUploadPath) {
 		title.Type = TitleTypeBornDigital
 		title.MOC = s.conf.PDFBatchMARCOrgCode
 		return title, nil
 	}
 
-	if strings.HasPrefix(t.Location, s.conf.MasterScanUploadPath) {
-		var relLoc = strings.Replace(title.Location, s.conf.MasterScanUploadPath, "", 1)
+	if strings.HasPrefix(t.Location, s.conf.ScanUploadPath) {
+		var relLoc = strings.Replace(title.Location, s.conf.ScanUploadPath, "", 1)
 		if relLoc[0] == '/' {
 			relLoc = relLoc[1:]
 		}

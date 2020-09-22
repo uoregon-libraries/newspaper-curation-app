@@ -54,11 +54,11 @@ DB_DATABASE="nca"
 # Paths for PDFs, derivatives, etc.
 ###
 
-# Master PDFs are deposited here - these should be exactly what the publisher
+# Uploaded PDFs are deposited here - these should be exactly what the publisher
 # gives us.  There must be one subdirectory per title, named after the title's
 # "SFTP Directory" value in the admin app, and each title must contain one
 # subdirectory per issue, named by the issue's date, in YYYY-MM-DD format.
-MASTER_PDF_UPLOAD_PATH="/mnt/news/sftp"
+PDF_UPLOAD_PATH="/mnt/news/sftp"
 
 # In-house scans are deposited here.  The folder structure must be precisely as follows:
 #
@@ -70,12 +70,12 @@ MASTER_PDF_UPLOAD_PATH="/mnt/news/sftp"
 # 150dpi JPEG image encoded at about a quality of 40 (or "medium"), per the
 # NDNP spec.  The PDF also needs to have the OCR text embedded for the
 # derivative processing to create the proper page XML.
-MASTER_SCAN_UPLOAD_PATH="/mnt/news/scans"
+SCAN_UPLOAD_PATH="/mnt/news/scans"
 
-# When a master PDF has been split, this is where we back it up.  Master files
+# When an uploaded PDF has been split, this is where we back it up.  Originals
 # are stored in the batches, so if you back up the batch, this can be a short-
 # term backup location.
-MASTER_PDF_BACKUP_PATH="/mnt/news/backup/master"
+ORIGINAL_PDF_BACKUP_PATH="/mnt/news/backup/originals"
 
 # This is where split PDFs are moved for manual reordering / renaming (e.g.,
 # using Adobe Bridge)
