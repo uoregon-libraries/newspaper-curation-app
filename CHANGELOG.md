@@ -29,7 +29,8 @@ Brief description, if necessary
 
 Language changes: as much as possible, *all* code and settings no longer refer
 to "master" assets, e.g., master PDFs, master backups, etc.  No functional
-changes have been made.
+changes have been made.  The choice to bump versions to 3.0.0 is due to the
+settings changes not being backward-compatible.
 
 ### Migration
 
