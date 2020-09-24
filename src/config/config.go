@@ -36,9 +36,9 @@ type Config struct {
 	MARCLocation2 string `setting:"MARC_LOCATION_2"`
 
 	// Paths to the various places we expect to find files
-	MasterPDFUploadPath  string `setting:"MASTER_PDF_UPLOAD_PATH" type:"path"`
-	MasterScanUploadPath string `setting:"MASTER_SCAN_UPLOAD_PATH" type:"path"`
-	MasterPDFBackupPath  string `setting:"MASTER_PDF_BACKUP_PATH" type:"path"`
+	PDFUploadPath        string `setting:"PDF_UPLOAD_PATH" type:"path"`
+	ScanUploadPath       string `setting:"SCAN_UPLOAD_PATH" type:"path"`
+	PDFBackupPath        string `setting:"ORIGINAL_PDF_BACKUP_PATH" type:"path"`
 	PDFPageReviewPath    string `setting:"PDF_PAGE_REVIEW_PATH" type:"path"`
 	BatchOutputPath      string `setting:"BATCH_OUTPUT_PATH" type:"path"`
 	WorkflowPath         string `setting:"WORKFLOW_PATH" type:"path"`

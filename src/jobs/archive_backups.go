@@ -12,32 +12,32 @@ import (
 	"github.com/uoregon-libraries/newspaper-curation-app/src/config"
 )
 
-// ArchiveMasterFiles is the job which finds backed-up master files (if any
+// ArchiveBackups is the job which finds backed-up original files (if any
 // exist), creates an archive from them, and copies them into the issue
 // location.  This only matters to born-digital issues; the scanned issues
 // aren't pre-processed like PDFs are.
-type ArchiveMasterFiles struct {
+type ArchiveBackups struct {
 	*IssueJob
 	tarfile string
 }
 
-// Process implements Processor, moving the issue's master files
-func (j *ArchiveMasterFiles) Process(*config.Config) bool {
-	if j.DBIssue.MasterBackupLocation == "" {
-		j.Logger.Debugf("Master file archive job for issue id %d skipped - no master files stored", j.DBIssue.ID)
+// Process implements Processor, moving the issue's original files
+func (j *ArchiveBackups) Process(*config.Config) bool {
+	if j.DBIssue.BackupLocation == "" {
+		j.Logger.Debugf("Archive job for issue id %d skipped - no backup exists", j.DBIssue.ID)
 		return true
 	}
 
-	j.tarfile = filepath.Join(j.DBIssue.Location, "master.tar")
-	j.Logger.Debugf("Starting master file archive for issue id %d", j.DBIssue.ID)
-	var err = j.makeMasterTar()
+	j.tarfile = filepath.Join(j.DBIssue.Location, "original.tar")
+	j.Logger.Debugf("Creating archive for issue id %d", j.DBIssue.ID)
+	var err = j.buildArchive()
 	if err != nil {
-		j.Logger.Errorf("Unable to produce tarfile from master PDF(s): %s", err)
+		j.Logger.Errorf("Unable to produce tarfile from PDF(s): %s", err)
 		return false
 	}
 
 	// Verify the tar wrote successfully just to be uber-paranoid before we go
-	// deleting the original master
+	// deleting the original file(s)
 	var info os.FileInfo
 	info, err = os.Stat(j.tarfile)
 	if err != nil {
@@ -52,8 +52,8 @@ func (j *ArchiveMasterFiles) Process(*config.Config) bool {
 	return true
 }
 
-func (j *ArchiveMasterFiles) makeMasterTar() error {
-	var src = j.DBIssue.MasterBackupLocation
+func (j *ArchiveBackups) buildArchive() error {
+	var src = j.DBIssue.BackupLocation
 
 	var f = fileutil.NewSafeFile(j.tarfile)
 	defer f.Close()
@@ -69,7 +69,7 @@ func (j *ArchiveMasterFiles) makeMasterTar() error {
 		var fname = info.Name()
 		j.Logger.Debugf("Writing tar header for %q", fname)
 		var hdr = &tar.Header{
-			Name: filepath.Join("master", fname),
+			Name: filepath.Join("original", fname),
 			Mode: 0666,
 			Size: info.Size(),
 		}

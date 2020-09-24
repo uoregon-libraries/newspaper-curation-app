@@ -19,11 +19,11 @@ var splitPageFilenames = regexp.MustCompile(`^seq-(\d+).pdf$`)
 // splitting a publisher's uploaded issue into PDF/a pages
 type PageSplit struct {
 	*IssueJob
-	FakeMasterFile string // Where we store the processed, combined PDF
-	TempDir        string // Where we do all page-level processing
-	OutputDir      string // Where we copy files after processing
-	GhostScript    string // The path to gs for combining the fake master PDF
-	MinPages       int    // Number of pages below which we refuse to process
+	CombinedFile string // Where we store the processed, combined PDF
+	TempDir      string // Where we do all page-level processing
+	OutputDir    string // Where we copy files after processing
+	GhostScript  string // The path to gs for combining the PDF
+	MinPages     int    // Number of pages below which we refuse to process
 }
 
 // Process combines, splits, and then renames files so they're sequential in a
@@ -49,7 +49,7 @@ func (ps *PageSplit) Process(config *config.Config) bool {
 
 func (ps *PageSplit) makeTempFiles() (ok bool) {
 	var err error
-	ps.FakeMasterFile, err = fileutil.TempNamedFile("", "splitter-master-", ".pdf")
+	ps.CombinedFile, err = fileutil.TempNamedFile("", "splitter-combined-", ".pdf")
 	if err != nil {
 		ps.Logger.Errorf("Unable to create temp file for combining PDFs: %s", err)
 		return false
@@ -65,9 +65,9 @@ func (ps *PageSplit) makeTempFiles() (ok bool) {
 }
 
 func (ps *PageSplit) removeTempFiles() {
-	var err = os.Remove(ps.FakeMasterFile)
+	var err = os.Remove(ps.CombinedFile)
 	if err != nil {
-		ps.Logger.Warnf("Unable to remove temp file %q: %s", ps.FakeMasterFile, err)
+		ps.Logger.Warnf("Unable to remove temp file %q: %s", ps.CombinedFile, err)
 	}
 	err = os.RemoveAll(ps.TempDir)
 	if err != nil {
@@ -77,7 +77,7 @@ func (ps *PageSplit) removeTempFiles() {
 
 func (ps *PageSplit) process() (ok bool) {
 	return RunWhileTrue(
-		ps.createMasterPDF,
+		ps.combinePDF,
 		ps.splitPages,
 		ps.fixPageNames,
 		ps.convertToPDFA,
@@ -85,9 +85,9 @@ func (ps *PageSplit) process() (ok bool) {
 	)
 }
 
-// createMasterPDF combines pages and pre-processes PDFs - ghostscript seems to
+// combinePDF combines pages and pre-processes PDFs - ghostscript seems to
 // be able to handle some PDFs that crash poppler utils (even as recent as 0.41)
-func (ps *PageSplit) createMasterPDF() (ok bool) {
+func (ps *PageSplit) combinePDF() (ok bool) {
 	ps.Logger.Debugf("Preprocessing with ghostscript")
 
 	// Using our custom numeric sort gives us a tiny chance that publishers who
@@ -103,7 +103,7 @@ func (ps *PageSplit) createMasterPDF() (ok bool) {
 	var args = []string{
 		"-sDEVICE=pdfwrite", "-dCompatibilityLevel=1.6", "-dPDFSETTINGS=/default",
 		"-dNOPAUSE", "-dQUIET", "-dBATCH", "-dDetectDuplicateImages",
-		"-dCompressFonts=true", "-r150", "-sOutputFile=" + ps.FakeMasterFile,
+		"-dCompressFonts=true", "-r150", "-sOutputFile=" + ps.CombinedFile,
 	}
 	for _, fi := range fileinfos {
 		args = append(args, filepath.Join(ps.DBIssue.Location, fi.Name()))
@@ -114,7 +114,7 @@ func (ps *PageSplit) createMasterPDF() (ok bool) {
 // splitPages ensures we end up with exactly one PDF per page
 func (ps *PageSplit) splitPages() (ok bool) {
 	ps.Logger.Infof("Splitting PDF(s)")
-	return shell.ExecSubgroup("pdfseparate", ps.Logger, ps.FakeMasterFile, filepath.Join(ps.TempDir, "seq-%d.pdf"))
+	return shell.ExecSubgroup("pdfseparate", ps.Logger, ps.CombinedFile, filepath.Join(ps.TempDir, "seq-%d.pdf"))
 }
 
 // fixPageNames converts sequenced PDFs to have 4-digit page numbers

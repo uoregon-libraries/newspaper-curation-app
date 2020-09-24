@@ -1,6 +1,6 @@
 // copy-sources.go hard-links source issues' files into the fakemount to test
 // various aspects of processing.  We hard-link PDFs in sources/sftp into
-// fakemount/sftp, sometimes creating a fake master PDF first (to test page
+// fakemount/sftp, sometimes combining the pages into a new PDF first (to test page
 // splitting), other times just copying them as-is.  We then hard-link TIFF and
 // PDF files in sources/scans into fakemount/scans.  Directories for SFTP
 // publisher are taken by splitting the sources dir on hyphen, and the same
@@ -100,7 +100,7 @@ func getDirParts(dirName string) (*issue, error) {
 }
 
 func refreshFakemount(testDir string) {
-	for _, dir := range []string{"backup/master", "outgoing", "page-review", "scans", "sftp", "workflow", "errors"} {
+	for _, dir := range []string{"backup/originals", "outgoing", "page-review", "scans", "sftp", "workflow", "errors"} {
 		var fullPath = filepath.Join(testDir, "fakemount", dir)
 		if err := os.RemoveAll(fullPath); err != nil {
 			l.Criticalf("Unable to delete %q: %s", fullPath, err)
@@ -142,11 +142,11 @@ func moveSFTPs(testDir string) {
 			l.Fatalf("Unable to create SFTP destination directory %q: %s", outPath, err)
 		}
 
-		// Now use fake-randomness to decide if we're building a fake master pdf
+		// Now use fake-randomness to decide if we're building a combined pdf
 		var hashval = crc32.ChecksumIEEE([]byte(issue.date))
 		var issueSrcPath = filepath.Join(sftpSourcePath, info.Name())
 		if hashval%2 == 0 {
-			makeMaster(issueSrcPath, outPath)
+			combinePDF(issueSrcPath, outPath)
 		} else {
 			linkFiles(issueSrcPath, outPath, ".pdf")
 		}
@@ -169,23 +169,23 @@ func getFiles(dir string, exts ...string) ([]string, error) {
 	return fileList, err
 }
 
-// makeMaster relies on poppler utilities to combine PDFs in the source
+// combinePDF relies on poppler utilities to combine PDFs in the source
 // directory to create a single PDF in the destination directory
-func makeMaster(src, dst string) {
+func combinePDF(src, dst string) {
 	// Find all PDF files
 	var pdfs, err = getFiles(src, ".pdf")
 	if err != nil {
 		l.Fatalf("Unable to scan for PDF files in %q: %s", src, err)
 	}
 
-	var args = append(pdfs, filepath.Join(dst, "master.pdf"))
+	var args = append(pdfs, filepath.Join(dst, "original.pdf"))
 	var cmd = exec.Command("pdfunite", args...)
 	var stdout = new(bytes.Buffer)
 	var stderr = new(bytes.Buffer)
 	cmd.Stdout = stdout
 	cmd.Stderr = stderr
 
-	l.Infof("Running %q %q to generate a master PDF", cmd.Path, cmd.Args)
+	l.Infof("Running %q %q to generate a combined PDF", cmd.Path, cmd.Args)
 	err = cmd.Run()
 
 	if len(stdout.Bytes()) > 0 {
@@ -200,7 +200,7 @@ func makeMaster(src, dst string) {
 		}
 	}
 	if err != nil {
-		l.Fatalf("Unable to create a master PDF: %s", err)
+		l.Fatalf("Unable to create a combined PDF: %s", err)
 	}
 }
 

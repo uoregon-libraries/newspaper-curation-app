@@ -51,7 +51,7 @@ type Issue struct {
 
 	BatchID                int                 // Which batch (if any) is this issue a part of?
 	Location               string              // Where is this issue on disk?
-	MasterBackupLocation   string              // Where is the master backup located?  (born-digital only)
+	BackupLocation         string              // Where is the original backup located?  (born-digital only)
 	HumanName              string              // What is the issue's "human" name (for consistent folder naming)?
 	IsFromScanner          bool                // Is the issue scanned in-house?  (Born-digital == false)
 	WorkflowStepString     string              `sql:"workflow_step"` // If set, tells us what "human workflow" step we're on

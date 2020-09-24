@@ -90,13 +90,13 @@ var batchNameLists = [][]string{
 	},
 }
 
-// copyLists does what you think: takes the master batch name lists and copies
+// copyLists does what you think: takes the main batch name lists and copies
 // them to allow for list manipulation without losing the original data
 func copyLists() [][]string {
 	var localLists = make([][]string, len(batchNameLists))
-	for i, masterList := range batchNameLists {
-		localLists[i] = make([]string, len(masterList))
-		copy(localLists[i], masterList)
+	for i, mainList := range batchNameLists {
+		localLists[i] = make([]string, len(mainList))
+		copy(localLists[i], mainList)
 	}
 
 	return localLists

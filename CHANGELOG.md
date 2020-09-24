@@ -25,6 +25,24 @@ Brief description, if necessary
 ### Migration
 -->
 
+## v3.0.0
+
+Language changes: as much as possible, *all* code and settings no longer refer
+to "master" assets, e.g., master PDFs, master backups, etc.  No functional
+changes have been made.  The choice to bump versions to 3.0.0 is due to the
+settings changes not being backward-compatible.
+
+### Migration
+
+- Shut down your NCA web server
+- Wait for your NCA workers to complete *all* jobs, then shut the workers down
+- Remove the NCA "finder" cache, e.g., `rm /tmp/nca/finder.cache`
+- Update your settings file:
+  - `MASTER_PDF_UPLOAD_PATH` is now `PDF_UPLOAD_PATH`
+  - `MASTER_SCAN_UPLOAD_PATH` is now `SCAN_UPLOAD_PATH`
+  - `MASTER_PDF_BACKUP_PATH` is now `ORIGINAL_PDF_BACKUP_PATH`
+- Start NCA workers and web daemon
+
 ## v2.14.0
 
 Major workflow improvements and accessibility fixes.  Minor refactoring.

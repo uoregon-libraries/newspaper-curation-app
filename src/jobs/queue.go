@@ -97,7 +97,7 @@ func QueueSFTPIssueMove(issue *models.Issue, c *config.Config) error {
 	var workflowWIPDir = filepath.Join(c.WorkflowPath, ".wip-"+issue.HumanName)
 	var pageReviewDir = filepath.Join(c.PDFPageReviewPath, issue.HumanName)
 	var pageReviewWIPDir = filepath.Join(c.PDFPageReviewPath, ".wip-"+issue.HumanName)
-	var masterLoc = filepath.Join(c.MasterPDFBackupPath, issue.HumanName)
+	var backupLoc = filepath.Join(c.PDFBackupPath, issue.HumanName)
 
 	return QueueSerial(
 		PrepareIssueJobAdvanced(models.JobTypeSetIssueWS, issue, makeWSArgs(schema.WSAwaitingProcessing)),
@@ -114,12 +114,12 @@ func QueueSFTPIssueMove(issue *models.Issue, c *config.Config) error {
 
 		// This gets a bit weird.  What's in the issue location dir is the original
 		// upload, which we back up since we may need to reprocess the PDFs from
-		// their masters.  Once we've backed up (syncdir + killdir), we move the
+		// these originals.  Once we've backed up (syncdir + killdir), we move the
 		// WIP files back into the proper workflow folder...  which is then
 		// promptly moved out to the page review area.
-		PrepareJobAdvanced(models.JobTypeSyncDir, makeSrcDstArgs(workflowDir, masterLoc)),
+		PrepareJobAdvanced(models.JobTypeSyncDir, makeSrcDstArgs(workflowDir, backupLoc)),
 		PrepareJobAdvanced(models.JobTypeKillDir, makeLocArgs(workflowDir)),
-		PrepareIssueJobAdvanced(models.JobTypeSetIssueMasterLoc, issue, makeLocArgs(masterLoc)),
+		PrepareIssueJobAdvanced(models.JobTypeSetIssueBackupLoc, issue, makeLocArgs(backupLoc)),
 		PrepareJobAdvanced(models.JobTypeRenameDir, makeSrcDstArgs(workflowWIPDir, workflowDir)),
 
 		// Now we move the issue data to the page review area for manual
@@ -155,17 +155,17 @@ func QueueMoveIssueForDerivatives(issue *models.Issue, workflowPath string) erro
 
 // QueueFinalizeIssue creates and queues jobs that get an issue ready for
 // batching.  Currently this means generating the METS XML file and copying
-// master PDFs (if born-digital) into the issue directory.
+// archived PDFs (if born-digital) into the issue directory.
 func QueueFinalizeIssue(issue *models.Issue) error {
-	// Some jobs aren't queued up unless there's a master backup, so we actually
-	// generate a list of jobs programatically insteadc of inline
+	// Some jobs aren't queued up unless there's a backup, so we actually
+	// generate a list of jobs programatically instead of inline
 	var jobs []*models.Job
 	jobs = append(jobs, PrepareIssueJobAdvanced(models.JobTypeBuildMETS, issue, nil))
 
-	if issue.MasterBackupLocation != "" {
-		jobs = append(jobs, PrepareIssueJobAdvanced(models.JobTypeArchiveMasterFiles, issue, nil))
-		jobs = append(jobs, PrepareJobAdvanced(models.JobTypeKillDir, makeLocArgs(issue.MasterBackupLocation)))
-		jobs = append(jobs, PrepareIssueJobAdvanced(models.JobTypeSetIssueMasterLoc, issue, makeLocArgs("")))
+	if issue.BackupLocation != "" {
+		jobs = append(jobs, PrepareIssueJobAdvanced(models.JobTypeArchiveBackups, issue, nil))
+		jobs = append(jobs, PrepareJobAdvanced(models.JobTypeKillDir, makeLocArgs(issue.BackupLocation)))
+		jobs = append(jobs, PrepareIssueJobAdvanced(models.JobTypeSetIssueBackupLoc, issue, makeLocArgs("")))
 	}
 
 	jobs = append(jobs, PrepareIssueJobAdvanced(models.JobTypeSetIssueWS, issue, makeWSArgs(schema.WSReadyForBatching)))
