@@ -295,6 +295,7 @@ func runAllQueues(c *config.Config) {
 			// too much FS stuff hapenning concurrently
 			watchJobTypes(c,
 				models.JobTypeArchiveBackups,
+				models.JobTypeMoveDerivatives,
 				models.JobTypeSyncDir,
 				models.JobTypeKillDir,
 				models.JobTypeWriteBagitManifest,
@@ -319,6 +320,7 @@ func runAllQueues(c *config.Config) {
 				models.JobTypeMakeBatchXML,
 				models.JobTypeRenameDir,
 				models.JobTypeCleanFiles,
+				models.JobTypeWriteActionLog,
 			)
 		},
 		func() {
@@ -329,6 +331,7 @@ func runAllQueues(c *config.Config) {
 				models.JobTypeSetIssueWS,
 				models.JobTypeSetIssueBackupLoc,
 				models.JobTypeSetIssueLocation,
+				models.JobTypeIgnoreIssue,
 				models.JobTypeSetBatchStatus,
 				models.JobTypeSetBatchLocation,
 			)
