@@ -42,6 +42,7 @@ type Config struct {
 	PDFPageReviewPath    string `setting:"PDF_PAGE_REVIEW_PATH" type:"path"`
 	BatchOutputPath      string `setting:"BATCH_OUTPUT_PATH" type:"path"`
 	WorkflowPath         string `setting:"WORKFLOW_PATH" type:"path"`
+	ErroredIssuesPath    string `setting:"ERRORED_ISSUES_PATH" type:"path"`
 	IssueCachePath       string `setting:"ISSUE_CACHE_PATH" type:"path"`
 	AppRoot              string `setting:"APP_ROOT" type:"path"`
 	METSXMLTemplatePath  string `setting:"METS_XML_TEMPLATE_PATH" type:"file"`
