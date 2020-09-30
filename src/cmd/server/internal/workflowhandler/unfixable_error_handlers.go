@@ -8,6 +8,7 @@ import (
 
 	"github.com/uoregon-libraries/newspaper-curation-app/src/cmd/server/internal/responder"
 	"github.com/uoregon-libraries/newspaper-curation-app/src/internal/logger"
+	"github.com/uoregon-libraries/newspaper-curation-app/src/jobs"
 	"github.com/uoregon-libraries/newspaper-curation-app/src/models"
 )
 
@@ -93,5 +94,14 @@ func returnErrorIssueHandler(resp *responder.Responder, i *Issue) {
 
 	resp.Audit("undo-error-issue", fmt.Sprintf("issue %d %s, comment: %q", i.ID, action, comment))
 	http.SetCookie(resp.Writer, &http.Cookie{Name: "Info", Value: "Issue moved back to NCA successfully", Path: "/"})
+	http.Redirect(resp.Writer, resp.Request, basePath, http.StatusFound)
+}
+
+func removeUnfixableIssueHandler(resp *responder.Responder, i *Issue) {
+	var comment = resp.Request.FormValue("comment")
+	jobs.QueueRemoveErroredIssue(i.Issue, conf.ErroredIssuesPath)
+
+	resp.Audit("remove-error-issue", fmt.Sprintf("issue %d, comment: %q", i.ID, comment))
+	http.SetCookie(resp.Writer, &http.Cookie{Name: "Info", Value: "Issue is now being moved to the error folder", Path: "/"})
 	http.Redirect(resp.Writer, resp.Request, basePath, http.StatusFound)
 }
