@@ -99,6 +99,7 @@ func returnErrorIssueHandler(resp *responder.Responder, i *Issue) {
 
 func removeUnfixableIssueHandler(resp *responder.Responder, i *Issue) {
 	var comment = resp.Request.FormValue("comment")
+	var err = i.Issue.saveWithAction(ac, managerID, msg)
 	jobs.QueueRemoveErroredIssue(i.Issue, conf.ErroredIssuesPath)
 
 	resp.Audit("remove-error-issue", fmt.Sprintf("issue %d, comment: %q", i.ID, comment))
