@@ -1,13 +1,14 @@
 package jobs
 
 import (
-	"bytes"
 	"fmt"
 	"io/ioutil"
 	"os"
 	"path/filepath"
+	"strings"
 
 	"github.com/uoregon-libraries/gopkg/fileutil"
+	"github.com/uoregon-libraries/gopkg/wordutils"
 	"github.com/uoregon-libraries/newspaper-curation-app/src/config"
 )
 
@@ -20,16 +21,31 @@ type WriteActionLog struct {
 // Process iterates over all workflow actions and writes them out to a text
 // buffer, which is then written to a file in the issue directory
 func (j *WriteActionLog) Process(*config.Config) bool {
+	var errPath = filepath.Join(j.DBIssue.Location, "errors.txt")
+	var f = fileutil.NewSafeFile(errPath)
+
 	var list = j.DBIssue.WorkflowActions()
-	var output = new(bytes.Buffer)
 	for _, a := range list {
-		fmt.Fprintln(output, a.ActionType)
+		var lines = strings.Split(wordutils.Wrap(a.Message, 80), "\n")
+		for i, line := range lines {
+			lines[i] = "	" + line
+		}
+		var _, err = fmt.Fprintf(f, "<%s>\n%s\n\n", a.Author().Login, strings.Join(lines, "\n"))
+		if err != nil {
+			j.Logger.Errorf("Unable to write errors to %q: %s", errPath, err)
+			f.Cancel()
+			return false
+		}
 	}
 
-	// TODO: Write to file
-	j.Logger.Errorf("WriteActionLog is not yet implemented")
+	var err = f.Close()
+	if err != nil {
+		j.Logger.Errorf("Unable to write errors to %q: %s", errPath, err)
+		return false
+	}
 
-	return false
+	j.Logger.Infof("Errors written to %q", errPath, err)
+	return true
 }
 
 // MoveDerivatives tries to get all non-primary content moved from an issue
