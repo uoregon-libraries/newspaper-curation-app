@@ -25,6 +25,7 @@ const (
 	ActionTypeReportUnfixableError ActionType = "report-unfixable-error"
 	ActionTypeReturnCurate         ActionType = "return-metadata-entry"
 	ActionTypeReturnReview         ActionType = "return-metadata-review"
+	ActionTypeRemoveErrorIssue     ActionType = "remove-error-issue"
 )
 
 // Describe gives a human-readable explanation of what happened when a given
@@ -45,6 +46,8 @@ func (at ActionType) Describe() string {
 		return "returned the issue for metadata entry"
 	case ActionTypeReturnReview:
 		return "returned the issue for metadata review"
+	case ActionTypeRemoveErrorIssue:
+		return "moved the issue from NCA to the error folder"
 	default:
 		return string(at)
 	}

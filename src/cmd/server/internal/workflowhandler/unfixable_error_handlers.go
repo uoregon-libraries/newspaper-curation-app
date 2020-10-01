@@ -98,9 +98,26 @@ func returnErrorIssueHandler(resp *responder.Responder, i *Issue) {
 }
 
 func removeUnfixableIssueHandler(resp *responder.Responder, i *Issue) {
+	var gotErr = func() {
+		resp.Vars.Alert = template.HTML("Error trying to remove this issue from NCA; try again or contact support")
+		resp.Writer.WriteHeader(http.StatusInternalServerError)
+		resp.Render(responder.Empty)
+	}
+
 	var comment = resp.Request.FormValue("comment")
-	var err = i.Issue.saveWithAction(ac, managerID, msg)
-	jobs.QueueRemoveErroredIssue(i.Issue, conf.ErroredIssuesPath)
+	var err = i.Issue.PrepForRemoval(resp.Vars.User.ID, comment)
+	if err != nil {
+		logger.Errorf("Unable to save action for errored issue removal (id %d): %s", i.ID, err)
+		gotErr()
+		return
+	}
+
+	err = jobs.QueueRemoveErroredIssue(i.Issue, conf.ErroredIssuesPath)
+	if err != nil {
+		logger.Errorf("Unable to queue errored issue for removal (id %d): %s", i.ID, err)
+		gotErr()
+		return
+	}
 
 	resp.Audit("remove-error-issue", fmt.Sprintf("issue %d, comment: %q", i.ID, comment))
 	http.SetCookie(resp.Writer, &http.Cookie{Name: "Info", Value: "Issue is now being moved to the error folder", Path: "/"})

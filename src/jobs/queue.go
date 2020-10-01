@@ -212,11 +212,10 @@ func QueueRemoveErroredIssue(issue *models.Issue, erroredIssueRoot string) error
 	// This is another set of jobs that has conditional steps, so we build it up
 	var jobs []*models.Job
 
-	// The first steps are unconditional: set the issue to "awaiting processing",
-	// move it to the WIP location, and move derivative images to the correct
-	// subdir so the wip/content dir consists solely of primary files.
+	// The first steps are unconditional: move the issue to the WIP location,
+	// move derivative images to the correct subdir so the wip/content dir
+	// consists solely of primary files, and write out the action log file.
 	jobs = append(jobs,
-		PrepareIssueJobAdvanced(models.JobTypeSetIssueWS, issue, makeWSArgs(schema.WSAwaitingProcessing)),
 		PrepareJobAdvanced(models.JobTypeSyncDir, makeSrcDstArgs(issue.Location, contentDir)),
 		PrepareJobAdvanced(models.JobTypeKillDir, makeLocArgs(issue.Location)),
 		PrepareIssueJobAdvanced(models.JobTypeSetIssueLocation, issue, makeLocArgs(contentDir)),
