@@ -44,7 +44,7 @@ func (j *WriteActionLog) Process(*config.Config) bool {
 		return false
 	}
 
-	j.Logger.Infof("Errors written to %q", errPath, err)
+	j.Logger.Infof("Errors written to %q", errPath)
 	return true
 }
 
