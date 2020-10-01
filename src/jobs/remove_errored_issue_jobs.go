@@ -21,18 +21,21 @@ type WriteActionLog struct {
 // Process iterates over all workflow actions and writes them out to a text
 // buffer, which is then written to a file in the issue directory
 func (j *WriteActionLog) Process(*config.Config) bool {
-	var errPath = filepath.Join(j.DBIssue.Location, "errors.txt")
+	var errPath = filepath.Join(j.DBIssue.Location, "actions.txt")
 	var f = fileutil.NewSafeFile(errPath)
 
 	var list = j.DBIssue.WorkflowActions()
 	for _, a := range list {
-		var lines = strings.Split(wordutils.Wrap(a.Message, 80), "\n")
-		for i, line := range lines {
-			lines[i] = "	" + line
+		var out = fmt.Sprintf("<%s> %s on %s", a.Author().Login, a.Type().Describe(), a.CreatedAt.Format("on Jan 2, 2006 at 3:04pm"))
+
+		if a.Message != "" {
+			var msg = wrapMessage(a.Message)
+			out += ":\n\n" + msg
 		}
-		var _, err = fmt.Fprintf(f, "<%s>\n%s\n\n", a.Author().Login, strings.Join(lines, "\n"))
+
+		var _, err = fmt.Fprint(f, out+"\n\n")
 		if err != nil {
-			j.Logger.Errorf("Unable to write errors to %q: %s", errPath, err)
+			j.Logger.Errorf("Unable to write action log to %q: %s", errPath, err)
 			f.Cancel()
 			return false
 		}
@@ -40,12 +43,30 @@ func (j *WriteActionLog) Process(*config.Config) bool {
 
 	var err = f.Close()
 	if err != nil {
-		j.Logger.Errorf("Unable to write errors to %q: %s", errPath, err)
+		j.Logger.Errorf("Unable to write action log to %q: %s", errPath, err)
 		return false
 	}
 
-	j.Logger.Infof("Errors written to %q", errPath)
+	j.Logger.Infof("Action log written to %q", errPath)
 	return true
+}
+
+func wrapMessage(msg string) string {
+	var full = strings.Replace(msg, "\r\n", "\n", -1)
+	full = strings.Replace(full, "\r", "\n", -1)
+	var lines = strings.Split(full, "\n")
+	for i, line := range lines {
+		lines[i] = wrapIndent(line)
+	}
+	return strings.Join(lines, "\n")
+}
+
+func wrapIndent(text string) string {
+	var lines = strings.Split(wordutils.Wrap(text, 80), "\n")
+	for i, line := range lines {
+		lines[i] = "    " + line
+	}
+	return strings.Join(lines, "\n")
 }
 
 // MoveDerivatives tries to get all non-primary content moved from an issue

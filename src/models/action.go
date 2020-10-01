@@ -108,6 +108,11 @@ func (a *Action) Author() *User {
 	return a.user
 }
 
+// Type returns a converted ActionType rather than the stringified version
+func (a *Action) Type() ActionType {
+	return ActionType(a.ActionType)
+}
+
 // Save creates or updates the Action in the actions table
 func (a *Action) Save() error {
 	var op = dbi.DB.Operation()
