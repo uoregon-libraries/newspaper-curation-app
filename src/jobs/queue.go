@@ -2,6 +2,7 @@ package jobs
 
 import (
 	"path/filepath"
+	"time"
 
 	"github.com/uoregon-libraries/newspaper-curation-app/src/config"
 	"github.com/uoregon-libraries/newspaper-curation-app/src/dbi"
@@ -190,4 +191,54 @@ func QueueMakeBatch(batch *models.Batch, batchOutputPath string) error {
 		PrepareBatchJobAdvanced(models.JobTypeSetBatchStatus, batch, makeBSArgs(models.BatchStatusQCReady)),
 		PrepareBatchJobAdvanced(models.JobTypeWriteBagitManifest, batch, nil),
 	)
+}
+
+// QueueRemoveErroredIssue builds jobs necessary to take an issue permanently
+// out of NCA's workflow:
+//
+// - The issue is flagged in the database as no longer being in NCA
+// - The issue directory is copied to the error location and then the original is removed
+// - The original uploads, if relevant, are moved into the error directory
+// - The derivatives are put under a sibling sub-dir from the primary files
+func QueueRemoveErroredIssue(issue *models.Issue, erroredIssueRoot string) error {
+	var dt = time.Now()
+	var dateSubdir = dt.Format("2006-01")
+	var rootDir = filepath.Join(erroredIssueRoot, dateSubdir)
+	var wipDir = filepath.Join(rootDir, ".wip-"+issue.HumanName)
+	var finalDir = filepath.Join(rootDir, issue.HumanName)
+	var contentDir = filepath.Join(wipDir, "content")
+	var derivDir = filepath.Join(wipDir, "derivatives")
+
+	// This is another set of jobs that has conditional steps, so we build it up
+	var jobs []*models.Job
+
+	// The first steps are unconditional: move the issue to the WIP location,
+	// move derivative images to the correct subdir so the wip/content dir
+	// consists solely of primary files, and write out the action log file.
+	jobs = append(jobs,
+		PrepareJobAdvanced(models.JobTypeSyncDir, makeSrcDstArgs(issue.Location, contentDir)),
+		PrepareJobAdvanced(models.JobTypeKillDir, makeLocArgs(issue.Location)),
+		PrepareIssueJobAdvanced(models.JobTypeSetIssueLocation, issue, makeLocArgs(contentDir)),
+		PrepareIssueJobAdvanced(models.JobTypeMoveDerivatives, issue, makeLocArgs(derivDir)),
+		PrepareIssueJobAdvanced(models.JobTypeWriteActionLog, issue, nil),
+	)
+
+	// If we have a backup, archive it and remove its files
+	if issue.BackupLocation != "" {
+		jobs = append(jobs,
+			PrepareIssueJobAdvanced(models.JobTypeArchiveBackups, issue, nil),
+			PrepareJobAdvanced(models.JobTypeKillDir, makeLocArgs(issue.BackupLocation)),
+			PrepareIssueJobAdvanced(models.JobTypeSetIssueBackupLoc, issue, makeLocArgs("")),
+		)
+	}
+
+	// Move to the final location and update metadata
+	jobs = append(jobs,
+		PrepareJobAdvanced(models.JobTypeRenameDir, makeSrcDstArgs(wipDir, finalDir)),
+		PrepareIssueJobAdvanced(models.JobTypeIgnoreIssue, issue, nil),
+		PrepareIssueJobAdvanced(models.JobTypeSetIssueLocation, issue, makeLocArgs("")),
+		PrepareIssueJobAdvanced(models.JobTypeSetIssueWS, issue, makeWSArgs(schema.WSUnfixableMetadataError)),
+	)
+
+	return QueueSerial(jobs...)
 }

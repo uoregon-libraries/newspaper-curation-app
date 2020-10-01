@@ -15,10 +15,14 @@ func DBJobToProcessor(dbJob *models.Job) Processor {
 		return &SetIssueBackupLoc{IssueJob: NewIssueJob(dbJob)}
 	case models.JobTypeSetIssueLocation:
 		return &SetIssueLocation{IssueJob: NewIssueJob(dbJob)}
+	case models.JobTypeIgnoreIssue:
+		return &IgnoreIssue{IssueJob: NewIssueJob(dbJob)}
 	case models.JobTypePageSplit:
 		return &PageSplit{IssueJob: NewIssueJob(dbJob)}
 	case models.JobTypeMakeDerivatives:
 		return &MakeDerivatives{IssueJob: NewIssueJob(dbJob)}
+	case models.JobTypeMoveDerivatives:
+		return &MoveDerivatives{IssueJob: NewIssueJob(dbJob)}
 	case models.JobTypeBuildMETS:
 		return &BuildMETS{IssueJob: NewIssueJob(dbJob)}
 	case models.JobTypeArchiveBackups:
@@ -31,6 +35,8 @@ func DBJobToProcessor(dbJob *models.Job) Processor {
 		return &CreateBatchStructure{BatchJob: NewBatchJob(dbJob)}
 	case models.JobTypeMakeBatchXML:
 		return &MakeBatchXML{BatchJob: NewBatchJob(dbJob)}
+	case models.JobTypeWriteActionLog:
+		return &WriteActionLog{IssueJob: NewIssueJob(dbJob)}
 	case models.JobTypeWriteBagitManifest:
 		return &WriteBagitManifest{BatchJob: NewBatchJob(dbJob)}
 	case models.JobTypeSyncDir:

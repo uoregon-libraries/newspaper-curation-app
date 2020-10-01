@@ -91,6 +91,7 @@ func Setup(r *mux.Router, webPath string, c *config.Config, w *issuewatcher.Watc
 	s4.Path("/return").Handler(handle(canReviewUnfixable(viewReturnUnfixableFormHandler)))
 	s4.Path("/return/save").Methods("POST").Handler(handle(canReviewUnfixable(returnErrorIssueHandler)))
 	s4.Path("/remove").Handler(handle(canReviewUnfixable(viewRemoveUnfixableFormHandler)))
+	s4.Path("/remove/confirm").Methods("POST").Handler(handle(canReviewUnfixable(removeUnfixableIssueHandler)))
 
 	Layout = responder.Layout.Clone()
 	Layout.Funcs(tmpl.FuncMap{"Can": Can})

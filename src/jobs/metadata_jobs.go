@@ -60,6 +60,23 @@ func (j *SetIssueLocation) Process(*config.Config) bool {
 	return true
 }
 
+// IgnoreIssue sets an issue's "ignored" field to true
+type IgnoreIssue struct {
+	*IssueJob
+}
+
+// Process sets the ignored field to true and saves the issue
+func (j *IgnoreIssue) Process(*config.Config) bool {
+	j.DBIssue.Ignored = true
+	var err = j.DBIssue.Save()
+	if err != nil {
+		j.Logger.Errorf("Error setting issue.ignored for id %d: %s", j.DBIssue.ID, err)
+		return false
+	}
+
+	return true
+}
+
 // SetBatchStatus is another simple job which... wait for it... sets the status
 // of the job's batch!
 type SetBatchStatus struct {

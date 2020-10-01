@@ -25,7 +25,33 @@ const (
 	ActionTypeReportUnfixableError ActionType = "report-unfixable-error"
 	ActionTypeReturnCurate         ActionType = "return-metadata-entry"
 	ActionTypeReturnReview         ActionType = "return-metadata-review"
+	ActionTypeRemoveErrorIssue     ActionType = "remove-error-issue"
 )
+
+// Describe gives a human-readable explanation of what happened when a given
+// action type was applied
+func (at ActionType) Describe() string {
+	switch at {
+	case ActionTypeComment:
+		return "wrote a comment"
+	case ActionTypeMetadataRejection:
+		return "rejected the issue's metadata"
+	case ActionTypeMetadataApproval:
+		return "approved the issue's metadata"
+	case ActionTypeMetadataEntry:
+		return "added metadata and pushed the issue to review"
+	case ActionTypeReportUnfixableError:
+		return "reported an unfixable error"
+	case ActionTypeReturnCurate:
+		return "returned the issue for metadata entry"
+	case ActionTypeReturnReview:
+		return "returned the issue for metadata review"
+	case ActionTypeRemoveErrorIssue:
+		return "moved the issue from NCA to the error folder"
+	default:
+		return string(at)
+	}
+}
 
 // Action holds onto information about an object (issues for now) so
 // communication can be centralized in NCA and be easily visible when, for
@@ -80,6 +106,11 @@ func (a *Action) Author() *User {
 		a.user = FindUserByID(a.UserID)
 	}
 	return a.user
+}
+
+// Type returns a converted ActionType rather than the stringified version
+func (a *Action) Type() ActionType {
+	return ActionType(a.ActionType)
 }
 
 // Save creates or updates the Action in the actions table

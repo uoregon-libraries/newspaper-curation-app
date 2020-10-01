@@ -24,14 +24,17 @@ const (
 	JobTypeSetIssueWS           JobType = "set_issue_workflow_step"
 	JobTypeSetIssueBackupLoc    JobType = "set_issue_original_backup_location"
 	JobTypeSetIssueLocation     JobType = "set_issue_location"
+	JobTypeIgnoreIssue          JobType = "ignore_issue"
 	JobTypeSetBatchStatus       JobType = "set_batch_status"
 	JobTypePageSplit            JobType = "page_split"
 	JobTypeMakeDerivatives      JobType = "make_derivatives"
+	JobTypeMoveDerivatives      JobType = "move_derivatives"
 	JobTypeBuildMETS            JobType = "build_mets"
 	JobTypeArchiveBackups       JobType = "archive_backups"
 	JobTypeSetBatchLocation     JobType = "set_batch_location"
 	JobTypeCreateBatchStructure JobType = "create_batch_structure"
 	JobTypeMakeBatchXML         JobType = "make_batch_xml"
+	JobTypeWriteActionLog       JobType = "write_action_log"
 	JobTypeWriteBagitManifest   JobType = "write_bagit_manifest"
 	JobTypeSyncDir              JobType = "sync_directory"
 	JobTypeKillDir              JobType = "delete_directory"
@@ -45,14 +48,17 @@ var ValidJobTypes = []JobType{
 	JobTypeSetIssueWS,
 	JobTypeSetIssueBackupLoc,
 	JobTypeSetIssueLocation,
+	JobTypeIgnoreIssue,
 	JobTypeSetBatchStatus,
 	JobTypePageSplit,
 	JobTypeMakeDerivatives,
+	JobTypeMoveDerivatives,
 	JobTypeBuildMETS,
 	JobTypeArchiveBackups,
 	JobTypeSetBatchLocation,
 	JobTypeCreateBatchStructure,
 	JobTypeMakeBatchXML,
+	JobTypeWriteActionLog,
 	JobTypeWriteBagitManifest,
 	JobTypeSyncDir,
 	JobTypeKillDir,

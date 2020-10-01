@@ -55,24 +55,7 @@ func dict(values ...interface{}) (map[string]interface{}, error) {
 // _rejected the issue metadata_ on Jan 1, 2002 at 3:45pm" or "jdepp _wrote a
 // comment_"
 func actionVerb(at string) string {
-	switch models.ActionType(at) {
-	case models.ActionTypeMetadataEntry:
-		return "added metadata and pushed the issue to review"
-	case models.ActionTypeMetadataApproval:
-		return "approved the issue's metadata"
-	case models.ActionTypeMetadataRejection:
-		return "rejected the issue's metadata"
-	case models.ActionTypeReturnCurate:
-		return "returned the issue for metadata entry"
-	case models.ActionTypeReturnReview:
-		return "returned the issue for metadata review"
-	case models.ActionTypeComment:
-		return "wrote a comment"
-	case models.ActionTypeReportUnfixableError:
-		return "reported an unfixable error"
-	default:
-		return string(at)
-	}
+	return models.ActionType(at).Describe()
 }
 
 // InitRootTemplate sets up pre-parsed template data in Root
