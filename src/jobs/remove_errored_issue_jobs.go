@@ -56,6 +56,9 @@ type MoveDerivatives struct {
 	dest string
 }
 
+// Process finds all derivative files, and moves them from the issue location
+// to the destination-arg location.  Derivatives, in this process, are defined
+// as anything with ".xml" or ".jp2" as its extension.
 func (j *MoveDerivatives) Process(*config.Config) bool {
 	var src = j.DBIssue.Location
 	var dst = j.db.Args[locArg]
