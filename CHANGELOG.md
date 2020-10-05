@@ -25,6 +25,29 @@ Brief description, if necessary
 ### Migration
 -->
 
+## v3.1.0
+
+Error issue removal implemented
+
+### Fixed
+
+- Minor tweaks to incorrect or confusing error messages
+
+### Added
+
+- Issues with unfixable errors that cannot be pushed back into NCA can now be
+  moved to an external location designated in the new setting,
+  `ERRORED_ISSUES_PATH`.
+- Reimplementation of the "force-rerun" action for the run-jobs tool.  This
+  time it's built in such a way that you can't accidentally run it - you have
+  to look at the code to understand how to make it go, and if you aren't
+  comfortable doing that, there's a good chance you shouldn't be using it.
+
+### Migration
+
+- Make sure you set `ERRORED_ISSUES_PATH`, then just stop the old server and
+  deploy the new one.
+
 ## v3.0.0
 
 Language changes: as much as possible, *all* code and settings no longer refer
