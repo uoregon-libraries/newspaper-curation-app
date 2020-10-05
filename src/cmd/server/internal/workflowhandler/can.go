@@ -191,7 +191,7 @@ func (v *CanValidation) ReviewUnfixable(i *Issue) bool {
 	v.Context = fmt.Sprintf("user %q trying to manage unfixable issue %d", v.User.Login, i.ID)
 
 	if !v.User.PermittedTo(privilege.ReviewUnfixableIssues) {
-		v.Error = errors.New("insufficient privileges (cannot enter issue metadata)")
+		v.Error = errors.New("insufficient privileges (cannot review unfixable issues)")
 		v.Status = http.StatusForbidden
 		return false
 	}

@@ -2,11 +2,6 @@
 
 <h2>Not implemented</h2>
 
-This feature is not yet implemented!
-
-<a href="{{.Data.Issue.Path "/errors/view"}}" class="btn btn-default">Return to error view</a>
-
-<!--
 <h2>Remove Issue</h2>
 
 <div>
@@ -15,7 +10,7 @@ This feature is not yet implemented!
   page if you got here by mistake.
 </div>
 
-<form id="metadata-form" class="form-horizontal" role="form" method="POST" action="{{"errors/save"|.Data.Issue.Path}}">
+<form id="metadata-form" class="form-horizontal" role="form" method="POST" action="{{"errors/remove/confirm"|.Data.Issue.Path}}">
   <div class="form-group">
     <label class="col-md-2 control-label" for="comment">Comments (optional)</label>
     <div class="col-md-10">
@@ -52,7 +47,6 @@ For reference, here's the issue again:
 <hr />
 <h3>Metadata</h3>
 {{template "issue_metadata_view" .Data.Issue}}
--->
 
 {{end}}
 

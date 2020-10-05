@@ -103,10 +103,10 @@ func usageFail(format string, args ...interface{}) {
 	wrapBullet(`* watch-scans: Watches for issues in the "scans" folder which are ` +
 		"ready to be moved for metadata entry.  No job is associated with this action, " +
 		"hence it must run on its own, and should only have one copy running at a time.")
-	wrapBullet("* force-rerun <job id> [<job id>...]: Creates new jobs by cloning the " +
-		"given jobs and running the new clones.  Extra metadata is removed to avoid " +
-		"as many side-effects as possible.  This is NOT a good idea unless you know " +
-		"exactly what the job(s) you're cloning can affect.")
+	wrapBullet("* force-rerun <job id>: Creates a new job by cloning the " +
+		"given job and running the new clone.  This is NOT a good idea unless you know " +
+		"exactly what the job(s) you're cloning can affect.  This is wonderful for " +
+		"testing, but should almost never be run on a production system.")
 
 	fmt.Fprintln(os.Stderr)
 	wrap(fmt.Sprintf("Valid queue names: %s", strings.Join(validQueueList, ", ")))
@@ -177,6 +177,8 @@ func main() {
 		watchPageReview(c)
 	case "watchall":
 		runAllQueues(c)
+	case "force-rerun":
+		forceRerun(args)
 	default:
 		usageFail("Error: invalid action")
 	}
@@ -225,6 +227,47 @@ func retryJob(idString string) {
 	var _, err = dj.Requeue()
 	if err != nil {
 		logger.Errorf("Unable to requeue job %d: %s", dj.ID, err)
+	}
+}
+
+func forceRerun(ids []string) {
+	if len(ids) == 0 {
+		usageFail("Error: the requeue action requires a job id")
+	}
+
+	if ids[0] != "we'll do it live" {
+		logger.Errorf(`For safety, you must run the "force-rerun" action with an extra hidden flag.  If you're not sure how to make this happen, you shouldn't be using this tool.  Sorry.`)
+		os.Exit(1)
+	}
+
+	if len(ids) != 2 {
+		usageFail("You must specify exactly one job id after the hidden flag")
+	}
+
+	rerunJob(ids[1])
+}
+
+func rerunJob(idString string) {
+	var j = findJob(idString)
+	if j == nil {
+		return
+	}
+
+	var dj = j.DBJob()
+	logger.Infof("Rerunning job %d", dj.ID)
+
+	// Make a shallow clone of the job, strip its ID, set it to pending so it
+	// runs soon, remove references to the next job to queue, but keep
+	// *everything else*.  This can cause massive problems if done wrong.  This
+	// should never be done live.
+	var temp = *dj
+	var clone = &temp
+	clone.ID = 0
+	clone.Status = string(models.JobStatusPending)
+	clone.QueueJobID = 0
+	var err = clone.Save()
+	if err != nil {
+		logger.Errorf("Unable to rerun job %d: %s", dj.ID, err)
 	}
 }
 
@@ -295,6 +338,7 @@ func runAllQueues(c *config.Config) {
 			// too much FS stuff hapenning concurrently
 			watchJobTypes(c,
 				models.JobTypeArchiveBackups,
+				models.JobTypeMoveDerivatives,
 				models.JobTypeSyncDir,
 				models.JobTypeKillDir,
 				models.JobTypeWriteBagitManifest,
@@ -319,6 +363,7 @@ func runAllQueues(c *config.Config) {
 				models.JobTypeMakeBatchXML,
 				models.JobTypeRenameDir,
 				models.JobTypeCleanFiles,
+				models.JobTypeWriteActionLog,
 			)
 		},
 		func() {
@@ -329,6 +374,7 @@ func runAllQueues(c *config.Config) {
 				models.JobTypeSetIssueWS,
 				models.JobTypeSetIssueBackupLoc,
 				models.JobTypeSetIssueLocation,
+				models.JobTypeIgnoreIssue,
 				models.JobTypeSetBatchStatus,
 				models.JobTypeSetBatchLocation,
 			)

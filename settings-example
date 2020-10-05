@@ -89,6 +89,12 @@ BATCH_OUTPUT_PATH="/mnt/news/outgoing"
 # modification, and all metadata will live in the database.
 WORKFLOW_PATH="/mnt/news/workflow"
 
+# This is where you want issues to be dropped off when they're reported as
+# unfixable and then an "Issue Manager" user chooses to remove them permanently
+# from NCA.  This location should be someplace curators / reviewers can access
+# so rescanning or other manual fixes can take place.
+ERRORED_ISSUES_PATH="/mnt/news/errors"
+
 # This is where cached files are stored for the issue data.  This is extremely
 # important for issues which live on the live website, as those are very
 # expensive to pull each time a given process is run.

@@ -341,6 +341,15 @@ func (i *Issue) ReturnForReview(managerID, workflowOwnerID int, comment string) 
 	return i.returnFor(schema.WSAwaitingMetadataReview, ActionTypeReturnReview, managerID, workflowOwnerID, comment)
 }
 
+// PrepForRemoval sets up the issue's metadata such that nothing else will
+// try to process it in any way as it waits for a job (or even a manual action)
+// to remove it
+func (i *Issue) PrepForRemoval(managerID int, message string) error {
+	i.unclaim()
+	i.WorkflowStep = schema.WSAwaitingProcessing
+	return i.saveWithAction(ActionTypeRemoveErrorIssue, managerID, message)
+}
+
 func (i *Issue) saveWithAction(action ActionType, userID int, message string) error {
 	var op = dbi.DB.Operation()
 	op.Dbg = dbi.Debug

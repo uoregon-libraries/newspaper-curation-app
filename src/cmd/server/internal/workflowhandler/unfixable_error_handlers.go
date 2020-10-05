@@ -8,6 +8,7 @@ import (
 
 	"github.com/uoregon-libraries/newspaper-curation-app/src/cmd/server/internal/responder"
 	"github.com/uoregon-libraries/newspaper-curation-app/src/internal/logger"
+	"github.com/uoregon-libraries/newspaper-curation-app/src/jobs"
 	"github.com/uoregon-libraries/newspaper-curation-app/src/models"
 )
 
@@ -93,5 +94,32 @@ func returnErrorIssueHandler(resp *responder.Responder, i *Issue) {
 
 	resp.Audit("undo-error-issue", fmt.Sprintf("issue %d %s, comment: %q", i.ID, action, comment))
 	http.SetCookie(resp.Writer, &http.Cookie{Name: "Info", Value: "Issue moved back to NCA successfully", Path: "/"})
+	http.Redirect(resp.Writer, resp.Request, basePath, http.StatusFound)
+}
+
+func removeUnfixableIssueHandler(resp *responder.Responder, i *Issue) {
+	var gotErr = func() {
+		resp.Vars.Alert = template.HTML("Error trying to remove this issue from NCA; try again or contact support")
+		resp.Writer.WriteHeader(http.StatusInternalServerError)
+		resp.Render(responder.Empty)
+	}
+
+	var comment = resp.Request.FormValue("comment")
+	var err = i.Issue.PrepForRemoval(resp.Vars.User.ID, comment)
+	if err != nil {
+		logger.Errorf("Unable to save action for errored issue removal (id %d): %s", i.ID, err)
+		gotErr()
+		return
+	}
+
+	err = jobs.QueueRemoveErroredIssue(i.Issue, conf.ErroredIssuesPath)
+	if err != nil {
+		logger.Errorf("Unable to queue errored issue for removal (id %d): %s", i.ID, err)
+		gotErr()
+		return
+	}
+
+	resp.Audit("remove-error-issue", fmt.Sprintf("issue %d, comment: %q", i.ID, comment))
+	http.SetCookie(resp.Writer, &http.Cookie{Name: "Info", Value: "Issue is now being moved to the error folder", Path: "/"})
 	http.Redirect(resp.Writer, resp.Request, basePath, http.StatusFound)
 }
