@@ -25,6 +25,22 @@ Brief description, if necessary
 ### Migration
 -->
 
+## vX.Y.Z
+
+TODO: fill this in!
+
+### Fixed
+
+- Removed "not implemented" from a page that is most definitely implemented
+
+### Added
+
+### Changed
+
+### Removed
+
+### Migration
+
 ## v3.1.0
 
 Error issue removal implemented
