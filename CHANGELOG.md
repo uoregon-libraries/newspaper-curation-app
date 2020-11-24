@@ -35,9 +35,19 @@ TODO: fill this in!
 
 ### Added
 
+- Optional local-dev scripts for advanced users
+
 ### Changed
 
 ### Removed
+
+- Several minor and unused binaries were removed to reduce maintenance and
+  clean up the compilation process a bit:
+  - `makejp2`, which was sort of a one-off to test that the JP2 transforms worked
+  - `pdf-to-alto-xml`, a standalone tranform runner for making Alto XML out of a PDF file
+  - `print-live-lccns`, basically a weird one-off for some validation which
+    probably never should have gotten into this repo
+  - `report-errors`, which read the issue cache to report all known errors
 
 ### Migration
 
