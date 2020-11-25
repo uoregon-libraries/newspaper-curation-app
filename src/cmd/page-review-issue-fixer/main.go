@@ -2,6 +2,7 @@ package main
 
 import (
 	"fmt"
+	"io/ioutil"
 	"regexp"
 	"strings"
 
@@ -17,7 +18,8 @@ import (
 // Command-line options
 type _opts struct {
 	cli.BaseOptions
-	Keys []string `long:"key" description:"Issue(s) to remove"`
+	Keys    []string `long:"key" description:"Issue(s) to remove"`
+	KeyFile string   `long:"key-file" description:"File with one key per line"`
 }
 
 var opts _opts
@@ -44,8 +46,25 @@ func getConfig() {
 		logger.Fatalf("Error trying to connect to database: %s", err)
 	}
 
-	if len(opts.Keys) == 0 {
-		c.UsageFail("Error: one or more keys must be specified")
+	if len(opts.Keys) == 0 && opts.KeyFile == "" {
+		c.UsageFail("Error: one or more keys, or a key file, must be specified")
+	}
+	if len(opts.Keys) > 0 && opts.KeyFile != "" {
+		c.UsageFail("Error: you must specify keys or a key file, not both")
+	}
+
+	if opts.KeyFile != "" {
+		var data, err = ioutil.ReadFile(opts.KeyFile)
+		if err != nil {
+			logger.Fatalf("Unable to read key file %q: %s", opts.KeyFile, err)
+		}
+
+		for _, k := range strings.Split(string(data), "\n") {
+			var key = strings.TrimSpace(k)
+			if key != "" {
+				opts.Keys = append(opts.Keys, key)
+			}
+		}
 	}
 }
 
