@@ -25,9 +25,9 @@ Brief description, if necessary
 ### Migration
 -->
 
-## vX.Y.Z
+## v3.2.0
 
-TODO: fill this in!
+Bye to old tools, hello to new tools, and small fixes
 
 ### Fixed
 
@@ -40,6 +40,9 @@ TODO: fill this in!
 
 ### Changed
 
+- There's no longer a "develop" branch, as the project "team" isn't big enough
+  to warrant a complex branching setup
+
 ### Removed
 
 - Several minor and unused binaries were removed to reduce maintenance and
@@ -49,8 +52,6 @@ TODO: fill this in!
   - `print-live-lccns`, basically a weird one-off for some validation which
     probably never should have gotten into this repo
   - `report-errors`, which read the issue cache to report all known errors
-
-### Migration
 
 ## v3.1.0
 
