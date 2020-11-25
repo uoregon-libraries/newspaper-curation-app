@@ -35,6 +35,7 @@ TODO: fill this in!
 
 ### Added
 
+- New command-line tool to remove issues from the "page review" location safely
 - Optional local-dev scripts for advanced users
 
 ### Changed
