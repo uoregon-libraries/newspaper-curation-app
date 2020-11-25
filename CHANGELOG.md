@@ -32,6 +32,7 @@ Bye to old tools, hello to new tools, and small fixes
 ### Fixed
 
 - Removed "not implemented" from a page that is most definitely implemented
+- Some wiki pages were rewritten to match reality more closely
 
 ### Added
 
