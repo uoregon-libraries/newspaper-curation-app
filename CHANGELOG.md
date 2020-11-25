@@ -25,6 +25,33 @@ Brief description, if necessary
 ### Migration
 -->
 
+## vX.Y.Z
+
+TODO: fill this in!
+
+### Fixed
+
+- Removed "not implemented" from a page that is most definitely implemented
+
+### Added
+
+- New command-line tool to remove issues from the "page review" location safely
+- Optional local-dev scripts for advanced users
+
+### Changed
+
+### Removed
+
+- Several minor and unused binaries were removed to reduce maintenance and
+  clean up the compilation process a bit:
+  - `makejp2`, which was sort of a one-off to test that the JP2 transforms worked
+  - `pdf-to-alto-xml`, a standalone tranform runner for making Alto XML out of a PDF file
+  - `print-live-lccns`, basically a weird one-off for some validation which
+    probably never should have gotten into this repo
+  - `report-errors`, which read the issue cache to report all known errors
+
+### Migration
+
 ## v3.1.0
 
 Error issue removal implemented
