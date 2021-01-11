@@ -42,7 +42,7 @@ func homeHandler(resp *responder.Responder, i *Issue) {
 		searchIssueError(resp)
 		return
 	}
-	resp.Vars.Data["PendingMetadataIssues"] = wrapDBIssues(issues)
+	resp.Vars.Data["PendingMetadataIssues"] = wrapClaimableDBIssues(resp.Vars.User, issues)
 
 	// Get issues needing metadata review
 	issues, err = models.FindAvailableIssuesByWorkflowStep(schema.WSAwaitingMetadataReview)
@@ -51,7 +51,7 @@ func homeHandler(resp *responder.Responder, i *Issue) {
 		searchIssueError(resp)
 		return
 	}
-	resp.Vars.Data["PendingReviewIssues"] = wrapDBIssues(issues)
+	resp.Vars.Data["PendingReviewIssues"] = wrapClaimableDBIssues(resp.Vars.User, issues)
 
 	issues, err = models.FindAvailableIssuesByWorkflowStep(schema.WSUnfixableMetadataError)
 	if err != nil {
@@ -59,7 +59,7 @@ func homeHandler(resp *responder.Responder, i *Issue) {
 		searchIssueError(resp)
 		return
 	}
-	resp.Vars.Data["UnfixableErrorIssues"] = wrapDBIssues(issues)
+	resp.Vars.Data["UnfixableErrorIssues"] = wrapClaimableDBIssues(resp.Vars.User, issues)
 
 	resp.Render(DeskTmpl)
 }

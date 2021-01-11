@@ -44,6 +44,7 @@ func wrapDBIssue(dbIssue *models.Issue) *Issue {
 	return &Issue{Issue: dbIssue, si: si, MetadataAuthorLogin: models.FindUserByID(dbIssue.MetadataEntryUserID).Login}
 }
 
+// wrapDBIssues wraps the given database issues for presentation
 func wrapDBIssues(dbIssues []*models.Issue) []*Issue {
 	var list []*Issue
 	for _, dbIssue := range dbIssues {
@@ -52,6 +53,24 @@ func wrapDBIssues(dbIssues []*models.Issue) []*Issue {
 			return nil
 		}
 		list = append(list, i)
+	}
+
+	return list
+}
+
+// wrapClaimableDBIssues wraps and returns database issues which the given user
+// may claim, so that the workflow issue lists are easier to follow
+func wrapClaimableDBIssues(user *models.User, dbIssues []*models.Issue) []*Issue {
+	var list []*Issue
+	var can = Can(user)
+	for _, dbIssue := range dbIssues {
+		var i = wrapDBIssue(dbIssue)
+		if i == nil {
+			return nil
+		}
+		if can.Claim(i) {
+			list = append(list, i)
+		}
 	}
 
 	return list

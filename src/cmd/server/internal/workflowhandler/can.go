@@ -95,6 +95,11 @@ func (v *CanValidation) Claim(i *Issue) bool {
 			v.Status = http.StatusForbidden
 			return false
 		}
+		if i.MetadataEntryUserID == v.User.ID && !v.User.PermittedTo(privilege.ReviewOwnMetadata) {
+			v.Error = fmt.Errorf("author cannot also be reviewer")
+			v.Status = http.StatusBadRequest
+			return false
+		}
 	case schema.WSUnfixableMetadataError:
 		if !v.User.PermittedTo(privilege.ReviewUnfixableIssues) {
 			v.Error = errors.New("insufficient privileges (cannot review errored issues)")
