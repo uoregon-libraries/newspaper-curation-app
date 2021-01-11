@@ -25,6 +25,22 @@ Brief description, if necessary
 ### Migration
 -->
 
+## v3.3.1
+
+Minor fix to issue visibility in Workflow
+
+### Fixed
+
+- Issues in the workflow tab will not be visibile if the current user cannot
+  claim them.  This is especially important for curators who are also
+  reviewers, as they cannot review issues they curated, but previously those
+  were showing in the list, leading to a lot of errors when trying to claim an
+  issue for review after having just finished a large batch of curation.
+
+## v3.3.0
+
+Meaningless version bump because that was forgotten in v3.2.0
+
 ## v3.2.0
 
 Bye to old tools, hello to new tools, and small fixes
