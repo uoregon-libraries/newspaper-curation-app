@@ -25,6 +25,20 @@ Brief description, if necessary
 ### Migration
 -->
 
+## In-development
+
+### Fixed
+
+- Docker setup is more up-to-date, and the IIIF images should be more consistently working
+
+### Added
+
+### Changed
+
+### Removed
+
+### Migration
+
 ## v3.3.1
 
 Minor fix to issue visibility in Workflow
