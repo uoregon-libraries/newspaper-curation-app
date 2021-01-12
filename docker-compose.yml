@@ -23,6 +23,7 @@ services:
   iiif:
     image: uolibraries/rais:4-alpine
     environment:
+      - RAIS_IIIFBASEURL=$APP_URL
       - RAIS_IIIFWEBPATH=/images/iiif
       - RAIS_TILECACHELEN=250
     volumes:

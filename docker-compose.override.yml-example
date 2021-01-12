@@ -7,10 +7,6 @@ services:
     # Homedir workflow directories require a hack to IIIF's image location
     volumes:
       - ./test/fakemount/workflow:/var/local/images:z
-    # Set this explicitly if the URL cannot be deduced by RAIS, e.g., if the
-    # host port and proxy port don't match
-    #environment:
-    #  - RAIS_IIIFBASEURL=$APP_URL
 
   # Workers needs all workflow directories
   workers:
