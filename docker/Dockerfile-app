@@ -4,7 +4,7 @@
 # files and templates.  The worker system would need a bit more, like the
 # openjpeg tools, poppler, etc., but still wouldn't need the whole Go stack or
 # a Maria DB client.
-FROM fedora:30
+FROM fedora:33
 MAINTAINER Jeremy Echols <jechols@uoregon.edu>
 
 RUN dnf update -y
@@ -47,7 +47,7 @@ RUN dnf install -y git
 RUN dnf install -y mariadb
 
 # Install Go
-RUN curl https://dl.google.com/go/go1.12.linux-amd64.tar.gz >/tmp/go.tgz
+RUN curl https://dl.google.com/go/go1.15.6.linux-amd64.tar.gz >/tmp/go.tgz
 RUN cd /opt && tar -xzf /tmp/go.tgz
 
 # Go ENV setup
