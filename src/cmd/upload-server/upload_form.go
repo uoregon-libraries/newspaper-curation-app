@@ -6,8 +6,6 @@ import (
 	"os"
 	"sync"
 	"time"
-
-	"github.com/uoregon-libraries/gopkg/logger"
 )
 
 const errInvalidDate = Error("invalid date")
@@ -52,7 +50,7 @@ func registerForm(owner string) *uploadForm {
 	forms[f.UID] = f
 	forml.Unlock()
 
-	logger.Infof("Registering new form %s", f)
+	l.Infof("Registering new form %s", f)
 	return f
 }
 
@@ -76,16 +74,16 @@ func cleanForms() {
 
 func purgeOldForms() {
 	var expired = time.Now().Add(-48 * time.Hour)
-	logger.Debugf("Purging old forms from before %s", expired)
+	l.Debugf("Purging old forms from before %s", expired)
 	forml.Lock()
 	var keysToPurge []string
 	for key, f := range forms {
-		logger.Debugf("Looking at form %s", f)
+		l.Debugf("Looking at form %s", f)
 		if f.lastAccessed.Before(expired) {
-			logger.Debugf("Will purge")
+			l.Debugf("Will purge")
 			keysToPurge = append(keysToPurge, key)
 		} else {
-			logger.Debugf("Will *not* purge")
+			l.Debugf("Will *not* purge")
 		}
 	}
 

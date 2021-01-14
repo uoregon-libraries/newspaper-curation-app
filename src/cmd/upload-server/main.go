@@ -17,7 +17,7 @@ import (
 	"github.com/uoregon-libraries/gopkg/logger"
 	"github.com/uoregon-libraries/gopkg/middleware"
 	"github.com/uoregon-libraries/gopkg/session"
-	"github.com/uoregon-libraries/newspaper-curation-app/src/db"
+	"github.com/uoregon-libraries/newspaper-curation-app/src/dbi"
 )
 
 var opts struct {
@@ -53,7 +53,7 @@ func getConf() {
 		os.Exit(1)
 	}
 
-	err = db.Connect(dbconn)
+	err = dbi.Connect(dbconn)
 	if err != nil {
 		fmt.Fprintf(os.Stderr, "Error connecting to database: %s\n\n", err)
 		p.WriteHelp(os.Stderr)
@@ -105,7 +105,7 @@ func main() {
 		os.Exit(0)
 	})
 
-	l = logger.Named("nca-upload-server", logger.Debug)
+	l = logger.Named("nca-upload-server", logger.Debug, false)
 
 	getConf()
 	if opts.Debug == true {

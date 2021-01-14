@@ -7,7 +7,7 @@ import (
 
 	"github.com/uoregon-libraries/gopkg/session"
 	"github.com/uoregon-libraries/gopkg/tmpl"
-	"github.com/uoregon-libraries/newspaper-curation-app/src/db"
+	"github.com/uoregon-libraries/newspaper-curation-app/src/models"
 )
 
 // responder wraps the server, request, and response writer to simplify common
@@ -81,7 +81,7 @@ func (r *responder) render(t *tmpl.Template, data map[string]interface{}) {
 	data["User"] = sessUser
 
 	if sessUser != "" {
-		var t, err = db.FindTitle("sftp_user = ?", sessUser)
+		var t, err = models.FindTitle("sftp_user = ?", sessUser)
 		if err != nil {
 			r.server.logger.Errorf("Unable to look up sftp user %q: %s", sessUser, err)
 			r.internalServerError()
