@@ -22,6 +22,7 @@ var tiffFilenameRegex = regexp.MustCompile(`(?i:^[0-9]+.tiff?)`)
 // requeue-friendly if just a few files are broken / missing.
 type MakeDerivatives struct {
 	*IssueJob
+	Force                 bool
 	AltoDerivativeSources []string
 	JP2DerivativeSources  []string
 	findTIFFs             func() bool
@@ -42,6 +43,7 @@ func (md *MakeDerivatives) Process(c *config.Config) bool {
 	md.GhostScript = c.GhostScript
 	md.JP2DPI = c.DPI
 	md.JP2Quality = c.Quality
+	md.Force = md.db.Args[forcedArg] == forcedArg
 
 	if md.DBIssue.IsFromScanner {
 		// For scanned issues, we have to verify TIFFs and use the scan DPI for
@@ -174,7 +176,7 @@ func (md *MakeDerivatives) generateDerivatives() (ok bool) {
 // createAltoXML produces ALTO XML from the given PDF file
 func (md *MakeDerivatives) createAltoXML(file string, pageno int) (ok bool) {
 	var outputFile = strings.Replace(file, filepath.Ext(file), ".xml", 1)
-	var transformer = alto.New(file, outputFile, md.AltoDPI, pageno)
+	var transformer = alto.New(file, outputFile, md.AltoDPI, pageno, md.Force)
 	transformer.Logger = md.Logger
 	transformer.LangCode3 = md.IssueJob.DBIssue.Title.LangCode()
 	var err = transformer.Transform()
@@ -189,7 +191,7 @@ func (md *MakeDerivatives) createAltoXML(file string, pageno int) (ok bool) {
 
 func (md *MakeDerivatives) createJP2(file string) (ok bool) {
 	var outputJP2 = strings.Replace(file, filepath.Ext(file), ".jp2", 1)
-	var transformer = jp2.New(file, outputJP2, md.JP2Quality, md.JP2DPI)
+	var transformer = jp2.New(file, outputJP2, md.JP2Quality, md.JP2DPI, md.Force)
 	transformer.Logger = md.Logger
 	transformer.OPJCompress = md.OPJCompress
 	transformer.OPJDecompress = md.OPJDecompress

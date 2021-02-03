@@ -25,6 +25,7 @@ type Transformer struct {
 	ScaleFactor        float64
 	ImageNumber        int
 	LangCode3          string
+	OverwriteXML       bool // if true, doesn't skip files which already exist
 
 	// Logger can be set up manually for customized logging, otherwise it just
 	// gets set to the default logger
@@ -36,12 +37,13 @@ type Transformer struct {
 }
 
 // New sets up a new transformer to convert a PDF to ALTO XML
-func New(pdfFile, altoFile string, pdfDPI int, imgNo int) *Transformer {
+func New(pdfFile, altoFile string, pdfDPI int, imgNo int, overwrite bool) *Transformer {
 	return &Transformer{
 		PDFFilename:        pdfFile,
 		ALTOOutputFilename: altoFile,
 		ScaleFactor:        float64(pdfDPI) / 72.0,
 		ImageNumber:        imgNo,
+		OverwriteXML:       overwrite,
 		Logger:             logger.Logger,
 	}
 }
@@ -51,10 +53,17 @@ func New(pdfFile, altoFile string, pdfDPI int, imgNo int) *Transformer {
 // ALTO-like XML file to ALTOOutputFilename.  If the return is anything but
 // nil, the ALTO XML will not have been created.
 func (t *Transformer) Transform() error {
-	// File existence is not a failure; just means we don't regenerate the file
 	if fileutil.Exists(t.ALTOOutputFilename) {
-		t.Logger.Infof("Not generating ALTO XML file %q; file already exists", t.ALTOOutputFilename)
-		return nil
+		if t.OverwriteXML {
+			t.Logger.Debugf("Removing existing ALTO XML file %q", t.ALTOOutputFilename)
+			var err = os.Remove(t.ALTOOutputFilename)
+			if err != nil {
+				return fmt.Errorf("removing existing ALTO XML in Transform(): %w", err)
+			}
+		} else {
+			t.Logger.Infof("Not generating ALTO XML file %q; file already exists", t.ALTOOutputFilename)
+			return nil
+		}
 	}
 
 	t.pdfToText()

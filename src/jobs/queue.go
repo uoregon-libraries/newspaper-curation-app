@@ -13,11 +13,12 @@ import (
 // These constants let us define arg names in a way that ensures we don't screw
 // up by setting an arg and then misspelling the reader of said arg
 const (
-	wsArg   = "WorkflowStep"
-	bsArg   = "BatchStatus"
-	locArg  = "Location"
-	srcArg  = "Source"
-	destArg = "Destination"
+	wsArg     = "WorkflowStep"
+	bsArg     = "BatchStatus"
+	locArg    = "Location"
+	srcArg    = "Source"
+	destArg   = "Destination"
+	forcedArg = "Forced"
 )
 
 // PrepareJobAdvanced gets a job of any kind set up with sensible defaults
@@ -82,6 +83,10 @@ func makeBSArgs(bs string) map[string]string {
 
 func makeLocArgs(loc string) map[string]string {
 	return map[string]string{locArg: loc}
+}
+
+func makeForcedArgs() map[string]string {
+	return map[string]string{forcedArg: forcedArg}
 }
 
 func makeSrcDstArgs(src, dest string) map[string]string {
