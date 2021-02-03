@@ -134,7 +134,11 @@ func (t *Transformer) makeJP2() {
 
 	t.Logger.Infof("Creating JP2 from PNG")
 
-	// Create a temp file for holding our JP2
+	// Create a temp file for holding our JP2.
+	//
+	// We cannot retrofit this to use fileutil.SafeFile because we have to shell
+	// out to commands to write to the file.  An io.Writer can't be used, and
+	// capturing things like errors on Write, Close, etc. isn't possible.
 	t.tmpJP2, err = fileutil.TempNamedFile("", "", ".jp2")
 	if err != nil {
 		t.err = fmt.Errorf("unable to create test JP2: %s", err)
@@ -170,8 +174,9 @@ func (t *Transformer) moveTempJP2() {
 	t.Logger.Infof("Copying temp JP2 to %s", t.OutputJP2)
 	var err = os.Link(t.tmpJP2, t.OutputJP2)
 	if err != nil {
-		var copyErr = fileutil.CopyFile(t.tmpJP2, t.OutputJP2)
+		var copyErr = fileutil.CopyVerify(t.tmpJP2, t.OutputJP2)
 		if copyErr != nil {
+			os.Remove(t.OutputJP2)
 			t.err = fmt.Errorf("unable to link or copy JP2: %s / %s", err, copyErr)
 			return
 		}
@@ -179,7 +184,11 @@ func (t *Transformer) moveTempJP2() {
 
 	// Make sure the JP2 can be read by non-NCA apps!  The output is very
 	// restricted, likely due to temp file security.
-	os.Chmod(t.OutputJP2, 0644)
+	err = os.Chmod(t.OutputJP2, 0644)
+	if err != nil {
+		os.Remove(t.OutputJP2)
+		t.err = fmt.Errorf("unable to set JP2 permissions: %s", err)
+	}
 }
 
 // testRate is a simple helper to create a JP2 and then try to read it
