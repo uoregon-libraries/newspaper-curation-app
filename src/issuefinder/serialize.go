@@ -131,7 +131,10 @@ func (f *Finder) Serialize(outFilename string) error {
 	}
 
 	// Create/overwrite the real file
-	fileutil.CopyFile(tmpfile.Name(), outFilename)
+	err = fileutil.CopyFile(tmpfile.Name(), outFilename)
+	if err != nil {
+		return fmt.Errorf("unable to copy temp file to %q: %s", outFilename, err)
+	}
 
 	// Attempt to remove the backup, though we ignore any errors if it doesn't
 	// work; we don't want to fail the whole operation because a backup file got
