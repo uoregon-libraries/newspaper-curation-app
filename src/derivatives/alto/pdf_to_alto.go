@@ -124,22 +124,17 @@ func (t *Transformer) writeALTOFile() {
 
 	t.Logger.Infof("Writing out ALTO XML to %q", t.ALTOOutputFilename)
 
-	var f, err = os.Create(t.ALTOOutputFilename)
-	if err != nil {
-		t.err = fmt.Errorf("unable to create alto output file %q: %s", t.ALTOOutputFilename, err)
+	var f = fileutil.NewSafeFile(t.ALTOOutputFilename)
+	if f.Err != nil {
+		t.err = fmt.Errorf("unable to create alto output file %q: %w", t.ALTOOutputFilename, f.Err)
+		f.Cancel()
 		return
 	}
 
-	_, err = f.Write([]byte(xml.Header))
-	if err == nil {
-		_, err = f.Write(t.xml)
-	}
-	if err != nil {
-		t.err = fmt.Errorf("unable to write to alto output file %q: %s", t.ALTOOutputFilename, err)
-		f.Close()
-		os.Remove(t.ALTOOutputFilename)
-		return
-	}
-
+	f.Write([]byte(xml.Header))
+	f.Write(t.xml)
 	f.Close()
+	if f.Err != nil {
+		t.err = fmt.Errorf("unable to write to alto output file %q: %w", t.ALTOOutputFilename, f.Err)
+	}
 }
