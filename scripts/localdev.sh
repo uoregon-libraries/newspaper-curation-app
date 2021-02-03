@@ -80,6 +80,13 @@ upload_server() {
 
 server() {
   make bin/server || return 1
+  echo
+  echo "Make sure RAIS knows its URL since it's running in a container:"
+  echo "- Update docker-compose.override.yml so RAIS exposes its port"
+  echo "- Set RAIS_IIIFBASEURL in .env or the docker override, e.g., RAIS_IIIFBASEURL=http://localhost:12415"
+  echo "- Set IIIF_BASE_URL in the NCA settings file, e.g., IIIF_BASE_URL=http://localhost:12415/images/iiif"
+  echo "- Restart the iiif service if you changed any of the above since it started last"
+  echo
   ./bin/server -c ./settings --debug
 }
 
