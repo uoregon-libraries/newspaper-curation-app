@@ -6,7 +6,6 @@ import (
 	"fmt"
 	"html/template"
 	"io"
-	"os"
 	"time"
 
 	"github.com/uoregon-libraries/gopkg/fileutil"
@@ -71,24 +70,17 @@ func (t *Transformer) Transform() error {
 	}
 
 	// Write to temp file, then copy if we're successful
-	var f *os.File
-	f, err = fileutil.TempFile("", "", "")
-	if err != nil {
-		return fmt.Errorf("unable to create METS temp output file: %s", err)
+	var f = fileutil.NewSafeFile(t.outFile)
+	if f.Err != nil {
+		f.Cancel()
+		return fmt.Errorf("unable to create METS temp output file: %s", f.Err)
 	}
-	defer f.Close()
-	defer os.Remove(f.Name())
 
 	f.Write([]byte(xml.Header))
-	_, err = io.Copy(f, buf)
-	if err != nil {
-		return fmt.Errorf("unable to write to METS temp output file: %s", err)
-	}
-
-	err = fileutil.CopyFile(f.Name(), t.outFile)
-	if err != nil {
-		os.Remove(t.outFile)
-		return fmt.Errorf("unable to write to METS temp output file: %s", err)
+	io.Copy(f, buf)
+	f.Close()
+	if f.Err != nil {
+		return fmt.Errorf("unable to write to METS temp output file: %s", f.Err)
 	}
 
 	return nil
