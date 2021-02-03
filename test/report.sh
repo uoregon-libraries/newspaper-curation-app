@@ -50,7 +50,7 @@ sql "
   SELECT
     marc_org_code, date, date_as_labeled, volume, issue, edition,
     edition_label, page_labels_csv, is_from_scanner, workflow_step,
-    location, rejection_notes, error, ignored
+    location, ignored
   FROM issues
   ORDER BY lccn, date, edition
 " | strip_dbids > $repdir/dump-issues.sql
