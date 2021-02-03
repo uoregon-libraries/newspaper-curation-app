@@ -114,6 +114,7 @@ func (i *Input) errorIssueHandler(args []string) {
 	err = i.issue.db.Save()
 	if err != nil {
 		i.printerrln("unable to update issue: " + err.Error())
+		return
 	}
 
 	if !i.reloadBatch() {
