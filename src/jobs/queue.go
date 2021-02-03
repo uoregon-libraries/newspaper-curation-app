@@ -159,6 +159,20 @@ func QueueMoveIssueForDerivatives(issue *models.Issue, workflowPath string) erro
 	)
 }
 
+// QueueForceDerivatives will forcibly regenerate all derivatives for an issue.
+// During the processing, the issue's workflow step is set to "awaiting
+// processing", and only gets set back to its previous value on successful
+// completion of the other jobs.
+func QueueForceDerivatives(issue *models.Issue) error {
+	var currentStep = issue.WorkflowStep
+	return QueueSerial(
+		PrepareIssueJobAdvanced(models.JobTypeSetIssueWS, issue, makeWSArgs(schema.WSAwaitingProcessing)),
+		PrepareIssueJobAdvanced(models.JobTypeMakeDerivatives, issue, makeForcedArgs()),
+		PrepareIssueJobAdvanced(models.JobTypeBuildMETS, issue, makeForcedArgs()),
+		PrepareIssueJobAdvanced(models.JobTypeSetIssueWS, issue, makeWSArgs(currentStep)),
+	)
+}
+
 // QueueFinalizeIssue creates and queues jobs that get an issue ready for
 // batching.  Currently this means generating the METS XML file and copying
 // archived PDFs (if born-digital) into the issue directory.
