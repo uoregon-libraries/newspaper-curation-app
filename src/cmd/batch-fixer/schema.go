@@ -77,6 +77,21 @@ type Issue struct {
 	db *models.Issue
 }
 
+// FindIssue looks up the issue in the database by the given id and wraps the
+// model struct inside our local struct
+func FindIssue(id int) (*Issue, error) {
+	var issue, err = models.FindIssue(id)
+	if err != nil {
+		return nil, fmt.Errorf("database error: %w", err)
+	}
+
+	if issue == nil {
+		return nil, fmt.Errorf("issue %d wasn't found in the database", id)
+	}
+
+	return &Issue{db: issue}, nil
+}
+
 // RemoveMETS attempts to remove the METS XML file, returning an error if any
 // problems occur *except* the file already being gone, since that may be a
 // sign this was called previously, or somebody had to handle it manually.  We

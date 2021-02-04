@@ -33,23 +33,15 @@ func (i *Input) loadIssueHandler(args []string) {
 		return
 	}
 
-	var issue *models.Issue
-	issue, err = models.FindIssue(id)
+	i.issue, err = FindIssue(id)
 	if err != nil {
-		i.printerrln("database error: " + err.Error())
+		i.printerrln(fmt.Sprintf("unable to load issue %d: %s", id, err.Error()))
 		return
 	}
-
-	if issue == nil {
-		i.printerrln(fmt.Sprintf("issue %d wasn't found in the database", id))
-		return
-	}
-	if issue.BatchID != i.batch.db.ID {
+	if i.issue.db.BatchID != i.batch.db.ID {
 		i.printerrln(fmt.Sprintf("issue %d doesn't belong to this batch", id))
 		return
 	}
-
-	i.issue = &Issue{db: issue}
 	i.menuFn = i.makeIssueMenu
 }
 
