@@ -21,6 +21,7 @@ func (i *Input) makeBatchMenu() (*menu, string) {
 			"the database to their 'ready for batching' state, for cases where a full rebatch "+
 			"is easier than pulling individual issues (e.g., bad org code, dozens of bad issues, "+
 			"etc.)", i.deleteBatchHandler)
+		m.add("redo-all-derivatives", "Creates jobs to rebuild *all* issues' derivatives", i.redoAllDerivatives)
 		m.add("requeue", "Creates a job in the database to requeue this batch", i.requeueBatchHandler)
 	}
 	if st != models.BatchStatusLive && st != models.BatchStatusLiveDone {
@@ -213,6 +214,27 @@ func (i *Input) deleteBatchHandler([]string) {
 	if err != nil {
 		i.printerrln(fmt.Sprintf("Unable to update batch / issue data: %s", err))
 	}
+}
+
+func (i *Input) redoAllDerivatives([]string) {
+	i.println(fmt.Sprintf("Are you sure you want to regenerate "+ansiImportant+"EVERY"+ansiReset+
+		" derivative for "+ansiIntenseYellow+"every single issue"+ansiReset+" in %s?", i.batch.db.Name))
+	i.println("  (" + ansiIntenseYellow + "Note:" + ansiReset + " this can take a very long time)")
+	if !i.confirmYN() {
+		i.println("Aborted...")
+		return
+	}
+
+	for _, issue := range i.batch.Issues {
+		i.println("Queueing derivatives for " + issue.db.Key())
+		var err = jobs.QueueForceDerivatives(issue.db)
+		if err != nil {
+			i.printerrln("failed: " + err.Error())
+		}
+		i.println("Success")
+	}
+
+	i.println("All issues' derivatives are now being forcibly recreated.  You should NOT recreate the batch until you " + ansiIntense + "manually" + ansiReset + " verify this operation's successful completion in the database!")
 }
 
 func (i *Input) requeueBatchHandler([]string) {
