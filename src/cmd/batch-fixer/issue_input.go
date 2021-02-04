@@ -133,12 +133,6 @@ func (i *Input) redoDerivativesHandler([]string) {
 		return
 	}
 
-	if !i.reloadBatch() {
-		return
-	}
-
-	i.issue = nil
-	i.menuFn = i.makeBatchMenu
 	i.println("Issue will have derivatives forcibly recreated.  You should NOT recreate the batch until you " + ansiIntense + "manually" + ansiReset + " verify this operation's successful completion in the database!")
 }
 
