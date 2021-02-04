@@ -38,7 +38,7 @@ Brief description, if necessary
 ### Added
 
 - The batch fixer tool can now be used to forcibly regenerate derivatives for
-  an issue, bypassing the normal "if a derivative exists, skip it" logic that
+  issues, bypassing the normal "if a derivative exists, skip it" logic that
   usually saves time, but sometimes causes problems fixing a bad file
   - This paves the way to expose rerunning of derivatives on the web app if it
     proves necessary to do this prior to an issue being in a batch
@@ -47,7 +47,7 @@ Brief description, if necessary
 
 - The batch fixer now displays issues' workflow steps in the "info" command
 - The batch fixer now auto-loads an issue after a "search" command if there is
-  exactly one result
+  exactly one result and the batch is in the "failed QC" status
 
 ### Removed
 
