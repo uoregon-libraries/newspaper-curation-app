@@ -154,6 +154,7 @@ func (i *Input) issueInfoHandler([]string) {
 		datum{"Issue Label", dbi.Issue},
 		datum{"Edition Label", dbi.EditionLabel},
 		datum{"Location", dbi.Location},
+		datum{"Workflow Step", dbi.WorkflowStepString},
 	)
 }
 
