@@ -183,6 +183,12 @@ func (i *Input) searchIssuesHandler(args []string) {
 	}
 
 	i.printIssueList(matches)
+
+	if len(matches) == 1 {
+		i.println("Exactly one result found; automatically loading issue")
+		i.issue = matches[0]
+		i.menuFn = i.makeIssueMenu
+	}
 }
 
 func (i *Input) batchInfoHandler([]string) {
