@@ -16,6 +16,7 @@ func (i *Input) makeIssueMenu() (*menu, string) {
 		"intervention, pulling it off the batch and flagging it for manual intervention", i.errorIssueHandler)
 	m.add("redo-derivatives", "Removes all derivative files for an issue and queues up jobs to recreate them", i.redoDerivativesHandler)
 	m.add("info", "Displays some detailed information about the issue", i.issueInfoHandler)
+	m.add("reload", "Reloads the issue data from the database, for seeing its latest status/information if things are changing (e.g., after running the redo-derivatives operation)", i.issueReloadHandler)
 	m.add("quit", "Return to the batch menu", i.issueQuitHandler)
 
 	return m, fmt.Sprintf("issue %q (batch %q).  Enter a command:", i.issue.db.Key(), i.batch.db.Name)
@@ -154,4 +155,21 @@ func (i *Input) issueInfoHandler([]string) {
 		datum{"Edition Label", dbi.EditionLabel},
 		datum{"Location", dbi.Location},
 	)
+}
+
+func (i *Input) reloadIssue() bool {
+	var err error
+	i.issue, err = FindIssue(i.issue.db.ID)
+	if err != nil {
+		i.printerrln(fmt.Sprintf("unable to reload issue %d: %s", i.issue.db.ID, err.Error()))
+		i.issue = nil
+		i.menuFn = i.makeBatchMenu
+		return false
+	}
+
+	return true
+}
+
+func (i *Input) issueReloadHandler([]string) {
+	i.reloadIssue()
 }
