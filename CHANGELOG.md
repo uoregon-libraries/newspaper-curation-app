@@ -30,10 +30,24 @@ Brief description, if necessary
 ### Fixed
 
 - Docker setup is more up-to-date, and the IIIF images should be more consistently working
+- Better explanation of how localdev.sh works when using it
+- File handling is even *more* robust when really odd edge cases happen, such
+  as losing network file mounts or running out of disk space
+- Better error reporting when building the issue cache fails
 
 ### Added
 
+- The batch fixer tool can now be used to forcibly regenerate derivatives for
+  an issue, bypassing the normal "if a derivative exists, skip it" logic that
+  usually saves time, but sometimes causes problems fixing a bad file
+  - This paves the way to expose rerunning of derivatives on the web app if it
+    proves necessary to do this prior to an issue being in a batch
+
 ### Changed
+
+- The batch fixer now displays issues' workflow steps in the "info" command
+- The batch fixer now auto-loads an issue after a "search" command if there is
+  exactly one result
 
 ### Removed
 
