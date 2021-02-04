@@ -184,7 +184,8 @@ func (i *Input) searchIssuesHandler(args []string) {
 
 	i.printIssueList(matches)
 
-	if len(matches) == 1 {
+	// Auto-load a single-issue match *if* the batch is in "failed qc" status
+	if len(matches) == 1 && i.batch.db.Status == models.BatchStatusFailedQC {
 		i.println("Exactly one result found; automatically loading issue")
 		i.issue = matches[0]
 		i.menuFn = i.makeIssueMenu
