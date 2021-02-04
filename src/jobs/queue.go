@@ -13,11 +13,12 @@ import (
 // These constants let us define arg names in a way that ensures we don't screw
 // up by setting an arg and then misspelling the reader of said arg
 const (
-	wsArg   = "WorkflowStep"
-	bsArg   = "BatchStatus"
-	locArg  = "Location"
-	srcArg  = "Source"
-	destArg = "Destination"
+	wsArg     = "WorkflowStep"
+	bsArg     = "BatchStatus"
+	locArg    = "Location"
+	srcArg    = "Source"
+	destArg   = "Destination"
+	forcedArg = "Forced"
 )
 
 // PrepareJobAdvanced gets a job of any kind set up with sensible defaults
@@ -82,6 +83,10 @@ func makeBSArgs(bs string) map[string]string {
 
 func makeLocArgs(loc string) map[string]string {
 	return map[string]string{locArg: loc}
+}
+
+func makeForcedArgs() map[string]string {
+	return map[string]string{forcedArg: forcedArg}
 }
 
 func makeSrcDstArgs(src, dest string) map[string]string {
@@ -151,6 +156,20 @@ func QueueMoveIssueForDerivatives(issue *models.Issue, workflowPath string) erro
 		PrepareJobAdvanced(models.JobTypeCleanFiles, makeLocArgs(workflowDir)),
 		PrepareIssueJobAdvanced(models.JobTypeMakeDerivatives, issue, nil),
 		PrepareIssueJobAdvanced(models.JobTypeSetIssueWS, issue, makeWSArgs(schema.WSReadyForMetadataEntry)),
+	)
+}
+
+// QueueForceDerivatives will forcibly regenerate all derivatives for an issue.
+// During the processing, the issue's workflow step is set to "awaiting
+// processing", and only gets set back to its previous value on successful
+// completion of the other jobs.
+func QueueForceDerivatives(issue *models.Issue) error {
+	var currentStep = issue.WorkflowStep
+	return QueueSerial(
+		PrepareIssueJobAdvanced(models.JobTypeSetIssueWS, issue, makeWSArgs(schema.WSAwaitingProcessing)),
+		PrepareIssueJobAdvanced(models.JobTypeMakeDerivatives, issue, makeForcedArgs()),
+		PrepareIssueJobAdvanced(models.JobTypeBuildMETS, issue, makeForcedArgs()),
+		PrepareIssueJobAdvanced(models.JobTypeSetIssueWS, issue, makeWSArgs(currentStep)),
 	)
 }
 

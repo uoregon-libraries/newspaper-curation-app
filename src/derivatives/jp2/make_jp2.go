@@ -34,6 +34,7 @@ type Transformer struct {
 	GraphicsMagick string
 	Quality        float64
 	PDFResolution  int
+	OverwriteJP2   bool // if true, doesn't skip files which already exist
 
 	err    error
 	Logger *ltype.Logger
@@ -41,7 +42,7 @@ type Transformer struct {
 
 // New creates a new PDF/TIFF-to-JP2 transformer with default values for the
 // various binaries and use of the default logger
-func New(source, output string, quality float64, resolution int) *Transformer {
+func New(source, output string, quality float64, resolution int, overwrite bool) *Transformer {
 	return &Transformer{
 		SourceFile:     source,
 		OutputJP2:      output,
@@ -51,6 +52,7 @@ func New(source, output string, quality float64, resolution int) *Transformer {
 		GraphicsMagick: "gm",
 		Quality:        quality,
 		PDFResolution:  resolution,
+		OverwriteJP2:   overwrite,
 		Logger:         logger.Logger,
 	}
 }
@@ -68,8 +70,16 @@ func (t *Transformer) getRate() float64 {
 // using a different quality)
 func (t *Transformer) Transform() error {
 	if fileutil.Exists(t.OutputJP2) {
-		t.Logger.Infof("Not generating JP2 file %q; file already exists", t.OutputJP2)
-		return nil
+		if t.OverwriteJP2 {
+			t.Logger.Debugf("Removing existing JP2 file %q", t.OutputJP2)
+			var err = os.Remove(t.OutputJP2)
+			if err != nil {
+				return fmt.Errorf("removing existing JP2 in Transform(): %w", err)
+			}
+		} else {
+			t.Logger.Infof("Not generating JP2 file %q; file already exists", t.OutputJP2)
+			return nil
+		}
 	}
 
 	t.makePNG()
