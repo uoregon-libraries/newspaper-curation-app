@@ -25,7 +25,7 @@ Brief description, if necessary
 ### Migration
 -->
 
-## In-development
+## v3.4.0
 
 ### Fixed
 
@@ -48,10 +48,6 @@ Brief description, if necessary
 - The batch fixer now displays issues' workflow steps in the "info" command
 - The batch fixer now auto-loads an issue after a "search" command if there is
   exactly one result and the batch is in the "failed QC" status
-
-### Removed
-
-### Migration
 
 ## v3.3.1
 
