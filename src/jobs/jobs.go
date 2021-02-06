@@ -47,6 +47,8 @@ func DBJobToProcessor(dbJob *models.Job) Processor {
 		return &RenameDir{Job: NewJob(dbJob)}
 	case models.JobTypeCleanFiles:
 		return &CleanFiles{Job: NewJob(dbJob)}
+	case models.JobTypeRenumberPages:
+		return &RenumberPages{IssueJob: NewIssueJob(dbJob)}
 	default:
 		logger.Errorf("Unknown job type %q for job id %d", dbJob.Type, dbJob.ID)
 	}

@@ -139,8 +139,8 @@ func QueueSFTPIssueMove(issue *models.Issue, c *config.Config) error {
 	)
 }
 
-// QueueMoveIssueForDerivatives creates jobs to move issues into the workflow
-// and then immediately generate derivatives
+// QueueMoveIssueForDerivatives creates jobs to move issues into the workflow,
+// make all issues' pages numbered nicely, and then generate derivatives
 func QueueMoveIssueForDerivatives(issue *models.Issue, workflowPath string) error {
 	var workflowDir = filepath.Join(workflowPath, issue.HumanName)
 	var workflowWIPDir = filepath.Join(workflowPath, ".wip-"+issue.HumanName)
@@ -154,6 +154,7 @@ func QueueMoveIssueForDerivatives(issue *models.Issue, workflowPath string) erro
 		PrepareIssueJobAdvanced(models.JobTypeSetIssueLocation, issue, makeLocArgs(workflowDir)),
 
 		PrepareJobAdvanced(models.JobTypeCleanFiles, makeLocArgs(workflowDir)),
+		PrepareIssueJobAdvanced(models.JobTypeRenumberPages, issue, nil),
 		PrepareIssueJobAdvanced(models.JobTypeMakeDerivatives, issue, nil),
 		PrepareIssueJobAdvanced(models.JobTypeSetIssueWS, issue, makeWSArgs(schema.WSReadyForMetadataEntry)),
 	)
