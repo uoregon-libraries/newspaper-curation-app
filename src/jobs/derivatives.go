@@ -12,8 +12,8 @@ import (
 	"github.com/uoregon-libraries/newspaper-curation-app/src/derivatives/jp2"
 )
 
-var pdfFilenameRegex = regexp.MustCompile(`(?i:^[0-9]+.pdf)`)
-var tiffFilenameRegex = regexp.MustCompile(`(?i:^[0-9]+.tiff?)`)
+var pdfFilenameRegex = regexp.MustCompile(`(?i:^[0-9]{4}.pdf)`)
+var tiffFilenameRegex = regexp.MustCompile(`(?i:^[0-9]{4}.tiff?)`)
 
 // MakeDerivatives is a job which creates all necessary derivatives for a given
 // issue, detecting whether Alto XMLs and JP2s should be built, and building

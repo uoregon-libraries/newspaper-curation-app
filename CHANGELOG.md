@@ -44,6 +44,11 @@ Blah blah blah awesome stuff, fixes greatestest change ever
 
 ### Migration
 
+- Empty all jobs in production before deploying this, otherwise there's a
+  chance of errors when the jobs start up again.  The chance is small (you'd
+  need to have unusual filenames in an issue that is awaiting derivative
+  processing), but it's easier to just avoid the situation.
+
 ## v3.4.0
 
 ### Fixed
