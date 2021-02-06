@@ -25,6 +25,25 @@ Brief description, if necessary
 ### Migration
 -->
 
+## In-development
+
+Blah blah blah awesome stuff, fixes greatestest change ever
+
+### Fixed
+
+### Added
+
+### Changed
+
+- Page files (*.pdf, *.tif, *.jp2, and *.xml [for alto, not mets]) have
+  consistent names again.  We allow more flexible names *on upload* than we
+  used to, but once an issue is in the workflow we want filenames to be simple
+  to look at.
+
+### Removed
+
+### Migration
+
 ## v3.4.0
 
 ### Fixed
