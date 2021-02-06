@@ -16,9 +16,9 @@ var pdfFilenameRegex = regexp.MustCompile(`(?i:^[0-9]+.pdf)`)
 var tiffFilenameRegex = regexp.MustCompile(`(?i:^[0-9]+.tiff?)`)
 
 // MakeDerivatives is a job which creates all necessary derivatives for a given
-// issue, detecting whether PDFs are needed and whether JP2s should be build
-// from PDF or TIFF sources.  Derivatives are built independently, and get
-// placed directly into the issue's existing path, so this job is very
+// issue, detecting whether Alto XMLs and JP2s should be built, and building
+// those which don't already exist.  Derivatives are built independently, and
+// get placed directly into the issue's existing path, so this job is very
 // requeue-friendly if just a few files are broken / missing.
 type MakeDerivatives struct {
 	*IssueJob
