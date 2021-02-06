@@ -364,6 +364,7 @@ func runAllQueues(c *config.Config) {
 				models.JobTypeRenameDir,
 				models.JobTypeCleanFiles,
 				models.JobTypeWriteActionLog,
+				models.JobTypeRenumberPages,
 			)
 		},
 		func() {
