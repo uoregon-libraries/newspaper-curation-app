@@ -92,5 +92,5 @@ server() {
 
 workers() {
   make bin/run-jobs || return 1
-  ./bin/run-jobs -c ./settings watchall
+  ./bin/run-jobs -c ./settings -v watchall
 }
