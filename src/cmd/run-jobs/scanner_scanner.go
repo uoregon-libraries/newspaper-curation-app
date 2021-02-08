@@ -28,7 +28,11 @@ func scanScannerIssues(c *config.Config) {
 		var i = uploads.New(issue, scanner, c)
 		i.ValidateAll()
 		if len(i.Errors) != 0 {
-			logger.Debugf("scanner-scanner: skipping issue %q: %s", i.Key(), i.Errors)
+			var errs []string
+			for _, err := range i.Errors {
+				errs = append(errs, err.Message())
+			}
+			logger.Debugf("scanner-scanner: skipping issue %q: %#v", i.Key(), errs)
 			continue
 		}
 
