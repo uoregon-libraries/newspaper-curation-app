@@ -35,10 +35,11 @@ Blah blah blah awesome stuff, fixes greatestest change ever
 
 ### Changed
 
+- Uploaded scanned files have no restrictions on their filename prefixes
+  anymore, so long as the prefixes match between TIFF and PDF files
 - Page files (*.pdf, *.tif, *.jp2, and *.xml [for alto, not mets]) have
-  consistent names again.  We allow more flexible names *on upload* than we
-  used to, but once an issue is in the workflow we want filenames to be simple
-  to look at.
+  consistent names again after they move into the internal workflow
+- Minor improvement to how `scripts/localdev.sh` launches workers
 
 ### Removed
 
