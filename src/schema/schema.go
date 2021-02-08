@@ -490,7 +490,7 @@ func (list IssueList) SortByKey() {
 	})
 }
 
-var allowedFilesRegex = regexp.MustCompile(`(?i:^([0-9]+.(pdf|jp2|xml|tiff?))|[0-9]{10}.xml|[a-z]+.tar)`)
+var validInternalName = regexp.MustCompile(`(?i:^([0-9]{4}.(pdf|jp2|xml|tif))|[0-9]{10}.xml|[a-z]+.tar)`)
 
 // File just gives fileutil.File a location and issue pointer
 type File struct {
@@ -500,10 +500,10 @@ type File struct {
 	Errors   apperr.List
 }
 
-// ValidName just returns whether the filename matches what we allow to exist once
+// ValidInternalName just returns whether the filename matches what we allow to exist once
 // something has entered NCA's internal workflow
-func (f *File) ValidName() bool {
-	return allowedFilesRegex.MatchString(f.Name)
+func (f *File) ValidInternalName() bool {
+	return validInternalName.MatchString(f.Name)
 }
 
 // AddError puts err on this file and reports to its issue that one of its

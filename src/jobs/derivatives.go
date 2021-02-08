@@ -127,7 +127,7 @@ func (md *MakeDerivatives) validateSourceFiles() (ok bool) {
 	}
 
 	for _, f := range md.Issue.Files {
-		if !f.ValidName() {
+		if !f.ValidInternalName() {
 			md.Logger.Errorf("Unexpected file found: %q", f.Name)
 			return false
 		}
