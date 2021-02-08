@@ -2,9 +2,7 @@ package issuefinder
 
 import (
 	"fmt"
-	"os"
 	"path/filepath"
-	"regexp"
 	"sort"
 	"strconv"
 	"strings"
@@ -15,9 +13,6 @@ import (
 	"github.com/uoregon-libraries/newspaper-curation-app/src/models"
 	"github.com/uoregon-libraries/newspaper-curation-app/src/schema"
 )
-
-var pdfFilenameRegex = regexp.MustCompile(`(?i:^[0-9]+.pdf)`)
-var tiffFilenameRegex = regexp.MustCompile(`(?i:^[0-9]+.tiff?)`)
 
 // FindScannedIssues aggregates all the in-house scans waiting for processing
 func (s *Searcher) FindScannedIssues() error {
@@ -123,20 +118,20 @@ func (s *Searcher) findScannedIssuesForTitlePath(moc, titlePath string) error {
 
 func (s *Searcher) verifyScanIssuePDFTIFFPairs(issue *schema.Issue) {
 	var tiffFiles, pdfFiles []string
-	var err error
 
-	tiffFiles, err = fileutil.FindIf(issue.Location, func(i os.FileInfo) bool {
-		return tiffFilenameRegex.MatchString(i.Name())
-	})
-	if err == nil {
-		pdfFiles, err = fileutil.FindIf(issue.Location, func(i os.FileInfo) bool {
-			return pdfFilenameRegex.MatchString(i.Name())
-		})
-	}
-
+	var infos, err = fileutil.ReaddirSortedNumeric(issue.Location)
 	if err != nil {
 		issue.ErrReadFailure(err)
 		return
+	}
+
+	for _, info := range infos {
+		switch strings.ToLower(filepath.Ext(info.Name())) {
+		case ".pdf":
+			pdfFiles = append(pdfFiles, info.Name())
+		case ".tif", ".tiff":
+			tiffFiles = append(tiffFiles, info.Name())
+		}
 	}
 
 	if len(tiffFiles) == 0 {
