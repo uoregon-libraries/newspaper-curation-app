@@ -25,6 +25,22 @@ Brief description, if necessary
 ### Migration
 -->
 
+## In-development
+
+Stuff and nonsense!
+
+### Fixed
+
+- Large datasets will now be much faster, thanks to database indices (oops)
+
+### Added
+
+### Changed
+
+### Removed
+
+### Migration
+
 ## v3.5.0
 
 Reduced barriers for uploaded scans and more consisten in-workflow filenames
