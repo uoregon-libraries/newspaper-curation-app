@@ -25,13 +25,9 @@ Brief description, if necessary
 ### Migration
 -->
 
-## In-development
+## v3.5.0
 
-Blah blah blah awesome stuff, fixes greatestest change ever
-
-### Fixed
-
-### Added
+Reduced barriers for uploaded scans and more consisten in-workflow filenames
 
 ### Changed
 
@@ -40,8 +36,6 @@ Blah blah blah awesome stuff, fixes greatestest change ever
 - Page files (*.pdf, *.tif, *.jp2, and *.xml [for alto, not mets]) have
   consistent names again after they move into the internal workflow
 - Minor improvement to how `scripts/localdev.sh` launches workers
-
-### Removed
 
 ### Migration
 
