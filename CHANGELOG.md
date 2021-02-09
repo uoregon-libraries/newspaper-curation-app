@@ -25,21 +25,15 @@ Brief description, if necessary
 ### Migration
 -->
 
-## In-development
+## v3.5.1
 
-Stuff and nonsense!
+Minor performance improvements
 
 ### Fixed
 
 - Large datasets will now be much faster, thanks to database indices (oops).
   Most operations won't change noticeably, but direct database queries on large
   tables will improve a lot, such as `SELECT * FROM job_logs where job_id = ?`
-
-### Added
-
-### Changed
-
-### Removed
 
 ### Migration
 
