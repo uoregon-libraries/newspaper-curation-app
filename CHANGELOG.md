@@ -31,7 +31,9 @@ Stuff and nonsense!
 
 ### Fixed
 
-- Large datasets will now be much faster, thanks to database indices (oops)
+- Large datasets will now be much faster, thanks to database indices (oops).
+  Most operations won't change noticeably, but direct database queries on large
+  tables will improve a lot, such as `SELECT * FROM job_logs where job_id = ?`
 
 ### Added
 
@@ -40,6 +42,8 @@ Stuff and nonsense!
 ### Removed
 
 ### Migration
+
+- Make sure you run the latest migrations
 
 ## v3.5.0
 
