@@ -25,6 +25,24 @@ Brief description, if necessary
 ### Migration
 -->
 
+## In-development
+
+Fixes and whatnot
+
+### Fixed
+
+- The system user can no longer claim issues.  This was an edge case that
+  rarely occurred, and in a worst-case scenario slowed things down until the
+  workflow owner expired, but it was still a nuisance.
+
+### Added
+
+### Changed
+
+### Removed
+
+### Migration
+
 ## v3.5.1
 
 Minor performance improvements
