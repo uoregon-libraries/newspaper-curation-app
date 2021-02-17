@@ -3,6 +3,7 @@ package main
 import (
 	"fmt"
 	"strconv"
+	"strings"
 
 	"github.com/uoregon-libraries/newspaper-curation-app/src/jobs"
 	"github.com/uoregon-libraries/newspaper-curation-app/src/models"
@@ -22,6 +23,7 @@ func (i *Input) makeBatchMenu() (*menu, string) {
 			"is easier than pulling individual issues (e.g., bad org code, dozens of bad issues, "+
 			"etc.)", i.deleteBatchHandler)
 		m.add("redo-all-derivatives", "Creates jobs to rebuild *all* issues' derivatives", i.redoAllDerivatives)
+		m.add("remove-all-and-delete", "Deletes the batch and removes all issues with a single error message.  This is a shortcut for removing each issue individually and then deleting the batch.  This is very dangerous and requires extra confirmation.", i.removeAllAndDelete)
 		m.add("requeue", "Creates a job in the database to requeue this batch", i.requeueBatchHandler)
 	}
 	if st != models.BatchStatusLive && st != models.BatchStatusLiveDone {
@@ -259,5 +261,81 @@ func (i *Input) requeueBatchHandler([]string) {
 	err = jobs.QueueMakeBatch(b, conf.BatchOutputPath)
 	if err != nil {
 		i.printerrln(fmt.Sprintf("Error queueing batch regeneration: %s", err))
+	}
+}
+
+func (i *Input) removeAllAndDelete(args []string) {
+	var forceID = strconv.Itoa(i.batch.db.ID ^ 0xbead)
+	var usage = func(errmsg string) {
+		i.printerrln(errmsg)
+		i.println("")
+		i.println("usage: remove-all-and-delete <force id> <type> <reason>")
+		i.println("")
+		i.println(fmt.Sprintf(`<force id> must be the semi-encrypted "%s" because of how incredibly dangerous this command is.`, forceID))
+		i.println(`<type> must be either "error" or "reject"`)
+		i.println("examples:")
+		i.println("    remove-all-and-delete <force id> reject double-check all page numbers")
+		i.println("    remove-all-and-delete <force id> error missing pages")
+	}
+
+	if len(args) < 3 {
+		usage("Invalid invocation of remove-all-and-delete")
+		return
+	}
+
+	if args[0] != forceID {
+		usage(fmt.Sprintf("<force id> must be %q", forceID))
+		return
+	}
+
+	var returnToMetadata bool
+	var t = args[1]
+	switch t {
+	case "reject":
+		returnToMetadata = true
+	case "error":
+		returnToMetadata = false
+	default:
+		usage("Invalid type")
+		return
+	}
+
+	var msg = strings.Join(args[2:], " ")
+	i.println(fmt.Sprintf("What will happen to batch %q:", i.batch.db.FullName()))
+	i.println(fmt.Sprintf("- All %d issues in this batch will be flagged as %sed", len(i.batch.Issues), t))
+	i.println(fmt.Sprintf("- Issues' %q reason will be set to %q", t, msg))
+	i.println("- This batch will be deleted")
+	i.println("")
+	i.println("Make absolutely certain that you want to do this.")
+	i.println("")
+	if !i.confirmYN() {
+		return
+	}
+
+	for _, issue := range i.batch.Issues {
+		var typ = iTypeReject
+		if returnToMetadata {
+			i.println("Returning to NCA: " + issue.db.Key())
+		} else {
+			i.println("Removing from NCA: " + issue.db.Key())
+			typ = iTypeError
+		}
+		var err = issue.invalidateFromBatch(typ, msg)
+		if err != nil {
+			i.printerrln(fmt.Sprintf("Unable to invalidate issue %q: %s", issue.db.Key(), err))
+			i.println("")
+			i.println("This batch is all kinds of broken now.")
+			i.println("Fix the problem and then re-run this command.  And hope and pray.")
+			return
+		}
+	}
+
+	i.println("Deleting batch from DB and un-associating issues")
+	var err = i.batch.db.Delete()
+	if err != nil {
+		i.printerrln(fmt.Sprintf("Unable to delete batch: %s", err))
+		i.println("")
+		i.println("This batch is all kinds of broken now.")
+		i.println("Fix the problem and then re-run this command.  And hope and pray.")
 	}
 }

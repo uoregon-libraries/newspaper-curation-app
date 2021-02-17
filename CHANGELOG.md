@@ -39,6 +39,11 @@ Fixes and whatnot
 
 ### Added
 
+- batch-fixer has a new command for rejecting/erroring all issues
+  simultaneously.  This should be extremely rarely needed, but it can help with
+  weird problems that necessitate an entire batch's issues being sent back or
+  deleted from NCA.
+
 ### Changed
 
 ### Removed
