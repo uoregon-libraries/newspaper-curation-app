@@ -34,6 +34,8 @@ Fixes and whatnot
 - The system user can no longer claim issues.  This was an edge case that
   rarely occurred, and in a worst-case scenario slowed things down until the
   workflow owner expired, but it was still a nuisance.
+- More consistency and better error handling in the batch-fixer tool when
+  rejecting or removing issues from a batch
 
 ### Added
 

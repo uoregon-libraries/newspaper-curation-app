@@ -92,12 +92,12 @@ func FindIssue(id int) (*Issue, error) {
 	return &Issue{db: issue}, nil
 }
 
-// RemoveMETS attempts to remove the METS XML file, returning an error if any
+// removeMETS attempts to remove the METS XML file, returning an error if any
 // problems occur *except* the file already being gone, since that may be a
 // sign this was called previously, or somebody had to handle it manually.  We
 // verify sanity first by checking that the issue's directory does indeed
 // exist (and is a directory as opposed to a file).
-func (i *Issue) RemoveMETS() error {
+func (i *Issue) removeMETS() error {
 	var si, err = i.db.SchemaIssue()
 	if err != nil {
 		return fmt.Errorf("unable to get a schema.Issue from the models.Issue: %s", err)
@@ -110,6 +110,43 @@ func (i *Issue) RemoveMETS() error {
 
 	err = os.Remove(si.METSFile())
 	if !os.IsNotExist(err) && err != nil {
+		return fmt.Errorf("unable to remove METS file: %s", err)
+	}
+
+	return nil
+}
+
+type invaliationType byte
+
+const (
+	iTypeNil invaliationType = iota
+	iTypeError
+	iTypeReject
+)
+
+// invalidateFromBatch handles the common logic necessary when an issue is
+// rejected from a batch to get a fix, or needs to be pulled from NCA entirely.
+// The iType determines which lower-level function to use for this.
+func (i *Issue) invalidateFromBatch(typ invaliationType, msg string) error {
+	var err error
+
+	i.db.BatchID = 0
+
+	switch typ {
+	case iTypeError:
+		err = i.db.ReportError(models.SystemUser.ID, msg)
+	case iTypeReject:
+		err = i.db.RejectMetadata(models.SystemUser.ID, msg)
+	default:
+		err = fmt.Errorf("unknown invalidation type")
+	}
+
+	if err != nil {
+		return fmt.Errorf("unable to report/reject issue: %s", err)
+	}
+
+	err = i.removeMETS()
+	if err != nil {
 		return fmt.Errorf("unable to remove METS file: %s", err)
 	}
 

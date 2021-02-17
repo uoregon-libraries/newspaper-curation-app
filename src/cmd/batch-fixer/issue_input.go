@@ -6,7 +6,6 @@ import (
 	"strings"
 
 	"github.com/uoregon-libraries/newspaper-curation-app/src/jobs"
-	"github.com/uoregon-libraries/newspaper-curation-app/src/models"
 )
 
 func (i *Input) makeIssueMenu() (*menu, string) {
@@ -60,21 +59,10 @@ func (i *Input) rejectIssueHandler(args []string) {
 		return
 	}
 
-	// Remove the METS file first - if this works, but the DB operation fails,
-	// it's a lot easier to fix than if the DB operation succeeds but the METS
-	// file is still around.
-	var err = i.issue.RemoveMETS()
+	var err = i.issue.invalidateFromBatch(iTypeReject, msg)
 	if err != nil {
-		i.printerrln("couldn't remove METS XML file: " + err.Error())
+		i.printerrln("unable to reject issue: " + err.Error())
 		return
-	}
-
-	// Save the issue's metadata
-	i.issue.db.RejectMetadata(models.SystemUser.ID, msg)
-	i.issue.db.BatchID = 0
-	err = i.issue.db.Save()
-	if err != nil {
-		i.printerrln("unable to update issue: " + err.Error())
 	}
 
 	if !i.reloadBatch() {
@@ -94,21 +82,9 @@ func (i *Input) errorIssueHandler(args []string) {
 		return
 	}
 
-	// Remove the METS file first - if this works, but the DB operation fails,
-	// it's a lot easier to fix than if the DB operation succeeds but the METS
-	// file is still around.
-	var err = i.issue.RemoveMETS()
+	var err = i.issue.invalidateFromBatch(iTypeError, msg)
 	if err != nil {
-		i.printerrln("couldn't remove METS XML file: " + err.Error())
-		return
-	}
-
-	// Save the issue's metadata
-	i.issue.db.ReportError(models.SystemUser.ID, msg)
-	i.issue.db.BatchID = 0
-	err = i.issue.db.Save()
-	if err != nil {
-		i.printerrln("unable to update issue: " + err.Error())
+		i.printerrln("unable to remove issue: " + err.Error())
 		return
 	}
 
