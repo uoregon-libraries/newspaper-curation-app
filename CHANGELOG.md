@@ -25,9 +25,9 @@ Brief description, if necessary
 ### Migration
 -->
 
-## In-development
+## v3.6.0
 
-Fixes and whatnot
+Minor improvements, mostly related to to the batch-fixer tool
 
 ### Fixed
 
@@ -43,12 +43,6 @@ Fixes and whatnot
   simultaneously.  This should be extremely rarely needed, but it can help with
   weird problems that necessitate an entire batch's issues being sent back or
   deleted from NCA.
-
-### Changed
-
-### Removed
-
-### Migration
 
 ## v3.5.1
 
