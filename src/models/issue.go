@@ -248,6 +248,11 @@ func (i *Issue) Claim(byUserID int) error {
 // claim updates metadata without writing to the database so internal
 // functions can use this as just one step of the update process
 func (i *Issue) claim(byUserID int) {
+	// *Never* let an empty or system user claim anything!
+	if byUserID <= 0 {
+		return
+	}
+
 	i.WorkflowOwnerID = byUserID
 	i.WorkflowOwnerExpiresAt = time.Now().Add(time.Hour * 24 * 7)
 }
@@ -321,7 +326,7 @@ func (i *Issue) returnFor(ws schema.WorkflowStep, ac ActionType, managerID, work
 	}
 	i.unclaim()
 	i.WorkflowStep = ws
-	if workflowOwnerID != 0 {
+	if workflowOwnerID > 0 {
 		i.claim(workflowOwnerID)
 	}
 	return i.saveWithAction(ac, managerID, msg)
