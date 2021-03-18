@@ -165,7 +165,7 @@ func (r *Runner) attemptRetry(pr Processor) {
 		return
 	}
 
-	var retryJob, err = dbj.Requeue()
+	var retryJob, err = dbj.FailAndRetry()
 	if err != nil {
 		r.logger.Criticalf("Unable to requeue failed job (job: %d): %s", dbj.ID, err)
 		return

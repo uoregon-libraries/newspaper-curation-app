@@ -296,20 +296,25 @@ func (j *Job) SaveOp(op *magicsql.Operation) error {
 	return op.Err()
 }
 
-// Requeue closes out this job and queues a new, duplicate job ready for
-// processing.  We do this instead of just rerunning a job so that the job logs
-// can be tied to a distinct instance of a job, making it easier to debug
-// things like command-line failures for a particular run.
-func (j *Job) Requeue() (*Job, error) {
-	var op = dbi.DB.Operation()
-	op.BeginTransaction()
-
-	// This is a shallow clone, but that should be fine since it's only the
-	// top-level data that gets serialized to the database
+// Clone returns a shallow copy of the job with key data cleared (database id,
+// for instance)
+func (j *Job) Clone() *Job {
 	var clone *Job
 	var temp = *j
 	clone = &temp
 	clone.ID = 0
+	return clone
+}
+
+// FailAndRetry closes out j and queues a new, duplicate job ready for
+// processing.  We do this instead of just rerunning a job so that the job logs
+// can be tied to a distinct instance of a job, making it easier to debug
+// things like command-line failures for a particular run.
+func (j *Job) FailAndRetry() (*Job, error) {
+	var op = dbi.DB.Operation()
+	op.BeginTransaction()
+
+	var clone = j.Clone()
 	clone.Status = string(JobStatusPending)
 	clone.RetryCount++
 
@@ -321,6 +326,31 @@ func (j *Job) Requeue() (*Job, error) {
 		delay = maxDelay
 	}
 	clone.RunAt = time.Now().Add(delay)
+	clone.SaveOp(op)
+
+	j.Status = string(JobStatusFailedDone)
+	j.SaveOp(op)
+
+	op.EndTransaction()
+	return clone, op.Err()
+}
+
+// RenewDeadJob takes a failed (NOT failed_done) job and queues a new job as if
+// it were being created for the first time, and is set to run immediately.
+//
+// This is used after manual intervention for a job that exhausted all retries.
+func RenewDeadJob(j *Job) (*Job, error) {
+	if j.Status != string(JobStatusFailed) {
+		return nil, fmt.Errorf("cannot restart unfailed job")
+	}
+
+	var op = dbi.DB.Operation()
+	op.BeginTransaction()
+
+	var clone = j.Clone()
+	clone.Status = string(JobStatusPending)
+	clone.RetryCount = 0
+	clone.RunAt = time.Now()
 	clone.SaveOp(op)
 
 	j.Status = string(JobStatusFailedDone)
