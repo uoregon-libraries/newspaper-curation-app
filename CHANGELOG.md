@@ -25,6 +25,23 @@ Brief description, if necessary
 ### Migration
 -->
 
+## Dev
+
+Brief description
+
+### Fixed
+
+- Dead jobs which are requeued now properly reset their retry count
+
+### Added
+
+### Changed
+
+### Removed
+
+### Migration
+
+
 ## v3.6.0
 
 Minor improvements, mostly related to to the batch-fixer tool
