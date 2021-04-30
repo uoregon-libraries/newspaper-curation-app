@@ -3,7 +3,7 @@ wait_for_database() {
   MAX_TRIES=30
   TRIES=0
   while true; do
-    mysql -unca -h127.0.0.1 -pnca -e 'ALTER DATABASE nca charset=utf8'
+    mysqladmin status -unca -h127.0.0.1 -pnca
     st=$?
     if [[ $st == 0 ]]; then
       return 0
