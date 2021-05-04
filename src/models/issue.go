@@ -296,7 +296,7 @@ func (i *Issue) ApproveMetadata(reviewerID int) error {
 	i.MetadataApprovedAt = time.Now()
 	i.ReviewedByUserID = reviewerID
 	i.WorkflowStep = schema.WSReadyForMETSXML
-	return i.Save()
+	return i.saveWithAction(ActionTypeMetadataApproval, reviewerID, "")
 }
 
 // RejectMetadata sends the issue back to the metadata entry user and saves the
