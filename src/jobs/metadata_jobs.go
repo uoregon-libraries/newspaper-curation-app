@@ -8,6 +8,7 @@ package jobs
 
 import (
 	"github.com/uoregon-libraries/newspaper-curation-app/src/config"
+	"github.com/uoregon-libraries/newspaper-curation-app/src/models"
 	"github.com/uoregon-libraries/newspaper-curation-app/src/schema"
 )
 
@@ -20,7 +21,7 @@ type SetIssueWS struct {
 // Process updates the issue's workflow step and attempts to save it
 func (j *SetIssueWS) Process(*config.Config) bool {
 	j.DBIssue.WorkflowStep = schema.WorkflowStep(j.db.Args[wsArg])
-	var err = j.DBIssue.Save()
+	var err = j.DBIssue.Save(models.ActionTypeInternalProcess, models.SystemUser.ID, "changed workflow step to "+j.db.Args[wsArg])
 	if err != nil {
 		j.Logger.Errorf("Unable to update workflow step for issue %d: %s", j.DBIssue.ID, err)
 	}
@@ -36,7 +37,7 @@ type SetIssueBackupLoc struct {
 // Process updates the issue's backup location and attempts to save it
 func (j *SetIssueBackupLoc) Process(*config.Config) bool {
 	j.DBIssue.BackupLocation = j.db.Args[locArg]
-	var err = j.DBIssue.Save()
+	var err = j.DBIssue.SaveWithoutAction()
 	if err != nil {
 		j.Logger.Errorf("Unable to update backup location for issue %d: %s", j.DBIssue.ID, err)
 	}
@@ -51,7 +52,7 @@ type SetIssueLocation struct {
 // Process just updates the issue's location field
 func (j *SetIssueLocation) Process(*config.Config) bool {
 	j.DBIssue.Location = j.db.Args[locArg]
-	var err = j.DBIssue.Save()
+	var err = j.DBIssue.SaveWithoutAction()
 	if err != nil {
 		j.Logger.Errorf("Error setting issue.location for id %d: %s", j.DBIssue.ID, err)
 		return false
@@ -68,7 +69,7 @@ type IgnoreIssue struct {
 // Process sets the ignored field to true and saves the issue
 func (j *IgnoreIssue) Process(*config.Config) bool {
 	j.DBIssue.Ignored = true
-	var err = j.DBIssue.Save()
+	var err = j.DBIssue.SaveWithoutAction()
 	if err != nil {
 		j.Logger.Errorf("Error setting issue.ignored for id %d: %s", j.DBIssue.ID, err)
 		return false

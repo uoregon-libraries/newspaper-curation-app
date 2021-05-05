@@ -19,6 +19,7 @@ type ActionType string
 // Full list of valid action types
 const (
 	ActionTypeComment              ActionType = "user-comment"
+	ActionTypeInternalProcess      ActionType = "internal-process"
 	ActionTypeMetadataRejection    ActionType = "metadata-rejection"
 	ActionTypeMetadataApproval     ActionType = "metadata-approval"
 	ActionTypeMetadataEntry        ActionType = "metadata-entry"
@@ -26,6 +27,8 @@ const (
 	ActionTypeReturnCurate         ActionType = "return-metadata-entry"
 	ActionTypeReturnReview         ActionType = "return-metadata-review"
 	ActionTypeRemoveErrorIssue     ActionType = "remove-error-issue"
+	ActionTypeClaim                ActionType = "claim-issue"
+	ActionTypeUnclaim              ActionType = "unclaim-issue"
 )
 
 // Describe gives a human-readable explanation of what happened when a given
@@ -34,6 +37,8 @@ func (at ActionType) Describe() string {
 	switch at {
 	case ActionTypeComment:
 		return "wrote a comment"
+	case ActionTypeInternalProcess:
+		return "executed an internal process"
 	case ActionTypeMetadataRejection:
 		return "rejected the issue's metadata"
 	case ActionTypeMetadataApproval:
@@ -48,6 +53,10 @@ func (at ActionType) Describe() string {
 		return "returned the issue for metadata review"
 	case ActionTypeRemoveErrorIssue:
 		return "moved the issue from NCA to the error folder"
+	case ActionTypeClaim:
+		return "claimed the issue"
+	case ActionTypeUnclaim:
+		return "unclaimed the issue"
 	default:
 		return string(at)
 	}
