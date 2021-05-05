@@ -21,7 +21,7 @@ type SetIssueWS struct {
 // Process updates the issue's workflow step and attempts to save it
 func (j *SetIssueWS) Process(*config.Config) bool {
 	j.DBIssue.WorkflowStep = schema.WorkflowStep(j.db.Args[wsArg])
-	var err = j.DBIssue.Save(models.ActionTypeInternalProcess, models.SystemUser.ID, "changed workflow step to "+j.db.Args[wsArg])
+	var err = j.DBIssue.SaveWithoutAction()
 	if err != nil {
 		j.Logger.Errorf("Unable to update workflow step for issue %d: %s", j.DBIssue.ID, err)
 	}
@@ -106,6 +106,30 @@ func (j *SetBatchLocation) Process(*config.Config) bool {
 	var err = j.DBBatch.Save()
 	if err != nil {
 		j.Logger.Errorf("Error setting batch.location for id %d: %s", j.DBBatch.ID, err)
+		return false
+	}
+
+	return true
+}
+
+// RecordIssueAction adds an issue action to the Issue in question.  This one
+// is slightly more involved than most metadata jobs, but in the end it's just
+// a quick SQL INSERT, and an action, in my mind, really is just barely outside
+// the traditional definition of metadata....
+type RecordIssueAction struct {
+	*IssueJob
+}
+
+// Process adds the issue action to the database
+func (j *RecordIssueAction) Process(*config.Config) bool {
+	// This is a waste of cycles right here, but going through the Issue's save
+	// procedure ensures that the action is created and associated with the issue
+	// in a way that is consistent.  If we add things to how issues and actions
+	// interact, we don't really want to duplicate (or else potentially break)
+	// this consistency.  Oh... and I'm lazy.
+	var err = j.DBIssue.Save(models.ActionTypeInternalProcess, models.SystemUser.ID, j.db.Args[msgArg])
+	if err != nil {
+		j.Logger.Errorf("Error recording internal issue action for id %d: %s", j.DBIssue.ID, err)
 		return false
 	}
 

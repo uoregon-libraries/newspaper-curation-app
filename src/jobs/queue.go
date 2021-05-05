@@ -19,6 +19,7 @@ const (
 	srcArg    = "Source"
 	destArg   = "Destination"
 	forcedArg = "Forced"
+	msgArg    = "Message"
 )
 
 // PrepareJobAdvanced gets a job of any kind set up with sensible defaults
@@ -44,6 +45,14 @@ func PrepareBatchJobAdvanced(t models.JobType, batch *models.Batch, args map[str
 	j.ObjectID = batch.ID
 	j.ObjectType = models.JobObjectTypeBatch
 	return j
+}
+
+// PrepareIssueActionJob sets up a job to record an internal system action tied
+// to the given issue.  This is a very simple wrapper around
+// PrepareIssueJobAdvanced that's meant to make it a lot easier to see whan an
+// action is being recorded.
+func PrepareIssueActionJob(issue *models.Issue, msg string) *models.Job {
+	return PrepareIssueJobAdvanced(models.JobTypeIssueAction, issue, map[string]string{msgArg: msg})
 }
 
 // QueueSerial attempts to save the jobs (in a transaction), setting the first
@@ -136,6 +145,7 @@ func QueueSFTPIssueMove(issue *models.Issue, c *config.Config) error {
 		PrepareIssueJobAdvanced(models.JobTypeSetIssueLocation, issue, makeLocArgs(pageReviewDir)),
 
 		PrepareIssueJobAdvanced(models.JobTypeSetIssueWS, issue, makeWSArgs(schema.WSAwaitingPageReview)),
+		PrepareIssueActionJob(issue, "Moved issue from SFTP into NCA"),
 	)
 }
 
@@ -157,6 +167,7 @@ func QueueMoveIssueForDerivatives(issue *models.Issue, workflowPath string) erro
 		PrepareIssueJobAdvanced(models.JobTypeRenumberPages, issue, nil),
 		PrepareIssueJobAdvanced(models.JobTypeMakeDerivatives, issue, nil),
 		PrepareIssueJobAdvanced(models.JobTypeSetIssueWS, issue, makeWSArgs(schema.WSReadyForMetadataEntry)),
+		PrepareIssueActionJob(issue, "Created issue derivatives"),
 	)
 }
 
@@ -171,6 +182,7 @@ func QueueForceDerivatives(issue *models.Issue) error {
 		PrepareIssueJobAdvanced(models.JobTypeMakeDerivatives, issue, makeForcedArgs()),
 		PrepareIssueJobAdvanced(models.JobTypeBuildMETS, issue, makeForcedArgs()),
 		PrepareIssueJobAdvanced(models.JobTypeSetIssueWS, issue, makeWSArgs(currentStep)),
+		PrepareIssueActionJob(issue, "Force-regenerated issue derivatives"),
 	)
 }
 
@@ -190,6 +202,7 @@ func QueueFinalizeIssue(issue *models.Issue) error {
 	}
 
 	jobs = append(jobs, PrepareIssueJobAdvanced(models.JobTypeSetIssueWS, issue, makeWSArgs(schema.WSReadyForBatching)))
+	jobs = append(jobs, PrepareIssueActionJob(issue, "Issue prepped for batching"))
 
 	return QueueSerial(jobs...)
 }
@@ -258,6 +271,7 @@ func QueueRemoveErroredIssue(issue *models.Issue, erroredIssueRoot string) error
 		PrepareIssueJobAdvanced(models.JobTypeIgnoreIssue, issue, nil),
 		PrepareIssueJobAdvanced(models.JobTypeSetIssueLocation, issue, makeLocArgs("")),
 		PrepareIssueJobAdvanced(models.JobTypeSetIssueWS, issue, makeWSArgs(schema.WSUnfixableMetadataError)),
+		PrepareIssueActionJob(issue, "Errored issue removed from NCA"),
 	)
 
 	return QueueSerial(jobs...)
