@@ -40,7 +40,7 @@ Brief description
 - Metadata approval is now added to the action log
 - More internal system events are logged to issue actions so users can better
   see what's happened to an issue beyond just who entered metadata
-  - Metadata curation and review contine to only display "relevant" actions to
+  - Metadata curation and review continue to only display "relevant" actions to
     avoid losing comments to things like users claiming/unclaiming issues
 
 ### Changed
