@@ -32,8 +32,16 @@ Brief description
 ### Fixed
 
 - Dead jobs which are requeued now properly reset their retry count
+- Timestamps should now always be converted to local time instead of sometimes
+  being UTC (without even bothering to say so)
 
 ### Added
+
+- Metadata approval is now added to the action log
+- More internal system events are logged to issue actions so users can better
+  see what's happened to an issue beyond just who entered metadata
+  - Metadata curation and review contine to only display "relevant" actions to
+    avoid losing comments to things like users claiming/unclaiming issues
 
 ### Changed
 
