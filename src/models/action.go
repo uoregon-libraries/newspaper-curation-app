@@ -129,6 +129,18 @@ func (a *Action) Save() error {
 	return a.SaveOp(op)
 }
 
+// important returns true for actions that really need to be seen, based on
+// their type.  This allows us to exclude things we want to capture, but not
+// spam at the curators / reviewers.
+func (a *Action) important() bool {
+	switch ActionType(a.ActionType) {
+	case ActionTypeInternalProcess, ActionTypeClaim, ActionTypeUnclaim:
+		return false
+	}
+
+	return true
+}
+
 // SaveOp creates or updates the Action with a custom operation (e.g., for
 // transaction-dependent saves)
 func (a *Action) SaveOp(op *magicsql.Operation) error {
