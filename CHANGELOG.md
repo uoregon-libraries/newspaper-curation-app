@@ -25,9 +25,9 @@ Brief description, if necessary
 ### Migration
 -->
 
-## Dev
+## v3.7.0
 
-Brief description
+Backend job fixes and better action log on issues
 
 ### Fixed
 
@@ -42,13 +42,6 @@ Brief description
   see what's happened to an issue beyond just who entered metadata
   - Metadata curation and review continue to only display "relevant" actions to
     avoid losing comments to things like users claiming/unclaiming issues
-
-### Changed
-
-### Removed
-
-### Migration
-
 
 ## v3.6.0
 
