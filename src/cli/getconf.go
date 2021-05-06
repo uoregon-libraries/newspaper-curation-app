@@ -91,7 +91,7 @@ func Wrap(msg string) {
 
 // HelpExit exits the application after printing out the parser's help
 func (c *CLI) HelpExit(code int) {
-	fmt.Fprintln(os.Stderr, "NCA Version v"+version.Version)
+	fmt.Fprintln(os.Stderr, "NCA Version "+version.Version)
 	fmt.Fprintln(os.Stderr)
 	c.p.WriteHelp(os.Stderr)
 	for _, msg := range c.postUsage {

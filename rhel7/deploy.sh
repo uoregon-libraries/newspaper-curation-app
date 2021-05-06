@@ -5,25 +5,6 @@
 
 set -eu
 
-type=${1:-}
-
-case "$type" in
-
-"dev")
-  checkout=
-  version="-$(git log -1 --format="%h")"
-  ;;
-
-"prod")
-  checkout=$(git tag | grep "^v[0-9.]\+$" | sort -V | tail -1)
-  version=
-  ;;
-
-*)
-  echo "You must specify 'dev' or 'prod'"
-  exit 1
-esac
-
 set +e
 status=$(git status --porcelain | grep -v "^??")
 set -e
@@ -37,13 +18,8 @@ if [[ $checkout != "" ]]; then
   git checkout $checkout
 fi
 
-cp src/version/version.go /tmp/old-version.go
-sed -i "s|\"$|$version\"|" src/version/version.go
-
 make clean
 make
-
-cp /tmp/old-version.go src/version/version.go
 
 echo Stopping services...
 sudo systemctl stop httpd || true

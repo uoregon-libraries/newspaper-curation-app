@@ -42,6 +42,8 @@ Backend job fixes and better action log on issues
   see what's happened to an issue beyond just who entered metadata
   - Metadata curation and review continue to only display "relevant" actions to
     avoid losing comments to things like users claiming/unclaiming issues
+- Full version information is now embedded into NCA at compile-time based on
+  the output of `git describe`
 
 ## v3.6.0
 

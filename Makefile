@@ -2,6 +2,7 @@
 
 SOURCES := $(shell find ./src -name "*.go")
 SOURCEDIRS := $(shell find ./src -type d)
+BUILD := $(shell git describe --tags)
 
 all: deps validate build
 
@@ -17,7 +18,7 @@ build: $(shell ./scripts/cmdslist.sh)
 
 # For quick building of binaries, you can run something like "make bin/server"
 bin/%: src/cmd/% $(SOURCES) $(SOURCEDIRS)
-	go build -ldflags="-s -w" -o $@ github.com/uoregon-libraries/newspaper-curation-app/$<
+	go build -ldflags="-s -w -X github.com/uoregon-libraries/newspaper-curation-app/src/version.Version=$(BUILD)" -o $@ github.com/uoregon-libraries/newspaper-curation-app/$<
 
 lint:
 	golint src/...
