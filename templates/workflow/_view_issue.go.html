@@ -1,5 +1,6 @@
 <!-- issue_actions needs to be given a dict of "Actions" (a list of actions to
-     render) and "User".  User is used to add a class on one's own actions. -->
+     render) and "User".  User is passed in so we can customize the
+     text/display for one's own actions. -->
 {{define "issue_actions"}}
   <div class="action-list">
     {{range .Actions}}

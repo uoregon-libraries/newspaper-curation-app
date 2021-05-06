@@ -217,7 +217,7 @@ func (i *Issue) DateEdition() string {
 	return schema.IssueDateEdition(i.Date, i.Edition)
 }
 
-// WorkflowActions lazy-loads all actions tied to this issue and orders them in
+// WorkflowActions loads all actions tied to this issue and orders them in
 // chronological order (the newest are at the end of the list)
 func (i *Issue) WorkflowActions() []*Action {
 	if i.actions == nil {
@@ -226,16 +226,6 @@ func (i *Issue) WorkflowActions() []*Action {
 	}
 
 	return i.actions
-}
-
-// RecentWorkflowActions returns the last n actions which have occurred
-func (i *Issue) RecentWorkflowActions(n int) []*Action {
-	var list = i.WorkflowActions()
-	if len(list) > n {
-		return list[len(list)-n:]
-	}
-
-	return list
 }
 
 // Claim sets the workflow owner to the given user id, and sets the expiration

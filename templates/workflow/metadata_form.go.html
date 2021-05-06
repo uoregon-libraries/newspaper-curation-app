@@ -11,8 +11,8 @@
 </p>
 
 {{if .Data.Issue.WorkflowActions}}
-  <h2>Recent Actions / Comments</h2>
-  {{template "issue_actions" (dict "Actions" (.Data.Issue.RecentWorkflowActions 10) "User" .User)}}
+  <h2>Actions / Comments</h2>
+  {{template "issue_actions" (dict "Actions" .Data.Issue.WorkflowActions "User" .User)}}
 {{end}}
 
 <h2>Page Numbering</h2>
