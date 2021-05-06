@@ -56,7 +56,7 @@ func (at ActionType) Describe() string {
 	case ActionTypeClaim:
 		return "claimed the issue"
 	case ActionTypeUnclaim:
-		return "unclaimed the issue"
+		return "removed the issue from the prior owner's desk"
 	default:
 		return string(at)
 	}

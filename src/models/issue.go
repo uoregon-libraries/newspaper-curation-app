@@ -258,9 +258,9 @@ func (i *Issue) claim(byUserID int) {
 }
 
 // Unclaim removes the workflow owner and resets the workflow expiration time
-func (i *Issue) Unclaim() error {
+func (i *Issue) Unclaim(byUserID int) error {
 	i.unclaim()
-	return i.Save(ActionTypeUnclaim, i.WorkflowOwnerID, "")
+	return i.Save(ActionTypeUnclaim, byUserID, "")
 }
 
 // unclaim updates metadata without writing to the database so internal
