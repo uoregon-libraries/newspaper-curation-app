@@ -1,5 +1,7 @@
 github.com/Nerdmaster/magicsql v0.10.1 h1:01JD0da/2n9HsGnwmd1qS2DTolcaur9u9TVQn0rOC+s=
 github.com/Nerdmaster/magicsql v0.10.1/go.mod h1:MqLFz6eaQVE6ysusi3NVz5bcNuULtwfSorc1aoYZG6s=
+github.com/Nerdmaster/magicsql v0.11.0 h1:YXSYCXZPzoeK4uRfdXVttuD1+i1Af+0aiZO9BAiIDek=
+github.com/Nerdmaster/magicsql v0.11.0/go.mod h1:VSxpxLy7SnfHjqM6B9LoO8GukliXLyHViUAmx79gCMc=
 github.com/Nerdmaster/terminal v0.12.1 h1:DGb3ya55nZdqdBMjWQHNF5mHYHS2eJgYLqmw3KnE1cQ=
 github.com/Nerdmaster/terminal v0.12.1/go.mod h1:Dg6++m3aF+P/l8RdYb/2N6zK3CqvUfzhBreUNEWuQ8M=
 github.com/go-sql-driver/mysql v1.3.0 h1:pgwjLi/dvffoP9aabwkT3AKpXQM93QARkjFhDDqC1UE=

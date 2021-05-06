@@ -127,5 +127,5 @@ func (i *Issue) createDatabaseIssue() (*models.Issue, error) {
 	}
 
 	dbi.Location = i.Location
-	return dbi, dbi.Save()
+	return dbi, dbi.Save(models.ActionTypeInternalProcess, models.SystemUser.ID, "Issue data initialized in NCA")
 }

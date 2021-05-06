@@ -50,9 +50,9 @@
 
 <h2>Issue</h2>
 
-{{if .Data.Issue.WorkflowActions}}
-  <h3>Actions / Comments</h3>
-  {{template "issue_actions" (dict "Actions" .Data.Issue.WorkflowActions "User" .User)}}
+{{if .Data.Issue.AllWorkflowActions}}
+  <h3>All Actions / Comments</h3>
+  {{template "issue_actions" (dict "Actions" .Data.Issue.AllWorkflowActions "User" .User)}}
 {{end}}
 
 <h3>Page Numbering</h3>

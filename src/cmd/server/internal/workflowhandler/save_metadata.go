@@ -56,7 +56,7 @@ func saveIssue(resp *responder.Responder, i *Issue, changes map[string]string) (
 	}
 
 	var info = fmt.Sprintf("issue id %d (POST: %#v; Changes: %#v)", i.ID, resp.Request.Form, changes)
-	var err = i.Save()
+	var err = i.SaveWithoutAction()
 	if err != nil {
 		logger.Errorf("Unable to save metadata for %s: %s", info, err)
 		resp.Writer.WriteHeader(http.StatusInternalServerError)

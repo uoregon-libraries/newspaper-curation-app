@@ -121,7 +121,7 @@ func purgeIssues() error {
 			return fmt.Errorf("unable to remove issue location %q: %s", issue.Location, err)
 		}
 		issue.Location = ""
-		err = issue.Save()
+		err = issue.SaveWithoutAction()
 		if err != nil {
 			return fmt.Errorf("unable to remove issue %d's location (%s) from database: %s", issue.ID, issue.Location, err)
 		}

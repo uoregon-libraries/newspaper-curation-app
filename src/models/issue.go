@@ -217,9 +217,9 @@ func (i *Issue) DateEdition() string {
 	return schema.IssueDateEdition(i.Date, i.Edition)
 }
 
-// WorkflowActions lazy-loads all actions tied to this issue and orders them in
+// AllWorkflowActions loads all actions tied to this issue and orders them in
 // chronological order (the newest are at the end of the list)
-func (i *Issue) WorkflowActions() []*Action {
+func (i *Issue) AllWorkflowActions() []*Action {
 	if i.actions == nil {
 		// Yup, we deliberately ignore errors here.  Bah.
 		i.actions, _ = FindActionsForIssue(i.ID)
@@ -228,21 +228,26 @@ func (i *Issue) WorkflowActions() []*Action {
 	return i.actions
 }
 
-// RecentWorkflowActions returns the last n actions which have occurred
-func (i *Issue) RecentWorkflowActions(n int) []*Action {
-	var list = i.WorkflowActions()
-	if len(list) > n {
-		return list[len(list)-n:]
+// WorkflowActions loads meaningful (to curators and reviewers) actions tied to
+// this issue and orders them in chronological order (the newest are at the end
+// of the list)
+func (i *Issue) WorkflowActions() []*Action {
+	var actions = i.AllWorkflowActions()
+	var meaningful []*Action
+	for _, a := range actions {
+		if a.important() {
+			meaningful = append(meaningful, a)
+		}
 	}
 
-	return list
+	return meaningful
 }
 
 // Claim sets the workflow owner to the given user id, and sets the expiration
 // time to a week from now
 func (i *Issue) Claim(byUserID int) error {
 	i.claim(byUserID)
-	return i.Save()
+	return i.Save(ActionTypeClaim, byUserID, "")
 }
 
 // claim updates metadata without writing to the database so internal
@@ -258,9 +263,9 @@ func (i *Issue) claim(byUserID int) {
 }
 
 // Unclaim removes the workflow owner and resets the workflow expiration time
-func (i *Issue) Unclaim() error {
+func (i *Issue) Unclaim(byUserID int) error {
 	i.unclaim()
-	return i.Save()
+	return i.Save(ActionTypeUnclaim, byUserID, "")
 }
 
 // unclaim updates metadata without writing to the database so internal
@@ -286,7 +291,7 @@ func (i *Issue) QueueForMetadataReview(curatorID int) error {
 
 	var message = i.DraftComment
 	i.DraftComment = ""
-	return i.saveWithAction(ActionTypeMetadataEntry, curatorID, message)
+	return i.Save(ActionTypeMetadataEntry, curatorID, message)
 }
 
 // ApproveMetadata moves the issue to the final workflow step (e.g., no more
@@ -296,7 +301,7 @@ func (i *Issue) ApproveMetadata(reviewerID int) error {
 	i.MetadataApprovedAt = time.Now()
 	i.ReviewedByUserID = reviewerID
 	i.WorkflowStep = schema.WSReadyForMETSXML
-	return i.Save()
+	return i.Save(ActionTypeMetadataApproval, reviewerID, "")
 }
 
 // RejectMetadata sends the issue back to the metadata entry user and saves the
@@ -305,7 +310,7 @@ func (i *Issue) RejectMetadata(reviewerID int, notes string) error {
 	i.claim(i.MetadataEntryUserID)
 	i.RejectedByUserID = reviewerID
 	i.WorkflowStep = schema.WSReadyForMetadataEntry
-	return i.saveWithAction(ActionTypeMetadataRejection, reviewerID, notes)
+	return i.Save(ActionTypeMetadataRejection, reviewerID, notes)
 }
 
 // ReportError adds an error message to the issue and flags it as being in the
@@ -314,7 +319,7 @@ func (i *Issue) RejectMetadata(reviewerID int, notes string) error {
 func (i *Issue) ReportError(userID int, message string) error {
 	i.WorkflowStep = schema.WSUnfixableMetadataError
 	i.unclaim()
-	return i.saveWithAction(ActionTypeReportUnfixableError, userID, message)
+	return i.Save(ActionTypeReportUnfixableError, userID, message)
 }
 
 // returnFor implements the issue and action logic we want when returning an
@@ -329,7 +334,7 @@ func (i *Issue) returnFor(ws schema.WorkflowStep, ac ActionType, managerID, work
 	if workflowOwnerID > 0 {
 		i.claim(workflowOwnerID)
 	}
-	return i.saveWithAction(ac, managerID, msg)
+	return i.Save(ac, managerID, msg)
 }
 
 // ReturnForCuration is a manager-only action which forces an issue back to the
@@ -352,10 +357,11 @@ func (i *Issue) ReturnForReview(managerID, workflowOwnerID int, comment string) 
 func (i *Issue) PrepForRemoval(managerID int, message string) error {
 	i.unclaim()
 	i.WorkflowStep = schema.WSAwaitingProcessing
-	return i.saveWithAction(ActionTypeRemoveErrorIssue, managerID, message)
+	return i.Save(ActionTypeRemoveErrorIssue, managerID, message)
 }
 
-func (i *Issue) saveWithAction(action ActionType, userID int, message string) error {
+// Save creates or updates the issue with an associated action and optional message
+func (i *Issue) Save(action ActionType, userID int, message string) error {
 	var op = dbi.DB.Operation()
 	op.Dbg = dbi.Debug
 	op.BeginTransaction()
@@ -371,8 +377,11 @@ func (i *Issue) saveWithAction(action ActionType, userID int, message string) er
 	return op.Err()
 }
 
-// Save creates or updates the Issue in the issues table
-func (i *Issue) Save() error {
+// SaveWithoutAction creates or updates the Issue in the issues table without
+// associating any kind of action.  This should be used sparingly, however, as
+// the action log is key to debugging a variety of issues as well as
+// determining what's going on with an issue.
+func (i *Issue) SaveWithoutAction() error {
 	var op = dbi.DB.Operation()
 	op.Dbg = dbi.Debug
 	return i.SaveOp(op)

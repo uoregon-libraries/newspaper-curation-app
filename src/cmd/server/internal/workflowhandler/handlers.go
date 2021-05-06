@@ -91,7 +91,7 @@ func claimIssueHandler(resp *responder.Responder, i *Issue) {
 
 // unclaimIssueHandler clears the issue's workflow data
 func unclaimIssueHandler(resp *responder.Responder, i *Issue) {
-	var err = i.Unclaim()
+	var err = i.Unclaim(resp.Vars.User.ID)
 	if err != nil {
 		logger.Errorf("Unable to unclaim issue id %d for user %s: %s", i.ID, resp.Vars.User.Login, err)
 		resp.Vars.Alert = template.HTML("Unable to unclaim issue; contact support or try again later.")
