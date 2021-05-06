@@ -217,15 +217,30 @@ func (i *Issue) DateEdition() string {
 	return schema.IssueDateEdition(i.Date, i.Edition)
 }
 
-// WorkflowActions loads all actions tied to this issue and orders them in
+// AllWorkflowActions loads all actions tied to this issue and orders them in
 // chronological order (the newest are at the end of the list)
-func (i *Issue) WorkflowActions() []*Action {
+func (i *Issue) AllWorkflowActions() []*Action {
 	if i.actions == nil {
 		// Yup, we deliberately ignore errors here.  Bah.
 		i.actions, _ = FindActionsForIssue(i.ID)
 	}
 
 	return i.actions
+}
+
+// WorkflowActions loads meaningful (to curators and reviewers) actions tied to
+// this issue and orders them in chronological order (the newest are at the end
+// of the list)
+func (i *Issue) WorkflowActions() []*Action {
+	var actions = i.AllWorkflowActions()
+	var meaningful []*Action
+	for _, a := range actions {
+		if a.important() {
+			meaningful = append(meaningful, a)
+		}
+	}
+
+	return meaningful
 }
 
 // Claim sets the workflow owner to the given user id, and sets the expiration
