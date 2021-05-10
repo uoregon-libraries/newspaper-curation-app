@@ -25,6 +25,14 @@ Brief description, if necessary
 ### Migration
 -->
 
+## v3.7.1
+
+Deploys work again
+
+### Fixed
+
+- Deploy script, broken in v3.7.0, is fixed
+
 ## v3.7.0
 
 Backend job fixes and better action log on issues
