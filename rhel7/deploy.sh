@@ -13,11 +13,6 @@ if [[ $status != "" ]]; then
   exit 1
 fi
 
-
-if [[ $checkout != "" ]]; then
-  git checkout $checkout
-fi
-
 make clean
 make
 
