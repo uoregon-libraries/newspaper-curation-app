@@ -25,6 +25,20 @@ Brief description, if necessary
 ### Migration
 -->
 
+## v3.7.2
+
+Local dev fixes
+
+### Fixed
+
+- Docker builds mostly work again
+  - You currently cannot use a built docker image as a standalone entity; you
+    have to use docker-compose and mount in local binaries.  This will get a
+    github issue.
+- Builds rely on goimports instead of gofmt
+  - This fixes local development when using versioned go (i.e., when you pull
+    down a new version via `go get golang.org/dl/go1.X.Y`)
+
 ## v3.7.1
 
 Deploys work again
