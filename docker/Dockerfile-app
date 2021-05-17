@@ -58,6 +58,7 @@ ENV PATH $PATH:$GOROOT/bin:$GOPATH/bin
 # Golang dependencies
 RUN go get github.com/pressly/goose/cmd/goose
 RUN go get -u golang.org/x/lint/golint
+RUN go get -u golang.org/x/tools/cmd/goimports
 
 WORKDIR /usr/local/src/nca
 
