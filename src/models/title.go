@@ -17,9 +17,7 @@ type Title struct {
 	EmbargoPeriod string
 	Rights        string
 	ValidLCCN     bool
-	SFTPDir       string
 	SFTPUser      string
-	SFTPPass      string
 	MARCTitle     string
 	MARCLocation  string
 	LangCode3     string
@@ -62,29 +60,16 @@ func (tl TitleList) FindByLCCN(lccn string) *Title {
 	return nil
 }
 
-// FindByDirectory looks up a title by the given directory string, matching it
-// against the sftp_dir field in the database
-func (tl TitleList) FindByDirectory(dir string) *Title {
+// Find tries to get a title by using the LCCN or the SFTPUser fields
+func (tl TitleList) Find(search string) *Title {
 	for _, t := range tl {
-		if t.SFTPDir == dir {
+		if t.LCCN == search {
+			return t
+		}
+		if t.SFTPUser == search {
 			return t
 		}
 	}
-	return nil
-}
-
-// Find looks for the title by either directory name or LCCN to give a simpler
-// way to find titles in a general case
-func (tl TitleList) Find(identifier string) *Title {
-	for _, t := range tl {
-		if t.SFTPDir == identifier {
-			return t
-		}
-		if t.LCCN == identifier {
-			return t
-		}
-	}
-
 	return nil
 }
 
