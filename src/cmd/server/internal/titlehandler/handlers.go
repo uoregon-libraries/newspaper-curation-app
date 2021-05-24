@@ -152,9 +152,7 @@ func setTitleData(r *responder.Responder, t *Title) (vErrors []string, handled b
 	}
 
 	if r.Vars.User.PermittedTo(privilege.ModifyTitleSFTP) {
-		t.SFTPDir = form.Get("sftpdir")
 		t.SFTPUser = form.Get("sftpuser")
-		t.SFTPPass = form.Get("sftppass")
 	}
 
 	if !t.ValidLCCN || r.Vars.User.PermittedTo(privilege.ModifyValidatedLCCNs) {
@@ -186,9 +184,6 @@ func setTitleData(r *responder.Responder, t *Title) (vErrors []string, handled b
 		}
 		if t.LCCN == t2.LCCN {
 			vErrors = append(vErrors, fmt.Sprintf("LCCN %q is already in use", t.LCCN))
-		}
-		if t.SFTPDir != "" && t.SFTPDir == t2.SFTPDir {
-			vErrors = append(vErrors, fmt.Sprintf("SFTPDir %q is already in use", t.SFTPDir))
 		}
 	}
 
