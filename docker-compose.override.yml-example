@@ -37,6 +37,18 @@ services:
     # Make sure the server always runs in debug mode
     command: ./bin/server -c ./settings --debug
 
+  # Set up sftpgo to use the fake mountpoint and be web-accessible via port
+  # 8080 for administrative use.  Port 2022 is the sftp port - in a production
+  # environment you might want to map this to 22 and set your server's ssh port
+  # set to a nonstandard option so that end users can sftp using their client's
+  # default settings.
+  sftpgo:
+    volumes:
+      - ./test/fakemount/sftp:/srv/sftpgo/data:z
+    ports:
+      - 8080:8080
+      - 2022:2022
+
   # Expose port 80 to the host's port 80
   proxy:
     ports:
