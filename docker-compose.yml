@@ -7,6 +7,8 @@ version: '2'
 volumes:
   db:
   issue-cache:
+  sftpgo-backups:
+  sftpgo-home:
 
 services:
   db:
@@ -49,7 +51,19 @@ services:
       - 8080
     depends_on:
       - db
+      - sftpgo
+      - iiif
     command: ./bin/server -c ./settings
+
+  sftpgo:
+    image: drakkan/sftpgo:v2.0-alpine
+    volumes:
+      - /mnt/news/sftp:/srv/sftpgo/data:z
+      - sftpgo-backups:/srv/sftpgo/backups
+      - sftpgo-home:/var/lib/sftpgo
+    expose:
+      - 8080
+      - 2022
 
   workers:
     build:
@@ -68,3 +82,4 @@ services:
     depends_on:
       - web
       - iiif
+      - sftpgo
