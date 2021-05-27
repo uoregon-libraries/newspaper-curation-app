@@ -57,27 +57,11 @@ func (r *Responder) injectDefaultTemplateVars() {
 // Render uses the responder's data to render the given template
 func (r *Responder) Render(t *tmpl.Template) {
 	r.injectDefaultTemplateVars()
-	var cookie, err = r.Request.Cookie("Alert")
-	if err == nil && cookie.Value != "" {
-		r.Vars.Alert = template.HTML(cookie.Value)
-		// TODO: This is such a horrible hack.  We need real session data management.
-		if len(r.Vars.Alert) > 6 && r.Vars.Alert[0:6] == "base64" {
-			var data, err = base64.StdEncoding.DecodeString(string(r.Vars.Alert[6:]))
-			r.Vars.Alert = template.HTML(string(data))
-			if err != nil {
-				r.Vars.Alert = ""
-			}
-		}
-		http.SetCookie(r.Writer, &http.Cookie{Name: "Alert", Value: "", Expires: time.Time{}, Path: "/"})
-	}
-	cookie, err = r.Request.Cookie("Info")
-	if err == nil && cookie.Value != "" {
-		r.Vars.Info = template.HTML(cookie.Value)
-		http.SetCookie(r.Writer, &http.Cookie{Name: "Info", Value: "", Expires: time.Time{}, Path: "/"})
-	}
+	r.Vars.Alert = r.flash("Alert")
+	r.Vars.Info = r.flash("Info")
 
 	var buffer = new(bytes.Buffer)
-	err = t.Execute(buffer, r.Vars)
+	var err = t.Execute(buffer, r.Vars)
 	if err != nil {
 		logger.Criticalf("Unable to render template %q: %s", t.Path, err)
 		http.Error(r.Writer, "NCA has experienced an internal error while trying to render the page. Please contact the administrator for assistance.", http.StatusInternalServerError)
@@ -87,6 +71,26 @@ func (r *Responder) Render(t *tmpl.Template) {
 	if err != nil {
 		logger.Errorf("Unable to copy template %q from buffer: %s", t.Name, err)
 	}
+}
+
+// TODO: This is such a horrible hack.  We need real session data management.
+func (r *Responder) flash(name string) template.HTML {
+	var cookie, err = r.Request.Cookie(name)
+	if err != nil || cookie.Value == "" {
+		return template.HTML("")
+	}
+
+	var val = template.HTML(cookie.Value)
+	if len(val) > 6 && val[0:6] == "base64" {
+		var data []byte
+		data, err = base64.StdEncoding.DecodeString(string(val[6:]))
+		if err == nil {
+			val = template.HTML(string(data))
+		}
+	}
+	http.SetCookie(r.Writer, &http.Cookie{Name: name, Value: "", Expires: time.Time{}, Path: "/"})
+
+	return val
 }
 
 // Audit stores an audit log in the database and logs to the command line if
