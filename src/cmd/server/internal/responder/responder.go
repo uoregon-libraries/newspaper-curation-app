@@ -57,8 +57,14 @@ func (r *Responder) injectDefaultTemplateVars() {
 // Render uses the responder's data to render the given template
 func (r *Responder) Render(t *tmpl.Template) {
 	r.injectDefaultTemplateVars()
-	r.Vars.Alert = r.flash("Alert")
-	r.Vars.Info = r.flash("Info")
+	var flash = r.flash("Alert")
+	if flash != "" {
+		r.Vars.Alert = flash
+	}
+	flash = r.flash("Info")
+	if flash != "" {
+		r.Vars.Info = flash
+	}
 
 	var buffer = new(bytes.Buffer)
 	var err = t.Execute(buffer, r.Vars)
