@@ -44,6 +44,9 @@ services:
     environment: &ncaenv
       - NCA_WEBROOT=$APP_URL
       - NCA_DB_HOST=db
+      - NCA_SFTP_API_URL=http://sftpgo:8080/api/v2
+      - NCA_SFTP_USER=admin
+      - NCA_SFTP_PASSWORD=password
       # The redundancy here ensures we get a warning if $NCA_NEWS_WEBROOT isn't set
       - NCA_NEWS_WEBROOT=$NCA_NEWS_WEBROOT
       - NCA_IIIF_BASE_URL=$APP_URL/images/iiif
