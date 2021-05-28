@@ -1,7 +1,9 @@
 package titlehandler
 
 import (
+	"encoding/base64"
 	"fmt"
+	"html/template"
 	"net/http"
 	"path"
 	"strconv"
@@ -9,8 +11,10 @@ import (
 	"github.com/gorilla/mux"
 	"github.com/uoregon-libraries/newspaper-curation-app/src/cmd/server/internal/responder"
 	"github.com/uoregon-libraries/newspaper-curation-app/src/config"
+	"github.com/uoregon-libraries/newspaper-curation-app/src/dbi"
 	"github.com/uoregon-libraries/newspaper-curation-app/src/duration"
 	"github.com/uoregon-libraries/newspaper-curation-app/src/internal/logger"
+	"github.com/uoregon-libraries/newspaper-curation-app/src/internal/sftpgo"
 	"github.com/uoregon-libraries/newspaper-curation-app/src/models"
 	"github.com/uoregon-libraries/newspaper-curation-app/src/privilege"
 	"github.com/uoregon-libraries/newspaper-curation-app/src/web/tmpl"
@@ -45,6 +49,7 @@ func Setup(r *mux.Router, baseWebPath string, c *config.Config) {
 	layout = responder.Layout.Clone()
 	layout.Funcs(tmpl.FuncMap{
 		"TitlesHomeURL": func() string { return basePath },
+		"SFTPGoEnabled": func() bool { return c.SFTPGoEnabled },
 	})
 	layout.Path = path.Join(layout.Path, "titles")
 
@@ -217,10 +222,14 @@ func saveHandler(w http.ResponseWriter, req *http.Request) {
 		return
 	}
 
-	var err = t.Save()
+	// Title saving is complex because of SFTPGo integration, so it's tucked away
+	var msg, err = saveTitle(t)
 	if err != nil {
 		logger.Errorf("Unable to save title %q: %s", t.Name, err)
-		r.Error(http.StatusInternalServerError, "Error trying to save title - try again or contact support")
+		r.Vars.Data["Title"] = t
+		r.Vars.Title = "Error saving title " + t.Name
+		r.Vars.Alert = template.HTML(msg)
+		r.Render(formTmpl)
 		return
 	}
 
@@ -233,8 +242,65 @@ func saveHandler(w http.ResponseWriter, req *http.Request) {
 	}
 
 	r.Audit(models.AuditActionSaveTitle, fmt.Sprintf("%#v", r.Request.Form))
-	http.SetCookie(w, &http.Cookie{Name: "Info", Value: "Title saved", Path: "/"})
+
+	http.SetCookie(w, &http.Cookie{
+		Name:  "Info",
+		Value: "base64" + base64.StdEncoding.EncodeToString([]byte(msg)),
+		Path:  "/",
+	})
 	http.Redirect(w, r.Request, basePath, http.StatusFound)
+}
+
+func saveTitle(t *Title) (msg string, err error) {
+	// If there's no SFTPGo connection, the title is already SFTPGo-connected, or
+	// the title has no sftp user, we just save and return
+	if !conf.SFTPGoEnabled || t.SFTPConnected || t.SFTPUser == "" {
+		return "Title saved", t.Save()
+	}
+
+	// We connect to SFTPGo, we we need a transaction
+	var op = dbi.DB.Operation()
+	op.Dbg = dbi.Debug
+	op.BeginTransaction()
+
+	// We'll need to save the title, and set its connection flag to true
+	t.SFTPConnected = true
+	err = t.SaveOp(op)
+	var sftpMessage string
+	if err != nil {
+		return "database write failure", err
+	}
+
+	sftpMessage, err = provisionSFTPUser(t)
+	if err != nil {
+		// rollback and set the in-memory title's sftp connection to false
+		op.Rollback()
+		t.SFTPConnected = false
+		return "couldn't integrate title into SFTP server", fmt.Errorf("Error in SFTPGo integration for title %q (SFTPUser %q): %s", t.Name, t.SFTPUser, err)
+	}
+
+	op.EndTransaction()
+	return "Title saved.  SFTP Provisioning successful: " + sftpMessage, op.Err()
+}
+
+// provisionSFTPUser attempts to create a new SFTP user in SFTPGo
+func provisionSFTPUser(t *Title) (msg string, err error) {
+	if !conf.SFTPGoEnabled {
+		return "", nil
+	}
+
+	var api *sftpgo.API
+	api, err = sftpgo.New(conf.SFTPGoAPIURL, conf.SFTPGoAdminLogin, conf.SFTPGoAdminPassword)
+	if err != nil {
+		return fmt.Sprintf("Error provisioning the SFTP user %q: try again or contact support", t.SFTPUser), err
+	}
+
+	var pass string
+	pass, err = api.CreateUser(t.SFTPUser, t.Name+" / "+t.LCCN)
+	if err != nil {
+		return fmt.Sprintf("Error provisioning the SFTP user %q: try again or contact support", t.SFTPUser), err
+	}
+	return fmt.Sprintf("SFTP credentials: Username %q; Password %q", t.SFTPUser, pass), nil
 }
 
 func validateHandler(w http.ResponseWriter, req *http.Request) {
