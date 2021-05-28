@@ -4,6 +4,7 @@ import (
 	"fmt"
 	"time"
 
+	"github.com/Nerdmaster/magicsql"
 	"github.com/uoregon-libraries/newspaper-curation-app/src/dbi"
 	"github.com/uoregon-libraries/newspaper-curation-app/src/duration"
 	"github.com/uoregon-libraries/newspaper-curation-app/src/schema"
@@ -77,6 +78,12 @@ func (tl TitleList) Find(search string) *Title {
 func (t *Title) Save() error {
 	var op = dbi.DB.Operation()
 	op.Dbg = dbi.Debug
+	return t.SaveOp(op)
+}
+
+// SaveOp uses the given database operation to save the title, primarily for
+// use in transactions
+func (t *Title) SaveOp(op *magicsql.Operation) error {
 	op.Save("titles", t)
 	return op.Err()
 }
