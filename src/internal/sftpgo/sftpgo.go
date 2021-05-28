@@ -38,12 +38,13 @@ type token struct {
 
 // API is used to send API requests to the SFTPGo daemon
 type API struct {
-	url   *url.URL
-	login string
-	pass  string
-	token *token
-	now   func() time.Time
-	do    func(c *http.Client, req *http.Request) ([]byte, error)
+	url     *url.URL
+	login   string
+	pass    string
+	token   *token
+	now     func() time.Time
+	do      func(c *http.Client, req *http.Request) ([]byte, error)
+	rndPass func() string
 }
 
 // New returns a new API instance for sending requests to SFTPGo
@@ -53,11 +54,12 @@ func New(apiURL *url.URL, login, pass string) (*API, error) {
 	}
 
 	var a = &API{
-		login: login,
-		pass:  pass,
-		url:   apiURL,
-		now:   time.Now,
-		token: &token{},
+		login:   login,
+		pass:    pass,
+		url:     apiURL,
+		now:     time.Now,
+		token:   &token{},
+		rndPass: rndPass,
 	}
 	a.do = a._do
 
@@ -67,7 +69,7 @@ func New(apiURL *url.URL, login, pass string) (*API, error) {
 // CreateUser adds a new user to the sftpgo daemon with a random password.  The
 // password and any errors are returned.
 func (a *API) CreateUser(user, desc string) (password string, err error) {
-	password = rndPass()
+	password = a.rndPass()
 	err = a.getToken()
 	if err != nil {
 		return "", err
