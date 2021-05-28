@@ -5,6 +5,7 @@ package config
 
 import (
 	"fmt"
+	"net/url"
 	"strings"
 
 	"github.com/uoregon-libraries/gopkg/bashconf"
@@ -19,6 +20,12 @@ type Config struct {
 	// We pull the DB string values manually, but having this already converted
 	// to int is easier
 	DBPort int `setting:"DB_PORT" type:"int"`
+
+	// SFTPGo settings
+	SFTPGoEnabled       bool
+	SFTPGoAPIURL        *url.URL
+	SFTPGoAdminLogin    string `setting:"SFTPGO_ADMIN_LOGIN"`
+	SFTPGoAdminPassword string `setting:"SFTPGO_ADMIN_PASSWORD"`
 
 	// Binary paths
 	GhostScript   string `setting:"GHOSTSCRIPT"`
@@ -83,6 +90,14 @@ func Parse(filename string) (*Config, error) {
 	c.DatabaseConnect = fmt.Sprintf("%s:%s@tcp(%s:%d)/%s", bc.Get("DB_USER"),
 		bc.Get("DB_PASSWORD"), bc.Get("DB_HOST"), c.DBPort, bc.Get("DB_DATABASE"))
 
+	// SFTPGo API URL is special: we want an actual URL out of it, but we also
+	// want to allow it to be empty via "" or "-"
+	c.SFTPGoAPIURL, err = parseOptionalURL(bc.Get("SFTPGO_API_URL"))
+	if err != nil {
+		errors = append(errors, fmt.Sprintf("invalid SFTPGoAPIURL: %s", err))
+	}
+	c.SFTPGoEnabled = (c.SFTPGoAPIURL != nil)
+
 	if c.MinimumIssuePages < 1 {
 		errors = append(errors, "invalid MINIMUM_ISSUE_PAGES: must be numeric and greater than 0")
 	}
@@ -100,4 +115,25 @@ func Parse(filename string) (*Config, error) {
 	}
 
 	return c, nil
+}
+
+func parseOptionalURL(val string) (*url.URL, error) {
+	if val == "" || val == "-" {
+		return nil, nil
+	}
+
+	var u, err = url.Parse(val)
+	if err != nil {
+		return nil, err
+	}
+
+	if u.Scheme != "http" && u.Scheme != "https" {
+		return nil, fmt.Errorf("scheme must be http or https")
+	}
+
+	if u.Host == "" {
+		return nil, fmt.Errorf("host may not be empty")
+	}
+
+	return u, nil
 }

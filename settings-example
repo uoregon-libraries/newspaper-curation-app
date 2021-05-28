@@ -56,6 +56,30 @@ DB_PASSWORD="nca"
 DB_DATABASE="nca"
 
 ###
+# SFTPGo settings.  These determine how NCA interacts with SFTPGo, not how
+# SFTPGo behaves more generally; see
+# https://github.com/drakkan/sftpgo/blob/main/docs/full-configuration.md for
+# configuring the SFTPGo daemon.
+#
+# This section is optional.  If SFTP_API_URL is set to either blank or "-",
+# connections to SFTPGo will not be initiated.  This will however mean that you
+# have to manage publisher uploads yourself, and NCA will not have any
+# integrated upload support.
+###
+
+# SFTPGo's API URL as NCA will use it; Set this to "-" to skip SFTPGo
+# integration.  This must be the "internal" URL.  e.g., the default value below
+# ("http://sftpgo:8080/api/v2") is how NCA sees SFTPGo in Docker.  This won't
+# be the same URL you'd use in a browser for web-based administration.
+SFTPGO_API_URL="http://sftpgo:8080/api/v2"
+
+# The SFTPGo username for API requests
+SFTPGO_ADMIN_LOGIN=admin
+
+# The SFTPGo password for API requests
+SFTPGO_ADMIN_PASSWORD=password
+
+###
 # Paths for PDFs, derivatives, etc.
 ###
 
