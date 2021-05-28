@@ -19,6 +19,7 @@ type Title struct {
 	Rights        string
 	ValidLCCN     bool
 	SFTPUser      string
+	SFTPConnected bool // True if the title has been stored in our external SFTP system (sftpgo)
 	MARCTitle     string
 	MARCLocation  string
 	LangCode3     string
