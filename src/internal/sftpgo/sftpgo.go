@@ -86,6 +86,21 @@ func (a *API) CreateUser(user, desc string) (password string, err error) {
 	return password, err
 }
 
+// UpdatePassword tells SFTPGo to use the given password for a publisher's
+// login instead of whatever the current password is
+func (a *API) UpdatePassword(user, pass string) error {
+	var u = User{
+		Username: user,
+		Password: pass,
+	}
+
+	// JSON errors only occur with complex types that can't be marshaled, so this
+	// error can be safely ignored
+	var userData, _ = json.Marshal(u)
+	var _, err = a.rpc("PUT", path.Join("users", user), string(userData))
+	return err
+}
+
 func (a *API) rpc(method, function string, data string) ([]byte, error) {
 	var endpoint = *a.url
 	endpoint.Path = path.Join(endpoint.Path, function)

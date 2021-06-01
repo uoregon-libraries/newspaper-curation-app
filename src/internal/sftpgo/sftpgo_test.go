@@ -129,3 +129,23 @@ func TestCreateUser(t *testing.T) {
 		t.Errorf("Expected password to be %q, got %q", fakepass, pass)
 	}
 }
+
+func TestUpdatePassword(t *testing.T) {
+	var a, s = newAPI(t)
+	// Right now the response is basically just ignored, so anything here works
+	s.responses["users/fakename"] = []byte(`{"foo": "bar"}`)
+	s.errors["users/fakename"] = nil
+	var err = a.UpdatePassword("fakename", "newpass")
+	if err != nil {
+		t.Errorf("UpdatePassword should have had no errors, but it returned %s", err)
+	}
+	if len(s.requests) != 2 {
+		t.Errorf("Expected two requests, but got %d", len(s.requests))
+	}
+	if s.requests[0].function != "token" {
+		t.Errorf("First request should have been for a token, but it was %#v", s.requests[0])
+	}
+	if s.requests[1].function != "users/fakename" {
+		t.Errorf("Second request should have been for the user, but it was %#v", s.requests[1])
+	}
+}
