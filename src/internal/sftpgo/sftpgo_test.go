@@ -113,6 +113,9 @@ func TestCreateUser(t *testing.T) {
 	s.responses["users"] = []byte(`{"foo": "bar"}`)
 	s.errors["users"] = nil
 	var pass, err = a.CreateUser("fakename", "description")
+	if err != nil {
+		t.Errorf("CreateUser should have had no errors, but it returned %s", err)
+	}
 	if len(s.requests) != 2 {
 		t.Errorf("Expected two requests, but got %d", len(s.requests))
 	}
@@ -121,9 +124,6 @@ func TestCreateUser(t *testing.T) {
 	}
 	if s.requests[1].function != "users" {
 		t.Errorf("Second request should have been for the user, but it was %#v", s.requests[1])
-	}
-	if err != nil {
-		t.Errorf("CreateUser should have had no errors, but it returned %s", err)
 	}
 	if pass != fakepass {
 		t.Errorf("Expected password to be %q, got %q", fakepass, pass)
