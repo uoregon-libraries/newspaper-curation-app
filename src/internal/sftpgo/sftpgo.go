@@ -78,7 +78,8 @@ func (a *API) CreateUser(user, desc string) (password string, err error) {
 		Permissions: map[string][]string{"/": {"*"}},
 	}
 
-	// JSON errors only occur with complex types that can't be marshaled, so this error can be safely ignored
+	// JSON errors only occur with complex types that can't be marshaled, so this
+	// error can be safely ignored
 	var userData, _ = json.Marshal(u)
 	_, err = a.rpc("POST", "users", string(userData))
 
