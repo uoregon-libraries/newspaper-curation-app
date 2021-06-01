@@ -70,11 +70,6 @@ func New(apiURL *url.URL, login, pass string) (*API, error) {
 // password and any errors are returned.
 func (a *API) CreateUser(user, desc string) (password string, err error) {
 	password = a.rndPass()
-	err = a.getToken()
-	if err != nil {
-		return "", err
-	}
-
 	var u = User{
 		Status:      1,
 		Username:    user,
@@ -97,6 +92,11 @@ func (a *API) rpc(method, function string, data string) ([]byte, error) {
 	// if function is "token", we have to supply credentials
 	if function == "token" {
 		endpoint.User = url.UserPassword(a.login, a.pass)
+	} else {
+		var err = a.getToken()
+		if err != nil {
+			return nil, err
+		}
 	}
 
 	var c = &http.Client{Timeout: time.Minute}
