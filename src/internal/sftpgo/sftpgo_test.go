@@ -112,7 +112,33 @@ func TestCreateUser(t *testing.T) {
 	// Right now the response is basically just ignored, so anything here works
 	s.responses["users"] = []byte(`{"foo": "bar"}`)
 	s.errors["users"] = nil
-	var pass, err = a.CreateUser("fakename", "description")
+	var pass, err = a.CreateUser("fakename", "", "description")
+	if err != nil {
+		t.Errorf("CreateUser should have had no errors, but it returned %s", err)
+	}
+	if len(s.requests) != 2 {
+		t.Errorf("Expected two requests, but got %d", len(s.requests))
+	}
+	if s.requests[0].function != "token" {
+		t.Errorf("First request should have been for a token, but it was %#v", s.requests[0])
+	}
+	if s.requests[1].function != "users" {
+		t.Errorf("Second request should have been for the user, but it was %#v", s.requests[1])
+	}
+	if pass != fakepass {
+		t.Errorf("Expected password to be %q, got %q", fakepass, pass)
+	}
+}
+
+func TestCreateUser_WithPassword(t *testing.T) {
+	var a, s = newAPI(t)
+	var fakepass = "nonrandom password"
+	a.rndPass = func() string { panic("this should not be called") }
+
+	// Right now the response is basically just ignored, so anything here works
+	s.responses["users"] = []byte(`{"foo": "bar"}`)
+	s.errors["users"] = nil
+	var pass, err = a.CreateUser("fakename", fakepass, "description")
 	if err != nil {
 		t.Errorf("CreateUser should have had no errors, but it returned %s", err)
 	}
