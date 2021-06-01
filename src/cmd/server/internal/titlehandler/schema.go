@@ -17,12 +17,16 @@ var noWordRE = regexp.MustCompile(`\W+`)
 type Title struct {
 	*models.Title
 	SortName string
+	SFTPPass string // SFTPPass is a temp field so we can send password updates to SFTPGo
 }
 
 // WrapTitle converts a models.Title to a Title, giving it a useful "SortName"
 // based on its name (stripped of common prefixes) and LCCN
 func WrapTitle(t *models.Title) *Title {
-	return &Title{t, strings.ToLower(re.ReplaceAllString(schema.TrimCommonPrefixes(t.Name)+t.LCCN, "-"))}
+	return &Title{
+		Title:    t,
+		SortName: strings.ToLower(re.ReplaceAllString(schema.TrimCommonPrefixes(t.Name)+t.LCCN, "-")),
+	}
 }
 
 // WrapTitles takes a models.TitleList and wraps each title individually

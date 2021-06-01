@@ -158,8 +158,13 @@ func setTitleData(r *responder.Responder, t *Title) (vErrors []string, handled b
 
 	if r.Vars.User.PermittedTo(privilege.ModifyTitleSFTP) {
 		var newUser = form.Get("sftpuser")
-		if newUser != "" {
+		if newUser != "" && !t.SFTPConnected {
 			t.SFTPUser = newUser
+		}
+
+		var newPass = form.Get("sftppass")
+		if newPass != "" {
+			t.SFTPPass = newPass
 		}
 	}
 
@@ -258,9 +263,18 @@ func saveHandler(w http.ResponseWriter, req *http.Request) {
 }
 
 func saveTitle(t *Title) (msg string, err error) {
-	// If there's no SFTPGo connection, the title is already SFTPGo-connected, or
-	// the title has no sftp user, we just save and return
-	if !conf.SFTPGoEnabled || t.SFTPConnected || t.SFTPUser == "" {
+	// If there's no SFTPGo connection, we just save and return
+	if !conf.SFTPGoEnabled {
+		return "Title saved", t.Save()
+	}
+
+	// If the title isn't connected, but username is blank, we also return
+	if !t.SFTPConnected && t.SFTPUser == "" {
+		return "Title saved", t.Save()
+	}
+
+	// If the title is already connected and password didn't change, again, return
+	if t.SFTPConnected && t.SFTPPass == "" {
 		return "Title saved", t.Save()
 	}
 
@@ -270,6 +284,7 @@ func saveTitle(t *Title) (msg string, err error) {
 	op.BeginTransaction()
 
 	// We'll need to save the title, and set its connection flag to true
+	var wasConnected = t.SFTPConnected
 	t.SFTPConnected = true
 	err = t.SaveOp(op)
 	var sftpMessage string
@@ -277,20 +292,20 @@ func saveTitle(t *Title) (msg string, err error) {
 		return "database write failure", err
 	}
 
-	sftpMessage, err = provisionSFTPUser(t)
+	sftpMessage, err = integrateSFTP(t, wasConnected)
 	if err != nil {
 		// rollback and set the in-memory title's sftp connection to false
 		op.Rollback()
-		t.SFTPConnected = false
+		t.SFTPConnected = wasConnected
 		return "couldn't integrate title into SFTP server", fmt.Errorf("Error in SFTPGo integration for title %q (SFTPUser %q): %s", t.Name, t.SFTPUser, err)
 	}
 
 	op.EndTransaction()
-	return "Title saved.  SFTP Provisioning successful: " + sftpMessage, op.Err()
+	return "Title saved.  SFTP Integration successful: " + sftpMessage, op.Err()
 }
 
-// provisionSFTPUser attempts to create a new SFTP user in SFTPGo
-func provisionSFTPUser(t *Title) (msg string, err error) {
+// integrateSFTP attempts to create a new SFTP user in SFTPGo
+func integrateSFTP(t *Title, connected bool) (msg string, err error) {
 	if !conf.SFTPGoEnabled {
 		return "", nil
 	}
@@ -301,8 +316,17 @@ func provisionSFTPUser(t *Title) (msg string, err error) {
 		return fmt.Sprintf("Error provisioning the SFTP user %q: try again or contact support", t.SFTPUser), err
 	}
 
+	// If the title already has an SFTP connection, we only try to update passwords
+	if connected {
+		err = api.UpdatePassword(t.SFTPUser, t.SFTPPass)
+		if err != nil {
+			return fmt.Sprintf("Error updating SFTP password for user %q: try again or contact support", t.SFTPUser), err
+		}
+		return "SFTP password updated", nil
+	}
+
 	var pass string
-	pass, err = api.CreateUser(t.SFTPUser, t.Name+" / "+t.LCCN)
+	pass, err = api.CreateUser(t.SFTPUser, t.SFTPPass, t.Name+" / "+t.LCCN)
 	if err != nil {
 		return fmt.Sprintf("Error provisioning the SFTP user %q: try again or contact support", t.SFTPUser), err
 	}
