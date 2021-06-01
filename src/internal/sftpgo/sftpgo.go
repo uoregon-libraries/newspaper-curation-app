@@ -68,8 +68,11 @@ func New(apiURL *url.URL, login, pass string) (*API, error) {
 
 // CreateUser adds a new user to the sftpgo daemon with a random password.  The
 // password and any errors are returned.
-func (a *API) CreateUser(user, desc string) (password string, err error) {
-	password = a.rndPass()
+func (a *API) CreateUser(user, pass, desc string) (password string, err error) {
+	password = pass
+	if password == "" {
+		password = a.rndPass()
+	}
 	var u = User{
 		Status:      1,
 		Username:    user,
