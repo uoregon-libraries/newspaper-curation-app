@@ -27,7 +27,7 @@ Brief description, if necessary
 
 ## vX.Y.Z
 
-Brief description, if necessary
+SFTPGo integration and documentation
 
 ### Fixed
 
@@ -35,15 +35,56 @@ Brief description, if necessary
 
 ### Added
 
+- [SFTPGo](https://github.com/drakkan/sftpgo) is now the preferred back-end ssh daemon for managing titles' uploads.
+
 ### Changed
 
 - Documentation is now housed in `docs/`, and server up via github pages
   (https://uoregon-libraries.github.io/newspaper-curation-app/) instead of
   using the github wiki.
+  - Technically this went up before the new release, but it is a change since
+    our last release....
 
 ### Removed
 
+- SFTP Password and SFTP directory fields are no longer stored in NCA, as
+  neither of these fields had any way to tie to a backend SFTP daemon, and got
+  out of sync too easily
+
 ### Migration
+
+This is complicated.
+
+#### No integration with SFTPGo
+
+If you choose to avoid SFTPGo integration, you're potentially losing
+functionality.  NCA will no longer let you track the password / directory
+settings.  As mentioned above, this didn't really make sense to begin with, but
+if this was functionality you relied on somehow, you'll have to find a
+different approach.
+
+#### Integration with SFTPGo
+
+*Do not* run the database migrations right away!
+
+If you choose to use the new SFTPGo integration, migration depends on what you
+have and what you want.
+
+Already have titles in NCA that have SFTP data?  We have a
+[process for bulk-loading users into SFTPGo]().
+
+It will use passwords stored in NCA, but bear in mind that those passwords are
+what NCA stored and has displayed, not necessarily the actual SFTP passwords
+you've been using.
+
+#### Always: migrate the database
+
+Do **not** do this until after you've performed whatever steps you needed to do
+above.  You may lose important data!
+
+Migration typically looks something like this:
+
+    goose -dir ./db/migrations/ mysql "<user>:<password>@tcp(<db host>:3306)/<database name>" up
 
 ## v3.7.2
 
