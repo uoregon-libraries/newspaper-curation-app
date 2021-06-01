@@ -162,10 +162,7 @@ func setTitleData(r *responder.Responder, t *Title) (vErrors []string, handled b
 			t.SFTPUser = newUser
 		}
 
-		var newPass = form.Get("sftppass")
-		if newPass != "" {
-			t.SFTPPass = newPass
-		}
+		t.SFTPPass = form.Get("sftppass")
 	}
 
 	if !t.ValidLCCN || r.Vars.User.PermittedTo(privilege.ModifyValidatedLCCNs) {
