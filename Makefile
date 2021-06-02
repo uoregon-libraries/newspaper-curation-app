@@ -1,10 +1,15 @@
-.PHONY: all deps fast validate build lint format test clean distclean
+.PHONY: all docs deps fast validate build lint format test clean distclean
 
 SOURCES := $(shell find ./src -name "*.go")
 SOURCEDIRS := $(shell find ./src -type d)
 BUILD := $(shell git describe --tags)
 
 all: deps validate build
+
+docs:
+	rm -rf ./docs
+	cd hugo && hugo
+	mv hugo/public ./docs
 
 deps:
 	go mod download

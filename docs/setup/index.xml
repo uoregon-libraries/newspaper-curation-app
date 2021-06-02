@@ -1,0 +1,63 @@
+<?xml version="1.0" encoding="utf-8" standalone="yes"?>
+<rss version="2.0" xmlns:atom="http://www.w3.org/2005/Atom">
+  <channel>
+    <title>Setup and Installation on Newspaper Curation App</title>
+    <link>https://uoregon-libraries.github.io/newspaper-curation-app/setup/</link>
+    <description>Recent content in Setup and Installation on Newspaper Curation App</description>
+    <generator>Hugo -- gohugo.io</generator>
+    <language>en-us</language><atom:link href="https://uoregon-libraries.github.io/newspaper-curation-app/setup/index.xml" rel="self" type="application/rss+xml" />
+    <item>
+      <title>Services and Apps</title>
+      <link>https://uoregon-libraries.github.io/newspaper-curation-app/setup/services/</link>
+      <pubDate>Mon, 01 Jan 0001 00:00:00 +0000</pubDate>
+      
+      <guid>https://uoregon-libraries.github.io/newspaper-curation-app/setup/services/</guid>
+      <description>You should at least understand everything in this document at a high level before moving on to the setup/installation documents, as the NCA suite is a set of tools, not a single application that does it all.
+Overview NCA has two key services which you&amp;rsquo;ll have to run, in addition to the rest of the external services (such as an IIIF server, MySQL / MariaDB, and Apach)
+If you&amp;rsquo;re doing a manual installation rather than container-based, you are strongly advised to look at the docker files - they make it clear precisely how the stack should be set up.</description>
+    </item>
+    
+    <item>
+      <title>Server Setup</title>
+      <link>https://uoregon-libraries.github.io/newspaper-curation-app/setup/server-setup/</link>
+      <pubDate>Mon, 01 Jan 0001 00:00:00 +0000</pubDate>
+      
+      <guid>https://uoregon-libraries.github.io/newspaper-curation-app/setup/server-setup/</guid>
+      <description>Human Requirements Unfortunately, this process is still technical enough that you will need a devops person to at least get the system set up for processing. You&amp;rsquo;ll also need people who can reorder PDF pages (if necessary) as well as people who can enter and review newspaper issue metadata.
+Somebody will want to monitor the output from the various automated processes, such as QCing generated batches on a staging server prior to loading in production, as there is still a great deal of room for human error.</description>
+    </item>
+    
+    <item>
+      <title>Installation</title>
+      <link>https://uoregon-libraries.github.io/newspaper-curation-app/setup/installation/</link>
+      <pubDate>Mon, 01 Jan 0001 00:00:00 +0000</pubDate>
+      
+      <guid>https://uoregon-libraries.github.io/newspaper-curation-app/setup/installation/</guid>
+      <description>Development If you&amp;rsquo;re developing on NCA, installation will differ from standing up a production server. Please see our Development Guide.
+Preliminary Setup Manual installation has several prerequisites:
+ Go and some dependencies (see below) Poppler Utils for PDF processing OpenJPEG 2 + command-line tools for JP2 generation  The command-line tools will probably need to be manually compiled to support converting PNG files. Most distributions of Linux don&amp;rsquo;t have this by default, hence the need to manually compile.</description>
+    </item>
+    
+    <item>
+      <title>Users</title>
+      <link>https://uoregon-libraries.github.io/newspaper-curation-app/setup/user-setup/</link>
+      <pubDate>Mon, 01 Jan 0001 00:00:00 +0000</pubDate>
+      
+      <guid>https://uoregon-libraries.github.io/newspaper-curation-app/setup/user-setup/</guid>
+      <description>Newspaper Curation App - User Setup First-time Setup Once the applications are installed and configured, start the NCA server in debug mode:
+./bin/server -c ./settings --debug  This lets you fake an admin login via http://your.site/users?debuguser=admin. You can then set up other users as necessary. Once you have Apache set up to do the authentication, you should never run in debug mode on production servers.
+For development use, docker-compose.override.yml-example is already set up to run in debug mode.</description>
+    </item>
+    
+    <item>
+      <title>Onboarding A Publisher</title>
+      <link>https://uoregon-libraries.github.io/newspaper-curation-app/setup/creating-publishers/</link>
+      <pubDate>Mon, 01 Jan 0001 00:00:00 +0000</pubDate>
+      
+      <guid>https://uoregon-libraries.github.io/newspaper-curation-app/setup/creating-publishers/</guid>
+      <description>Creating a publisher in NCA, at least for UO, requires several manual processes take place:
+ Add a title to NCA with sftp credential information. If necessary, import the title to your ONI site (for example, oregonnews.uoregon.edu).  See Adding Titles for details   Add a user to the sftp server  At UO, we have an internal sftp script at /usr/local/scripts/addsftpuser.sh. e.g., /usr/local/scripts/addsftpuser.sh &amp;quot;newpublisher&amp;quot; &amp;quot;Pas$w0rd&amp;quot;   Symlink the sftp server&amp;rsquo;s location so NCA can see it.</description>
+    </item>
+    
+  </channel>
+</rss>

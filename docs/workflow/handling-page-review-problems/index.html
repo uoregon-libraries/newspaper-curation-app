@@ -1,0 +1,181 @@
+<!DOCTYPE html>
+<html lang="en-us">
+<head><meta charset="utf-8">
+<meta http-equiv="X-UA-Compatible" content="IE=edge">
+<meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1, user-scalable=no">
+<title>Handling Page Review Problems - Newspaper Curation App</title>
+<meta name="description" content="Dealing with problems created when issues are in the &#34;page review&#34; area of NCA">
+<meta name="generator" content="Hugo 0.83.1" />
+<link href="https://uoregon-libraries.github.io/newspaper-curation-app//index.xml" rel="alternate" type="application/rss+xml">
+<link rel="canonical" href="https://uoregon-libraries.github.io/newspaper-curation-app/workflow/handling-page-review-problems/">
+<link rel="stylesheet" href="https://uoregon-libraries.github.io/newspaper-curation-app/css/theme.min.css">
+<script src="https://use.fontawesome.com/releases/v5.0.6/js/all.js"></script>
+<link rel="stylesheet" href="https://uoregon-libraries.github.io/newspaper-curation-app/css/chroma.min.css">
+<script src="https://cdn.jsdelivr.net/npm/jquery@3.4.1/dist/jquery.min.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/jquery.easing@1.4.1/jquery.easing.min.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/clipboard@2.0.6/dist/clipboard.min.js"></script>
+<script src="https://uoregon-libraries.github.io/newspaper-curation-app/js/bundle.js"></script><style>
+:root {}
+</style>
+<meta property="og:title" content="Handling Page Review Problems" />
+<meta property="og:description" content="Dealing with problems created when issues are in the &#34;page review&#34; area of NCA" />
+<meta property="og:type" content="article" />
+<meta property="og:url" content="https://uoregon-libraries.github.io/newspaper-curation-app/workflow/handling-page-review-problems/" /><meta property="article:section" content="workflow" />
+
+
+
+<meta name="twitter:card" content="summary"/>
+<meta name="twitter:title" content="Handling Page Review Problems"/>
+<meta name="twitter:description" content="Dealing with problems created when issues are in the &#34;page review&#34; area of NCA"/>
+<meta itemprop="name" content="Handling Page Review Problems">
+<meta itemprop="description" content="Dealing with problems created when issues are in the &#34;page review&#34; area of NCA">
+
+<meta itemprop="wordCount" content="506">
+<meta itemprop="keywords" content="" /></head>
+<body><div class="container"><header>
+<h1>Newspaper Curation App</h1><a href="https://github.com/uoregon-libraries/newspaper-curation-app/" class="github"><i class="fab fa-github"></i></a>
+</header>
+
+<div class="content-container">
+<main><h1>Handling Page Review Problems</h1>
+<p>The &ldquo;page review&rdquo; location is one of the most dangerous in the application due
+to the requirement that people manually edit and rename files.  There are
+potentially a <em>lot</em> of difficult problems to manage here.</p>
+<h2 id="manual-deletion">Manual Deletion</h2>
+<p>If issues got to the page-review step when they shouldn&rsquo;t have, the only option
+is to remove them.  <strong>Make sure you do this right</strong>.  There is a tool for this
+process, and manually deleting issues will cause you <em>pain</em> (see below).</p>
+<p>To use the tool, build NCA with <code>make</code>, and run <code>./bin/page-review-issue-fixer -c ./settings --key ...</code>.  You can specify multiple issue keys or even a file
+full of issue keys.  Use <code>--help</code> for a complete explanation.</p>
+<p>Once this tool runs, if all goes well the issues will get queued up and moved
+to the configured error location.  From there you can do whatever you like with
+the issues, as described in
+<a href="../../workflow/fixing-flagged-workflow-issues">Fixing Flagged Workflow Issues</a>.</p>
+<h2 id="accidental-deletion">Accidental Deletion</h2>
+<p>Sometimes a helpful curator deletes the issues manually, not being aware this
+shouldn&rsquo;t happen.  On these occasions, manual cleanup is required, and it gets
+very ugly.</p>
+<h3 id="identify-the-deleted-issues">Identify the deleted issues</h3>
+<p>If you don&rsquo;t know offhand what&rsquo;s been deleted, but you&rsquo;ve seen log errors about
+the page review location, this might help.</p>
+<div class="highlight"><pre style="color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4"><code class="language-bash" data-lang="bash">cat /var/log/nca-* | grep <span style="color:#e6db74">&#34; - ERROR - &#34;</span> | <span style="color:#ae81ff">\
+</span><span style="color:#ae81ff"></span>    sed <span style="color:#e6db74">&#39;s|^.* - ERROR - ||&#39;</span> | <span style="color:#ae81ff">\
+</span><span style="color:#ae81ff"></span>    sed <span style="color:#e6db74">&#39;s|^.* \(/mnt/news/.*\): no such file or directory$|\1|&#39;</span> | <span style="color:#ae81ff">\
+</span><span style="color:#ae81ff"></span>    sort | uniq -c | sort -n
+</code></pre></div><p>This will find all error logs that are due to file or directory being missing.
+It will likely catch other problems than just page-review deletions, but those
+can be useful as well.  Just note that things like NFS drop can result in
+occasional one-offs.  You really want to look for systemic, repetitive errors.
+In our case, we saw almost 400 errors per issue because NCA scans the
+filesystem every few minutes.</p>
+<p>(If you&rsquo;re using a smart logging system like logstash, you can probably
+identify logs more easily, but you&rsquo;ll likely need to split logs up to strip off
+the changing bits so the unique issues can be aggregated and counted)</p>
+<p>The database ids are the last number in an issue&rsquo;s path.  e.g.,
+<code>/mnt/news/page-review/sn99063854-1925122501-9971</code> has a database id of 9971.</p>
+<h3 id="fix-the-data">Fix the data</h3>
+<p>First, <strong>verify</strong> that the issues are in fact not on the filesystem.  If you
+see errors about database id 9971, you can query its location:</p>
+<div class="highlight"><pre style="color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4"><code class="language-sql" data-lang="sql"><span style="color:#66d9ef">SELECT</span> <span style="color:#66d9ef">location</span> <span style="color:#66d9ef">FROM</span> issues <span style="color:#66d9ef">WHERE</span> id<span style="color:#f92672">=</span><span style="color:#ae81ff">9971</span>;
+</code></pre></div><p>If that location exists, the problem you have is <em>not</em> what is described here.</p>
+<p>Assuming the locations are indeed deleted, gather up all your database ids.  If
+you had errors with ids 9971, 9975, and 9990:</p>
+<div class="highlight"><pre style="color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4"><code class="language-sql" data-lang="sql"><span style="color:#66d9ef">UPDATE</span> issues <span style="color:#66d9ef">SET</span>
+    error <span style="color:#f92672">=</span> <span style="color:#e6db74">&#39;manually deleted from page-review step&#39;</span>,
+    workflow_step <span style="color:#f92672">=</span> <span style="color:#e6db74">&#39;UnfixableMetadataError&#39;</span>,
+    <span style="color:#66d9ef">location</span><span style="color:#f92672">=</span><span style="color:#e6db74">&#39;&#39;</span>,
+    ignored<span style="color:#f92672">=</span><span style="color:#ae81ff">1</span>
+<span style="color:#66d9ef">WHERE</span> id <span style="color:#66d9ef">in</span> (<span style="color:#ae81ff">9971</span>, <span style="color:#ae81ff">9975</span>, <span style="color:#ae81ff">9990</span>);
+</code></pre></div><p>The database is fixed!</p>
+<h3 id="delete-backups">Delete backups?</h3>
+<p>If the issues are completely ruined and the backups are known to be bad, you
+should delete them.  Get their locations from the database:</p>
+<div class="highlight"><pre style="color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4"><code class="language-sql" data-lang="sql"><span style="color:#66d9ef">SELECT</span> backup_location <span style="color:#66d9ef">FROM</span> issues <span style="color:#66d9ef">WHERE</span> id <span style="color:#66d9ef">IN</span> (<span style="color:#ae81ff">9971</span>, <span style="color:#ae81ff">9975</span>, <span style="color:#ae81ff">9990</span>);
+</code></pre></div><p>Remove these locations from disk.</p>
+<div class="edit-meta">
+
+<br></div><nav class="pagination"><a class="nav nav-prev" href="https://uoregon-libraries.github.io/newspaper-curation-app/workflow/adding-titles/" title="Adding Titles"><i class="fas fa-arrow-left" aria-hidden="true"></i>&nbsp;Prev - Adding Titles</a>
+<a class="nav nav-next" href="https://uoregon-libraries.github.io/newspaper-curation-app/workflow/fixing-flagged-workflow-issues/" title="Fixing Flagged Workflow Issues">Next - Fixing Flagged Workflow Issues <i class="fas fa-arrow-right" aria-hidden="true"></i></a>
+</nav><footer><p class="powered">Powered by <a href="https://gohugo.io">Hugo</a>. Theme by <a href="https://themes.gohugo.io/hugo-theme-techdoc/">TechDoc</a>. Designed by <a href="https://github.com/thingsym/hugo-theme-techdoc">Thingsym</a>.</p>
+</footer>
+</main>
+<div class="sidebar">
+
+<nav class="open-menu">
+<ul>
+<li class=""><a href="https://uoregon-libraries.github.io/newspaper-curation-app/">Home</a></li>
+
+<li class=""><a href="https://uoregon-libraries.github.io/newspaper-curation-app/setup/">Setup and Installation</a>
+  
+<ul class="sub-menu">
+<li class=""><a href="https://uoregon-libraries.github.io/newspaper-curation-app/setup/services/">Services and Apps</a></li>
+<li class=""><a href="https://uoregon-libraries.github.io/newspaper-curation-app/setup/server-setup/">Server Setup</a></li>
+<li class=""><a href="https://uoregon-libraries.github.io/newspaper-curation-app/setup/installation/">Installation</a></li>
+<li class=""><a href="https://uoregon-libraries.github.io/newspaper-curation-app/setup/user-setup/">Users</a></li>
+<li class=""><a href="https://uoregon-libraries.github.io/newspaper-curation-app/setup/creating-publishers/">Onboarding A Publisher</a></li>
+</ul>
+  
+</li>
+
+<li class=""><a href="https://uoregon-libraries.github.io/newspaper-curation-app/specs/">NCA Terms, Specs, and Information</a>
+  
+<ul class="sub-menu">
+<li class=""><a href="https://uoregon-libraries.github.io/newspaper-curation-app/specs/glossary/">Glossary</a></li>
+<li class=""><a href="https://uoregon-libraries.github.io/newspaper-curation-app/specs/upload-specs/">Uploads: Folder and File Specs</a></li>
+</ul>
+  
+</li>
+
+<li class="parent"><a href="https://uoregon-libraries.github.io/newspaper-curation-app/workflow/">Workflow</a>
+  
+<ul class="sub-menu">
+<li class=""><a href="https://uoregon-libraries.github.io/newspaper-curation-app/workflow/technical/">Technical Details</a></li>
+<li class=""><a href="https://uoregon-libraries.github.io/newspaper-curation-app/workflow/adding-titles/">Adding Titles</a></li>
+<li class="active"><a href="https://uoregon-libraries.github.io/newspaper-curation-app/workflow/handling-page-review-problems/">Handling Page Review Problems</a></li>
+<li class=""><a href="https://uoregon-libraries.github.io/newspaper-curation-app/workflow/fixing-flagged-workflow-issues/">Fixing Flagged Workflow Issues</a></li>
+<li class=""><a href="https://uoregon-libraries.github.io/newspaper-curation-app/workflow/fixing-batches/">Fixing Batches</a></li>
+<li class=""><a href="https://uoregon-libraries.github.io/newspaper-curation-app/workflow/batch-manual-golive/">Batch Manual Go-live Procedure</a></li>
+</ul>
+  
+</li>
+
+<li class=""><a href="https://uoregon-libraries.github.io/newspaper-curation-app/contributing/">Contributing</a>
+  
+<ul class="sub-menu">
+<li class=""><a href="https://uoregon-libraries.github.io/newspaper-curation-app/contributing/dev-guide/">Developer&#39;s Guide</a></li>
+<li class=""><a href="https://uoregon-libraries.github.io/newspaper-curation-app/contributing/not-compiling-locally/">Not Compiling Locally</a></li>
+<li class=""><a href="https://uoregon-libraries.github.io/newspaper-curation-app/contributing/documentation/">Contributing to Documentation</a></li>
+<li class=""><a href="https://uoregon-libraries.github.io/newspaper-curation-app/contributing/testing/">Testing</a></li>
+
+<li class=""><a href="https://uoregon-libraries.github.io/newspaper-curation-app/contributing/dev-howto/">How do I...?</a>
+  
+<ul class="sub-menu">
+<li class=""><a href="https://uoregon-libraries.github.io/newspaper-curation-app/contributing/dev-howto/add-job-types/">Add Job Types</a></li>
+</ul>
+  
+</li>
+</ul>
+  
+</li>
+</ul>
+</nav>
+
+
+
+<div class="sidebar-footer"></div>
+</div>
+
+</div><a href="#" id="backtothetop-fixed" class="backtothetop"
+ data-backtothetop-duration="600"
+ data-backtothetop-easing="easeOutQuart"
+ data-backtothetop-fixed-fadeIn="1000"
+ data-backtothetop-fixed-fadeOut="1000"
+ data-backtothetop-fixed-bottom="10"
+ data-backtothetop-fixed-right="20">
+<span class="fa-layers fa-fw">
+<i class="fas fa-circle"></i>
+<i class="fas fa-arrow-circle-up"></i>
+</span></a>
+</div>
+</body>
+</html>

@@ -1,0 +1,11 @@
+baseURL = "https://uoregon-libraries.github.io/newspaper-curation-app/"
+languageCode = "en-us"
+title = "Newspaper Curation App"
+theme = "hugo-theme-techdoc"
+relativeURLs = true
+
+[params]
+    # Source Code repository section
+    github_repository = "https://github.com/uoregon-libraries/newspaper-curation-app/"
+    algolia_search_enable = false
+    menu_style = "open-menu" # "open-menu" or "slide-menu" or "" blank is as no sidebar

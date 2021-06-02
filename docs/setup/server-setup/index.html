@@ -1,0 +1,195 @@
+<!DOCTYPE html>
+<html lang="en-us">
+<head><meta charset="utf-8">
+<meta http-equiv="X-UA-Compatible" content="IE=edge">
+<meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1, user-scalable=no">
+<title>Server Setup - Newspaper Curation App</title>
+<meta name="description" content="Setting up a new NCA toolsuite">
+<meta name="generator" content="Hugo 0.83.1" />
+<link href="https://uoregon-libraries.github.io/newspaper-curation-app//index.xml" rel="alternate" type="application/rss+xml">
+<link rel="canonical" href="https://uoregon-libraries.github.io/newspaper-curation-app/setup/server-setup/">
+<link rel="stylesheet" href="https://uoregon-libraries.github.io/newspaper-curation-app/css/theme.min.css">
+<script src="https://use.fontawesome.com/releases/v5.0.6/js/all.js"></script>
+<link rel="stylesheet" href="https://uoregon-libraries.github.io/newspaper-curation-app/css/chroma.min.css">
+<script src="https://cdn.jsdelivr.net/npm/jquery@3.4.1/dist/jquery.min.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/jquery.easing@1.4.1/jquery.easing.min.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/clipboard@2.0.6/dist/clipboard.min.js"></script>
+<script src="https://uoregon-libraries.github.io/newspaper-curation-app/js/bundle.js"></script><style>
+:root {}
+</style>
+<meta property="og:title" content="Server Setup" />
+<meta property="og:description" content="Setting up a new NCA toolsuite" />
+<meta property="og:type" content="article" />
+<meta property="og:url" content="https://uoregon-libraries.github.io/newspaper-curation-app/setup/server-setup/" /><meta property="article:section" content="setup" />
+
+
+
+<meta name="twitter:card" content="summary"/>
+<meta name="twitter:title" content="Server Setup"/>
+<meta name="twitter:description" content="Setting up a new NCA toolsuite"/>
+<meta itemprop="name" content="Server Setup">
+<meta itemprop="description" content="Setting up a new NCA toolsuite">
+
+<meta itemprop="wordCount" content="587">
+<meta itemprop="keywords" content="" /></head>
+<body><div class="container"><header>
+<h1>Newspaper Curation App</h1><a href="https://github.com/uoregon-libraries/newspaper-curation-app/" class="github"><i class="fab fa-github"></i></a>
+</header>
+
+<div class="content-container">
+<main><h1>Server Setup</h1>
+<h2 id="human-requirements">Human Requirements</h2>
+<p>Unfortunately, this process is still technical enough that you will need a
+devops person to at least get the system set up for processing.  You&rsquo;ll also
+need people who can reorder PDF pages (if necessary) as well as people who can
+enter and review newspaper issue metadata.</p>
+<p>Somebody will want to monitor the output from the various automated processes,
+such as QCing generated batches on a staging server prior to loading in
+production, as there is still a great deal of room for human error.</p>
+<h2 id="preliminary-setup">Preliminary setup</h2>
+<p>Before anything can be done, the following setup has to happen:</p>
+<ol>
+<li>Make sure you understand the <a href="../../setup/services">Services</a> documentation and
+can get the stack up and running</li>
+<li>Somebody symlinks or otherwise sets up the sftp folder root so that each
+title has its own location directly off said root.  e.g.,
+<code>/mnt/news/sftp/foo</code> should contain one title&rsquo;s issues, and
+<code>/mnt/news/sftp/bar</code> should contain a different title&rsquo;s issues.</li>
+<li>Somebody sets up the full swath of folders, mounting to network storage
+as it makes sense.
+<ul>
+<li><code>PDF_UPLOAD_PATH</code> (<code>/mnt/news/sftp</code>): One subfolder should be set up per title</li>
+<li><code>SCAN_UPLOAD_PATH</code> (<code>/mnt/news/scans</code>): This is where in-house scans would be uploaded.</li>
+<li><code>ORIGINAL_PDF_BACKUP_PATH</code> (<code>/mnt/news/backup/originals</code>): Short-term storage
+where uploaded PDFs will be moved after being split.  They may need to be
+held a few months for embargoed issues, but they&rsquo;re auto-purged once the
+issue has been put into a batch.</li>
+<li><code>PDF_PAGE_REVIEW_PATH</code> (<code>/mnt/news/page-review</code>): Issues which came from
+born-digital SFTP uploads and are ready for manual page reordering - this
+should be exposed to whomever will manually review and reorder the
+born-digital uploads prior to them entering the rest of the workflow.</li>
+<li><code>BATCH_OUTPUT_PATH</code> (<code>/mnt/news/outgoing</code>): Batches here are ready for
+ingest into staging and eventually production</li>
+<li><code>WORKFLOW_PATH</code> (<code>/mnt/news/workflow</code>): Issues are moved here for
+processing, and once here should never be accessible to anybody to
+manually modify them.  They will live here until all workflow tasks are
+complete and they&rsquo;re put into a batch for ingest.</li>
+<li><code>ISSUE_CACHE_PATH</code> (<code>/var/local/news/nca/cache</code>): This just needs to be
+created.  The app will use this to speed up issue lookups.</li>
+</ul>
+</li>
+<li>Make sure that the workflow path and the batch output path are on the same
+filesystem!  This ensures the batch generator will be able to hard-link
+files, rather than copying them, which saves a significant amount of time
+when building large batches.  <strong>NOTE</strong>: the system currently <em>requires</em>
+this, and will fail if an attempt to hard-link files fails.</li>
+<li>Permissions have to be set up such that:
+<ul>
+<li>Humans can rename PDFs in the page review path</li>
+<li>Humans can drop off scanned PDF/TIFF pairs in the scans path</li>
+<li>Humans can upload born-digital PDFs into the sftp path</li>
+<li>All binaries (<code>server</code>, <code>run-jobs</code>, anything else in <code>bin/</code> you wish to
+run) are run as a user who can read and write to all paths</li>
+<li>Apache can read the scans path</li>
+<li>The system which ingests batches into ONI can read from the batch
+output path</li>
+</ul>
+</li>
+<li>Run the servers and set up one or more users: <a href="../../setup/user-setup">User Setup</a></li>
+<li>Somebody must set up the list of newspaper titles using the &ldquo;Manage
+Newspaper Titles&rdquo; functionality.  Nothing works if titles aren&rsquo;t set up!
+Titles need all data except the username and password, which are primarily
+there to help keep the information central.</li>
+<li>Somebody has to set up at least one MARC Org Code in the admin app&rsquo;s &ldquo;MARC
+Org Codes&rdquo; area.  This should match the code set up in the app&rsquo;s settings.
+If in-house scanning is done, and awardees will differ from your primary
+awardee&rsquo;s code, you would set up those awardees before putting their scanned
+images into the scan folder.</li>
+</ol>
+<div class="edit-meta">
+
+<br></div><nav class="pagination"><a class="nav nav-prev" href="https://uoregon-libraries.github.io/newspaper-curation-app/setup/services/" title="Services and Apps"><i class="fas fa-arrow-left" aria-hidden="true"></i>&nbsp;Prev - Services and Apps</a>
+<a class="nav nav-next" href="https://uoregon-libraries.github.io/newspaper-curation-app/setup/installation/" title="Installation">Next - Installation <i class="fas fa-arrow-right" aria-hidden="true"></i></a>
+</nav><footer><p class="powered">Powered by <a href="https://gohugo.io">Hugo</a>. Theme by <a href="https://themes.gohugo.io/hugo-theme-techdoc/">TechDoc</a>. Designed by <a href="https://github.com/thingsym/hugo-theme-techdoc">Thingsym</a>.</p>
+</footer>
+</main>
+<div class="sidebar">
+
+<nav class="open-menu">
+<ul>
+<li class=""><a href="https://uoregon-libraries.github.io/newspaper-curation-app/">Home</a></li>
+
+<li class="parent"><a href="https://uoregon-libraries.github.io/newspaper-curation-app/setup/">Setup and Installation</a>
+  
+<ul class="sub-menu">
+<li class=""><a href="https://uoregon-libraries.github.io/newspaper-curation-app/setup/services/">Services and Apps</a></li>
+<li class="active"><a href="https://uoregon-libraries.github.io/newspaper-curation-app/setup/server-setup/">Server Setup</a></li>
+<li class=""><a href="https://uoregon-libraries.github.io/newspaper-curation-app/setup/installation/">Installation</a></li>
+<li class=""><a href="https://uoregon-libraries.github.io/newspaper-curation-app/setup/user-setup/">Users</a></li>
+<li class=""><a href="https://uoregon-libraries.github.io/newspaper-curation-app/setup/creating-publishers/">Onboarding A Publisher</a></li>
+</ul>
+  
+</li>
+
+<li class=""><a href="https://uoregon-libraries.github.io/newspaper-curation-app/specs/">NCA Terms, Specs, and Information</a>
+  
+<ul class="sub-menu">
+<li class=""><a href="https://uoregon-libraries.github.io/newspaper-curation-app/specs/glossary/">Glossary</a></li>
+<li class=""><a href="https://uoregon-libraries.github.io/newspaper-curation-app/specs/upload-specs/">Uploads: Folder and File Specs</a></li>
+</ul>
+  
+</li>
+
+<li class=""><a href="https://uoregon-libraries.github.io/newspaper-curation-app/workflow/">Workflow</a>
+  
+<ul class="sub-menu">
+<li class=""><a href="https://uoregon-libraries.github.io/newspaper-curation-app/workflow/technical/">Technical Details</a></li>
+<li class=""><a href="https://uoregon-libraries.github.io/newspaper-curation-app/workflow/adding-titles/">Adding Titles</a></li>
+<li class=""><a href="https://uoregon-libraries.github.io/newspaper-curation-app/workflow/handling-page-review-problems/">Handling Page Review Problems</a></li>
+<li class=""><a href="https://uoregon-libraries.github.io/newspaper-curation-app/workflow/fixing-flagged-workflow-issues/">Fixing Flagged Workflow Issues</a></li>
+<li class=""><a href="https://uoregon-libraries.github.io/newspaper-curation-app/workflow/fixing-batches/">Fixing Batches</a></li>
+<li class=""><a href="https://uoregon-libraries.github.io/newspaper-curation-app/workflow/batch-manual-golive/">Batch Manual Go-live Procedure</a></li>
+</ul>
+  
+</li>
+
+<li class=""><a href="https://uoregon-libraries.github.io/newspaper-curation-app/contributing/">Contributing</a>
+  
+<ul class="sub-menu">
+<li class=""><a href="https://uoregon-libraries.github.io/newspaper-curation-app/contributing/dev-guide/">Developer&#39;s Guide</a></li>
+<li class=""><a href="https://uoregon-libraries.github.io/newspaper-curation-app/contributing/not-compiling-locally/">Not Compiling Locally</a></li>
+<li class=""><a href="https://uoregon-libraries.github.io/newspaper-curation-app/contributing/documentation/">Contributing to Documentation</a></li>
+<li class=""><a href="https://uoregon-libraries.github.io/newspaper-curation-app/contributing/testing/">Testing</a></li>
+
+<li class=""><a href="https://uoregon-libraries.github.io/newspaper-curation-app/contributing/dev-howto/">How do I...?</a>
+  
+<ul class="sub-menu">
+<li class=""><a href="https://uoregon-libraries.github.io/newspaper-curation-app/contributing/dev-howto/add-job-types/">Add Job Types</a></li>
+</ul>
+  
+</li>
+</ul>
+  
+</li>
+</ul>
+</nav>
+
+
+
+<div class="sidebar-footer"></div>
+</div>
+
+</div><a href="#" id="backtothetop-fixed" class="backtothetop"
+ data-backtothetop-duration="600"
+ data-backtothetop-easing="easeOutQuart"
+ data-backtothetop-fixed-fadeIn="1000"
+ data-backtothetop-fixed-fadeOut="1000"
+ data-backtothetop-fixed-bottom="10"
+ data-backtothetop-fixed-right="20">
+<span class="fa-layers fa-fw">
+<i class="fas fa-circle"></i>
+<i class="fas fa-arrow-circle-up"></i>
+</span></a>
+</div>
+</body>
+</html>

@@ -1,0 +1,200 @@
+<!DOCTYPE html>
+<html lang="en-us">
+<head><meta charset="utf-8">
+<meta http-equiv="X-UA-Compatible" content="IE=edge">
+<meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1, user-scalable=no">
+<title>Contributing to Documentation - Newspaper Curation App</title>
+<meta name="description" content="How to help with NCA&#39;s docs">
+<meta name="generator" content="Hugo 0.83.1" />
+<link href="https://uoregon-libraries.github.io/newspaper-curation-app//index.xml" rel="alternate" type="application/rss+xml">
+<link rel="canonical" href="https://uoregon-libraries.github.io/newspaper-curation-app/contributing/documentation/">
+<link rel="stylesheet" href="https://uoregon-libraries.github.io/newspaper-curation-app/css/theme.min.css">
+<script src="https://use.fontawesome.com/releases/v5.0.6/js/all.js"></script>
+<link rel="stylesheet" href="https://uoregon-libraries.github.io/newspaper-curation-app/css/chroma.min.css">
+<script src="https://cdn.jsdelivr.net/npm/jquery@3.4.1/dist/jquery.min.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/jquery.easing@1.4.1/jquery.easing.min.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/clipboard@2.0.6/dist/clipboard.min.js"></script>
+<script src="https://uoregon-libraries.github.io/newspaper-curation-app/js/bundle.js"></script><style>
+:root {}
+</style>
+<meta property="og:title" content="Contributing to Documentation" />
+<meta property="og:description" content="How to help with NCA&#39;s docs" />
+<meta property="og:type" content="article" />
+<meta property="og:url" content="https://uoregon-libraries.github.io/newspaper-curation-app/contributing/documentation/" /><meta property="article:section" content="contributing" />
+
+
+
+<meta name="twitter:card" content="summary"/>
+<meta name="twitter:title" content="Contributing to Documentation"/>
+<meta name="twitter:description" content="How to help with NCA&#39;s docs"/>
+<meta itemprop="name" content="Contributing to Documentation">
+<meta itemprop="description" content="How to help with NCA&#39;s docs">
+
+<meta itemprop="wordCount" content="708">
+<meta itemprop="keywords" content="" /></head>
+<body><div class="container"><header>
+<h1>Newspaper Curation App</h1><a href="https://github.com/uoregon-libraries/newspaper-curation-app/" class="github"><i class="fab fa-github"></i></a>
+</header>
+
+<div class="content-container">
+<main><h1>Contributing to Documentation</h1>
+<p>The documentation for this site is produce using <a href="https://gohugo.io/">Hugo</a> and
+the <a href="https://themes.gohugo.io/hugo-theme-techdoc/">TechDoc</a> theme.</p>
+<p>We want our documentation to help you use NCA (okay, again, if I&rsquo;m being
+honest, this is really just for UO to remember how to use our app), and as such
+the documentation itself needs to be easy to edit and keep up-to-date.</p>
+<h2 id="starting-out">Starting out</h2>
+<p>Get Hugo installed.  It&rsquo;s a trivial standalone application that can be
+installed with minimal fuss:
+<a href="https://gohugo.io/getting-started/installing">installing Hugo</a>.</p>
+<p>Once you have it, you can download the NCA codebase from Github and start
+editing.  Change to the <code>hugo</code> subdirectory in NCA, and you&rsquo;ll see all the
+content under <code>content/</code>.</p>
+<p>When you&rsquo;re in the <code>hugo</code> directory, you can simply run <code>hugo serve</code> to start a
+local server where you can then browse to something like
+<a href="http://localhost:1313/newspaper-curation-app"><code>http://localhost:1313/newspaper-curation-app/</code></a>
+in order to view the site.  Hugo is again 100% standalone, so you won&rsquo;t need
+nodejs, Ruby, etc. to compile the documentation.</p>
+<h2 id="magic--rules">Magic / Rules</h2>
+<p>Everything under <code>hugo/content</code> abides by certain rules.  These rules are few,
+but can be very confusing at first.  If you know Hugo pretty well already, this
+probably makes sense to you, but I&rsquo;m just using it for the first time ever,
+so&hellip;.</p>
+<p><strong>Rule 1</strong>: <code>hugo/content/</code> seems to be a &ldquo;special&rdquo; location.  Nothing there shows
+up in the site navigation area except <code>_index.md</code>, which is our main navigation
+landing page.  If you created a file called <code>hugo/content/foo.md</code>, you could
+reach it by visiting <code>http://localhost:1313/newspaper-curation-app/foo</code>, but it
+won&rsquo;t show up in the navigation.</p>
+<p><strong>Rule 2</strong>: Everything else has to live under a subdirectory, period.  If you
+want it in the navigation, and you almost always do, you need it under a
+subdirectory, such as this document which lives under <code>contributing</code>.</p>
+<p><strong>Rule 3</strong>: The &ldquo;home&rdquo; page of a subdirectory is always called <code>index.md</code>.
+That file is magic and shows up it the hierarchy of pages at one level above
+the subdirectory.  e.g., <code>hugo/content/contributing/_index.md</code> is at the root
+level of the navigation menu, and everything else in
+<code>hugo/content/contributing/</code> is shown in the navigation menu as being nested
+under that.</p>
+<p><strong>Rule 4</strong>: All pages need to be in markdown format and need &ldquo;frontmatter&rdquo;.
+Example frontmatter can be seen on any of these pages at the top, between two
+lines which are simply &ldquo;&mdash;&rdquo;.  The title is critical, as it shows up in the
+navbar, the site&rsquo;s <code>&lt;title&gt;</code>, and is the first heading (<code>&lt;h1&gt;</code>) on the page.
+The weight is where the page shows up in the navigation bar <em>relative to the
+structure in which the page lives</em>.  This can be confusing, so&hellip;</p>
+<p><strong>Rule 5</strong>: A page&rsquo;s &ldquo;weight&rdquo; is confusing because the hierarchy is confusing.
+All pages are siblings of one another if they&rsquo;re in the same directory <em>except</em>
+<code>_index.md</code>.  That magical, special page is actually a <em>parent</em> of the other
+pages in that directory.  This means the weight listed in <code>foo/one.md</code> is how
+&ldquo;one&rdquo; will be ordered compared to <code>foo/two.md</code>.  But <code>foo/bar/_index.md</code> will
+also be ordered relative to those two pages, because it is the <em>parent</em> of
+<code>foo/bar/*</code>, which makes it the <strong>sibling</strong> of <code>foo/*</code>.  Confusing, right?</p>
+<h2 id="guidelines">Guidelines</h2>
+<p>This is more straightforward.  YAY!</p>
+<ul>
+<li>Never include a level one heading, e.g., <code># Title</code>.  Hugo generates a level
+one heading based on the title, so this is unnecessary, and can be an
+accessibility problem.</li>
+<li>Use hashes, not underscores, for level two headings.  It&rsquo;s just easier to
+grep for structural elements this way.</li>
+<li>Be explicit about weights, even though it is confusing and sucky.</li>
+<li>Use 80-character width for documentation unless it splits up a link&rsquo;s text
+(that messes up my markdown editor in some cases).  80 characters.  I use
+tmux with multiple panes, and 80 characters will never annoy me.  If you
+contribute something annoying, it may or may not ever get into the repo.
+Call me old if you like, but I&rsquo;m king where this repository is concerned.</li>
+</ul>
+<h2 id="linking-to-other-pages">Linking to other pages</h2>
+<p>If you want to link to another document, use a relative path, not a full URL,
+because a full URL will either work on the live site (e.g.,
+<a href="https://foo.github.io/blah">https://foo.github.io/blah</a>) or locally (http://localhost:1313/blah), but not
+both.</p>
+<p>An easy way to do this is just start with a slash and append everything that
+comes after <code>hugo/content/</code> minus the &ldquo;.md&rdquo;.  e.g. you can do this:</p>
+<p><a href="../../contributing/documentation">docs</a></p>
+<p>with this code: <code>[docs](/contributing/documentation)</code>.</p>
+<div class="edit-meta">
+
+<br></div><nav class="pagination"><a class="nav nav-prev" href="https://uoregon-libraries.github.io/newspaper-curation-app/contributing/not-compiling-locally/" title="Not Compiling Locally"><i class="fas fa-arrow-left" aria-hidden="true"></i>&nbsp;Prev - Not Compiling Locally</a>
+<a class="nav nav-next" href="https://uoregon-libraries.github.io/newspaper-curation-app/contributing/testing/" title="Testing">Next - Testing <i class="fas fa-arrow-right" aria-hidden="true"></i></a>
+</nav><footer><p class="powered">Powered by <a href="https://gohugo.io">Hugo</a>. Theme by <a href="https://themes.gohugo.io/hugo-theme-techdoc/">TechDoc</a>. Designed by <a href="https://github.com/thingsym/hugo-theme-techdoc">Thingsym</a>.</p>
+</footer>
+</main>
+<div class="sidebar">
+
+<nav class="open-menu">
+<ul>
+<li class=""><a href="https://uoregon-libraries.github.io/newspaper-curation-app/">Home</a></li>
+
+<li class=""><a href="https://uoregon-libraries.github.io/newspaper-curation-app/setup/">Setup and Installation</a>
+  
+<ul class="sub-menu">
+<li class=""><a href="https://uoregon-libraries.github.io/newspaper-curation-app/setup/services/">Services and Apps</a></li>
+<li class=""><a href="https://uoregon-libraries.github.io/newspaper-curation-app/setup/server-setup/">Server Setup</a></li>
+<li class=""><a href="https://uoregon-libraries.github.io/newspaper-curation-app/setup/installation/">Installation</a></li>
+<li class=""><a href="https://uoregon-libraries.github.io/newspaper-curation-app/setup/user-setup/">Users</a></li>
+<li class=""><a href="https://uoregon-libraries.github.io/newspaper-curation-app/setup/creating-publishers/">Onboarding A Publisher</a></li>
+</ul>
+  
+</li>
+
+<li class=""><a href="https://uoregon-libraries.github.io/newspaper-curation-app/specs/">NCA Terms, Specs, and Information</a>
+  
+<ul class="sub-menu">
+<li class=""><a href="https://uoregon-libraries.github.io/newspaper-curation-app/specs/glossary/">Glossary</a></li>
+<li class=""><a href="https://uoregon-libraries.github.io/newspaper-curation-app/specs/upload-specs/">Uploads: Folder and File Specs</a></li>
+</ul>
+  
+</li>
+
+<li class=""><a href="https://uoregon-libraries.github.io/newspaper-curation-app/workflow/">Workflow</a>
+  
+<ul class="sub-menu">
+<li class=""><a href="https://uoregon-libraries.github.io/newspaper-curation-app/workflow/technical/">Technical Details</a></li>
+<li class=""><a href="https://uoregon-libraries.github.io/newspaper-curation-app/workflow/adding-titles/">Adding Titles</a></li>
+<li class=""><a href="https://uoregon-libraries.github.io/newspaper-curation-app/workflow/handling-page-review-problems/">Handling Page Review Problems</a></li>
+<li class=""><a href="https://uoregon-libraries.github.io/newspaper-curation-app/workflow/fixing-flagged-workflow-issues/">Fixing Flagged Workflow Issues</a></li>
+<li class=""><a href="https://uoregon-libraries.github.io/newspaper-curation-app/workflow/fixing-batches/">Fixing Batches</a></li>
+<li class=""><a href="https://uoregon-libraries.github.io/newspaper-curation-app/workflow/batch-manual-golive/">Batch Manual Go-live Procedure</a></li>
+</ul>
+  
+</li>
+
+<li class="parent"><a href="https://uoregon-libraries.github.io/newspaper-curation-app/contributing/">Contributing</a>
+  
+<ul class="sub-menu">
+<li class=""><a href="https://uoregon-libraries.github.io/newspaper-curation-app/contributing/dev-guide/">Developer&#39;s Guide</a></li>
+<li class=""><a href="https://uoregon-libraries.github.io/newspaper-curation-app/contributing/not-compiling-locally/">Not Compiling Locally</a></li>
+<li class="active"><a href="https://uoregon-libraries.github.io/newspaper-curation-app/contributing/documentation/">Contributing to Documentation</a></li>
+<li class=""><a href="https://uoregon-libraries.github.io/newspaper-curation-app/contributing/testing/">Testing</a></li>
+
+<li class=""><a href="https://uoregon-libraries.github.io/newspaper-curation-app/contributing/dev-howto/">How do I...?</a>
+  
+<ul class="sub-menu">
+<li class=""><a href="https://uoregon-libraries.github.io/newspaper-curation-app/contributing/dev-howto/add-job-types/">Add Job Types</a></li>
+</ul>
+  
+</li>
+</ul>
+  
+</li>
+</ul>
+</nav>
+
+
+
+<div class="sidebar-footer"></div>
+</div>
+
+</div><a href="#" id="backtothetop-fixed" class="backtothetop"
+ data-backtothetop-duration="600"
+ data-backtothetop-easing="easeOutQuart"
+ data-backtothetop-fixed-fadeIn="1000"
+ data-backtothetop-fixed-fadeOut="1000"
+ data-backtothetop-fixed-bottom="10"
+ data-backtothetop-fixed-right="20">
+<span class="fa-layers fa-fw">
+<i class="fas fa-circle"></i>
+<i class="fas fa-arrow-circle-up"></i>
+</span></a>
+</div>
+</body>
+</html>
