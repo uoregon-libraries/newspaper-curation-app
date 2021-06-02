@@ -1,0 +1,200 @@
+<?xml version="1.0" encoding="utf-8" standalone="yes"?>
+<rss version="2.0" xmlns:atom="http://www.w3.org/2005/Atom">
+  <channel>
+    <title>Home on Newspaper Curation App</title>
+    <link>https://uoregon-libraries.github.io/newspaper-curation-app/</link>
+    <description>Recent content in Home on Newspaper Curation App</description>
+    <generator>Hugo -- gohugo.io</generator>
+    <language>en-us</language><atom:link href="https://uoregon-libraries.github.io/newspaper-curation-app/index.xml" rel="self" type="application/rss+xml" />
+    <item>
+      <title>Services and Apps</title>
+      <link>https://uoregon-libraries.github.io/newspaper-curation-app/setup/services/</link>
+      <pubDate>Mon, 01 Jan 0001 00:00:00 +0000</pubDate>
+      
+      <guid>https://uoregon-libraries.github.io/newspaper-curation-app/setup/services/</guid>
+      <description>You should at least understand everything in this document at a high level before moving on to the setup/installation documents, as the NCA suite is a set of tools, not a single application that does it all.
+Overview NCA has two key services which you&amp;rsquo;ll have to run, in addition to the rest of the external services (such as an IIIF server, MySQL / MariaDB, and Apach)
+If you&amp;rsquo;re doing a manual installation rather than container-based, you are strongly advised to look at the docker files - they make it clear precisely how the stack should be set up.</description>
+    </item>
+    
+    <item>
+      <title>Add Job Types</title>
+      <link>https://uoregon-libraries.github.io/newspaper-curation-app/contributing/dev-howto/add-job-types/</link>
+      <pubDate>Mon, 01 Jan 0001 00:00:00 +0000</pubDate>
+      
+      <guid>https://uoregon-libraries.github.io/newspaper-curation-app/contributing/dev-howto/add-job-types/</guid>
+      <description>When a new kind of job is required for backend processing, it has to be done properly in order to ensure it is used, set up, and processed by NCA.
+ Make sure there aren&amp;rsquo;t already existing jobs that do what you want! There are a lot of jobs in NCA already, and some are meant to be very generic, such as JobTypeRenameDir.  Read and make sure you understand all structs in src/jobs that implement Process   Create a new JobType in src/models/job.</description>
+    </item>
+    
+    <item>
+      <title>Developer&#39;s Guide</title>
+      <link>https://uoregon-libraries.github.io/newspaper-curation-app/contributing/dev-guide/</link>
+      <pubDate>Mon, 01 Jan 0001 00:00:00 +0000</pubDate>
+      
+      <guid>https://uoregon-libraries.github.io/newspaper-curation-app/contributing/dev-guide/</guid>
+      <description>It is assumed developers will use Docker for the stack, other than the relatively simple process of compiling binaries.
+Requirements / Setup Local compilation (recommended)  A supported version of Go (e.g., if 1.16 is the latest, you want 1.15 or 1.16) golint: go get -u golang.org/x/lint/golint Set up your GOPATH: https://golang.org/doc/code.html#GOPATH  Add $GOPATH/bin to your path    If you choose not to compile on your host machine, you will have a slightly simpler install, but there are a few considerations.</description>
+    </item>
+    
+    <item>
+      <title>Glossary</title>
+      <link>https://uoregon-libraries.github.io/newspaper-curation-app/specs/glossary/</link>
+      <pubDate>Mon, 01 Jan 0001 00:00:00 +0000</pubDate>
+      
+      <guid>https://uoregon-libraries.github.io/newspaper-curation-app/specs/glossary/</guid>
+      <description>NDNP / Newspaper Catalogers These are terms I&amp;rsquo;m trying to use properly, but which I sometimes still mess up. Don&amp;rsquo;t let that happen to you!
+ Title: A distinct newspaper title, such as The Daily Prophet. All titles will have a unique LCCN. LCCN: Library of Congress Control Number: https://en.wikipedia.org/wiki/Library_of_Congress_Control_Number. In terms of NCA (and ONI and chronam), this uniquely identifies a newspaper title. Issue: A single published issue of a newspaper title, such as the April 20th edition of The Daily Prophet.</description>
+    </item>
+    
+    <item>
+      <title>Server Setup</title>
+      <link>https://uoregon-libraries.github.io/newspaper-curation-app/setup/server-setup/</link>
+      <pubDate>Mon, 01 Jan 0001 00:00:00 +0000</pubDate>
+      
+      <guid>https://uoregon-libraries.github.io/newspaper-curation-app/setup/server-setup/</guid>
+      <description>Human Requirements Unfortunately, this process is still technical enough that you will need a devops person to at least get the system set up for processing. You&amp;rsquo;ll also need people who can reorder PDF pages (if necessary) as well as people who can enter and review newspaper issue metadata.
+Somebody will want to monitor the output from the various automated processes, such as QCing generated batches on a staging server prior to loading in production, as there is still a great deal of room for human error.</description>
+    </item>
+    
+    <item>
+      <title>Technical Details</title>
+      <link>https://uoregon-libraries.github.io/newspaper-curation-app/workflow/technical/</link>
+      <pubDate>Mon, 01 Jan 0001 00:00:00 +0000</pubDate>
+      
+      <guid>https://uoregon-libraries.github.io/newspaper-curation-app/workflow/technical/</guid>
+      <description>This document attempts to explain the entire workflow from upload to batch generation in a way that developers can understand what&amp;rsquo;s needed and how to at least begin investigating if something goes wrong.
+Jobs and the Job Queue The job runner regularly scans the database looking for jobs to run. The default setup splits jobs up to ensure quick jobs, like moving an issue from one location to another on the filesystem, are run separately from slow jobs like generating JP2 files.</description>
+    </item>
+    
+    <item>
+      <title>Adding Titles</title>
+      <link>https://uoregon-libraries.github.io/newspaper-curation-app/workflow/adding-titles/</link>
+      <pubDate>Mon, 01 Jan 0001 00:00:00 +0000</pubDate>
+      
+      <guid>https://uoregon-libraries.github.io/newspaper-curation-app/workflow/adding-titles/</guid>
+      <description>Adding a title to NCA is very simple in cases where the title already exists somewhere external (e.g., Library of Congress), but can take a lot more work for titles not indexed elsewhere. Here&amp;rsquo;s our process:
+ Provision a real record, including things like an LCCN  This is a must for us, otherwise our Historic Oregon Newspapers site will misrepresent information that could be extremely confusing to end-users looking for more details.</description>
+    </item>
+    
+    <item>
+      <title>Installation</title>
+      <link>https://uoregon-libraries.github.io/newspaper-curation-app/setup/installation/</link>
+      <pubDate>Mon, 01 Jan 0001 00:00:00 +0000</pubDate>
+      
+      <guid>https://uoregon-libraries.github.io/newspaper-curation-app/setup/installation/</guid>
+      <description>Development If you&amp;rsquo;re developing on NCA, installation will differ from standing up a production server. Please see our Development Guide.
+Preliminary Setup Manual installation has several prerequisites:
+ Go and some dependencies (see below) Poppler Utils for PDF processing OpenJPEG 2 + command-line tools for JP2 generation  The command-line tools will probably need to be manually compiled to support converting PNG files. Most distributions of Linux don&amp;rsquo;t have this by default, hence the need to manually compile.</description>
+    </item>
+    
+    <item>
+      <title>Not Compiling Locally</title>
+      <link>https://uoregon-libraries.github.io/newspaper-curation-app/contributing/not-compiling-locally/</link>
+      <pubDate>Mon, 01 Jan 0001 00:00:00 +0000</pubDate>
+      
+      <guid>https://uoregon-libraries.github.io/newspaper-curation-app/contributing/not-compiling-locally/</guid>
+      <description>If you want to compile NCA inside a container, you are for the most part on your own. It&amp;rsquo;s doable and pretty easy, but it&amp;rsquo;s not part of the steps we&amp;rsquo;re going to outline, because it adds some annoyances.
+Why is it best to compile on your local machine instead of inside a container?
+ Go is not Ruby / Python / PHP / node. You aren&amp;rsquo;t installing a systemwide runtime or futzing with things like rbenv, nvm, virtualenv, composer, &amp;hellip;.</description>
+    </item>
+    
+    <item>
+      <title>Uploads: Folder and File Specs</title>
+      <link>https://uoregon-libraries.github.io/newspaper-curation-app/specs/upload-specs/</link>
+      <pubDate>Mon, 01 Jan 0001 00:00:00 +0000</pubDate>
+      
+      <guid>https://uoregon-libraries.github.io/newspaper-curation-app/specs/upload-specs/</guid>
+      <description>Uploads: Folder and File Specs Publishers (or in-house scanners) who upload issues must adhere to very strict structures for issue organization.
+Born-Digital The folder structure tells us the newspaper title and issue date. e.g., /mnt/news/sftp/sn12345678/2018-01-02 would mean the January 2nd, 2018 edition of title sn12345678. Note that the &amp;ldquo;sftp directory&amp;rdquo; can be used instead of the LCCN if they differ (for historical reasons - the legacy app&amp;rsquo;s born-digital and scan processors were very separated).</description>
+    </item>
+    
+    <item>
+      <title>Contributing to Documentation</title>
+      <link>https://uoregon-libraries.github.io/newspaper-curation-app/contributing/documentation/</link>
+      <pubDate>Mon, 01 Jan 0001 00:00:00 +0000</pubDate>
+      
+      <guid>https://uoregon-libraries.github.io/newspaper-curation-app/contributing/documentation/</guid>
+      <description>The documentation for this site is produce using Hugo and the TechDoc theme.
+We want our documentation to help you use NCA (okay, again, if I&amp;rsquo;m being honest, this is really just for UO to remember how to use our app), and as such the documentation itself needs to be easy to edit and keep up-to-date.
+Starting out Get Hugo installed. It&amp;rsquo;s a trivial standalone application that can be installed with minimal fuss: installing Hugo.</description>
+    </item>
+    
+    <item>
+      <title>Handling Page Review Problems</title>
+      <link>https://uoregon-libraries.github.io/newspaper-curation-app/workflow/handling-page-review-problems/</link>
+      <pubDate>Mon, 01 Jan 0001 00:00:00 +0000</pubDate>
+      
+      <guid>https://uoregon-libraries.github.io/newspaper-curation-app/workflow/handling-page-review-problems/</guid>
+      <description>The &amp;ldquo;page review&amp;rdquo; location is one of the most dangerous in the application due to the requirement that people manually edit and rename files. There are potentially a lot of difficult problems to manage here.
+Manual Deletion If issues got to the page-review step when they shouldn&amp;rsquo;t have, the only option is to remove them. Make sure you do this right. There is a tool for this process, and manually deleting issues will cause you pain (see below).</description>
+    </item>
+    
+    <item>
+      <title>Users</title>
+      <link>https://uoregon-libraries.github.io/newspaper-curation-app/setup/user-setup/</link>
+      <pubDate>Mon, 01 Jan 0001 00:00:00 +0000</pubDate>
+      
+      <guid>https://uoregon-libraries.github.io/newspaper-curation-app/setup/user-setup/</guid>
+      <description>Newspaper Curation App - User Setup First-time Setup Once the applications are installed and configured, start the NCA server in debug mode:
+./bin/server -c ./settings --debug  This lets you fake an admin login via http://your.site/users?debuguser=admin. You can then set up other users as necessary. Once you have Apache set up to do the authentication, you should never run in debug mode on production servers.
+For development use, docker-compose.override.yml-example is already set up to run in debug mode.</description>
+    </item>
+    
+    <item>
+      <title>Fixing Flagged Workflow Issues</title>
+      <link>https://uoregon-libraries.github.io/newspaper-curation-app/workflow/fixing-flagged-workflow-issues/</link>
+      <pubDate>Mon, 01 Jan 0001 00:00:00 +0000</pubDate>
+      
+      <guid>https://uoregon-libraries.github.io/newspaper-curation-app/workflow/fixing-flagged-workflow-issues/</guid>
+      <description>This refers to issues which were already queued from their uploaded location, had derivatives generated, and were ready for metadata entry.
+The metadata entry person flags errors to say essentially, &amp;ldquo;NCA&amp;rsquo;s UI cannot fix the problems on this issue&amp;rdquo;. We have seen a variety of problems like this:
+ The PDF or JP2 image derivatives are corrupt in some way, even though the tools which generated them seemed to run without errors The pages are out of order - somebody reordered pages incorrectly, and the issue now has to be manually pulled, fixed, and re-inserted into the workflow The issue is incorrect in some other way, and wasn&amp;rsquo;t caught when queueing from the uploads area (e.</description>
+    </item>
+    
+    <item>
+      <title>Onboarding A Publisher</title>
+      <link>https://uoregon-libraries.github.io/newspaper-curation-app/setup/creating-publishers/</link>
+      <pubDate>Mon, 01 Jan 0001 00:00:00 +0000</pubDate>
+      
+      <guid>https://uoregon-libraries.github.io/newspaper-curation-app/setup/creating-publishers/</guid>
+      <description>Creating a publisher in NCA, at least for UO, requires several manual processes take place:
+ Add a title to NCA with sftp credential information. If necessary, import the title to your ONI site (for example, oregonnews.uoregon.edu).  See Adding Titles for details   Add a user to the sftp server  At UO, we have an internal sftp script at /usr/local/scripts/addsftpuser.sh. e.g., /usr/local/scripts/addsftpuser.sh &amp;quot;newpublisher&amp;quot; &amp;quot;Pas$w0rd&amp;quot;   Symlink the sftp server&amp;rsquo;s location so NCA can see it.</description>
+    </item>
+    
+    <item>
+      <title>Testing</title>
+      <link>https://uoregon-libraries.github.io/newspaper-curation-app/contributing/testing/</link>
+      <pubDate>Mon, 01 Jan 0001 00:00:00 +0000</pubDate>
+      
+      <guid>https://uoregon-libraries.github.io/newspaper-curation-app/contributing/testing/</guid>
+      <description>Unit Testing Running unit tests is easy:
+make test  This compiles all of the code and tests any *_test.go files. Test coverage is spotty at best right now, but the compile-time checks catch the most common problems, like typos in variable names.
+Contributors: feel free to add more unit tests to improve overall coverage!
+Manual Testing This is clunky and hacky, but it&amp;rsquo;s what we&amp;rsquo;ve got for now. How it all works:</description>
+    </item>
+    
+    <item>
+      <title>Fixing Batches</title>
+      <link>https://uoregon-libraries.github.io/newspaper-curation-app/workflow/fixing-batches/</link>
+      <pubDate>Mon, 01 Jan 0001 00:00:00 +0000</pubDate>
+      
+      <guid>https://uoregon-libraries.github.io/newspaper-curation-app/workflow/fixing-batches/</guid>
+      <description>Install Build and run the batch fixer tool. You&amp;rsquo;ll need the same prerequisites as are necessary for the rest of the toolsuite, and you&amp;rsquo;ll need to run it on your production system in order to manipulate batch files.
+git clone https://github.com/uoregon-libraries/newspaper-curation-app.git cd newspaper-curation-app make ./bin/batch-fixer -c ./settings The tool is an interactive command-line application. You can type &amp;ldquo;help&amp;rdquo; at any time to get a full list of commands for your current context.</description>
+    </item>
+    
+    <item>
+      <title>Batch Manual Go-live Procedure</title>
+      <link>https://uoregon-libraries.github.io/newspaper-curation-app/workflow/batch-manual-golive/</link>
+      <pubDate>Mon, 01 Jan 0001 00:00:00 +0000</pubDate>
+      
+      <guid>https://uoregon-libraries.github.io/newspaper-curation-app/workflow/batch-manual-golive/</guid>
+      <description>Once a batch has been approved in staging, the following steps must be taken, at least for the UO workflow:
+  Make sure the batch has a valid tagmanifest-sha256.txt file
+  Copy the batch (sans TIFFs) to the newspaper batch network store, e.g.:
+# $src is something like: # /mnt/news/outgoing/batch_foo_20180918BasaltVampireTramplingCrabgrass_ver01 # $dest_batch is something like: # /mnt/production/batch_foo_20180918BasaltVampireTramplingCrabgrass_ver01 rsync -av flags --delete \  --exclude=&amp;#34;*.tif&amp;#34; --exclude=&amp;#34;*.tiff&amp;#34; --exclude=&amp;#34;*.TIF&amp;#34; --exclude=&amp;#34;*.TIFF&amp;#34; \  --exclude=&amp;#34;*.</description>
+    </item>
+    
+  </channel>
+</rss>

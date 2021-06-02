@@ -1,0 +1,30 @@
+<?xml version="1.0" encoding="utf-8" standalone="yes"?>
+<rss version="2.0" xmlns:atom="http://www.w3.org/2005/Atom">
+  <channel>
+    <title>NCA Terms, Specs, and Information on Newspaper Curation App</title>
+    <link>https://uoregon-libraries.github.io/newspaper-curation-app/specs/</link>
+    <description>Recent content in NCA Terms, Specs, and Information on Newspaper Curation App</description>
+    <generator>Hugo -- gohugo.io</generator>
+    <language>en-us</language><atom:link href="https://uoregon-libraries.github.io/newspaper-curation-app/specs/index.xml" rel="self" type="application/rss+xml" />
+    <item>
+      <title>Glossary</title>
+      <link>https://uoregon-libraries.github.io/newspaper-curation-app/specs/glossary/</link>
+      <pubDate>Mon, 01 Jan 0001 00:00:00 +0000</pubDate>
+      
+      <guid>https://uoregon-libraries.github.io/newspaper-curation-app/specs/glossary/</guid>
+      <description>NDNP / Newspaper Catalogers These are terms I&amp;rsquo;m trying to use properly, but which I sometimes still mess up. Don&amp;rsquo;t let that happen to you!
+ Title: A distinct newspaper title, such as The Daily Prophet. All titles will have a unique LCCN. LCCN: Library of Congress Control Number: https://en.wikipedia.org/wiki/Library_of_Congress_Control_Number. In terms of NCA (and ONI and chronam), this uniquely identifies a newspaper title. Issue: A single published issue of a newspaper title, such as the April 20th edition of The Daily Prophet.</description>
+    </item>
+    
+    <item>
+      <title>Uploads: Folder and File Specs</title>
+      <link>https://uoregon-libraries.github.io/newspaper-curation-app/specs/upload-specs/</link>
+      <pubDate>Mon, 01 Jan 0001 00:00:00 +0000</pubDate>
+      
+      <guid>https://uoregon-libraries.github.io/newspaper-curation-app/specs/upload-specs/</guid>
+      <description>Uploads: Folder and File Specs Publishers (or in-house scanners) who upload issues must adhere to very strict structures for issue organization.
+Born-Digital The folder structure tells us the newspaper title and issue date. e.g., /mnt/news/sftp/sn12345678/2018-01-02 would mean the January 2nd, 2018 edition of title sn12345678. Note that the &amp;ldquo;sftp directory&amp;rdquo; can be used instead of the LCCN if they differ (for historical reasons - the legacy app&amp;rsquo;s born-digital and scan processors were very separated).</description>
+    </item>
+    
+  </channel>
+</rss>

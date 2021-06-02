@@ -1,0 +1,211 @@
+<!DOCTYPE html>
+<html lang="en-us">
+<head><meta charset="utf-8">
+<meta http-equiv="X-UA-Compatible" content="IE=edge">
+<meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1, user-scalable=no">
+<title>Fixing Batches - Newspaper Curation App</title>
+<meta name="description" content="Fixing batches after QC failure">
+<meta name="generator" content="Hugo 0.83.1" />
+<link href="https://uoregon-libraries.github.io/newspaper-curation-app//index.xml" rel="alternate" type="application/rss+xml">
+<link rel="canonical" href="https://uoregon-libraries.github.io/newspaper-curation-app/workflow/fixing-batches/">
+<link rel="stylesheet" href="https://uoregon-libraries.github.io/newspaper-curation-app/css/theme.min.css">
+<script src="https://use.fontawesome.com/releases/v5.0.6/js/all.js"></script>
+<link rel="stylesheet" href="https://uoregon-libraries.github.io/newspaper-curation-app/css/chroma.min.css">
+<script src="https://cdn.jsdelivr.net/npm/jquery@3.4.1/dist/jquery.min.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/jquery.easing@1.4.1/jquery.easing.min.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/clipboard@2.0.6/dist/clipboard.min.js"></script>
+<script src="https://uoregon-libraries.github.io/newspaper-curation-app/js/bundle.js"></script><style>
+:root {}
+</style>
+<meta property="og:title" content="Fixing Batches" />
+<meta property="og:description" content="Fixing batches after QC failure" />
+<meta property="og:type" content="article" />
+<meta property="og:url" content="https://uoregon-libraries.github.io/newspaper-curation-app/workflow/fixing-batches/" /><meta property="article:section" content="workflow" />
+
+
+
+<meta name="twitter:card" content="summary"/>
+<meta name="twitter:title" content="Fixing Batches"/>
+<meta name="twitter:description" content="Fixing batches after QC failure"/>
+<meta itemprop="name" content="Fixing Batches">
+<meta itemprop="description" content="Fixing batches after QC failure">
+
+<meta itemprop="wordCount" content="702">
+<meta itemprop="keywords" content="" /></head>
+<body><div class="container"><header>
+<h1>Newspaper Curation App</h1><a href="https://github.com/uoregon-libraries/newspaper-curation-app/" class="github"><i class="fab fa-github"></i></a>
+</header>
+
+<div class="content-container">
+<main><h1>Fixing Batches</h1>
+<h2 id="install">Install</h2>
+<p>Build and run the batch fixer tool.  You&rsquo;ll need the same prerequisites as are
+necessary for the rest of the toolsuite, and you&rsquo;ll need to run it on your
+production system in order to manipulate batch files.</p>
+<div class="highlight"><pre style="color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4"><code class="language-bash" data-lang="bash">git clone https://github.com/uoregon-libraries/newspaper-curation-app.git
+cd newspaper-curation-app
+make
+./bin/batch-fixer -c ./settings
+</code></pre></div><p>The tool is an interactive command-line application.  You can type &ldquo;help&rdquo; at
+any time to get a full list of commands for your current context.</p>
+<h2 id="top-menu">Top Menu</h2>
+<h3 id="list">list</h3>
+<p>The initial context has very few commands, and you likely want to start with &ldquo;list&rdquo;:</p>
+<pre><code>$ ../bin/batch-fixer -c ../settings
+
+No batch or issue loaded.  Enter a command:
+&gt; list
+  - id: 34, status: qc_ready, name: batch_oru_20181128MahoganyNamahageSurroundedByStrawberries_ver01
+  - id: 38, status: qc_ready, name: batch_roguerivervalleyirrigationdistrict_20181128BronzeXiangliuTramplingKelp_ver01
+</code></pre><h3 id="load">load</h3>
+<p>You load a batch using the &ldquo;load&rdquo; command with an id, e.g., <code>load 34</code>.  This
+puts you into a new context which changes your commands.</p>
+<h2 id="batch-menu">Batch Menu</h2>
+<p>From there you can type &ldquo;help&rdquo; again to get a new list of batch-context
+commands.  Not all commands will be explained here, as the in-app help is
+likely to be more useful.</p>
+<h3 id="info">info</h3>
+<p>Shows you some metadata around the batch.  Useful for ensuring you loaded what
+you think you did.</p>
+<h3 id="failqc">failqc</h3>
+<p>If the batch is ready for QC, you can fail it by typing &ldquo;failqc&rdquo;.  This would
+update the batch status as well as removing its files from your batch output
+path so that the batch can be regenerated when it&rsquo;s fixed.</p>
+<h3 id="delete">delete</h3>
+<p>After failing a batch, you have the option to delete it completely.  <em>This
+should only be done if the batch is so broken that removing bad issues
+individually is less feasible than manually removing issues from the database!</em></p>
+<p>All issues will be removed from the batch, but their metadata will remain unchanged otherwise.  If a large number of issues have to be corrected, you&rsquo;ll have to remove them via direct SQL, e.g.:</p>
+<div class="highlight"><pre style="color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4"><code class="language-sql" data-lang="sql"><span style="color:#66d9ef">UPDATE</span> issues
+  <span style="color:#66d9ef">SET</span> workflow_step <span style="color:#f92672">=</span> <span style="color:#e6db74">&#39;UnfixableMetadataError&#39;</span> <span style="color:#66d9ef">AND</span> error <span style="color:#f92672">=</span> <span style="color:#e6db74">&#39;Re-OCR all these!&#39;</span>
+  <span style="color:#66d9ef">WHERE</span> lccn <span style="color:#f92672">=</span> <span style="color:#e6db74">&#39;sn88086023&#39;</span> <span style="color:#66d9ef">AND</span> workflow_step <span style="color:#f92672">=</span> <span style="color:#e6db74">&#39;ReadyForBatching&#39;</span> <span style="color:#66d9ef">AND</span> ...;
+</code></pre></div><p><strong>This is obviously dangerous</strong>.  To reiterate, if it is at all possible,
+issues should be removed individually.</p>
+<h3 id="search--list">search / list</h3>
+<p>You can list all issues associated with a batch using &ldquo;list&rdquo;.  You can also
+search for a particular issue using the &ldquo;search&rdquo; command with regular
+expressions.  For instance, &ldquo;search date=19[0-6].*&rdquo; will find any issue that&rsquo;s
+got a date of 1900 - 1969.  You can search by lccn, issue key, date, and/or title.  You can combine terms to make searches very refined, e.g.:</p>
+<pre><code>search lccn=sn12.* date=19[0-6].* key=.*02 title=.*blue.*
+</code></pre>
+<p>This would search for issues from 1900-1969 where the key ends in &ldquo;02&rdquo; (second
+edition issue), the lccn starts with &ldquo;sn12&rdquo;, and the title contains the word
+&ldquo;blue&rdquo; somewhere in it.  Search terms are combined via &ldquo;AND&rdquo; logic - all terms
+you list must match for an issue to be listed.</p>
+<h3 id="load-1">load</h3>
+<p>In batch context, &ldquo;load&rdquo; will load an issue by its id.  This will only work if
+the issue belongs to the batch you&rsquo;re working on.</p>
+<h2 id="issues">Issues</h2>
+<p>Again, rely on &ldquo;help&rdquo; as much as possible.</p>
+<h3 id="info-1">info</h3>
+<p>This shows details about the loaded issue.</p>
+<h3 id="reject">reject</h3>
+<p>Flags an issue as having metadata problems which can be fixed in NCA.  This
+removes the issue from the batch, deletes its METS file, and puts it back on
+the desk of the metadata entry person.</p>
+<p>The rejection notes will store whatever you put after &ldquo;reject&rdquo;.  e.g., &ldquo;reject
+page 19 is mislabeled&rdquo;.</p>
+<h3 id="error">error</h3>
+<p>Flags an issue as having metadata problems which <em>cannot</em> be fixed in NCA.  This
+removes the issue from the batch, deletes its METS file, and flags it for
+removal from the system using the &ldquo;move-errored-issues&rdquo; tool.</p>
+<p>The error notes will store whatever you put after &ldquo;reject&rdquo;.  e.g., &ldquo;reject
+page 19 and 20 are out of order&rdquo;.</p>
+<h2 id="load-into-staging--production--wherever">Load into staging / production / wherever</h2>
+<p>Rebuild the batch with the issues that still remain:</p>
+<div class="highlight"><pre style="color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4"><code class="language-bash" data-lang="bash"><span style="color:#75715e">### [On the NCA server] ###</span>
+
+cd /usr/local/nca
+./requeue-batch -c ./settings --batch-id <span style="color:#ae81ff">29</span>
+</code></pre></div><p>Once it&rsquo;s rebuilt, you can reload into staging if you want to double-check the
+batch, or if you&rsquo;re confident the first round of quality control caught all
+issues, load to production.  This document won&rsquo;t cover that process.  See
+<a href="../../workflow/batch-manual-golive">Batch Manual GoLive</a> for details of loading a
+batch into production.</p>
+<div class="edit-meta">
+
+<br></div><nav class="pagination"><a class="nav nav-prev" href="https://uoregon-libraries.github.io/newspaper-curation-app/workflow/fixing-flagged-workflow-issues/" title="Fixing Flagged Workflow Issues"><i class="fas fa-arrow-left" aria-hidden="true"></i>&nbsp;Prev - Fixing Flagged Workflow Issues</a>
+<a class="nav nav-next" href="https://uoregon-libraries.github.io/newspaper-curation-app/workflow/batch-manual-golive/" title="Batch Manual Go-live Procedure">Next - Batch Manual Go-live Procedure <i class="fas fa-arrow-right" aria-hidden="true"></i></a>
+</nav><footer><p class="powered">Powered by <a href="https://gohugo.io">Hugo</a>. Theme by <a href="https://themes.gohugo.io/hugo-theme-techdoc/">TechDoc</a>. Designed by <a href="https://github.com/thingsym/hugo-theme-techdoc">Thingsym</a>.</p>
+</footer>
+</main>
+<div class="sidebar">
+
+<nav class="open-menu">
+<ul>
+<li class=""><a href="https://uoregon-libraries.github.io/newspaper-curation-app/">Home</a></li>
+
+<li class=""><a href="https://uoregon-libraries.github.io/newspaper-curation-app/setup/">Setup and Installation</a>
+  
+<ul class="sub-menu">
+<li class=""><a href="https://uoregon-libraries.github.io/newspaper-curation-app/setup/services/">Services and Apps</a></li>
+<li class=""><a href="https://uoregon-libraries.github.io/newspaper-curation-app/setup/server-setup/">Server Setup</a></li>
+<li class=""><a href="https://uoregon-libraries.github.io/newspaper-curation-app/setup/installation/">Installation</a></li>
+<li class=""><a href="https://uoregon-libraries.github.io/newspaper-curation-app/setup/user-setup/">Users</a></li>
+<li class=""><a href="https://uoregon-libraries.github.io/newspaper-curation-app/setup/creating-publishers/">Onboarding A Publisher</a></li>
+</ul>
+  
+</li>
+
+<li class=""><a href="https://uoregon-libraries.github.io/newspaper-curation-app/specs/">NCA Terms, Specs, and Information</a>
+  
+<ul class="sub-menu">
+<li class=""><a href="https://uoregon-libraries.github.io/newspaper-curation-app/specs/glossary/">Glossary</a></li>
+<li class=""><a href="https://uoregon-libraries.github.io/newspaper-curation-app/specs/upload-specs/">Uploads: Folder and File Specs</a></li>
+</ul>
+  
+</li>
+
+<li class="parent"><a href="https://uoregon-libraries.github.io/newspaper-curation-app/workflow/">Workflow</a>
+  
+<ul class="sub-menu">
+<li class=""><a href="https://uoregon-libraries.github.io/newspaper-curation-app/workflow/technical/">Technical Details</a></li>
+<li class=""><a href="https://uoregon-libraries.github.io/newspaper-curation-app/workflow/adding-titles/">Adding Titles</a></li>
+<li class=""><a href="https://uoregon-libraries.github.io/newspaper-curation-app/workflow/handling-page-review-problems/">Handling Page Review Problems</a></li>
+<li class=""><a href="https://uoregon-libraries.github.io/newspaper-curation-app/workflow/fixing-flagged-workflow-issues/">Fixing Flagged Workflow Issues</a></li>
+<li class="active"><a href="https://uoregon-libraries.github.io/newspaper-curation-app/workflow/fixing-batches/">Fixing Batches</a></li>
+<li class=""><a href="https://uoregon-libraries.github.io/newspaper-curation-app/workflow/batch-manual-golive/">Batch Manual Go-live Procedure</a></li>
+</ul>
+  
+</li>
+
+<li class=""><a href="https://uoregon-libraries.github.io/newspaper-curation-app/contributing/">Contributing</a>
+  
+<ul class="sub-menu">
+<li class=""><a href="https://uoregon-libraries.github.io/newspaper-curation-app/contributing/dev-guide/">Developer&#39;s Guide</a></li>
+<li class=""><a href="https://uoregon-libraries.github.io/newspaper-curation-app/contributing/not-compiling-locally/">Not Compiling Locally</a></li>
+<li class=""><a href="https://uoregon-libraries.github.io/newspaper-curation-app/contributing/documentation/">Contributing to Documentation</a></li>
+<li class=""><a href="https://uoregon-libraries.github.io/newspaper-curation-app/contributing/testing/">Testing</a></li>
+
+<li class=""><a href="https://uoregon-libraries.github.io/newspaper-curation-app/contributing/dev-howto/">How do I...?</a>
+  
+<ul class="sub-menu">
+<li class=""><a href="https://uoregon-libraries.github.io/newspaper-curation-app/contributing/dev-howto/add-job-types/">Add Job Types</a></li>
+</ul>
+  
+</li>
+</ul>
+  
+</li>
+</ul>
+</nav>
+
+
+
+<div class="sidebar-footer"></div>
+</div>
+
+</div><a href="#" id="backtothetop-fixed" class="backtothetop"
+ data-backtothetop-duration="600"
+ data-backtothetop-easing="easeOutQuart"
+ data-backtothetop-fixed-fadeIn="1000"
+ data-backtothetop-fixed-fadeOut="1000"
+ data-backtothetop-fixed-bottom="10"
+ data-backtothetop-fixed-right="20">
+<span class="fa-layers fa-fw">
+<i class="fas fa-circle"></i>
+<i class="fas fa-arrow-circle-up"></i>
+</span></a>
+</div>
+</body>
+</html>

@@ -1,0 +1,193 @@
+<!DOCTYPE html>
+<html lang="en-us">
+<head><meta charset="utf-8">
+<meta http-equiv="X-UA-Compatible" content="IE=edge">
+<meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1, user-scalable=no">
+<title>Fixing Flagged Workflow Issues - Newspaper Curation App</title>
+<meta name="description" content="Fixing issues which have errors NCA cannot fix">
+<meta name="generator" content="Hugo 0.83.1" />
+<link href="https://uoregon-libraries.github.io/newspaper-curation-app//index.xml" rel="alternate" type="application/rss+xml">
+<link rel="canonical" href="https://uoregon-libraries.github.io/newspaper-curation-app/workflow/fixing-flagged-workflow-issues/">
+<link rel="stylesheet" href="https://uoregon-libraries.github.io/newspaper-curation-app/css/theme.min.css">
+<script src="https://use.fontawesome.com/releases/v5.0.6/js/all.js"></script>
+<link rel="stylesheet" href="https://uoregon-libraries.github.io/newspaper-curation-app/css/chroma.min.css">
+<script src="https://cdn.jsdelivr.net/npm/jquery@3.4.1/dist/jquery.min.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/jquery.easing@1.4.1/jquery.easing.min.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/clipboard@2.0.6/dist/clipboard.min.js"></script>
+<script src="https://uoregon-libraries.github.io/newspaper-curation-app/js/bundle.js"></script><style>
+:root {}
+</style>
+<meta property="og:title" content="Fixing Flagged Workflow Issues" />
+<meta property="og:description" content="Fixing issues which have errors NCA cannot fix" />
+<meta property="og:type" content="article" />
+<meta property="og:url" content="https://uoregon-libraries.github.io/newspaper-curation-app/workflow/fixing-flagged-workflow-issues/" /><meta property="article:section" content="workflow" />
+
+
+
+<meta name="twitter:card" content="summary"/>
+<meta name="twitter:title" content="Fixing Flagged Workflow Issues"/>
+<meta name="twitter:description" content="Fixing issues which have errors NCA cannot fix"/>
+<meta itemprop="name" content="Fixing Flagged Workflow Issues">
+<meta itemprop="description" content="Fixing issues which have errors NCA cannot fix">
+
+<meta itemprop="wordCount" content="681">
+<meta itemprop="keywords" content="" /></head>
+<body><div class="container"><header>
+<h1>Newspaper Curation App</h1><a href="https://github.com/uoregon-libraries/newspaper-curation-app/" class="github"><i class="fab fa-github"></i></a>
+</header>
+
+<div class="content-container">
+<main><h1>Fixing Flagged Workflow Issues</h1>
+<p>This refers to issues which were already queued from their uploaded location,
+had derivatives generated, and were ready for metadata entry.</p>
+<p>The metadata entry person flags errors to say essentially, &ldquo;NCA&rsquo;s UI cannot fix
+the problems on this issue&rdquo;.  We have seen a variety of problems like this:</p>
+<ul>
+<li>The PDF or JP2 image derivatives are corrupt in some way, even though the
+tools which generated them seemed to run without errors</li>
+<li>The pages are out of order - somebody reordered pages incorrectly, and the
+issue now has to be manually pulled, fixed, and re-inserted into the workflow</li>
+<li>The issue is incorrect in some other way, and wasn&rsquo;t caught when queueing
+from the uploads area (e.g., a publisher uploaded two issues in the same
+location, pages were missing from an upload, etc.)</li>
+</ul>
+<p>Most errors can be caught prior to queueing an issue for processing, so it is
+very important that curators be aware of the additional cost of having to fix
+issues that are incorrect after they&rsquo;ve gotten into the workflow.</p>
+<h2 id="identifying-bad-issues">Identifying bad issues</h2>
+<p>NCA now provides a place for privileged users to process &ldquo;unfixable&rdquo; errors.
+Anybody with the &ldquo;Issue Manager&rdquo; role can see a tab in the Workflow section of
+the application labeled &ldquo;Unfixable Errors&rdquo;.  In this tab, issue managers can
+claim and then process these issues, choosing to return them back to NCA if
+they were flagged incorrectly, or move them to a configured error location
+(<code>ERRORED_ISSUES_PATH</code> in the settings file).</p>
+<p>When moved to the error location, the issues will be put into a directory based
+on the current month so that they&rsquo;re somewhat organized without having so many
+subdirectories as to make the process more painful than necessary.</p>
+<p>Within the month subdirectory, issues will be identifiable by their LCCN, date,
+edition, and database id in the same way they existed in the workflow location.
+This will look something like <code>sn96088087-2010041901-1</code>.  Under that directory
+you will find <code>content</code> and <code>derivatives</code>.  The derivatives are preserved just
+in case debugging is necessary (e.g., if a JP2 is broken, but the source PDF
+seems fine).  The content directory will contain the source files, including
+original uploads in the case of publishers' sftp-delivered files, in an archive
+called <code>original.tar</code>.</p>
+<p>Additionally, a file called <code>actions.txt</code> will be present and describe all
+actions taken on the issue along with any comments written by curators and
+reviewers.</p>
+<h2 id="fixing-removed-issues">Fixing removed issues</h2>
+<p>This is a much more difficult problem to solve, because of the wide variety of
+errors that can occur.  Fixing problems will typically require a manual
+examination of each issue that was removed.  The <code>actions.txt</code> file should help
+understand what caused the issue to be removed, but that won&rsquo;t necessarily help
+fix the problem.</p>
+<p>There are cases where the only option is to delete the issue entirely and
+accept that it will not be able to be a part of your archive.  This can happen
+if the publisher uploaded the wrong issue and no longer has access to the
+original files, or if scanned papers' TIFFs were corrupt and the original paper
+is no longer available.</p>
+<h2 id="putting-issues-back-into-the-workflow">Putting issues back into the workflow</h2>
+<p>If an issue can be fixed and put back into the workflow, there are typically
+two options:</p>
+<ul>
+<li>Pretend it&rsquo;s a new upload and start right at the beginning.  Derivative files
+must be removed, and the uploads must conform to the file and folder specs as
+defined in our <a href="../../specs/upload-specs">file/folder upload specs</a>.</li>
+<li>Just delete the issue folder and get it re-scanned or re-uploaded from the
+publisher.  In this case, the normal procedures are followed and the issue
+will be completely new for all intents and purposes.</li>
+</ul>
+<p>Database manipulation is almost never the right approach once issues have been
+moved out of the workflow.  If you believe that you need to manipulate the
+database to get an issue back into the workflow, you need to be <strong>100%
+certain</strong> you understand the application as well as <em>the precise meaning of
+every field in every table</em>.</p>
+<p>Generally speaking, if database manipulation <em>is</em> the correct approach, it
+should have been done <em>instead of</em> reporting an error and removing the issue.</p>
+<div class="edit-meta">
+
+<br></div><nav class="pagination"><a class="nav nav-prev" href="https://uoregon-libraries.github.io/newspaper-curation-app/workflow/handling-page-review-problems/" title="Handling Page Review Problems"><i class="fas fa-arrow-left" aria-hidden="true"></i>&nbsp;Prev - Handling Page Review Problems</a>
+<a class="nav nav-next" href="https://uoregon-libraries.github.io/newspaper-curation-app/workflow/fixing-batches/" title="Fixing Batches">Next - Fixing Batches <i class="fas fa-arrow-right" aria-hidden="true"></i></a>
+</nav><footer><p class="powered">Powered by <a href="https://gohugo.io">Hugo</a>. Theme by <a href="https://themes.gohugo.io/hugo-theme-techdoc/">TechDoc</a>. Designed by <a href="https://github.com/thingsym/hugo-theme-techdoc">Thingsym</a>.</p>
+</footer>
+</main>
+<div class="sidebar">
+
+<nav class="open-menu">
+<ul>
+<li class=""><a href="https://uoregon-libraries.github.io/newspaper-curation-app/">Home</a></li>
+
+<li class=""><a href="https://uoregon-libraries.github.io/newspaper-curation-app/setup/">Setup and Installation</a>
+  
+<ul class="sub-menu">
+<li class=""><a href="https://uoregon-libraries.github.io/newspaper-curation-app/setup/services/">Services and Apps</a></li>
+<li class=""><a href="https://uoregon-libraries.github.io/newspaper-curation-app/setup/server-setup/">Server Setup</a></li>
+<li class=""><a href="https://uoregon-libraries.github.io/newspaper-curation-app/setup/installation/">Installation</a></li>
+<li class=""><a href="https://uoregon-libraries.github.io/newspaper-curation-app/setup/user-setup/">Users</a></li>
+<li class=""><a href="https://uoregon-libraries.github.io/newspaper-curation-app/setup/creating-publishers/">Onboarding A Publisher</a></li>
+</ul>
+  
+</li>
+
+<li class=""><a href="https://uoregon-libraries.github.io/newspaper-curation-app/specs/">NCA Terms, Specs, and Information</a>
+  
+<ul class="sub-menu">
+<li class=""><a href="https://uoregon-libraries.github.io/newspaper-curation-app/specs/glossary/">Glossary</a></li>
+<li class=""><a href="https://uoregon-libraries.github.io/newspaper-curation-app/specs/upload-specs/">Uploads: Folder and File Specs</a></li>
+</ul>
+  
+</li>
+
+<li class="parent"><a href="https://uoregon-libraries.github.io/newspaper-curation-app/workflow/">Workflow</a>
+  
+<ul class="sub-menu">
+<li class=""><a href="https://uoregon-libraries.github.io/newspaper-curation-app/workflow/technical/">Technical Details</a></li>
+<li class=""><a href="https://uoregon-libraries.github.io/newspaper-curation-app/workflow/adding-titles/">Adding Titles</a></li>
+<li class=""><a href="https://uoregon-libraries.github.io/newspaper-curation-app/workflow/handling-page-review-problems/">Handling Page Review Problems</a></li>
+<li class="active"><a href="https://uoregon-libraries.github.io/newspaper-curation-app/workflow/fixing-flagged-workflow-issues/">Fixing Flagged Workflow Issues</a></li>
+<li class=""><a href="https://uoregon-libraries.github.io/newspaper-curation-app/workflow/fixing-batches/">Fixing Batches</a></li>
+<li class=""><a href="https://uoregon-libraries.github.io/newspaper-curation-app/workflow/batch-manual-golive/">Batch Manual Go-live Procedure</a></li>
+</ul>
+  
+</li>
+
+<li class=""><a href="https://uoregon-libraries.github.io/newspaper-curation-app/contributing/">Contributing</a>
+  
+<ul class="sub-menu">
+<li class=""><a href="https://uoregon-libraries.github.io/newspaper-curation-app/contributing/dev-guide/">Developer&#39;s Guide</a></li>
+<li class=""><a href="https://uoregon-libraries.github.io/newspaper-curation-app/contributing/not-compiling-locally/">Not Compiling Locally</a></li>
+<li class=""><a href="https://uoregon-libraries.github.io/newspaper-curation-app/contributing/documentation/">Contributing to Documentation</a></li>
+<li class=""><a href="https://uoregon-libraries.github.io/newspaper-curation-app/contributing/testing/">Testing</a></li>
+
+<li class=""><a href="https://uoregon-libraries.github.io/newspaper-curation-app/contributing/dev-howto/">How do I...?</a>
+  
+<ul class="sub-menu">
+<li class=""><a href="https://uoregon-libraries.github.io/newspaper-curation-app/contributing/dev-howto/add-job-types/">Add Job Types</a></li>
+</ul>
+  
+</li>
+</ul>
+  
+</li>
+</ul>
+</nav>
+
+
+
+<div class="sidebar-footer"></div>
+</div>
+
+</div><a href="#" id="backtothetop-fixed" class="backtothetop"
+ data-backtothetop-duration="600"
+ data-backtothetop-easing="easeOutQuart"
+ data-backtothetop-fixed-fadeIn="1000"
+ data-backtothetop-fixed-fadeOut="1000"
+ data-backtothetop-fixed-bottom="10"
+ data-backtothetop-fixed-right="20">
+<span class="fa-layers fa-fw">
+<i class="fas fa-circle"></i>
+<i class="fas fa-arrow-circle-up"></i>
+</span></a>
+</div>
+</body>
+</html>

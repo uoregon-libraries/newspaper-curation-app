@@ -1,0 +1,235 @@
+<!DOCTYPE html>
+<html lang="en-us">
+<head><meta charset="utf-8">
+<meta http-equiv="X-UA-Compatible" content="IE=edge">
+<meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1, user-scalable=no">
+<title>Technical Details - Newspaper Curation App</title>
+<meta name="description" content="Deeper explanation of NCA&#39;s various workflows">
+<meta name="generator" content="Hugo 0.83.1" />
+<link href="https://uoregon-libraries.github.io/newspaper-curation-app//index.xml" rel="alternate" type="application/rss+xml">
+<link rel="canonical" href="https://uoregon-libraries.github.io/newspaper-curation-app/workflow/technical/">
+<link rel="stylesheet" href="https://uoregon-libraries.github.io/newspaper-curation-app/css/theme.min.css">
+<script src="https://use.fontawesome.com/releases/v5.0.6/js/all.js"></script>
+<link rel="stylesheet" href="https://uoregon-libraries.github.io/newspaper-curation-app/css/chroma.min.css">
+<script src="https://cdn.jsdelivr.net/npm/jquery@3.4.1/dist/jquery.min.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/jquery.easing@1.4.1/jquery.easing.min.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/clipboard@2.0.6/dist/clipboard.min.js"></script>
+<script src="https://uoregon-libraries.github.io/newspaper-curation-app/js/bundle.js"></script><style>
+:root {}
+</style>
+<meta property="og:title" content="Technical Details" />
+<meta property="og:description" content="Deeper explanation of NCA&#39;s various workflows" />
+<meta property="og:type" content="article" />
+<meta property="og:url" content="https://uoregon-libraries.github.io/newspaper-curation-app/workflow/technical/" /><meta property="article:section" content="workflow" />
+
+
+
+<meta name="twitter:card" content="summary"/>
+<meta name="twitter:title" content="Technical Details"/>
+<meta name="twitter:description" content="Deeper explanation of NCA&#39;s various workflows"/>
+<meta itemprop="name" content="Technical Details">
+<meta itemprop="description" content="Deeper explanation of NCA&#39;s various workflows">
+
+<meta itemprop="wordCount" content="1147">
+<meta itemprop="keywords" content="" /></head>
+<body><div class="container"><header>
+<h1>Newspaper Curation App</h1><a href="https://github.com/uoregon-libraries/newspaper-curation-app/" class="github"><i class="fab fa-github"></i></a>
+</header>
+
+<div class="content-container">
+<main><h1>Technical Details</h1>
+<p>This document attempts to explain the entire workflow from upload to batch
+generation in a way that developers can understand what&rsquo;s needed and how to at
+least begin investigating if something goes wrong.</p>
+<h2 id="jobs-and-the-job-queue">Jobs and the Job Queue</h2>
+<p>The job runner regularly scans the database looking for jobs to run.  The
+default setup splits jobs up to ensure quick jobs, like moving an issue from
+one location to another on the filesystem, are run separately from slow jobs
+like generating JP2 files.  This ensures that slow jobs don&rsquo;t hold up the
+faster jobs, but could be confusing if you&rsquo;re expecting to see jobs run in the
+order they are queued.  It also tends to make raw job logs confusing.</p>
+<p>The job runner also looks for issues in the page review area that have been
+renamed and are ready to enter the workflow.</p>
+<p>All jobs store logs in the database, but these are currently not exposed to end
+users (not even admins).  To help mitigate this, the job runner also logs to
+STDERR, so those can be captured and reviewed.</p>
+<h2 id="uploads">Uploads</h2>
+<p>Whenever issues are uploaded into NCA, the application&rsquo;s &ldquo;Uploaded Issues&rdquo;
+pages will display these issues along with any obvious errors the application
+was able to detect.  After a reasonable amount of time (to ensure uploading is
+completed; some publishers slowly upload issue pages throughout the day, or
+even multiple days), issues may be queued up for processing.  Too-new issues
+will be displayed, but queueing will be disabled.</p>
+<p>Born-digital issues, when queued, are preprocessed (in order to ensure
+derivatives can be generated, forcing one-pdf-per-page, etc.), then moved into
+the page review area.  The pages will be named sequentially in the format
+<code>seq-dddd.pdf</code>, starting with <code>seq-0001.pdf</code>, then <code>seq-0002.pdf</code>, etc.  These
+PDFs might already be ordered correctly, but we&rsquo;ve found the need to manually
+reorder them many times, and have decided an out-of-band process for reviewing
+and reordering is necessary.  An easy approach is to have somebody use
+something like Adobe Bridge to review and rename in bulk.  Once complete, an
+issue&rsquo;s filenames need to be ordered by their filenames, e.g., <code>0001.pdf</code>,
+<code>0002.pdf</code>, etc.  Until issues are all given a fully numeric name, the job
+runner will not pick them up.</p>
+<p><strong>Note</strong>: if issue folders are deleted from the page review location for any
+reason, they must be cleaned up manually:
+<a href="../../workflow/handling-page-review-problems">Handling Page Review Problems</a>.  Once
+NCA is tracking uploads, deleting them outside the system will cause error logs
+to go a bit haywire, and the issues can&rsquo;t be re-uploaded since NCA will believe
+they quasi-exist.</p>
+<p>For scanned issues, since they are in-house for us, it is assumed they&rsquo;re
+already going to be properly named (<code>&lt;number&gt;.tif</code> and <code>&lt;number&gt;.pdf</code>) and
+ordered, so after being queued, they get moved and processed for derivatives,
+then they&rsquo;re available in the workflow for metadata entry.</p>
+<p>The bulk upload queue tool (compiled to <code>bin/bulk-issue-queue</code>) can be used to
+push all issues of a given type (scan vs. born digital) and issue key into the
+workflow as if they&rsquo;d been queued from the web app.  This tool should only be
+run when people aren&rsquo;t using the NCA queueing front-end, as it will queue
+things faster than the NCA cache will be updated, which can lead to NCA&rsquo;s web
+view being out of sync with reality.  The data will be intact, but it can be
+confusing.  Also note that for scanned issues, this tool can take a long time
+because it verifies the DPI of all images embedded in PDFs.</p>
+<h2 id="derivative-processing">Derivative Processing</h2>
+<p>Once issues are ready for derivatives (born-digital issues have been queued,
+pre-processed, and renamed; scanned issues have been queued and moved), a job
+is queued for derivative processing.  This creates JP2 images from either the
+PDFs (born-digital) or TIFFs (scanned), and the ALTO-compatible OCR XML based
+on the text in the PDF.  In our process, the PDFs are created by OCRing the
+TIFFs.  This process is manual and out-of-band since we rely on Abbyy, and
+there isn&rsquo;t a particularly easy way to integrate it into our workflow.</p>
+<p>The derivative generation process is probably the slowest job in the system.
+As such, it is particularly susceptible to things like server power outage.  In
+the event that a job is canceled mid-operation, somebody will have to modify
+the database to change the job&rsquo;s status from <code>in_process</code> to <code>pending</code>.</p>
+<p>The derivative jobs are very fault-tolerant:</p>
+<ul>
+<li>Derivatives are generated in a temporary location, and only moved into the
+issue folder after the derivative has been generated successfully</li>
+<li>Derivatives which were already created are not rebuilt</li>
+</ul>
+<p>These two factors make it easy to re-kick-off a derivative process without
+worrying about data corruption.</p>
+<h2 id="error-reports">Error Reports</h2>
+<p>If an issue has some kind of problem which cannot be fixed with metadata entry,
+the metadata person will report an error.  Once an error is reported, the issue
+will be hidden from all but Issue Managers in the NCA UI and one of them will
+have to decide how to handle it.  See
+<a href="../../workflow/fixing-flagged-workflow-issues">Fixing Flagged Workflow Issues</a>.</p>
+<h2 id="post-metadata--batch-generation">Post-Metadata / Batch Generation</h2>
+<p>After metadata has been entered and approved, the issue is considered &ldquo;done&rdquo;.
+An issue XML will be generated (using the METS template defined by the setting
+<code>METS_XML_TEMPLATE_PATH</code>) and born-digital issues' original PDF(s) is/are moved
+into the issue location for safe-keeping.  Assuming these are done without
+error, the issue is marked &ldquo;ready for batching&rdquo;.</p>
+<p>The batch queue command-line script (compiled to <code>bin/queue-batches</code>) grabs all
+issues which are ready to be batched, organizes them by MARC Org Code (a.k.a.,
+awardee) for batching (<em>each awardee must have its issues in a separate
+batch</em>), and generates batches if there are enough pages (see the
+<code>MINIMUM_ISSUE_PAGES</code> setting).</p>
+<p><strong>Note</strong>: the <code>MINIMUM_ISSUE_PAGES</code> setting will be ignored if any issues
+waiting to be batched have been ready for batching for more than 30 days.  This
+is necessary to handle cases where an issue had to have special treatment after
+the bulk of a batch was completed, and would otherwise just sit and wait
+indefinitely.</p>
+<p>Once batches are generated, they will appear in the configured
+<code>BATCH_OUTPUT_PATH</code>.  The <code>batches</code> table in the database will show the batch
+with a <code>status</code> of <code>qc_ready</code>.</p>
+<p>Please note that a bagit job will still be running in the background.  Bag
+files are unnecessary to load a batch into ONI or Chronam, so the job can
+happen while somebody is reviewing the batch on a staging server, but the batch
+should <strong>not be considered production-ready</strong> until the bagit files are
+generated.  You can monitor the status of the job in the database directly, or
+just watch for a valid tag manifest file.</p>
+<p>If the batch has any bad issues, it must be <a href="../../workflow/fixing-batches">fixed</a>
+with a command-line tool and then rebatched.</p>
+<p>Once the batch has been approved in staging, (TODO: another utility!) run the
+<a href="../../workflow/batch-manual-golive">manual go-live</a> process to get the batch and
+its issues to be properly recognized by the rest of NCA as no longer being part
+of the workflow.</p>
+<div class="edit-meta">
+
+<br></div><nav class="pagination"><a class="nav nav-prev" href="https://uoregon-libraries.github.io/newspaper-curation-app/workflow/" title="Workflow"><i class="fas fa-arrow-left" aria-hidden="true"></i>&nbsp;Prev - Workflow</a>
+<a class="nav nav-next" href="https://uoregon-libraries.github.io/newspaper-curation-app/workflow/adding-titles/" title="Adding Titles">Next - Adding Titles <i class="fas fa-arrow-right" aria-hidden="true"></i></a>
+</nav><footer><p class="powered">Powered by <a href="https://gohugo.io">Hugo</a>. Theme by <a href="https://themes.gohugo.io/hugo-theme-techdoc/">TechDoc</a>. Designed by <a href="https://github.com/thingsym/hugo-theme-techdoc">Thingsym</a>.</p>
+</footer>
+</main>
+<div class="sidebar">
+
+<nav class="open-menu">
+<ul>
+<li class=""><a href="https://uoregon-libraries.github.io/newspaper-curation-app/">Home</a></li>
+
+<li class=""><a href="https://uoregon-libraries.github.io/newspaper-curation-app/setup/">Setup and Installation</a>
+  
+<ul class="sub-menu">
+<li class=""><a href="https://uoregon-libraries.github.io/newspaper-curation-app/setup/services/">Services and Apps</a></li>
+<li class=""><a href="https://uoregon-libraries.github.io/newspaper-curation-app/setup/server-setup/">Server Setup</a></li>
+<li class=""><a href="https://uoregon-libraries.github.io/newspaper-curation-app/setup/installation/">Installation</a></li>
+<li class=""><a href="https://uoregon-libraries.github.io/newspaper-curation-app/setup/user-setup/">Users</a></li>
+<li class=""><a href="https://uoregon-libraries.github.io/newspaper-curation-app/setup/creating-publishers/">Onboarding A Publisher</a></li>
+</ul>
+  
+</li>
+
+<li class=""><a href="https://uoregon-libraries.github.io/newspaper-curation-app/specs/">NCA Terms, Specs, and Information</a>
+  
+<ul class="sub-menu">
+<li class=""><a href="https://uoregon-libraries.github.io/newspaper-curation-app/specs/glossary/">Glossary</a></li>
+<li class=""><a href="https://uoregon-libraries.github.io/newspaper-curation-app/specs/upload-specs/">Uploads: Folder and File Specs</a></li>
+</ul>
+  
+</li>
+
+<li class="parent"><a href="https://uoregon-libraries.github.io/newspaper-curation-app/workflow/">Workflow</a>
+  
+<ul class="sub-menu">
+<li class="active"><a href="https://uoregon-libraries.github.io/newspaper-curation-app/workflow/technical/">Technical Details</a></li>
+<li class=""><a href="https://uoregon-libraries.github.io/newspaper-curation-app/workflow/adding-titles/">Adding Titles</a></li>
+<li class=""><a href="https://uoregon-libraries.github.io/newspaper-curation-app/workflow/handling-page-review-problems/">Handling Page Review Problems</a></li>
+<li class=""><a href="https://uoregon-libraries.github.io/newspaper-curation-app/workflow/fixing-flagged-workflow-issues/">Fixing Flagged Workflow Issues</a></li>
+<li class=""><a href="https://uoregon-libraries.github.io/newspaper-curation-app/workflow/fixing-batches/">Fixing Batches</a></li>
+<li class=""><a href="https://uoregon-libraries.github.io/newspaper-curation-app/workflow/batch-manual-golive/">Batch Manual Go-live Procedure</a></li>
+</ul>
+  
+</li>
+
+<li class=""><a href="https://uoregon-libraries.github.io/newspaper-curation-app/contributing/">Contributing</a>
+  
+<ul class="sub-menu">
+<li class=""><a href="https://uoregon-libraries.github.io/newspaper-curation-app/contributing/dev-guide/">Developer&#39;s Guide</a></li>
+<li class=""><a href="https://uoregon-libraries.github.io/newspaper-curation-app/contributing/not-compiling-locally/">Not Compiling Locally</a></li>
+<li class=""><a href="https://uoregon-libraries.github.io/newspaper-curation-app/contributing/documentation/">Contributing to Documentation</a></li>
+<li class=""><a href="https://uoregon-libraries.github.io/newspaper-curation-app/contributing/testing/">Testing</a></li>
+
+<li class=""><a href="https://uoregon-libraries.github.io/newspaper-curation-app/contributing/dev-howto/">How do I...?</a>
+  
+<ul class="sub-menu">
+<li class=""><a href="https://uoregon-libraries.github.io/newspaper-curation-app/contributing/dev-howto/add-job-types/">Add Job Types</a></li>
+</ul>
+  
+</li>
+</ul>
+  
+</li>
+</ul>
+</nav>
+
+
+
+<div class="sidebar-footer"></div>
+</div>
+
+</div><a href="#" id="backtothetop-fixed" class="backtothetop"
+ data-backtothetop-duration="600"
+ data-backtothetop-easing="easeOutQuart"
+ data-backtothetop-fixed-fadeIn="1000"
+ data-backtothetop-fixed-fadeOut="1000"
+ data-backtothetop-fixed-bottom="10"
+ data-backtothetop-fixed-right="20">
+<span class="fa-layers fa-fw">
+<i class="fas fa-circle"></i>
+<i class="fas fa-arrow-circle-up"></i>
+</span></a>
+</div>
+</body>
+</html>

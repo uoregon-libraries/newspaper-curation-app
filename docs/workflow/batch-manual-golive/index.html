@@ -1,0 +1,194 @@
+<!DOCTYPE html>
+<html lang="en-us">
+<head><meta charset="utf-8">
+<meta http-equiv="X-UA-Compatible" content="IE=edge">
+<meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1, user-scalable=no">
+<title>Batch Manual Go-live Procedure - Newspaper Curation App</title>
+<meta name="description" content="Pushing generated batches to production">
+<meta name="generator" content="Hugo 0.83.1" />
+<link href="https://uoregon-libraries.github.io/newspaper-curation-app//index.xml" rel="alternate" type="application/rss+xml">
+<link rel="canonical" href="https://uoregon-libraries.github.io/newspaper-curation-app/workflow/batch-manual-golive/">
+<link rel="stylesheet" href="https://uoregon-libraries.github.io/newspaper-curation-app/css/theme.min.css">
+<script src="https://use.fontawesome.com/releases/v5.0.6/js/all.js"></script>
+<link rel="stylesheet" href="https://uoregon-libraries.github.io/newspaper-curation-app/css/chroma.min.css">
+<script src="https://cdn.jsdelivr.net/npm/jquery@3.4.1/dist/jquery.min.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/jquery.easing@1.4.1/jquery.easing.min.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/clipboard@2.0.6/dist/clipboard.min.js"></script>
+<script src="https://uoregon-libraries.github.io/newspaper-curation-app/js/bundle.js"></script><style>
+:root {}
+</style>
+<meta property="og:title" content="Batch Manual Go-live Procedure" />
+<meta property="og:description" content="Pushing generated batches to production" />
+<meta property="og:type" content="article" />
+<meta property="og:url" content="https://uoregon-libraries.github.io/newspaper-curation-app/workflow/batch-manual-golive/" /><meta property="article:section" content="workflow" />
+
+
+
+<meta name="twitter:card" content="summary"/>
+<meta name="twitter:title" content="Batch Manual Go-live Procedure"/>
+<meta name="twitter:description" content="Pushing generated batches to production"/>
+<meta itemprop="name" content="Batch Manual Go-live Procedure">
+<meta itemprop="description" content="Pushing generated batches to production">
+
+<meta itemprop="wordCount" content="420">
+<meta itemprop="keywords" content="" /></head>
+<body><div class="container"><header>
+<h1>Newspaper Curation App</h1><a href="https://github.com/uoregon-libraries/newspaper-curation-app/" class="github"><i class="fab fa-github"></i></a>
+</header>
+
+<div class="content-container">
+<main><h1>Batch Manual Go-live Procedure</h1>
+<p>Once a batch has been approved in staging, the following steps must be taken,
+at least for the UO workflow:</p>
+<ul>
+<li>
+<p>Make sure the batch has a valid <code>tagmanifest-sha256.txt</code> file</p>
+</li>
+<li>
+<p>Copy the batch (sans TIFFs) to the newspaper batch network store, e.g.:</p>
+<div class="highlight"><pre style="color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4"><code class="language-bash" data-lang="bash"><span style="color:#75715e"># $src is something like:</span>
+<span style="color:#75715e">#   /mnt/news/outgoing/batch_foo_20180918BasaltVampireTramplingCrabgrass_ver01</span>
+<span style="color:#75715e"># $dest_batch is something like:</span>
+<span style="color:#75715e">#   /mnt/production/batch_foo_20180918BasaltVampireTramplingCrabgrass_ver01</span>
+rsync -av flags --delete <span style="color:#ae81ff">\
+</span><span style="color:#ae81ff"></span>  --exclude<span style="color:#f92672">=</span><span style="color:#e6db74">&#34;*.tif&#34;</span> --exclude<span style="color:#f92672">=</span><span style="color:#e6db74">&#34;*.tiff&#34;</span> --exclude<span style="color:#f92672">=</span><span style="color:#e6db74">&#34;*.TIF&#34;</span> --exclude<span style="color:#f92672">=</span><span style="color:#e6db74">&#34;*.TIFF&#34;</span> <span style="color:#ae81ff">\
+</span><span style="color:#ae81ff"></span>  --exclude<span style="color:#f92672">=</span><span style="color:#e6db74">&#34;*.tar.bz&#34;</span> --exclude<span style="color:#f92672">=</span><span style="color:#e6db74">&#34;*.tar&#34;</span> <span style="color:#ae81ff">\
+</span><span style="color:#ae81ff"></span>  $src/ $dest_batch
+</code></pre></div></li>
+<li>
+<p>Load the batch into production via the chronam / ONI <code>load_batch</code> admin command</p>
+</li>
+<li>
+<p>Remove the batch from staging via the chronam / ONI <code>purge_batch</code> admin command</p>
+<ul>
+<li>If your staging system mirrors production data, reload the batch from its live location</li>
+</ul>
+</li>
+<li>
+<p>Update the batch in the database so its status is &ldquo;live&rdquo; and its
+<code>went_live_at</code> date is (relatively) accurate.  The <code>went_live_at</code> field is
+technically optional, but can be helpful to track the gap between prepping a
+batch and actually loading it.</p>
+<ul>
+<li>For example: <code>UPDATE batches SET status = 'live', went_live_at = NOW() WHERE name = 'BasaltVampireTramplingCrabgrass' AND id = 32 AND status = 'qc_ready'</code></li>
+</ul>
+</li>
+<li>
+<p>Update the batch&rsquo;s issues in the database to be ignored by setting their <code>ignored</code> field to 1</p>
+<ul>
+<li>If you consistently set the batch status to &ldquo;live&rdquo; when you load batches
+into production, this is fairly easy in a single SQL statement:
+<ul>
+<li><code>UPDATE issues SET ignored=1, workflow_step = 'InProduction' WHERE batch_id IN (SELECT id FROM batches WHERE status = 'live')</code></li>
+</ul>
+</li>
+</ul>
+</li>
+</ul>
+<p>We also have a dark archive process.  We move issues to a dark archive &ldquo;holding
+tank&rdquo; until we have enough data to warrant a transfer:</p>
+<ul>
+<li>Move batches to the &ldquo;holding tank&rdquo; (original batches with the TIFFs, from the
+&ldquo;ready for ingest&rdquo; location, e.g., <code>/mnt/news/outgoing</code>)</li>
+<li>In the database, set batches' <code>location</code> to empty ('')</li>
+<li>When enough batches are in the holding tank, run the script that handles the
+move to the dark archive</li>
+<li>Update the batch&rsquo;s <code>archived_at</code> date</li>
+<li>About four weeks after the <code>archived_at</code> date, we expect the dark archive is
+safe and backed up</li>
+</ul>
+<p>There&rsquo;s a script to help with cleanup: <code>bin/delete-live-done-issues</code>, built in
+a standard <code>make</code> run.  This script will take these four-weeks-plus archived
+batches and update their status to <code>live_done</code>, indicating they need no more
+consideration from NCA.  Then all issues associated with any <code>live_done</code> batch
+will be removed from the filesystem, and their database records' locations will
+be cleared to indicate they are no longer on local storage.  This should be run
+regularly to prevent massive disk use, since otherwise all TIFFs, JP2s, PDFs,
+and XMLs for all issues will stay on your filesystem indefinitely.</p>
+<div class="edit-meta">
+
+<br></div><nav class="pagination"><a class="nav nav-prev" href="https://uoregon-libraries.github.io/newspaper-curation-app/workflow/fixing-batches/" title="Fixing Batches"><i class="fas fa-arrow-left" aria-hidden="true"></i>&nbsp;Prev - Fixing Batches</a>
+<a class="nav nav-next" href="https://uoregon-libraries.github.io/newspaper-curation-app/contributing/" title="Contributing">Next - Contributing <i class="fas fa-arrow-right" aria-hidden="true"></i></a>
+</nav><footer><p class="powered">Powered by <a href="https://gohugo.io">Hugo</a>. Theme by <a href="https://themes.gohugo.io/hugo-theme-techdoc/">TechDoc</a>. Designed by <a href="https://github.com/thingsym/hugo-theme-techdoc">Thingsym</a>.</p>
+</footer>
+</main>
+<div class="sidebar">
+
+<nav class="open-menu">
+<ul>
+<li class=""><a href="https://uoregon-libraries.github.io/newspaper-curation-app/">Home</a></li>
+
+<li class=""><a href="https://uoregon-libraries.github.io/newspaper-curation-app/setup/">Setup and Installation</a>
+  
+<ul class="sub-menu">
+<li class=""><a href="https://uoregon-libraries.github.io/newspaper-curation-app/setup/services/">Services and Apps</a></li>
+<li class=""><a href="https://uoregon-libraries.github.io/newspaper-curation-app/setup/server-setup/">Server Setup</a></li>
+<li class=""><a href="https://uoregon-libraries.github.io/newspaper-curation-app/setup/installation/">Installation</a></li>
+<li class=""><a href="https://uoregon-libraries.github.io/newspaper-curation-app/setup/user-setup/">Users</a></li>
+<li class=""><a href="https://uoregon-libraries.github.io/newspaper-curation-app/setup/creating-publishers/">Onboarding A Publisher</a></li>
+</ul>
+  
+</li>
+
+<li class=""><a href="https://uoregon-libraries.github.io/newspaper-curation-app/specs/">NCA Terms, Specs, and Information</a>
+  
+<ul class="sub-menu">
+<li class=""><a href="https://uoregon-libraries.github.io/newspaper-curation-app/specs/glossary/">Glossary</a></li>
+<li class=""><a href="https://uoregon-libraries.github.io/newspaper-curation-app/specs/upload-specs/">Uploads: Folder and File Specs</a></li>
+</ul>
+  
+</li>
+
+<li class="parent"><a href="https://uoregon-libraries.github.io/newspaper-curation-app/workflow/">Workflow</a>
+  
+<ul class="sub-menu">
+<li class=""><a href="https://uoregon-libraries.github.io/newspaper-curation-app/workflow/technical/">Technical Details</a></li>
+<li class=""><a href="https://uoregon-libraries.github.io/newspaper-curation-app/workflow/adding-titles/">Adding Titles</a></li>
+<li class=""><a href="https://uoregon-libraries.github.io/newspaper-curation-app/workflow/handling-page-review-problems/">Handling Page Review Problems</a></li>
+<li class=""><a href="https://uoregon-libraries.github.io/newspaper-curation-app/workflow/fixing-flagged-workflow-issues/">Fixing Flagged Workflow Issues</a></li>
+<li class=""><a href="https://uoregon-libraries.github.io/newspaper-curation-app/workflow/fixing-batches/">Fixing Batches</a></li>
+<li class="active"><a href="https://uoregon-libraries.github.io/newspaper-curation-app/workflow/batch-manual-golive/">Batch Manual Go-live Procedure</a></li>
+</ul>
+  
+</li>
+
+<li class=""><a href="https://uoregon-libraries.github.io/newspaper-curation-app/contributing/">Contributing</a>
+  
+<ul class="sub-menu">
+<li class=""><a href="https://uoregon-libraries.github.io/newspaper-curation-app/contributing/dev-guide/">Developer&#39;s Guide</a></li>
+<li class=""><a href="https://uoregon-libraries.github.io/newspaper-curation-app/contributing/not-compiling-locally/">Not Compiling Locally</a></li>
+<li class=""><a href="https://uoregon-libraries.github.io/newspaper-curation-app/contributing/documentation/">Contributing to Documentation</a></li>
+<li class=""><a href="https://uoregon-libraries.github.io/newspaper-curation-app/contributing/testing/">Testing</a></li>
+
+<li class=""><a href="https://uoregon-libraries.github.io/newspaper-curation-app/contributing/dev-howto/">How do I...?</a>
+  
+<ul class="sub-menu">
+<li class=""><a href="https://uoregon-libraries.github.io/newspaper-curation-app/contributing/dev-howto/add-job-types/">Add Job Types</a></li>
+</ul>
+  
+</li>
+</ul>
+  
+</li>
+</ul>
+</nav>
+
+
+
+<div class="sidebar-footer"></div>
+</div>
+
+</div><a href="#" id="backtothetop-fixed" class="backtothetop"
+ data-backtothetop-duration="600"
+ data-backtothetop-easing="easeOutQuart"
+ data-backtothetop-fixed-fadeIn="1000"
+ data-backtothetop-fixed-fadeOut="1000"
+ data-backtothetop-fixed-bottom="10"
+ data-backtothetop-fixed-right="20">
+<span class="fa-layers fa-fw">
+<i class="fas fa-circle"></i>
+<i class="fas fa-arrow-circle-up"></i>
+</span></a>
+</div>
+</body>
+</html>

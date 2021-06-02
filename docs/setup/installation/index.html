@@ -1,0 +1,189 @@
+<!DOCTYPE html>
+<html lang="en-us">
+<head><meta charset="utf-8">
+<meta http-equiv="X-UA-Compatible" content="IE=edge">
+<meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1, user-scalable=no">
+<title>Installation - Newspaper Curation App</title>
+<meta name="description" content="How to build and compile NCA">
+<meta name="generator" content="Hugo 0.83.1" />
+<link href="https://uoregon-libraries.github.io/newspaper-curation-app//index.xml" rel="alternate" type="application/rss+xml">
+<link rel="canonical" href="https://uoregon-libraries.github.io/newspaper-curation-app/setup/installation/">
+<link rel="stylesheet" href="https://uoregon-libraries.github.io/newspaper-curation-app/css/theme.min.css">
+<script src="https://use.fontawesome.com/releases/v5.0.6/js/all.js"></script>
+<link rel="stylesheet" href="https://uoregon-libraries.github.io/newspaper-curation-app/css/chroma.min.css">
+<script src="https://cdn.jsdelivr.net/npm/jquery@3.4.1/dist/jquery.min.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/jquery.easing@1.4.1/jquery.easing.min.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/clipboard@2.0.6/dist/clipboard.min.js"></script>
+<script src="https://uoregon-libraries.github.io/newspaper-curation-app/js/bundle.js"></script><style>
+:root {}
+</style>
+<meta property="og:title" content="Installation" />
+<meta property="og:description" content="How to build and compile NCA" />
+<meta property="og:type" content="article" />
+<meta property="og:url" content="https://uoregon-libraries.github.io/newspaper-curation-app/setup/installation/" /><meta property="article:section" content="setup" />
+
+
+
+<meta name="twitter:card" content="summary"/>
+<meta name="twitter:title" content="Installation"/>
+<meta name="twitter:description" content="How to build and compile NCA"/>
+<meta itemprop="name" content="Installation">
+<meta itemprop="description" content="How to build and compile NCA">
+
+<meta itemprop="wordCount" content="427">
+<meta itemprop="keywords" content="" /></head>
+<body><div class="container"><header>
+<h1>Newspaper Curation App</h1><a href="https://github.com/uoregon-libraries/newspaper-curation-app/" class="github"><i class="fab fa-github"></i></a>
+</header>
+
+<div class="content-container">
+<main><h1>Installation</h1>
+<h2 id="development">Development</h2>
+<p>If you&rsquo;re developing on NCA, installation will differ from standing up a
+production server.  Please see our <a href="../../contributing/dev-guide">Development Guide</a>.</p>
+<h2 id="preliminary-setup">Preliminary Setup</h2>
+<p>Manual installation has several prerequisites:</p>
+<ul>
+<li>Go and some dependencies (see below)</li>
+<li>Poppler Utils for PDF processing</li>
+<li>OpenJPEG 2 + command-line tools for JP2 generation
+<ul>
+<li>The command-line tools will probably need to be <strong>manually compiled</strong> to
+support converting PNG files.  Most distributions of Linux don&rsquo;t have this
+by default, hence the need to manually compile.</li>
+</ul>
+</li>
+<li>MariaDB</li>
+<li>An IIIF server capable of handling tiled JP2 files without a ton of overhead (e.g.,
+<a href="https://github.com/uoregon-libraries/rais-image-server">RAIS</a>)</li>
+<li>Apache/nginx for authentication as well as proxying to NCA and the IIIF server</li>
+</ul>
+<p><strong>Please note</strong>: The easiest way to get up and running with NCA is via
+our Docker configuration / setup.</p>
+<ul>
+<li><a href="https://github.com/uoregon-libraries/newspaper-curation-app/blob/main/docker-compose.yml">https://github.com/uoregon-libraries/newspaper-curation-app/blob/main/docker-compose.yml</a></li>
+<li><a href="https://github.com/uoregon-libraries/newspaper-curation-app/tree/main/docker">https://github.com/uoregon-libraries/newspaper-curation-app/tree/main/docker</a></li>
+</ul>
+<p>It&rsquo;s not difficult to run NCA on a VM or bare metal, but if you go that
+route, you&rsquo;ll find the docker setup helpful just in terms of understanding the
+full stack and configuration.</p>
+<h2 id="compile">Compile</h2>
+<p>Compilation requires:</p>
+<ul>
+<li><a href="https://golang.org/dl/">Go</a> 1.9 or later</li>
+<li><a href="https://github.com/golang/lint">golint</a>: <code>go get -u golang.org/x/lint/golint</code></li>
+</ul>
+<p>The easiest way to compile is simply running <code>make</code> in the source directory.
+This will grab various Go packages the application requires, validate the
+current code (via golint, gofmt, and go vet, for development purposes), and
+build all the binaries.</p>
+<p>A full compilation from a clean repository should take about 15 seconds, though
+this can depend on network speed the first time dependencies are pulled from
+github.  Subsequent compiles generally take under 5 seconds.  If that&rsquo;s still
+too long, and you don&rsquo;t mind skipping the code validations, <code>make fast</code> will
+skip the validator entirely, usually saving 1-2 seconds.</p>
+<p>Once you&rsquo;ve compiled, the two key binaries are going to be <code>bin/server</code> for the
+HTTP listener, and <code>bin/run-jobs</code>, the job queue processor.</p>
+<p>Note that even if you do use Docker, you&rsquo;ll probably want to have your dev
+system set up to compile the binaries.  With a suitable
+<code>docker-compose.override.yml</code> file (like the provided
+<code>docker-compose.override.yml-example</code>), the binaries are mounted into the
+container, allowing for quicker code changes.</p>
+<h2 id="database-setup">Database Setup</h2>
+<p>Creating / migrating the database can be done manually by
+executing the &ldquo;up&rdquo; sections of the various migration files, but it&rsquo;s <em>far</em>
+easier to just use <a href="https://github.com/pressly/goose">goose</a></p>
+<pre><code>go get -u github.com/pressly/goose/cmd/goose
+goose -dir ./db/migrations/ mysql &quot;&lt;user&gt;:&lt;password&gt;@tcp(&lt;db host&gt;:3306)/&lt;database name&gt;&quot; up
+</code></pre>
+<p><em>(Obviously you must replace <code>&lt;user&gt;</code>, <code>&lt;password&gt;</code>, <code>&lt;db host&gt;</code>, and <code>&lt;database name&gt;</code> with appropriate values for your environment!)</em></p>
+<p>If you use docker, the entrypoint script should migrate automatically whenever
+the container starts up.  If you&rsquo;re doing development and break the automatic
+migration, just use the steps above inside the web container.</p>
+<div class="edit-meta">
+
+<br></div><nav class="pagination"><a class="nav nav-prev" href="https://uoregon-libraries.github.io/newspaper-curation-app/setup/server-setup/" title="Server Setup"><i class="fas fa-arrow-left" aria-hidden="true"></i>&nbsp;Prev - Server Setup</a>
+<a class="nav nav-next" href="https://uoregon-libraries.github.io/newspaper-curation-app/setup/user-setup/" title="Users">Next - Users <i class="fas fa-arrow-right" aria-hidden="true"></i></a>
+</nav><footer><p class="powered">Powered by <a href="https://gohugo.io">Hugo</a>. Theme by <a href="https://themes.gohugo.io/hugo-theme-techdoc/">TechDoc</a>. Designed by <a href="https://github.com/thingsym/hugo-theme-techdoc">Thingsym</a>.</p>
+</footer>
+</main>
+<div class="sidebar">
+
+<nav class="open-menu">
+<ul>
+<li class=""><a href="https://uoregon-libraries.github.io/newspaper-curation-app/">Home</a></li>
+
+<li class="parent"><a href="https://uoregon-libraries.github.io/newspaper-curation-app/setup/">Setup and Installation</a>
+  
+<ul class="sub-menu">
+<li class=""><a href="https://uoregon-libraries.github.io/newspaper-curation-app/setup/services/">Services and Apps</a></li>
+<li class=""><a href="https://uoregon-libraries.github.io/newspaper-curation-app/setup/server-setup/">Server Setup</a></li>
+<li class="active"><a href="https://uoregon-libraries.github.io/newspaper-curation-app/setup/installation/">Installation</a></li>
+<li class=""><a href="https://uoregon-libraries.github.io/newspaper-curation-app/setup/user-setup/">Users</a></li>
+<li class=""><a href="https://uoregon-libraries.github.io/newspaper-curation-app/setup/creating-publishers/">Onboarding A Publisher</a></li>
+</ul>
+  
+</li>
+
+<li class=""><a href="https://uoregon-libraries.github.io/newspaper-curation-app/specs/">NCA Terms, Specs, and Information</a>
+  
+<ul class="sub-menu">
+<li class=""><a href="https://uoregon-libraries.github.io/newspaper-curation-app/specs/glossary/">Glossary</a></li>
+<li class=""><a href="https://uoregon-libraries.github.io/newspaper-curation-app/specs/upload-specs/">Uploads: Folder and File Specs</a></li>
+</ul>
+  
+</li>
+
+<li class=""><a href="https://uoregon-libraries.github.io/newspaper-curation-app/workflow/">Workflow</a>
+  
+<ul class="sub-menu">
+<li class=""><a href="https://uoregon-libraries.github.io/newspaper-curation-app/workflow/technical/">Technical Details</a></li>
+<li class=""><a href="https://uoregon-libraries.github.io/newspaper-curation-app/workflow/adding-titles/">Adding Titles</a></li>
+<li class=""><a href="https://uoregon-libraries.github.io/newspaper-curation-app/workflow/handling-page-review-problems/">Handling Page Review Problems</a></li>
+<li class=""><a href="https://uoregon-libraries.github.io/newspaper-curation-app/workflow/fixing-flagged-workflow-issues/">Fixing Flagged Workflow Issues</a></li>
+<li class=""><a href="https://uoregon-libraries.github.io/newspaper-curation-app/workflow/fixing-batches/">Fixing Batches</a></li>
+<li class=""><a href="https://uoregon-libraries.github.io/newspaper-curation-app/workflow/batch-manual-golive/">Batch Manual Go-live Procedure</a></li>
+</ul>
+  
+</li>
+
+<li class=""><a href="https://uoregon-libraries.github.io/newspaper-curation-app/contributing/">Contributing</a>
+  
+<ul class="sub-menu">
+<li class=""><a href="https://uoregon-libraries.github.io/newspaper-curation-app/contributing/dev-guide/">Developer&#39;s Guide</a></li>
+<li class=""><a href="https://uoregon-libraries.github.io/newspaper-curation-app/contributing/not-compiling-locally/">Not Compiling Locally</a></li>
+<li class=""><a href="https://uoregon-libraries.github.io/newspaper-curation-app/contributing/documentation/">Contributing to Documentation</a></li>
+<li class=""><a href="https://uoregon-libraries.github.io/newspaper-curation-app/contributing/testing/">Testing</a></li>
+
+<li class=""><a href="https://uoregon-libraries.github.io/newspaper-curation-app/contributing/dev-howto/">How do I...?</a>
+  
+<ul class="sub-menu">
+<li class=""><a href="https://uoregon-libraries.github.io/newspaper-curation-app/contributing/dev-howto/add-job-types/">Add Job Types</a></li>
+</ul>
+  
+</li>
+</ul>
+  
+</li>
+</ul>
+</nav>
+
+
+
+<div class="sidebar-footer"></div>
+</div>
+
+</div><a href="#" id="backtothetop-fixed" class="backtothetop"
+ data-backtothetop-duration="600"
+ data-backtothetop-easing="easeOutQuart"
+ data-backtothetop-fixed-fadeIn="1000"
+ data-backtothetop-fixed-fadeOut="1000"
+ data-backtothetop-fixed-bottom="10"
+ data-backtothetop-fixed-right="20">
+<span class="fa-layers fa-fw">
+<i class="fas fa-circle"></i>
+<i class="fas fa-arrow-circle-up"></i>
+</span></a>
+</div>
+</body>
+</html>

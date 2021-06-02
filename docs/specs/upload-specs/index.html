@@ -1,0 +1,163 @@
+<!DOCTYPE html>
+<html lang="en-us">
+<head><meta charset="utf-8">
+<meta http-equiv="X-UA-Compatible" content="IE=edge">
+<meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1, user-scalable=no">
+<title>Uploads: Folder and File Specs - Newspaper Curation App</title>
+<meta name="description" content="Detailed specifications for uploaded issues&#39; files">
+<meta name="generator" content="Hugo 0.83.1" />
+<link href="https://uoregon-libraries.github.io/newspaper-curation-app//index.xml" rel="alternate" type="application/rss+xml">
+<link rel="canonical" href="https://uoregon-libraries.github.io/newspaper-curation-app/specs/upload-specs/">
+<link rel="stylesheet" href="https://uoregon-libraries.github.io/newspaper-curation-app/css/theme.min.css">
+<script src="https://use.fontawesome.com/releases/v5.0.6/js/all.js"></script>
+<link rel="stylesheet" href="https://uoregon-libraries.github.io/newspaper-curation-app/css/chroma.min.css">
+<script src="https://cdn.jsdelivr.net/npm/jquery@3.4.1/dist/jquery.min.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/jquery.easing@1.4.1/jquery.easing.min.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/clipboard@2.0.6/dist/clipboard.min.js"></script>
+<script src="https://uoregon-libraries.github.io/newspaper-curation-app/js/bundle.js"></script><style>
+:root {}
+</style>
+<meta property="og:title" content="Uploads: Folder and File Specs" />
+<meta property="og:description" content="Detailed specifications for uploaded issues&#39; files" />
+<meta property="og:type" content="article" />
+<meta property="og:url" content="https://uoregon-libraries.github.io/newspaper-curation-app/specs/upload-specs/" /><meta property="article:section" content="specs" />
+
+
+
+<meta name="twitter:card" content="summary"/>
+<meta name="twitter:title" content="Uploads: Folder and File Specs"/>
+<meta name="twitter:description" content="Detailed specifications for uploaded issues&#39; files"/>
+<meta itemprop="name" content="Uploads: Folder and File Specs">
+<meta itemprop="description" content="Detailed specifications for uploaded issues&#39; files">
+
+<meta itemprop="wordCount" content="335">
+<meta itemprop="keywords" content="" /></head>
+<body><div class="container"><header>
+<h1>Newspaper Curation App</h1><a href="https://github.com/uoregon-libraries/newspaper-curation-app/" class="github"><i class="fab fa-github"></i></a>
+</header>
+
+<div class="content-container">
+<main><h1>Uploads: Folder and File Specs</h1>
+<h2 id="uploads-folder-and-file-specs">Uploads: Folder and File Specs</h2>
+<p>Publishers (or in-house scanners) who upload issues must adhere to very strict
+structures for issue organization.</p>
+<h3 id="born-digital">Born-Digital</h3>
+<p>The folder structure tells us the newspaper title and issue date.  e.g.,
+<code>/mnt/news/sftp/sn12345678/2018-01-02</code> would mean the January 2nd, 2018 edition
+of title <code>sn12345678</code>.  Note that the &ldquo;sftp directory&rdquo; can be used instead
+of the LCCN if they differ (for historical reasons - the legacy app&rsquo;s
+born-digital and scan processors were very separated).</p>
+<p>The issue should contain PDFs and nothing else.  Publishers should never upload
+tertiary files.  Ideally, publishers should upload one PDF for the entire
+issue, with pages in the order they wish to see on the ONI site, as that
+reduces (or eliminates) the need to have anybody reviewing these issues' pages.</p>
+<p>Some publishers may be unable (or unwilling) to comply with the aforementioned
+folder structure.  It may be necessary to build a custom pre-processor that
+takes uploaded files and restructures them for the application.  In some cases,
+there may even need to be human intervention to determine the right issue
+folder name.</p>
+<p><strong>Note</strong>: Currently NCA puts all born-digital issues into a single MARC Org
+Code when generating batches (determined by the <code>PDF_BATCH_MARC_ORG_CODE</code>
+setting), and doesn&rsquo;t support having multiple editions of a single date.</p>
+<h3 id="scans">Scans</h3>
+<p>The folder structure tells us the same information as with born-digital
+uploads, but also includes a MARC Org Code.  e.g.,
+<code>/mnt/news/scans/oru/sn12345678/2018-01-02</code> would be the January 2nd, 2018
+issue of title <code>sn12345678</code>, and would be assigned the <code>oru</code> awardee when
+batched.</p>
+<p>Additionally, issues can have multiple editions by adding <code>_dd</code> to the issue
+folder name; e.g., <code>.../2018-01-02_03</code> would designate the third edition
+for January 2nd, 2018.</p>
+<p>These issues should contain one TIFF per page and one PDF per page.  The PDF
+should contain the TIFF&rsquo;s image with OCR information as an application like
+Abbyy produces.</p>
+<p>To conform closely to the NDNP spec, the TIFF files should be at least 300dpi
+and the PDFs should contain a 150dpi JPEG image encoded at about a quality of
+40 (or &ldquo;medium&rdquo;).</p>
+<div class="edit-meta">
+
+<br></div><nav class="pagination"><a class="nav nav-prev" href="https://uoregon-libraries.github.io/newspaper-curation-app/specs/glossary/" title="Glossary"><i class="fas fa-arrow-left" aria-hidden="true"></i>&nbsp;Prev - Glossary</a>
+<a class="nav nav-next" href="https://uoregon-libraries.github.io/newspaper-curation-app/workflow/" title="Workflow">Next - Workflow <i class="fas fa-arrow-right" aria-hidden="true"></i></a>
+</nav><footer><p class="powered">Powered by <a href="https://gohugo.io">Hugo</a>. Theme by <a href="https://themes.gohugo.io/hugo-theme-techdoc/">TechDoc</a>. Designed by <a href="https://github.com/thingsym/hugo-theme-techdoc">Thingsym</a>.</p>
+</footer>
+</main>
+<div class="sidebar">
+
+<nav class="open-menu">
+<ul>
+<li class=""><a href="https://uoregon-libraries.github.io/newspaper-curation-app/">Home</a></li>
+
+<li class=""><a href="https://uoregon-libraries.github.io/newspaper-curation-app/setup/">Setup and Installation</a>
+  
+<ul class="sub-menu">
+<li class=""><a href="https://uoregon-libraries.github.io/newspaper-curation-app/setup/services/">Services and Apps</a></li>
+<li class=""><a href="https://uoregon-libraries.github.io/newspaper-curation-app/setup/server-setup/">Server Setup</a></li>
+<li class=""><a href="https://uoregon-libraries.github.io/newspaper-curation-app/setup/installation/">Installation</a></li>
+<li class=""><a href="https://uoregon-libraries.github.io/newspaper-curation-app/setup/user-setup/">Users</a></li>
+<li class=""><a href="https://uoregon-libraries.github.io/newspaper-curation-app/setup/creating-publishers/">Onboarding A Publisher</a></li>
+</ul>
+  
+</li>
+
+<li class="parent"><a href="https://uoregon-libraries.github.io/newspaper-curation-app/specs/">NCA Terms, Specs, and Information</a>
+  
+<ul class="sub-menu">
+<li class=""><a href="https://uoregon-libraries.github.io/newspaper-curation-app/specs/glossary/">Glossary</a></li>
+<li class="active"><a href="https://uoregon-libraries.github.io/newspaper-curation-app/specs/upload-specs/">Uploads: Folder and File Specs</a></li>
+</ul>
+  
+</li>
+
+<li class=""><a href="https://uoregon-libraries.github.io/newspaper-curation-app/workflow/">Workflow</a>
+  
+<ul class="sub-menu">
+<li class=""><a href="https://uoregon-libraries.github.io/newspaper-curation-app/workflow/technical/">Technical Details</a></li>
+<li class=""><a href="https://uoregon-libraries.github.io/newspaper-curation-app/workflow/adding-titles/">Adding Titles</a></li>
+<li class=""><a href="https://uoregon-libraries.github.io/newspaper-curation-app/workflow/handling-page-review-problems/">Handling Page Review Problems</a></li>
+<li class=""><a href="https://uoregon-libraries.github.io/newspaper-curation-app/workflow/fixing-flagged-workflow-issues/">Fixing Flagged Workflow Issues</a></li>
+<li class=""><a href="https://uoregon-libraries.github.io/newspaper-curation-app/workflow/fixing-batches/">Fixing Batches</a></li>
+<li class=""><a href="https://uoregon-libraries.github.io/newspaper-curation-app/workflow/batch-manual-golive/">Batch Manual Go-live Procedure</a></li>
+</ul>
+  
+</li>
+
+<li class=""><a href="https://uoregon-libraries.github.io/newspaper-curation-app/contributing/">Contributing</a>
+  
+<ul class="sub-menu">
+<li class=""><a href="https://uoregon-libraries.github.io/newspaper-curation-app/contributing/dev-guide/">Developer&#39;s Guide</a></li>
+<li class=""><a href="https://uoregon-libraries.github.io/newspaper-curation-app/contributing/not-compiling-locally/">Not Compiling Locally</a></li>
+<li class=""><a href="https://uoregon-libraries.github.io/newspaper-curation-app/contributing/documentation/">Contributing to Documentation</a></li>
+<li class=""><a href="https://uoregon-libraries.github.io/newspaper-curation-app/contributing/testing/">Testing</a></li>
+
+<li class=""><a href="https://uoregon-libraries.github.io/newspaper-curation-app/contributing/dev-howto/">How do I...?</a>
+  
+<ul class="sub-menu">
+<li class=""><a href="https://uoregon-libraries.github.io/newspaper-curation-app/contributing/dev-howto/add-job-types/">Add Job Types</a></li>
+</ul>
+  
+</li>
+</ul>
+  
+</li>
+</ul>
+</nav>
+
+
+
+<div class="sidebar-footer"></div>
+</div>
+
+</div><a href="#" id="backtothetop-fixed" class="backtothetop"
+ data-backtothetop-duration="600"
+ data-backtothetop-easing="easeOutQuart"
+ data-backtothetop-fixed-fadeIn="1000"
+ data-backtothetop-fixed-fadeOut="1000"
+ data-backtothetop-fixed-bottom="10"
+ data-backtothetop-fixed-right="20">
+<span class="fa-layers fa-fw">
+<i class="fas fa-circle"></i>
+<i class="fas fa-arrow-circle-up"></i>
+</span></a>
+</div>
+</body>
+</html>

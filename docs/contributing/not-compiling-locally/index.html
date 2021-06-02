@@ -1,0 +1,161 @@
+<!DOCTYPE html>
+<html lang="en-us">
+<head><meta charset="utf-8">
+<meta http-equiv="X-UA-Compatible" content="IE=edge">
+<meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1, user-scalable=no">
+<title>Not Compiling Locally - Newspaper Curation App</title>
+<meta name="description" content="Why it&#39;s best to compile NCA locally">
+<meta name="generator" content="Hugo 0.83.1" />
+<link href="https://uoregon-libraries.github.io/newspaper-curation-app//index.xml" rel="alternate" type="application/rss+xml">
+<link rel="canonical" href="https://uoregon-libraries.github.io/newspaper-curation-app/contributing/not-compiling-locally/">
+<link rel="stylesheet" href="https://uoregon-libraries.github.io/newspaper-curation-app/css/theme.min.css">
+<script src="https://use.fontawesome.com/releases/v5.0.6/js/all.js"></script>
+<link rel="stylesheet" href="https://uoregon-libraries.github.io/newspaper-curation-app/css/chroma.min.css">
+<script src="https://cdn.jsdelivr.net/npm/jquery@3.4.1/dist/jquery.min.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/jquery.easing@1.4.1/jquery.easing.min.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/clipboard@2.0.6/dist/clipboard.min.js"></script>
+<script src="https://uoregon-libraries.github.io/newspaper-curation-app/js/bundle.js"></script><style>
+:root {}
+</style>
+<meta property="og:title" content="Not Compiling Locally" />
+<meta property="og:description" content="Why it&#39;s best to compile NCA locally" />
+<meta property="og:type" content="article" />
+<meta property="og:url" content="https://uoregon-libraries.github.io/newspaper-curation-app/contributing/not-compiling-locally/" /><meta property="article:section" content="contributing" />
+
+
+
+<meta name="twitter:card" content="summary"/>
+<meta name="twitter:title" content="Not Compiling Locally"/>
+<meta name="twitter:description" content="Why it&#39;s best to compile NCA locally"/>
+<meta itemprop="name" content="Not Compiling Locally">
+<meta itemprop="description" content="Why it&#39;s best to compile NCA locally">
+
+<meta itemprop="wordCount" content="323">
+<meta itemprop="keywords" content="" /></head>
+<body><div class="container"><header>
+<h1>Newspaper Curation App</h1><a href="https://github.com/uoregon-libraries/newspaper-curation-app/" class="github"><i class="fab fa-github"></i></a>
+</header>
+
+<div class="content-container">
+<main><h1>Not Compiling Locally</h1>
+<p>If you want to compile NCA inside a container, you are for the most part on
+your own.  It&rsquo;s doable and pretty easy, but it&rsquo;s not part of the steps we&rsquo;re
+going to outline, because it adds some annoyances.</p>
+<p>Why is it best to compile on your local machine instead of inside a container?</p>
+<ul>
+<li>Go is not Ruby / Python / PHP / node.  You aren&rsquo;t installing a systemwide
+runtime or futzing with things like rbenv, nvm, virtualenv, composer, &hellip;.</li>
+<li>Go doesn&rsquo;t even really require an install per se; you can choose to download
+the binary distribution, set up some environment variables, and use it.  No
+sudo, no /usr/bin polluting, no complex compiling from sources.</li>
+<li>Same with go&rsquo;s dependencies - <code>go get ...</code> will install files in a space
+that&rsquo;s local to your user path.  All NCA&rsquo;s code dependencies are similarly
+local.  Everything &ldquo;just works&rdquo;.  The only reason we use Docker for
+development is the various external dependencies like poppler utils, graphics
+magick, etc.</li>
+<li>Vim (and other editors / IDEs) usually require Go tools to be installed
+locally for code analysis, autocomplete, etc.</li>
+<li>This repository doesn&rsquo;t have a deploy system for use inside containers; if
+you want to compile inside the containers, it can be a little tricky:
+<ul>
+<li>Mount your code into <code>/usr/local/src/nca</code></li>
+<li>Within the container, go to the <code>/usr/local/src/nca</code> directory for all commands like make, gofmt, etc.</li>
+<li>Copy binary files into <code>/usr/local/nca</code></li>
+</ul>
+</li>
+</ul>
+<p>For development, it&rsquo;s just a lot easier to install Go locally, compile locally,
+and mount the binaries inside the Docker containers.</p>
+<p>That said, PRs which make it easier to set up a &ldquo;build box&rdquo; type of container
+certainly would be appreciated.  Better yet, it would be lovely to get a tool
+like <code>gin</code> integrated - except not a dead project, and something more
+customizable.  We&rsquo;d want to validate code (possibly just to report as opposed
+to refusing to start the services), recompile only when <code>*.go</code> or <code>*.html</code>
+files change, etc.</p>
+<div class="edit-meta">
+
+<br></div><nav class="pagination"><a class="nav nav-prev" href="https://uoregon-libraries.github.io/newspaper-curation-app/contributing/dev-guide/" title="Developer&#39;s Guide"><i class="fas fa-arrow-left" aria-hidden="true"></i>&nbsp;Prev - Developer&#39;s Guide</a>
+<a class="nav nav-next" href="https://uoregon-libraries.github.io/newspaper-curation-app/contributing/documentation/" title="Contributing to Documentation">Next - Contributing to Documentation <i class="fas fa-arrow-right" aria-hidden="true"></i></a>
+</nav><footer><p class="powered">Powered by <a href="https://gohugo.io">Hugo</a>. Theme by <a href="https://themes.gohugo.io/hugo-theme-techdoc/">TechDoc</a>. Designed by <a href="https://github.com/thingsym/hugo-theme-techdoc">Thingsym</a>.</p>
+</footer>
+</main>
+<div class="sidebar">
+
+<nav class="open-menu">
+<ul>
+<li class=""><a href="https://uoregon-libraries.github.io/newspaper-curation-app/">Home</a></li>
+
+<li class=""><a href="https://uoregon-libraries.github.io/newspaper-curation-app/setup/">Setup and Installation</a>
+  
+<ul class="sub-menu">
+<li class=""><a href="https://uoregon-libraries.github.io/newspaper-curation-app/setup/services/">Services and Apps</a></li>
+<li class=""><a href="https://uoregon-libraries.github.io/newspaper-curation-app/setup/server-setup/">Server Setup</a></li>
+<li class=""><a href="https://uoregon-libraries.github.io/newspaper-curation-app/setup/installation/">Installation</a></li>
+<li class=""><a href="https://uoregon-libraries.github.io/newspaper-curation-app/setup/user-setup/">Users</a></li>
+<li class=""><a href="https://uoregon-libraries.github.io/newspaper-curation-app/setup/creating-publishers/">Onboarding A Publisher</a></li>
+</ul>
+  
+</li>
+
+<li class=""><a href="https://uoregon-libraries.github.io/newspaper-curation-app/specs/">NCA Terms, Specs, and Information</a>
+  
+<ul class="sub-menu">
+<li class=""><a href="https://uoregon-libraries.github.io/newspaper-curation-app/specs/glossary/">Glossary</a></li>
+<li class=""><a href="https://uoregon-libraries.github.io/newspaper-curation-app/specs/upload-specs/">Uploads: Folder and File Specs</a></li>
+</ul>
+  
+</li>
+
+<li class=""><a href="https://uoregon-libraries.github.io/newspaper-curation-app/workflow/">Workflow</a>
+  
+<ul class="sub-menu">
+<li class=""><a href="https://uoregon-libraries.github.io/newspaper-curation-app/workflow/technical/">Technical Details</a></li>
+<li class=""><a href="https://uoregon-libraries.github.io/newspaper-curation-app/workflow/adding-titles/">Adding Titles</a></li>
+<li class=""><a href="https://uoregon-libraries.github.io/newspaper-curation-app/workflow/handling-page-review-problems/">Handling Page Review Problems</a></li>
+<li class=""><a href="https://uoregon-libraries.github.io/newspaper-curation-app/workflow/fixing-flagged-workflow-issues/">Fixing Flagged Workflow Issues</a></li>
+<li class=""><a href="https://uoregon-libraries.github.io/newspaper-curation-app/workflow/fixing-batches/">Fixing Batches</a></li>
+<li class=""><a href="https://uoregon-libraries.github.io/newspaper-curation-app/workflow/batch-manual-golive/">Batch Manual Go-live Procedure</a></li>
+</ul>
+  
+</li>
+
+<li class="parent"><a href="https://uoregon-libraries.github.io/newspaper-curation-app/contributing/">Contributing</a>
+  
+<ul class="sub-menu">
+<li class=""><a href="https://uoregon-libraries.github.io/newspaper-curation-app/contributing/dev-guide/">Developer&#39;s Guide</a></li>
+<li class="active"><a href="https://uoregon-libraries.github.io/newspaper-curation-app/contributing/not-compiling-locally/">Not Compiling Locally</a></li>
+<li class=""><a href="https://uoregon-libraries.github.io/newspaper-curation-app/contributing/documentation/">Contributing to Documentation</a></li>
+<li class=""><a href="https://uoregon-libraries.github.io/newspaper-curation-app/contributing/testing/">Testing</a></li>
+
+<li class=""><a href="https://uoregon-libraries.github.io/newspaper-curation-app/contributing/dev-howto/">How do I...?</a>
+  
+<ul class="sub-menu">
+<li class=""><a href="https://uoregon-libraries.github.io/newspaper-curation-app/contributing/dev-howto/add-job-types/">Add Job Types</a></li>
+</ul>
+  
+</li>
+</ul>
+  
+</li>
+</ul>
+</nav>
+
+
+
+<div class="sidebar-footer"></div>
+</div>
+
+</div><a href="#" id="backtothetop-fixed" class="backtothetop"
+ data-backtothetop-duration="600"
+ data-backtothetop-easing="easeOutQuart"
+ data-backtothetop-fixed-fadeIn="1000"
+ data-backtothetop-fixed-fadeOut="1000"
+ data-backtothetop-fixed-bottom="10"
+ data-backtothetop-fixed-right="20">
+<span class="fa-layers fa-fw">
+<i class="fas fa-circle"></i>
+<i class="fas fa-arrow-circle-up"></i>
+</span></a>
+</div>
+</body>
+</html>

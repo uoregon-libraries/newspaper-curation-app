@@ -1,0 +1,73 @@
+<?xml version="1.0" encoding="utf-8" standalone="yes"?>
+<rss version="2.0" xmlns:atom="http://www.w3.org/2005/Atom">
+  <channel>
+    <title>Workflow on Newspaper Curation App</title>
+    <link>https://uoregon-libraries.github.io/newspaper-curation-app/workflow/</link>
+    <description>Recent content in Workflow on Newspaper Curation App</description>
+    <generator>Hugo -- gohugo.io</generator>
+    <language>en-us</language><atom:link href="https://uoregon-libraries.github.io/newspaper-curation-app/workflow/index.xml" rel="self" type="application/rss+xml" />
+    <item>
+      <title>Technical Details</title>
+      <link>https://uoregon-libraries.github.io/newspaper-curation-app/workflow/technical/</link>
+      <pubDate>Mon, 01 Jan 0001 00:00:00 +0000</pubDate>
+      
+      <guid>https://uoregon-libraries.github.io/newspaper-curation-app/workflow/technical/</guid>
+      <description>This document attempts to explain the entire workflow from upload to batch generation in a way that developers can understand what&amp;rsquo;s needed and how to at least begin investigating if something goes wrong.
+Jobs and the Job Queue The job runner regularly scans the database looking for jobs to run. The default setup splits jobs up to ensure quick jobs, like moving an issue from one location to another on the filesystem, are run separately from slow jobs like generating JP2 files.</description>
+    </item>
+    
+    <item>
+      <title>Adding Titles</title>
+      <link>https://uoregon-libraries.github.io/newspaper-curation-app/workflow/adding-titles/</link>
+      <pubDate>Mon, 01 Jan 0001 00:00:00 +0000</pubDate>
+      
+      <guid>https://uoregon-libraries.github.io/newspaper-curation-app/workflow/adding-titles/</guid>
+      <description>Adding a title to NCA is very simple in cases where the title already exists somewhere external (e.g., Library of Congress), but can take a lot more work for titles not indexed elsewhere. Here&amp;rsquo;s our process:
+ Provision a real record, including things like an LCCN  This is a must for us, otherwise our Historic Oregon Newspapers site will misrepresent information that could be extremely confusing to end-users looking for more details.</description>
+    </item>
+    
+    <item>
+      <title>Handling Page Review Problems</title>
+      <link>https://uoregon-libraries.github.io/newspaper-curation-app/workflow/handling-page-review-problems/</link>
+      <pubDate>Mon, 01 Jan 0001 00:00:00 +0000</pubDate>
+      
+      <guid>https://uoregon-libraries.github.io/newspaper-curation-app/workflow/handling-page-review-problems/</guid>
+      <description>The &amp;ldquo;page review&amp;rdquo; location is one of the most dangerous in the application due to the requirement that people manually edit and rename files. There are potentially a lot of difficult problems to manage here.
+Manual Deletion If issues got to the page-review step when they shouldn&amp;rsquo;t have, the only option is to remove them. Make sure you do this right. There is a tool for this process, and manually deleting issues will cause you pain (see below).</description>
+    </item>
+    
+    <item>
+      <title>Fixing Flagged Workflow Issues</title>
+      <link>https://uoregon-libraries.github.io/newspaper-curation-app/workflow/fixing-flagged-workflow-issues/</link>
+      <pubDate>Mon, 01 Jan 0001 00:00:00 +0000</pubDate>
+      
+      <guid>https://uoregon-libraries.github.io/newspaper-curation-app/workflow/fixing-flagged-workflow-issues/</guid>
+      <description>This refers to issues which were already queued from their uploaded location, had derivatives generated, and were ready for metadata entry.
+The metadata entry person flags errors to say essentially, &amp;ldquo;NCA&amp;rsquo;s UI cannot fix the problems on this issue&amp;rdquo;. We have seen a variety of problems like this:
+ The PDF or JP2 image derivatives are corrupt in some way, even though the tools which generated them seemed to run without errors The pages are out of order - somebody reordered pages incorrectly, and the issue now has to be manually pulled, fixed, and re-inserted into the workflow The issue is incorrect in some other way, and wasn&amp;rsquo;t caught when queueing from the uploads area (e.</description>
+    </item>
+    
+    <item>
+      <title>Fixing Batches</title>
+      <link>https://uoregon-libraries.github.io/newspaper-curation-app/workflow/fixing-batches/</link>
+      <pubDate>Mon, 01 Jan 0001 00:00:00 +0000</pubDate>
+      
+      <guid>https://uoregon-libraries.github.io/newspaper-curation-app/workflow/fixing-batches/</guid>
+      <description>Install Build and run the batch fixer tool. You&amp;rsquo;ll need the same prerequisites as are necessary for the rest of the toolsuite, and you&amp;rsquo;ll need to run it on your production system in order to manipulate batch files.
+git clone https://github.com/uoregon-libraries/newspaper-curation-app.git cd newspaper-curation-app make ./bin/batch-fixer -c ./settings The tool is an interactive command-line application. You can type &amp;ldquo;help&amp;rdquo; at any time to get a full list of commands for your current context.</description>
+    </item>
+    
+    <item>
+      <title>Batch Manual Go-live Procedure</title>
+      <link>https://uoregon-libraries.github.io/newspaper-curation-app/workflow/batch-manual-golive/</link>
+      <pubDate>Mon, 01 Jan 0001 00:00:00 +0000</pubDate>
+      
+      <guid>https://uoregon-libraries.github.io/newspaper-curation-app/workflow/batch-manual-golive/</guid>
+      <description>Once a batch has been approved in staging, the following steps must be taken, at least for the UO workflow:
+  Make sure the batch has a valid tagmanifest-sha256.txt file
+  Copy the batch (sans TIFFs) to the newspaper batch network store, e.g.:
+# $src is something like: # /mnt/news/outgoing/batch_foo_20180918BasaltVampireTramplingCrabgrass_ver01 # $dest_batch is something like: # /mnt/production/batch_foo_20180918BasaltVampireTramplingCrabgrass_ver01 rsync -av flags --delete \  --exclude=&amp;#34;*.tif&amp;#34; --exclude=&amp;#34;*.tiff&amp;#34; --exclude=&amp;#34;*.TIF&amp;#34; --exclude=&amp;#34;*.TIFF&amp;#34; \  --exclude=&amp;#34;*.</description>
+    </item>
+    
+  </channel>
+</rss>

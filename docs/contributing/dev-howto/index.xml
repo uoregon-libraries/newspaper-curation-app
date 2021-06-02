@@ -1,0 +1,20 @@
+<?xml version="1.0" encoding="utf-8" standalone="yes"?>
+<rss version="2.0" xmlns:atom="http://www.w3.org/2005/Atom">
+  <channel>
+    <title>How do I...? on Newspaper Curation App</title>
+    <link>https://uoregon-libraries.github.io/newspaper-curation-app/contributing/dev-howto/</link>
+    <description>Recent content in How do I...? on Newspaper Curation App</description>
+    <generator>Hugo -- gohugo.io</generator>
+    <language>en-us</language><atom:link href="https://uoregon-libraries.github.io/newspaper-curation-app/contributing/dev-howto/index.xml" rel="self" type="application/rss+xml" />
+    <item>
+      <title>Add Job Types</title>
+      <link>https://uoregon-libraries.github.io/newspaper-curation-app/contributing/dev-howto/add-job-types/</link>
+      <pubDate>Mon, 01 Jan 0001 00:00:00 +0000</pubDate>
+      
+      <guid>https://uoregon-libraries.github.io/newspaper-curation-app/contributing/dev-howto/add-job-types/</guid>
+      <description>When a new kind of job is required for backend processing, it has to be done properly in order to ensure it is used, set up, and processed by NCA.
+ Make sure there aren&amp;rsquo;t already existing jobs that do what you want! There are a lot of jobs in NCA already, and some are meant to be very generic, such as JobTypeRenameDir.  Read and make sure you understand all structs in src/jobs that implement Process   Create a new JobType in src/models/job.</description>
+    </item>
+    
+  </channel>
+</rss>

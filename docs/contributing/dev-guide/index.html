@@ -1,0 +1,281 @@
+<!DOCTYPE html>
+<html lang="en-us">
+<head><meta charset="utf-8">
+<meta http-equiv="X-UA-Compatible" content="IE=edge">
+<meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1, user-scalable=no">
+<title>Developer&#39;s Guide - Newspaper Curation App</title>
+<meta name="description" content="Developing on NCA">
+<meta name="generator" content="Hugo 0.83.1" />
+<link href="https://uoregon-libraries.github.io/newspaper-curation-app//index.xml" rel="alternate" type="application/rss+xml">
+<link rel="canonical" href="https://uoregon-libraries.github.io/newspaper-curation-app/contributing/dev-guide/">
+<link rel="stylesheet" href="https://uoregon-libraries.github.io/newspaper-curation-app/css/theme.min.css">
+<script src="https://use.fontawesome.com/releases/v5.0.6/js/all.js"></script>
+<link rel="stylesheet" href="https://uoregon-libraries.github.io/newspaper-curation-app/css/chroma.min.css">
+<script src="https://cdn.jsdelivr.net/npm/jquery@3.4.1/dist/jquery.min.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/jquery.easing@1.4.1/jquery.easing.min.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/clipboard@2.0.6/dist/clipboard.min.js"></script>
+<script src="https://uoregon-libraries.github.io/newspaper-curation-app/js/bundle.js"></script><style>
+:root {}
+</style>
+<meta property="og:title" content="Developer&#39;s Guide" />
+<meta property="og:description" content="Developing on NCA" />
+<meta property="og:type" content="article" />
+<meta property="og:url" content="https://uoregon-libraries.github.io/newspaper-curation-app/contributing/dev-guide/" /><meta property="article:section" content="contributing" />
+
+
+
+<meta name="twitter:card" content="summary"/>
+<meta name="twitter:title" content="Developer&#39;s Guide"/>
+<meta name="twitter:description" content="Developing on NCA"/>
+<meta itemprop="name" content="Developer&#39;s Guide">
+<meta itemprop="description" content="Developing on NCA">
+
+<meta itemprop="wordCount" content="1035">
+<meta itemprop="keywords" content="" /></head>
+<body><div class="container"><header>
+<h1>Newspaper Curation App</h1><a href="https://github.com/uoregon-libraries/newspaper-curation-app/" class="github"><i class="fab fa-github"></i></a>
+</header>
+
+<div class="content-container">
+<main><h1>Developer&#39;s Guide</h1>
+<p>It is assumed developers will use Docker for the stack, other than the
+relatively simple process of compiling binaries.</p>
+<h2 id="requirements--setup">Requirements / Setup</h2>
+<h3 id="local-compilation-recommended">Local compilation (recommended)</h3>
+<ul>
+<li>A supported version of <a href="https://golang.org/dl/">Go</a> (e.g., if 1.16 is the
+latest, you want 1.15 or 1.16)</li>
+<li><a href="https://github.com/golang/lint">golint</a>: <code>go get -u golang.org/x/lint/golint</code></li>
+<li>Set up your <code>GOPATH</code>: <a href="https://golang.org/doc/code.html#GOPATH">https://golang.org/doc/code.html#GOPATH</a>
+<ul>
+<li>Add <code>$GOPATH/bin</code> to your path</li>
+</ul>
+</li>
+</ul>
+<p>If you choose not to compile on your host machine, you will have a slightly
+simpler install, but there are a few considerations.  See
+<a href="../../contributing/not-compiling-locally">Not Compiling Locally</a>.</p>
+<h3 id="docker">Docker</h3>
+<p>Install <a href="https://docs.docker.com/install/">Docker CE</a>, which will give you the
+<code>docker</code> and <code>docker-compose</code> commands.</p>
+<p>As mentioned before, Docker is the preferred method for development.  Manual
+setup instructions would be needlessly complicated to handle installing the
+lower-level libraries you&rsquo;ll need, like a very specific version of
+poppler-utils, openjpeg with PNG support, and so forth.</p>
+<p>If you choose not to use Docker, you&rsquo;re on your own.  Look at the docker files
+included in the repository, and the service/deploy files under <code>rhel7</code>.  These
+are the <em>only</em> references for doing a manual installation.</p>
+<h3 id="application">Application</h3>
+<h4 id="grab-the-nca-repository">Grab the NCA repository</h4>
+<pre><code>git clone git@github.com:uoregon-libraries/newspaper-curation-app.git nca
+cd nca
+</code></pre>
+<p>You don&rsquo;t have to specify &ldquo;nca&rdquo; as the destination; I just find it easier to
+use than the full name.  When reading the documentation, if you don&rsquo;t call it
+&ldquo;nca&rdquo;, make sure you mentally replace references to that directory / app name.</p>
+<h4 id="copy-docker-configuration">Copy docker configuration</h4>
+<pre><code>cp docker-compose.override.yml-example docker-compose.override.yml
+</code></pre>
+<p>The override file specifies useful things like automatically mounting your
+local binaries to speed up the edit+compile+test loop, mounting in your local
+templates and static files, mapping the proxy service&rsquo;s port, and running in
+debug mode.</p>
+<pre><code>cp env-example .env
+vim .env
+</code></pre>
+<p><code>.env</code> sets up default environment variables which <code>docker-compose</code> commands
+will use.  A sample file might look like this:</p>
+<div class="highlight"><pre style="color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4"><code class="language-bash" data-lang="bash">APP_URL<span style="color:#f92672">=</span><span style="color:#e6db74">&#34;https://jechols.uoregon.edu&#34;</span>
+NCA_NEWS_WEBROOT<span style="color:#f92672">=</span><span style="color:#e6db74">&#34;https://oregonnews.uoregon.edu&#34;</span>
+</code></pre></div><p>This would say that all app URLs should begin with
+<code>https://jechols.uoregon.edu</code> (the default is <code>localhost</code>, which is usually
+fine for simple dev work), and that the live issues are found on
+<code>https://oregonnews.uoregon.edu</code>.  The live newspaper server is expected to
+have the legacy chronam JSON handlers, as described in
+<a href="../../setup/services">Services</a>.</p>
+<h4 id="compile">Compile</h4>
+<pre><code>make
+</code></pre>
+<p>Binaries have to be built before starting up docker if you are mounting them
+into the container.</p>
+<h4 id="get-all-images">Get all images</h4>
+<pre><code>docker-compose build
+docker-compose pull
+</code></pre>
+<p>Building the NCA application image will take a long time.  Grab some coffee.
+And maybe a nap&hellip;.</p>
+<p>Note that once it&rsquo;s been built, further builds will be quick as docker will
+cache the expensive operations (compiling custom versions of poppler and
+openjpeg) and only update what has changed (e.g., NCA source code).</p>
+<h4 id="start-the-stack">Start the stack</h4>
+<p>Run <code>docker-compose up</code>, and the application will be available at
+<code>$APP_URL/nca</code>.  Note that on the first run it will take a while to respond as
+the system is caching all known issues - including those on the defined live
+site.</p>
+<h3 id="test-data">Test Data</h3>
+<p>You won&rsquo;t get far without setting up some test issues.  NCA has a rudimentary
+setup for grabbing issues from a live server and turning them into testable
+data for local use.</p>
+<p>The process is detailed on the <a href="../../contributing/testing">Testing</a> page.</p>
+<h2 id="coding">Coding</h2>
+<p>All source code lives under <code>src/</code> and is broken up by &ldquo;local&rdquo; packages.
+Everything which compiles into a standalone binary lives in <code>src/cmd/</code>.
+Comprehensive documentation exists only in the source code, but can be viewed
+with <code>go doc</code>; e.g.:</p>
+<pre><code># Read the entire &quot;issuefinder&quot; package's documentation
+go doc ./src/issuefinder
+
+# Read the Finder type's documentation
+go doc ./src/issuefinder Finder
+</code></pre>
+<h3 id="validation">Validation</h3>
+<p><code>make</code> will do basic linting and then compile the code if there were no
+compiliation / linter errors.</p>
+<p>There are a few unit tests which can be executed via <code>make test</code>.  Coverage is
+spotty at best, but some level of sanity-checking does exist.  More
+comprehensive end-to-end testing is explained in the
+<a href="../../contributing/testing">Testing</a> page.</p>
+<h3 id="edit--compile--test-loop">Edit + Compile + Test Loop</h3>
+<p>Here&rsquo;s a nice shortcut one can use to speed up the process since, unlike PHP,
+this project requires compilation before it starts up:</p>
+<pre><code>alias dc='docker-compose'
+make fast
+dc restart web proxy workers
+dc logs -f web proxy workers
+</code></pre>
+<p>The alias just makes it easier to work with docker in general, and can be put
+into a <code>.bash_aliases</code> file or similar.</p>
+<h3 id="general-development-notes">General Development Notes</h3>
+<ul>
+<li>If you make a database schema change (e.g., a new migration), or other major
+changes (e.g., changing your <code>docker-compose.override.yml</code> file), you should
+bring the whole stack down and back up</li>
+<li>If things seem &ldquo;weird&rdquo;, bring the whole stack down and back up</li>
+<li>Only run <code>make fast</code> for quick test loops, as it skips static analysis
+validations like code formatting and linting</li>
+<li>Run <code>make clean</code> if you don&rsquo;t trust what you&rsquo;re seeing; it&rsquo;ll remove all
+cached compiler output</li>
+<li>Run <code>make distclean</code> if you want to delete all cached / downloaded
+dependencies.  This should rarely be necessary, if ever.</li>
+</ul>
+<h2 id="advanced-users">Advanced Users</h2>
+<p>A handy script, <code>scripts/localdev.sh</code>, has been provided <strong>for advanced
+users</strong>.  Using it via <code>source</code> will expose several useful functions for easing
+a more local development environment.  Docker is still expected for the IIIF
+server and the database, but the NCA applications will be completely local.
+This can be a much faster way to do development if you don&rsquo;t mind a more
+complicated setup.</p>
+<p>For this to work, however:</p>
+<ul>
+<li>You must understand how the Docker image works and replicate it locally.
+This means all the dependencies, like poppler utils and openjpeg, must be
+installed <em>locally</em>.  Don&rsquo;t pursue this avenue if you don&rsquo;t know how or
+aren&rsquo;t comfortable locally installing these things.</li>
+<li>You must have a strong understanding of how NCA works: which binaries do
+what, the overall workflow both at a high-level and a technical level, etc.</li>
+<li>You must have a pretty thorough understanding of bash so you can read through
+<code>localdev.sh</code> and figure out which commands make sense.  They won&rsquo;t be
+documented very carefully here.</li>
+<li>You must be comfortable working with docker on the command line.</li>
+</ul>
+<p>Settings:</p>
+<ul>
+<li><em>All paths</em> need to point to your local filesystem, e.g.,
+<code>APP_ROOT=&quot;/home/jechols/nca&quot;</code>.</li>
+<li><code>WEBROOT=&quot;http://localhost:8080&quot;</code></li>
+<li><code>IIIF_BASE_URL=&quot;http://localhost:12415/images/iiif&quot;</code></li>
+<li>Paths to commands must match the path on your local system: <code>GHOSTSCRIPT</code>,
+<code>OPJ_COMPRESS</code>, etc.</li>
+</ul>
+<p>Additionally, <code>docker-compose.override.yml</code> needs to expose RAIS (&ldquo;iiif&rdquo;) on
+12415 and mysql (&ldquo;db&rdquo;) on 3306.</p>
+<p>The rest is left as an exercise for the reader.  Really, if you made it this
+far, and you grasp bash, reading the localdev script should get you the rest of
+the way.</p>
+<div class="edit-meta">
+
+<br></div><nav class="pagination"><a class="nav nav-prev" href="https://uoregon-libraries.github.io/newspaper-curation-app/contributing/" title="Contributing"><i class="fas fa-arrow-left" aria-hidden="true"></i>&nbsp;Prev - Contributing</a>
+<a class="nav nav-next" href="https://uoregon-libraries.github.io/newspaper-curation-app/contributing/not-compiling-locally/" title="Not Compiling Locally">Next - Not Compiling Locally <i class="fas fa-arrow-right" aria-hidden="true"></i></a>
+</nav><footer><p class="powered">Powered by <a href="https://gohugo.io">Hugo</a>. Theme by <a href="https://themes.gohugo.io/hugo-theme-techdoc/">TechDoc</a>. Designed by <a href="https://github.com/thingsym/hugo-theme-techdoc">Thingsym</a>.</p>
+</footer>
+</main>
+<div class="sidebar">
+
+<nav class="open-menu">
+<ul>
+<li class=""><a href="https://uoregon-libraries.github.io/newspaper-curation-app/">Home</a></li>
+
+<li class=""><a href="https://uoregon-libraries.github.io/newspaper-curation-app/setup/">Setup and Installation</a>
+  
+<ul class="sub-menu">
+<li class=""><a href="https://uoregon-libraries.github.io/newspaper-curation-app/setup/services/">Services and Apps</a></li>
+<li class=""><a href="https://uoregon-libraries.github.io/newspaper-curation-app/setup/server-setup/">Server Setup</a></li>
+<li class=""><a href="https://uoregon-libraries.github.io/newspaper-curation-app/setup/installation/">Installation</a></li>
+<li class=""><a href="https://uoregon-libraries.github.io/newspaper-curation-app/setup/user-setup/">Users</a></li>
+<li class=""><a href="https://uoregon-libraries.github.io/newspaper-curation-app/setup/creating-publishers/">Onboarding A Publisher</a></li>
+</ul>
+  
+</li>
+
+<li class=""><a href="https://uoregon-libraries.github.io/newspaper-curation-app/specs/">NCA Terms, Specs, and Information</a>
+  
+<ul class="sub-menu">
+<li class=""><a href="https://uoregon-libraries.github.io/newspaper-curation-app/specs/glossary/">Glossary</a></li>
+<li class=""><a href="https://uoregon-libraries.github.io/newspaper-curation-app/specs/upload-specs/">Uploads: Folder and File Specs</a></li>
+</ul>
+  
+</li>
+
+<li class=""><a href="https://uoregon-libraries.github.io/newspaper-curation-app/workflow/">Workflow</a>
+  
+<ul class="sub-menu">
+<li class=""><a href="https://uoregon-libraries.github.io/newspaper-curation-app/workflow/technical/">Technical Details</a></li>
+<li class=""><a href="https://uoregon-libraries.github.io/newspaper-curation-app/workflow/adding-titles/">Adding Titles</a></li>
+<li class=""><a href="https://uoregon-libraries.github.io/newspaper-curation-app/workflow/handling-page-review-problems/">Handling Page Review Problems</a></li>
+<li class=""><a href="https://uoregon-libraries.github.io/newspaper-curation-app/workflow/fixing-flagged-workflow-issues/">Fixing Flagged Workflow Issues</a></li>
+<li class=""><a href="https://uoregon-libraries.github.io/newspaper-curation-app/workflow/fixing-batches/">Fixing Batches</a></li>
+<li class=""><a href="https://uoregon-libraries.github.io/newspaper-curation-app/workflow/batch-manual-golive/">Batch Manual Go-live Procedure</a></li>
+</ul>
+  
+</li>
+
+<li class="parent"><a href="https://uoregon-libraries.github.io/newspaper-curation-app/contributing/">Contributing</a>
+  
+<ul class="sub-menu">
+<li class="active"><a href="https://uoregon-libraries.github.io/newspaper-curation-app/contributing/dev-guide/">Developer&#39;s Guide</a></li>
+<li class=""><a href="https://uoregon-libraries.github.io/newspaper-curation-app/contributing/not-compiling-locally/">Not Compiling Locally</a></li>
+<li class=""><a href="https://uoregon-libraries.github.io/newspaper-curation-app/contributing/documentation/">Contributing to Documentation</a></li>
+<li class=""><a href="https://uoregon-libraries.github.io/newspaper-curation-app/contributing/testing/">Testing</a></li>
+
+<li class=""><a href="https://uoregon-libraries.github.io/newspaper-curation-app/contributing/dev-howto/">How do I...?</a>
+  
+<ul class="sub-menu">
+<li class=""><a href="https://uoregon-libraries.github.io/newspaper-curation-app/contributing/dev-howto/add-job-types/">Add Job Types</a></li>
+</ul>
+  
+</li>
+</ul>
+  
+</li>
+</ul>
+</nav>
+
+
+
+<div class="sidebar-footer"></div>
+</div>
+
+</div><a href="#" id="backtothetop-fixed" class="backtothetop"
+ data-backtothetop-duration="600"
+ data-backtothetop-easing="easeOutQuart"
+ data-backtothetop-fixed-fadeIn="1000"
+ data-backtothetop-fixed-fadeOut="1000"
+ data-backtothetop-fixed-bottom="10"
+ data-backtothetop-fixed-right="20">
+<span class="fa-layers fa-fw">
+<i class="fas fa-circle"></i>
+<i class="fas fa-arrow-circle-up"></i>
+</span></a>
+</div>
+</body>
+</html>
