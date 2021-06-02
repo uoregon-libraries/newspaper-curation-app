@@ -25,6 +25,24 @@ Brief description, if necessary
 ### Migration
 -->
 
+## vX.Y.Z
+
+Brief description, if necessary
+
+### Fixed
+
+### Added
+
+### Changed
+
+- Documentation is now housed in `docs/`, and server up via github pages
+  (https://uoregon-libraries.github.io/newspaper-curation-app/) instead of
+  using the github wiki.
+
+### Removed
+
+### Migration
+
 ## v3.7.2
 
 Local dev fixes

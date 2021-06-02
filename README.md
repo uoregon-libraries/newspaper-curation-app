@@ -36,6 +36,6 @@ well as scanned newspapers, into a one-batch
 [ONI](https://github.com/open-oni/open-oni) and
 [chronam](https://github.com/LibraryOfCongress/chronam).
 
-Please refer to the
-[wiki](https://github.com/uoregon-libraries/newspaper-curation-app/wiki) for
+Please refer to
+[NCA's online documentation](https://uoregon-libraries.github.io/newspaper-curation-app/) for
 detailed documentation.
