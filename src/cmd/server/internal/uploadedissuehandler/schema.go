@@ -222,6 +222,12 @@ func (f *File) Link() template.HTML {
 	return template.HTML(fmt.Sprintf(`<a href="%s">%s</a>`, path, f.Slug))
 }
 
+// RelativePath returns the location on disk relative to the title's location
+// on disk (primarily to help locate SFTP issues)
+func (f *File) RelativePath() string {
+	return strings.Replace(f.Location, f.Issue.Title.Location, "", 1)
+}
+
 // HasErrors reports true if this file has any errors
 func (f *File) HasErrors() bool {
 	return f.Errors.Major().Len() > 0

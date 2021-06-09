@@ -54,6 +54,7 @@
   <thead>
     <tr>
       <th scope="col" data-sorttype="alpha">Filename</th>
+      <th scope="col" data-sorttype="alpha">Relative Path</th>
       <th scope="col" data-sorttype="alpha">Last Modified</th>
       <th scope="col" data-sorttype="alpha">Status</th>
     </tr>
@@ -63,6 +64,7 @@
     {{range .Data.Issue.Files}}
       <tr {{if .HasErrors}} class="file-with-errors"{{end}}>
         <td>{{.Link}}</td>
+        <td>{{.RelativePath}}</td>
         <td>{{TimeString .ModTime}}</td>
         <td>
           {{- if .HasErrors}}
