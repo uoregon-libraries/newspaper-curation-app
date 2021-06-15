@@ -307,11 +307,7 @@ func integrateSFTP(t *Title, connected bool) (msg string, err error) {
 		return "", nil
 	}
 
-	var api *sftpgo.API
-	api, err = sftpgo.New(conf.SFTPGoAPIURL, conf.SFTPGoAdminLogin, conf.SFTPGoAdminPassword)
-	if err != nil {
-		return fmt.Sprintf("Error provisioning the SFTP user %q: try again or contact support", t.SFTPUser), err
-	}
+	var api = sftpgo.New(conf.SFTPGoAPIURL, conf.SFTPGoAdminLogin, conf.SFTPGoAdminPassword)
 
 	// If the title already has an SFTP connection, we only try to update passwords
 	if connected {
