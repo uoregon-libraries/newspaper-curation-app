@@ -49,10 +49,7 @@ func (s *spy) do(c *http.Client, req *http.Request) ([]byte, error) {
 // before the token expiry for easier testing.
 func newAPI(t *testing.T) (*API, *spy) {
 	var u, _ = url.Parse("http://example.org/api/v2")
-	var a, err = New(u, "user", "pass")
-	if err != nil {
-		t.Errorf("Couldn't instantiate a simple API: %s", err)
-	}
+	var a = New(u, "user", "pass")
 	var s = makeSpy()
 	a.now = makeNow(time.Date(2021, 1, 17, 9, 25, 0, 0, time.UTC))
 	a.do = s.do
