@@ -9,6 +9,7 @@ import (
 	"strings"
 
 	"github.com/uoregon-libraries/gopkg/bashconf"
+	"github.com/uoregon-libraries/newspaper-curation-app/src/internal/datasize"
 )
 
 // Config holds the configuration needed for this application to work
@@ -26,6 +27,7 @@ type Config struct {
 	SFTPGoAPIURL        *url.URL
 	SFTPGoAdminLogin    string `setting:"SFTPGO_ADMIN_LOGIN"`
 	SFTPGoAdminPassword string `setting:"SFTPGO_ADMIN_PASSWORD"`
+	SFTPGoNewUserQuota  datasize.Datasize
 
 	// Binary paths
 	GhostScript   string `setting:"GHOSTSCRIPT"`
@@ -97,6 +99,14 @@ func Parse(filename string) (*Config, error) {
 		errors = append(errors, fmt.Sprintf("invalid SFTPGoAPIURL: %s", err))
 	}
 	c.SFTPGoEnabled = (c.SFTPGoAPIURL != nil)
+
+	// We validate the quota here rather than just reading it as a string - then
+	// end-users could get hit with errors just because they used the default
+	var quota = bc.Get("SFTPGO_NEW_USER_QUOTA")
+	c.SFTPGoNewUserQuota, err = datasize.New(quota)
+	if err != nil {
+		errors = append(errors, fmt.Sprintf("invalid SFPTGoNewUserQuota: %s", err))
+	}
 
 	if c.MinimumIssuePages < 1 {
 		errors = append(errors, "invalid MINIMUM_ISSUE_PAGES: must be numeric and greater than 0")

@@ -79,6 +79,12 @@ SFTPGO_ADMIN_LOGIN=admin
 # The SFTPGo password for API requests
 SFTPGO_ADMIN_PASSWORD=password
 
+# How much disk each new user is allotted for uploads.  Note that this is NOT
+# retroactive.  This is simply the default used when a *new* title is sent to
+# SFTPGo.  Changing quotas for existing titles requires manual editing of their
+# title data in NCA.
+SFTPGO_NEW_USER_QUOTA=5gb
+
 ###
 # Paths for PDFs, derivatives, etc.
 ###
