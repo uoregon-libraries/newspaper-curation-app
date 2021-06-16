@@ -11,6 +11,7 @@ import (
 	"net/http"
 	"net/url"
 	"path"
+	"sync"
 	"time"
 )
 
@@ -38,6 +39,7 @@ type token struct {
 
 // API is used to send API requests to the SFTPGo daemon
 type API struct {
+	m       sync.Mutex
 	url     *url.URL
 	login   string
 	pass    string
@@ -174,6 +176,9 @@ func (a *API) _do(c *http.Client, req *http.Request) ([]byte, error) {
 }
 
 func (a *API) getToken() error {
+	a.m.Lock()
+	defer a.m.Unlock()
+
 	if a.token.ExpiresAt.Sub(a.now()) > (3 * time.Minute) {
 		return nil
 	}
