@@ -69,17 +69,19 @@ func New(apiURL *url.URL, login, pass string) *API {
 // CreateUser adds a new user to the sftpgo daemon with the given password and
 // description.  If pass is empty, a random password is generated.  The
 // password and any errors are returned.
-func (a *API) CreateUser(user, pass, desc string) (password string, err error) {
+func (a *API) CreateUser(user, pass string, quota int64, desc string) (password string, err error) {
 	password = pass
 	if password == "" {
 		password = a.rndPass()
 	}
+
 	var u = User{
 		Status:      1,
 		Username:    user,
 		Password:    password,
 		Description: desc,
 		Permissions: map[string][]string{"/": {"*"}},
+		QuotaSize:   quota,
 	}
 
 	// JSON errors only occur with complex types that can't be marshaled, so this
@@ -90,12 +92,33 @@ func (a *API) CreateUser(user, pass, desc string) (password string, err error) {
 	return password, err
 }
 
-// UpdatePassword tells SFTPGo to use the given password for a publisher's
-// login instead of whatever the current password is
-func (a *API) UpdatePassword(user, pass string) error {
+// GetUser calls the SFTPGo API to retrieve some information about the given user.
+//
+// Note that SFTPGo does not return raw password data.  Passwords can be reset
+// but never viewed.
+func (a *API) GetUser(user string) (u *User, err error) {
+	u = &User{}
+	var data []byte
+	data, err = a.rpc("GET", path.Join("users", user), "")
+	if err != nil {
+		return nil, fmt.Errorf("unable to request user from SFTPGo: %w", err)
+	}
+
+	err = json.Unmarshal(data, u)
+	if err != nil {
+		return nil, fmt.Errorf("unable to unmarshal user JSON: %w", err)
+	}
+
+	return u, err
+}
+
+// UpdateUser tells SFTPGo to change the password and/or quota for a
+// publisher's SFTP user
+func (a *API) UpdateUser(user, pass string, quota int64) error {
 	var u = User{
-		Username: user,
-		Password: pass,
+		Username:  user,
+		Password:  pass,
+		QuotaSize: quota,
 	}
 
 	// JSON errors only occur with complex types that can't be marshaled, so this

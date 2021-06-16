@@ -7,4 +7,5 @@ type User struct {
 	Password    string              `json:"password,omitempty"`
 	Description string              `json:"description,omitempty"`
 	Permissions map[string][]string `json:"permissions,omitempty"`
+	QuotaSize   int64               `json:"quota_size,omitempty"`
 }
