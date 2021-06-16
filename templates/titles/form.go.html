@@ -129,7 +129,7 @@
     </div>
   </div>
 
-  <!-- Only create password input if we use SFTPGo; otherwise it's a meaningless field -->
+  <!-- Only create password and quota inputs if we use SFTPGo; otherwise they'd be meaningless -->
   {{if SFTPGoEnabled}}
   <div class="form-group">
     <label class="col-sm-4 control-label" for="sftppass">SFTP password</label>
@@ -141,6 +141,20 @@
         {{else}}
         Optional: leave blank to let NCA generate a random password for this user's SFTP login
         {{end}}
+      </p>
+    </div>
+  </div>
+
+  <div class="form-group">
+    <label class="col-sm-4 control-label" for="sftpquota">SFTP Quota</label>
+    <div class="col-sm-8">
+      <input id="sftpquota" name="sftpquota" class="form-control" value="{{.Data.Title.SFTPQuota.String}}" aria-describedby="sftpquota-help" />
+      <p id="sftpquota-help" class="help-block">
+        Maximum amount of space allowed to be used by this title's SFTP
+        uploads.  You can enter a shorthand value, e.g., "5gb" means 5
+        gigabytes.  Anything which results in a zero value (blank, "0", "0 B",
+        etc.) means the SFTP account has unlimited storage.  This is
+        <strong>not recommended</strong>.
       </p>
     </div>
   </div>

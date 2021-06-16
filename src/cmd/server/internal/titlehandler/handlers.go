@@ -13,6 +13,7 @@ import (
 	"github.com/uoregon-libraries/newspaper-curation-app/src/config"
 	"github.com/uoregon-libraries/newspaper-curation-app/src/dbi"
 	"github.com/uoregon-libraries/newspaper-curation-app/src/duration"
+	"github.com/uoregon-libraries/newspaper-curation-app/src/internal/datasize"
 	"github.com/uoregon-libraries/newspaper-curation-app/src/internal/logger"
 	"github.com/uoregon-libraries/newspaper-curation-app/src/internal/sftpgo"
 	"github.com/uoregon-libraries/newspaper-curation-app/src/models"
@@ -77,7 +78,23 @@ func getTitle(r *responder.Responder) (t *Title, handled bool) {
 		return nil, true
 	}
 
-	return WrapTitle(dbt), false
+	var wrapped = WrapTitle(dbt)
+
+	// If we've got a connection to SFTPGo, we have to read from there, too, not
+	// just the database
+	if dbt.SFTPConnected {
+		var api = sftpgo.New(conf.SFTPGoAPIURL, conf.SFTPGoAdminLogin, conf.SFTPGoAdminPassword)
+		var u, err = api.GetUser(dbt.SFTPUser)
+		if err != nil {
+			logger.Errorf("Unable to look up title %q in SFTPGo: %s", id, err)
+			r.Error(http.StatusInternalServerError, "Unable to find title - try again or contact support")
+			return nil, true
+		}
+
+		wrapped.SFTPQuota = datasize.Datasize(u.QuotaSize)
+	}
+
+	return wrapped, false
 }
 
 // listHandler spits out the list of titles
@@ -161,8 +178,16 @@ func setTitleData(r *responder.Responder, t *Title) (vErrors []string, handled b
 		if newUser != "" && !t.SFTPConnected {
 			t.SFTPUser = newUser
 		}
-
 		t.SFTPPass = form.Get("sftppass")
+
+		var quota = form.Get("sftpquota")
+		if quota == "" {
+			quota = "0 B"
+		}
+		t.SFTPQuota, err = datasize.New(quota)
+		if err != nil {
+			vErrors = append(vErrors, fmt.Sprintf("Invalid SFTP quota %q: %s", t.SFTPQuota, err))
+		}
 	}
 
 	if !t.ValidLCCN || r.Vars.User.PermittedTo(privilege.ModifyValidatedLCCNs) {
@@ -270,11 +295,6 @@ func saveTitle(t *Title) (msg string, err error) {
 		return "Title saved", t.Save()
 	}
 
-	// If the title is already connected and password didn't change, again, return
-	if t.SFTPConnected && t.SFTPPass == "" {
-		return "Title saved", t.Save()
-	}
-
 	// We connect to SFTPGo, we we need a transaction
 	var op = dbi.DB.Operation()
 	op.Dbg = dbi.Debug
@@ -301,7 +321,7 @@ func saveTitle(t *Title) (msg string, err error) {
 	return "Title saved.  SFTP Integration successful: " + sftpMessage, op.Err()
 }
 
-// integrateSFTP attempts to create a new SFTP user in SFTPGo
+// integrateSFTP attempts to create or update a user in SFTPGo
 func integrateSFTP(t *Title, connected bool) (msg string, err error) {
 	if !conf.SFTPGoEnabled {
 		return "", nil
@@ -309,17 +329,17 @@ func integrateSFTP(t *Title, connected bool) (msg string, err error) {
 
 	var api = sftpgo.New(conf.SFTPGoAPIURL, conf.SFTPGoAdminLogin, conf.SFTPGoAdminPassword)
 
-	// If the title already has an SFTP connection, we only try to update passwords
+	// If the title already has an SFTP connection, we perform an update
 	if connected {
-		err = api.UpdatePassword(t.SFTPUser, t.SFTPPass)
+		err = api.UpdateUser(t.SFTPUser, t.SFTPPass, int64(t.SFTPQuota))
 		if err != nil {
 			return fmt.Sprintf("Error updating SFTP password for user %q: try again or contact support", t.SFTPUser), err
 		}
-		return "SFTP password updated", nil
+		return "update complete", nil
 	}
 
 	var pass string
-	pass, err = api.CreateUser(t.SFTPUser, t.SFTPPass, t.Name+" / "+t.LCCN)
+	pass, err = api.CreateUser(t.SFTPUser, t.SFTPPass, int64(t.SFTPQuota), t.Name+" / "+t.LCCN)
 	if err != nil {
 		return fmt.Sprintf("Error provisioning the SFTP user %q: try again or contact support", t.SFTPUser), err
 	}

@@ -109,7 +109,7 @@ func TestCreateUser(t *testing.T) {
 	// Right now the response is basically just ignored, so anything here works
 	s.responses["users"] = []byte(`{"foo": "bar"}`)
 	s.errors["users"] = nil
-	var pass, err = a.CreateUser("fakename", "", "description")
+	var pass, err = a.CreateUser("fakename", "", 0, "description")
 	if err != nil {
 		t.Errorf("CreateUser should have had no errors, but it returned %s", err)
 	}
@@ -135,7 +135,7 @@ func TestCreateUser_WithPassword(t *testing.T) {
 	// Right now the response is basically just ignored, so anything here works
 	s.responses["users"] = []byte(`{"foo": "bar"}`)
 	s.errors["users"] = nil
-	var pass, err = a.CreateUser("fakename", fakepass, "description")
+	var pass, err = a.CreateUser("fakename", fakepass, 0, "description")
 	if err != nil {
 		t.Errorf("CreateUser should have had no errors, but it returned %s", err)
 	}
@@ -153,14 +153,14 @@ func TestCreateUser_WithPassword(t *testing.T) {
 	}
 }
 
-func TestUpdatePassword(t *testing.T) {
+func TestUpdateUser(t *testing.T) {
 	var a, s = newAPI(t)
 	// Right now the response is basically just ignored, so anything here works
 	s.responses["users/fakename"] = []byte(`{"foo": "bar"}`)
 	s.errors["users/fakename"] = nil
-	var err = a.UpdatePassword("fakename", "newpass")
+	var err = a.UpdateUser("fakename", "newpass", 0)
 	if err != nil {
-		t.Errorf("UpdatePassword should have had no errors, but it returned %s", err)
+		t.Errorf("UpdateUser should have had no errors, but it returned %s", err)
 	}
 	if len(s.requests) != 2 {
 		t.Errorf("Expected two requests, but got %d", len(s.requests))
