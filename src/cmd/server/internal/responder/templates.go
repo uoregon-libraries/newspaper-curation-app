@@ -127,7 +127,6 @@ func InitRootTemplate(templatePath string) {
 		"ModifyUsers":              func() *privilege.Privilege { return privilege.ModifyUsers },
 		"ViewUploadedIssues":       func() *privilege.Privilege { return privilege.ViewUploadedIssues },
 		"ModifyUploadedIssues":     func() *privilege.Privilege { return privilege.ModifyUploadedIssues },
-		"ViewTitleSFTPCredentials": func() *privilege.Privilege { return privilege.ViewTitleSFTPCredentials },
 		"SearchIssues":             func() *privilege.Privilege { return privilege.SearchIssues },
 		"ViewBatchStatus":          func() *privilege.Privilege { return privilege.ViewBatchStatus },
 		"ViewQCReadyBatches":       func() *privilege.Privilege { return privilege.ViewQCReadyBatches },
@@ -139,7 +138,6 @@ func InitRootTemplate(templatePath string) {
 		"PurgeBatches":             func() *privilege.Privilege { return privilege.PurgeBatches },
 		"ArchiveBatches":           func() *privilege.Privilege { return privilege.ArchiveBatches },
 		"ModifyValidatedLCCNs":     func() *privilege.Privilege { return privilege.ModifyValidatedLCCNs },
-		"ModifyTitleSFTP":          func() *privilege.Privilege { return privilege.ModifyTitleSFTP },
 		"ListAuditLogs":            func() *privilege.Privilege { return privilege.ListAuditLogs },
 	}
 
