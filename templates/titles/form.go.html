@@ -88,9 +88,8 @@
     </div>
   </div>
 
-  <!-- User can modify SFTP data -->
-  {{if .User.PermittedTo ModifyTitleSFTP}}
-
+  <!-- No sftp data is shown/editable if we aren't connected to SFTPGo.  Too much pain. -->
+  {{if SFTPGoEnabled}}
   <div class="form-group">
     <label class="col-sm-4 control-label" for="sftpuser">SFTP username</label>
     <div class="col-sm-8">
@@ -100,12 +99,6 @@
       <p id="sftpuser-help" class="help-block">
         This title's SFTP credentials have already been generated in our
         external SFTPGo system, so the SFTP Username can no longer be modified.
-        {{if not SFTPGoEnabled}}
-        <strong>Note</strong>: it appears that the SFTPGo connection has been
-        disabled since this title was connected.  In case this disconnect is
-        accidental or temporary, however, NCA still cannot allow changes to be
-        made to this user.
-        {{end}}
       </p>
 
       <!-- No account, so username can be set -->
@@ -113,24 +106,16 @@
       <input id="sftpuser" name="sftpuser" class="form-control" value="{{.Data.Title.SFTPUser}}" aria-describedby="sftpuser-help" />
       <p id="sftpuser-help" class="help-block">
         Enter a login name for this title if the publisher will send issues via SFTP.
-        Leave this blank to indicate the title isn't being uploaded externally
-        (e.g., if it's for in-house scanning).
-        <br /><br />
-        {{if SFTPGoEnabled}}
         <strong>Note</strong>: NCA will use this to provision an external
         account, and it <strong>cannot be changed</strong> once set.
-        {{else}}
-        <strong>Note</strong>: NCA is not set up to auto-provision SFTP users.
-        Your system administrator will need to take manual steps in order to
-        allow this title to have issues uploaded.
-        {{end}}
+        <br /><br />
+        Leave this blank to indicate the title isn't being uploaded externally
+        (e.g., if it's for in-house scanning).
       </p>
       {{end}}
     </div>
   </div>
 
-  <!-- Only create password and quota inputs if we use SFTPGo; otherwise they'd be meaningless -->
-  {{if SFTPGoEnabled}}
   <div class="form-group">
     <label class="col-sm-4 control-label" for="sftppass">SFTP password</label>
     <div class="col-sm-8">
@@ -156,16 +141,6 @@
         etc.) means the SFTP account has unlimited storage.  This is
         <strong>not recommended</strong>.
       </p>
-    </div>
-  </div>
-  {{end}}
-
-  <!-- User cannot modify titles' SFTP data, but can view it -->
-  {{else if and (ne .Data.Title.ID 0) (.User.PermittedTo ViewTitleSFTPCredentials)}}
-  <div class="form-group">
-    <label class="col-sm-4 control-label" for="sftpuser">SFTP username</label>
-    <div class="col-sm-8">
-      <p id="sftpuser" class="form-control-static">{{.Data.Title.SFTPUser}}</p>
     </div>
   </div>
   {{end}}

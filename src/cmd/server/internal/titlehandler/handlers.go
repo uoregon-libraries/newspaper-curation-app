@@ -173,21 +173,19 @@ func setTitleData(r *responder.Responder, t *Title) (vErrors []string, handled b
 		t.EmbargoPeriod = embargoPeriod.String()
 	}
 
-	if r.Vars.User.PermittedTo(privilege.ModifyTitleSFTP) {
-		var newUser = form.Get("sftpuser")
-		if newUser != "" && !t.SFTPConnected {
-			t.SFTPUser = newUser
-		}
-		t.SFTPPass = form.Get("sftppass")
+	var newUser = form.Get("sftpuser")
+	if newUser != "" && !t.SFTPConnected {
+		t.SFTPUser = newUser
+	}
+	t.SFTPPass = form.Get("sftppass")
 
-		var quota = form.Get("sftpquota")
-		if quota == "" {
-			quota = "0 B"
-		}
-		t.SFTPQuota, err = datasize.New(quota)
-		if err != nil {
-			vErrors = append(vErrors, fmt.Sprintf("Invalid SFTP quota %q: %s", t.SFTPQuota, err))
-		}
+	var quota = form.Get("sftpquota")
+	if quota == "" {
+		quota = "0 B"
+	}
+	t.SFTPQuota, err = datasize.New(quota)
+	if err != nil {
+		vErrors = append(vErrors, fmt.Sprintf("Invalid SFTP quota %q: %s", t.SFTPQuota, err))
 	}
 
 	if !t.ValidLCCN || r.Vars.User.PermittedTo(privilege.ModifyValidatedLCCNs) {
