@@ -100,6 +100,12 @@
       <p id="sftpuser-help" class="help-block">
         This title's SFTP credentials have already been generated in our
         external SFTPGo system, so the SFTP Username can no longer be modified.
+        {{if not SFTPGoEnabled}}
+        <strong>Note</strong>: it appears that the SFTPGo connection has been
+        disabled since this title was connected.  In case this disconnect is
+        accidental or temporary, however, NCA still cannot allow changes to be
+        made to this user.
+        {{end}}
       </p>
 
       <!-- No account, so username can be set -->
@@ -131,9 +137,9 @@
       <input id="sftppass" name="sftppass" class="form-control" value="{{.Data.Title.SFTPPass}}" aria-describedby="sftppass-help" />
       <p id="sftppass-help" class="help-block">
         {{if .Data.Title.SFTPConnected}}
-        Optional: leave blank to let NCA generate a random password for this user's SFTP login
-        {{else}}
         Optional: if filled in, the SFTP user's password will be changed
+        {{else}}
+        Optional: leave blank to let NCA generate a random password for this user's SFTP login
         {{end}}
       </p>
     </div>
