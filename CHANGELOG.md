@@ -44,6 +44,10 @@ SFTPGo integration and documentation
   using the github wiki.
   - Technically this went up before the new release, but it is a change since
     our last release....
+- Users with the role "Title Manager" can now edit all aspects of a title,
+  including SFTP data.  Since we no longer store plaintext passwords, there's
+  no reason to do the weird half-editing setup we had before where only admins
+  could edit the SFTP stuff.
 
 ### Removed
 
