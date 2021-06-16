@@ -82,7 +82,7 @@ func getTitle(r *responder.Responder) (t *Title, handled bool) {
 
 	// If we've got a connection to SFTPGo, we have to read from there, too, not
 	// just the database
-	if dbt.SFTPConnected {
+	if conf.SFTPGoEnabled && dbt.SFTPConnected {
 		var api = sftpgo.New(conf.SFTPGoAPIURL, conf.SFTPGoAdminLogin, conf.SFTPGoAdminPassword)
 		var u, err = api.GetUser(dbt.SFTPUser)
 		if err != nil {
