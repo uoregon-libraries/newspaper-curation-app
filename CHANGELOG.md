@@ -62,10 +62,11 @@ This is complicated.
 #### No integration with SFTPGo
 
 If you choose to avoid SFTPGo integration, you're potentially losing
-functionality.  NCA will no longer let you track the password / directory
-settings.  As mentioned above, this didn't really make sense to begin with, but
-if this was functionality you relied on somehow, you'll have to find a
-different approach.
+functionality.  NCA will no longer let you track the SFTP data.  Trying to
+conditionally determine which bits of data make sense to track without real
+integration was too complicated and doesn't make sense to keep maintaining.  If
+this was functionality you relied on somehow, you'll have to find a different
+approach.
 
 #### Integration with SFTPGo
 
@@ -83,8 +84,8 @@ you've been using.
 
 #### Always: migrate the database
 
-Do **not** do this until after you've performed whatever steps you needed to do
-above.  You may lose important data!
+**Do not do this until after you've performed whatever steps you needed to do
+above.  You may lose important data!**
 
 Migration typically looks something like this:
 
