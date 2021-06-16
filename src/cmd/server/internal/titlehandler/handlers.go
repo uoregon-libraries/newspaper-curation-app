@@ -181,7 +181,7 @@ func setTitleData(r *responder.Responder, t *Title) (vErrors []string, handled b
 
 	var quota = form.Get("sftpquota")
 	if quota == "" {
-		quota = "0 B"
+		vErrors = append(vErrors, "SFTP quota cannot be blank")
 	}
 	t.SFTPQuota, err = datasize.New(quota)
 	if err != nil {
