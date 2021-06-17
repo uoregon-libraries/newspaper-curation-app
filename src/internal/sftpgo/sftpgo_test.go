@@ -64,7 +64,7 @@ func makeNow(t time.Time) func() time.Time {
 
 func TestToken(t *testing.T) {
 	var a, s = newAPI(t)
-	var err = a.getToken()
+	var err = a.GetToken()
 	if err != nil {
 		t.Fatalf("Couldn't retrieve token: %s", err)
 	}
@@ -89,14 +89,14 @@ func TestToken(t *testing.T) {
 	}
 
 	// Make sure the token isn't requested a second time if it hasn't expired
-	a.getToken()
+	a.GetToken()
 	if len(s.requests) != 1 {
 		t.Errorf("doToken caused an extra HTTP request despite token still being valid")
 	}
 
 	// If the token's about to expire, a new one should be issued
 	a.token.ExpiresAt = time.Date(2021, 1, 17, 9, 26, 0, 0, time.UTC)
-	a.getToken()
+	a.GetToken()
 	if len(s.requests) != 2 {
 		t.Errorf("doToken should have requested a new token since the current is expired")
 	}

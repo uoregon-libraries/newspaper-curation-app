@@ -24,7 +24,7 @@ func getOpts() *config.Config {
 		"the MAX_BATCH_SIZE and MIN_BATCH_SIZE settings to control how many " +
 		"pages a batch may contain.")
 	var conf = c.GetConf()
-	var err = dbi.Connect(conf.DatabaseConnect)
+	var err = dbi.DBConnect(conf.DatabaseConnect)
 	if err != nil {
 		logger.Fatalf("Error trying to connect to database: %s", err)
 	}

@@ -49,7 +49,7 @@ func getConf() {
 		logger.Fatalf("Config error: %s", err)
 	}
 
-	err = dbi.Connect(conf.DatabaseConnect)
+	err = dbi.DBConnect(conf.DatabaseConnect)
 	if err != nil {
 		logger.Fatalf("Error trying to connect to database: %s", err)
 	}

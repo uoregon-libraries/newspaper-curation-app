@@ -41,7 +41,7 @@ func getConfig() {
 		anything.`))
 
 	conf = c.GetConf()
-	var err = dbi.Connect(conf.DatabaseConnect)
+	var err = dbi.DBConnect(conf.DatabaseConnect)
 	if err != nil {
 		logger.Fatalf("Error trying to connect to database: %s", err)
 	}
