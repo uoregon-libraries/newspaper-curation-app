@@ -31,6 +31,8 @@ Brief description, if necessary
 
 ### Fixed
 
+- `make format` works again
+
 ### Added
 
 ### Changed
