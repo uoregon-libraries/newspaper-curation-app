@@ -29,7 +29,7 @@ lint:
 	golint src/...
 
 format:
-	find src/ -name "*.go" | xargs goimports -l -w -s
+	find src/ -name "*.go" | xargs goimports -l -w
 
 test:
 	go test ./src/...
