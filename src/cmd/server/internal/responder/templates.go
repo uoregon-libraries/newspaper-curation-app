@@ -85,21 +85,21 @@ func InitRootTemplate(templatePath string) {
 
 		// We have functions for our privileges since they need to be "global" and
 		// easily verified at template compile time
-		"ListTitles":               func() *privilege.Privilege { return privilege.ListTitles },
-		"ModifyTitles":             func() *privilege.Privilege { return privilege.ModifyTitles },
-		"ManageMOCs":               func() *privilege.Privilege { return privilege.ManageMOCs },
-		"ViewMetadataWorkflow":     func() *privilege.Privilege { return privilege.ViewMetadataWorkflow },
-		"EnterIssueMetadata":       func() *privilege.Privilege { return privilege.EnterIssueMetadata },
-		"ReviewIssueMetadata":      func() *privilege.Privilege { return privilege.ReviewIssueMetadata },
-		"ReviewOwnMetadata":        func() *privilege.Privilege { return privilege.ReviewOwnMetadata },
-		"ReviewUnfixableIssues":    func() *privilege.Privilege { return privilege.ReviewUnfixableIssues },
-		"ListUsers":                func() *privilege.Privilege { return privilege.ListUsers },
-		"ModifyUsers":              func() *privilege.Privilege { return privilege.ModifyUsers },
-		"ViewUploadedIssues":       func() *privilege.Privilege { return privilege.ViewUploadedIssues },
-		"ModifyUploadedIssues":     func() *privilege.Privilege { return privilege.ModifyUploadedIssues },
-		"SearchIssues":             func() *privilege.Privilege { return privilege.SearchIssues },
-		"ModifyValidatedLCCNs":     func() *privilege.Privilege { return privilege.ModifyValidatedLCCNs },
-		"ListAuditLogs":            func() *privilege.Privilege { return privilege.ListAuditLogs },
+		"ListTitles":            func() *privilege.Privilege { return privilege.ListTitles },
+		"ModifyTitles":          func() *privilege.Privilege { return privilege.ModifyTitles },
+		"ManageMOCs":            func() *privilege.Privilege { return privilege.ManageMOCs },
+		"ViewMetadataWorkflow":  func() *privilege.Privilege { return privilege.ViewMetadataWorkflow },
+		"EnterIssueMetadata":    func() *privilege.Privilege { return privilege.EnterIssueMetadata },
+		"ReviewIssueMetadata":   func() *privilege.Privilege { return privilege.ReviewIssueMetadata },
+		"ReviewOwnMetadata":     func() *privilege.Privilege { return privilege.ReviewOwnMetadata },
+		"ReviewUnfixableIssues": func() *privilege.Privilege { return privilege.ReviewUnfixableIssues },
+		"ListUsers":             func() *privilege.Privilege { return privilege.ListUsers },
+		"ModifyUsers":           func() *privilege.Privilege { return privilege.ModifyUsers },
+		"ViewUploadedIssues":    func() *privilege.Privilege { return privilege.ViewUploadedIssues },
+		"ModifyUploadedIssues":  func() *privilege.Privilege { return privilege.ModifyUploadedIssues },
+		"SearchIssues":          func() *privilege.Privilege { return privilege.SearchIssues },
+		"ModifyValidatedLCCNs":  func() *privilege.Privilege { return privilege.ModifyValidatedLCCNs },
+		"ListAuditLogs":         func() *privilege.Privilege { return privilege.ListAuditLogs },
 	}
 
 	// Set up the layout and then our global templates
