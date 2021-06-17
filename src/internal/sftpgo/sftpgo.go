@@ -138,7 +138,7 @@ func (a *API) rpc(method, function string, data string) ([]byte, error) {
 	if function == "token" {
 		endpoint.User = url.UserPassword(a.login, a.pass)
 	} else {
-		var err = a.getToken()
+		var err = a.GetToken()
 		if err != nil {
 			return nil, err
 		}
@@ -175,7 +175,9 @@ func (a *API) _do(c *http.Client, req *http.Request) ([]byte, error) {
 	return data, err
 }
 
-func (a *API) getToken() error {
+// GetToken procures a time-sensitive authorization token from SFTPGo.  This
+// doesn't need to be called directly, but can be used as a "health check".
+func (a *API) GetToken() error {
 	a.m.Lock()
 	defer a.m.Unlock()
 
