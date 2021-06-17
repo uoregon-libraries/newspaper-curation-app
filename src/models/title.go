@@ -19,7 +19,8 @@ type Title struct {
 	Rights        string
 	ValidLCCN     bool
 	SFTPUser      string
-	SFTPConnected bool // True if the title has been stored in our external SFTP system (sftpgo)
+	LegacyPass    string `sql:"sftp_pass"` // This is still here for migrations, but we don't use it anymore
+	SFTPConnected bool   // True if the title has been stored in our external SFTP system (sftpgo)
 	MARCTitle     string
 	MARCLocation  string
 	LangCode3     string
