@@ -218,7 +218,7 @@ func setTitleData(r *responder.Responder, t *Title) (vErrors []string, handled b
 		if t.LCCN == t2.LCCN {
 			vErrors = append(vErrors, fmt.Sprintf("LCCN %q is already in use", t.LCCN))
 		}
-		if t.SFTPUser == t2.SFTPUser {
+		if t.SFTPUser != "" && t.SFTPUser == t2.SFTPUser {
 			vErrors = append(vErrors, fmt.Sprintf("SFTP Username %s is already in use", t.SFTPUser))
 		}
 	}
