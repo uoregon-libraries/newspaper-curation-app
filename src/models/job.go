@@ -230,7 +230,7 @@ func FindRecentJobsByType(t JobType, d time.Duration) ([]*Job, error) {
 
 // FindJobsForIssueID returns all jobs tied to the given issue
 func FindJobsForIssueID(id int) ([]*Job, error) {
-	return findJobs("object_id = ?", id)
+	return findJobs("object_type = ? AND object_id = ?", JobObjectTypeIssue, id)
 }
 
 // Logs lazy-loads all logs for this job from the database
