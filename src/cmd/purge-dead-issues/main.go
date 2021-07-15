@@ -115,7 +115,12 @@ func purgeIssue(i *models.Issue) error {
 
 	// Getting here means no errors, so we can kick off the purge.  All errors
 	// from doPurge are fatal.
-	return fatalError{doPurge(i, purgeJobs)}
+	err = doPurge(i, purgeJobs)
+	if err != nil {
+		err = fatalError{err}
+	}
+
+	return err
 }
 
 // doPurge finalizes the dead/on-hold jobs' statuses and then kicks off a new
