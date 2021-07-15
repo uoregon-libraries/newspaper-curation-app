@@ -16,7 +16,7 @@ import (
 // Command-line options
 type _opts struct {
 	cli.BaseOptions
-	Live bool `long:"live" description:"Run the issue purge operation rather than just showing what would be done" default:"false"`
+	Live bool `long:"live" description:"Run the issue purge operation rather than just showing what would be done"`
 }
 
 // Stupid error wrapper to make it easy to know if an issue's inability to
