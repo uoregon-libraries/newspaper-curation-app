@@ -32,6 +32,7 @@ Brief description, if necessary
 ### Fixed
 
 - `make format` works again
+- Fixed rare edge case with batch jobs being loaded as if they were issue jobs
 
 ### Added
 
