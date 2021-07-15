@@ -53,6 +53,7 @@ func main() {
 	}
 
 	for _, i := range issues {
+		logger.Debugf("Examining issue id %d (%s)", i.ID, i.HumanName)
 		err = purgeIssue(i)
 		if err == nil {
 			logger.Infof("Issue id %d (%s): purged", i.ID, i.HumanName)
