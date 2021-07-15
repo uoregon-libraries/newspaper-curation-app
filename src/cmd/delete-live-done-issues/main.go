@@ -47,10 +47,6 @@ func main() {
 		logger.Fatalf("Unable to query for batches needing to be closed out: %s", err)
 	}
 
-	var op = dbi.DB.Operation()
-	op.Dbg = dbi.Debug
-	op.BeginTransaction()
-
 	for _, b := range batches {
 		logger.Infof("Closing batch %q", b.FullName())
 		b.Close()
