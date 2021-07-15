@@ -80,10 +80,16 @@ func purgeIssue(i *models.Issue) error {
 	}
 
 	var purgeJobs []*models.Job
+	var hasFailedJob bool
 	for _, j := range joblist {
 		switch models.JobStatus(j.Status) {
-		// Jobs on hold / dead need to be closed out
-		case models.JobStatusOnHold, models.JobStatusFailed:
+		// Jobs on hold / dead need to be closed out; failed jobs specifically get
+		// called out so we know the issue is actually a valid purge candidate
+		// (must have at least one dead job)
+		case models.JobStatusFailed:
+			hasFailedJob = true
+			purgeJobs = append(purgeJobs, j)
+		case models.JobStatusOnHold:
 			purgeJobs = append(purgeJobs, j)
 
 		// These types have no effect on processing and don't need to be dealt with
@@ -100,6 +106,10 @@ func purgeIssue(i *models.Issue) error {
 		default:
 			return fatalError{fmt.Errorf("invalid job status for job %d: %q", j.ID, j.Status)}
 		}
+	}
+
+	if !hasFailedJob {
+		return fmt.Errorf("cannot purge issue with no dead jobs")
 	}
 
 	// Getting here means no errors, so we can kick off the purge.  All errors
