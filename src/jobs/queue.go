@@ -4,6 +4,7 @@ import (
 	"path/filepath"
 	"time"
 
+	"github.com/Nerdmaster/magicsql"
 	"github.com/uoregon-libraries/newspaper-curation-app/src/config"
 	"github.com/uoregon-libraries/newspaper-curation-app/src/dbi"
 	"github.com/uoregon-libraries/newspaper-curation-app/src/models"
@@ -62,7 +63,13 @@ func QueueSerial(jobs ...*models.Job) error {
 	var op = dbi.DB.Operation()
 	op.BeginTransaction()
 	defer op.EndTransaction()
+	return QueueSerialOp(op, jobs...)
+}
 
+// QueueSerialOp attempts to save the jobs using an existing operation (for
+// when a transaction needs to wrap more than just the job queueing), but is
+// otherwise the same as QueueSerial.
+func QueueSerialOp(op *magicsql.Operation, jobs ...*models.Job) error {
 	// Iterate over jobs in reverse so we can set the prior job's next-run id
 	// without saving things twice
 	var lastJobID int
@@ -234,6 +241,13 @@ func QueueMakeBatch(batch *models.Batch, batchOutputPath string) error {
 // - The original uploads, if relevant, are moved into the error directory
 // - The derivatives are put under a sibling sub-dir from the primary files
 func QueueRemoveErroredIssue(issue *models.Issue, erroredIssueRoot string) error {
+	var jobs = GetJobsForRemoveErroredIssue(issue, erroredIssueRoot)
+	return QueueSerial(jobs...)
+}
+
+// GetJobsForRemoveErroredIssue returns the list of jobs for removing the given
+// errored issue, suitable for use in a QueueSerial or QueueSerialOp call
+func GetJobsForRemoveErroredIssue(issue *models.Issue, erroredIssueRoot string) []*models.Job {
 	var dt = time.Now()
 	var dateSubdir = dt.Format("2006-01")
 	var rootDir = filepath.Join(erroredIssueRoot, dateSubdir)
@@ -274,5 +288,5 @@ func QueueRemoveErroredIssue(issue *models.Issue, erroredIssueRoot string) error
 		PrepareIssueActionJob(issue, "Errored issue removed from NCA"),
 	)
 
-	return QueueSerial(jobs...)
+	return jobs
 }
