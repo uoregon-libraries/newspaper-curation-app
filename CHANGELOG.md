@@ -25,7 +25,7 @@ Brief description, if necessary
 ### Migration
 -->
 
-## vX.Y.Z
+## v3.8.0
 
 Brief description, if necessary
 
@@ -36,6 +36,8 @@ Brief description, if necessary
 
 ### Added
 
+- New tool for getting "stuck" issues out of the workflow (e.g., issues that
+  failed to have pages split or derivatives generated due to broken PDFs)
 - More internal issua actions logged: when adding an issue to a batch or
   removing one from a batch
 
