@@ -233,7 +233,7 @@ func doPurge(dbop *magicsql.Operation, issue *models.Issue, purgeJobs []*models.
 		}
 	}
 
-	issue.Save(models.ActionTypeInternalProcess, models.SystemUser.ID, purgeReason)
+	issue.SaveOp(dbop, models.ActionTypeInternalProcess, models.SystemUser.ID, purgeReason)
 	var joblist = jobs.GetJobsForRemoveErroredIssue(issue, erroredIssuesPath)
 	var err = jobs.QueueSerialOp(dbop, joblist...)
 	if err != nil {
