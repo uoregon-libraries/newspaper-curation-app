@@ -101,7 +101,7 @@ func CreateBatch(webroot, moc string, issues []*Issue) (*Batch, error) {
 
 	for _, i := range issues {
 		i.BatchID = b.ID
-		i.SaveOp(op)
+		i.SaveOp(op, ActionTypeInternalProcess, SystemUser.ID, fmt.Sprintf("added to batch %q", b.Name))
 	}
 
 	var chksum = crc32.ChecksumIEEE([]byte(webroot))
@@ -177,7 +177,7 @@ func (b *Batch) Delete() error {
 
 	for _, i := range issues {
 		i.BatchID = 0
-		i.SaveOp(op)
+		i.SaveOp(op, ActionTypeInternalProcess, SystemUser.ID, fmt.Sprintf("removed from batch %q - batch deleted", b.Name))
 	}
 	return op.Err()
 }

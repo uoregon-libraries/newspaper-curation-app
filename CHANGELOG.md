@@ -36,6 +36,9 @@ Brief description, if necessary
 
 ### Added
 
+- More internal issua actions logged: when adding an issue to a batch or
+  removing one from a batch
+
 ### Changed
 
 - Documentation is now housed in `docs/`, and server up via github pages
