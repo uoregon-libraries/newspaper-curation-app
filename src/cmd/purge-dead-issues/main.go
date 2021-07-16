@@ -2,8 +2,10 @@ package main
 
 import (
 	"database/sql"
+	"encoding/json"
 	"errors"
 	"fmt"
+	"os"
 
 	"github.com/Nerdmaster/magicsql"
 	"github.com/uoregon-libraries/newspaper-curation-app/src/cli"
@@ -12,6 +14,12 @@ import (
 	"github.com/uoregon-libraries/newspaper-curation-app/src/jobs"
 	"github.com/uoregon-libraries/newspaper-curation-app/src/models"
 )
+
+const csi = "\033["
+const ansiReset = csi + "0m"
+const ansiBold = csi + "1m"
+const ansiIntenseGreen = csi + "32;1m"
+const ansiIntenseRed = csi + "31;1m"
 
 // Command-line options
 type _opts struct {
@@ -42,6 +50,19 @@ func getConfig() {
 	erroredIssuesPath = conf.ErroredIssuesPath
 }
 
+// issue is used for JSON output in the purged issues "report"
+type issue struct {
+	ID             int
+	MARCOrgCode    string
+	LCCN           string
+	Date           string
+	TitleName      string
+	Location       string
+	BackupLocation string
+	IsFromScanner  bool
+	Actions        []*models.Action
+}
+
 func main() {
 	getConfig()
 
@@ -59,7 +80,12 @@ func main() {
 	op.BeginTransaction()
 	defer op.EndTransaction()
 
-	err = purge(op, issues)
+	var purged []*models.Issue
+	purged, err = purge(op, issues)
+
+	if err == nil {
+		writeReport(purged)
+	}
 
 	if err != nil {
 		logger.Warnf("One or more errors were encountered: aborting transaction")
@@ -78,24 +104,64 @@ func main() {
 	logger.Debugf("Process complete")
 }
 
-func purge(dbop *magicsql.Operation, list []*models.Issue) error {
+func writeReport(purged []*models.Issue) {
+	// Print a "report"
+	fmt.Printf("%s------------------------------------------------%s\n", ansiBold, ansiReset)
+	if opts.Live {
+		fmt.Printf("%s Purged Issue Report%s\n", ansiIntenseGreen, ansiReset)
+	} else {
+		fmt.Printf("%s DRY RUN%s: Purged Issue Report%s\n", ansiIntenseRed, ansiIntenseGreen, ansiReset)
+	}
+	fmt.Printf("%s (a JSON report is also written to purge.json)%s\n", ansiBold, ansiReset)
+	fmt.Printf("%s------------------------------------------------%s\n", ansiBold, ansiReset)
+	fmt.Println()
+	var jsonIssues []*issue
+	for _, i := range purged {
+		jsonIssues = append(jsonIssues, &issue{
+			ID:             i.ID,
+			MARCOrgCode:    i.MARCOrgCode,
+			LCCN:           i.LCCN,
+			Date:           i.Date,
+			TitleName:      i.Title.Name,
+			Location:       i.Location,
+			BackupLocation: i.BackupLocation,
+			IsFromScanner:  i.IsFromScanner,
+			Actions:        i.WorkflowActions(),
+		})
+
+		fmt.Printf("Issue %d (key: %q) from title %q\n", i.ID, i.Key(), i.Title.Name)
+	}
+	// Errors in marshaling shouldn't be possible with the current Issue structure
+	var data, err = json.MarshalIndent(jsonIssues, "", "\t")
+	if err != nil {
+		panic(err)
+	}
+
+	err = os.WriteFile("purge.json", data, 0644)
+	if err != nil {
+		logger.Errorf("Unable to write to purge.json: %s", err)
+	}
+}
+
+func purge(dbop *magicsql.Operation, list []*models.Issue) (purged []*models.Issue, err error) {
 	for _, i := range list {
 		logger.Debugf("Examining issue id %d (%s)", i.ID, i.HumanName)
 		var err = purgeIssue(dbop, i)
 		if err == nil {
 			logger.Infof("Issue id %d (%s): purged", i.ID, i.HumanName)
+			purged = append(purged, i)
 			continue
 		}
 
 		if errors.As(err, &fatalError{}) {
 			logger.Warnf("Issue id %d (%s): fatal error checking purgability: %s", i.ID, i.HumanName, err)
-			return err
+			return nil, err
 		}
 
 		logger.Infof("Issue id %d (%s): skipping: %s", i.ID, i.HumanName, err)
 	}
 
-	return nil
+	return purged, nil
 }
 
 func purgeIssue(dbop *magicsql.Operation, i *models.Issue) error {
