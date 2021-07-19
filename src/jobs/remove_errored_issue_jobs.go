@@ -24,7 +24,7 @@ func (j *WriteActionLog) Process(*config.Config) bool {
 	var errPath = filepath.Join(j.DBIssue.Location, "actions.txt")
 	var f = fileutil.NewSafeFile(errPath)
 
-	var list = j.DBIssue.WorkflowActions()
+	var list = j.DBIssue.AllWorkflowActions()
 	for _, a := range list {
 		var out = fmt.Sprintf("<%s> %s on %s", a.Author().Login, a.Type().Describe(), a.CreatedAt.Format("on Jan 2, 2006 at 3:04pm"))
 
