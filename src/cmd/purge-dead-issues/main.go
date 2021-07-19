@@ -126,7 +126,7 @@ func writeReport(purged []*models.Issue) {
 			Location:       i.Location,
 			BackupLocation: i.BackupLocation,
 			IsFromScanner:  i.IsFromScanner,
-			Actions:        i.WorkflowActions(),
+			Actions:        i.AllWorkflowActions(),
 		})
 
 		fmt.Printf("Issue %d (key: %q) from title %q\n", i.ID, i.Key(), i.Title.Name)
