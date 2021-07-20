@@ -25,6 +25,24 @@ Brief description, if necessary
 ### Migration
 -->
 
+## vX.Y.Z
+
+Brief description, if necessary
+
+### Fixed
+
+- CircleCI builds succeed again (updated Go version in CircleCI config)
+
+### Added
+
+### Changed
+
+- Updated to latest Go crypto package
+
+### Removed
+
+### Migration
+
 ## v3.8.0
 
 New tool for purging dead issues, various fixes
