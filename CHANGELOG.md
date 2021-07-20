@@ -27,29 +27,28 @@ Brief description, if necessary
 
 ## v3.8.0
 
-Brief description, if necessary
+New tool for purging dead issues, various fixes
 
 ### Fixed
 
 - `make format` works again
 - Fixed rare edge case with batch jobs being loaded as if they were issue jobs
+- Issues which are removed from NCA (via the in-app "report an error"
+  functionality or the new `purge-dead-issues` tool) now report *all* actions
+  in `actions.txt`, not just those of interest to curators.
 
 ### Added
 
 - New tool for getting "stuck" issues out of the workflow (e.g., issues that
   failed to have pages split or derivatives generated due to broken PDFs)
-- More internal issua actions logged: when adding an issue to a batch or
+- More internal issue actions logged: when adding an issue to a batch or
   removing one from a batch
 
 ### Changed
 
-- Documentation is now housed in `docs/`, and server up via github pages
+- Documentation is now housed in `docs/`, and served up via github pages
   (https://uoregon-libraries.github.io/newspaper-curation-app/) instead of
   using the github wiki.
-
-### Removed
-
-### Migration
 
 ## v3.7.2
 
