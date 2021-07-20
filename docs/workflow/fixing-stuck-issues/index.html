@@ -3,11 +3,11 @@
 <head><meta charset="utf-8">
 <meta http-equiv="X-UA-Compatible" content="IE=edge">
 <meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1, user-scalable=no">
-<title>Setup and Installation - Newspaper Curation App</title>
-<meta name="description" content="Preparing for and installing NCA">
+<title>Fixing &#34;Stuck&#34; Issues - Newspaper Curation App</title>
+<meta name="description" content="Removing issues from NCA which can&#39;t get derivatives generated or have other issues leaving them stuck but invisible to the UI">
 <meta name="generator" content="Hugo 0.83.1" />
 <link href="https://uoregon-libraries.github.io/newspaper-curation-app//index.xml" rel="alternate" type="application/rss+xml">
-<link rel="canonical" href="https://uoregon-libraries.github.io/newspaper-curation-app/setup/">
+<link rel="canonical" href="https://uoregon-libraries.github.io/newspaper-curation-app/workflow/fixing-stuck-issues/">
 <link rel="stylesheet" href="https://uoregon-libraries.github.io/newspaper-curation-app/css/theme.min.css">
 <script src="https://use.fontawesome.com/releases/v5.0.6/js/all.js"></script>
 <link rel="stylesheet" href="https://uoregon-libraries.github.io/newspaper-curation-app/css/chroma.min.css">
@@ -17,31 +17,77 @@
 <script src="https://uoregon-libraries.github.io/newspaper-curation-app/js/bundle.js"></script><style>
 :root {}
 </style>
-<meta property="og:title" content="Setup and Installation" />
-<meta property="og:description" content="Preparing for and installing NCA" />
-<meta property="og:type" content="website" />
-<meta property="og:url" content="https://uoregon-libraries.github.io/newspaper-curation-app/setup/" />
+<meta property="og:title" content="Fixing &#34;Stuck&#34; Issues" />
+<meta property="og:description" content="Removing issues from NCA which can&#39;t get derivatives generated or have other issues leaving them stuck but invisible to the UI" />
+<meta property="og:type" content="article" />
+<meta property="og:url" content="https://uoregon-libraries.github.io/newspaper-curation-app/workflow/fixing-stuck-issues/" /><meta property="article:section" content="workflow" />
+
+
 
 <meta name="twitter:card" content="summary"/>
-<meta name="twitter:title" content="Setup and Installation"/>
-<meta name="twitter:description" content="Preparing for and installing NCA"/>
-<meta itemprop="name" content="Setup and Installation">
-<meta itemprop="description" content="Preparing for and installing NCA"></head>
+<meta name="twitter:title" content="Fixing &#34;Stuck&#34; Issues"/>
+<meta name="twitter:description" content="Removing issues from NCA which can&#39;t get derivatives generated or have other issues leaving them stuck but invisible to the UI"/>
+<meta itemprop="name" content="Fixing &#34;Stuck&#34; Issues">
+<meta itemprop="description" content="Removing issues from NCA which can&#39;t get derivatives generated or have other issues leaving them stuck but invisible to the UI">
+
+<meta itemprop="wordCount" content="439">
+<meta itemprop="keywords" content="" /></head>
 <body><div class="container"><header>
 <h1>Newspaper Curation App</h1><a href="https://github.com/uoregon-libraries/newspaper-curation-app/" class="github"><i class="fab fa-github"></i></a>
 </header>
 
 <div class="content-container">
-<main><h1>Setup and Installation</h1><p>This section will take you through the steps necessary to install the NCA tools
-on your system.</p>
-<p>Note that developer setup is likely to differ greatly from a production
-install, as you&rsquo;ll need tools (such as Go and/or Docker) that production setups
-can do without.  See <a href="../contributing">Contributing</a> for a rundown of how to get
-started doing development (and other contribution-related tasks).</p>
+<main><h1>Fixing &#34;Stuck&#34; Issues</h1>
+<p>Sometimes a publisher will upload a broken PDF that NCA cannot process.  There
+is a safeguard against these kinds of issues: only queue uploaded issues after
+careful review.  But it&rsquo;s often infeasible to do this, especially if you have
+enough publishers that you get hundreds of pages uploaded each week.</p>
+<p>When an issue gets stuck, NCA currently has no way to indicate this.  This is
+one area where a developer used to have to clean up the filesystem and database
+manually.  As of NCA v3.8.0, there is a tool which can handle this in a
+significantly less painful way.</p>
+<h2 id="purging-dead-issues">Purging Dead Issues</h2>
+<p>A normal invocation of <code>make</code> creates <code>bin/purge-dead-issues</code>.  This is a
+destructive operation, and you will need to be prepared prior to running it so
+that you can decide how best to handle the broken issues.  Please read this
+document fully!</p>
+<p>When run, <code>purge-dead-issues</code> will do a lot of logging to STDERR, print out a
+&ldquo;report&rdquo; of which issues were purged, and write a <code>purge.json</code> file describing
+each purged issue in some detail.</p>
+<p>By default, <code>purge-dead-issues</code> will not actually make any changes.  It scans
+the database and reports the issues which would be purged, but it doesn&rsquo;t
+actually purge them.  Because the process is exactly the same as a live run,
+this allows you to carefully review what will happen without anything
+destructive occurring.</p>
+<p>When you&rsquo;re ready, run the command with the <code>--live</code> flag.</p>
+<h2 id="technical-details">Technical Details</h2>
+<p>Under the hood, this command does the following:</p>
+<ul>
+<li>Finds all issues that are valid candidates for purging.  To be valid, an issue:
+<ul>
+<li>Is in the &ldquo;awaiting processing&rdquo; state</li>
+<li>Has at least one failed job - as in &ldquo;failed&rdquo;, which means failed forever,
+not <code>failed_done</code>, which indicates a temporary failure which was retried.</li>
+<li>Is not tied to a batch</li>
+<li>Has no jobs that are pending or in process</li>
+</ul>
+</li>
+<li>Ends all jobs that were stuck - this means failed jobs as well as any &ldquo;on
+hold&rdquo; jobs that had been waiting for a failed jobs to finish</li>
+<li>Creates a new job to purge the issue.  This uses the same logic as issues
+that are flagged as having errors and removed from NCA.</li>
+</ul>
+<p>All operations are just database changes, and as such a transaction is able to
+wrap the entire command.  A single critical failure of any kind prevents any
+changes from being made, ensuring a pretty safe run.</p>
+<p>In fact, when <code>--live</code> is not specified, the transaction is rolled back right
+before the code would normally commit it.  This is why the command is able to
+give a complete report as if everything had been run without altering the
+application&rsquo;s state in any way.</p>
 <div class="edit-meta">
 
-<br></div><nav class="pagination"><a class="nav nav-prev" href="https://uoregon-libraries.github.io/newspaper-curation-app/" title="Home"><i class="fas fa-arrow-left" aria-hidden="true"></i>&nbsp;Prev - Home</a>
-<a class="nav nav-next" href="https://uoregon-libraries.github.io/newspaper-curation-app/setup/services/" title="Services and Apps">Next - Services and Apps <i class="fas fa-arrow-right" aria-hidden="true"></i></a>
+<br></div><nav class="pagination"><a class="nav nav-prev" href="https://uoregon-libraries.github.io/newspaper-curation-app/workflow/handling-page-review-problems/" title="Handling Page Review Problems"><i class="fas fa-arrow-left" aria-hidden="true"></i>&nbsp;Prev - Handling Page Review Problems</a>
+<a class="nav nav-next" href="https://uoregon-libraries.github.io/newspaper-curation-app/workflow/fixing-flagged-workflow-issues/" title="Fixing Flagged Workflow Issues">Next - Fixing Flagged Workflow Issues <i class="fas fa-arrow-right" aria-hidden="true"></i></a>
 </nav><footer><p class="powered">Powered by <a href="https://gohugo.io">Hugo</a>. Theme by <a href="https://themes.gohugo.io/hugo-theme-techdoc/">TechDoc</a>. Designed by <a href="https://github.com/thingsym/hugo-theme-techdoc">Thingsym</a>.</p>
 </footer>
 </main>
@@ -51,7 +97,7 @@ started doing development (and other contribution-related tasks).</p>
 <ul>
 <li class=""><a href="https://uoregon-libraries.github.io/newspaper-curation-app/">Home</a></li>
 
-<li class="parent active"><a href="https://uoregon-libraries.github.io/newspaper-curation-app/setup/">Setup and Installation</a>
+<li class=""><a href="https://uoregon-libraries.github.io/newspaper-curation-app/setup/">Setup and Installation</a>
   
 <ul class="sub-menu">
 <li class=""><a href="https://uoregon-libraries.github.io/newspaper-curation-app/setup/services/">Services and Apps</a></li>
@@ -72,13 +118,13 @@ started doing development (and other contribution-related tasks).</p>
   
 </li>
 
-<li class=""><a href="https://uoregon-libraries.github.io/newspaper-curation-app/workflow/">Workflow</a>
+<li class="parent"><a href="https://uoregon-libraries.github.io/newspaper-curation-app/workflow/">Workflow</a>
   
 <ul class="sub-menu">
 <li class=""><a href="https://uoregon-libraries.github.io/newspaper-curation-app/workflow/technical/">Technical Details</a></li>
 <li class=""><a href="https://uoregon-libraries.github.io/newspaper-curation-app/workflow/adding-titles/">Adding Titles</a></li>
 <li class=""><a href="https://uoregon-libraries.github.io/newspaper-curation-app/workflow/handling-page-review-problems/">Handling Page Review Problems</a></li>
-<li class=""><a href="https://uoregon-libraries.github.io/newspaper-curation-app/workflow/fixing-stuck-issues/">Fixing &#34;Stuck&#34; Issues</a></li>
+<li class="active"><a href="https://uoregon-libraries.github.io/newspaper-curation-app/workflow/fixing-stuck-issues/">Fixing &#34;Stuck&#34; Issues</a></li>
 <li class=""><a href="https://uoregon-libraries.github.io/newspaper-curation-app/workflow/fixing-flagged-workflow-issues/">Fixing Flagged Workflow Issues</a></li>
 <li class=""><a href="https://uoregon-libraries.github.io/newspaper-curation-app/workflow/bulk-load-sftpgo/">Bulk-load SFTPGo Users</a></li>
 <li class=""><a href="https://uoregon-libraries.github.io/newspaper-curation-app/workflow/fixing-batches/">Fixing Batches</a></li>

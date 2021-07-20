@@ -37,6 +37,16 @@ Manual Deletion If issues got to the page-review step when they shouldn&amp;rsqu
     </item>
     
     <item>
+      <title>Fixing &#34;Stuck&#34; Issues</title>
+      <link>https://uoregon-libraries.github.io/newspaper-curation-app/workflow/fixing-stuck-issues/</link>
+      <pubDate>Mon, 01 Jan 0001 00:00:00 +0000</pubDate>
+      
+      <guid>https://uoregon-libraries.github.io/newspaper-curation-app/workflow/fixing-stuck-issues/</guid>
+      <description>Sometimes a publisher will upload a broken PDF that NCA cannot process. There is a safeguard against these kinds of issues: only queue uploaded issues after careful review. But it&amp;rsquo;s often infeasible to do this, especially if you have enough publishers that you get hundreds of pages uploaded each week.
+When an issue gets stuck, NCA currently has no way to indicate this. This is one area where a developer used to have to clean up the filesystem and database manually.</description>
+    </item>
+    
+    <item>
       <title>Fixing Flagged Workflow Issues</title>
       <link>https://uoregon-libraries.github.io/newspaper-curation-app/workflow/fixing-flagged-workflow-issues/</link>
       <pubDate>Mon, 01 Jan 0001 00:00:00 +0000</pubDate>
@@ -45,6 +55,15 @@ Manual Deletion If issues got to the page-review step when they shouldn&amp;rsqu
       <description>This refers to issues which were already queued from their uploaded location, had derivatives generated, and were ready for metadata entry.
 The metadata entry person flags errors to say essentially, &amp;ldquo;NCA&amp;rsquo;s UI cannot fix the problems on this issue&amp;rdquo;. We have seen a variety of problems like this:
  The PDF or JP2 image derivatives are corrupt in some way, even though the tools which generated them seemed to run without errors The pages are out of order - somebody reordered pages incorrectly, and the issue now has to be manually pulled, fixed, and re-inserted into the workflow The issue is incorrect in some other way, and wasn&amp;rsquo;t caught when queueing from the uploads area (e.</description>
+    </item>
+    
+    <item>
+      <title>Bulk-load SFTPGo Users</title>
+      <link>https://uoregon-libraries.github.io/newspaper-curation-app/workflow/bulk-load-sftpgo/</link>
+      <pubDate>Mon, 01 Jan 0001 00:00:00 +0000</pubDate>
+      
+      <guid>https://uoregon-libraries.github.io/newspaper-curation-app/workflow/bulk-load-sftpgo/</guid>
+      <description></description>
     </item>
     
     <item>
