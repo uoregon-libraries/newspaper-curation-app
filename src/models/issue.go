@@ -366,15 +366,7 @@ func (i *Issue) Save(action ActionType, userID int, message string) error {
 	op.Dbg = dbi.Debug
 	op.BeginTransaction()
 	defer op.EndTransaction()
-
-	var a = newIssueAction(i.ID, action)
-	a.UserID = userID
-	a.Message = message
-	i.actions = append(i.actions, a)
-
-	a.SaveOp(op)
-	i.SaveOp(op)
-	return op.Err()
+	return i.SaveOp(op, action, userID, message)
 }
 
 // SaveWithoutAction creates or updates the Issue in the issues table without
@@ -384,11 +376,22 @@ func (i *Issue) Save(action ActionType, userID int, message string) error {
 func (i *Issue) SaveWithoutAction() error {
 	var op = dbi.DB.Operation()
 	op.Dbg = dbi.Debug
-	return i.SaveOp(op)
+	return i.saveOp(op)
 }
 
 // SaveOp creates or updates the Issue in the issues table with a custom operation
-func (i *Issue) SaveOp(op *magicsql.Operation) error {
+func (i *Issue) SaveOp(op *magicsql.Operation, action ActionType, userID int, message string) error {
+	var a = newIssueAction(i.ID, action)
+	a.UserID = userID
+	a.Message = message
+	i.actions = append(i.actions, a)
+
+	a.SaveOp(op)
+	i.saveOp(op)
+	return op.Err()
+}
+
+func (i *Issue) saveOp(op *magicsql.Operation) error {
 	var valid bool
 	for _, validWS := range allowedWorkflowSteps {
 		if string(i.WorkflowStep) == string(validWS) {
