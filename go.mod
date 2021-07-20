@@ -10,6 +10,5 @@ require (
 	github.com/jessevdk/go-flags v1.4.0
 	github.com/mattn/go-sqlite3 v1.10.0 // indirect
 	github.com/uoregon-libraries/gopkg v0.15.0
-	golang.org/x/crypto v0.0.0-20190320223903-b7391e95e576
-	golang.org/x/sys v0.0.0-20190321052220-f7bb7a8bee54 // indirect
+	golang.org/x/crypto v0.0.0-20210711020723-a769d52b0f97
 )
