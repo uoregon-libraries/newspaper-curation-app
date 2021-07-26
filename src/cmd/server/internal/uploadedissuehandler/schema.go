@@ -38,7 +38,7 @@ func errorHTML(err apperr.Error) template.HTML {
 	return template.HTML(msg)
 }
 
-// errorHTML returns the errors joined together, using errorHTML to let each
+// errorListHTML returns the errors joined together, using errorHTML to let each
 // error be displayed appropriately
 func errorListHTML(list apperr.List) template.HTML {
 	var sList = make([]string, len(list))
