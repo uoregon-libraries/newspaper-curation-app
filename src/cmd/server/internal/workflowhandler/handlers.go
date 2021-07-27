@@ -142,7 +142,7 @@ func approveIssueMetadataHandler(resp *responder.Responder, i *Issue) {
 	// Validate the metadata again to be certain there were no last-minute
 	// changes (e.g., database manipulation, out-of-band batch load, etc.)
 	i.ValidateMetadata()
-	if len(i.Errors()) > 0 {
+	if i.Errors().Major().Len() > 0 {
 		http.SetCookie(resp.Writer, &http.Cookie{Name: "Alert", Value: encodedErrors("approve", i.Errors()), Path: "/"})
 		http.Redirect(resp.Writer, resp.Request, i.Path("review/metadata"), http.StatusFound)
 		return

@@ -38,11 +38,12 @@ func errorHTML(err apperr.Error) template.HTML {
 	return template.HTML(msg)
 }
 
-// errorListHTML returns the errors joined together, using errorHTML to let each
-// error be displayed appropriately
-func errorListHTML(list apperr.List) template.HTML {
-	var sList = make([]string, len(list))
-	for i, err := range list {
+// errorListHTML returns HTML for errs, filtered to just major errors, then
+// joined together using errorHTML to let each error be displayed appropriately
+func errorListHTML(errs apperr.List) template.HTML {
+	var list = errs.Major()
+	var sList = make([]string, list.Len())
+	for i, err := range list.All() {
 		sList[i] = string(errorHTML(err))
 	}
 	return template.HTML(strings.Join(sList, "; "))
@@ -114,7 +115,7 @@ func (t *Title) Show() bool {
 // AddError works in the schema, this will report true if the title has an
 // error *or* if one or more issues have errors
 func (t *Title) HasErrors() bool {
-	return len(t.Errors) > 0
+	return t.Errors.Major().Len() > 0
 }
 
 // Link returns a link for this title
@@ -232,7 +233,7 @@ func (i *Issue) WorkflowPath(action string) string {
 // AddError works in the schema, this will report true if the issue has an
 // error *or* if one or more files have errors
 func (i *Issue) HasErrors() bool {
-	return len(i.Errors) > 0
+	return i.Errors.Major().Len() > 0
 }
 
 // ChildErrors reports the number of files with errors
@@ -261,5 +262,5 @@ func (f *File) Link() template.HTML {
 
 // HasErrors reports true if this file has any errors
 func (f *File) HasErrors() bool {
-	return len(f.Errors) > 0
+	return f.Errors.Major().Len() > 0
 }

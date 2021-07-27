@@ -6,7 +6,7 @@
     This issue has errors, and cannot be queued:
   </div>
   <ul>
-  {{range .Data.Issue.Errors}}
+  {{range .Data.Issue.Errors.Major}}
     <li>{{ErrorHTML .}}</li>
   {{end}}
   </ul>

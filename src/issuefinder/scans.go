@@ -30,7 +30,7 @@ func (s *Searcher) FindScannedIssues() error {
 	for _, mocPath := range mocPaths {
 		var mocName = filepath.Base(mocPath)
 		if !models.ValidMOC(mocName) {
-			s.Errors = append(s.Errors, apperr.Errorf("unable to find MARC Org Code %#v in database", mocName))
+			s.Errors.Append(apperr.Errorf("unable to find MARC Org Code %#v in database", mocName))
 			continue
 		}
 

@@ -87,7 +87,7 @@ func (s *Searcher) init() {
 	s.Batches = make([]*schema.Batch, 0)
 	s.Titles = make(schema.TitleList, 0)
 	s.titleByLoc = make(map[string]*schema.Title)
-	s.Errors = nil
+	s.Errors.Clear()
 
 	// Make sure titles are loaded from the DB, and puke on any errors
 	var err error
@@ -153,8 +153,8 @@ func (f *Finder) aggregate(s *Searcher) {
 		f.Issues = append(f.Issues, i)
 		f.IssueNamespace[i] = s.Namespace
 	}
-	for _, e := range s.Errors {
-		f.Errors = append(f.Errors, e)
+	for _, e := range s.Errors.All() {
+		f.Errors.Append(e)
 	}
 }
 
@@ -166,7 +166,7 @@ func (f *Finder) Aggregate() {
 	f.Titles = nil
 	f.Issues = nil
 	f.IssueNamespace = make(map[*schema.Issue]Namespace)
-	f.Errors = nil
+	f.Errors.Clear()
 
 	for _, s := range f.Searchers {
 		f.aggregate(s)

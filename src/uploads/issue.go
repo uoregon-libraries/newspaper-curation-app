@@ -44,7 +44,7 @@ func (i *Issue) ValidateFast() {
 	// for getting real-time checks.  This is good!  But validating twice when we
 	// already have errors can end up giving us duplicate errors.  This... is not
 	// quite so good.
-	if i.validatedFast && len(i.Errors) > 0 {
+	if i.validatedFast && i.Errors.Major().Len() > 0 {
 		return
 	}
 	i.validatedFast = true
@@ -53,7 +53,7 @@ func (i *Issue) ValidateFast() {
 	if time.Since(i.LastModified()) < time.Hour*time.Duration(hrs) {
 		i.ErrTooNew(hrs)
 	}
-	if len(i.Title.Errors) > 0 {
+	if i.Title.Errors.Major().Len() > 0 {
 		i.ErrBadTitle()
 	}
 	i.CheckDupes(i.scanner.Lookup)
@@ -71,7 +71,7 @@ func (i *Issue) ValidateAll() {
 	// for getting real-time checks.  This is good!  But validating twice when we
 	// already have errors can end up giving us duplicate errors.  This... is not
 	// quite so good.
-	if i.validatedAll && len(i.Errors) > 0 {
+	if i.validatedAll && i.Errors.Major().Len() > 0 {
 		return
 	}
 	i.validatedAll = true

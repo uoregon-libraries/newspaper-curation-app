@@ -11,6 +11,7 @@ type IssueError struct {
 	Err  string
 	Msg  string
 	Prop bool
+	Warn bool
 }
 
 func (e *IssueError) Error() string {
@@ -26,6 +27,12 @@ func (e *IssueError) Message() string {
 // having an error
 func (e *IssueError) Propagate() bool {
 	return e.Prop
+}
+
+// Warning returns whether this error is classified low enough to allow other
+// actions to happen
+func (e *IssueError) Warning() bool {
+	return !e.Warn
 }
 
 // ErrNoFiles adds an error stating the issue folder is empty

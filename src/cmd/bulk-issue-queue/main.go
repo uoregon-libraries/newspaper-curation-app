@@ -108,9 +108,9 @@ func main() {
 		var i = uploads.New(issue, globalScanner, conf)
 		logger.Infof("Looking at issue %q", i.Key())
 		i.ValidateAll()
-		if len(i.Errors) != 0 {
+		if i.Errors.Len() != 0 {
 			var errorList []string
-			for _, e := range i.Errors {
+			for _, e := range i.Errors.All() {
 				errorList = append(errorList, e.Message())
 			}
 			logger.Warnf("Skipping %q: %s", i.Key(), strings.Join(errorList, "; "))

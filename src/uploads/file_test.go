@@ -54,9 +54,9 @@ func TestValidateDPIGood(t *testing.T) {
 
 	var f = fakeFile()
 	f.ValidateDPI(100)
-	if len(f.Errors) != 0 {
+	if f.Errors.Len() != 0 {
 		var elist []string
-		for _, err := range f.Errors {
+		for _, err := range f.Errors.All() {
 			elist = append(elist, err.Message())
 		}
 		t.Errorf("Expected no errors.  Got: %q", strings.Join(elist, ","))
@@ -72,9 +72,9 @@ func TestValidateDPIGoodSmallImages(t *testing.T) {
 
 	var f = fakeFile()
 	f.ValidateDPI(100)
-	if len(f.Errors) != 0 {
+	if f.Errors.Len() != 0 {
 		var elist []string
-		for _, err := range f.Errors {
+		for _, err := range f.Errors.All() {
 			elist = append(elist, err.Message())
 		}
 		t.Errorf("Expected no errors.  Got: %q", strings.Join(elist, ","))
@@ -90,9 +90,9 @@ func TestValidateDPIBadSmallImages(t *testing.T) {
 
 	var f = fakeFile()
 	f.ValidateDPI(100)
-	if len(f.Errors) != 1 {
+	if f.Errors.Len() != 1 {
 		var elist []string
-		for _, err := range f.Errors {
+		for _, err := range f.Errors.All() {
 			elist = append(elist, err.Message())
 		}
 		t.Errorf("Expected 1 error.  Got: %q", strings.Join(elist, ","))
@@ -118,9 +118,9 @@ func TestValidateDPIBadLargeImage(t *testing.T) {
 
 	var f = fakeFile()
 	f.ValidateDPI(100)
-	if len(f.Errors) != 1 {
+	if f.Errors.Len() != 1 {
 		var elist []string
-		for _, err := range f.Errors {
+		for _, err := range f.Errors.All() {
 			elist = append(elist, err.Message())
 		}
 		t.Errorf("Expected 1 error.  Got: %q", strings.Join(elist, ","))
@@ -132,9 +132,9 @@ func TestValidateDPIBadNoImages(t *testing.T) {
 	var f = fakeFile()
 	f.Name = "fake.pdf"
 	f.ValidateDPI(100)
-	if len(f.Errors) != 1 {
+	if f.Errors.Len() != 1 {
 		var elist []string
-		for _, err := range f.Errors {
+		for _, err := range f.Errors.All() {
 			elist = append(elist, err.Message())
 		}
 		t.Errorf("Expected an error.  Got: %q", strings.Join(elist, ","))
@@ -146,9 +146,9 @@ func TestValidateDPINonPDF(t *testing.T) {
 	var f = fakeFile()
 	f.Name = "fake.tiff"
 	f.ValidateDPI(100)
-	if len(f.Errors) != 0 {
+	if f.Errors.Len() != 0 {
 		var elist []string
-		for _, err := range f.Errors {
+		for _, err := range f.Errors.All() {
 			elist = append(elist, err.Message())
 		}
 		t.Errorf("Expected no errors.  Got: %q", strings.Join(elist, ","))
