@@ -44,9 +44,17 @@
               <li>{{ErrorHTML .}}</li>
               {{end}}
             </ul>
+            </div>
           {{- end}}
-          {{- if .IsNew}}
-            <div class="issue-new">This issue was recently uploaded, and might get more changes</div>
+          {{- if .HasWarnings}}
+            <div class="issue-warning-list">
+            Warnings:
+            <ul>
+              {{range .Warnings}}
+              <li>{{.Message}}</li>
+              {{end}}
+            </ul>
+            </div>
           {{- end}}
         </td>
         <td>{{len .Files}}</td>

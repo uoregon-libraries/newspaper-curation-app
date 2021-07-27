@@ -6,18 +6,27 @@
     This issue has errors, and cannot be queued:
   </div>
   <ul>
-  {{range .Data.Issue.Errors.Major}}
+  {{range .Data.Issue.Errors}}
     <li>{{ErrorHTML .}}</li>
   {{end}}
   </ul>
 {{else}}
   <form action="{{.Data.Issue.WorkflowPath "queue"}}" method="POST">
     <p>No critical errors detected</p>
+
+    {{if .Data.Issue.HasWarnings}}
+    <div class="alert alert-warning">
+      This issue has warnings - queue with care!
+    </div>
+    <ul>
+    {{range .Data.Issue.Warnings}}
+      <li>{{.Message}}</li>
+    {{end}}
+    </ul>
+    {{end}}
+
     {{if .Data.Issue.QueueInfo}}
       <div class="alert alert-warning">{{.Data.Issue.QueueInfo}}</div>
-    {{end}}
-    {{if .Data.Issue.IsNew}}
-      <div class="alert alert-warning">This issue is relatively new and may get more uploads - queue with care!</div>
     {{end}}
 
     {{if .User.PermittedTo ModifyUploadedIssues}}

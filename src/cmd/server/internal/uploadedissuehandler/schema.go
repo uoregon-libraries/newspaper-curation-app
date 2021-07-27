@@ -5,7 +5,6 @@ import (
 	"html/template"
 	"path/filepath"
 	"strings"
-	"time"
 
 	"github.com/uoregon-libraries/newspaper-curation-app/src/apperr"
 	"github.com/uoregon-libraries/newspaper-curation-app/src/internal/logger"
@@ -13,11 +12,6 @@ import (
 	"github.com/uoregon-libraries/newspaper-curation-app/src/schema"
 	"github.com/uoregon-libraries/newspaper-curation-app/src/uploads"
 )
-
-// DaysIssueConsideredNew is how long we warn users that the issue is new - but
-// it can be queued before that warning goes away so long as
-// DaysIssueConsideredDangerous has elapsed
-const DaysIssueConsideredNew = 14
 
 // errorHTML returns the error text - usually just err.Message(), but some
 // errors (okay, just one for now) need more details, including HTML output
@@ -212,12 +206,6 @@ func (i *Issue) decoratePriorJobLogs() {
 	}
 }
 
-// IsNew tells the presentation if the issue is fairly new, which can be
-// important for some publishers who upload over several days
-func (i *Issue) IsNew() bool {
-	return time.Since(i.LastModified()) < time.Hour*24*DaysIssueConsideredNew
-}
-
 // Link returns a link for this title
 func (i *Issue) Link() template.HTML {
 	var path = IssuePath(i.Title.Slug(), i.Slug)
@@ -234,6 +222,11 @@ func (i *Issue) WorkflowPath(action string) string {
 // error *or* if one or more files have errors
 func (i *Issue) HasErrors() bool {
 	return i.Errors.Major().Len() > 0
+}
+
+// HasWarnings reports true if this issue has any warnings
+func (i *Issue) HasWarnings() bool {
+	return i.Errors.Minor().Len() > 0
 }
 
 // ChildErrors reports the number of files with errors

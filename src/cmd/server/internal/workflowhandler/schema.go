@@ -214,6 +214,11 @@ func (i *Issue) Errors() *apperr.List {
 	return i.validationErrors.Major()
 }
 
+// Warnings returns validation warnings a user must explicitly choose to skip
+func (i *Issue) Warnings() *apperr.List {
+	return i.validationErrors.Minor()
+}
+
 // CanReturnToReview returns true if the issue's metadata is valid.  This is
 // pretty specific (for now) to the process of taking an out-of-NCA issue
 // (reported as having unfixable errors) and wanting to push it straight to the

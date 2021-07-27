@@ -82,6 +82,17 @@ func (i *Issue) ErrTooNew(hours int) {
 	})
 }
 
+// WarnTooNew sets a warning-level error for alerting curators without forcing
+// the issue to be stuck
+func (i *Issue) WarnTooNew() {
+	i.addError(&IssueError{
+		Err:  "may be too new",
+		Msg:  "Issue was modified recently and may still have updates pending",
+		Prop: false,
+		Warn: true,
+	})
+}
+
 // DuplicateIssueError implements apperr.Error for duped issue situations, and
 // holds onto extra information for figuring out how to handle the dupe
 type DuplicateIssueError struct {

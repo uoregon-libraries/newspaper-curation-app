@@ -19,6 +19,15 @@ body {
   font-weight: normal;
 }
 
+.issue-warning-list {
+  background: #FFE;
+  font-weight: bold;
+}
+
+.issue-warning-list ul li {
+  font-weight: normal;
+}
+
 .issue-new {
   font-style: italic;
 }
