@@ -214,11 +214,11 @@ func (i *Issue) Errors() []apperr.Error {
 	return i.validationErrors
 }
 
-// IsReadyForReview returns true if the issue's metadata is valid.  This is
+// CanReturnToReview returns true if the issue's metadata is valid.  This is
 // pretty specific (for now) to the process of taking an out-of-NCA issue
 // (reported as having unfixable errors) and wanting to push it straight to the
 // review queue.
-func (i *Issue) IsReadyForReview() bool {
+func (i *Issue) CanReturnToReview() bool {
 	i.ValidateMetadata()
 	return len(i.validationErrors) == 0
 }
