@@ -32,7 +32,7 @@ func (e *IssueError) Propagate() bool {
 // Warning returns whether this error is classified low enough to allow other
 // actions to happen
 func (e *IssueError) Warning() bool {
-	return !e.Warn
+	return e.Warn
 }
 
 // ErrNoFiles adds an error stating the issue folder is empty
