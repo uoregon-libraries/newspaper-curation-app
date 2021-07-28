@@ -65,9 +65,10 @@ func HomeHandler(w http.ResponseWriter, req *http.Request) {
 	var r = getResponder(w, req)
 	r.Vars.Title = "Uploaded Issues"
 	if searcher.Ready() {
-		r.Vars.Data["OtherErrors"] = searcher.TopErrors()
+		var errs = searcher.TopErrors()
+		r.Vars.Data["OtherErrors"] = &errs
 	} else {
-		r.Vars.Data["OtherErrors"] = []string{}
+		r.Vars.Data["OtherErrors"] = apperr.List{}
 	}
 	r.Render(TitleList)
 }

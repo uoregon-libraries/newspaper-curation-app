@@ -6,7 +6,7 @@
     This issue has errors, and cannot be queued:
   </div>
   <ul>
-  {{range .Data.Issue.Errors}}
+  {{range .Data.Issue.Errors.Major.All}}
     <li>{{ErrorHTML .}}</li>
   {{end}}
   </ul>
@@ -19,7 +19,7 @@
       This issue has warnings - queue with care!
     </div>
     <ul>
-    {{range .Data.Issue.Warnings}}
+    {{range .Data.Issue.Errors.Minor.All}}
       <li>{{.Message}}</li>
     {{end}}
     </ul>
@@ -66,7 +66,7 @@
         <td>{{TimeString .ModTime}}</td>
         <td>
           {{- if .HasErrors}}
-            <b>{{ErrorListHTML .Errors}}</b>
+            <b>{{ErrorListHTML .Errors.Major.All}}</b>
           {{- else}}
             No file errors detected
           {{- end}}

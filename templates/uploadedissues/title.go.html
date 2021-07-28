@@ -9,7 +9,7 @@
     </span>
   </div>
   <ul>
-    {{range .Data.Title.Errors}}
+    {{range .Data.Title.Errors.Major.All}}
     <li>{{ErrorHTML .}}</li>
     {{end}}
   </ul>
@@ -40,7 +40,7 @@
             <div class="issue-error-list">
             Errors:
             <ul>
-              {{range .Errors}}
+              {{range .Errors.Major.All}}
               <li>{{ErrorHTML .}}</li>
               {{end}}
             </ul>
@@ -50,7 +50,7 @@
             <div class="issue-warning-list">
             Warnings:
             <ul>
-              {{range .Warnings}}
+              {{range .Errors.Minor.All}}
               <li>{{.Message}}</li>
               {{end}}
             </ul>

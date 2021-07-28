@@ -39,7 +39,7 @@
 
 {{block "content" .}}
 
-{{if gt (len .Data.OtherErrors) 0}}
+{{if gt .Data.OtherErrors.Len 0}}
   <h2>Errors</h2>
   <div class="title-with-errors">
     <span class="glyphicon glyphicon-exclamation-sign" aria-hidden="true"></span>
@@ -49,7 +49,7 @@
     </span>
   </div>
   <ul>
-    {{range .Data.OtherErrors}}
+    {{range .Data.OtherErrors.All}}
     <li>{{ErrorHTML .}}</li>
     {{end}}
   </ul>
