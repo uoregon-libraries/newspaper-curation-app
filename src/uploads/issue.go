@@ -49,7 +49,7 @@ func (i *Issue) ValidateFast() {
 	// for getting real-time checks.  This is good!  But validating twice when we
 	// already have errors can end up giving us duplicate errors.  This... is not
 	// quite so good.
-	if i.validatedFast && i.Errors.Major().Len() > 0 {
+	if i.validatedFast && i.Errors.Len() > 0 {
 		return
 	}
 	i.validatedFast = true
@@ -81,7 +81,7 @@ func (i *Issue) ValidateAll() {
 	// for getting real-time checks.  This is good!  But validating twice when we
 	// already have errors can end up giving us duplicate errors.  This... is not
 	// quite so good.
-	if i.validatedAll && i.Errors.Major().Len() > 0 {
+	if i.validatedAll && i.Errors.Len() > 0 {
 		return
 	}
 	i.validatedAll = true
