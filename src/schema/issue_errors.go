@@ -109,6 +109,7 @@ func (i *Issue) ErrDuped(dupe *Issue) {
 			Err:  "duplicate of another issue",
 			Msg:  fmt.Sprintf("This issue appears to be a duplicate (same LCCN, date, and edition) of %s", dupe.WorkflowIdentification()),
 			Prop: true,
+			Warn: true,
 		},
 		Location: dupe.Location,
 		Name:     dupe.Title.Name + ", " + dupe.RawDate,

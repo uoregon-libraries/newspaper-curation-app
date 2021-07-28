@@ -51,7 +51,7 @@
             Warnings:
             <ul>
               {{range .Errors.Minor.All}}
-              <li>{{.Message}}</li>
+              <li>{{ErrorHTML .}}</li>
               {{end}}
             </ul>
             </div>

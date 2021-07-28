@@ -19,7 +19,7 @@
       This issue has warnings - <strong>queue with care</strong>:
       <ul>
       {{range .Data.Issue.Errors.Minor.All}}
-        <li>{{.Message}}</li>
+        <li>{{ErrorHTML .}}</li>
       {{end}}
       </ul>
     </div>
