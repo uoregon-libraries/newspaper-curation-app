@@ -4,25 +4,25 @@
   <h2>Errors</h2>
   <div class="issue-with-errors">
     This issue has errors, and cannot be queued:
+    <ul>
+    {{range .Data.Issue.Errors.Major.All}}
+      <li>{{ErrorHTML .}}</li>
+    {{end}}
+    </ul>
   </div>
-  <ul>
-  {{range .Data.Issue.Errors.Major.All}}
-    <li>{{ErrorHTML .}}</li>
-  {{end}}
-  </ul>
 {{else}}
   <form action="{{.Data.Issue.WorkflowPath "queue"}}" method="POST">
     <p>No critical errors detected</p>
 
     {{if .Data.Issue.HasWarnings}}
     <div class="alert alert-warning">
-      This issue has warnings - queue with care!
+      This issue has warnings - <strong>queue with care</strong>:
+      <ul>
+      {{range .Data.Issue.Errors.Minor.All}}
+        <li>{{.Message}}</li>
+      {{end}}
+      </ul>
     </div>
-    <ul>
-    {{range .Data.Issue.Errors.Minor.All}}
-      <li>{{.Message}}</li>
-    {{end}}
-    </ul>
     {{end}}
 
     {{if .Data.Issue.QueueInfo}}
