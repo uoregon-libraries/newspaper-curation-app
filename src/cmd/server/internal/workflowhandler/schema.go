@@ -211,12 +211,7 @@ func (i *Issue) ValidateMetadata() {
 
 // Errors returns validation errors
 func (i *Issue) Errors() *apperr.List {
-	return i.validationErrors.Major()
-}
-
-// Warnings returns validation warnings a user must explicitly choose to skip
-func (i *Issue) Warnings() *apperr.List {
-	return i.validationErrors.Minor()
+	return i.validationErrors
 }
 
 // CanReturnToReview returns true if the issue's metadata is valid.  This is
