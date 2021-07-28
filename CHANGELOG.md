@@ -38,10 +38,34 @@ Brief description, if necessary
 ### Changed
 
 - Updated to latest Go crypto package
+- Errors associated with an issue's metadata are now treated very differently
+  than before.  Some are warnings rather than critical errors and can be
+  ignored if necessary.
 
 ### Removed
 
 ### Migration
+
+The NCA disk cache will have to be replaced, because some data structures have
+changed in an incompatible way.  There's the easy way and the hard way to do
+this.  The easy way requires more downtime:
+
+- Shut off NCA's services
+- Delete the cache files as specified by the setting `ISSUE_CACHE_PATH`, e.g.:
+  `rm -rf /var/local/news/nca/cache/*`
+- Deploy NCA and restart.  The cache rebuild will keep NCA from running for
+  several minutes.
+
+Alternatively, you can rebuild the cache outside NCA:
+
+- Build NCA and make sure you have `bin/make-cache`
+- Copy your production settings file somewhere else, and edit
+  `ISSUE_CACHE_PATH` to point to a temporary location.
+- Run `bin/make-cache -c <temporary settings file>`
+- Shut down NCA
+- Delete the existing cache files and replace them with the ones you just
+  generated
+- Deploy NCA and restart
 
 ## v3.8.0
 
