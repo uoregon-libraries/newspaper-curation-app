@@ -7,9 +7,11 @@ import (
 	"strings"
 	"time"
 
+	"github.com/uoregon-libraries/newspaper-curation-app/src/apperr"
 	"github.com/uoregon-libraries/newspaper-curation-app/src/cmd/server/internal/settings"
 	"github.com/uoregon-libraries/newspaper-curation-app/src/models"
 	"github.com/uoregon-libraries/newspaper-curation-app/src/privilege"
+	"github.com/uoregon-libraries/newspaper-curation-app/src/schema"
 	"github.com/uoregon-libraries/newspaper-curation-app/src/web/tmpl"
 	"github.com/uoregon-libraries/newspaper-curation-app/src/web/webutil"
 )
@@ -78,10 +80,12 @@ func InitRootTemplate(templatePath string) {
 			var replaced = strings.Replace(escaped, "\n", "<br />", -1)
 			return template.HTML(replaced)
 		},
-		"IIIFInfoURL": webutil.IIIFInfoURL,
-		"raw":         func(s string) template.HTML { return template.HTML(s) },
-		"debug":       func() bool { return settings.DEBUG },
-		"dict":        dict,
+		"ErrorHTML":     errorHTML,
+		"ErrorListHTML": errorListHTML,
+		"IIIFInfoURL":   webutil.IIIFInfoURL,
+		"raw":           func(s string) template.HTML { return template.HTML(s) },
+		"debug":         func() bool { return settings.DEBUG },
+		"dict":          dict,
 
 		// We have functions for our privileges since they need to be "global" and
 		// easily verified at template compile time
@@ -111,4 +115,34 @@ func InitRootTemplate(templatePath string) {
 	InsufficientPrivileges = Layout.MustBuild("insufficient-privileges.go.html")
 	Empty = Layout.MustBuild("empty.go.html")
 	Home = Layout.MustBuild("home.go.html")
+}
+
+// errorHTML returns the error text - usually just err.Message(), but some
+// errors (okay, just one for now) need more details, including HTML output
+func errorHTML(err apperr.Error) template.HTML {
+	var msg = template.HTMLEscapeString(err.Message())
+	switch v := err.(type) {
+	case *schema.DuplicateIssueError:
+		if v.IsLive {
+			// The location is the JSON we get from the web scanner, so we have to trim
+			// ".json" off the end.  We could have the web view follow the JSON link to
+			// get the unquestionably correct URL to the issue, but that would add tens
+			// of thousands of unnecessary web hits.
+			var nonJSONURL = v.Location[:len(v.Location)-5]
+			msg += fmt.Sprintf(`: <a href="%s">%s</a>`, nonJSONURL, v.Name)
+		}
+	}
+
+	return template.HTML(msg)
+}
+
+// errorListHTML returns HTML for errs, filtered to just major errors, then
+// joined together using errorHTML to let each error be displayed appropriately
+func errorListHTML(errs apperr.List) template.HTML {
+	var list = errs.Major()
+	var sList = make([]string, list.Len())
+	for i, err := range list.All() {
+		sList[i] = string(errorHTML(err))
+	}
+	return template.HTML(strings.Join(sList, "; "))
 }

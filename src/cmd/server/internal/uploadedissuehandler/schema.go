@@ -6,42 +6,11 @@ import (
 	"path/filepath"
 	"strings"
 
-	"github.com/uoregon-libraries/newspaper-curation-app/src/apperr"
 	"github.com/uoregon-libraries/newspaper-curation-app/src/internal/logger"
 	"github.com/uoregon-libraries/newspaper-curation-app/src/models"
 	"github.com/uoregon-libraries/newspaper-curation-app/src/schema"
 	"github.com/uoregon-libraries/newspaper-curation-app/src/uploads"
 )
-
-// errorHTML returns the error text - usually just err.Message(), but some
-// errors (okay, just one for now) need more details, including HTML output
-func errorHTML(err apperr.Error) template.HTML {
-	var msg = template.HTMLEscapeString(err.Message())
-	switch v := err.(type) {
-	case *schema.DuplicateIssueError:
-		if v.IsLive {
-			// The location is the JSON we get from the web scanner, so we have to trim
-			// ".json" off the end.  We could have the web view follow the JSON link to
-			// get the unquestionably correct URL to the issue, but that would add tens
-			// of thousands of unnecessary web hits.
-			var nonJSONURL = v.Location[:len(v.Location)-5]
-			msg += fmt.Sprintf(`: <a href="%s">%s</a>`, nonJSONURL, v.Name)
-		}
-	}
-
-	return template.HTML(msg)
-}
-
-// errorListHTML returns HTML for errs, filtered to just major errors, then
-// joined together using errorHTML to let each error be displayed appropriately
-func errorListHTML(errs apperr.List) template.HTML {
-	var list = errs.Major()
-	var sList = make([]string, list.Len())
-	for i, err := range list.All() {
-		sList[i] = string(errorHTML(err))
-	}
-	return template.HTML(strings.Join(sList, "; "))
-}
 
 // TitleType tells us if a title contains born-digital issues or scanned
 type TitleType int
