@@ -99,8 +99,8 @@ func saveQueue(resp *responder.Responder, i *Issue, changes map[string]string) {
 	// redisplay the form; we still keep the saved changes in order to avoid
 	// losing metadata
 	i.ValidateMetadata()
-	if i.Errors().Len() > 0 {
-		http.SetCookie(resp.Writer, &http.Cookie{Name: "Alert", Value: encodedErrors("queue", i.Errors()), Path: "/"})
+	if i.Errors().Major().Len() > 0 {
+		http.SetCookie(resp.Writer, &http.Cookie{Name: "Alert", Value: encodedErrors("queue", i.Errors().Major()), Path: "/"})
 		http.Redirect(resp.Writer, resp.Request, i.Path("metadata"), http.StatusFound)
 		return
 	}
