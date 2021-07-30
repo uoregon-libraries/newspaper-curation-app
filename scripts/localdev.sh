@@ -58,6 +58,11 @@ resetfakemount() {
 bulk_queue_borndigital() {
   # Bulk-queue all issues we can
   make bin/bulk-issue-queue || return 1
+  pushd .
+  cd ./test
+  ./makemine.sh
+  ./make-older.sh 30
+  popd
   for lccn in $(_get_bulk_lccns borndigital); do
     ./bin/bulk-issue-queue -c ./settings --type=borndigital --key=$lccn
   done
