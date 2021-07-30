@@ -46,7 +46,7 @@ func badStepErr() apperr.Error {
 func (i *Issue) Queue() apperr.Error {
 	// Make sure the issue is definitely valid
 	i.ValidateAll()
-	if len(i.Errors) > 0 {
+	if i.Errors.Major().Len() > 0 {
 		// This should be rare, but it can happen during normal operation, so we
 		// just log an info message in case more digging needs to happen
 		logger.Infof("Issue %q isn't able to be queued in uploads.Issue.Queue(): %#v", i.Key(), i.Errors)

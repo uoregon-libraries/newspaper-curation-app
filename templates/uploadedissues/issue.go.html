@@ -4,20 +4,29 @@
   <h2>Errors</h2>
   <div class="issue-with-errors">
     This issue has errors, and cannot be queued:
+    <ul>
+    {{range .Data.Issue.Errors.Major.All}}
+      <li>{{ErrorHTML .}}</li>
+    {{end}}
+    </ul>
   </div>
-  <ul>
-  {{range .Data.Issue.Errors}}
-    <li>{{ErrorHTML .}}</li>
-  {{end}}
-  </ul>
 {{else}}
   <form action="{{.Data.Issue.WorkflowPath "queue"}}" method="POST">
     <p>No critical errors detected</p>
+
+    {{if .Data.Issue.HasWarnings}}
+    <div class="alert alert-warning">
+      This issue has warnings - <strong>queue with care</strong>:
+      <ul>
+      {{range .Data.Issue.Errors.Minor.All}}
+        <li>{{ErrorHTML .}}</li>
+      {{end}}
+      </ul>
+    </div>
+    {{end}}
+
     {{if .Data.Issue.QueueInfo}}
       <div class="alert alert-warning">{{.Data.Issue.QueueInfo}}</div>
-    {{end}}
-    {{if .Data.Issue.IsNew}}
-      <div class="alert alert-warning">This issue is relatively new and may get more uploads - queue with care!</div>
     {{end}}
 
     {{if .User.PermittedTo ModifyUploadedIssues}}
@@ -57,7 +66,7 @@
         <td>{{TimeString .ModTime}}</td>
         <td>
           {{- if .HasErrors}}
-            <b>{{ErrorListHTML .Errors}}</b>
+            <b>{{ErrorListHTML .Errors.Major.All}}</b>
           {{- else}}
             No file errors detected
           {{- end}}

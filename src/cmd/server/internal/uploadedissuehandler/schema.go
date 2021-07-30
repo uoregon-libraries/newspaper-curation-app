@@ -5,48 +5,12 @@ import (
 	"html/template"
 	"path/filepath"
 	"strings"
-	"time"
 
-	"github.com/uoregon-libraries/newspaper-curation-app/src/apperr"
 	"github.com/uoregon-libraries/newspaper-curation-app/src/internal/logger"
 	"github.com/uoregon-libraries/newspaper-curation-app/src/models"
 	"github.com/uoregon-libraries/newspaper-curation-app/src/schema"
 	"github.com/uoregon-libraries/newspaper-curation-app/src/uploads"
 )
-
-// DaysIssueConsideredNew is how long we warn users that the issue is new - but
-// it can be queued before that warning goes away so long as
-// DaysIssueConsideredDangerous has elapsed
-const DaysIssueConsideredNew = 14
-
-// errorHTML returns the error text - usually just err.Message(), but some
-// errors (okay, just one for now) need more details, including HTML output
-func errorHTML(err apperr.Error) template.HTML {
-	var msg = template.HTMLEscapeString(err.Message())
-	switch v := err.(type) {
-	case *schema.DuplicateIssueError:
-		if v.IsLive {
-			// The location is the JSON we get from the web scanner, so we have to trim
-			// ".json" off the end.  We could have the web view follow the JSON link to
-			// get the unquestionably correct URL to the issue, but that would add tens
-			// of thousands of unnecessary web hits.
-			var nonJSONURL = v.Location[:len(v.Location)-5]
-			msg += fmt.Sprintf(`: <a href="%s">%s</a>`, nonJSONURL, v.Name)
-		}
-	}
-
-	return template.HTML(msg)
-}
-
-// errorHTML returns the errors joined together, using errorHTML to let each
-// error be displayed appropriately
-func errorListHTML(list apperr.List) template.HTML {
-	var sList = make([]string, len(list))
-	for i, err := range list {
-		sList[i] = string(errorHTML(err))
-	}
-	return template.HTML(strings.Join(sList, "; "))
-}
 
 // TitleType tells us if a title contains born-digital issues or scanned
 type TitleType int
@@ -114,7 +78,7 @@ func (t *Title) Show() bool {
 // AddError works in the schema, this will report true if the title has an
 // error *or* if one or more issues have errors
 func (t *Title) HasErrors() bool {
-	return len(t.Errors) > 0
+	return t.Errors.Major().Len() > 0
 }
 
 // Link returns a link for this title
@@ -211,12 +175,6 @@ func (i *Issue) decoratePriorJobLogs() {
 	}
 }
 
-// IsNew tells the presentation if the issue is fairly new, which can be
-// important for some publishers who upload over several days
-func (i *Issue) IsNew() bool {
-	return time.Since(i.LastModified()) < time.Hour*24*DaysIssueConsideredNew
-}
-
 // Link returns a link for this title
 func (i *Issue) Link() template.HTML {
 	var path = IssuePath(i.Title.Slug(), i.Slug)
@@ -232,7 +190,12 @@ func (i *Issue) WorkflowPath(action string) string {
 // AddError works in the schema, this will report true if the issue has an
 // error *or* if one or more files have errors
 func (i *Issue) HasErrors() bool {
-	return len(i.Errors) > 0
+	return i.Errors.Major().Len() > 0
+}
+
+// HasWarnings reports true if this issue has any warnings
+func (i *Issue) HasWarnings() bool {
+	return i.Errors.Minor().Len() > 0
 }
 
 // ChildErrors reports the number of files with errors
@@ -261,5 +224,5 @@ func (f *File) Link() template.HTML {
 
 // HasErrors reports true if this file has any errors
 func (f *File) HasErrors() bool {
-	return len(f.Errors) > 0
+	return f.Errors.Major().Len() > 0
 }

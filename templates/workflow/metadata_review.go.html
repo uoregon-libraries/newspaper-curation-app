@@ -7,8 +7,11 @@
     <li>All pages which are labeled have a page label entered <strong>exactly as it's printed</strong></li>
     <li>All pages which are not labeled have a zero ("0") entered for their label</li>
     <li>The date and "date as labeled" are correct for the issue - <em>this doesn't always mean they're the same</em>!</li>
+    <li>All warnings below (if any) can be safely ignored</li>
   </ul>
 </p>
+
+{{template "issue_errors" (dict "Errors" .Data.Issue.Errors "Heading" "h2")}}
 
 {{if .Data.Issue.WorkflowActions}}
   <h2>Actions / Comments</h2>

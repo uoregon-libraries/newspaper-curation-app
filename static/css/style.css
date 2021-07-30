@@ -10,12 +10,25 @@ body {
   width: 200px;
 }
 
+.issue-with-warnings {
+  background: #FFE;
+}
+
 .issue-error-list {
   background: #FEE;
   font-weight: bold;
 }
 
 .issue-error-list ul li {
+  font-weight: normal;
+}
+
+.issue-warning-list {
+  background: #FFE;
+  font-weight: bold;
+}
+
+.issue-warning-list ul li {
   font-weight: normal;
 }
 

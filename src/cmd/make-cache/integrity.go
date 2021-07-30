@@ -38,7 +38,7 @@ func testIntegrity(fA *issuefinder.Finder) {
 	validateLen("issue", len(fA.Issues), len(fB.Issues))
 	validateLen("title", len(fA.Titles), len(fB.Titles))
 	validateLen("batch", len(fA.Batches), len(fB.Batches))
-	validateLen("error", len(fA.Errors), len(fB.Errors))
+	validateLen("error", fA.Errors.Len(), fB.Errors.Len())
 
 	logger.Debugf("Sorting issues for comparisons")
 	fA.Issues.SortByKey()
@@ -59,13 +59,13 @@ func testIntegrity(fA *issuefinder.Finder) {
 		}
 	}
 
-	var aErr = make([]string, len(fA.Errors))
-	for i, err := range fA.Errors {
+	var aErr = make([]string, fA.Errors.Len())
+	for i, err := range fA.Errors.All() {
 		aErr[i] = err.Message()
 	}
 
-	var bErr = make([]string, len(fB.Errors))
-	for i, err := range fB.Errors {
+	var bErr = make([]string, fB.Errors.Len())
+	for i, err := range fB.Errors.All() {
 		bErr[i] = err.Message()
 	}
 

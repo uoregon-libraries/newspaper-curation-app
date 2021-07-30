@@ -7,6 +7,8 @@
     <li>The issue below is part of the title <strong>{{.Data.Issue.Title}} ({{.Data.Issue.LCCN}})</strong></li>
     <li>All pages are in order, there are no dupes, and there are no pages for a different issue or date</li>
     <li>The title's MARC organization code is "{{.Data.Issue.MARCOrgCode}}"</li>
+    <li>All errors below (if any) can be fixed in NCA</li>
+    <li>All warnings below (if any) can be fixed in NCA or ignored</li>
   </ul>
 </p>
 
@@ -148,6 +150,28 @@
           </p>
         </div>
       </div>
+
+      {{if .Data.Issue.Errors.Minor.Len}}
+      <div class="form-group">
+        <div class="col-md-9 col-md-offset-2">
+          <div class="issue-with-warnings">
+            This issue's metadata may be incorrect.  <strong>Review all warnings
+            below</strong> before queueing this issue:
+            <ul id="issue-warnings">
+            {{range .Data.Issue.Errors.Minor.All}}
+              <li>{{ErrorHTML .}}</li>
+            {{end}}
+            </ul>
+          </div>
+          <div class="checkbox">
+            <label>
+              <input type="checkbox" name="ignore_warnings" value="{{.Data.Issue.ID}}" aria-describedby="issue-warnings" />
+              I accept the risk of queueing this issue despite these warnings.
+            </label>
+          </div>
+        </div>
+      </div>
+      {{end}}
 
       <div class="form-group">
         <div class="col-md-9 col-md-offset-2">

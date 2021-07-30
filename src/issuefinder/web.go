@@ -35,7 +35,7 @@ func (s *Searcher) FindWebBatches(cachePath string) error {
 		var batch, err = schema.ParseBatchname(batchMetadata.Name)
 		if err != nil {
 			var e = apperr.Errorf("invalid live batch at %q: %s", s.Location, err)
-			s.Errors = append(s.Errors, e)
+			s.Errors.Append(e)
 			return nil
 		}
 		batch.Location = batchMetadata.URL

@@ -146,8 +146,12 @@ func reportIssues(issueList schema.IssueList) {
 			fmt.Printf("    - Batch: %s\n", issue.Batch.Fullname())
 		}
 
-		for _, e := range issue.Errors {
-			fmt.Printf("    - ERROR: %s\n", e)
+		for _, e := range issue.Errors.All() {
+			var word = "ERROR"
+			if e.Warning() {
+				word = "WARNING"
+			}
+			fmt.Printf("    - %s: %s\n", word, e)
 		}
 	}
 }

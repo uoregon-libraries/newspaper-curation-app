@@ -16,9 +16,9 @@ import (
 
 // encodedErrors creates a base64 alert for validation errors to be displayed
 // after attempting to queue an issue or approve an issue
-func encodedErrors(action string, errors []apperr.Error) string {
+func encodedErrors(action string, errors *apperr.List) string {
 	var errorstr string
-	for _, err := range errors {
+	for _, err := range errors.All() {
 		errorstr += "<li>" + err.Message() + "</li>"
 	}
 	var alertMsg = "Cannot " + action + " this issue:<ul>" + errorstr + "</ul>"
@@ -34,7 +34,8 @@ type Issue struct {
 
 	si *schema.Issue
 
-	validationErrors []apperr.Error
+	validationErrors *apperr.List
+	acceptWarnings   bool
 }
 
 func wrapDBIssue(dbIssue *models.Issue) *Issue {
@@ -156,8 +157,8 @@ func (i *Issue) Path(actionPath string) string {
 // ValidateMetadata checks all fields for validity and sets up
 // i.validationErrors to describe anything wrong
 func (i *Issue) ValidateMetadata() {
-	i.validationErrors = nil
-	var addError = func(err apperr.Error) { i.validationErrors = append(i.validationErrors, err) }
+	i.validationErrors = new(apperr.List)
+	var addError = func(err apperr.Error) { i.validationErrors.Append(err) }
 	var validDate = func(dtString, fieldName string) {
 		var dtLayout = "2006-01-02"
 		var dt, err = time.Parse(dtLayout, dtString)
@@ -204,21 +205,21 @@ func (i *Issue) ValidateMetadata() {
 
 	// Check dupes on the schema issue, then pull those errors onto our validations
 	i.si.CheckDupes(watcher.Scanner.Lookup)
-	for _, err := range i.si.Errors {
+	for _, err := range i.si.Errors.All() {
 		addError(err)
 	}
 }
 
 // Errors returns validation errors
-func (i *Issue) Errors() []apperr.Error {
+func (i *Issue) Errors() *apperr.List {
 	return i.validationErrors
 }
 
-// IsReadyForReview returns true if the issue's metadata is valid.  This is
+// CanReturnToReview returns true if the issue's metadata is valid.  This is
 // pretty specific (for now) to the process of taking an out-of-NCA issue
 // (reported as having unfixable errors) and wanting to push it straight to the
 // review queue.
-func (i *Issue) IsReadyForReview() bool {
+func (i *Issue) CanReturnToReview() bool {
 	i.ValidateMetadata()
-	return len(i.validationErrors) == 0
+	return i.Errors().Major().Len() == 0
 }

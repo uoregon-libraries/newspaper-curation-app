@@ -117,7 +117,7 @@ func (b *Batch) AddIssue(i *Issue) {
 
 // AddError attaches err to this batch
 func (b *Batch) AddError(err apperr.Error) {
-	b.Errors = append(b.Errors, err)
+	b.Errors.Append(err)
 }
 
 // Title is a publisher's information, unique per LCCN
@@ -160,7 +160,7 @@ func (t *Title) GenericTitle() *Title {
 
 // AddError attaches err to this title
 func (t *Title) AddError(err apperr.Error) {
-	t.Errors = append(t.Errors, err)
+	t.Errors.Append(err)
 }
 
 // addChildError notes that this title has at least one issue with errors.
@@ -345,7 +345,7 @@ func (i *Issue) WorkflowIdentification() string {
 // addError attaches err to this issue and reports to the issue's title that it
 // has an error
 func (i *Issue) addError(err apperr.Error) {
-	i.Errors = append(i.Errors, err)
+	i.Errors.Append(err)
 	if err.Propagate() && i.Title != nil {
 		i.Title.addChildError()
 	}
@@ -509,7 +509,7 @@ func (f *File) ValidInternalName() bool {
 // AddError puts err on this file and reports to its issue that one of its
 // children has an error
 func (f *File) AddError(err apperr.Error) {
-	f.Errors = append(f.Errors, err)
+	f.Errors.Append(err)
 	if err.Propagate() {
 		f.Issue.addChildError()
 	}

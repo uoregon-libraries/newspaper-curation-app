@@ -9,7 +9,7 @@
     </span>
   </div>
   <ul>
-    {{range .Data.Title.Errors}}
+    {{range .Data.Title.Errors.Major.All}}
     <li>{{ErrorHTML .}}</li>
     {{end}}
   </ul>
@@ -40,13 +40,21 @@
             <div class="issue-error-list">
             Errors:
             <ul>
-              {{range .Errors}}
+              {{range .Errors.Major.All}}
               <li>{{ErrorHTML .}}</li>
               {{end}}
             </ul>
+            </div>
           {{- end}}
-          {{- if .IsNew}}
-            <div class="issue-new">This issue was recently uploaded, and might get more changes</div>
+          {{- if .HasWarnings}}
+            <div class="issue-warning-list">
+            Warnings:
+            <ul>
+              {{range .Errors.Minor.All}}
+              <li>{{ErrorHTML .}}</li>
+              {{end}}
+            </ul>
+            </div>
           {{- end}}
         </td>
         <td>{{len .Files}}</td>

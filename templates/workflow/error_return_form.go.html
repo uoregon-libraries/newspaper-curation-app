@@ -38,7 +38,7 @@
       <button id="return-to-entry" type="Submit" name="action" value="return-to-entry" class="btn btn-default">
         Return to metadata entry
       </button>
-      {{if .Data.Issue.IsReadyForReview}}
+      {{if .Data.Issue.CanReturnToReview}}
       <button id="return-to-review" type="Submit" name="action" value="return-to-review" class="btn btn-default">
         Return to metadata review
       </button>
@@ -49,6 +49,8 @@
 </form>
 
 <h2>Issue</h2>
+
+{{template "issue_errors" (dict "Errors" .Data.Issue.Errors "Heading" "h3")}}
 
 {{if .Data.Issue.AllWorkflowActions}}
   <h3>All Actions / Comments</h3>

@@ -12,6 +12,11 @@ import (
 // prior to anybody queueing it
 const DaysIssueConsideredDangerous = 2
 
+// DaysIssueConsideredNew is how long we warn users that the issue is new - but
+// it can be queued before that warning goes away so long as
+// DaysIssueConsideredDangerous has elapsed
+const DaysIssueConsideredNew = 14
+
 // Issue wraps a schema.Issue to add upload- and queue-specific validations and
 // behavior
 type Issue struct {
@@ -44,7 +49,7 @@ func (i *Issue) ValidateFast() {
 	// for getting real-time checks.  This is good!  But validating twice when we
 	// already have errors can end up giving us duplicate errors.  This... is not
 	// quite so good.
-	if i.validatedFast && len(i.Errors) > 0 {
+	if i.validatedFast && i.Errors.Len() > 0 {
 		return
 	}
 	i.validatedFast = true
@@ -52,8 +57,13 @@ func (i *Issue) ValidateFast() {
 	var hrs = 24 * DaysIssueConsideredDangerous
 	if time.Since(i.LastModified()) < time.Hour*time.Duration(hrs) {
 		i.ErrTooNew(hrs)
+	} else {
+		hrs = 24 * DaysIssueConsideredNew
+		if time.Since(i.LastModified()) < time.Hour*time.Duration(hrs) {
+			i.WarnTooNew()
+		}
 	}
-	if len(i.Title.Errors) > 0 {
+	if i.Title.Errors.Major().Len() > 0 {
 		i.ErrBadTitle()
 	}
 	i.CheckDupes(i.scanner.Lookup)
@@ -71,7 +81,7 @@ func (i *Issue) ValidateAll() {
 	// for getting real-time checks.  This is good!  But validating twice when we
 	// already have errors can end up giving us duplicate errors.  This... is not
 	// quite so good.
-	if i.validatedAll && len(i.Errors) > 0 {
+	if i.validatedAll && i.Errors.Len() > 0 {
 		return
 	}
 	i.validatedAll = true

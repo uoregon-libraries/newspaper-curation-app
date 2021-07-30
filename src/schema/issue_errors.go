@@ -11,6 +11,7 @@ type IssueError struct {
 	Err  string
 	Msg  string
 	Prop bool
+	Warn bool
 }
 
 func (e *IssueError) Error() string {
@@ -26,6 +27,12 @@ func (e *IssueError) Message() string {
 // having an error
 func (e *IssueError) Propagate() bool {
 	return e.Prop
+}
+
+// Warning returns whether this error is classified low enough to allow other
+// actions to happen
+func (e *IssueError) Warning() bool {
+	return e.Warn
 }
 
 // ErrNoFiles adds an error stating the issue folder is empty
@@ -75,6 +82,17 @@ func (i *Issue) ErrTooNew(hours int) {
 	})
 }
 
+// WarnTooNew sets a warning-level error for alerting curators without forcing
+// the issue to be stuck
+func (i *Issue) WarnTooNew() {
+	i.addError(&IssueError{
+		Err:  "may be too new",
+		Msg:  "Issue was modified recently and may still have updates pending",
+		Prop: false,
+		Warn: true,
+	})
+}
+
 // DuplicateIssueError implements apperr.Error for duped issue situations, and
 // holds onto extra information for figuring out how to handle the dupe
 type DuplicateIssueError struct {
@@ -91,6 +109,7 @@ func (i *Issue) ErrDuped(dupe *Issue) {
 			Err:  "duplicate of another issue",
 			Msg:  fmt.Sprintf("This issue appears to be a duplicate (same LCCN, date, and edition) of %s", dupe.WorkflowIdentification()),
 			Prop: true,
+			Warn: true,
 		},
 		Location: dupe.Location,
 		Name:     dupe.Title.Name + ", " + dupe.RawDate,
