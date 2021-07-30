@@ -136,12 +136,11 @@ func errorHTML(err apperr.Error) template.HTML {
 	return template.HTML(msg)
 }
 
-// errorListHTML returns HTML for errs, filtered to just major errors, then
-// joined together using errorHTML to let each error be displayed appropriately
+// errorListHTML returns HTML for errs joined together using errorHTML to let
+// each error be displayed appropriately
 func errorListHTML(errs apperr.List) template.HTML {
-	var list = errs.Major()
-	var sList = make([]string, list.Len())
-	for i, err := range list.All() {
+	var sList = make([]string, errs.Len())
+	for i, err := range errs.All() {
 		sList[i] = string(errorHTML(err))
 	}
 	return template.HTML(strings.Join(sList, "; "))
