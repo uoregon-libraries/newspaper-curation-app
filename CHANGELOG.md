@@ -25,15 +25,13 @@ Brief description, if necessary
 ### Migration
 -->
 
-## vX.Y.Z
+## v3.9.0
 
-Brief description, if necessary
+Issue error overhaul
 
 ### Fixed
 
 - CircleCI builds succeed again (updated Go version in CircleCI config)
-
-### Added
 
 ### Changed
 
@@ -41,8 +39,12 @@ Brief description, if necessary
 - Errors associated with an issue's metadata are now treated very differently
   than before.  Some are warnings rather than critical errors and can be
   ignored if necessary.
-
-### Removed
+  - Users must explicitly skip warnings on metadata entry if they feel the
+    warnings are not a concern
+  - The bulk issue queue will fail on any warnings to prevent things like dupes
+    from getting into the system.  This change may be re-evaluated later, as it
+    could cause an unnecessary burden for issues which need to get queued
+    regardless, and where these warnings can be managed in NCA anyway.
 
 ### Migration
 
