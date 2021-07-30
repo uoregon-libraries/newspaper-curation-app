@@ -87,6 +87,12 @@ func InitRootTemplate(templatePath string) {
 		"debug":         func() bool { return settings.DEBUG },
 		"dict":          dict,
 
+		// This hack helps with dynamic heading - Go's templating system seems to
+		// be confused when we have something like "<{{.Something}}>" - it decides
+		// the brackets, despite not being in a variable, need to be escaped.
+		"Open":  func(s string) template.HTML { return template.HTML("<" + s + ">") },
+		"Close": func(s string) template.HTML { return template.HTML("</" + s + ">") },
+
 		// We have functions for our privileges since they need to be "global" and
 		// easily verified at template compile time
 		"ListTitles":               func() *privilege.Privilege { return privilege.ListTitles },

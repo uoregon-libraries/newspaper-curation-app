@@ -27,6 +27,38 @@
 </div>
 {{end}}
 
+<!-- issue_errors needs to be given a dict of "Errors" (apperr.List) and
+     "Heading" to define the appropriate heading level -->
+{{define "issue_errors"}}
+  {{if .Errors.Major.Len}}
+    {{Open .Heading}}Errors{{Close .Heading}}
+    <div class="issue-with-errors">
+      This issue has errors:
+      <ul>
+      {{range .Errors.Major.All}}
+        <li>{{ErrorHTML .}}</li>
+      {{end}}
+      </ul>
+    </div>
+  {{end}}
+
+  {{if .Errors.Minor.Len}}
+    {{Open .Heading}}Warnings{{Close .Heading}}
+    <div class="issue-with-warnings">
+      {{if .Errors.Major.Len}}
+        In addition, there are warnings:
+      {{else}}
+        This issue's metadata has warnings:
+      {{end}}
+      <ul>
+      {{range .Errors.Minor.All}}
+        <li>{{ErrorHTML .}}</li>
+      {{end}}
+      </ul>
+    </div>
+  {{end}}
+{{end}}
+
 {{define "issue_page_view"}}
 <div class="row">
   <div class="col-md-12">

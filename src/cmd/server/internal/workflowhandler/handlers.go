@@ -67,6 +67,7 @@ func homeHandler(resp *responder.Responder, i *Issue) {
 // viewIssueHandler displays the given issue to the user so it can be looked
 // over without having to claim it
 func viewIssueHandler(resp *responder.Responder, i *Issue) {
+	i.ValidateMetadata()
 	resp.Vars.Title = "Issue Metadata / Page Numbers"
 	resp.Vars.Data["Issue"] = i
 	resp.Render(ViewIssueTmpl)
@@ -107,6 +108,7 @@ func unclaimIssueHandler(resp *responder.Responder, i *Issue) {
 
 // enterMetadataHandler shows the metadata entry form for the issue
 func enterMetadataHandler(resp *responder.Responder, i *Issue) {
+	i.ValidateMetadata()
 	resp.Vars.Title = "Issue Metadata / Page Numbers"
 	resp.Vars.Data["Issue"] = i
 	resp.Render(MetadataFormTmpl)
@@ -133,6 +135,7 @@ func saveMetadataHandler(resp *responder.Responder, i *Issue) {
 }
 
 func reviewMetadataHandler(resp *responder.Responder, i *Issue) {
+	i.ValidateMetadata()
 	resp.Vars.Title = "Reviewing Issue Metadata"
 	resp.Vars.Data["Issue"] = i
 	resp.Render(ReviewMetadataTmpl)

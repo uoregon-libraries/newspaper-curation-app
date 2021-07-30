@@ -50,6 +50,8 @@
 
 <h2>Issue</h2>
 
+{{template "issue_errors" (dict "Errors" .Data.Issue.Errors "Heading" "h3")}}
+
 {{if .Data.Issue.AllWorkflowActions}}
   <h3>All Actions / Comments</h3>
   {{template "issue_actions" (dict "Actions" .Data.Issue.AllWorkflowActions "User" .User)}}
