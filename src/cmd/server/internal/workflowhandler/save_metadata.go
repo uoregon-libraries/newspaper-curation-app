@@ -8,6 +8,7 @@ import (
 
 	"github.com/uoregon-libraries/newspaper-curation-app/src/cmd/server/internal/responder"
 	"github.com/uoregon-libraries/newspaper-curation-app/src/internal/logger"
+	"github.com/uoregon-libraries/newspaper-curation-app/src/models"
 )
 
 // storeIssueMetadata centralizes the logic for storing a metadata form's data
@@ -37,6 +38,14 @@ func storeIssueMetadata(resp *responder.Responder, i *Issue) map[string]string {
 	if i.Edition != valNum {
 		i.Edition = valNum
 		changes[key] = val
+	}
+
+	// Look for warning ignore/acceptance
+	val = resp.Request.FormValue("ignore_warnings")
+	logger.Warnf("val: %q", val)
+	valNum, _ = strconv.Atoi(val)
+	if valNum == i.ID {
+		i.acceptWarnings = true
 	}
 
 	// This one's funny - we have to "deserialize" the label csv since the real
@@ -105,12 +114,31 @@ func saveQueue(resp *responder.Responder, i *Issue, changes map[string]string) {
 		return
 	}
 
+	// If we had no errors, but there are warnings, the user must explicitly say
+	// they're okay queueing anyway
+	if i.Errors().Minor().Len() > 0 && !i.acceptWarnings {
+		http.SetCookie(resp.Writer, &http.Cookie{Name: "Alert", Value: "Warnings are present and must be remediated or skipped before queueing", Path: "/"})
+		http.Redirect(resp.Writer, resp.Request, i.Path("metadata"), http.StatusFound)
+		return
+	}
+
 	// Metadata is good: queue for review
 	var err = i.QueueForMetadataReview(resp.Vars.User.ID)
 	if err != nil {
 		resp.Vars.Alert = "Unable to save issue; try again or contact support"
 		enterMetadataHandler(resp, i)
 		return
+	}
+
+	// If there were warnings, we want to note that the user has explicitly
+	// chosen to ignore them
+	if i.acceptWarnings {
+		var warns []string
+		for _, e := range i.Errors().Minor().All() {
+			warns = append(warns, e.Message())
+		}
+		i.Save(models.ActionTypeInternalProcess, models.SystemUser.ID,
+			fmt.Sprintf("ignoring warnings (approved by %q):\n\n%s", resp.Vars.User.Login, strings.Join(warns, "\n")))
 	}
 
 	resp.Audit("queue-for-review", fmt.Sprintf("issue id %d", i.ID))

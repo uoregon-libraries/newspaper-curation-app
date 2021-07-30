@@ -35,6 +35,7 @@ type Issue struct {
 	si *schema.Issue
 
 	validationErrors *apperr.List
+	acceptWarnings   bool
 }
 
 func wrapDBIssue(dbIssue *models.Issue) *Issue {
