@@ -3,10 +3,13 @@
 All notable changes to NCA will be documented in this file.
 
 Starting from NCA v2.10.0, a changelog shall be kept based loosely on the [Keep
-a Changelog](https://keepachangelog.com/en/1.0.0/) format.  Since this is an
-internal project for UO, we won't necessarily add helpful migration notes,
-features and public API may change without notice, etc.  This is basically to
-help our team keep up with what's going on.  Ye be warned.  Again.
+a Changelog](https://keepachangelog.com/en/1.0.0/) format.
+
+Note that this has historically been an internal project for UO, and some notes
+have been confusing or even incomplete in the past.  We try hard to avoid this,
+but as usual, ye be warned.  However, if you're using NCA and find notes that
+don't help or seem wrong, please do not hesitate to
+[file an issue](https://github.com/uoregon-libraries/newspaper-curation-app/issues)!
 
 <!-- Template
 
