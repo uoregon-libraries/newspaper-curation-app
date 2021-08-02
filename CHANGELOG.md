@@ -28,7 +28,7 @@ Brief description, if necessary
 ### Migration
 -->
 
-## vX.Y.Z
+## v3.9.0
 
 Issue error overhaul
 
