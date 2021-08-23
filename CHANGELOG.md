@@ -11,6 +11,12 @@ but as usual, ye be warned.  However, if you're using NCA and find notes that
 don't help or seem wrong, please do not hesitate to
 [file an issue](https://github.com/uoregon-libraries/newspaper-curation-app/issues)!
 
+Starting from NCA v3.9.0, changes are kept in a separate `changelogs` directory
+until a branch is merged into main in order to minimize the difficulty merging
+changes when fixes and long-running features happen in tandem.  This *will* add
+ugliness and noise to git work, but it's better than the merge conflicts and
+error-prone resolutions we've been dealing with.
+
 <!-- Template
 
 ## vX.Y.Z
