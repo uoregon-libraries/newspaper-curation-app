@@ -51,6 +51,10 @@
                 <li><a href="{{FullPath "find"}}">Find Issues</a></li>
               {{end}}
 
+              {{if .User.PermittedTo ListAuditLogs}}
+                <li><a href="{{FullPath "logs"}}">Logs</a></li>
+              {{end}}
+
               {{if .User.PermittedTo ManageMOCs}}
                 <li><a href="{{FullPath "mocs"}}">MARC Org Codes</a></li>
               {{end}}
