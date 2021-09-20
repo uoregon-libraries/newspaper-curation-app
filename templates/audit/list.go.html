@@ -1,5 +1,41 @@
 {{block "content" .}}
 
+<div class="panel panel-default">
+  <div class="panel-heading">
+    <h2 class="panel-title"><button class="link disclosure" aria-expanded="false" aria-controls="table-filters">Filters</button></h2>
+  </div>
+  <div class="disclosure panel-body" id="table-filters">
+    <form class="form-horizontal" role="search" method="get" action="{{AuditHomeURL}}">
+      <div class="form-group">
+        <label class="col-sm-4 control-label" for="date-selector">Preset Dates:</label>
+        <div class="col-sm-8"><select name="preset-date-range">
+          <option value="all">All Time</option>
+          <option value="past12m">Past 12 months</option>
+          <option value="ytd">This year</option>
+          <option value="past30d">Past 30 days</option>
+          <option value="today">Today</option>
+        </select></div>
+      </div>
+
+      <div class="form-group">
+        <label class="col-sm-4 control-label" id="custom-date">Custom Date Range:</label>
+        <div class="col-sm-8">
+          <label class="control-label" id="custom-date-start">Start</label>
+          <input type="date" value="{{.Data.AuditCustomStartDate}}" aria-labelledby="custom-date custom-date-start" name="custom-date-start" />
+          <label class="control-label" id="custom-date-end">End</label>
+          <input type="date" value="{{.Data.AuditCustomStartDate}}" aria-labelledby="custom-date custom-date-end" name="custom-date-end" />
+        </div>
+      </div>
+
+      <div class="form-group">
+        <div class="col-sm-8 col-sm-offset-4">
+          <button id="apply-filters-button" class="btn btn-default" type="Submit">Apply filters</button>
+        </div>
+      </div>
+    </form>
+  </div>
+</div>
+
 <h2 id="audit-logs-heading" aria-live="polite">
   Recent Audit Logs (showing {{.Data.AuditLogsCount}} of {{len .Data.AuditLogs}})
 </h2>

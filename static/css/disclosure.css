@@ -1,0 +1,38 @@
+button.disclosure {
+  margin: 0;
+  padding: 0;
+  display: block;
+  font-size: 110%;
+  border: thin solid transparent;
+  background-color: transparent;
+  padding-left: 0.125em;
+  position: relative;
+  left: -0.35em;
+}
+
+button.disclosure:hover,
+button.disclosure:focus {
+  background-color: #eee;
+}
+
+button.disclosure:focus {
+  border-color: #630;
+}
+
+button.disclosure:hover {
+  text-decoration: underline;
+}
+
+button.disclosure:active {
+  background-color: #bbb;
+}
+
+button.disclosure[aria-expanded="false"]::before {
+  content: "➤";
+  padding-right: 0.25em;
+}
+
+button.disclosure[aria-expanded="true"]::before {
+  content: "▼";
+  padding-right: 0.25em;
+}
