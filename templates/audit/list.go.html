@@ -9,21 +9,22 @@
       <div class="form-group">
         <label class="col-sm-4 control-label" for="preset-date">Preset Dates:</label>
         <div class="col-sm-8"><select id="preset-date" name="preset-date">
-          <option value="all">All Time</option>
-          <option value="past12m">Past 12 months</option>
-          <option value="ytd">This year</option>
-          <option value="past30d">Past 30 days</option>
-          <option value="today">Today</option>
+          {{option "Custom (Use Fields Below)" "custom" .Data.Form.PresetDate}}
+          {{option "All" "all" .Data.Form.PresetDate}}
+          {{option "Past 12 months" "past12m" .Data.Form.PresetDate}}
+          {{option "This year" "ytd" .Data.Form.PresetDate}}
+          {{option "Past 30 days" "past30d" .Data.Form.PresetDate}}
+          {{option "Today" "today" .Data.Form.PresetDate}}
         </select></div>
       </div>
 
-      <div class="form-group">
+      <div class="custom-date form-group">
         <label class="col-sm-4 control-label" id="custom-date">Custom Date Range:</label>
         <div class="col-sm-8">
           <label class="control-label" id="custom-date-start">Start</label>
-          <input type="date" value="{{.Data.AuditCustomStartDate}}" aria-labelledby="custom-date custom-date-start" name="custom-date-start" />
+          <input type="date" value="{{.Data.Form.StartString}}" aria-labelledby="custom-date custom-date-start" name="custom-date-start" />
           <label class="control-label" id="custom-date-end">End</label>
-          <input type="date" value="{{.Data.AuditCustomStartDate}}" aria-labelledby="custom-date custom-date-end" name="custom-date-end" />
+          <input type="date" value="{{.Data.Form.EndString}}" aria-labelledby="custom-date custom-date-end" name="custom-date-end" />
         </div>
       </div>
 
@@ -64,4 +65,8 @@
   </tbody>
 </table>
 
+{{end}}
+
+{{block "extrajs" .}}
+{{IncludeJS "logs"}}
 {{end}}

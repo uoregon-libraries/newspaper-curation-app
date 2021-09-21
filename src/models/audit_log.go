@@ -67,6 +67,15 @@ func (f *auditLogFinder) find() ([]*AuditLog, uint64, error) {
 	return list, num, op.Err()
 }
 
+// FindAuditLogsByDateRange returns up to limit rows from the audit_logs table
+// in reverse-chronological order (most recent log first). If limit is less
+// than 1, all objects are returned. A count is also returned since the most
+// common use-case is displaying a subset of records but reporting a total as
+// well.
+func FindAuditLogsByDateRange(start, end time.Time, limit int) ([]*AuditLog, uint64, error) {
+	return new(auditLogFinder).where("`when` >= ? AND `when` <= ?", start, end).order("`when` desc").limit(limit).find()
+}
+
 // FindRecentAuditLogs returns the most recent limit logs sorted in
 // reverse-chronological order. If limit is less than 1, all logs are returned.
 // A count is also returned since the most common use-case is displaying a
