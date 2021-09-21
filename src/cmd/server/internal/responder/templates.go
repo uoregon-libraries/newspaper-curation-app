@@ -53,6 +53,21 @@ func dict(values ...interface{}) (map[string]interface{}, error) {
 	return dict, nil
 }
 
+// option generates an <option> tag like so:
+//   <option value="(value)">(text)>
+//
+// If current == value, the selected attribute is also set
+func option(text, value, current string) template.HTML {
+	var t string
+	if current == value {
+		t = `<option value="%s" selected>%s</option>`
+	} else {
+		t = `<option value="%s">%s</option>`
+	}
+
+	return template.HTML(fmt.Sprintf(t, value, text))
+}
+
 // actionVerb fills in the blank when describing what happened, e.g., "kbates
 // _rejected the issue metadata_ on Jan 1, 2002 at 3:45pm" or "jdepp _wrote a
 // comment_"
@@ -86,6 +101,7 @@ func InitRootTemplate(templatePath string) {
 		"raw":           func(s string) template.HTML { return template.HTML(s) },
 		"debug":         func() bool { return settings.DEBUG },
 		"dict":          dict,
+		"option":        option,
 
 		// This hack helps with dynamic heading - Go's templating system seems to
 		// be confused when we have something like "<{{.Something}}>" - it decides
