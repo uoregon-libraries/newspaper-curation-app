@@ -7,6 +7,7 @@ import (
 	"net/http"
 	"net/url"
 	"path"
+	"strings"
 	"time"
 
 	"github.com/gorilla/mux"
@@ -215,6 +216,7 @@ func csvHandler(w http.ResponseWriter, req *http.Request) {
 
 	cw.Write([]string{"When", "User", "IP Address", "Action", "Raw Message"})
 	for _, l := range logs {
-		cw.Write([]string{l.When.Format("2006-01-02 15:04"), l.User, l.IP, l.Action, l.Message})
+		cw.Write([]string{l.When.Format("2006-01-02 15:04"), l.User, l.IP, l.Action, strings.Replace(l.Message, "\n", "\\n", -1)})
 	}
+	cw.Flush()
 }
