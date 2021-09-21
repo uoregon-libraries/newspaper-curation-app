@@ -53,7 +53,9 @@ func (f *auditLogFinder) find() ([]*AuditLog, uint64, error) {
 	var list []*AuditLog
 	var selector = op.Select("audit_logs", &AuditLog{})
 	if f.cond != "" {
-		selector = selector.Where(f.cond, f.args...)
+		selector = selector.Where("action <> 'autosave' AND ("+f.cond+")", f.args...)
+	} else {
+		selector = selector.Where("action <> 'autosave'")
 	}
 	if f.ord != "" {
 		selector = selector.Order(f.ord)
