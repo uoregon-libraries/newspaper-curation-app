@@ -172,12 +172,12 @@ func listHandler(w http.ResponseWriter, req *http.Request) {
 
 	// Get up to 100 audit logs. If the requested range is "all", don't bother
 	// with the form's date values.
+	var finder = models.AuditLogs().Limit(100)
 	var err error
-	if f.PresetDate == "all" {
-		r.Vars.Data["AuditLogs"], r.Vars.Data["AuditLogsCount"], err = models.FindRecentAuditLogs(100)
-	} else {
-		r.Vars.Data["AuditLogs"], r.Vars.Data["AuditLogsCount"], err = models.FindAuditLogsByDateRange(f.Start, f.End, 100)
+	if f.PresetDate != "all" {
+		finder = finder.Between(f.Start, f.End)
 	}
+	r.Vars.Data["AuditLogs"], r.Vars.Data["AuditLogsCount"], err = finder.All()
 	if err != nil {
 		logger.Errorf("Unable to load audit log list: %s", err)
 		r.Error(http.StatusInternalServerError, "Error trying to pull audit logs - try again or contact support")
@@ -197,9 +197,9 @@ func csvHandler(w http.ResponseWriter, req *http.Request) {
 	var err error
 	var logs []*models.AuditLog
 	if f.PresetDate == "all" {
-		logs, _, err = models.FindRecentAuditLogs(-1)
+		logs, _, err = models.AuditLogs().All()
 	} else {
-		logs, _, err = models.FindAuditLogsByDateRange(f.Start, f.End, -1)
+		logs, _, err = models.AuditLogs().Between(f.Start, f.End).All()
 	}
 	if err != nil {
 		logger.Errorf("Unable to load audit log list: %s", err)

@@ -1,6 +1,7 @@
 package models
 
 import (
+	"strings"
 	"time"
 
 	"github.com/uoregon-libraries/newspaper-curation-app/src/dbi"
@@ -24,39 +25,73 @@ func CreateAuditLog(ip, user, action, message string) error {
 	return op.Err()
 }
 
-type auditLogFinder struct {
-	cond string
-	args []interface{}
-	ord  string
-	lim  int
+// AuditLogFinder is a pseudo-DSL for easily creating queries without needing
+// to know the underlying table structure
+type AuditLogFinder struct {
+	// this looks weird, but making a map of conditions allows us to have helpers
+	// that just replace data instead of having to worry about deduping it. e.g.,
+	// if somebody calls f.ForUser("foo").ForUser("bar")
+	conditions map[string]interface{}
+	ord        string
+	lim        int
 }
 
-func (f *auditLogFinder) where(cond string, args ...interface{}) *auditLogFinder {
-	f.cond = cond
-	f.args = args
-	return f
-}
-
-func (f *auditLogFinder) limit(limit int) *auditLogFinder {
-	f.lim = limit
-	return f
-}
-
-func (f *auditLogFinder) order(order string) *auditLogFinder {
+func (f *AuditLogFinder) order(order string) *AuditLogFinder {
 	f.ord = order
 	return f
 }
 
-func (f *auditLogFinder) find() ([]*AuditLog, uint64, error) {
+// AuditLogs returns a scoped object for use in simple filtering of the
+// audit_logs table without needing manual SQL or deep knowledge of the
+// database. It is meant to be ORM-like but with a very narrow scope:
+//
+//   AuditLogs().Between(time.Date(), time.Now()).ForUser("jechols").Limit(100).All()
+func AuditLogs() *AuditLogFinder {
+	var f = &AuditLogFinder{conditions: make(map[string]interface{})}
+	f.conditions["action <> 'autosave'"] = nil
+	f.ord = "`when` desc"
+	return f
+}
+
+// Between returns a scoped finder for limiting the results of the query to >=
+// start and <= end.
+func (f *AuditLogFinder) Between(start, end time.Time) *AuditLogFinder {
+	f.conditions["`when` >= ?"] = start
+	f.conditions["`when` <= ?"] = end
+	return f
+}
+
+// ForUser scopes the finder to only look for logs where the given string is in
+// the username field
+func (f *AuditLogFinder) ForUser(u string) *AuditLogFinder {
+	f.conditions["`user` = ?"] = u
+	return f
+}
+
+// Limit makes f.All() return at most limit AuditLog instances
+func (f *AuditLogFinder) Limit(limit int) *AuditLogFinder {
+	f.lim = limit
+	return f
+}
+
+// All returns all logs for the current query. If a limit was set, the returned
+// AuditLog objects will be limited, but the second return value will indicate
+// how many total logs there were.
+func (f *AuditLogFinder) All() ([]*AuditLog, uint64, error) {
 	var op = dbi.DB.Operation()
 	op.Dbg = dbi.Debug
 	var list []*AuditLog
-	var selector = op.Select("audit_logs", &AuditLog{})
-	if f.cond != "" {
-		selector = selector.Where("action <> 'autosave' AND ("+f.cond+")", f.args...)
-	} else {
-		selector = selector.Where("action <> 'autosave'")
+
+	var where []string
+	var args []interface{}
+	for k, v := range f.conditions {
+		where = append(where, k)
+		if v != nil {
+			args = append(args, v)
+		}
 	}
+	var selector = op.Select("audit_logs", &AuditLog{}).Where(strings.Join(where, " AND "), args...)
+
 	if f.ord != "" {
 		selector = selector.Order(f.ord)
 	}
@@ -67,21 +102,4 @@ func (f *auditLogFinder) find() ([]*AuditLog, uint64, error) {
 	selector.AllObjects(&list)
 
 	return list, num, op.Err()
-}
-
-// FindAuditLogsByDateRange returns up to limit rows from the audit_logs table
-// in reverse-chronological order (most recent log first). If limit is less
-// than 1, all objects are returned. A count is also returned since the most
-// common use-case is displaying a subset of records but reporting a total as
-// well.
-func FindAuditLogsByDateRange(start, end time.Time, limit int) ([]*AuditLog, uint64, error) {
-	return new(auditLogFinder).where("`when` >= ? AND `when` <= ?", start, end).order("`when` desc").limit(limit).find()
-}
-
-// FindRecentAuditLogs returns the most recent limit logs sorted in
-// reverse-chronological order. If limit is less than 1, all logs are returned.
-// A count is also returned since the most common use-case is displaying a
-// subset of records but reporting a total as well.
-func FindRecentAuditLogs(limit int) ([]*AuditLog, uint64, error) {
-	return new(auditLogFinder).order("`when` desc").limit(limit).find()
 }
