@@ -53,7 +53,7 @@ type form struct {
 	EndString   string
 	Start       time.Time
 	End         time.Time
-	Valid bool
+	Valid       bool
 }
 
 func parseCustomDate(f *form) error {
@@ -72,7 +72,7 @@ func parseCustomDate(f *form) error {
 		return fmt.Errorf("start must come before end")
 	}
 
-		f.Valid = true
+	f.Valid = true
 	return nil
 }
 
@@ -129,9 +129,9 @@ func listHandler(w http.ResponseWriter, req *http.Request) {
 	switch f.PresetDate {
 	case "custom":
 		if f.Valid {
-		r.Vars.Title = fmt.Sprintf("Audit Logs: %s to %s", f.StartString, f.EndString)
+			r.Vars.Title = fmt.Sprintf("Audit Logs: %s to %s", f.StartString, f.EndString)
 		} else {
-		r.Vars.Title = "Error Parsing Custom Date: Showing All Recent Logs"
+			r.Vars.Title = "Error Parsing Custom Date: Showing All Recent Logs"
 		}
 	case "past12m":
 		r.Vars.Title = "Past 12 Months Audit Logs"
