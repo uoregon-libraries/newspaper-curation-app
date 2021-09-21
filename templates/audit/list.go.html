@@ -54,7 +54,7 @@
   <tbody>
     {{range .Data.AuditLogs}}
       <tr>
-        <td>{{.When}}</td>
+        <td>{{TimeString .When}}</td>
         <td>{{.User}}</td>
         <td>{{.IP}}</td>
         <td>{{.Action}}</td>
