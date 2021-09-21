@@ -41,6 +41,13 @@
   Showing {{len .Data.AuditLogs}} logs (of {{.Data.AuditLogsCount}})
 </h2>
 
+<p>
+  <a href="{{AuditHomeURL}}/csv?{{.Data.Form.QueryString}}">Download a CSV of the current view</a>.
+  {{if gt .Data.AuditLogsCount 50000}}
+  <strong>Note that your current view has a lot of results. The download may take a minute or two.</strong>
+  {{end}}
+</p>
+
 <table class="table table-striped table-bordered table-condensed sortable" aria-labelledby="audit-logs-heading">
   <thead>
     <tr>

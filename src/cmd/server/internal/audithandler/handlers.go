@@ -1,9 +1,11 @@
 package audithandler
 
 import (
+	"encoding/csv"
 	"fmt"
 	"html/template"
 	"net/http"
+	"net/url"
 	"path"
 	"time"
 
@@ -34,6 +36,7 @@ func Setup(r *mux.Router, baseWebPath string, c *config.Config) {
 	basePath = baseWebPath
 	var s = r.PathPrefix(basePath).Subrouter()
 	s.Path("").Handler(canView(listHandler))
+	s.Path("/csv").Handler(canView(csvHandler))
 
 	layout = responder.Layout.Clone()
 	layout.Funcs(tmpl.FuncMap{"AuditHomeURL": func() string { return basePath }})
@@ -54,6 +57,19 @@ type form struct {
 	Start       time.Time
 	End         time.Time
 	Valid       bool
+}
+
+// QueryString encodes the form values for reuse in an href
+func (f *form) QueryString() template.URL {
+	var v = url.Values{}
+	v.Set("preset-date", f.PresetDate)
+	if f.PresetDate == "custom" {
+		v.Set("custom-date-start", f.StartString)
+		v.Set("custom-date-end", f.EndString)
+	}
+
+	logger.Infof(v.Encode())
+	return template.URL(v.Encode())
 }
 
 func parseCustomDate(f *form) error {
@@ -154,10 +170,9 @@ func listHandler(w http.ResponseWriter, req *http.Request) {
 		r.Vars.Title = "Recent Audit Logs"
 	}
 
-	// Get up to 100 audit logs
+	// Get up to 100 audit logs. If the requested range is "all", don't bother
+	// with the form's date values.
 	var err error
-
-	// if the requested range is "all", don't bother with the form's date values
 	if f.PresetDate == "all" {
 		r.Vars.Data["AuditLogs"], r.Vars.Data["AuditLogsCount"], err = models.FindRecentAuditLogs(100)
 	} else {
@@ -170,4 +185,36 @@ func listHandler(w http.ResponseWriter, req *http.Request) {
 	}
 
 	r.Render(listTmpl)
+}
+
+// csvHandler creates and streams a CSV of all audit logs matching the query
+func csvHandler(w http.ResponseWriter, req *http.Request) {
+	var r = responder.Response(w, req)
+	var f = getForm(r)
+
+	// Pull all logs matching the request. If the requested range is "all", don't
+	// bother with the form's date values.
+	var err error
+	var logs []*models.AuditLog
+	if f.PresetDate == "all" {
+		logs, _, err = models.FindRecentAuditLogs(-1)
+	} else {
+		logs, _, err = models.FindAuditLogsByDateRange(f.Start, f.End, -1)
+	}
+	if err != nil {
+		logger.Errorf("Unable to load audit log list: %s", err)
+		r.Error(http.StatusInternalServerError, "Error trying to generate audit log CSV - try again or contact support")
+		return
+	}
+
+	// Set up headers so the browser knows to download it
+	var fname = fmt.Sprintf("logs-%s-%s.csv", f.Start.Format("20060102"), f.End.Format("20060102"))
+	w.Header().Add("Content-Type", "text/csv")
+	w.Header().Add("Content-Disposition", `attachment; filename="`+fname+`"`)
+	var cw = csv.NewWriter(w)
+
+	cw.Write([]string{"When", "User", "IP Address", "Action", "Raw Message"})
+	for _, l := range logs {
+		cw.Write([]string{l.When.Format("2006-01-02 15:04"), l.User, l.IP, l.Action, l.Message})
+	}
 }
