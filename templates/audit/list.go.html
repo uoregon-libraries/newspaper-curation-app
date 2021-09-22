@@ -1,0 +1,92 @@
+{{block "content" .}}
+
+<div class="panel panel-default">
+  <div class="panel-heading">
+    <h2 class="panel-title"><button class="link disclosure" aria-expanded="false" aria-controls="table-filters">Filters</button></h2>
+  </div>
+  <div class="disclosure panel-body" id="table-filters">
+    <form class="form-horizontal" role="search" method="get" action="{{AuditHomeURL}}">
+      <div class="form-group">
+        <label class="col-sm-4 control-label" for="preset-date">Preset Dates:</label>
+        <div class="col-sm-8"><select id="preset-date" name="preset-date">
+          {{option "Custom (Use Fields Below)" "custom" .Data.Form.PresetDate}}
+          {{option "All" "all" .Data.Form.PresetDate}}
+          {{option "Past 12 months" "past12m" .Data.Form.PresetDate}}
+          {{option "This year" "ytd" .Data.Form.PresetDate}}
+          {{option "Past 30 days" "past30d" .Data.Form.PresetDate}}
+          {{option "Today" "today" .Data.Form.PresetDate}}
+        </select></div>
+      </div>
+
+      <div class="custom-date form-group">
+        <label class="col-sm-4 control-label" id="custom-date">Custom Date Range:</label>
+        <div class="col-sm-8">
+          <label class="control-label" id="custom-date-start">Start</label>
+          <input type="date" value="{{.Data.Form.StartString}}" aria-labelledby="custom-date custom-date-start" name="custom-date-start" />
+          <label class="control-label" id="custom-date-end">End</label>
+          <input type="date" value="{{.Data.Form.EndString}}" aria-labelledby="custom-date custom-date-end" name="custom-date-end" />
+        </div>
+      </div>
+
+      <div class="form-group">
+        <label for="user" class="col-sm-4 control-label">Only Show Logs For:</label>
+        <div class="col-sm-8">
+          <select name="user" id="user">
+            <optgroup label="Active">
+            {{range .Data.ActiveUsers}}
+            {{option .Login .Login $.Data.Form.Username}}
+            {{end}}
+            <optgroup label="Inactive">
+            {{range .Data.InactiveUsers}}
+            {{option .Login .Login $.Data.Form.Username}}
+            {{end}}
+          </select>
+        </div>
+      </div>
+
+      <div class="form-group">
+        <div class="col-sm-8 col-sm-offset-4">
+          <button id="apply-filters-button" class="btn btn-default" type="Submit">Apply filters</button>
+        </div>
+      </div>
+    </form>
+  </div>
+</div>
+
+<h2 id="audit-logs-heading" aria-live="polite">
+  Showing {{len .Data.AuditLogs}} logs (of {{.Data.AuditLogsCount}})
+</h2>
+
+<p>
+  <a href="{{AuditHomeURL}}/csv?{{.Data.Form.QueryString}}">Download a CSV of the current view</a>.
+</p>
+
+<table class="table table-striped table-bordered table-condensed sortable" aria-labelledby="audit-logs-heading">
+  <thead>
+    <tr>
+      <th scope="col">When</th>
+      <th scope="col">User</th>
+      <th scope="col">IP Address</th>
+      <th scope="col">Action</th>
+      <th scope="col">Raw Message</th>
+    </tr>
+  </thead>
+
+  <tbody>
+    {{range .Data.AuditLogs}}
+      <tr>
+        <td>{{TimeString .When}}</td>
+        <td>{{.User}}</td>
+        <td>{{.IP}}</td>
+        <td>{{.Action}}</td>
+        <td>{{.Message}}</td>
+      </tr>
+    {{end}}
+  </tbody>
+</table>
+
+{{end}}
+
+{{block "extrajs" .}}
+{{IncludeJS "logs"}}
+{{end}}

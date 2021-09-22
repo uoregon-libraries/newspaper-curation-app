@@ -54,6 +54,20 @@ func ActiveUsers() ([]*User, error) {
 	return users, op.Err()
 }
 
+// InactiveUsers returns the list of all inactive users in the system. This
+// should generally be used only for very niche tasks since we rarely want to
+// display deactive users.
+func InactiveUsers() ([]*User, error) {
+	var users []*User
+	var op = dbi.DB.Operation()
+	op.Select("users", &User{}).Where("deactivated = ?", true).AllObjects(&users)
+
+	for _, u := range users {
+		u.deserialize()
+	}
+	return users, op.Err()
+}
+
 // FindActiveUserWithLogin looks for a user whose login name is the given string.
 // Deactivated users need not apply.
 func FindActiveUserWithLogin(l string) *User {

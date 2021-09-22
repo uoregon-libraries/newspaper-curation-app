@@ -13,6 +13,8 @@
     {{IncludeCSS "tabs"}}
     {{IncludeCSS "actions"}}
     {{IncludeJS "sortabletable"}}
+    {{IncludeCSS "disclosure"}}
+    {{IncludeJS "disclosureButton"}}
   </head>
 
   <body>
@@ -49,6 +51,10 @@
 
               {{if .User.PermittedTo SearchIssues}}
                 <li><a href="{{FullPath "find"}}">Find Issues</a></li>
+              {{end}}
+
+              {{if .User.PermittedTo ListAuditLogs}}
+                <li><a href="{{FullPath "logs"}}">Logs</a></li>
               {{end}}
 
               {{if .User.PermittedTo ManageMOCs}}
