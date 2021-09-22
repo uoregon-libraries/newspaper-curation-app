@@ -17,7 +17,7 @@ type form struct {
 	EndString   string
 	Start       time.Time
 	End         time.Time
-	Valid       bool
+	Invalid     bool
 }
 
 // getForm stuffs the form data into our form structure for use in filtering
@@ -90,10 +90,10 @@ func (f *form) QueryString() template.URL {
 func (f *form) title() string {
 	switch f.PresetDate {
 	case "custom":
-		if f.Valid {
-			return fmt.Sprintf("Audit Logs: %s to %s", f.StartString, f.EndString)
+		if f.Invalid {
+			return "Error Parsing Custom Date: Showing All Recent Logs"
 		}
-		return "Error Parsing Custom Date: Showing All Recent Logs"
+		return fmt.Sprintf("Audit Logs: %s to %s", f.StartString, f.EndString)
 	case "past12m":
 		return "Past 12 Months Audit Logs"
 	case "ytd":
@@ -123,6 +123,7 @@ func (f *form) logs(limit int) ([]*models.AuditLog, uint64, error) {
 }
 
 func (f *form) parseCustomDate() error {
+	f.Invalid = true
 	var err error
 	f.Start, err = time.Parse("2006-01-02", f.StartString)
 	if err != nil {
@@ -138,6 +139,6 @@ func (f *form) parseCustomDate() error {
 		return fmt.Errorf("start must come before end")
 	}
 
-	f.Valid = true
+	f.Invalid = false
 	return nil
 }
