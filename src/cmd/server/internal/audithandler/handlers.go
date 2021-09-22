@@ -5,11 +5,14 @@ import (
 	"fmt"
 	"net/http"
 	"path"
+	"sort"
 	"strings"
 
 	"github.com/gorilla/mux"
 	"github.com/uoregon-libraries/newspaper-curation-app/src/cmd/server/internal/responder"
 	"github.com/uoregon-libraries/newspaper-curation-app/src/config"
+	"github.com/uoregon-libraries/newspaper-curation-app/src/internal/logger"
+	"github.com/uoregon-libraries/newspaper-curation-app/src/models"
 	"github.com/uoregon-libraries/newspaper-curation-app/src/privilege"
 	"github.com/uoregon-libraries/newspaper-curation-app/src/web/tmpl"
 )
@@ -53,6 +56,25 @@ func listHandler(w http.ResponseWriter, req *http.Request) {
 	r.Vars.Title = f.title()
 
 	var err error
+	var active, inactive []*models.User
+	active, err = models.ActiveUsers()
+	if err == nil {
+		inactive, err = models.InactiveUsers()
+	}
+	if err != nil {
+		logger.Errorf("Unable to pull users from database: %s", err)
+		r.Error(http.StatusInternalServerError, "Error trying to pull user list - try again or contact support")
+		return
+	}
+	sort.Slice(active, func(i, j int) bool {
+		return active[i].Login < active[j].Login
+	})
+	sort.Slice(inactive, func(i, j int) bool {
+		return inactive[i].Login < inactive[j].Login
+	})
+	r.Vars.Data["ActiveUsers"] = active
+	r.Vars.Data["InactiveUsers"] = inactive
+
 	r.Vars.Data["AuditLogs"], r.Vars.Data["AuditLogsCount"], err = f.logs(100)
 	if err != nil {
 		r.Error(http.StatusInternalServerError, "Error trying to pull audit logs - try again or contact support")
@@ -73,7 +95,11 @@ func csvHandler(w http.ResponseWriter, req *http.Request) {
 	}
 
 	// Set up headers so the browser knows to download it
-	var fname = fmt.Sprintf("logs-%s-%s.csv", f.Start.Format("20060102"), f.End.Format("20060102"))
+	var prefix string
+	if f.Username != "" {
+		prefix = f.Username + "-"
+	}
+	var fname = fmt.Sprintf("%slogs-%s-%s.csv", prefix, f.Start.Format("20060102"), f.End.Format("20060102"))
 	w.Header().Add("Content-Type", "text/csv")
 	w.Header().Add("Content-Disposition", `attachment; filename="`+fname+`"`)
 	var cw = csv.NewWriter(w)

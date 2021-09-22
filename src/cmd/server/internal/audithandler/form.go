@@ -15,6 +15,7 @@ type form struct {
 	PresetDate  string
 	StartString string
 	EndString   string
+	Username    string
 	Start       time.Time
 	End         time.Time
 	Invalid     bool
@@ -28,6 +29,7 @@ func getForm(r *responder.Responder) *form {
 		PresetDate:  vfn("preset-date"),
 		StartString: vfn("custom-date-start"),
 		EndString:   vfn("custom-date-end"),
+		Username:    vfn("user"),
 	}
 	var now = time.Now()
 	var min = time.Date(2010, 1, 1, 0, 0, 0, 0, time.Local)
@@ -79,6 +81,7 @@ func (f *form) QueryString() template.URL {
 		v.Set("custom-date-start", f.StartString)
 		v.Set("custom-date-end", f.EndString)
 	}
+	v.Set("user", f.Username)
 
 	logger.Infof(v.Encode())
 	return template.URL(v.Encode())
@@ -86,28 +89,37 @@ func (f *form) QueryString() template.URL {
 
 // title returns a useful title / caption based on the request
 func (f *form) title() string {
+	var title = "Recent Audit Logs"
 	switch f.PresetDate {
 	case "custom":
+		title = fmt.Sprintf("Audit Logs: %s to %s", f.StartString, f.EndString)
 		if f.Invalid {
-			return "Error Parsing Custom Date: Showing All Recent Logs"
+			title = "Error Parsing Custom Date: Showing All Recent Logs"
 		}
-		return fmt.Sprintf("Audit Logs: %s to %s", f.StartString, f.EndString)
 	case "past12m":
-		return "Past 12 Months Audit Logs"
+		title = "Past 12 Months Audit Logs"
 	case "ytd":
-		return "This Year's Audit Logs"
+		title = "This Year's Audit Logs"
 	case "past30d":
-		return "Past 30 Days Audit Logs"
+		title = "Past 30 Days Audit Logs"
 	case "today":
-		return "Today's Audit Logs"
+		title = "Today's Audit Logs"
 	}
-	return "Recent Audit Logs"
+
+	if f.Username != "" {
+		title += " for " + f.Username
+	}
+
+	return title
 }
 
 func (f *form) logs(limit int) ([]*models.AuditLog, uint64, error) {
 	var finder = models.AuditLogs()
 	if f.PresetDate != "all" {
 		finder.Between(f.Start, f.End)
+	}
+	if f.Username != "" {
+		finder.ForUser(f.Username)
 	}
 	if limit > 1 {
 		finder.Limit(limit)

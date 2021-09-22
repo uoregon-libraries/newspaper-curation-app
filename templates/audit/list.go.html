@@ -29,6 +29,22 @@
       </div>
 
       <div class="form-group">
+        <label for="user" class="col-sm-4 control-label">Only Show Logs For:</label>
+        <div class="col-sm-8">
+          <select name="user" id="user">
+            <optgroup label="Active">
+            {{range .Data.ActiveUsers}}
+            {{option .Login .Login $.Data.Form.Username}}
+            {{end}}
+            <optgroup label="Inactive">
+            {{range .Data.InactiveUsers}}
+            {{option .Login .Login $.Data.Form.Username}}
+            {{end}}
+          </select>
+        </div>
+      </div>
+
+      <div class="form-group">
         <div class="col-sm-8 col-sm-offset-4">
           <button id="apply-filters-button" class="btn btn-default" type="Submit">Apply filters</button>
         </div>
