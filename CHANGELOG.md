@@ -34,6 +34,22 @@ Brief description, if necessary
 ### Migration
 -->
 
+## v3.10.0
+
+Brief description, if necessary
+
+### Fixed
+
+### Added
+
+- New app section for viewing and downloading audit logs (for admins only)
+
+### Changed
+
+### Removed
+
+### Migration
+
 ## v3.9.0
 
 Issue error overhaul
