@@ -20,6 +20,59 @@ type form struct {
 	Valid       bool
 }
 
+// getForm stuffs the form data into our form structure for use in filtering
+// and redisplaying the form
+func getForm(r *responder.Responder) *form {
+	var vfn = r.Request.FormValue
+	var f = &form{
+		PresetDate:  vfn("preset-date"),
+		StartString: vfn("custom-date-start"),
+		EndString:   vfn("custom-date-end"),
+	}
+	var now = time.Now()
+	var min = time.Date(2010, 1, 1, 0, 0, 0, 0, time.Local)
+
+	switch f.PresetDate {
+	case "custom":
+		var err = f.parseCustomDate()
+		if err != nil {
+			f.Start = min
+			f.End = now
+			r.Vars.Alert = template.HTML("Invalid date range: " + err.Error())
+		}
+	case "past12m":
+		var y, m, d = now.Date()
+		f.Start = time.Date(y-1, m, d, 0, 0, 0, 0, now.Location())
+		f.End = now
+	case "ytd":
+		f.Start = time.Date(now.Year(), 1, 1, 0, 0, 0, 0, now.Location())
+		f.End = now
+	case "past30d":
+		f.Start = now.Add(-time.Hour * 24 * 30)
+		f.End = now
+	case "today":
+		var y, m, d = now.Date()
+		f.Start = time.Date(y, m, d, 0, 0, 0, 0, now.Location())
+		f.End = now
+	default:
+		f.Start = min
+		f.End = now
+		f.PresetDate = "all"
+	}
+
+	// Make sure the custom dates are helpful if the user wants to switch from a
+	// preset to custom
+	if f.StartString == "" {
+		f.StartString = f.Start.Format("2006-01-02")
+	}
+	if f.EndString == "" {
+		f.EndString = f.End.Format("2006-01-02")
+	}
+
+	r.Vars.Data["Form"] = f
+	return f
+}
+
 // QueryString encodes the form values for reuse in an href
 func (f *form) QueryString() template.URL {
 	var v = url.Values{}
@@ -87,57 +140,4 @@ func (f *form) parseCustomDate() error {
 
 	f.Valid = true
 	return nil
-}
-
-// getForm stuffs the form data into our form structure for use in filtering
-// and redisplaying the form
-func getForm(r *responder.Responder) *form {
-	var vfn = r.Request.FormValue
-	var f = &form{
-		PresetDate:  vfn("preset-date"),
-		StartString: vfn("custom-date-start"),
-		EndString:   vfn("custom-date-end"),
-	}
-	var now = time.Now()
-	var min = time.Date(2010, 1, 1, 0, 0, 0, 0, time.Local)
-
-	switch f.PresetDate {
-	case "custom":
-		var err = f.parseCustomDate()
-		if err != nil {
-			f.Start = min
-			f.End = now
-			r.Vars.Alert = template.HTML("Invalid date range: " + err.Error())
-		}
-	case "past12m":
-		var y, m, d = now.Date()
-		f.Start = time.Date(y-1, m, d, 0, 0, 0, 0, now.Location())
-		f.End = now
-	case "ytd":
-		f.Start = time.Date(now.Year(), 1, 1, 0, 0, 0, 0, now.Location())
-		f.End = now
-	case "past30d":
-		f.Start = now.Add(-time.Hour * 24 * 30)
-		f.End = now
-	case "today":
-		var y, m, d = now.Date()
-		f.Start = time.Date(y, m, d, 0, 0, 0, 0, now.Location())
-		f.End = now
-	default:
-		f.Start = min
-		f.End = now
-		f.PresetDate = "all"
-	}
-
-	// Make sure the custom dates are helpful if the user wants to switch from a
-	// preset to custom
-	if f.StartString == "" {
-		f.StartString = f.Start.Format("2006-01-02")
-	}
-	if f.EndString == "" {
-		f.EndString = f.End.Format("2006-01-02")
-	}
-
-	r.Vars.Data["Form"] = f
-	return f
 }
