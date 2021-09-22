@@ -62,10 +62,8 @@ func getForm(r *responder.Responder) *form {
 
 	// Make sure the custom dates are helpful if the user wants to switch from a
 	// preset to custom
-	if f.StartString == "" {
+	if f.PresetDate != "custom" {
 		f.StartString = f.Start.Format("2006-01-02")
-	}
-	if f.EndString == "" {
 		f.EndString = f.End.Format("2006-01-02")
 	}
 
