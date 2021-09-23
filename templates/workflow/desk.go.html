@@ -2,7 +2,7 @@
 
 <div class="tabs">
   <div role="tablist" aria-label="Workflow">
-    <button role="tab" aria-selected="true" aria-controls="desk-tab" id="desk">
+    <button role="tab" aria-selected="false" aria-controls="desk-tab" id="desk">
       Desk
       <span class="badge">{{.Data.MyDeskIssues|len}}</span>
     </button>
@@ -30,7 +30,7 @@
   </div>
 
   <!-- Everybody can see their own desk -->
-  <div tabindex="0" role="tabpanel" id="desk-tab" aria-labelledby="desk">
+  <div tabindex="0" role="tabpanel" id="desk-tab" aria-labelledby="desk" hidden="">
     {{template "desk" .}}
   </div>
 
