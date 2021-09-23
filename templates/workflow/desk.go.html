@@ -65,8 +65,8 @@
     and any work you've done will be lost.
   </p>
 
-{{if .Data.MyDeskIssues}}
-  <table class="table">
+  <div class="info" aria-live="polite" hidden></div>
+  <table class="table" hidden>
     <caption>Tasks</caption>
     <thead>
       <tr>
@@ -78,14 +78,8 @@
     </thead>
 
     <tbody>
-    {{range .Data.MyDeskIssues}}
-      {{template "MyDeskIssue" (dict "Issue" . "User" $.User)}}
-    {{end}}
     </tbody>
   </table>
-{{else}}
-  <em>There are no tasks awaiting your attention</em>
-{{end}}
 
 {{end}}<!-- block "desk" -->
 
@@ -97,26 +91,20 @@
     be ready to convert to a batch and ingest.
   </p>
 
-  {{if .Data.PendingMetadataIssues}}
-    <table class="table">
-      <caption>Issues Needing Metadata Entry</caption>
-      <thead>
-        <tr>
-          <th scope="col">Title</th>
-          <th scope="col">Date</th>
-          <th scope="col">Actions</th>
-        </tr>
-      </thead>
+  <div class="info" aria-live="polite" hidden></div>
+  <table class="table" hidden>
+    <caption>Issues Needing Metadata Entry</caption>
+    <thead>
+      <tr>
+        <th scope="col">Title</th>
+        <th scope="col">Date</th>
+        <th scope="col">Actions</th>
+      </tr>
+    </thead>
 
-      <tbody>
-      {{range .Data.PendingMetadataIssues}}
-        {{template "PendingMetadataIssues" (dict "Issue" . "User" $.User)}}
-      {{end}}
-      </tbody>
-    </table>
-  {{else}}
-    <em>There are no issues needing metadata entry</em>
-  {{end}}
+    <tbody>
+    </tbody>
+  </table>
 {{end}} <!-- block "needs-metadata" -->
 
 {{block "needs-review" .}}
@@ -125,26 +113,20 @@
     flag them as ready for processing.
   </p>
 
-  {{if .Data.PendingReviewIssues}}
-    <table class="table">
-      <caption>Issues Needing Metadata Review</caption>
-      <thead>
-        <tr>
-          <th scope="col">Title</th>
-          <th scope="col">Date</th>
-          <th scope="col">Actions</th>
-        </tr>
-      </thead>
+  <div class="info" aria-live="polite" hidden></div>
+  <table class="table" hidden>
+    <caption>Issues Needing Metadata Review</caption>
+    <thead>
+      <tr>
+        <th scope="col">Title</th>
+        <th scope="col">Date</th>
+        <th scope="col">Actions</th>
+      </tr>
+    </thead>
 
-      <tbody>
-      {{range .Data.PendingReviewIssues}}
-        {{template "PendingReviewIssues" (dict "Issue" . "User" $.User)}}
-      {{end}}
-      </tbody>
-    </table>
-  {{else}}
-    <em>There are no issues needing metadata review</em>
-  {{end}}
+    <tbody>
+    </tbody>
+  </table>
 {{end}} <!-- block "needs-review" -->
 
 {{block "unfixable-errors" .}}
@@ -153,24 +135,18 @@
     necessitate them being removed from NCA entirely and manually fixed
   </p>
 
-  {{if .Data.UnfixableErrorIssues}}
-    <table class="table">
-      <caption>Issues With Unfixable Errors</caption>
-      <thead>
-        <tr>
-          <th scope="col">Title</th>
-          <th scope="col">Date</th>
-          <th scope="col">Actions</th>
-        </tr>
-      </thead>
+  <div class="info" aria-live="polite" hidden></div>
+  <table class="table" hidden>
+    <caption>Issues With Unfixable Errors</caption>
+    <thead>
+      <tr>
+        <th scope="col">Title</th>
+        <th scope="col">Date</th>
+        <th scope="col">Actions</th>
+      </tr>
+    </thead>
 
-      <tbody>
-      {{range .Data.UnfixableErrorIssues}}
-        {{template "UnfixableErrorIssues" (dict "Issue" . "User" $.User)}}
-      {{end}}
-      </tbody>
-    </table>
-  {{else}}
-    <em>There are no issues with unfixable errors</em>
-  {{end}}
+    <tbody>
+    </tbody>
+  </table>
 {{end}} <!-- block "unfixable-errors" -->
