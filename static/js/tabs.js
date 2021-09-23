@@ -204,6 +204,10 @@
     if (setFocus) {
       tab.focus();
     };
+
+    // Fire off an event so tabs can handle custom on-select behaviors
+    const ev = new Event('tabselect');
+    tab.dispatchEvent(ev);
   };
 
   // Deactivate all tabs and tab panels
