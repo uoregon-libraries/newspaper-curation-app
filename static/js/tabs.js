@@ -179,6 +179,10 @@
 
   // Activates any given tab panel
   function activateTab (tab, setFocus) {
+    if (tab.getAttribute('aria-selected') == 'true') {
+      return
+    }
+
     setFocus = setFocus || true;
     // Deactivate all other tabs
     deactivateTabs();
