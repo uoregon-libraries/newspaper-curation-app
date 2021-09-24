@@ -45,7 +45,7 @@ func (f *AuditLogFinder) order(order string) *AuditLogFinder {
 // audit_logs table without needing manual SQL or deep knowledge of the
 // database. It is meant to be ORM-like but with a very narrow scope:
 //
-//   AuditLogs().Between(time.Date(), time.Now()).ForUser("jechols").Limit(100).All()
+//   AuditLogs().Between(time.Date(), time.Now()).ForUser("jechols").Limit(100).Fetch()
 func AuditLogs() *AuditLogFinder {
 	var f = &AuditLogFinder{conditions: make(map[string]interface{})}
 	f.conditions["action <> 'autosave'"] = nil
@@ -68,16 +68,16 @@ func (f *AuditLogFinder) ForUser(u string) *AuditLogFinder {
 	return f
 }
 
-// Limit makes f.All() return at most limit AuditLog instances
+// Limit makes f.Fetch() return at most limit AuditLog instances
 func (f *AuditLogFinder) Limit(limit int) *AuditLogFinder {
 	f.lim = limit
 	return f
 }
 
-// All returns all logs for the current query. If a limit was set, the returned
+// Fetch returns all logs for the current query. If a limit was set, the returned
 // AuditLog objects will be limited, but the second return value will indicate
 // how many total logs there were.
-func (f *AuditLogFinder) All() ([]*AuditLog, uint64, error) {
+func (f *AuditLogFinder) Fetch() ([]*AuditLog, uint64, error) {
 	var op = dbi.DB.Operation()
 	op.Dbg = dbi.Debug
 	var list []*AuditLog
