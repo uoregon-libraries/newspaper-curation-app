@@ -13,7 +13,7 @@ import (
 )
 
 func scanPageReviewIssues(c *config.Config) {
-	var list, err = models.FindIssuesInPageReview()
+	var list, err = models.Issues().InWorkflowStep(schema.WSAwaitingPageReview).Fetch()
 	if err != nil {
 		logger.Errorf("Unable to query issues in page review: %s", err)
 		return

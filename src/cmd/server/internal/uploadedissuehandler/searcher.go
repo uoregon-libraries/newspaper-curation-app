@@ -173,7 +173,7 @@ func (s *Searcher) swapTitleData(nextTitles []*Title, nextTitleLookup map[string
 func (s *Searcher) BuildInProcessList() error {
 	var nextInProcessIssues = make(map[string]bool)
 
-	var issues, err = models.FindIssuesAwaitingProcessing()
+	var issues, err = models.Issues().InWorkflowStep(schema.WSAwaitingProcessing).Fetch()
 	if err != nil {
 		return fmt.Errorf("unable to find in-process issues: %s", err)
 	}

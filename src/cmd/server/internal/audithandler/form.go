@@ -125,7 +125,7 @@ func (f *form) logs(limit int) ([]*models.AuditLog, uint64, error) {
 		finder.Limit(limit)
 	}
 
-	var logs, count, err = finder.All()
+	var logs, count, err = finder.Fetch()
 	if err != nil {
 		logger.Errorf("Unable to load audit log list: %s", err)
 	}

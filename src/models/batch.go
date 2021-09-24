@@ -120,7 +120,7 @@ func (b *Batch) Issues() ([]*Issue, error) {
 		return b.issues, nil
 	}
 
-	var issues, err = FindIssuesByBatchID(b.ID)
+	var issues, err = Issues().BatchID(b.ID).Fetch()
 	b.issues = issues
 	return b.issues, err
 }
