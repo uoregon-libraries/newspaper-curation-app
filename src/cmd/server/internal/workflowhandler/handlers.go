@@ -25,41 +25,22 @@ func searchIssueError(resp *responder.Responder) {
 func homeHandler(resp *responder.Responder, i *Issue) {
 	resp.Vars.Title = "Workflow"
 
-	// Get issues currently on user's desk
-	var uid = resp.Vars.User.ID
-	var issues, err = models.Issues().OnDesk(uid).Fetch()
+	var err error
+	resp.Vars.Data["DeskCount"], err = models.Issues().OnDesk(resp.Vars.User.ID).Count()
+	if err == nil {
+		resp.Vars.Data["CurateCount"], err = models.Issues().Available().InWorkflowStep(schema.WSReadyForMetadataEntry).Count()
+	}
+	if err == nil {
+		resp.Vars.Data["ReviewCount"], err = models.Issues().Available().InWorkflowStep(schema.WSAwaitingMetadataReview).Count()
+	}
+	if err == nil {
+		resp.Vars.Data["ErrorCount"], err = models.Issues().Available().InWorkflowStep(schema.WSUnfixableMetadataError).Count()
+	}
 	if err != nil {
-		logger.Errorf("Unable to find issues on user %d's desk: %s", uid, err)
+		logger.Errorf("Unable to count issues for workflow homepage: %s", err)
 		searchIssueError(resp)
 		return
 	}
-	resp.Vars.Data["MyDeskIssues"] = wrapDBIssues(issues)
-
-	// Get issues needing metadata
-	issues, err = models.Issues().Available().InWorkflowStep(schema.WSReadyForMetadataEntry).Fetch()
-	if err != nil {
-		logger.Errorf("Unable to find issues needing metadata entry: %s", err)
-		searchIssueError(resp)
-		return
-	}
-	resp.Vars.Data["PendingMetadataIssues"] = wrapClaimableDBIssues(resp.Vars.User, issues)
-
-	// Get issues needing metadata review
-	issues, err = models.Issues().Available().InWorkflowStep(schema.WSAwaitingMetadataReview).Fetch()
-	if err != nil {
-		logger.Errorf("Unable to find issues needing metadata review: %s", err)
-		searchIssueError(resp)
-		return
-	}
-	resp.Vars.Data["PendingReviewIssues"] = wrapClaimableDBIssues(resp.Vars.User, issues)
-
-	issues, err = models.Issues().Available().InWorkflowStep(schema.WSUnfixableMetadataError).Fetch()
-	if err != nil {
-		logger.Errorf(`Unable to find issues in the "unfixable" state: %s`, err)
-		searchIssueError(resp)
-		return
-	}
-	resp.Vars.Data["UnfixableErrorIssues"] = wrapClaimableDBIssues(resp.Vars.User, issues)
 
 	resp.Render(DeskTmpl)
 }
