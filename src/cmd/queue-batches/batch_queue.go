@@ -5,6 +5,7 @@ import (
 
 	"github.com/uoregon-libraries/newspaper-curation-app/src/internal/logger"
 	"github.com/uoregon-libraries/newspaper-curation-app/src/models"
+	"github.com/uoregon-libraries/newspaper-curation-app/src/schema"
 )
 
 // issueQueue is a list of issues for a given MOC to ease batching.  It acts as
@@ -100,7 +101,7 @@ func newBatchQueue(minPages, maxPages int) *batchQueue {
 // to the metadata entry phase; store file-level info in the database so we
 // have an easy checksum that's 100% separate from the filesystem)
 func (q *batchQueue) FindReadyIssues() {
-	var issues, err = models.FindIssuesReadyForBatching()
+	var issues, err = models.Issues().InWorkflowStep(schema.WSReadyForBatching).BatchID(0).Fetch()
 	if err != nil {
 		logger.Fatalf("Error trying to find issues: %s", err)
 	}

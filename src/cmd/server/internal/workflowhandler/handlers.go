@@ -27,7 +27,7 @@ func homeHandler(resp *responder.Responder, i *Issue) {
 
 	// Get issues currently on user's desk
 	var uid = resp.Vars.User.ID
-	var issues, err = models.FindIssuesOnDesk(uid)
+	var issues, err = models.Issues().OnDesk(uid).Fetch()
 	if err != nil {
 		logger.Errorf("Unable to find issues on user %d's desk: %s", uid, err)
 		searchIssueError(resp)
@@ -36,7 +36,7 @@ func homeHandler(resp *responder.Responder, i *Issue) {
 	resp.Vars.Data["MyDeskIssues"] = wrapDBIssues(issues)
 
 	// Get issues needing metadata
-	issues, err = models.FindAvailableIssuesByWorkflowStep(schema.WSReadyForMetadataEntry)
+	issues, err = models.Issues().Available().InWorkflowStep(schema.WSReadyForMetadataEntry).Fetch()
 	if err != nil {
 		logger.Errorf("Unable to find issues needing metadata entry: %s", err)
 		searchIssueError(resp)
@@ -45,7 +45,7 @@ func homeHandler(resp *responder.Responder, i *Issue) {
 	resp.Vars.Data["PendingMetadataIssues"] = wrapClaimableDBIssues(resp.Vars.User, issues)
 
 	// Get issues needing metadata review
-	issues, err = models.FindAvailableIssuesByWorkflowStep(schema.WSAwaitingMetadataReview)
+	issues, err = models.Issues().Available().InWorkflowStep(schema.WSAwaitingMetadataReview).Fetch()
 	if err != nil {
 		logger.Errorf("Unable to find issues needing metadata review: %s", err)
 		searchIssueError(resp)
@@ -53,7 +53,7 @@ func homeHandler(resp *responder.Responder, i *Issue) {
 	}
 	resp.Vars.Data["PendingReviewIssues"] = wrapClaimableDBIssues(resp.Vars.User, issues)
 
-	issues, err = models.FindAvailableIssuesByWorkflowStep(schema.WSUnfixableMetadataError)
+	issues, err = models.Issues().Available().InWorkflowStep(schema.WSUnfixableMetadataError).Fetch()
 	if err != nil {
 		logger.Errorf(`Unable to find issues in the "unfixable" state: %s`, err)
 		searchIssueError(resp)

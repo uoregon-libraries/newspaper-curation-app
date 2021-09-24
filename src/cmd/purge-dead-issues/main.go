@@ -13,6 +13,7 @@ import (
 	"github.com/uoregon-libraries/newspaper-curation-app/src/internal/logger"
 	"github.com/uoregon-libraries/newspaper-curation-app/src/jobs"
 	"github.com/uoregon-libraries/newspaper-curation-app/src/models"
+	"github.com/uoregon-libraries/newspaper-curation-app/src/schema"
 )
 
 const csi = "\033["
@@ -68,7 +69,7 @@ func main() {
 
 	logger.Debugf("Scanning for issues to purge")
 
-	var issues, err = models.FindIssuesAwaitingProcessing()
+	var issues, err = models.Issues().InWorkflowStep(schema.WSAwaitingProcessing).Fetch()
 	if err != nil {
 		logger.Fatalf("Unable to scan database for issues awaiting processing: %s", err)
 	}

@@ -75,22 +75,108 @@ func NewIssue(moc, lccn, dt string, ed int) *Issue {
 	return &Issue{MARCOrgCode: moc, LCCN: lccn, Date: dt, Edition: ed, WorkflowStep: schema.WSAwaitingProcessing}
 }
 
-// findIssues is a centralized finder that auto-skips issues flagged as ignored
-// and auto-deserializes the issues returned
-func findIssues(cond string, args ...interface{}) ([]*Issue, error) {
-	var op = dbi.DB.Operation()
-	op.Dbg = dbi.Debug
+// IssueFinder is a pseudo-DSL for easily creating queries without needing to
+// know the underlying table structure
+type IssueFinder struct {
+	// see AuditLogFinder: this map is weird but useful
+	conditions map[string]interface{}
+	op         *magicsql.Operation
+	ord        string
+	lim        int
+}
 
-	var list []*Issue
-	if cond == "" {
-		cond = "ignored = ?"
-	} else {
-		cond = "(" + cond + ")" + " AND ignored = ?"
+// Issues returns an IssueFinder: a scoped object for simple filtering of the
+// issues table with a very narrow DSL
+func Issues() *IssueFinder {
+	var f = &IssueFinder{conditions: make(map[string]interface{}), op: dbi.DB.Operation()}
+	f.conditions["ignored = ?"] = false
+	f.op.Dbg = dbi.Debug
+	return f
+}
+
+func (f *IssueFinder) lccn(lccn string) *IssueFinder {
+	f.conditions["lccn = ?"] = lccn
+	return f
+}
+func (f *IssueFinder) date(date string) *IssueFinder {
+	f.conditions["date = ?"] = date
+	return f
+}
+func (f *IssueFinder) edition(ed int) *IssueFinder {
+	f.conditions["edition = ?"] = ed
+	return f
+}
+func (f *IssueFinder) location(loc string) *IssueFinder {
+	f.conditions["location = ?"] = loc
+	return f
+}
+
+// InWorkflowStep filters issues by a given workflow step. Most common use:
+//
+//   - WSAwaitingProcessing: issues which are "invisible" to the UI because
+//     some automated process needs to run or is running
+//   - WSAwaitingPageReview: issues we have to regularly check to see if page
+//     review renaming is complete
+//   - WSReadyForBatching: issues with no batch id in this step are gathered up
+//     for generating a new ONI batch
+func (f *IssueFinder) InWorkflowStep(ws schema.WorkflowStep) *IssueFinder {
+	f.conditions["workflow_step = ?"] = string(ws)
+	return f
+}
+
+// BatchID filters issues associated with the given batch id
+func (f *IssueFinder) BatchID(batchID int) *IssueFinder {
+	f.conditions["batch_id = ?"] = batchID
+	return f
+}
+
+// OnDesk filters issues "owned" by a given user id
+func (f *IssueFinder) OnDesk(userID int) *IssueFinder {
+	f.conditions["workflow_owner_id = ?"] = userID
+	f.conditions["workflow_owner_expires_at IS NOT NULL"] = nil
+	f.conditions["workflow_owner_expires_at > ?"] = time.Now()
+	return f
+}
+
+// Available filters issues to just those which are "available". We
+// define "available" as any issue without an owner or where ownership expired
+// (e.g., an issue was sitting on somebody's desk for several days).
+func (f *IssueFinder) Available() *IssueFinder {
+	f.conditions["workflow_owner_id = 0 OR workflow_owner_expires_at < ?"] = time.Now()
+	return f
+}
+
+func (f *IssueFinder) selector() magicsql.Select {
+	var where []string
+	var args []interface{}
+	for k, v := range f.conditions {
+		where = append(where, "("+k+")")
+		if v != nil {
+			args = append(args, v)
+		}
 	}
-	args = append(args, false)
-	op.Select("issues", &Issue{}).Where(cond, args...).AllObjects(&list)
+	var sel = f.op.Select("issues", &Issue{}).Where(strings.Join(where, " AND "), args...)
+	if f.lim > 0 {
+		sel = sel.Limit(uint64(f.lim))
+	}
+	if f.ord != "" {
+		sel = sel.Order(f.ord)
+	}
+
+	return sel
+}
+
+// Fetch returns all issues this scoped finder represents
+func (f *IssueFinder) Fetch() ([]*Issue, error) {
+	var list []*Issue
+	f.selector().AllObjects(&list)
 	deserializeIssues(list)
-	return list, op.Err()
+	return list, f.op.Err()
+}
+
+// Count returns the number of records this query would return
+func (f *IssueFinder) Count() (uint64, error) {
+	return f.selector().Count().RowCount(), f.op.Err()
 }
 
 // FindIssue looks for an issue by its id
@@ -133,7 +219,7 @@ func FindIssuesByKey(key string) ([]*Issue, error) {
 		return nil, fmt.Errorf("invalid issue key %q", key)
 	}
 
-	return findIssues("lccn = ? AND date = ? AND edition = ?", lccn, date, ed)
+	return Issues().lccn(lccn).date(date).edition(ed).Fetch()
 }
 
 // FindIssueByKey returns the first issue with the given key
@@ -150,10 +236,8 @@ func FindIssueByKey(key string) (*Issue, error) {
 
 // FindIssueByLocation returns the first issue with the given location
 func FindIssueByLocation(location string) (*Issue, error) {
-	var op = dbi.DB.Operation()
-	op.Dbg = dbi.Debug
 	var i *Issue
-	var list, err = findIssues("location = ?", location)
+	var list, err = Issues().location(location).Fetch()
 	if len(list) != 0 {
 		i = list[0]
 	}
@@ -164,47 +248,10 @@ func FindIssueByLocation(location string) (*Issue, error) {
 // workflow system, but haven't yet gone through all the way to the point of
 // being batched and approved for production
 func FindInProcessIssues() ([]*Issue, error) {
-	return findIssues("")
-}
-
-// FindIssuesAwaitingProcessing returns all issues which should be considered
-// "invisible" to the UI - these are untouchable until some automated process
-// is complete
-func FindIssuesAwaitingProcessing() ([]*Issue, error) {
-	return findIssues("workflow_step = ?", string(schema.WSAwaitingProcessing))
-}
-
-// FindIssuesByBatchID returns all issues associated with the given batch id
-func FindIssuesByBatchID(batchID int) ([]*Issue, error) {
-	return findIssues("batch_id = ?", batchID)
-}
-
-// FindIssuesOnDesk returns all issues "owned" by a given user id
-func FindIssuesOnDesk(userID int) ([]*Issue, error) {
-	return findIssues(`
-		workflow_owner_id = ? AND
-		workflow_owner_expires_at IS NOT NULL AND
-		workflow_owner_expires_at > ?`, userID, time.Now())
-}
-
-// FindIssuesInPageReview looks for all issues currently awaiting page review
-// and returns them
-func FindIssuesInPageReview() ([]*Issue, error) {
-	return findIssues("workflow_step = ?", string(schema.WSAwaitingPageReview))
-}
-
-// FindIssuesReadyForBatching looks for all issues which are in the
-// WSReadyForBatching workflow step and have no batch ID
-func FindIssuesReadyForBatching() ([]*Issue, error) {
-	return findIssues("workflow_step = ? AND batch_id = 0", string(schema.WSReadyForBatching))
-}
-
-// FindAvailableIssuesByWorkflowStep looks for all "available" issues with the
-// requested workflow step and returns them.  We define "available" as
-// basically any issue without an owner.
-func FindAvailableIssuesByWorkflowStep(ws schema.WorkflowStep) ([]*Issue, error) {
-	return findIssues("workflow_step = ? AND (workflow_owner_id = 0 OR workflow_owner_expires_at < ?)",
-		string(ws), time.Now().Format("2006-01-02 15:04:05"))
+	// This seems really awful, but every issue that's in the system and isn't
+	// ignored is in process today. We keep this helper around because at least
+	// the function name says something clearly compared to the code below.
+	return Issues().Fetch()
 }
 
 // Key returns the standardized issue key for this DB issue
