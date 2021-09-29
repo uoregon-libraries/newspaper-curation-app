@@ -146,6 +146,12 @@ func (f *IssueFinder) Available() *IssueFinder {
 	return f
 }
 
+// Limit sets the max issues to return
+func (f *IssueFinder) Limit(limit int) *IssueFinder {
+	f.lim = limit
+	return f
+}
+
 func (f *IssueFinder) selector() magicsql.Select {
 	var where []string
 	var args []interface{}

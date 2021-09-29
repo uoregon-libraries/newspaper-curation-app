@@ -61,6 +61,7 @@ func Setup(r *mux.Router, webPath string, c *config.Config, w *issuewatcher.Watc
 	// Base path (desk view)
 	var s = r.PathPrefix(basePath).Subrouter()
 	s.Path("").Handler(handle(canView(homeHandler)))
+	s.Path("/json").Handler(handle(canView(jsonHandler)))
 
 	// All other paths are centered around a specific issue
 	var s2 = s.PathPrefix("/{issue_id}").Subrouter()
@@ -94,7 +95,10 @@ func Setup(r *mux.Router, webPath string, c *config.Config, w *issuewatcher.Watc
 	s4.Path("/remove/confirm").Methods("POST").Handler(handle(canReviewUnfixable(removeUnfixableIssueHandler)))
 
 	Layout = responder.Layout.Clone()
-	Layout.Funcs(tmpl.FuncMap{"Can": Can})
+	Layout.Funcs(tmpl.FuncMap{
+		"Can":             Can,
+		"WorkflowHomeURL": func() string { return basePath },
+	})
 	Layout.Path = path.Join(Layout.Path, "workflow")
 	Layout.MustReadPartials("_osdjs.go.html", "_view_issue.go.html")
 	DeskTmpl = Layout.MustBuild("desk.go.html")

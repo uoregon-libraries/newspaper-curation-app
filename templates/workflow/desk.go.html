@@ -150,3 +150,10 @@
     </tbody>
   </table>
 {{end}} <!-- block "unfixable-errors" -->
+
+{{block "extrajs" .}}
+  {{IncludeJS "workflow_issue_tabs"}}
+  <script>
+  const workflowHomeURL = {{WorkflowHomeURL}};
+  </script>
+{{end}}

@@ -1,6 +1,7 @@
 package workflowhandler
 
 import (
+	"encoding/json"
 	"fmt"
 	"html/template"
 	"net/http"
@@ -43,6 +44,64 @@ func homeHandler(resp *responder.Responder, i *Issue) {
 	}
 
 	resp.Render(DeskTmpl)
+}
+
+type jsonResponse struct {
+	Code    int
+	Message string
+	Issues  []*JSONIssue
+	Total   uint64
+}
+
+func getJSONIssues(resp *responder.Responder) *jsonResponse {
+	var tab = resp.Request.FormValue("tab")
+	var response = new(jsonResponse)
+	response.Code = http.StatusOK
+	var finder = models.Issues()
+	switch tab {
+	case "desk":
+		finder = models.Issues().OnDesk(resp.Vars.User.ID)
+	case "needs-metadata":
+		finder = models.Issues().Available().InWorkflowStep(schema.WSReadyForMetadataEntry)
+	case "needs-review":
+		finder = models.Issues().Available().InWorkflowStep(schema.WSAwaitingMetadataReview)
+	case "unfixable-errors":
+		finder = models.Issues().Available().InWorkflowStep(schema.WSUnfixableMetadataError)
+	default:
+		logger.Warnf("Unknown tab %q requested in workflow JSON handler", tab)
+		response.Code = http.StatusBadRequest
+		response.Message = "Invalid / unknown data requested"
+		return response
+	}
+	var err error
+	response.Total, err = finder.Count()
+	var issues []*models.Issue
+	if err == nil {
+		issues, err = finder.Limit(100).Fetch()
+	}
+
+	if err != nil {
+		logger.Warnf("Error reading issues in workflow JSON handler: %s", err)
+		response.Message = "Unable to retrieve issues from the database! Try again or contact support."
+		response.Code = http.StatusInternalServerError
+		return response
+	}
+
+	response.Issues = jsonify(issues, resp.Vars.User)
+	return response
+}
+
+// jsonHandler produces a JSON feed of issue information to enable
+// rendering a subset of issues
+func jsonHandler(resp *responder.Responder, i *Issue) {
+	var response = getJSONIssues(resp)
+	resp.Writer.Header().Add("Content-Type", "application/json")
+	resp.Writer.WriteHeader(response.Code)
+	var data, err = json.Marshal(response)
+	if err != nil {
+		logger.Criticalf("Unable to marshal %#v: %s", response, err)
+	}
+	resp.Writer.Write(data)
 }
 
 // viewIssueHandler displays the given issue to the user so it can be looked
