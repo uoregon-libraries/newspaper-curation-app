@@ -1,5 +1,7 @@
 {{block "content" .}}
 
+<div id="json-status" role="status" class="alert alert-info" aria-live="polite">Status: N/A</div>
+
 <div class="tabs">
   <div role="tablist" aria-label="Workflow">
     <button role="tab" aria-selected="false" aria-controls="desk-tab" id="desk">
@@ -65,7 +67,6 @@
     and any work you've done will be lost.
   </p>
 
-  <div class="info" aria-live="polite" hidden></div>
   <table class="table" hidden>
     <caption>Tasks</caption>
     <thead>
@@ -76,10 +77,9 @@
         <th scope="col">Actions</th>
       </tr>
     </thead>
-
-    <tbody>
-    </tbody>
   </table>
+
+  <div class="empty" hidden><em>There are no tasks awaiting your attention</em></div>
 
 {{end}}<!-- block "desk" -->
 
@@ -91,7 +91,6 @@
     be ready to convert to a batch and ingest.
   </p>
 
-  <div class="info" aria-live="polite" hidden></div>
   <table class="table" hidden>
     <caption>Issues Needing Metadata Entry</caption>
     <thead>
@@ -101,10 +100,9 @@
         <th scope="col">Actions</th>
       </tr>
     </thead>
-
-    <tbody>
-    </tbody>
   </table>
+
+  <div class="empty" hidden><em>There are no issues needing metadata entry</em></div>
 {{end}} <!-- block "needs-metadata" -->
 
 {{block "needs-review" .}}
@@ -113,7 +111,6 @@
     flag them as ready for processing.
   </p>
 
-  <div class="info" aria-live="polite" hidden></div>
   <table class="table" hidden>
     <caption>Issues Needing Metadata Review</caption>
     <thead>
@@ -123,10 +120,8 @@
         <th scope="col">Actions</th>
       </tr>
     </thead>
-
-    <tbody>
-    </tbody>
   </table>
+  <div class="empty" hidden><em>There are no issues needing metadata review</em></div>
 {{end}} <!-- block "needs-review" -->
 
 {{block "unfixable-errors" .}}
@@ -135,7 +130,6 @@
     necessitate them being removed from NCA entirely and manually fixed
   </p>
 
-  <div class="info" aria-live="polite" hidden></div>
   <table class="table" hidden>
     <caption>Issues With Unfixable Errors</caption>
     <thead>
@@ -145,10 +139,8 @@
         <th scope="col">Actions</th>
       </tr>
     </thead>
-
-    <tbody>
-    </tbody>
   </table>
+  <div class="empty" hidden><em>There are no issues with unfixable errors</em></div>
 {{end}} <!-- block "unfixable-errors" -->
 
 {{block "extrajs" .}}
