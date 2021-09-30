@@ -12,8 +12,8 @@ window.addEventListener('DOMContentLoaded', (event) => {
 
 async function loadIssues(e) {
   // Start by clearing the table caption and body in this tab
-  const el = e.target;
-  const panel = document.getElementById(el.getAttribute('aria-controls'));
+  const tab = e.target;
+  const panel = document.getElementById(tab.getAttribute('aria-controls'));
   const table = panel.querySelector('table');
   const emptyDiv = panel.querySelector('.empty');
   emptyDiv.setAttribute('hidden', true);
@@ -28,7 +28,7 @@ async function loadIssues(e) {
 
   var response, data;
   try {
-    response = await fetch(workflowHomeURL+'/json?tab='+el.getAttribute('id'));
+    response = await fetch(workflowHomeURL+'/json?tab='+tab.getAttribute('id'));
     data = await response.json();
   }
   catch (e) {
