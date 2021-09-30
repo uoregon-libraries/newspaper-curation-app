@@ -50,38 +50,42 @@ type jsonResponse struct {
 	Code    int
 	Message string
 	Issues  []*JSONIssue
-	Total   uint64
+	Counts  map[string]uint64
 }
 
 func getJSONIssues(resp *responder.Responder) *jsonResponse {
-	var tab = resp.Request.FormValue("tab")
 	var response = new(jsonResponse)
+	response.Counts = make(map[string]uint64)
 	response.Code = http.StatusOK
-	var finder = models.Issues()
-	switch tab {
-	case "desk":
-		finder = models.Issues().OnDesk(resp.Vars.User.ID)
-	case "needs-metadata":
-		finder = models.Issues().Available().InWorkflowStep(schema.WSReadyForMetadataEntry)
-	case "needs-review":
-		finder = models.Issues().Available().InWorkflowStep(schema.WSAwaitingMetadataReview)
-	case "unfixable-errors":
-		finder = models.Issues().Available().InWorkflowStep(schema.WSUnfixableMetadataError)
-	default:
-		logger.Warnf("Unknown tab %q requested in workflow JSON handler", tab)
+	var finders = map[string]*models.IssueFinder{
+		"desk":             models.Issues().OnDesk(resp.Vars.User.ID),
+		"needs-metadata":   models.Issues().Available().InWorkflowStep(schema.WSReadyForMetadataEntry),
+		"needs-review":     models.Issues().Available().InWorkflowStep(schema.WSAwaitingMetadataReview),
+		"unfixable-errors": models.Issues().Available().InWorkflowStep(schema.WSUnfixableMetadataError),
+	}
+	for tab, f := range finders {
+		var err error
+		response.Counts[tab], err = f.Count()
+		if err != nil {
+			logger.Errorf("JSON request: error trying to count issues for %q: %s", tab, err)
+			response.Message = "Unable to retrieve issues from the database! Try again or contact support."
+			response.Code = http.StatusInternalServerError
+			return response
+		}
+	}
+
+	var selectedTab = resp.Request.FormValue("tab")
+	var finder = finders[selectedTab]
+	if finder == nil {
+		logger.Warnf("Unknown tab %q requested in workflow JSON handler", selectedTab)
 		response.Code = http.StatusBadRequest
 		response.Message = "Invalid / unknown data requested"
 		return response
 	}
-	var err error
-	response.Total, err = finder.Count()
-	var issues []*models.Issue
-	if err == nil {
-		issues, err = finder.Limit(100).Fetch()
-	}
 
+	var issues, err = finder.Limit(100).Fetch()
 	if err != nil {
-		logger.Warnf("Error reading issues in workflow JSON handler: %s", err)
+		logger.Errorf("Error reading issues in workflow JSON handler: %s", err)
 		response.Message = "Unable to retrieve issues from the database! Try again or contact support."
 		response.Code = http.StatusInternalServerError
 		return response

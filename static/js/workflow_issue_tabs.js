@@ -53,7 +53,7 @@ async function loadIssues(e) {
   }
 
   statusDiv.innerText = `Load complete: displaying ${data.Issues.length} of ${data.Total} issues`;
-  tab.querySelector('span[class=badge]').innerText = data.Total;
+  tab.querySelector('span[class=badge]').innerText = data.Counts[tab.getAttribute('id')];
   populateTable(table, data.Issues);
   table.removeAttribute('hidden');
   emptyDiv.setAttribute('hidden', true);
