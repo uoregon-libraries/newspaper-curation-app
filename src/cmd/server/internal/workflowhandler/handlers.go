@@ -21,6 +21,21 @@ func searchIssueError(resp *responder.Responder) {
 	resp.Render(responder.Empty)
 }
 
+func loadTitles() (schema.TitleList, error) {
+	var dbTitles, err = models.Titles()
+	if err != nil {
+		return nil, err
+	}
+
+	var titles schema.TitleList
+	for _, t := range dbTitles {
+		titles = append(titles, t.SchemaTitle())
+	}
+	titles.SortByName()
+
+	return titles, nil
+}
+
 // homeHandler shows claimed workflow items that need to be finished as well as
 // pending items which can be claimed
 func homeHandler(resp *responder.Responder, i *Issue) {
@@ -37,8 +52,15 @@ func homeHandler(resp *responder.Responder, i *Issue) {
 	if err == nil {
 		resp.Vars.Data["ErrorCount"], err = models.Issues().Available().InWorkflowStep(schema.WSUnfixableMetadataError).Count()
 	}
+	if err == nil {
+		resp.Vars.Data["Titles"], err = loadTitles()
+	}
+	if err == nil {
+		resp.Vars.Data["MOCs"], err = models.AllMOCs()
+	}
+
 	if err != nil {
-		logger.Errorf("Unable to count issues for workflow homepage: %s", err)
+		logger.Errorf("Unable to read data for workflow homepage: %s", err)
 		searchIssueError(resp)
 		return
 	}
