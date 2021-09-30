@@ -45,10 +45,6 @@ window.addEventListener('load', function () {
   // Set the active tab
   parseTabState();
 
-  // Make sure that any history change loads the right tab, not just when the
-  // client requests a new page from the server
-  window.addEventListener('hashchange', parseTabState, false);
-
   function addListeners (index) {
     tabs[index].addEventListener('click', clickEventListener);
     tabs[index].addEventListener('keydown', keydownEventListener);
@@ -168,16 +164,18 @@ window.addEventListener('load', function () {
     };
   };
 
-  // Returns the tab as defined in the URL fragment ("hash" to javascript)
-  function getFragmentTab() {
-    var hsh = new URLSearchParams(window.location.hash.substr(1));
-    return hsh.get('tab');
+  // Returns the tab as defined in the URL query ("search" to javascript)
+  function getTabFromURL() {
+    var srch = new URLSearchParams(window.location.search.substr(1));
+    return srch.get('tab');
   }
 
-  function setFragmentTab(tabid) {
-    var hsh = new URLSearchParams(window.location.hash.substr(1));
-    hsh.set('tab', tabid);
-    window.location.hash = hsh.toString();
+  function setURLTab(tabid) {
+    let u = new URL(window.location);
+    let srch = new URLSearchParams(u.search.substr(1));
+    srch.set('tab', tabid);
+    u.search = srch.toString();
+    history.replaceState(null, "", u);
   }
 
   // Activates any given tab panel
@@ -203,8 +201,8 @@ window.addEventListener('load', function () {
     document.getElementById(controls).removeAttribute('hidden');
 
     // Update the URL fragment if it's not already set properly
-    if (tab.id != getFragmentTab()) {
-      setFragmentTab(tab.id);
+    if (tab.id != getTabFromURL()) {
+      setURLTab(tab.id);
     }
 
     // Set focus when required
@@ -308,7 +306,7 @@ window.addEventListener('load', function () {
 
   // parseTabState determines which tab should be active based on the fragment
   function parseTabState() {
-    var tab = document.getElementById(getFragmentTab());
+    var tab = document.getElementById(getTabFromURL());
     if (tab == null) {
       tab = tabs[0];
     }
