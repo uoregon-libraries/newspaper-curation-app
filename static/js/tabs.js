@@ -64,9 +64,12 @@ window.addEventListener('load', function () {
     // Allow a child of the button to be clicked - for some reason even though
     // the event is defined solely on the button, a span within the button
     // "steals" the event without this.
-    if (tab.getAttribute('role') != 'tab') {
-      tab.parentNode.dispatchEvent(new Event('click'));
-      return;
+    while (tab.getAttribute('role') != 'tab') {
+      tab = tab.parentNode;
+      if (tab == null) {
+        console.log(`unable to find parent of ${event.target} with role of 'tab'!`);
+        return;
+      }
     }
     activateTab(tab, false);
   };
