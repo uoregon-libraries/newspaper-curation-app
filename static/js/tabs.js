@@ -2,7 +2,7 @@
 *   This content is licensed according to the W3C Software License at
 *   https://www.w3.org/Consortium/Legal/2015/copyright-software-and-document
 */
-(function () {
+window.addEventListener('load', function () {
   var tablist = document.querySelectorAll('[role="tablist"]')[0];
   if (tablist == null) {
     return;
@@ -179,6 +179,10 @@
 
   // Activates any given tab panel
   function activateTab (tab, setFocus) {
+    if (tab.getAttribute('aria-selected') == 'true') {
+      return
+    }
+
     setFocus = setFocus || true;
     // Deactivate all other tabs
     deactivateTabs();
@@ -204,6 +208,10 @@
     if (setFocus) {
       tab.focus();
     };
+
+    // Fire off an event so tabs can handle custom on-select behaviors
+    const ev = new Event('tabselect');
+    tab.dispatchEvent(ev);
   };
 
   // Deactivate all tabs and tab panels
@@ -303,4 +311,4 @@
     }
     activateTab(tab);
   }
-}());
+});

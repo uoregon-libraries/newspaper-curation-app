@@ -1,36 +1,38 @@
 {{block "content" .}}
 
+<div id="json-status" role="status" class="alert alert-info" aria-live="polite">Status: N/A</div>
+
 <div class="tabs">
   <div role="tablist" aria-label="Workflow">
-    <button role="tab" aria-selected="true" aria-controls="desk-tab" id="desk">
+    <button role="tab" aria-selected="false" aria-controls="desk-tab" id="desk">
       Desk
-      <span class="badge">{{.Data.MyDeskIssues|len}}</span>
+      <span class="badge">{{.Data.DeskCount}}</span>
     </button>
 
     {{if .User.PermittedTo EnterIssueMetadata}}
     <button role="tab" aria-selected="false" aria-controls="needs-metadata-tab" id="needs-metadata" tabindex="-1">
       Metadata Entry
-      <span class="badge">{{.Data.PendingMetadataIssues|len}}</span>
+      <span class="badge">{{.Data.CurateCount}}</span>
     </button>
     {{end}}
 
     {{if .User.PermittedTo ReviewIssueMetadata}}
     <button role="tab" aria-selected="false" aria-controls="needs-review-tab" id="needs-review" tabindex="-1">
       Metadata Review
-      <span class="badge">{{.Data.PendingReviewIssues|len}}</span>
+      <span class="badge">{{.Data.ReviewCount}}</span>
     </button>
     {{end}}
 
     {{if .User.PermittedTo ReviewUnfixableIssues}}
     <button role="tab" aria-selected="false" aria-controls="unfixable-errors-tab" id="unfixable-errors" tabindex="-1">
       Unfixable Errors
-      <span class="badge">{{.Data.UnfixableErrorIssues|len}}</span>
+      <span class="badge">{{.Data.ErrorCount}}</span>
     </button>
     {{end}}
   </div>
 
   <!-- Everybody can see their own desk -->
-  <div tabindex="0" role="tabpanel" id="desk-tab" aria-labelledby="desk">
+  <div tabindex="0" role="tabpanel" id="desk-tab" aria-labelledby="desk" hidden="">
     {{template "desk" .}}
   </div>
 
@@ -65,8 +67,7 @@
     and any work you've done will be lost.
   </p>
 
-{{if .Data.MyDeskIssues}}
-  <table class="table">
+  <table class="table" hidden>
     <caption>Tasks</caption>
     <thead>
       <tr>
@@ -76,16 +77,9 @@
         <th scope="col">Actions</th>
       </tr>
     </thead>
-
-    <tbody>
-    {{range .Data.MyDeskIssues}}
-      {{template "MyDeskIssue" (dict "Issue" . "User" $.User)}}
-    {{end}}
-    </tbody>
   </table>
-{{else}}
-  <em>There are no tasks awaiting your attention</em>
-{{end}}
+
+  <div class="empty" hidden><em>There are no tasks awaiting your attention</em></div>
 
 {{end}}<!-- block "desk" -->
 
@@ -97,26 +91,18 @@
     be ready to convert to a batch and ingest.
   </p>
 
-  {{if .Data.PendingMetadataIssues}}
-    <table class="table">
-      <caption>Issues Needing Metadata Entry</caption>
-      <thead>
-        <tr>
-          <th scope="col">Title</th>
-          <th scope="col">Date</th>
-          <th scope="col">Actions</th>
-        </tr>
-      </thead>
+  <table class="table" hidden>
+    <caption>Issues Needing Metadata Entry</caption>
+    <thead>
+      <tr>
+        <th scope="col">Title</th>
+        <th scope="col">Date</th>
+        <th scope="col">Actions</th>
+      </tr>
+    </thead>
+  </table>
 
-      <tbody>
-      {{range .Data.PendingMetadataIssues}}
-        {{template "PendingMetadataIssues" (dict "Issue" . "User" $.User)}}
-      {{end}}
-      </tbody>
-    </table>
-  {{else}}
-    <em>There are no issues needing metadata entry</em>
-  {{end}}
+  <div class="empty" hidden><em>There are no issues needing metadata entry</em></div>
 {{end}} <!-- block "needs-metadata" -->
 
 {{block "needs-review" .}}
@@ -125,26 +111,17 @@
     flag them as ready for processing.
   </p>
 
-  {{if .Data.PendingReviewIssues}}
-    <table class="table">
-      <caption>Issues Needing Metadata Review</caption>
-      <thead>
-        <tr>
-          <th scope="col">Title</th>
-          <th scope="col">Date</th>
-          <th scope="col">Actions</th>
-        </tr>
-      </thead>
-
-      <tbody>
-      {{range .Data.PendingReviewIssues}}
-        {{template "PendingReviewIssues" (dict "Issue" . "User" $.User)}}
-      {{end}}
-      </tbody>
-    </table>
-  {{else}}
-    <em>There are no issues needing metadata review</em>
-  {{end}}
+  <table class="table" hidden>
+    <caption>Issues Needing Metadata Review</caption>
+    <thead>
+      <tr>
+        <th scope="col">Title</th>
+        <th scope="col">Date</th>
+        <th scope="col">Actions</th>
+      </tr>
+    </thead>
+  </table>
+  <div class="empty" hidden><em>There are no issues needing metadata review</em></div>
 {{end}} <!-- block "needs-review" -->
 
 {{block "unfixable-errors" .}}
@@ -153,24 +130,22 @@
     necessitate them being removed from NCA entirely and manually fixed
   </p>
 
-  {{if .Data.UnfixableErrorIssues}}
-    <table class="table">
-      <caption>Issues With Unfixable Errors</caption>
-      <thead>
-        <tr>
-          <th scope="col">Title</th>
-          <th scope="col">Date</th>
-          <th scope="col">Actions</th>
-        </tr>
-      </thead>
-
-      <tbody>
-      {{range .Data.UnfixableErrorIssues}}
-        {{template "UnfixableErrorIssues" (dict "Issue" . "User" $.User)}}
-      {{end}}
-      </tbody>
-    </table>
-  {{else}}
-    <em>There are no issues with unfixable errors</em>
-  {{end}}
+  <table class="table" hidden>
+    <caption>Issues With Unfixable Errors</caption>
+    <thead>
+      <tr>
+        <th scope="col">Title</th>
+        <th scope="col">Date</th>
+        <th scope="col">Actions</th>
+      </tr>
+    </thead>
+  </table>
+  <div class="empty" hidden><em>There are no issues with unfixable errors</em></div>
 {{end}} <!-- block "unfixable-errors" -->
+
+{{block "extrajs" .}}
+  {{IncludeJS "workflow_issue_tabs"}}
+  <script>
+  const workflowHomeURL = {{WorkflowHomeURL}};
+  </script>
+{{end}}
