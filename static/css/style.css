@@ -114,3 +114,9 @@ a.skiplink:focus {
   -webkit-transition: top .1s ease-in, background .5s linear;
   transition: top .1s ease-in, background .5s linear;
 }
+
+/* Tabs that are headings already stand out; they don't need to be absurdly huge */
+button[role=tab] h2 {
+  font-size: inherit;
+  margin: inherit;
+}

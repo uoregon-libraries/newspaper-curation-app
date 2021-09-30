@@ -5,28 +5,36 @@
 <div class="tabs">
   <div role="tablist" aria-label="Workflow">
     <button role="tab" aria-selected="false" aria-controls="desk-tab" id="desk">
-      Desk
-      <span class="badge">{{.Data.DeskCount}}</span>
+      <h2>
+        Desk
+        <span class="badge">{{.Data.DeskCount}}</span>
+      </h2>
     </button>
 
     {{if .User.PermittedTo EnterIssueMetadata}}
     <button role="tab" aria-selected="false" aria-controls="needs-metadata-tab" id="needs-metadata" tabindex="-1">
-      Metadata Entry
-      <span class="badge">{{.Data.CurateCount}}</span>
+      <h2>
+        Metadata Entry
+        <span class="badge">{{.Data.CurateCount}}</span>
+      </h2>
     </button>
     {{end}}
 
     {{if .User.PermittedTo ReviewIssueMetadata}}
     <button role="tab" aria-selected="false" aria-controls="needs-review-tab" id="needs-review" tabindex="-1">
-      Metadata Review
-      <span class="badge">{{.Data.ReviewCount}}</span>
+      <h2>
+        Metadata Review
+        <span class="badge">{{.Data.ReviewCount}}</span>
+      </h2>
     </button>
     {{end}}
 
     {{if .User.PermittedTo ReviewUnfixableIssues}}
     <button role="tab" aria-selected="false" aria-controls="unfixable-errors-tab" id="unfixable-errors" tabindex="-1">
-      Unfixable Errors
-      <span class="badge">{{.Data.ErrorCount}}</span>
+      <h2>
+        Unfixable Errors
+        <span class="badge">{{.Data.ErrorCount}}</span>
+      </h2>
     </button>
     {{end}}
   </div>
