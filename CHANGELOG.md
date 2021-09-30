@@ -40,11 +40,24 @@ Brief description, if necessary
 
 ### Fixed
 
+- In the workflow page, you can now properly click on a tab's badge (the
+  roundish dark circle with a number telling you how many issues are in the
+  given tab panel) to activate the tab.
+
 ### Added
 
 - New app section for viewing and downloading audit logs (for admins only)
 
 ### Changed
+
+- Refactor to how issues are pulled from the database, to enable other work
+- Workflow lazy-loading: the workflow pages should generally look the same as
+  previously, but they no longer pre-fetch gobs of data:
+  - A maximum of 100 issues is presented on a tab now
+  - Issues are loaded for a tab when the tab is selected rather than all tabs'
+    issues being loaded at once
+  - JSON endpoints for issues now exist which will allow for future fixes and
+    improvements to the workflow tabs
 
 ### Removed
 
