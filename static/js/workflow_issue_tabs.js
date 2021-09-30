@@ -45,13 +45,15 @@ async function loadIssues(e) {
   }
 
   statusDiv.setAttribute('class', 'alert alert-success');
-  statusDiv.innerText = 'Load complete';
   if (data.Issues == null || data.Issues.length == 0) {
+    statusDiv.innerText = 'Load complete: no issues for this query';
     table.setAttribute('hidden', true);
     emptyDiv.removeAttribute('hidden');
     return
   }
 
+  statusDiv.innerText = `Load complete: displaying ${data.Issues.length} of ${data.Total} issues`;
+  tab.querySelector('span[class=badge]').innerText = data.Total;
   populateTable(table, data.Issues);
   table.removeAttribute('hidden');
   emptyDiv.setAttribute('hidden', true);
