@@ -68,7 +68,7 @@ function populateTable(table, issues) {
     // In all cases, cell 1 is the publication's title and cell 2 is the issue date
     cell = document.createElement('th');
     cell.setAttribute('scope', 'row');
-    cell.innerText = issue.Title;
+    cell.innerText = `${issue.Title} (${issue.LCCN})`;
     row.appendChild(cell);
     cell = document.createElement('th');
     cell.setAttribute('scope', 'row');
