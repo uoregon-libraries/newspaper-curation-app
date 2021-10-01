@@ -75,6 +75,18 @@ type jsonResponse struct {
 	Counts  map[string]uint64
 }
 
+func applyIssueFilters(resp *responder.Responder, finder *models.IssueFinder) {
+	var moc = resp.Request.FormValue("moc")
+	var lccn = resp.Request.FormValue("lccn")
+
+	if moc != "" {
+		finder.MOC(moc)
+	}
+	if lccn != "" {
+		finder.LCCN(lccn)
+	}
+}
+
 func getJSONIssues(resp *responder.Responder) *jsonResponse {
 	var response = new(jsonResponse)
 	response.Counts = make(map[string]uint64)
@@ -86,6 +98,7 @@ func getJSONIssues(resp *responder.Responder) *jsonResponse {
 		"unfixable-errors": models.Issues().Available().InWorkflowStep(schema.WSUnfixableMetadataError),
 	}
 	for tab, f := range finders {
+		applyIssueFilters(resp, f)
 		var err error
 		response.Counts[tab], err = f.Count()
 		if err != nil {

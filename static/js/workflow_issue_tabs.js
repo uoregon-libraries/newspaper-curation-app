@@ -4,15 +4,46 @@ window.addEventListener('DOMContentLoaded', (event) => {
     table.dataset.caption = table.caption.innerText;
   });
 
+  // Read the URL to determine if we already have a filter in place - this must
+  // happen prior to any tabs being loaded
+  setFilterValuesFromURL();
+
+  // Add on-select listeners to pull issues from the server whenever a new tab
+  // is selected
   document.getElementById('desk').addEventListener('tabselect', loadIssues);
   document.getElementById('needs-metadata').addEventListener('tabselect', loadIssues);
   document.getElementById('needs-review').addEventListener('tabselect', loadIssues);
   document.getElementById('unfixable-errors').addEventListener('tabselect', loadIssues);
+
+  // Set up the filter form to fetch JSON from the server on submit
+  document.getElementById('filter-form').addEventListener('submit', applyFilter);
 });
 
-async function loadIssues(e) {
+function setFilterValuesFromURL() {
+  let u = new URL(window.location);
+  let srch = new URLSearchParams(u.search.substr(1));
+  document.getElementById('lccn').value = srch.get('lccn');
+  document.getElementById('moc').value = srch.get('moc');
+}
+
+function applyFilter(e) {
+  let u = new URL(window.location);
+  let srch = new URLSearchParams(u.search.substr(1));
+  srch.set('lccn', document.getElementById('lccn').value);
+  srch.set('moc', document.getElementById('moc').value);
+  u.search = srch.toString();
+  history.replaceState(null, "", u);
+  loadTabIssues(document.getElementById(srch.get('tab')));
+
+  e.preventDefault();
+}
+
+function loadIssues(e) {
+  loadTabIssues(e.target);
+}
+
+async function loadTabIssues(tab) {
   // Start by clearing the table caption and body in this tab
-  const tab = e.target;
   const panel = document.getElementById(tab.getAttribute('aria-controls'));
   const table = panel.querySelector('table');
   const emptyDiv = panel.querySelector('.empty');
@@ -29,9 +60,12 @@ async function loadIssues(e) {
     statusDiv.innerText = 'Fetching issues from server...';
   }, 200);
 
+  let u = new URL(window.location);
+  let srch = new URLSearchParams(u.search.substr(1));
+
   var response, data;
   try {
-    response = await fetch(workflowHomeURL+'/json?tab='+tab.getAttribute('id'));
+    response = await fetch(workflowHomeURL+'/json?'+srch.toString());
     data = await response.json();
   }
   catch (e) {
