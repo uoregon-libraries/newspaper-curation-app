@@ -44,6 +44,11 @@ async function loadIssues(e) {
     return;
   }
 
+  // Refresh all tabs' counts
+  document.querySelectorAll('[role="tab"]').forEach((el) => {
+    el.querySelector('span[class=badge]').innerText = data.Counts[el.getAttribute('id')];
+  });
+
   statusDiv.setAttribute('class', 'alert alert-success');
   if (data.Issues == null || data.Issues.length == 0) {
     statusDiv.innerText = 'Load complete: no issues for this query';
@@ -53,7 +58,6 @@ async function loadIssues(e) {
   }
 
   statusDiv.innerText = `Load complete: displaying ${data.Issues.length} of ${data.Total} issues`;
-  tab.querySelector('span[class=badge]').innerText = data.Counts[tab.getAttribute('id')];
   populateTable(table, data.Issues);
   table.removeAttribute('hidden');
   emptyDiv.setAttribute('hidden', true);
