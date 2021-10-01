@@ -1,7 +1,5 @@
 {{block "content" .}}
 
-<div id="json-status" role="status" class="alert alert-info" aria-live="polite">Status: N/A</div>
-
 <div class="filter">
   <h2>Filter / Search</h2>
   <form id="filter-form" role="form">
@@ -50,7 +48,12 @@
   </form>
 </div>
 
-<h2>Issues</h2>
+<div class="row">
+  <div class="col-md-8"><h2>Issues</h2></div>
+  <div class="col-md-4">
+    <div id="json-status" role="status" class="alert alert-info" aria-live="polite">Status: N/A</div>
+  </div>
+</div>
 <div class="tabs">
   <div role="tablist" aria-label="Workflow">
     <button role="tab" aria-selected="false" aria-controls="desk-tab" id="desk">

@@ -23,8 +23,11 @@ async function loadIssues(e) {
   };
 
   const statusDiv = document.getElementById('json-status');
-  statusDiv.setAttribute('class', 'alert alert-info');
-  statusDiv.innerText = 'Fetching issues from server...';
+  let loading = setTimeout(() => {
+    statusDiv.setAttribute('class', 'alert alert-info');
+    statusDiv.dataset.faded = false;
+    statusDiv.innerText = 'Fetching issues from server...';
+  }, 200);
 
   var response, data;
   try {
@@ -49,8 +52,12 @@ async function loadIssues(e) {
     el.querySelector('span[class=badge]').innerText = data.Counts[el.getAttribute('id')];
   });
 
-  statusDiv.setAttribute('class', 'alert alert-success');
+  clearTimeout(loading);
+  statusDiv.setAttribute('class', 'alert');
   statusDiv.innerText = 'Load complete';
+  setTimeout(() => {
+    statusDiv.dataset.faded = true;
+  }, 5000);
   if (data.Issues == null || data.Issues.length == 0) {
     table.setAttribute('hidden', true);
     emptyDiv.removeAttribute('hidden');

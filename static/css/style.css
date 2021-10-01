@@ -121,3 +121,13 @@ button[role=tab] h4, button[role=tab] h5, button[role=tab] h6 {
   font-size: inherit;
   margin: inherit;
 }
+
+/* Make status presentation better */
+#json-status {
+  margin-top: 20px;
+  -webkit-transition: color .5s linear, background .5s linear;
+  transition: color .5s linear, background .5s linear;
+}
+#json-status[data-faded=true] {
+  color: white;
+}
