@@ -50,22 +50,27 @@ async function loadIssues(e) {
   });
 
   statusDiv.setAttribute('class', 'alert alert-success');
+  statusDiv.innerText = 'Load complete';
   if (data.Issues == null || data.Issues.length == 0) {
-    statusDiv.innerText = 'Load complete: no issues for this query';
     table.setAttribute('hidden', true);
     emptyDiv.removeAttribute('hidden');
     return
   }
 
-  statusDiv.innerText = `Load complete: displaying ${data.Issues.length} of ${data.Total} issues`;
+  let total = data.Counts[tab.getAttribute('id')];
+  let count = data.Issues.length;
+  if (count != total) {
+    table.caption.innerText = table.dataset.caption + ` (showing ${count} of ${total})`;
+  }
+  else {
+    table.caption.innerText = table.dataset.caption;
+  }
   populateTable(table, data.Issues);
   table.removeAttribute('hidden');
   emptyDiv.setAttribute('hidden', true);
 }
 
 function populateTable(table, issues) {
-  table.caption.innerText = table.dataset.caption;
-
   const tBody = table.createTBody();
   var row, cell;
   for (i = 0; i < issues.length; i++) {
