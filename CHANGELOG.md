@@ -36,17 +36,29 @@ Brief description, if necessary
 
 ## v3.10.0
 
-Brief description, if necessary
+Admin Mega-Release: workflow UI improvements, audit log view / download
 
 ### Fixed
 
 - In the workflow page, you can now properly click on a tab's badge (the
   roundish dark circle with a number telling you how many issues are in the
   given tab panel) to activate the tab.
+- Workflow tab selection no longer adds countless entries to your browser
+  history. (i.e., you can use your browser's "back" button to go to the page
+  you were at prior to the workflow page instead of having to hit "back" a
+  billion times)
+- Workflow tabs now manipulate the query string of the URL rather than the
+  fragment. This is mostly a "best practice" sort of fix, but it does mean the
+  "skip to main content" link now functions properly in the workflow pages,
+  where it used to kick you back to the "desk" tab.
+- Workflow tabs are HTML headings, which should be an improvement for users of
+  tools which let you browse and navigate to headings (e.g., screen readers).
 
 ### Added
 
 - New app section for viewing and downloading audit logs (for admins only)
+- Workflow UI now has filters to only show issues with a particular LCCN and/or
+  MARC Org Code.
 
 ### Changed
 
@@ -56,12 +68,6 @@ Brief description, if necessary
   - A maximum of 100 issues is presented on a tab now
   - Issues are loaded for a tab when the tab is selected rather than all tabs'
     issues being loaded at once
-  - JSON endpoints for issues now exist which will allow for future fixes and
-    improvements to the workflow tabs
-
-### Removed
-
-### Migration
 
 ## v3.9.0
 
