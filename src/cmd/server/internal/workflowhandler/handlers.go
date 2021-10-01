@@ -21,6 +21,21 @@ func searchIssueError(resp *responder.Responder) {
 	resp.Render(responder.Empty)
 }
 
+func loadTitles() (schema.TitleList, error) {
+	var dbTitles, err = models.Titles()
+	if err != nil {
+		return nil, err
+	}
+
+	var titles schema.TitleList
+	for _, t := range dbTitles {
+		titles = append(titles, t.SchemaTitle())
+	}
+	titles.SortByName()
+
+	return titles, nil
+}
+
 // homeHandler shows claimed workflow items that need to be finished as well as
 // pending items which can be claimed
 func homeHandler(resp *responder.Responder, i *Issue) {
@@ -37,8 +52,15 @@ func homeHandler(resp *responder.Responder, i *Issue) {
 	if err == nil {
 		resp.Vars.Data["ErrorCount"], err = models.Issues().Available().InWorkflowStep(schema.WSUnfixableMetadataError).Count()
 	}
+	if err == nil {
+		resp.Vars.Data["Titles"], err = loadTitles()
+	}
+	if err == nil {
+		resp.Vars.Data["MOCs"], err = models.AllMOCs()
+	}
+
 	if err != nil {
-		logger.Errorf("Unable to count issues for workflow homepage: %s", err)
+		logger.Errorf("Unable to read data for workflow homepage: %s", err)
 		searchIssueError(resp)
 		return
 	}
@@ -50,38 +72,55 @@ type jsonResponse struct {
 	Code    int
 	Message string
 	Issues  []*JSONIssue
-	Total   uint64
+	Counts  map[string]uint64
+}
+
+func applyIssueFilters(resp *responder.Responder, finder *models.IssueFinder) {
+	var moc = resp.Request.FormValue("moc")
+	var lccn = resp.Request.FormValue("lccn")
+
+	if moc != "" {
+		finder.MOC(moc)
+	}
+	if lccn != "" {
+		finder.LCCN(lccn)
+	}
 }
 
 func getJSONIssues(resp *responder.Responder) *jsonResponse {
-	var tab = resp.Request.FormValue("tab")
 	var response = new(jsonResponse)
+	response.Counts = make(map[string]uint64)
 	response.Code = http.StatusOK
-	var finder = models.Issues()
-	switch tab {
-	case "desk":
-		finder = models.Issues().OnDesk(resp.Vars.User.ID)
-	case "needs-metadata":
-		finder = models.Issues().Available().InWorkflowStep(schema.WSReadyForMetadataEntry)
-	case "needs-review":
-		finder = models.Issues().Available().InWorkflowStep(schema.WSAwaitingMetadataReview)
-	case "unfixable-errors":
-		finder = models.Issues().Available().InWorkflowStep(schema.WSUnfixableMetadataError)
-	default:
-		logger.Warnf("Unknown tab %q requested in workflow JSON handler", tab)
+	var finders = map[string]*models.IssueFinder{
+		"desk":             models.Issues().OnDesk(resp.Vars.User.ID),
+		"needs-metadata":   models.Issues().Available().InWorkflowStep(schema.WSReadyForMetadataEntry),
+		"needs-review":     models.Issues().Available().InWorkflowStep(schema.WSAwaitingMetadataReview),
+		"unfixable-errors": models.Issues().Available().InWorkflowStep(schema.WSUnfixableMetadataError),
+	}
+	for tab, f := range finders {
+		applyIssueFilters(resp, f)
+		var err error
+		response.Counts[tab], err = f.Count()
+		if err != nil {
+			logger.Errorf("JSON request: error trying to count issues for %q: %s", tab, err)
+			response.Message = "Unable to retrieve issues from the database! Try again or contact support."
+			response.Code = http.StatusInternalServerError
+			return response
+		}
+	}
+
+	var selectedTab = resp.Request.FormValue("tab")
+	var finder = finders[selectedTab]
+	if finder == nil {
+		logger.Warnf("Unknown tab %q requested in workflow JSON handler", selectedTab)
 		response.Code = http.StatusBadRequest
 		response.Message = "Invalid / unknown data requested"
 		return response
 	}
-	var err error
-	response.Total, err = finder.Count()
-	var issues []*models.Issue
-	if err == nil {
-		issues, err = finder.Limit(100).Fetch()
-	}
 
+	var issues, err = finder.Limit(100).Fetch()
 	if err != nil {
-		logger.Warnf("Error reading issues in workflow JSON handler: %s", err)
+		logger.Errorf("Error reading issues in workflow JSON handler: %s", err)
 		response.Message = "Unable to retrieve issues from the database! Try again or contact support."
 		response.Code = http.StatusInternalServerError
 		return response

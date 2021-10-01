@@ -94,10 +94,18 @@ func Issues() *IssueFinder {
 	return f
 }
 
-func (f *IssueFinder) lccn(lccn string) *IssueFinder {
+// LCCN returns a scope for finding issues with a particular title
+func (f *IssueFinder) LCCN(lccn string) *IssueFinder {
 	f.conditions["lccn = ?"] = lccn
 	return f
 }
+
+// MOC returns a scope for finding issues with a particular awardee (MARC Org Code)
+func (f *IssueFinder) MOC(moc string) *IssueFinder {
+	f.conditions["marc_org_code = ?"] = moc
+	return f
+}
+
 func (f *IssueFinder) date(date string) *IssueFinder {
 	f.conditions["date = ?"] = date
 	return f
@@ -225,7 +233,7 @@ func FindIssuesByKey(key string) ([]*Issue, error) {
 		return nil, fmt.Errorf("invalid issue key %q", key)
 	}
 
-	return Issues().lccn(lccn).date(date).edition(ed).Fetch()
+	return Issues().LCCN(lccn).date(date).edition(ed).Fetch()
 }
 
 // FindIssueByKey returns the first issue with the given key
