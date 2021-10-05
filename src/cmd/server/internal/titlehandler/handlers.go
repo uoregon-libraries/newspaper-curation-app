@@ -293,7 +293,7 @@ func saveTitle(t *Title) (msg string, err error) {
 		return "Title saved", t.Save()
 	}
 
-	// We connect to SFTPGo, we we need a transaction
+	// We connect to SFTPGo, so we need a transaction
 	var op = dbi.DB.Operation()
 	op.Dbg = dbi.Debug
 	op.BeginTransaction()
