@@ -44,7 +44,7 @@ func getConfig() {
 	c.AppendUsage(`Deletes all "stuck" issues couldn't make it into NCA.  Issues must have the "AwaitingProcessing" workflow step and at least one dead job ("failed", not "failed_done") to be considered for purging.  They will not be purged if they are tied to a batch or have any pending jobs associated with them.  All issues' jobs will be finalized (set to "failed_done") or removed (those that are on hold waiting for the failed job / jobs).`)
 
 	var conf = c.GetConf()
-	var err = dbi.Connect(conf.DatabaseConnect)
+	var err = dbi.DBConnect(conf.DatabaseConnect)
 	if err != nil {
 		logger.Fatalf("Error trying to connect to database: %s", err)
 	}
