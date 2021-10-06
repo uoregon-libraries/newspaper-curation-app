@@ -22,7 +22,7 @@ wait_for_database() {
 # Resets the database, deleting and rebuilding all the seed data
 resetdb() {
   docker-compose down -v
-  docker-compose up -d db iiif
+  docker-compose up -d db iiif sftpgo
   wait_for_database && migrate && load_seed_data
 }
 
@@ -84,7 +84,7 @@ upload_server() {
 }
 
 server() {
-  docker-compose up -d db iiif
+  docker-compose up -d db iiif sftpgo
   wait_for_database
   make bin/server || return 1
   echo
@@ -98,7 +98,7 @@ server() {
 }
 
 workers() {
-  docker-compose up -d db iiif
+  docker-compose up -d db iiif sftpgo
   wait_for_database
   make bin/run-jobs || return 1
   ./bin/run-jobs -c ./settings -v watchall
