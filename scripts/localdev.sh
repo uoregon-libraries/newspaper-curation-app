@@ -84,6 +84,8 @@ upload_server() {
 }
 
 server() {
+  docker-compose up -d db iiif
+  wait_for_database
   make bin/server || return 1
   echo
   echo "Make sure RAIS knows its URL since it's running in a container:"
@@ -96,6 +98,8 @@ server() {
 }
 
 workers() {
+  docker-compose up -d db iiif
+  wait_for_database
   make bin/run-jobs || return 1
   ./bin/run-jobs -c ./settings -v watchall
 }
