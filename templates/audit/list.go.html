@@ -32,6 +32,7 @@
         <label for="user" class="col-sm-4 control-label">Only Show Logs For:</label>
         <div class="col-sm-8">
           <select name="user" id="user">
+            {{option "All Users" "" .Data.Form.Username}}
             <optgroup label="Active">
             {{range .Data.ActiveUsers}}
             {{option .Login .Login $.Data.Form.Username}}
