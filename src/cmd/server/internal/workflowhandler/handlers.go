@@ -159,7 +159,7 @@ func claimIssueHandler(resp *responder.Responder, i *Issue) {
 		return
 	}
 
-	resp.Audit("claim", fmt.Sprintf("issue id %d", i.ID))
+	resp.Audit(models.AuditActionClaim, fmt.Sprintf("issue id %d", i.ID))
 	http.SetCookie(resp.Writer, &http.Cookie{Name: "Info", Value: "Issue claimed successfully", Path: "/"})
 	http.Redirect(resp.Writer, resp.Request, basePath, http.StatusFound)
 }
@@ -175,7 +175,7 @@ func unclaimIssueHandler(resp *responder.Responder, i *Issue) {
 		return
 	}
 
-	resp.Audit("unclaim", fmt.Sprintf("issue id %d", i.ID))
+	resp.Audit(models.AuditActionUnclaim, fmt.Sprintf("issue id %d", i.ID))
 	http.SetCookie(resp.Writer, &http.Cookie{Name: "Info", Value: "Issue removed from your task list", Path: "/"})
 	http.Redirect(resp.Writer, resp.Request, basePath, http.StatusFound)
 }
@@ -242,7 +242,7 @@ func approveIssueMetadataHandler(resp *responder.Responder, i *Issue) {
 	if err != nil {
 		logger.Criticalf("Unable to queue issue finalization for issue id %d: %s", i.ID, err)
 	}
-	resp.Audit("approve-metadata", fmt.Sprintf("issue id %d", i.ID))
+	resp.Audit(models.AuditActionApproveMetadata, fmt.Sprintf("issue id %d", i.ID))
 	http.SetCookie(resp.Writer, &http.Cookie{Name: "Info", Value: "Issue approved", Path: "/"})
 	http.Redirect(resp.Writer, resp.Request, basePath, http.StatusFound)
 }
@@ -270,7 +270,7 @@ func rejectIssueMetadataHandler(resp *responder.Responder, i *Issue) {
 		return
 	}
 
-	resp.Audit("reject-metadata", fmt.Sprintf("issue id %d", i.ID))
+	resp.Audit(models.AuditActionRejectMetadata, fmt.Sprintf("issue id %d", i.ID))
 	http.SetCookie(resp.Writer, &http.Cookie{Name: "Info", Value: "Issue rejected", Path: "/"})
 	http.Redirect(resp.Writer, resp.Request, basePath, http.StatusFound)
 }

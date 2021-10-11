@@ -72,7 +72,8 @@ func saveIssue(resp *responder.Responder, i *Issue, changes map[string]string) (
 		return false
 	}
 
-	resp.Audit(resp.Request.FormValue("action"), info)
+	var auditAction = models.AuditActionFromString(resp.Request.FormValue("action"))
+	resp.Audit(auditAction, info)
 	return true
 }
 
@@ -141,7 +142,7 @@ func saveQueue(resp *responder.Responder, i *Issue, changes map[string]string) {
 			fmt.Sprintf("ignoring warnings (approved by %q):\n\n%s", resp.Vars.User.Login, strings.Join(warns, "\n")))
 	}
 
-	resp.Audit("queue-for-review", fmt.Sprintf("issue id %d", i.ID))
+	resp.Audit(models.AuditActionQueueForReview, fmt.Sprintf("issue id %d", i.ID))
 	http.SetCookie(resp.Writer, &http.Cookie{Name: "Info", Value: "Issue queued for review", Path: "/"})
 	http.Redirect(resp.Writer, resp.Request, basePath, http.StatusFound)
 }

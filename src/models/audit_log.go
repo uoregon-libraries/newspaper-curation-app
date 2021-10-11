@@ -1,11 +1,78 @@
 package models
 
 import (
+	"fmt"
 	"strings"
 	"time"
 
 	"github.com/uoregon-libraries/newspaper-curation-app/src/dbi"
 )
+
+// AuditAction is a semi-controlled integer representing the possible audit log
+// action types. This hack is what bad devs like me end up doing when they
+// don't properly normalize their data from the beginning.
+type AuditAction uint8
+
+// All currently valid audit log actions
+const (
+	AuditActionUnderflow AuditAction = iota
+
+	AuditActionQueue
+	AuditActionSaveTitle
+	AuditActionValidateTitle
+	AuditActionCreateMoc
+	AuditActionUpdateMoc
+	AuditActionDeleteMoc
+	AuditActionSaveUser
+	AuditActionDeactivateUser
+	AuditActionClaim
+	AuditActionUnclaim
+	AuditActionApproveMetadata
+	AuditActionRejectMetadata
+	AuditActionReportError
+	AuditActionUndoErrorIssue
+	AuditActionRemoveErrorIssue
+	AuditActionQueueForReview
+	AuditActionAutosave
+	AuditActionSaveDraft
+	AuditActionSaveQueue
+
+	AuditActionOverflow
+)
+
+var dbAuditActions = map[AuditAction]string{
+	AuditActionQueue:            "queue",
+	AuditActionSaveTitle:        "save-title",
+	AuditActionValidateTitle:    "validate-title",
+	AuditActionCreateMoc:        "create-moc",
+	AuditActionUpdateMoc:        "update-moc",
+	AuditActionDeleteMoc:        "delete-moc",
+	AuditActionSaveUser:         "save-user",
+	AuditActionDeactivateUser:   "deactivate-user",
+	AuditActionClaim:            "claim",
+	AuditActionUnclaim:          "unclaim",
+	AuditActionApproveMetadata:  "approve-metadata",
+	AuditActionRejectMetadata:   "reject-metadata",
+	AuditActionReportError:      "report-error",
+	AuditActionUndoErrorIssue:   "undo-error-issue",
+	AuditActionRemoveErrorIssue: "remove-error-issue",
+	AuditActionQueueForReview:   "queue-for-review",
+	AuditActionAutosave:         "autosave",
+	AuditActionSaveDraft:        "savedraft",
+	AuditActionSaveQueue:        "savequeue",
+}
+
+// AuditActionFromString returns the action int for the given string, if the
+// string is one of our known actions
+func AuditActionFromString(s string) AuditAction {
+	for action, dbString := range dbAuditActions {
+		if dbString == s {
+			return action
+		}
+	}
+
+	return AuditActionUnderflow
+}
 
 // AuditLog represents the audit_logs table
 type AuditLog struct {
@@ -18,10 +85,13 @@ type AuditLog struct {
 }
 
 // CreateAuditLog writes the given data to audit_logs
-func CreateAuditLog(ip, user, action, message string) error {
+func CreateAuditLog(ip, user string, action AuditAction, message string) error {
+	if action <= AuditActionUnderflow || action >= AuditActionOverflow {
+		return fmt.Errorf("Unknown audit action")
+	}
 	var op = dbi.DB.Operation()
 	op.Dbg = dbi.Debug
-	op.Save("audit_logs", &AuditLog{When: time.Now(), IP: ip, User: user, Action: action, Message: message})
+	op.Save("audit_logs", &AuditLog{When: time.Now(), IP: ip, User: user, Action: string(action), Message: message})
 	return op.Err()
 }
 

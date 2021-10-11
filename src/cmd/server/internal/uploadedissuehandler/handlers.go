@@ -11,6 +11,7 @@ import (
 	"github.com/uoregon-libraries/newspaper-curation-app/src/cmd/server/internal/responder"
 	"github.com/uoregon-libraries/newspaper-curation-app/src/config"
 	"github.com/uoregon-libraries/newspaper-curation-app/src/issuewatcher"
+	"github.com/uoregon-libraries/newspaper-curation-app/src/models"
 	"github.com/uoregon-libraries/newspaper-curation-app/src/web/tmpl"
 )
 
@@ -115,7 +116,7 @@ func IssueWorkflowHandler(w http.ResponseWriter, req *http.Request) {
 			msg = encodedError(err)
 		}
 
-		r.Audit("queue", fmt.Sprintf("Issue from %q, success: %#v", r.issue.Location, err == nil))
+		r.Audit(models.AuditActionQueue, fmt.Sprintf("Issue from %q, success: %#v", r.issue.Location, err == nil))
 		http.SetCookie(w, &http.Cookie{Name: cname, Value: msg, Path: "/"})
 		http.Redirect(w, req, TitlePath(r.issue.Title.Slug()), http.StatusFound)
 

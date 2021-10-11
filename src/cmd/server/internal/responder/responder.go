@@ -82,7 +82,7 @@ func (r *Responder) Render(t *tmpl.Template) {
 
 // Audit stores an audit log in the database and logs to the command line if
 // the database audit fails
-func (r *Responder) Audit(action, msg string) {
+func (r *Responder) Audit(action models.AuditAction, msg string) {
 	var u = r.Vars.User
 	var err = models.CreateAuditLog(u.IP, u.Login, action, msg)
 	if err != nil {

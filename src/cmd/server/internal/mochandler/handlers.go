@@ -99,7 +99,7 @@ func createMOC(r *responder.Responder) {
 		return
 	}
 
-	r.Audit("create-moc", code)
+	r.Audit(models.AuditActionCreateMoc, code)
 	http.SetCookie(r.Writer, &http.Cookie{Name: "Info", Value: "New MOC created", Path: "/"})
 	http.Redirect(r.Writer, r.Request, basePath, http.StatusFound)
 }
@@ -126,7 +126,7 @@ func updateMOC(r *responder.Responder) {
 		return
 	}
 
-	r.Audit("update-moc", fmt.Sprintf("previous: %#v, new: %#v", oldMOC, moc))
+	r.Audit(models.AuditActionUpdateMoc, fmt.Sprintf("previous: %#v, new: %#v", oldMOC, moc))
 	http.SetCookie(r.Writer, &http.Cookie{Name: "Info", Value: "MOC updated", Path: "/"})
 	http.Redirect(r.Writer, r.Request, basePath, http.StatusFound)
 }
@@ -146,7 +146,7 @@ func deleteHandler(w http.ResponseWriter, req *http.Request) {
 		return
 	}
 
-	r.Audit("delete-moc", fmt.Sprintf("%#v", moc))
+	r.Audit(models.AuditActionDeleteMoc, fmt.Sprintf("%#v", moc))
 	http.SetCookie(w, &http.Cookie{Name: "Info", Value: "Deleted MOC", Path: "/"})
 	http.Redirect(w, req, basePath, http.StatusFound)
 }
