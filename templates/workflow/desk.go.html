@@ -59,7 +59,7 @@
     <button role="tab" aria-selected="false" aria-controls="desk-tab" id="desk">
       <h3>
         Desk
-        <span class="badge">{{.Data.DeskCount}}</span>
+        <span class="badge">loading...</span>
       </h3>
     </button>
 
@@ -67,7 +67,7 @@
     <button role="tab" aria-selected="false" aria-controls="needs-metadata-tab" id="needs-metadata" tabindex="-1">
       <h3>
         Metadata Entry
-        <span class="badge">{{.Data.CurateCount}}</span>
+        <span class="badge">loading...</span>
       </h3>
     </button>
     {{end}}
@@ -76,7 +76,7 @@
     <button role="tab" aria-selected="false" aria-controls="needs-review-tab" id="needs-review" tabindex="-1">
       <h3>
         Metadata Review
-        <span class="badge">{{.Data.ReviewCount}}</span>
+        <span class="badge">loading...</span>
       </h3>
     </button>
     {{end}}
@@ -85,7 +85,7 @@
     <button role="tab" aria-selected="false" aria-controls="unfixable-errors-tab" id="unfixable-errors" tabindex="-1">
       <h3>
         Unfixable Errors
-        <span class="badge">{{.Data.ErrorCount}}</span>
+        <span class="badge">loading...</span>
       </h3>
     </button>
     {{end}}

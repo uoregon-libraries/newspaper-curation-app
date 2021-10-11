@@ -42,19 +42,7 @@ func homeHandler(resp *responder.Responder, i *Issue) {
 	resp.Vars.Title = "Workflow"
 
 	var err error
-	resp.Vars.Data["DeskCount"], err = models.Issues().OnDesk(resp.Vars.User.ID).Count()
-	if err == nil {
-		resp.Vars.Data["CurateCount"], err = models.Issues().Available().InWorkflowStep(schema.WSReadyForMetadataEntry).Count()
-	}
-	if err == nil {
-		resp.Vars.Data["ReviewCount"], err = models.Issues().Available().InWorkflowStep(schema.WSAwaitingMetadataReview).Count()
-	}
-	if err == nil {
-		resp.Vars.Data["ErrorCount"], err = models.Issues().Available().InWorkflowStep(schema.WSUnfixableMetadataError).Count()
-	}
-	if err == nil {
-		resp.Vars.Data["Titles"], err = loadTitles()
-	}
+	resp.Vars.Data["Titles"], err = loadTitles()
 	if err == nil {
 		resp.Vars.Data["MOCs"], err = models.AllMOCs()
 	}
