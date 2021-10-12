@@ -34,6 +34,17 @@ Brief description, if necessary
 ### Migration
 -->
 
+## v3.10.1
+
+Hotfix for workflow filters
+
+### Fixed
+
+- Curators no longer see their own issues in the list of issues awaiting
+  metadata approval unless they have the privileges to claim and approve those
+  issues. Now that one can only see 100 issues at a time, this is critical for
+  workflows with few people but hundreds of issues.
+
 ## v3.10.0
 
 Admin Mega-Release: workflow UI improvements, audit log view / download
