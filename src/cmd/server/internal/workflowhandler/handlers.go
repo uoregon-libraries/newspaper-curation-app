@@ -10,6 +10,7 @@ import (
 	"github.com/uoregon-libraries/newspaper-curation-app/src/internal/logger"
 	"github.com/uoregon-libraries/newspaper-curation-app/src/jobs"
 	"github.com/uoregon-libraries/newspaper-curation-app/src/models"
+	"github.com/uoregon-libraries/newspaper-curation-app/src/privilege"
 	"github.com/uoregon-libraries/newspaper-curation-app/src/schema"
 )
 
@@ -42,19 +43,7 @@ func homeHandler(resp *responder.Responder, i *Issue) {
 	resp.Vars.Title = "Workflow"
 
 	var err error
-	resp.Vars.Data["DeskCount"], err = models.Issues().OnDesk(resp.Vars.User.ID).Count()
-	if err == nil {
-		resp.Vars.Data["CurateCount"], err = models.Issues().Available().InWorkflowStep(schema.WSReadyForMetadataEntry).Count()
-	}
-	if err == nil {
-		resp.Vars.Data["ReviewCount"], err = models.Issues().Available().InWorkflowStep(schema.WSAwaitingMetadataReview).Count()
-	}
-	if err == nil {
-		resp.Vars.Data["ErrorCount"], err = models.Issues().Available().InWorkflowStep(schema.WSUnfixableMetadataError).Count()
-	}
-	if err == nil {
-		resp.Vars.Data["Titles"], err = loadTitles()
-	}
+	resp.Vars.Data["Titles"], err = loadTitles()
 	if err == nil {
 		resp.Vars.Data["MOCs"], err = models.AllMOCs()
 	}
@@ -97,6 +86,12 @@ func getJSONIssues(resp *responder.Responder) *jsonResponse {
 		"needs-review":     models.Issues().Available().InWorkflowStep(schema.WSAwaitingMetadataReview),
 		"unfixable-errors": models.Issues().Available().InWorkflowStep(schema.WSUnfixableMetadataError),
 	}
+
+	// HACK: anybody who can't review their own metadata needs a different "needs-review" finder
+	if !resp.Vars.User.PermittedTo(privilege.ReviewOwnMetadata) {
+		finders["needs-review"] = finders["needs-review"].NotCuratedBy(resp.Vars.User.ID)
+	}
+
 	for tab, f := range finders {
 		applyIssueFilters(resp, f)
 		var err error

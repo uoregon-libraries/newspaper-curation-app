@@ -154,6 +154,14 @@ func (f *IssueFinder) Available() *IssueFinder {
 	return f
 }
 
+// NotCuratedBy adds a filter for ensuring the given user didn't curate an
+// issue, for preventing us from loading hundreds of issues that cannot in fact
+// be reviewed by a given logged-in user.
+func (f *IssueFinder) NotCuratedBy(userID int) *IssueFinder {
+	f.conditions["metadata_entry_user_id <> ?"] = userID
+	return f
+}
+
 // Limit sets the max issues to return
 func (f *IssueFinder) Limit(limit int) *IssueFinder {
 	f.lim = limit
