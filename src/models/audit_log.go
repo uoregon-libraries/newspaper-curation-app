@@ -154,6 +154,16 @@ func (f *AuditLogFinder) ForUser(u string) *AuditLogFinder {
 	return f
 }
 
+// ForActions scopes the finder to a specific list of actions.
+func (f *AuditLogFinder) ForActions(list ...AuditAction) *AuditLogFinder {
+	var dbActions = make([]string, len(list))
+	for i, action := range list {
+		dbActions[i] = dbAuditActions[action]
+	}
+	f.conditions["`action` IN (--IN--)"] = dbActions
+	return f
+}
+
 // Limit makes f.Fetch() return at most limit AuditLog instances
 func (f *AuditLogFinder) Limit(limit int) *AuditLogFinder {
 	f.lim = limit
@@ -166,14 +176,31 @@ func (f *AuditLogFinder) Limit(limit int) *AuditLogFinder {
 func (f *AuditLogFinder) Fetch() ([]*AuditLog, uint64, error) {
 	var op = dbi.DB.Operation()
 	op.Dbg = dbi.Debug
+	op.Dbg = true
 	var list []*AuditLog
 
 	var where []string
 	var args []interface{}
 	for k, v := range f.conditions {
-		where = append(where, k)
-		if v != nil {
-			args = append(args, v)
+		// Magic "IN" qualifier because this ORMy approach wasn't well-thought-out.
+		// Thanks, past self. AGAIN.
+		//
+		// Note that this setup adds more potential future pain: if anything other
+		// than a string array is used in an "IN" clause, this won't work.
+		if strings.Contains(k, "--IN--") {
+			var vals = v.([]string)
+			var placeholders = make([]string, len(vals))
+			for i, val := range vals {
+				placeholders[i] = "?"
+				args = append(args, val)
+			}
+			k = strings.Replace(k, "--IN--", strings.Join(placeholders, ","), 1)
+			where = append(where, k)
+		} else {
+			where = append(where, k)
+			if v != nil {
+				args = append(args, v)
+			}
 		}
 	}
 	var selector = op.Select("audit_logs", &AuditLog{}).Where(strings.Join(where, " AND "), args...)
