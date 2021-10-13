@@ -99,6 +99,9 @@ func csvHandler(w http.ResponseWriter, req *http.Request) {
 	if f.Username != "" {
 		prefix = f.Username + "-"
 	}
+	if f.ActionTypes != "" {
+		prefix += strings.ToLower(strings.Replace(f.ActionTypes, " ", "-", -1)) + "-"
+	}
 	var fname = fmt.Sprintf("%slogs-%s-%s.csv", prefix, f.Start.Format("20060102"), f.End.Format("20060102"))
 	w.Header().Add("Content-Type", "text/csv")
 	w.Header().Add("Content-Disposition", `attachment; filename="`+fname+`"`)

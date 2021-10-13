@@ -29,7 +29,7 @@
       </div>
 
       <div class="form-group">
-        <label for="user" class="col-sm-4 control-label">Only Show Logs For:</label>
+        <label for="user" class="col-sm-4 control-label">Show logs for:</label>
         <div class="col-sm-8">
           <select name="user" id="user">
             {{option "All Users" "" .Data.Form.Username}}
@@ -41,6 +41,20 @@
             {{range .Data.InactiveUsers}}
             {{option .Login .Login $.Data.Form.Username}}
             {{end}}
+          </select>
+        </div>
+      </div>
+
+      <div class="form-group">
+        <label for="action-types" class="col-sm-4 control-label">Action Types:</label>
+        <div class="col-sm-8">
+          <select name="action-types" id="action-types">
+            {{option "All Actions" "" .Data.Form.ActionTypes}}
+            {{option "Uploads" "Uploads" $.Data.Form.ActionTypes}}
+            {{option "Titles" "Titles" $.Data.Form.ActionTypes}}
+            {{option "MARC Org Codes" "MARC Org Codes" $.Data.Form.ActionTypes}}
+            {{option "Users" "Users" $.Data.Form.ActionTypes}}
+            {{option "Issue Workflow" "Issue Workflow" $.Data.Form.ActionTypes}}
           </select>
         </div>
       </div>
