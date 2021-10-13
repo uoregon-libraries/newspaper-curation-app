@@ -62,16 +62,32 @@ var dbAuditActions = map[AuditAction]string{
 	AuditActionSaveQueue:        "savequeue",
 }
 
+var auditActionLookup = map[string]AuditAction{
+	"queue":              AuditActionQueue,
+	"save-title":         AuditActionSaveTitle,
+	"validate-title":     AuditActionValidateTitle,
+	"create-moc":         AuditActionCreateMoc,
+	"update-moc":         AuditActionUpdateMoc,
+	"delete-moc":         AuditActionDeleteMoc,
+	"save-user":          AuditActionSaveUser,
+	"deactivate-user":    AuditActionDeactivateUser,
+	"claim":              AuditActionClaim,
+	"unclaim":            AuditActionUnclaim,
+	"approve-metadata":   AuditActionApproveMetadata,
+	"reject-metadata":    AuditActionRejectMetadata,
+	"report-error":       AuditActionReportError,
+	"undo-error-issue":   AuditActionUndoErrorIssue,
+	"remove-error-issue": AuditActionRemoveErrorIssue,
+	"queue-for-review":   AuditActionQueueForReview,
+	"autosave":           AuditActionAutosave,
+	"savedraft":          AuditActionSaveDraft,
+	"savequeue":          AuditActionSaveQueue,
+}
+
 // AuditActionFromString returns the action int for the given string, if the
 // string is one of our known actions
 func AuditActionFromString(s string) AuditAction {
-	for action, dbString := range dbAuditActions {
-		if dbString == s {
-			return action
-		}
-	}
-
-	return AuditActionUnderflow
+	return auditActionLookup[s]
 }
 
 // AuditLog represents the audit_logs table
