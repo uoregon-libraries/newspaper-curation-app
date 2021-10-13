@@ -1,6 +1,11 @@
 package workflowhandler
 
-import "github.com/uoregon-libraries/newspaper-curation-app/src/models"
+import (
+	"time"
+
+	"github.com/uoregon-libraries/newspaper-curation-app/src/internal/humanize"
+	"github.com/uoregon-libraries/newspaper-curation-app/src/models"
+)
 
 // Action describes the path and text for anything a user is allowed to do with
 // an issue
@@ -19,6 +24,7 @@ type JSONIssue struct {
 	Date       string
 	Task       string
 	Expiration string
+	Waiting    string // How long since this issue's metadata was entered
 	Actions    []Action
 }
 
@@ -42,6 +48,7 @@ func wrapJSON(i *Issue, u *models.User) *JSONIssue {
 		Date:       i.Date(),
 		Task:       i.TaskDescription(),
 		Expiration: i.WorkflowExpiration(),
+		Waiting:    humanize.Duration(time.Since(i.MetadataEnteredAt)),
 	}
 
 	var addAction = func(text, subpath string, atype string) {
