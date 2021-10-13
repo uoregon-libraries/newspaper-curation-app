@@ -4,6 +4,7 @@ import (
 	"fmt"
 	"html/template"
 	"net/url"
+	"strings"
 	"time"
 
 	"github.com/uoregon-libraries/newspaper-curation-app/src/cmd/server/internal/responder"
@@ -16,9 +17,29 @@ type form struct {
 	StartString string
 	EndString   string
 	Username    string
+	ActionTypes string
 	Start       time.Time
 	End         time.Time
 	Invalid     bool
+}
+
+var actionLookup = map[string][]models.AuditAction{
+	"Uploads":        {models.AuditActionQueue},
+	"Titles":         {models.AuditActionSaveTitle, models.AuditActionValidateTitle},
+	"MARC Org Codes": {models.AuditActionCreateMoc, models.AuditActionUpdateMoc, models.AuditActionDeleteMoc},
+	"Users":          {models.AuditActionSaveUser, models.AuditActionDeactivateUser},
+	"Issue Workflow": {
+		models.AuditActionClaim,
+		models.AuditActionUnclaim,
+		models.AuditActionApproveMetadata,
+		models.AuditActionRejectMetadata,
+		models.AuditActionReportError,
+		models.AuditActionUndoErrorIssue,
+		models.AuditActionRemoveErrorIssue,
+		models.AuditActionQueueForReview,
+		models.AuditActionSaveDraft,
+		models.AuditActionSaveQueue,
+	},
 }
 
 // getForm stuffs the form data into our form structure for use in filtering
@@ -30,6 +51,7 @@ func getForm(r *responder.Responder) *form {
 		StartString: vfn("custom-date-start"),
 		EndString:   vfn("custom-date-end"),
 		Username:    vfn("user"),
+		ActionTypes: vfn("action-types"),
 	}
 	var now = time.Now()
 	var min = time.Date(2010, 1, 1, 0, 0, 0, 0, time.Local)
@@ -82,6 +104,7 @@ func (f *form) QueryString() template.URL {
 		v.Set("custom-date-end", f.EndString)
 	}
 	v.Set("user", f.Username)
+	v.Set("action-types", f.ActionTypes)
 
 	logger.Infof(v.Encode())
 	return template.URL(v.Encode())
@@ -89,26 +112,32 @@ func (f *form) QueryString() template.URL {
 
 // title returns a useful title / caption based on the request
 func (f *form) title() string {
-	var title = "Recent Audit Logs"
+	var logText = "Audit Logs"
+	if f.ActionTypes != "" {
+		logText = f.ActionTypes + " Audit Logs"
+	}
+
+	var title string = "Recent {{logs}}"
 	switch f.PresetDate {
 	case "custom":
-		title = fmt.Sprintf("Audit Logs: %s to %s", f.StartString, f.EndString)
+		title = fmt.Sprintf("{{logs}}: %s to %s", f.StartString, f.EndString)
 		if f.Invalid {
-			title = "Error Parsing Custom Date: Showing All Recent Logs"
+			title = "Error Parsing Custom Date: Showing Recent {{logs}}"
 		}
 	case "past12m":
-		title = "Past 12 Months Audit Logs"
+		title = "Past 12 Months {{logs}}"
 	case "ytd":
-		title = "This Year's Audit Logs"
+		title = "This Year's {{logs}}"
 	case "past30d":
-		title = "Past 30 Days Audit Logs"
+		title = "Past 30 Days {{logs}}"
 	case "today":
-		title = "Today's Audit Logs"
+		title = "Today's {{logs}}"
 	}
 
 	if f.Username != "" {
 		title += " for " + f.Username
 	}
+	title = strings.Replace(title, "{{logs}}", logText, 1)
 
 	return title
 }
@@ -120,6 +149,9 @@ func (f *form) logs(limit int) ([]*models.AuditLog, uint64, error) {
 	}
 	if f.Username != "" {
 		finder.ForUser(f.Username)
+	}
+	if f.ActionTypes != "" {
+		finder.ForActions(actionLookup[f.ActionTypes]...)
 	}
 	if limit > 1 {
 		finder.Limit(limit)

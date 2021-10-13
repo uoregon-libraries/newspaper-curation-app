@@ -240,7 +240,7 @@ func saveHandler(w http.ResponseWriter, req *http.Request) {
 		return
 	}
 
-	r.Audit("save-user", fmt.Sprintf("Login: %q, roles: %q", u.Login, u.RolesString))
+	r.Audit(models.AuditActionSaveUser, fmt.Sprintf("Login: %q, roles: %q", u.Login, u.RolesString))
 	http.SetCookie(w, &http.Cookie{Name: "Info", Value: "User data saved", Path: "/"})
 	http.Redirect(w, req, basePath, http.StatusFound)
 }
@@ -266,7 +266,7 @@ func deactivateHandler(w http.ResponseWriter, req *http.Request) {
 		return
 	}
 
-	r.Audit("deactivate-user", u.Login)
+	r.Audit(models.AuditActionDeactivateUser, u.Login)
 	http.SetCookie(w, &http.Cookie{Name: "Info", Value: fmt.Sprintf("Deactivated user '%s'", u.Login), Path: "/"})
 	http.Redirect(w, req, basePath, http.StatusFound)
 }

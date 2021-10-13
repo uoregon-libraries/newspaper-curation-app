@@ -237,7 +237,7 @@ func saveHandler(w http.ResponseWriter, req *http.Request) {
 		go pullMARCForTitle(t)
 	}
 
-	r.Audit("save-title", fmt.Sprintf("%#v", r.Request.Form))
+	r.Audit(models.AuditActionSaveTitle, fmt.Sprintf("%#v", r.Request.Form))
 	http.SetCookie(w, &http.Cookie{Name: "Info", Value: "Title saved", Path: "/"})
 	http.Redirect(w, r.Request, basePath, http.StatusFound)
 }
@@ -251,7 +251,7 @@ func validateHandler(w http.ResponseWriter, req *http.Request) {
 
 	// When validation is explicitly requested, the user waits for a response
 	pullMARCForTitle(t)
-	r.Audit("validate-title", fmt.Sprintf("%q %q", t.MARCTitle, t.MARCLocation))
+	r.Audit(models.AuditActionValidateTitle, fmt.Sprintf("%q %q", t.MARCTitle, t.MARCLocation))
 
 	var alertLevel = "Info"
 	var response = "Validated LCCN"

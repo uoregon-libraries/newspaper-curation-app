@@ -1,11 +1,94 @@
 package models
 
 import (
+	"fmt"
 	"strings"
 	"time"
 
 	"github.com/uoregon-libraries/newspaper-curation-app/src/dbi"
 )
+
+// AuditAction is a semi-controlled integer representing the possible audit log
+// action types. This hack is what bad devs like me end up doing when they
+// don't properly normalize their data from the beginning.
+type AuditAction uint8
+
+// All currently valid audit log actions
+const (
+	AuditActionUnderflow AuditAction = iota
+
+	AuditActionQueue
+	AuditActionSaveTitle
+	AuditActionValidateTitle
+	AuditActionCreateMoc
+	AuditActionUpdateMoc
+	AuditActionDeleteMoc
+	AuditActionSaveUser
+	AuditActionDeactivateUser
+	AuditActionClaim
+	AuditActionUnclaim
+	AuditActionApproveMetadata
+	AuditActionRejectMetadata
+	AuditActionReportError
+	AuditActionUndoErrorIssue
+	AuditActionRemoveErrorIssue
+	AuditActionQueueForReview
+	AuditActionAutosave
+	AuditActionSaveDraft
+	AuditActionSaveQueue
+
+	AuditActionOverflow
+)
+
+var dbAuditActions = map[AuditAction]string{
+	AuditActionQueue:            "queue",
+	AuditActionSaveTitle:        "save-title",
+	AuditActionValidateTitle:    "validate-title",
+	AuditActionCreateMoc:        "create-moc",
+	AuditActionUpdateMoc:        "update-moc",
+	AuditActionDeleteMoc:        "delete-moc",
+	AuditActionSaveUser:         "save-user",
+	AuditActionDeactivateUser:   "deactivate-user",
+	AuditActionClaim:            "claim",
+	AuditActionUnclaim:          "unclaim",
+	AuditActionApproveMetadata:  "approve-metadata",
+	AuditActionRejectMetadata:   "reject-metadata",
+	AuditActionReportError:      "report-error",
+	AuditActionUndoErrorIssue:   "undo-error-issue",
+	AuditActionRemoveErrorIssue: "remove-error-issue",
+	AuditActionQueueForReview:   "queue-for-review",
+	AuditActionAutosave:         "autosave",
+	AuditActionSaveDraft:        "savedraft",
+	AuditActionSaveQueue:        "savequeue",
+}
+
+var auditActionLookup = map[string]AuditAction{
+	"queue":              AuditActionQueue,
+	"save-title":         AuditActionSaveTitle,
+	"validate-title":     AuditActionValidateTitle,
+	"create-moc":         AuditActionCreateMoc,
+	"update-moc":         AuditActionUpdateMoc,
+	"delete-moc":         AuditActionDeleteMoc,
+	"save-user":          AuditActionSaveUser,
+	"deactivate-user":    AuditActionDeactivateUser,
+	"claim":              AuditActionClaim,
+	"unclaim":            AuditActionUnclaim,
+	"approve-metadata":   AuditActionApproveMetadata,
+	"reject-metadata":    AuditActionRejectMetadata,
+	"report-error":       AuditActionReportError,
+	"undo-error-issue":   AuditActionUndoErrorIssue,
+	"remove-error-issue": AuditActionRemoveErrorIssue,
+	"queue-for-review":   AuditActionQueueForReview,
+	"autosave":           AuditActionAutosave,
+	"savedraft":          AuditActionSaveDraft,
+	"savequeue":          AuditActionSaveQueue,
+}
+
+// AuditActionFromString returns the action int for the given string, if the
+// string is one of our known actions
+func AuditActionFromString(s string) AuditAction {
+	return auditActionLookup[s]
+}
 
 // AuditLog represents the audit_logs table
 type AuditLog struct {
@@ -18,10 +101,13 @@ type AuditLog struct {
 }
 
 // CreateAuditLog writes the given data to audit_logs
-func CreateAuditLog(ip, user, action, message string) error {
+func CreateAuditLog(ip, user string, action AuditAction, message string) error {
+	if action <= AuditActionUnderflow || action >= AuditActionOverflow {
+		return fmt.Errorf("Unknown audit action")
+	}
 	var op = dbi.DB.Operation()
 	op.Dbg = dbi.Debug
-	op.Save("audit_logs", &AuditLog{When: time.Now(), IP: ip, User: user, Action: action, Message: message})
+	op.Save("audit_logs", &AuditLog{When: time.Now(), IP: ip, User: user, Action: string(action), Message: message})
 	return op.Err()
 }
 
@@ -68,6 +154,16 @@ func (f *AuditLogFinder) ForUser(u string) *AuditLogFinder {
 	return f
 }
 
+// ForActions scopes the finder to a specific list of actions.
+func (f *AuditLogFinder) ForActions(list ...AuditAction) *AuditLogFinder {
+	var dbActions = make([]string, len(list))
+	for i, action := range list {
+		dbActions[i] = dbAuditActions[action]
+	}
+	f.conditions["`action` IN (--IN--)"] = dbActions
+	return f
+}
+
 // Limit makes f.Fetch() return at most limit AuditLog instances
 func (f *AuditLogFinder) Limit(limit int) *AuditLogFinder {
 	f.lim = limit
@@ -80,14 +176,31 @@ func (f *AuditLogFinder) Limit(limit int) *AuditLogFinder {
 func (f *AuditLogFinder) Fetch() ([]*AuditLog, uint64, error) {
 	var op = dbi.DB.Operation()
 	op.Dbg = dbi.Debug
+	op.Dbg = true
 	var list []*AuditLog
 
 	var where []string
 	var args []interface{}
 	for k, v := range f.conditions {
-		where = append(where, k)
-		if v != nil {
-			args = append(args, v)
+		// Magic "IN" qualifier because this ORMy approach wasn't well-thought-out.
+		// Thanks, past self. AGAIN.
+		//
+		// Note that this setup adds more potential future pain: if anything other
+		// than a string array is used in an "IN" clause, this won't work.
+		if strings.Contains(k, "--IN--") {
+			var vals = v.([]string)
+			var placeholders = make([]string, len(vals))
+			for i, val := range vals {
+				placeholders[i] = "?"
+				args = append(args, val)
+			}
+			k = strings.Replace(k, "--IN--", strings.Join(placeholders, ","), 1)
+			where = append(where, k)
+		} else {
+			where = append(where, k)
+			if v != nil {
+				args = append(args, v)
+			}
 		}
 	}
 	var selector = op.Select("audit_logs", &AuditLog{}).Where(strings.Join(where, " AND "), args...)
