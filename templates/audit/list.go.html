@@ -86,6 +86,35 @@
   </tbody>
 </table>
 
+<h2>Help</h2>
+
+<p>Audit logs are very "internal", and as such the data may not mean a lot. Ask
+the administrator for details if something is confusing. Some of the
+information in the "Raw Message" column is only going to be meaningful to a
+developer and/or database administrator.</p>
+
+<p>Filters by date range and user should be self-explanatory. The action type
+filter is a bit tricky, however. The list presented here only includes a subset
+of the actual database values, because many values have proven not to be useful
+or have changed drastically over time due to the lack of having a controlled
+list of action types. Additionally, some actions are ambiguous in name and
+still need a more human-friendly explanation.</p>
+
+<h2>Some Background</h2>
+
+<p>(or "why do these logs seem so weird?")</p>
+
+<p>Audit logs were put into NCA very early on, back when the system consisted
+of multiple apps in PHP and Python, and the various pieces were very brittle.
+The audit logs were originally put in place to help debug issues or identify
+why an issue had the wrong metadata. This was long before we had an
+action/comment log tied to issues.</p>
+
+<p>Because of the action logs tied to issues, and the history of the audit
+logs, these are now only useful in very specific situations: typcially when you
+want to see who is doing what kind of work, how often, or who made a very
+specific change, such as deactivating a user.</p>
+
 {{end}}
 
 {{block "extrajs" .}}
