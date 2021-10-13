@@ -59,6 +59,7 @@ type Issue struct {
 	WorkflowOwnerID        int                 // Whose "desk" is this currently on?
 	WorkflowOwnerExpiresAt time.Time           // When does the workflow owner lose ownership?
 	MetadataEntryUserID    int                 // Who entered metadata?
+	MetadataEnteredAt      time.Time           // When was metadata last saved for this issue?
 	ReviewedByUserID       int                 // Who reviewed metadata last?
 	MetadataApprovedAt     time.Time           // When was metadata approved / how long has this been waiting to batch?
 	RejectedByUserID       int                 // If not approved, who rejected the metadata?
@@ -549,6 +550,18 @@ func FindCompletedIssuesReadyForRemoval() ([]*Issue, error) {
 	var list []*Issue
 	var cond = "batch_id IN (SELECT id FROM batches WHERE status = ?) AND ignored = 1 AND location <> ''"
 	op.Select("issues", &Issue{}).Where(cond, BatchStatusLiveDone).AllObjects(&list)
+	deserializeIssues(list)
+	return list, op.Err()
+}
+
+// FindIssuesLackingMetadataEntryDate is a one-off to help migrate legacy
+// issues. It's dumb and shouldn't live here. Blah.
+func FindIssuesLackingMetadataEntryDate() ([]*Issue, error) {
+	var op = dbi.DB.Operation()
+	op.Dbg = dbi.Debug
+
+	var list []*Issue
+	op.Select("issues", &Issue{}).Where("metadata_entered_at IS NULL").AllObjects(&list)
 	deserializeIssues(list)
 	return list, op.Err()
 }
