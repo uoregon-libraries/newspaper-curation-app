@@ -8,7 +8,9 @@ import (
 	"time"
 )
 
-// Duration returns a human-friendly string describing (roughly) the duration d
+// Duration returns a human-friendly string describing (roughly) the duration
+// d. This is a very rough string just to give people an idea how long
+// something has been waiting, and as such isn't meant for general use.
 func Duration(d time.Duration) string {
 	var hours = d.Hours()
 	var days = math.Floor((hours + 4) / 24.0)
