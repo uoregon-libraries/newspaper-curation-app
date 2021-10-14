@@ -83,7 +83,7 @@ func getJSONIssues(resp *responder.Responder) *jsonResponse {
 	var finders = map[string]*models.IssueFinder{
 		"desk":             models.Issues().OnDesk(resp.Vars.User.ID),
 		"needs-metadata":   models.Issues().Available().InWorkflowStep(schema.WSReadyForMetadataEntry),
-		"needs-review":     models.Issues().Available().InWorkflowStep(schema.WSAwaitingMetadataReview),
+		"needs-review":     models.Issues().Available().OrderBy("metadata_entered_at").InWorkflowStep(schema.WSAwaitingMetadataReview),
 		"unfixable-errors": models.Issues().Available().InWorkflowStep(schema.WSUnfixableMetadataError),
 	}
 

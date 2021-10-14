@@ -169,6 +169,11 @@ func (f *IssueFinder) Limit(limit int) *IssueFinder {
 	return f
 }
 
+func (f *IssueFinder) OrderBy(order string) *IssueFinder {
+	f.ord = order
+	return f
+}
+
 func (f *IssueFinder) selector() magicsql.Select {
 	var where []string
 	var args []interface{}
