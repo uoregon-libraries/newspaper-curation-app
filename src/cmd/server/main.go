@@ -147,5 +147,6 @@ func home(w http.ResponseWriter, req *http.Request) {
 
 func main() {
 	getConf()
+	migrateIssuesMissingMetadataEntry()
 	startServer()
 }

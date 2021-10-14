@@ -127,10 +127,17 @@ function populateTable(table, issues) {
     cell.innerText = issue.Date;
     row.appendChild(cell);
 
-    // If we're on the desk, we have a third cell before actions for the workflow status and expiration
-    if (table.parentNode.getAttribute('id') == 'desk-tab') {
-      cell = row.insertCell();
-      cell.innerHTML = issue.Task + '<br />' + 'Expires on ' + issue.Expiration;
+    switch(table.parentNode.getAttribute('id')) {
+      case 'desk-tab':
+        // On the desk, we have a third cell before actions for the workflow status and expiration
+        cell = row.insertCell();
+        cell.innerHTML = issue.Task + '<br />' + 'Expires on ' + issue.Expiration;
+        break;
+      case 'needs-review-tab':
+        // On the "needs review" tab, our third cell is the waiting time
+        cell = row.insertCell();
+        cell.innerHTML = issue.Waiting;
+        break;
     }
 
     // Finally, build out all the actions....
