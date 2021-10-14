@@ -357,6 +357,7 @@ func (i *Issue) QueueForMetadataReview(curatorID int) error {
 	// Update workflow step and record the curator id
 	i.WorkflowStep = schema.WSAwaitingMetadataReview
 	i.MetadataEntryUserID = curatorID
+	i.MetadataEnteredAt = time.Now()
 	i.unclaim()
 
 	// If this was previously rejected, put it back on the reviewer's desk
