@@ -169,6 +169,10 @@ func (f *IssueFinder) Limit(limit int) *IssueFinder {
 	return f
 }
 
+// OrderBy sets an order for this finder.
+//
+// TODO: This currently requires a raw SQL order string which ties business
+// logic and DB schema too tightly. Not sure the best way to address this.
 func (f *IssueFinder) OrderBy(order string) *IssueFinder {
 	f.ord = order
 	return f
