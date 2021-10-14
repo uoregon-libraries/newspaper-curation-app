@@ -20,19 +20,19 @@ func Duration(d time.Duration) string {
 	if weeks > 50 {
 		return "about a year"
 	}
-	if months > 1 {
+	if months > 3 {
 		return "about " + strconv.Itoa(int(months)) + " months"
 	}
-	if weeks >= 4 {
+	if weeks == 4 {
 		return "about a month"
 	}
-	if weeks > 1 {
+	if weeks > 3 {
 		return "about " + strconv.Itoa(int(weeks)) + " weeks"
 	}
-	if weeks == 1 {
+	if days == 7 {
 		return "about a week"
 	}
-	if days > 1 {
+	if days > 3 {
 		return "about " + strconv.Itoa(int(days)) + " days"
 	}
 	if hours >= 23 {

@@ -11,9 +11,11 @@ func TestDuration(t *testing.T) {
 		want  string
 	}{
 		"Small":  {time.Second, "a few minutes"},
-		"Weeks":  {time.Hour * 24 * 25, "about 3 weeks"},
+		"Days":   {time.Hour * 24 * 10, "about 10 days"},
+		"Days 2": {time.Hour * 24 * 25, "about 25 days"},
+		"Weeks":  {time.Hour * 24 * 45, "about 6 weeks"},
 		"Month":  {time.Hour * 24 * 30, "about a month"},
-		"Months": {time.Hour * 24 * 90, "about 3 months"},
+		"Months": {time.Hour * 24 * 120, "about 4 months"},
 	}
 
 	for name, tc := range tests {
