@@ -117,7 +117,7 @@ func (f *form) title() string {
 		logText = f.ActionTypes + " Audit Logs"
 	}
 
-	var title string = "Recent {{logs}}"
+	var title = "Recent {{logs}}"
 	switch f.PresetDate {
 	case "custom":
 		title = fmt.Sprintf("{{logs}}: %s to %s", f.StartString, f.EndString)
