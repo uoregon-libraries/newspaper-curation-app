@@ -34,9 +34,9 @@ Brief description, if necessary
 ### Migration
 -->
 
-## vX.Y.Z
+## v3.11.0
 
-Brief description, if necessary
+Audit logs and workflow improvements
 
 ### Fixed
 
@@ -64,8 +64,6 @@ Brief description, if necessary
     previously didn't have.
   - Metadata Review returns issues sorted by when metadata was entered, oldest
     first, so it's easy to tackle issues that have been sitting for a while.
-
-### Removed
 
 ### Migration
 
