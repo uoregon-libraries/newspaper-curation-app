@@ -88,7 +88,7 @@ func TestTSV(t *testing.T) {
 		"somewhereOnDisk\\tsn12345678\\tTreehugger's Digest\\tEugene, Oregon\\t000001",
 		"/mnt/news/data/workflow/2004260523-2001020304-1",
 		"2001020304", "",
-		"internal,main.go,middleware.go,migrate_issue_metadata_entry.go",
+		"internal,main.go,middleware.go,migrate_issue_metadata_entry.go,migrate_sftpgo.go",
 	}, "\t")
 	var tsv = i.TSV()
 	if tsv != expectedTSV {
