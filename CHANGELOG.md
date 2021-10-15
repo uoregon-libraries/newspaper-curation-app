@@ -34,6 +34,44 @@ Brief description, if necessary
 ### Migration
 -->
 
+## vX.Y.Z
+
+Brief description, if necessary
+
+### Fixed
+
+- Audit logs can now be filtered without having to choose a single individual.
+
+### Added
+
+- New filtering options for audit logs to see grouped logs by general type.
+- Some basic info/help/background text is now shown after the audit log block
+  to hopefully help explain what exactly the purpose is for these logs.
+- Issues now store their most recent curation date so that in the workflow view
+  they can be sorted by those which have been waiting the longest for review.
+- The "Metadata Review" tab on the workflow page shows a rough wait time (since
+  metadata entry) per issue
+
+### Changed
+
+- Audit log types are now in a controlled list rather than just any text, which
+  should make the audit logs more meaningful as new stuff needs to be audited.
+- Both the "Metadata Entry" and "Metadata Review" tabs in the workflow page are
+  sorted in a deterministic way (used to be just whatever order the database
+  chose to return)
+  - Metadata Entry returns issues sorted by LCCN, issue date, and edition -
+    this isn't useful so much as it gives us some consistency that we
+    previously didn't have.
+  - Metadata Review returns issues sorted by when metadata was entered, oldest
+    first, so it's easy to tackle issues that have been sitting for a while.
+
+### Removed
+
+### Migration
+
+- Run the database migrations, e.g., with `goose`:
+  - `goose -dir ./db/migrations/ mysql "<user>:<password>@tcp(<db host>:3306)/<database name>" up`
+
 ## v3.10.1
 
 Hotfix for workflow filters
