@@ -33,8 +33,7 @@ This project consists of various scripts for converting
 [born-digital](https://en.wikipedia.org/wiki/Born-digital) PDF newspapers, as
 well as scanned newspapers, into a one-batch
 [bag](https://en.wikipedia.org/wiki/BagIt) which can be ingested into
-[ONI](https://github.com/open-oni/open-oni) and
-[chronam](https://github.com/LibraryOfCongress/chronam).
+[ONI](https://github.com/open-oni/open-oni).
 
 Please refer to
 [NCA's online documentation](https://uoregon-libraries.github.io/newspaper-curation-app/) for
