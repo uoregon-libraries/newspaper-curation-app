@@ -34,6 +34,15 @@ Brief description, if necessary
 ### Migration
 -->
 
+## v3.11.1
+
+Hotfix
+
+### Fixed
+
+- The application no longer crashes when viewing issues flagged as having
+  unfixable errors
+
 ## v3.11.0
 
 Audit logs and workflow improvements
