@@ -42,6 +42,17 @@ go build \
 
 https://github.com/drakkan/sftpgo/blob/main/docs/service.md
 
+First, to remove everything from a prior install:
+
+```
+sudo systemctl stop sftpgo
+sudo rm -rf /etc/sftpgo \
+    /var/lib/sftpgo \
+    /usr/share/sftpgo \
+    /usr/bin/sftpgo \
+    /etc/systemd/system/sftpgo.service
+```
+
 Full command list from docs, in case they get removed or something:
 
 ```
@@ -94,6 +105,21 @@ sudo sh -c '/usr/bin/sftpgo gen completion bash > /usr/share/bash-completion/com
 # optional, create man pages
 sudo /usr/bin/sftpgo gen man -d /usr/share/man/man1
 ```
+
+Make sure bolt is the configured data store, e.g. in `/etc/sftpgo/sftpgo.json`:
+
+```
+...
+
+  "data_provider": {
+    "driver": "bolt",
+    "name": "sftpgo.db",
+    "host": "",
+...
+
+```
+
+May need to run `systemctl daemon-reload` prior to restarting the service.
 
 ## Downtime
 
