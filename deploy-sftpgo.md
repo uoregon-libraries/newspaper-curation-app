@@ -15,6 +15,8 @@ SFTP Server:
 - Replace manual install of SFTPGo with latest 2.1.x
   - More painful to manage than using their custom RPMs, but guaranteed not to
     conflict with automated server updates
+  - Building from source (easier to pull new tags for updates) - see below
+  - Setup service (see below)
 - Configuration:
   - `track_quota` = 1
   - Make sure it's still on port 2022
@@ -24,6 +26,74 @@ SFTP Server:
 - Create a test user and validate various operations. Purge said user.
 - Firewall: allow http traffic from the NCA server at a minimum; maybe library
   IP ranges for easier SFTPGo administration if necessary?
+
+### Build from source
+
+https://github.com/drakkan/sftpgo/blob/main/docs/build-from-source.md
+
+```
+go build \
+  -tags nomysql,nopgsql,nosqlite \
+  -ldflags "-s -w -X github.com/drakkan/sftpgo/v2/version.commit=$(git describe --always --dirty) -X github.com/drakkan/sftpgo/v2/version.date=$(date -u +%FT%TZ)" \
+  -o sftpgo
+```
+
+### Set up service
+
+https://github.com/drakkan/sftpgo/blob/main/docs/service.md
+
+Full command list from docs, in case they get removed or something:
+
+```
+# create the sftpgo user and group
+sudo groupadd --system sftpgo
+sudo useradd --system \
+  --gid sftpgo \
+  --no-create-home \
+  --home-dir /var/lib/sftpgo \
+  --shell /usr/sbin/nologin \
+  --comment "SFTPGo user" \
+  sftpgo
+# create the required directories
+sudo mkdir -p /etc/sftpgo \
+  /var/lib/sftpgo \
+  /usr/share/sftpgo
+
+# install the sftpgo executable
+sudo install -Dm755 sftpgo /usr/bin/sftpgo
+# install the default configuration file, edit it if required
+sudo install -Dm644 sftpgo.json /etc/sftpgo/
+# override some configuration keys using environment variables
+sudo sh -c 'echo "SFTPGO_HTTPD__TEMPLATES_PATH=/usr/share/sftpgo/templates" > /etc/sftpgo/sftpgo.env'
+sudo sh -c 'echo "SFTPGO_HTTPD__STATIC_FILES_PATH=/usr/share/sftpgo/static" >> /etc/sftpgo/sftpgo.env'
+sudo sh -c 'echo "SFTPGO_HTTPD__BACKUPS_PATH=/var/lib/sftpgo/backups" >> /etc/sftpgo/sftpgo.env'
+sudo sh -c 'echo "SFTPGO_DATA_PROVIDER__CREDENTIALS_PATH=/var/lib/sftpgo/credentials" >> /etc/sftpgo/sftpgo.env'
+# if you use a file based data provider such as sqlite or bolt consider to set the database path too, for example:
+#sudo sh -c 'echo "SFTPGO_DATA_PROVIDER__NAME=/var/lib/sftpgo/sftpgo.db" >> /etc/sftpgo/sftpgo.env'
+# also set the provider's PATH as env var to get initprovider to work with SQLite provider:
+#export SFTPGO_DATA_PROVIDER__NAME=/var/lib/sftpgo/sftpgo.db
+# install static files and templates for the web UI
+sudo cp -r static templates /usr/share/sftpgo/
+# set files and directory permissions
+sudo chown -R sftpgo:sftpgo /etc/sftpgo /var/lib/sftpgo
+sudo chmod 750 /etc/sftpgo /var/lib/sftpgo
+sudo chmod 640 /etc/sftpgo/sftpgo.json /etc/sftpgo/sftpgo.env
+# initialize the configured data provider
+# if you want to use MySQL or PostgreSQL you need to create the configured database before running the initprovider command
+sudo -E su - sftpgo -m -s /bin/bash -c 'sftpgo initprovider -c /etc/sftpgo'
+# install the systemd service
+sudo install -Dm644 init/sftpgo.service /etc/systemd/system
+# start the service
+sudo systemctl start sftpgo
+# verify that the service is started
+sudo systemctl status sftpgo
+# automatically start sftpgo on boot
+sudo systemctl enable sftpgo
+# optional, create shell completion script, for example for bash
+sudo sh -c '/usr/bin/sftpgo gen completion bash > /usr/share/bash-completion/completions/sftpgo'
+# optional, create man pages
+sudo /usr/bin/sftpgo gen man -d /usr/share/man/man1
+```
 
 ## Downtime
 
