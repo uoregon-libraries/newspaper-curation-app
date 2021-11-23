@@ -4,8 +4,10 @@
 package responder
 
 import (
+	"bytes"
 	"encoding/base64"
 	"html/template"
+	"io"
 	"net/http"
 	"time"
 
@@ -74,9 +76,16 @@ func (r *Responder) Render(t *tmpl.Template) {
 		http.SetCookie(r.Writer, &http.Cookie{Name: "Info", Value: "", Expires: time.Time{}, Path: "/"})
 	}
 
-	err = t.Execute(r.Writer, r.Vars)
+	var buffer = new(bytes.Buffer)
+	err = t.Execute(buffer, r.Vars)
 	if err != nil {
-		logger.Errorf("Unable to render template %#v: %s", t.Name, err)
+		logger.Criticalf("Unable to render template %q: %s", t.Path, err)
+		http.Error(r.Writer, "NCA has experienced an internal error while trying to render the page. Please contact the administrator for assistance.", http.StatusInternalServerError)
+		return
+	}
+	_, err = io.Copy(r.Writer, buffer)
+	if err != nil {
+		logger.Errorf("Unable to copy template %q from buffer: %s", t.Name, err)
 	}
 }
 

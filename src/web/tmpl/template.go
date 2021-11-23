@@ -15,12 +15,13 @@ type FuncMap template.FuncMap
 type Template struct {
 	*template.Template
 	Name string
+	Path string
 }
 
 // Clone wraps html/template.Clone to also clone the name
 func (t *Template) Clone() (*Template, error) {
 	var tmpl, err = t.Template.Clone()
-	return &Template{tmpl, t.Name}, err
+	return &Template{tmpl, t.Name, t.Path}, err
 }
 
 // TRoot wraps template.Template for use to spawn "real" templates.  The TRoot
@@ -37,7 +38,7 @@ type TRoot struct {
 // execution of templates doesn't require a template.Lookup call, which can be
 // somewhat error prone.
 func Root(name, path string) *TRoot {
-	var tmpl = &Template{template.New(name), name}
+	var tmpl = &Template{template.New(name), name, path}
 	var t = &TRoot{tmpl, path}
 
 	return t
@@ -102,6 +103,7 @@ func (t *TRoot) Build(path string) (*Template, error) {
 	}
 
 	tNew.Name = path
+	tNew.Path = filepath.Join(t.Path, path)
 	return tNew, nil
 }
 
