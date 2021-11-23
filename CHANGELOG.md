@@ -34,6 +34,15 @@ Brief description, if necessary
 ### Migration
 -->
 
+## v3.11.2
+
+Hotfix
+
+### Fixed
+
+- Partial pages will no longer render - if a page fails to render, it will be *very* clear that something went wrong
+- Uploaded issues with file errors can now be seen instead of crashing mid-render
+
 ## v3.11.1
 
 Hotfix
