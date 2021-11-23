@@ -9,6 +9,7 @@ import (
 
 	"github.com/uoregon-libraries/newspaper-curation-app/src/apperr"
 	"github.com/uoregon-libraries/newspaper-curation-app/src/cmd/server/internal/settings"
+	"github.com/uoregon-libraries/newspaper-curation-app/src/internal/logger"
 	"github.com/uoregon-libraries/newspaper-curation-app/src/models"
 	"github.com/uoregon-libraries/newspaper-curation-app/src/privilege"
 	"github.com/uoregon-libraries/newspaper-curation-app/src/schema"
@@ -102,6 +103,7 @@ func InitRootTemplate(templatePath string) {
 		"debug":         func() bool { return settings.DEBUG },
 		"dict":          dict,
 		"option":        option,
+		"log":           func(val interface{}) string { logger.Debugf("%#v", val); return "" },
 
 		// This hack helps with dynamic heading - Go's templating system seems to
 		// be confused when we have something like "<{{.Something}}>" - it decides
