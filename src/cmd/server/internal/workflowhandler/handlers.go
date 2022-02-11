@@ -141,7 +141,6 @@ func jsonHandler(resp *responder.Responder, i *Issue) {
 // viewIssueHandler displays the given issue to the user so it can be looked
 // over without having to claim it
 func viewIssueHandler(resp *responder.Responder, i *Issue) {
-	i.ValidateMetadata()
 	resp.Vars.Title = "Issue Metadata / Page Numbers"
 	resp.Vars.Data["Issue"] = i
 	resp.Render(ViewIssueTmpl)
@@ -182,7 +181,6 @@ func unclaimIssueHandler(resp *responder.Responder, i *Issue) {
 
 // enterMetadataHandler shows the metadata entry form for the issue
 func enterMetadataHandler(resp *responder.Responder, i *Issue) {
-	i.ValidateMetadata()
 	resp.Vars.Title = "Issue Metadata / Page Numbers"
 	resp.Vars.Data["Issue"] = i
 	resp.Render(MetadataFormTmpl)
@@ -209,16 +207,14 @@ func saveMetadataHandler(resp *responder.Responder, i *Issue) {
 }
 
 func reviewMetadataHandler(resp *responder.Responder, i *Issue) {
-	i.ValidateMetadata()
 	resp.Vars.Title = "Reviewing Issue Metadata"
 	resp.Vars.Data["Issue"] = i
 	resp.Render(ReviewMetadataTmpl)
 }
 
 func approveIssueMetadataHandler(resp *responder.Responder, i *Issue) {
-	// Validate the metadata again to be certain there were no last-minute
+	// Check for metadata errors again to be certain there were no last-minute
 	// changes (e.g., database manipulation, out-of-band batch load, etc.)
-	i.ValidateMetadata()
 	if i.Errors().Major().Len() > 0 {
 		http.SetCookie(resp.Writer, &http.Cookie{Name: "Alert", Value: encodedErrors("approve", i.Errors()), Path: "/"})
 		http.Redirect(resp.Writer, resp.Request, i.Path("review/metadata"), http.StatusFound)

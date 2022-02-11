@@ -212,6 +212,9 @@ func (i *Issue) ValidateMetadata() {
 
 // Errors returns validation errors
 func (i *Issue) Errors() *apperr.List {
+	if i.validationErrors == nil {
+		i.ValidateMetadata()
+	}
 	return i.validationErrors
 }
 
@@ -220,6 +223,5 @@ func (i *Issue) Errors() *apperr.List {
 // (reported as having unfixable errors) and wanting to push it straight to the
 // review queue.
 func (i *Issue) CanReturnToReview() bool {
-	i.ValidateMetadata()
 	return i.Errors().Major().Len() == 0
 }

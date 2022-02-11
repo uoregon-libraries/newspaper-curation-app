@@ -105,10 +105,9 @@ func saveQueue(resp *responder.Responder, i *Issue, changes map[string]string) {
 		return
 	}
 
-	// Validate the metadata.  If there are errors, let the user know and
-	// redisplay the form; we still keep the saved changes in order to avoid
-	// losing metadata
-	i.ValidateMetadata()
+	// Check for metadata errors (which implicitly validates the metadata).  If
+	// there are errors, let the user know and redisplay the form; we still keep
+	// the saved changes in order to avoid losing metadata
 	if i.Errors().Major().Len() > 0 {
 		http.SetCookie(resp.Writer, &http.Cookie{Name: "Alert", Value: encodedErrors("queue", i.Errors().Major()), Path: "/"})
 		http.Redirect(resp.Writer, resp.Request, i.Path("metadata"), http.StatusFound)

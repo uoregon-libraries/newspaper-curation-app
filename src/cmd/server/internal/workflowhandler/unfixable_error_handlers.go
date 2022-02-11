@@ -44,7 +44,6 @@ func saveErrorHandler(resp *responder.Responder, i *Issue) {
 }
 
 func reviewUnfixableHandler(resp *responder.Responder, i *Issue) {
-	i.ValidateMetadata()
 	resp.Vars.Title = "Reviewing Issue Error(s)"
 	resp.Vars.Data["Issue"] = i
 	resp.Render(ViewErrorTmpl)
