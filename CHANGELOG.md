@@ -34,6 +34,15 @@ Brief description, if necessary
 ### Migration
 -->
 
+## v3.11.3
+
+Hotfix
+
+### Fixed
+
+- The "remove an errored issue from NCA" page no longer fails to load due to
+  errors in how I handled loading the issue's errors. So meta.
+
 ## v3.11.2
 
 Hotfix
