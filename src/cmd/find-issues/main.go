@@ -125,6 +125,8 @@ func main() {
 		var found = scanner.LookupIssues(k)
 		if len(found) > 0 {
 			list = append(list, found...)
+		} else {
+			log.Printf("Error: issue key %q has no matches", k)
 		}
 	}
 	reportIssues(list)
