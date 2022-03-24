@@ -74,7 +74,11 @@ func main() {
 	var keysByBatch = make(map[string][]string)
 	for key, locs := range locmap {
 		for _, loc := range locs {
+			if loc.Location == "" {
+				log.Fatalf("Issue key %q must be bad: no location data", key)
+			}
 			if loc.Batch == "" {
+				log.Printf("Warning: issue key %q doesn't exist in a batch (location is %q)", key, loc.Location)
 				continue
 			}
 			keysByBatch[loc.Batch] = append(keysByBatch[loc.Batch], key)
@@ -82,7 +86,7 @@ func main() {
 	}
 
 	for batchname, keys := range keysByBatch {
-		fmt.Printf("\n--------\n\n")
+		fmt.Printf("\n########################\n\n")
 		var currentVersion = batchname[len(batchname)-2:]
 		var vnum, _ = strconv.ParseInt(currentVersion, 10, 64)
 		var newname = batchname[:len(batchname)-2] + fmt.Sprintf("%02d", vnum+1)
