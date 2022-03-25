@@ -72,16 +72,30 @@ func main() {
 	}
 
 	var keysByBatch = make(map[string][]string)
+	var batchedKeys = make(map[string]bool)
+	var unbatchedKeys = make(map[string]bool)
 	for key, locs := range locmap {
 		for _, loc := range locs {
 			if loc.Location == "" {
 				log.Fatalf("Issue key %q must be bad: no location data", key)
 			}
 			if loc.Batch == "" {
-				log.Printf("Warning: issue key %q doesn't exist in a batch (location is %q)", key, loc.Location)
+				unbatchedKeys[key] = true
 				continue
 			}
+			batchedKeys[key] = true
 			keysByBatch[loc.Batch] = append(keysByBatch[loc.Batch], key)
+		}
+	}
+
+	for k := range unbatchedKeys {
+		if batchedKeys[k] == false {
+			log.Printf("Warning: issue key %q doesn't exist in any batches", k)
+		}
+	}
+	for k := range batchedKeys {
+		if unbatchedKeys[k] == false {
+			log.Printf("Warning: issue key %q would be removed without being replaced", k)
 		}
 	}
 
