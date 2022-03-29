@@ -21,6 +21,7 @@ import (
 	"os"
 	"os/exec"
 	"path/filepath"
+	"sort"
 	"strconv"
 	"strings"
 	"time"
@@ -99,22 +100,65 @@ func main() {
 		}
 	}
 
-	for batchname, keys := range keysByBatch {
-		fmt.Printf("\n########################\n\n")
+	// Make the output consistent
+	var names []string
+	for batchname := range keysByBatch {
+		names = append(names, batchname)
+	}
+	sort.Strings(names)
+
+	// Print out commands for creating the replacement batches first - this is a
+	// non-destructive operation
+	fmt.Println("#####")
+	fmt.Println("# Run on NCA server")
+	fmt.Println("#####")
+	fmt.Println()
+	fmt.Println("# Create batches that replace existing batches but without the bad issues")
+	fmt.Printf("cd %s\n", pathToNCA)
+	for _, batchname := range names {
 		var currentVersion = batchname[len(batchname)-2:]
 		var vnum, _ = strconv.ParseInt(currentVersion, 10, 64)
 		var newname = batchname[:len(batchname)-2] + fmt.Sprintf("%02d", vnum+1)
-		fmt.Printf("cd %s\n", pathToNCA)
 		fmt.Printf("./bin/remove-issues -c ./settings %s %s %s\n",
 			filepath.Join(pathToBatches, batchname),
 			filepath.Join(pathToBatches, newname),
-			strings.Join(keys, " "),
+			strings.Join(keysByBatch[batchname], " "),
 		)
+	}
 
-		fmt.Println("cd /opt/openoni")
-		fmt.Println("source ENV/bin/activate")
+	// Next print out commands to run on ONI server, which actually remove the old batch and replace it
+	fmt.Println()
+	fmt.Println("#####")
+	fmt.Println("# Run on ONI server")
+	fmt.Println("#####")
+	fmt.Println()
+	fmt.Println("# Unload and then replace batches")
+	fmt.Println("# NOTE: your site will be missing every issue in each batch until the new batch loads,")
+	fmt.Println("# but nothing is irreversibly lost at this point.")
+	fmt.Println()
+	fmt.Println("cd /opt/openoni")
+	fmt.Println("source ENV/bin/activate")
+	for _, batchname := range names {
+		var currentVersion = batchname[len(batchname)-2:]
+		var vnum, _ = strconv.ParseInt(currentVersion, 10, 64)
+		var newname = batchname[:len(batchname)-2] + fmt.Sprintf("%02d", vnum+1)
+
 		fmt.Printf("./manage.py purge_batch %s\n", batchname)
 		fmt.Printf("./manage.py load_batch %s\n", filepath.Join(pathToBatches, newname))
+	}
+
+	// Finally print out the commands to remove the original batch from disk.
+	// These are *final*: after this there is no going back.
+	fmt.Println()
+	fmt.Println("#####")
+	fmt.Println("# Run on whichever server can remove entire batches")
+	fmt.Println("#####")
+	fmt.Println()
+	fmt.Println("# Remove batches from disk")
+	fmt.Println("# NOTE: These operations ARE PERMANENT and CANNOT BE UNDONE.")
+	fmt.Println()
+	for _, batchname := range names {
+		fmt.Printf("rm -rf %s\n", filepath.Join(pathToBatches, batchname))
 	}
 }
 
