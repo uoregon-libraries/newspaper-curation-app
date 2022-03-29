@@ -119,7 +119,8 @@ func main() {
 		var currentVersion = batchname[len(batchname)-2:]
 		var vnum, _ = strconv.ParseInt(currentVersion, 10, 64)
 		var newname = batchname[:len(batchname)-2] + fmt.Sprintf("%02d", vnum+1)
-		fmt.Printf("./bin/remove-issues -c ./settings %s %s %s\n",
+
+		fmt.Printf("./bin/remove-issues %s %s %s\n",
 			filepath.Join(pathToBatches, batchname),
 			filepath.Join(pathToBatches, newname),
 			strings.Join(keysByBatch[batchname], " "),
