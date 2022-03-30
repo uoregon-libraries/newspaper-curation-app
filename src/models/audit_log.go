@@ -62,6 +62,11 @@ var dbAuditActions = map[AuditAction]string{
 	AuditActionSaveQueue:        "savequeue",
 }
 
+// String returns the human-readable value for an action
+func (a AuditAction) String() string {
+	return dbAuditActions[a]
+}
+
 var auditActionLookup = map[string]AuditAction{
 	"queue":              AuditActionQueue,
 	"save-title":         AuditActionSaveTitle,
@@ -102,13 +107,22 @@ type AuditLog struct {
 
 // CreateAuditLog writes the given data to audit_logs
 func CreateAuditLog(ip, user string, action AuditAction, message string) error {
-	if action <= AuditActionUnderflow || action >= AuditActionOverflow {
-		return fmt.Errorf("Unknown audit action")
+	var alog, err = BuildAuditLog(ip, user, action, message)
+	if err != nil {
+		return err
 	}
 	var op = dbi.DB.Operation()
 	op.Dbg = dbi.Debug
-	op.Save("audit_logs", &AuditLog{When: time.Now(), IP: ip, User: user, Action: string(action), Message: message})
+	op.Save("audit_logs", alog)
 	return op.Err()
+}
+
+// BuildAuditLog creates the data for an audit log without saving it
+func BuildAuditLog(ip, user string, action AuditAction, message string) (*AuditLog, error) {
+	if action <= AuditActionUnderflow || action >= AuditActionOverflow {
+		return nil, fmt.Errorf("Unknown audit action")
+	}
+	return &AuditLog{When: time.Now(), IP: ip, User: user, Action: action.String(), Message: message}, nil
 }
 
 // AuditLogFinder is a pseudo-DSL for easily creating queries without needing
