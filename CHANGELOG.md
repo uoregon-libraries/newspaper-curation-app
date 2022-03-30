@@ -34,6 +34,25 @@ Brief description, if necessary
 ### Migration
 -->
 
+## v3.11.4
+
+Miscellaneous improvements; major data problem fixed
+
+### Fixed
+
+- Audit logs no longer store raw binary data instead of the proper text value
+
+### Added
+
+- Slightly better tooling for replacing issues in live batches; documentation
+  is still needed here, though
+
+### Migration
+
+- Shut down NCA entirely, deploy the new version, and run the database
+  migrations, e.g., with `goose`:
+  - `goose -dir ./db/migrations/ mysql "<user>:<password>@tcp(<db host>:3306)/<database name>" up`
+
 ## v3.11.3
 
 Hotfix
