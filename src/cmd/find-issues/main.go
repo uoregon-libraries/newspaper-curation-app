@@ -6,8 +6,10 @@
 package main
 
 import (
+	"encoding/json"
 	"fmt"
 	"io/ioutil"
+	"log"
 	"strings"
 
 	"github.com/uoregon-libraries/gopkg/fileutil"
@@ -118,9 +120,22 @@ func main() {
 		return
 	}
 
+	var list schema.IssueList
 	for _, k := range issueSearchKeys {
-		reportIssues(scanner.LookupIssues(k))
+		var found = scanner.LookupIssues(k)
+		if len(found) > 0 {
+			list = append(list, found...)
+		} else {
+			log.Printf("Error: issue key %q has no matches", k)
+		}
 	}
+	reportIssues(list)
+}
+
+type locData struct {
+	Location string
+	Batch    string
+	Errors   []string
 }
 
 func reportIssues(issueList schema.IssueList) {
@@ -134,16 +149,12 @@ func reportIssues(issueList schema.IssueList) {
 		}
 	}
 
-	var lastKey = ""
+	var locs = make(map[string][]*locData)
 	for _, issue := range newList {
-		var currKey = issue.Key()
-		if currKey != lastKey {
-			fmt.Printf("%#v:\n", currKey)
-			lastKey = currKey
-		}
-		fmt.Printf("  - %#v\n", issue.Location)
+		var key = issue.Key()
+		var loc = &locData{Location: issue.Location}
 		if issue.Batch != nil {
-			fmt.Printf("    - Batch: %s\n", issue.Batch.Fullname())
+			loc.Batch = issue.Batch.Fullname()
 		}
 
 		for _, e := range issue.Errors.All() {
@@ -151,7 +162,15 @@ func reportIssues(issueList schema.IssueList) {
 			if e.Warning() {
 				word = "WARNING"
 			}
-			fmt.Printf("    - %s: %s\n", word, e)
+			loc.Errors = append(loc.Errors, word+": "+e.Error())
 		}
+
+		locs[key] = append(locs[key], loc)
 	}
+
+	var data, err = json.MarshalIndent(locs, "", "\t")
+	if err != nil {
+		log.Fatalf("Error marshaling location report: %s", err)
+	}
+	fmt.Println(string(data))
 }
