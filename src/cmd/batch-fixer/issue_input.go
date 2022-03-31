@@ -76,8 +76,8 @@ func (i *Input) rejectIssueHandler(args []string) {
 
 func (i *Input) errorIssueHandler(args []string) {
 	var msg = strings.Join(args, " ")
-	i.println(fmt.Sprintf("%q will be removed from the batch *and* the "+
-		"workflow, with an error message of %q.", i.issue.db.Key(), msg))
+	i.println(fmt.Sprintf("%q will be removed from the batch and moved to the \"Unfixable "+
+		"Errors\" workflow tab, with an error message of %q.", i.issue.db.Key(), msg))
 	if !i.confirmYN() {
 		return
 	}
