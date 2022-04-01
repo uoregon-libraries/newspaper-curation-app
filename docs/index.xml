@@ -195,6 +195,16 @@ git clone https://github.com/uoregon-libraries/newspaper-curation-app.git cd new
     </item>
     
     <item>
+      <title>Replacing Live Issues</title>
+      <link>https://uoregon-libraries.github.io/newspaper-curation-app/workflow/fixing-live-batches/</link>
+      <pubDate>Mon, 01 Jan 0001 00:00:00 +0000</pubDate>
+      
+      <guid>https://uoregon-libraries.github.io/newspaper-curation-app/workflow/fixing-live-batches/</guid>
+      <description>Helper Script We&amp;rsquo;ve put together a helper script which can automate a lot of the preparation steps when a single LCCN needs a lot of issues pulled. It is hacky and hard-coded at the moment, but it doesn&amp;rsquo;t make any changes to anything, so it&amp;rsquo;s safe to try out, and even modify to suit other use-cases.
+To run: go run scripts/help-remove-issues.go &amp;lt;lccn&amp;gt; &amp;lt;issue dates filename&amp;gt; &amp;lt;path to NCA dir&amp;gt; &amp;lt;path to live batches&amp;gt;.</description>
+    </item>
+    
+    <item>
       <title>Batch Manual Go-live Procedure</title>
       <link>https://uoregon-libraries.github.io/newspaper-curation-app/workflow/batch-manual-golive/</link>
       <pubDate>Mon, 01 Jan 0001 00:00:00 +0000</pubDate>

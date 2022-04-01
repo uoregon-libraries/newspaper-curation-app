@@ -1,0 +1,205 @@
+<!DOCTYPE html>
+<html lang="en-us">
+<head><meta charset="utf-8">
+<meta http-equiv="X-UA-Compatible" content="IE=edge">
+<meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1, user-scalable=no">
+<title>Replacing Live Issues - Newspaper Curation App</title>
+<meta name="description" content="Fixing batches after they&#39;ve been pushed into production">
+<meta name="generator" content="Hugo 0.85.0" />
+<link href="https://uoregon-libraries.github.io/newspaper-curation-app//index.xml" rel="alternate" type="application/rss+xml">
+<link rel="canonical" href="https://uoregon-libraries.github.io/newspaper-curation-app/workflow/fixing-live-batches/">
+<link rel="stylesheet" href="https://uoregon-libraries.github.io/newspaper-curation-app/css/theme.min.css">
+<script src="https://use.fontawesome.com/releases/v5.0.6/js/all.js"></script>
+<link rel="stylesheet" href="https://uoregon-libraries.github.io/newspaper-curation-app/css/chroma.min.css">
+<script src="https://cdn.jsdelivr.net/npm/jquery@3.4.1/dist/jquery.min.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/jquery.easing@1.4.1/jquery.easing.min.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/clipboard@2.0.6/dist/clipboard.min.js"></script>
+<script src="https://uoregon-libraries.github.io/newspaper-curation-app/js/bundle.js"></script><style>
+:root {}
+</style>
+<meta property="og:title" content="Replacing Live Issues" />
+<meta property="og:description" content="Fixing batches after they&#39;ve been pushed into production" />
+<meta property="og:type" content="article" />
+<meta property="og:url" content="https://uoregon-libraries.github.io/newspaper-curation-app/workflow/fixing-live-batches/" /><meta property="article:section" content="workflow" />
+
+
+
+<meta name="twitter:card" content="summary"/>
+<meta name="twitter:title" content="Replacing Live Issues"/>
+<meta name="twitter:description" content="Fixing batches after they&#39;ve been pushed into production"/>
+<meta itemprop="name" content="Replacing Live Issues">
+<meta itemprop="description" content="Fixing batches after they&#39;ve been pushed into production">
+
+<meta itemprop="wordCount" content="564">
+<meta itemprop="keywords" content="" /></head>
+<body><div class="container"><header>
+<h1>Newspaper Curation App</h1><a href="https://github.com/uoregon-libraries/newspaper-curation-app/" class="github"><i class="fab fa-github"></i></a>
+</header>
+
+<div class="content-container">
+<main><h1>Replacing Live Issues</h1>
+<h2 id="helper-script">Helper Script</h2>
+<p>We&rsquo;ve put together a helper script which can automate a lot of the preparation
+steps when a single LCCN needs a lot of issues pulled. It is hacky and
+hard-coded at the moment, but it doesn&rsquo;t make any changes to anything, so it&rsquo;s
+safe to try out, and even modify to suit other use-cases.</p>
+<p>To run: <code>go run scripts/help-remove-issues.go &lt;lccn&gt; &lt;issue dates filename&gt; &lt;path to NCA dir&gt; &lt;path to live batches&gt;</code>.</p>
+<p>This will find all batches that have the given LCCN and dates. It will &ldquo;parse&rdquo;
+date ranges that are in the form &ldquo;YYYY-MM-DD thru YYYY-MM-DD&rdquo; and then find all
+valid issues within that range.</p>
+<p>It will then produce a complete list of all commands you&rsquo;ll need to run.</p>
+<h3 id="preparation">Preparation</h3>
+<ul>
+<li>Create a file full of dates in the form <code>YYYY-MM-DD</code>, representing all dates
+which need to be pulled
+<ul>
+<li>Note that <strong>all</strong> editions on the given date will be removed</li>
+</ul>
+</li>
+<li>Grab <a href="https://github.com/uoregon-libraries/batch-issue-remover">https://github.com/uoregon-libraries/batch-issue-remover</a> and build it.
+Copy the binary to your NCA system, as it is presumably capable of writing to
+your batch dir&hellip; otherwise how would you build batches?</li>
+<li>Determine where you&rsquo;ll run this script so you can put all necessary helper
+binaries in place
+<ul>
+<li>You need <code>find-issues</code> (from a standard NCA project build) and
+<code>remove-issues</code> (from the above-mentioned batch issue remove repo) under a
+<code>bin</code> directory in your NCA dir
+<ul>
+<li>e.g., if your NCA installation is in <code>/usr/local/nca</code>, that&rsquo;s your &ldquo;path
+to NCA dir&rdquo;, and you&rsquo;ll need to place the binaries in
+<code>/usr/local/nca/bin</code>.</li>
+</ul>
+</li>
+</ul>
+</li>
+<li>Run the helper, e.g., <code>go run scripts/help-remove-issues.go sn12345678 /tmp/issue-dates /usr/local/nca /mnt/livebatches</code>
+<ul>
+<li>You probably want to capture the output to a file</li>
+</ul>
+</li>
+</ul>
+<h3 id="removal">Removal</h3>
+<p>The output of the helper script has three components:</p>
+<ul>
+<li>Removal / rebatch commands using <code>remove-issues</code>. Each of these commands will
+generate a new version of a live batch with the given issue keys removed.
+This is a non-destructive operation, as the live batch isn&rsquo;t changed, and the
+new version could simply be deleted if desired without any effect.</li>
+<li>Purge / load batch commands. These pair up for each new batch generated: you
+purge the live batch, then load the new one which has the bad issues removed.
+These commands are destructive but can still be undone because you can simply
+reverse them if necessary: purge the new version of the batch and then load
+the old one.</li>
+<li>Batch destruction commands. These are very permanent, and will dispose of the
+old version of batches, which you no presumably no longer want living
+alongside the new version.</li>
+</ul>
+<p>At UO, we also have a separate component we try to manage, which is a &ldquo;batch
+patch&rdquo; for our dark archive. For each change to a batch that&rsquo;s been archived,
+we craft a README.md with the commands needed, and generally include the entire
+codebase of any commands we use in order to ensure reproducibility. This is
+manual and error-prone, but necessary to ensure disaster recovery efforts will
+not result in loading old/broken batches we&rsquo;ve since fixed.</p>
+<h2 id="post-fix">Post-fix</h2>
+<p>Once you&rsquo;ve ingested the new issues, NCA needs to have its cache completely
+rebuilt, since it assumes what&rsquo;s live doesn&rsquo;t change (it does a full rebuild
+weekly, but this is often too slow for heavy workflows).</p>
+<ul>
+<li>Stop the NCA services (nca-httpd and nca-workers)</li>
+<li>Delete the NCA cache entirely
+<ul>
+<li>e.g., if <code>$ISSUE_CACHE_PATH</code> is <code>/tmp</code>: <code>rm -rf /tmp/batch-list /tmp/batches /tmp/titles /tmp/finder.cache</code></li>
+</ul>
+</li>
+<li>Start the services up. This will take time as the live site has to be re-scanned</li>
+</ul>
+<div class="edit-meta">
+
+<br></div><nav class="pagination"><a class="nav nav-prev" href="https://uoregon-libraries.github.io/newspaper-curation-app/workflow/fixing-batches/" title="Fixing Batches"><i class="fas fa-arrow-left" aria-hidden="true"></i>&nbsp;Prev - Fixing Batches</a>
+<a class="nav nav-next" href="https://uoregon-libraries.github.io/newspaper-curation-app/workflow/batch-manual-golive/" title="Batch Manual Go-live Procedure">Next - Batch Manual Go-live Procedure <i class="fas fa-arrow-right" aria-hidden="true"></i></a>
+</nav><footer><p class="powered">Powered by <a href="https://gohugo.io">Hugo</a>. Theme by <a href="https://themes.gohugo.io/hugo-theme-techdoc/">TechDoc</a>. Designed by <a href="https://github.com/thingsym/hugo-theme-techdoc">Thingsym</a>.</p>
+</footer>
+</main>
+<div class="sidebar">
+
+<nav class="open-menu">
+<ul>
+<li class=""><a href="https://uoregon-libraries.github.io/newspaper-curation-app/">Home</a></li>
+
+<li class=""><a href="https://uoregon-libraries.github.io/newspaper-curation-app/setup/">Setup and Installation</a>
+  
+<ul class="sub-menu">
+<li class=""><a href="https://uoregon-libraries.github.io/newspaper-curation-app/setup/services/">Services and Apps</a></li>
+<li class=""><a href="https://uoregon-libraries.github.io/newspaper-curation-app/setup/server-setup/">Server Setup</a></li>
+<li class=""><a href="https://uoregon-libraries.github.io/newspaper-curation-app/setup/installation/">Installation</a></li>
+<li class=""><a href="https://uoregon-libraries.github.io/newspaper-curation-app/setup/user-setup/">Users</a></li>
+<li class=""><a href="https://uoregon-libraries.github.io/newspaper-curation-app/setup/creating-publishers/">Onboarding A Publisher</a></li>
+</ul>
+  
+</li>
+
+<li class=""><a href="https://uoregon-libraries.github.io/newspaper-curation-app/specs/">NCA Terms, Specs, and Information</a>
+  
+<ul class="sub-menu">
+<li class=""><a href="https://uoregon-libraries.github.io/newspaper-curation-app/specs/glossary/">Glossary</a></li>
+<li class=""><a href="https://uoregon-libraries.github.io/newspaper-curation-app/specs/upload-specs/">Uploads: Folder and File Specs</a></li>
+</ul>
+  
+</li>
+
+<li class="parent"><a href="https://uoregon-libraries.github.io/newspaper-curation-app/workflow/">Workflow</a>
+  
+<ul class="sub-menu">
+<li class=""><a href="https://uoregon-libraries.github.io/newspaper-curation-app/workflow/technical/">Technical Details</a></li>
+<li class=""><a href="https://uoregon-libraries.github.io/newspaper-curation-app/workflow/adding-titles/">Adding Titles</a></li>
+<li class=""><a href="https://uoregon-libraries.github.io/newspaper-curation-app/workflow/handling-page-review-problems/">Handling Page Review Problems</a></li>
+<li class=""><a href="https://uoregon-libraries.github.io/newspaper-curation-app/workflow/fixing-stuck-issues/">Fixing &#34;Stuck&#34; Issues</a></li>
+<li class=""><a href="https://uoregon-libraries.github.io/newspaper-curation-app/workflow/fixing-flagged-workflow-issues/">Fixing Flagged Workflow Issues</a></li>
+<li class=""><a href="https://uoregon-libraries.github.io/newspaper-curation-app/workflow/fixing-batches/">Fixing Batches</a></li>
+<li class="active"><a href="https://uoregon-libraries.github.io/newspaper-curation-app/workflow/fixing-live-batches/">Replacing Live Issues</a></li>
+<li class=""><a href="https://uoregon-libraries.github.io/newspaper-curation-app/workflow/batch-manual-golive/">Batch Manual Go-live Procedure</a></li>
+</ul>
+  
+</li>
+
+<li class=""><a href="https://uoregon-libraries.github.io/newspaper-curation-app/contributing/">Contributing</a>
+  
+<ul class="sub-menu">
+<li class=""><a href="https://uoregon-libraries.github.io/newspaper-curation-app/contributing/dev-guide/">Developer&#39;s Guide</a></li>
+<li class=""><a href="https://uoregon-libraries.github.io/newspaper-curation-app/contributing/not-compiling-locally/">Not Compiling Locally</a></li>
+<li class=""><a href="https://uoregon-libraries.github.io/newspaper-curation-app/contributing/documentation/">Contributing to Documentation</a></li>
+<li class=""><a href="https://uoregon-libraries.github.io/newspaper-curation-app/contributing/testing/">Testing</a></li>
+
+<li class=""><a href="https://uoregon-libraries.github.io/newspaper-curation-app/contributing/dev-howto/">How do I...?</a>
+  
+<ul class="sub-menu">
+<li class=""><a href="https://uoregon-libraries.github.io/newspaper-curation-app/contributing/dev-howto/add-job-types/">Add Job Types</a></li>
+</ul>
+  
+</li>
+</ul>
+  
+</li>
+</ul>
+</nav>
+
+
+
+<div class="sidebar-footer"></div>
+</div>
+
+</div><a href="#" id="backtothetop-fixed" class="backtothetop"
+ data-backtothetop-duration="600"
+ data-backtothetop-easing="easeOutQuart"
+ data-backtothetop-fixed-fadeIn="1000"
+ data-backtothetop-fixed-fadeOut="1000"
+ data-backtothetop-fixed-bottom="10"
+ data-backtothetop-fixed-right="20">
+<span class="fa-layers fa-fw">
+<i class="fas fa-circle"></i>
+<i class="fas fa-arrow-circle-up"></i>
+</span></a>
+</div>
+</body>
+</html>
