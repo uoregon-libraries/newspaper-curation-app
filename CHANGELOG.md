@@ -34,6 +34,28 @@ Brief description, if necessary
 ### Migration
 -->
 
+## Next Release
+
+Brief description, if necessary
+
+### Fixed
+
+- Live batch issue removal helper script no longer hard-codes the LCCN
+- CircleCI test integration works again
+
+### Added
+
+- New documentation for removing issues from a live batch
+
+### Changed
+
+- Batch fixer's wording makes it clearer that pulled issues will end up in the
+  workflow, not removed from NCA
+
+### Removed
+
+### Migration
+
 ## v3.11.4
 
 Miscellaneous improvements; major data problem fixed
