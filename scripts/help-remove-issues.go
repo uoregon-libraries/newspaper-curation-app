@@ -28,12 +28,13 @@ import (
 )
 
 func main() {
-	if len(os.Args) < 4 {
-		log.Fatalf("Usage: go run ./scripts/help-remove-issues.go <path to unparsed issue dates file> <path to nca dir> <path to batches>")
+	if len(os.Args) < 5 {
+		log.Fatalf("Usage: go run ./scripts/help-remove-issues.go <lccn> <path to unparsed issue dates file> <path to nca dir> <path to batches>")
 	}
-	var inputFile = os.Args[1]
-	var pathToNCA = os.Args[2]
-	var pathToBatches = os.Args[3]
+	var lccn = os.Args[1]
+	var inputFile = os.Args[2]
+	var pathToNCA = os.Args[3]
+	var pathToBatches = os.Args[4]
 
 	var data, err = ioutil.ReadFile(inputFile)
 	if err != nil {
@@ -46,7 +47,7 @@ func main() {
 	}
 
 	for i, date := range keys {
-		keys[i] = "sn99063854/" + date
+		keys[i] = lccn + "/" + date
 	}
 
 	err = ioutil.WriteFile("issuekeys", []byte(strings.Join(keys, "\n")), 0640)
