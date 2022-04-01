@@ -6,13 +6,13 @@ jobs:
   build:
     docker:
       # specify the version
-      - image: circleci/golang:1.16
+      - image: cimg/go:1.18
       
     steps:
       - checkout
 
       # specify any bash command here prefixed with `run: `
-      - run: go get -u bitbucket.org/liamstask/goose/cmd/goose
-      - run: go get -u golang.org/x/lint/golint
-      - run: go get -u golang.org/x/tools/cmd/goimports
+      - run: go install github.com/pressly/goose/v3/cmd/goose@latest
+      - run: go install golang.org/x/lint/golint@latest
+      - run: go install golang.org/x/tools/cmd/goimports@latest
       - run: make deps validate test
