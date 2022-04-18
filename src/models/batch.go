@@ -99,13 +99,13 @@ func CreateBatch(webroot, moc string, issues []*Issue) (*Batch, error) {
 		return nil, err
 	}
 
+	var chksum = crc32.ChecksumIEEE([]byte(webroot))
+	b.Name = RandomBatchName(uint32(b.ID) + chksum)
 	for _, i := range issues {
 		i.BatchID = b.ID
 		i.SaveOp(op, ActionTypeInternalProcess, SystemUser.ID, fmt.Sprintf("added to batch %q", b.Name))
 	}
 
-	var chksum = crc32.ChecksumIEEE([]byte(webroot))
-	b.Name = RandomBatchName(uint32(b.ID) + chksum)
 	err = b.SaveOp(op)
 	return b, err
 }
