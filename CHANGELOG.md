@@ -42,6 +42,7 @@ Brief description, if necessary
 
 - Live batch issue removal helper script no longer hard-codes the LCCN
 - CircleCI test integration works again
+- Action logs now report batch name properly
 
 ### Added
 
