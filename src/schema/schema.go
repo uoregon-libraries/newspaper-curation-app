@@ -393,6 +393,23 @@ func (i *Issue) CheckDupes(lookup *Lookup) {
 	}
 }
 
+// CheckLiveDupes is similar to CheckDupes, but strictly adds dupe errors if a
+// duplicate issue is live
+func (i *Issue) CheckLiveDupes(lookup *Lookup) {
+	// Get a search key for this issue.  If the issue key is invalid, that
+	// probably means a bad upload, and so dupe-checking doesn't really matter
+	var sKey, err = ParseSearchKey(i.Key())
+	if err != nil {
+		return
+	}
+
+	for _, i2 := range lookup.Issues(sKey) {
+		if i2.WorkflowStep == WSInProduction {
+			i.ErrDuped(i2)
+		}
+	}
+}
+
 // Text returns a more human-friendly string explaining a workflow step - for
 // end users as opposed to devs
 func (ws WorkflowStep) Text() string {
