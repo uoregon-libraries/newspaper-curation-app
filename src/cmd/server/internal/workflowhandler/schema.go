@@ -203,8 +203,35 @@ func (i *Issue) ValidateMetadata() {
 		return
 	}
 
-	// Check dupes on the schema issue, then pull those errors onto our validations
-	i.si.CheckDupes(watcher.Scanner.Lookup)
+	// Check for dupes against the database
+	var dupes []*models.Issue
+	dupes, err = models.FindIssuesByKey(i.Key())
+	if err != nil {
+		logger.Criticalf("Unable to query database for duped issues: issue id %d: %s", i.ID, err)
+		addError(apperr.New("Unknown error checking issue validity; contact support or try again"))
+		return
+	}
+	for _, dupe := range dupes {
+		if dupe.ID == i.ID {
+			continue
+		}
+
+		var dsi *schema.Issue
+		dsi, err = dupe.SchemaIssue()
+		if err != nil {
+			logger.Criticalf("Unable to recreate schema.Issue for duped issue id %d: %s", dupe.ID, err)
+			addError(apperr.New("Unknown error checking issue validity; contact support or try again"))
+			return
+		}
+
+		// Don't report dupes unless they're "after" this issue's workflow step
+		if i.WorkflowStep.Before(dsi.WorkflowStep) {
+			addError(i.si.ErrDuped(dsi))
+		}
+	}
+
+	// Check for dupes against the live site
+	i.si.CheckLiveDupes(watcher.Scanner.Lookup)
 	for _, err := range i.si.Errors.All() {
 		addError(err)
 	}
