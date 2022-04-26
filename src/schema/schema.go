@@ -316,11 +316,13 @@ func (i *Issue) WorkflowIdentification() string {
 
 // addError attaches err to this issue and reports to the issue's title that it
 // has an error
-func (i *Issue) addError(err apperr.Error) {
+func (i *Issue) addError(err apperr.Error) apperr.Error {
 	i.Errors.Append(err)
 	if err.Propagate() && i.Title != nil {
 		i.Title.addChildError()
 	}
+
+	return err
 }
 
 // addChildError sets a flag to let us know this issue has a child with an
