@@ -301,44 +301,16 @@ func (i *Issue) IsLive() bool {
 }
 
 // WorkflowIdentification returns a human-readable explanation of where an
-// issue lives currently is in the workflow - currently used for adding to
-// "likely duplicate of ..."
-//
-// Several of the values below won't make sense in dupe reporting, but are in
-// this list becuause (a) if some logic changes and a dupe report does happen,
-// they need something more than "an unknown issue" describing them, and (b)
-// this function may eventually be useful beyond explanation of duped issues.
+// issue is in the workflow - currently used for explaining duped issues.
 func (i *Issue) WorkflowIdentification() string {
+	// We use WorkflowStep's Text() string except when it's in a batch; for that
+	// case, we override the message to give a batch name.
 	switch i.WorkflowStep {
-	case WSSFTP:
-		return "a born-digital issue waiting for processing"
-
-	case WSScan:
-		return "a scanned issue waiting for processing"
-
-	case WSUnfixableMetadataError:
-		return "an issue with errors, awaiting remediation"
-
-	case WSAwaitingProcessing:
-		return "a pending issue"
-
-	case WSAwaitingPageReview:
-		return "an issue awaiting page reordering / renumbering"
-
-	case WSReadyForMetadataEntry:
-		return "an issue awaiting metadata entry"
-
-	case WSAwaitingMetadataReview:
-		return "an issue awaiting metadata review"
-
-	case WSReadyForBatching:
-		return "an issue waiting to be batched"
-
 	case WSInProduction:
 		return "a live issue in batch " + i.Batch.Fullname()
 
 	default:
-		return fmt.Sprintf("an unknown issue (location: %q)", i.Location)
+		return i.WorkflowStep.Text()
 	}
 }
 
@@ -419,6 +391,42 @@ func (i *Issue) CheckDupes(lookup *Lookup) {
 	}
 }
 
+// Text returns a more human-friendly string explaining a workflow step - for
+// end users as opposed to devs
+func (ws WorkflowStep) Text() string {
+	switch ws {
+	case WSSFTP:
+		return "a born-digital issue waiting for processing"
+
+	case WSScan:
+		return "a scanned issue waiting for processing"
+
+	case WSUnfixableMetadataError:
+		return "an issue with errors, awaiting remediation"
+
+	case WSAwaitingProcessing:
+		return "a pending issue"
+
+	case WSAwaitingPageReview:
+		return "an issue awaiting page reordering / renumbering"
+
+	case WSReadyForMetadataEntry:
+		return "an issue awaiting metadata entry"
+
+	case WSAwaitingMetadataReview:
+		return "an issue awaiting metadata review"
+
+	case WSReadyForBatching:
+		return "an issue waiting to be batched"
+
+	case WSInProduction:
+		return "a live issue"
+
+	default:
+		return "an issue in an unknown state"
+	}
+}
+
 // before tells us if wsa is logically before wsb in terms of issues flowing
 // through the system.  This helps determine what to report if there's
 // duplicated data: anything that's earlier in the process is the dupe, as the
@@ -428,7 +436,7 @@ func (i *Issue) CheckDupes(lookup *Lookup) {
 // certain; e.g., an uploaded issue is completely unknown and is therefore
 // before all other steps, but a live issue is considered done and wouldn't be
 // before anything else.
-func (wsa WorkflowStep) before(wsb WorkflowStep) bool {
+func (ws WorkflowStep) before(wsb WorkflowStep) bool {
 	var stepOrder = map[WorkflowStep]int{
 		// Nil is before literally everything except another nil
 		WSNil: 0,
@@ -470,7 +478,7 @@ func (wsa WorkflowStep) before(wsb WorkflowStep) bool {
 		WSInProduction: math.MaxInt32,
 	}
 
-	return stepOrder[wsa] < stepOrder[wsb]
+	return stepOrder[ws] < stepOrder[wsb]
 }
 
 // IssueList groups a bunch of issues together
