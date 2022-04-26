@@ -8,11 +8,10 @@ import (
 
 // IssueError implements apperr.Error and forms the base for all issue errors
 type IssueError struct {
-	IssueID int
-	Err     string
-	Msg     string
-	Prop    bool
-	Warn    bool
+	Err  string
+	Msg  string
+	Prop bool
+	Warn bool
 }
 
 func (e *IssueError) Error() string {
@@ -39,40 +38,36 @@ func (e *IssueError) Warning() bool {
 // ErrNoFiles adds an error stating the issue folder is empty
 func (i *Issue) ErrNoFiles() {
 	i.addError(&IssueError{
-		IssueID: i.DatabaseID,
-		Err:     "no files",
-		Msg:     "Issue has no files",
-		Prop:    true,
+		Err:  "no files",
+		Msg:  "Issue has no files",
+		Prop: true,
 	})
 }
 
 // ErrInvalidFolderName adds an Error for invalid folder name formats
 func (i *Issue) ErrInvalidFolderName(extra string) {
 	i.addError(&IssueError{
-		IssueID: i.DatabaseID,
-		Err:     "invalid folder name",
-		Msg:     "Issue has an invalid folder name: " + extra,
-		Prop:    true,
+		Err:  "invalid folder name",
+		Msg:  "Issue has an invalid folder name: " + extra,
+		Prop: true,
 	})
 }
 
 // ErrReadFailure indicates the issue's folder wasn't able to be read
 func (i *Issue) ErrReadFailure(err error) {
 	i.addError(&IssueError{
-		IssueID: i.DatabaseID,
-		Err:     err.Error(),
-		Msg:     "Issue wasn't able to be scanned for files: " + err.Error(),
-		Prop:    true,
+		Err:  err.Error(),
+		Msg:  "Issue wasn't able to be scanned for files: " + err.Error(),
+		Prop: true,
 	})
 }
 
 // ErrFolderContents tells us the issue's files on disk are invalid in some way
 func (i *Issue) ErrFolderContents(extra string) {
 	i.addError(&IssueError{
-		IssueID: i.DatabaseID,
-		Err:     "missing / invalid folder contents",
-		Msg:     "Issue's folder contents are invalid: " + extra,
-		Prop:    true,
+		Err:  "missing / invalid folder contents",
+		Msg:  "Issue's folder contents are invalid: " + extra,
+		Prop: true,
 	})
 }
 
@@ -81,10 +76,9 @@ func (i *Issue) ErrFolderContents(extra string) {
 // before being considered "safe".
 func (i *Issue) ErrTooNew(hours int) {
 	i.addError(&IssueError{
-		IssueID: i.DatabaseID,
-		Err:     "too new for processing",
-		Msg:     fmt.Sprintf("Issue was modified too recently; it must be left alone for a minimum of %d hours before processing", hours),
-		Prop:    false,
+		Err:  "too new for processing",
+		Msg:  fmt.Sprintf("Issue was modified too recently; it must be left alone for a minimum of %d hours before processing", hours),
+		Prop: false,
 	})
 }
 
@@ -92,11 +86,10 @@ func (i *Issue) ErrTooNew(hours int) {
 // the issue to be stuck
 func (i *Issue) WarnTooNew() {
 	i.addError(&IssueError{
-		IssueID: i.DatabaseID,
-		Err:     "may be too new",
-		Msg:     "Issue was modified recently and may still have updates pending",
-		Prop:    false,
-		Warn:    true,
+		Err:  "may be too new",
+		Msg:  "Issue was modified recently and may still have updates pending",
+		Prop: false,
+		Warn: true,
 	})
 }
 
@@ -113,11 +106,10 @@ type DuplicateIssueError struct {
 func (i *Issue) ErrDuped(dupe *Issue) {
 	i.addError(&DuplicateIssueError{
 		IssueError: &IssueError{
-			IssueID: i.DatabaseID,
-			Err:     "duplicate of another issue",
-			Msg:     fmt.Sprintf("This issue appears to be a duplicate (same LCCN, date, and edition) of %s", dupe.WorkflowIdentification()),
-			Prop:    true,
-			Warn:    true,
+			Err:  "duplicate of another issue",
+			Msg:  fmt.Sprintf("This issue appears to be a duplicate (same LCCN, date, and edition) of %s", dupe.WorkflowIdentification()),
+			Prop: true,
+			Warn: true,
 		},
 		Location: dupe.Location,
 		Name:     dupe.Title.Name + ", " + dupe.RawDate,
@@ -129,9 +121,8 @@ func (i *Issue) ErrDuped(dupe *Issue) {
 // and therefore the issue cannot be processed even if all its data is good
 func (i *Issue) ErrBadTitle() {
 	i.addError(&IssueError{
-		IssueID: i.DatabaseID,
-		Err:     "issue linked to invalid title",
-		Msg:     "Title is invalid",
-		Prop:    false,
+		Err:  "issue linked to invalid title",
+		Msg:  "Title is invalid",
+		Prop: false,
 	})
 }
