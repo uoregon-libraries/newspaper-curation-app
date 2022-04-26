@@ -301,54 +301,28 @@ func (i *Issue) IsLive() bool {
 }
 
 // WorkflowIdentification returns a human-readable explanation of where an
-// issue lives currently is in the workflow - currently used for adding to
-// "likely duplicate of ..."
-//
-// Several of the values below won't make sense in dupe reporting, but are in
-// this list becuause (a) if some logic changes and a dupe report does happen,
-// they need something more than "an unknown issue" describing them, and (b)
-// this function may eventually be useful beyond explanation of duped issues.
+// issue is in the workflow - currently used for explaining duped issues.
 func (i *Issue) WorkflowIdentification() string {
+	// We use WorkflowStep's Text() string except when it's in a batch; for that
+	// case, we override the message to give a batch name.
 	switch i.WorkflowStep {
-	case WSSFTP:
-		return "a born-digital issue waiting for processing"
-
-	case WSScan:
-		return "a scanned issue waiting for processing"
-
-	case WSUnfixableMetadataError:
-		return "an issue with errors, awaiting remediation"
-
-	case WSAwaitingProcessing:
-		return "a pending issue"
-
-	case WSAwaitingPageReview:
-		return "an issue awaiting page reordering / renumbering"
-
-	case WSReadyForMetadataEntry:
-		return "an issue awaiting metadata entry"
-
-	case WSAwaitingMetadataReview:
-		return "an issue awaiting metadata review"
-
-	case WSReadyForBatching:
-		return "an issue waiting to be batched"
-
 	case WSInProduction:
 		return "a live issue in batch " + i.Batch.Fullname()
 
 	default:
-		return fmt.Sprintf("an unknown issue (location: %q)", i.Location)
+		return i.WorkflowStep.Text()
 	}
 }
 
 // addError attaches err to this issue and reports to the issue's title that it
 // has an error
-func (i *Issue) addError(err apperr.Error) {
+func (i *Issue) addError(err apperr.Error) apperr.Error {
 	i.Errors.Append(err)
 	if err.Propagate() && i.Title != nil {
 		i.Title.addChildError()
 	}
+
+	return err
 }
 
 // addChildError sets a flag to let us know this issue has a child with an
@@ -413,13 +387,109 @@ func (i *Issue) CheckDupes(lookup *Lookup) {
 	}
 
 	for _, i2 := range lookup.Issues(sKey) {
-		if i.WorkflowStep.before(i2.WorkflowStep) {
+		if i.WorkflowStep.Before(i2.WorkflowStep) {
 			i.ErrDuped(i2)
 		}
 	}
 }
 
-// before tells us if wsa is logically before wsb in terms of issues flowing
+// CheckLiveDupes is similar to CheckDupes, but strictly adds dupe errors if a
+// duplicate issue is live
+func (i *Issue) CheckLiveDupes(lookup *Lookup) {
+	// Get a search key for this issue.  If the issue key is invalid, that
+	// probably means a bad upload, and so dupe-checking doesn't really matter
+	var sKey, err = ParseSearchKey(i.Key())
+	if err != nil {
+		return
+	}
+
+	for _, i2 := range lookup.Issues(sKey) {
+		if i2.WorkflowStep == WSInProduction {
+			i.ErrDuped(i2)
+		}
+	}
+}
+
+// Text returns a more human-friendly string explaining a workflow step - for
+// end users as opposed to devs
+func (ws WorkflowStep) Text() string {
+	switch ws {
+	case WSSFTP:
+		return "a born-digital issue waiting for processing"
+
+	case WSScan:
+		return "a scanned issue waiting for processing"
+
+	case WSUnfixableMetadataError:
+		return "an issue with errors, awaiting remediation"
+
+	case WSAwaitingProcessing:
+		return "a pending issue"
+
+	case WSAwaitingPageReview:
+		return "an issue awaiting page reordering / renumbering"
+
+	case WSReadyForMetadataEntry:
+		return "an issue awaiting metadata entry"
+
+	case WSAwaitingMetadataReview:
+		return "an issue awaiting metadata review"
+
+	case WSReadyForBatching:
+		return "an issue waiting to be batched"
+
+	case WSInProduction:
+		return "a live issue"
+
+	default:
+		return "an issue in an unknown state"
+	}
+}
+
+// stepOrder holds a list of each known workflow step and how it ranks in order
+// of data "certainty", as defined in the WorkflowStep.Before() method
+var stepOrder = map[WorkflowStep]int{
+	// Nil is before literally everything except another nil
+	WSNil: 0,
+
+	// Issues that are broken in some way have metadata we can't rely on, so we
+	// declare them as being "before" everything else
+	WSUnfixableMetadataError: 10,
+
+	// The uploads come before anything that isn't another upload, or nil
+	WSSFTP: 20,
+	WSScan: 20,
+
+	// Awaiting processing is a meaningless step that just says something
+	// automated needs to happen.  Because of this we can't say where it should
+	// fit in the workflow.  We have to return *something*, so we just say this
+	// isn't "before" anything (other than live issues).  Once processing is
+	// complete, it'll have a meaningful step again, and at that point we'll be
+	// able to catch any problems.
+	WSAwaitingProcessing: 100,
+
+	// Awaiting page review is still fairly unknown, like uploads, and only comes
+	// after them to make it clear that a new upload shouldn't supercede a
+	// previous upload.  But this could cause false dupe flags if an old upload
+	// had the wrong folder name, so I could see a case for changing this to the
+	// same value as uploads.
+	WSAwaitingPageReview: 30,
+
+	WSReadyForMetadataEntry:  40,
+	WSAwaitingMetadataReview: 50,
+
+	// When an issue is waiting for METS XML, its metadata is in exactly the
+	// same state as when it's ready for batching, and no dupe checking occurs
+	// here anyway, so these are considered equal
+	WSReadyForMETSXML:  60,
+	WSReadyForBatching: 60,
+
+	// Let's just make sure in-production always comes after everything else,
+	// even the unknown awaiting-processing issues
+	WSInProduction: math.MaxInt32,
+}
+
+// Before tells us if ws is logically before b in terms of issues flowing
 // through the system.  This helps determine what to report if there's
 // duplicated data: anything that's earlier in the process is the dupe, as the
 // later something is, the more metadata scrutiny has gone into it.
@@ -428,49 +498,8 @@ func (i *Issue) CheckDupes(lookup *Lookup) {
 // certain; e.g., an uploaded issue is completely unknown and is therefore
 // before all other steps, but a live issue is considered done and wouldn't be
 // before anything else.
-func (wsa WorkflowStep) before(wsb WorkflowStep) bool {
-	var stepOrder = map[WorkflowStep]int{
-		// Nil is before literally everything except another nil
-		WSNil: 0,
-
-		// Issues that are broken in some way have metadata we can't rely on, so we
-		// declare them as being "before" everything else
-		WSUnfixableMetadataError: 10,
-
-		// The uploads come before anything that isn't another upload, or nil
-		WSSFTP: 20,
-		WSScan: 20,
-
-		// Awaiting processing is a meaningless step that just says something
-		// automated needs to happen.  Because of this we can't say where it should
-		// fit in the workflow.  We have to return *something*, so we just say this
-		// isn't "before" anything (other than live issues).  Once processing is
-		// complete, it'll have a meaningful step again, and at that point we'll be
-		// able to catch any problems.
-		WSAwaitingProcessing: 100,
-
-		// Awaiting page review is still fairly unknown, like uploads, and only comes
-		// after them to make it clear that a new upload shouldn't supercede a
-		// previous upload.  But this could cause false dupe flags if an old upload
-		// had the wrong folder name, so I could see a case for changing this to the
-		// same value as uploads.
-		WSAwaitingPageReview: 30,
-
-		WSReadyForMetadataEntry:  40,
-		WSAwaitingMetadataReview: 50,
-
-		// When an issue is waiting for METS XML, its metadata is in exactly the
-		// same state as when it's ready for batching, and no dupe checking occurs
-		// here anyway, so these are considered equal
-		WSReadyForMETSXML:  60,
-		WSReadyForBatching: 60,
-
-		// Let's just make sure in-production always comes after everything else,
-		// even the unknown awaiting-processing issues
-		WSInProduction: math.MaxInt32,
-	}
-
-	return stepOrder[wsa] < stepOrder[wsb]
+func (ws WorkflowStep) Before(b WorkflowStep) bool {
+	return stepOrder[ws] < stepOrder[b]
 }
 
 // IssueList groups a bunch of issues together
