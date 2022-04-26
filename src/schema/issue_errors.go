@@ -97,6 +97,7 @@ func (i *Issue) WarnTooNew() {
 // holds onto extra information for figuring out how to handle the dupe
 type DuplicateIssueError struct {
 	*IssueError
+	IssueID  int
 	Location string
 	Name     string
 	IsLive   bool
@@ -111,6 +112,7 @@ func (i *Issue) ErrDuped(dupe *Issue) {
 			Prop: true,
 			Warn: true,
 		},
+		IssueID:  dupe.DatabaseID,
 		Location: dupe.Location,
 		Name:     dupe.Title.Name + ", " + dupe.RawDate,
 		IsLive:   dupe.WorkflowStep == WSInProduction,
