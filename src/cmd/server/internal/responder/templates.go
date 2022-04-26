@@ -4,6 +4,8 @@ import (
 	"errors"
 	"fmt"
 	"html/template"
+	"path"
+	"strconv"
 	"strings"
 	"time"
 
@@ -147,14 +149,16 @@ func errorHTML(err apperr.Error) template.HTML {
 	var msg = template.HTMLEscapeString(err.Message())
 	switch v := err.(type) {
 	case *schema.DuplicateIssueError:
+		var href string
 		if v.IsLive {
-			// The location is the JSON we get from the web scanner, so we have to trim
-			// ".json" off the end.  We could have the web view follow the JSON link to
-			// get the unquestionably correct URL to the issue, but that would add tens
-			// of thousands of unnecessary web hits.
-			var nonJSONURL = v.Location[:len(v.Location)-5]
-			msg += fmt.Sprintf(`: <a href="%s">%s</a>`, nonJSONURL, v.Name)
+			// For live issues, the HTML URL is always the same as the location, but
+			// with ".json" removed
+			href = v.Location[:len(v.Location)-5]
+		} else {
+			// In-process URLs have to be manually crafted
+			href = path.Join(webutil.FullPath("workflow", strconv.Itoa(v.IssueID), "view"))
 		}
+		msg += fmt.Sprintf(`: <a href="%s">%s</a>`, href, v.Name)
 	}
 
 	return template.HTML(msg)
