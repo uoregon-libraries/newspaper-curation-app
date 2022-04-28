@@ -34,7 +34,7 @@ Brief description, if necessary
 ### Migration
 -->
 
-## Next Release
+## v3.12.0
 
 Brief description, if necessary
 
