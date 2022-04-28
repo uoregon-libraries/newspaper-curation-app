@@ -43,6 +43,10 @@ Brief description, if necessary
 - Live batch issue removal helper script no longer hard-codes the LCCN
 - CircleCI test integration works again
 - Action logs now report batch name properly
+- Dupe checking against issues in NCA's database is now real-time. This fixes
+  the very rare (but very horrible to fix as we just learned) situation where
+  two issues have the same metadata entered at roughly the same time, and the
+  curators receive no warnings about the duplication.
 
 ### Added
 
@@ -52,6 +56,7 @@ Brief description, if necessary
 
 - Batch fixer's wording makes it clearer that pulled issues will end up in the
   workflow, not removed from NCA
+- Various low-level code changes to improve error handling and issue management
 
 ### Removed
 
