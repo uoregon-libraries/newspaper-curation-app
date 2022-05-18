@@ -37,8 +37,8 @@ full stack and configuration.
 ## Compile
 
 Compilation requires:
-- [Go](https://golang.org/dl/) 1.9 or later
-- [golint](https://github.com/golang/lint): `go get -u golang.org/x/lint/golint`
+- [Go](https://golang.org/dl/) 1.18 or later
+- [golint](https://github.com/golang/lint): `go install golang.org/x/lint/golint@latest`
 
 The easiest way to compile is simply running `make` in the source directory.
 This will grab various Go packages the application requires, validate the
@@ -66,7 +66,7 @@ Creating / migrating the database can be done manually by
 executing the "up" sections of the various migration files, but it's *far*
 easier to just use [goose](https://github.com/pressly/goose)
 
-    go get -u github.com/pressly/goose/cmd/goose
+    go install github.com/pressly/goose/v3/cmd/goose@latest
     goose -dir ./db/migrations/ mysql "<user>:<password>@tcp(<db host>:3306)/<database name>" up
 
 *(Obviously you must replace `<user>`, `<password>`, `<db host>`, and `<database
