@@ -34,7 +34,9 @@ Brief description, if necessary
 ### Migration
 -->
 
-## Next Release
+## v3.12.1
+
+A better new-setup experience!
 
 ### Fixed
 
