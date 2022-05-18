@@ -20,6 +20,7 @@ source settings && mkdir -p $ORIGINAL_PDF_BACKUP_PATH
 source settings && mkdir -p $PDF_PAGE_REVIEW_PATH
 source settings && mkdir -p $BATCH_OUTPUT_PATH
 source settings && mkdir -p $WORKFLOW_PATH
+source settings && mkdir -p $ERRORED_ISSUES_PATH
 
 echo 'Executing "'$@'"'
 cd /usr/local/nca
