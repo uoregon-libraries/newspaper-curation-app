@@ -47,7 +47,7 @@ RUN dnf install -y git
 RUN dnf install -y mariadb
 
 # Install Go
-RUN curl https://dl.google.com/go/go1.15.6.linux-amd64.tar.gz >/tmp/go.tgz
+RUN curl https://dl.google.com/go/go1.18.2.linux-amd64.tar.gz >/tmp/go.tgz
 RUN cd /opt && tar -xzf /tmp/go.tgz
 
 # Go ENV setup
@@ -56,9 +56,9 @@ ENV GOPATH /go
 ENV PATH $PATH:$GOROOT/bin:$GOPATH/bin
 
 # Golang dependencies
-RUN go get github.com/pressly/goose/cmd/goose
-RUN go get -u golang.org/x/lint/golint
-RUN go get -u golang.org/x/tools/cmd/goimports
+RUN go install github.com/pressly/goose/v3/cmd/goose@latest
+RUN go install golang.org/x/lint/golint@latest
+RUN go install golang.org/x/tools/cmd/goimports@latest
 
 WORKDIR /usr/local/src/nca
 

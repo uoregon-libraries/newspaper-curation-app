@@ -15,7 +15,7 @@ Why is it best to compile on your local machine instead of inside a container?
 - Go doesn't even really require an install per se; you can choose to download
   the binary distribution, set up some environment variables, and use it.  No
   sudo, no /usr/bin polluting, no complex compiling from sources.
-- Same with go's dependencies - `go get ...` will install files in a space
+- Same with go's dependencies - `go install ...` will install files in a space
   that's local to your user path.  All NCA's code dependencies are similarly
   local.  Everything "just works".  The only reason we use Docker for
   development is the various external dependencies like poppler utils, graphics

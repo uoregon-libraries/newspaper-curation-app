@@ -30,7 +30,7 @@
 <meta itemprop="name" content="Installation">
 <meta itemprop="description" content="How to build and compile NCA">
 
-<meta itemprop="wordCount" content="427">
+<meta itemprop="wordCount" content="425">
 <meta itemprop="keywords" content="" /></head>
 <body><div class="container"><header>
 <h1>Newspaper Curation App</h1><a href="https://github.com/uoregon-libraries/newspaper-curation-app/" class="github"><i class="fab fa-github"></i></a>
@@ -70,8 +70,8 @@ full stack and configuration.</p>
 <h2 id="compile">Compile</h2>
 <p>Compilation requires:</p>
 <ul>
-<li><a href="https://golang.org/dl/">Go</a> 1.9 or later</li>
-<li><a href="https://github.com/golang/lint">golint</a>: <code>go get -u golang.org/x/lint/golint</code></li>
+<li><a href="https://golang.org/dl/">Go</a> 1.18 or later</li>
+<li><a href="https://github.com/golang/lint">golint</a>: <code>go install golang.org/x/lint/golint@latest</code></li>
 </ul>
 <p>The easiest way to compile is simply running <code>make</code> in the source directory.
 This will grab various Go packages the application requires, validate the
@@ -93,7 +93,7 @@ container, allowing for quicker code changes.</p>
 <p>Creating / migrating the database can be done manually by
 executing the &ldquo;up&rdquo; sections of the various migration files, but it&rsquo;s <em>far</em>
 easier to just use <a href="https://github.com/pressly/goose">goose</a></p>
-<pre><code>go get -u github.com/pressly/goose/cmd/goose
+<pre><code>go install github.com/pressly/goose/v3/cmd/goose@latest
 goose -dir ./db/migrations/ mysql &quot;&lt;user&gt;:&lt;password&gt;@tcp(&lt;db host&gt;:3306)/&lt;database name&gt;&quot; up
 </code></pre>
 <p><em>(Obviously you must replace <code>&lt;user&gt;</code>, <code>&lt;password&gt;</code>, <code>&lt;db host&gt;</code>, and <code>&lt;database name&gt;</code> with appropriate values for your environment!)</em></p>

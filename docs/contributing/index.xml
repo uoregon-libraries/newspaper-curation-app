@@ -13,7 +13,7 @@
       
       <guid>https://uoregon-libraries.github.io/newspaper-curation-app/contributing/dev-guide/</guid>
       <description>It is assumed developers will use Docker for the stack, other than the relatively simple process of compiling binaries.
-Requirements / Setup Local compilation (recommended)  A supported version of Go (e.g., if 1.16 is the latest, you want 1.15 or 1.16) golint: go get -u golang.org/x/lint/golint Set up your GOPATH: https://golang.org/doc/code.html#GOPATH  Add $GOPATH/bin to your path    If you choose not to compile on your host machine, you will have a slightly simpler install, but there are a few considerations.</description>
+Requirements / Setup Local compilation (recommended)  A supported version of Go (e.g., if 1.16 is the latest, you want 1.15 or 1.16) golint: go install golang.org/x/lint/golint@latest Set up your GOPATH: https://golang.org/doc/code.html#GOPATH  Add $GOPATH/bin to your path    If you choose not to compile on your host machine, you will have a slightly simpler install, but there are a few considerations.</description>
     </item>
     
     <item>
