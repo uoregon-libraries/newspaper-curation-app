@@ -47,6 +47,10 @@ Brief description, if necessary
   the very rare (but very horrible to fix as we just learned) situation where
   two issues have the same metadata entered at roughly the same time, and the
   curators receive no warnings about the duplication.
+- Various dev- and docker-specific setup scripts and docs have been fixed to
+  address shortcomings. These only affected new users, making them not obvious
+  to me. Thanks to @michaelmherrera for taking NCA for a test drive and
+  uncovering some old cruft!
 
 ### Added
 
