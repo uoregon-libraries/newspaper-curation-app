@@ -151,3 +151,29 @@ func TestManifestRead(t *testing.T) {
 		}
 	}
 }
+
+func TestManifestChange(t *testing.T) {
+	var corpus = _m(t)
+	corpus.build()
+	corpus.write()
+	var cwd, _ = os.Getwd()
+	var fname = filepath.Join(cwd, "testdata", "foo.dat")
+
+	var pre = _m(t)
+	pre.build()
+	if !corpus.equiv(pre) {
+		t.Fatalf("Pre-create, manifests should be the same")
+	}
+
+	var err = os.WriteFile(fname, []byte("foo"), 0644)
+	if err != nil {
+		t.Fatalf("Unable to write file %q: %s", fname, err)
+	}
+	defer os.Remove(fname)
+
+	var post = _m(t)
+	post.build()
+	if corpus.equiv(post) {
+		t.Fatalf("Post-create, manifests should differ")
+	}
+}
