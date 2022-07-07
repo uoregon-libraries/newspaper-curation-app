@@ -1,9 +1,11 @@
 package schema
 
 import (
+	"encoding/json"
 	"errors"
 	"fmt"
 	"io/fs"
+	"io/ioutil"
 	"os"
 	"path/filepath"
 	"sort"
@@ -70,11 +72,29 @@ func (m *manifest) build() error {
 }
 
 func (m *manifest) read() error {
-	return fmt.Errorf("Not Implemented")
+	var data, err = ioutil.ReadFile(m.filename())
+	if err != nil {
+		return err
+	}
+
+	err = json.Unmarshal(data, &m)
+	if err != nil {
+		return err
+	}
+
+	return nil
+}
+
+func (m *manifest) filename() string {
+	return filepath.Join(m.Path, manifestFilename)
 }
 
 func (m *manifest) write() error {
-	return fmt.Errorf("Not Implemented")
+	var data, err = json.Marshal(m)
+	if err != nil {
+		return err
+	}
+	return ioutil.WriteFile(m.filename(), data, 0600)
 }
 
 func (m *manifest) sortFiles() {
