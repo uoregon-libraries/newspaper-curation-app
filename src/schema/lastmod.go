@@ -60,8 +60,10 @@ func (m *manifest) build() error {
 			return fmt.Errorf("reading dir %q: one or more entries are not a regular file", m.Path)
 		}
 
-		// Skip all hidden files - these have no bearing once issues move to NCA
-		if entry.Name()[0] == '.' {
+		// Skip the manifest as well as any hidden files - these have no bearing
+		// once issues move to NCA. We explicitly check for the manifest in case we
+		// change the constant string to not be hidden for some reason.
+		if entry.Name()[0] == '.' || entry.Name() == manifestFilename {
 			continue
 		}
 
