@@ -2,5 +2,7 @@
 if [[ -d ./fakemount ]]; then
   iam=$(whoami)
   sudo chown -R $iam ./fakemount
-  sudo chmod 755 ./fakemount/workflow/* || true
+  for dir in $(find ./fakemount -type d); do
+    sudo chmod 755 $dir || true
+  done
 fi
