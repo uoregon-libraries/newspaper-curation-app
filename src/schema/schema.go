@@ -4,9 +4,7 @@
 package schema
 
 import (
-	"errors"
 	"fmt"
-	"io/fs"
 	"math"
 	"path/filepath"
 	"regexp"
@@ -16,8 +14,8 @@ import (
 	"time"
 
 	"github.com/uoregon-libraries/gopkg/fileutil"
-	"github.com/uoregon-libraries/gopkg/fileutil/manifest"
 	"github.com/uoregon-libraries/newspaper-curation-app/src/apperr"
+	"github.com/uoregon-libraries/newspaper-curation-app/src/internal/lastmod"
 	"github.com/uoregon-libraries/newspaper-curation-app/src/internal/logger"
 )
 
@@ -344,43 +342,13 @@ func (i *Issue) LastModified() time.Time {
 	if i.WorkflowStep == WSInProduction {
 		return time.Time{}
 	}
-
-	// Set up the two manifest structures for this issue
-	var m1, m2 = manifest.New(i.Location), manifest.New(i.Location)
-
-	// First build a manifest of everything in the issue dir
-	var err = m1.Build()
+	var t, err = lastmod.Time(i.Location)
 	if err != nil {
-		// This can happen when an issue is being moved by another process while
-		// this process is scanning it, so we just return time.Now() and ignore the
-		// (likely invalid) error
-		if errors.Is(err, fs.ErrNotExist) {
-			return time.Now()
-		}
-
-		logger.Errorf("Unable to read dir %q: %s", i.Location, err)
+		logger.Errorf("Unable to get last mod time: %s", err)
 		return time.Now()
 	}
 
-	// Second, read the existing manifest
-	err = m2.Read()
-	if err != nil && !errors.Is(err, fs.ErrNotExist) {
-		logger.Errorf("Unable to read existing manifest for issue in %q: %s", i.Location, err)
-		return time.Now()
-	}
-
-	// Different existing manifest (including not having an existing manifest)?
-	// Write new data and return the current time.
-	if !m1.Equiv(m2) {
-		err = m1.Write()
-		if err != nil {
-			logger.Errorf("Unable to write new manifest for issue in %q: %s", i.Location, err)
-		}
-		return m1.Created
-	}
-
-	// Manifests are the same? Return the existing manifest's creation time.
-	return m2.Created
+	return t
 }
 
 // METSFile returns the canonical path to an issue's METS file
