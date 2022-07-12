@@ -45,6 +45,10 @@
               <li><a href="{{FullPath "uploadedissues"}}">Uploaded Issues</a></li>
               {{end}}
 
+              {{if .User.PermittedTo ViewBatches}}
+              <li><a href="{{FullPath "batches"}}">Batches</a></li>
+              {{end}}
+
               {{if .User.PermittedTo ViewMetadataWorkflow}}
                 <li><a href="{{FullPath "workflow"}}">Workflow</a></li>
               {{end}}

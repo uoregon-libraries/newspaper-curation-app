@@ -40,6 +40,8 @@ var (
 		others which have been assigned to them.`)
 	RoleMOCManager      = newRole("marc org code manager", "Has access to add new MARC Org Codes")
 	RoleWorkflowManager = newRole("workflow manager", "Can queue SFTP and scanned issues for processing")
+	RoleBatchReviewer   = newRole("batch reviewer",
+		"Can view and comment on batches which NCA has built but which are not yet in production.")
 )
 
 // roles is our internal map of string to Role object

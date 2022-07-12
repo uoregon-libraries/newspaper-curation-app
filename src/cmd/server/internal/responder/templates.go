@@ -129,6 +129,8 @@ func InitRootTemplate(templatePath string) {
 		"ModifyUploadedIssues":     func() *privilege.Privilege { return privilege.ModifyUploadedIssues },
 		"ViewTitleSFTPCredentials": func() *privilege.Privilege { return privilege.ViewTitleSFTPCredentials },
 		"SearchIssues":             func() *privilege.Privilege { return privilege.SearchIssues },
+		"ViewBatches":              func() *privilege.Privilege { return privilege.ViewBatches },
+		"CommentBatches":           func() *privilege.Privilege { return privilege.CommentBatches },
 		"ModifyValidatedLCCNs":     func() *privilege.Privilege { return privilege.ModifyValidatedLCCNs },
 		"ModifyTitleSFTP":          func() *privilege.Privilege { return privilege.ModifyTitleSFTP },
 		"ListAuditLogs":            func() *privilege.Privilege { return privilege.ListAuditLogs },

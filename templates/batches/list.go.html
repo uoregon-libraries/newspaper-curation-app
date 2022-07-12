@@ -1,0 +1,15 @@
+{{block "content" .}}
+
+<h2>Batches needing attention</h2>
+
+{{if .Data.Batches}}
+<ul>
+  {{range .Data.Batches}}
+  <li><a href="">{{.Name}}: {{.Status}}</a></li>
+  {{end}}
+</ul>
+{{else}}
+There are no batches currently in need of any action!
+{{end}}
+
+{{end}}

@@ -32,6 +32,11 @@ var (
 	// the moment
 	SearchIssues = newPrivilege(RoleWorkflowManager)
 
+	// Batch management - probably more people could view, but commenting and
+	// beyond should be locked down
+	ViewBatches    = newPrivilege(RoleBatchReviewer)
+	CommentBatches = newPrivilege(RoleBatchReviewer)
+
 	// Admins only
 	ModifyValidatedLCCNs = newPrivilege()
 	ModifyTitleSFTP      = newPrivilege()
