@@ -3,6 +3,7 @@ package models
 import (
 	"fmt"
 	"hash/crc32"
+	"strings"
 	"time"
 
 	"github.com/Nerdmaster/magicsql"
@@ -21,6 +22,35 @@ const (
 	BatchStatusLiveDone  = "live_done"  // Batch has gone live; batch and its issues have been archived and are no longer on the filesystem
 )
 
+// BatchStatus describes the metadata corresponding to a database status
+type BatchStatus struct {
+	Status      string
+	Live        bool
+	Dead        bool
+	Description string
+}
+
+var noStatus BatchStatus
+
+var statusMap = map[string]BatchStatus{
+	BatchStatusPending: {Status: BatchStatusPending, Live: false, Dead: false,
+		Description: "Pending: build job is scheduled but hasn't yet run"},
+	BatchStatusQCReady: {Status: BatchStatusQCReady, Live: false, Dead: false,
+		Description: "Ready for ingest onto staging server"},
+	BatchStatusOnStaging: {Status: BatchStatusOnStaging, Live: false, Dead: false,
+		Description: "On staging, awaiting quality control check"},
+	BatchStatusFailedQC: {Status: BatchStatusFailedQC, Live: false, Dead: false,
+		Description: "Failed quality control, awaiting batch maintainer fixes"},
+	BatchStatusDeleted: {Status: BatchStatusDeleted, Live: false, Dead: true,
+		Description: "Removed from the system.  Likely rebuilt under a new name."},
+	BatchStatusPassedQC: {Status: BatchStatusPassedQC, Live: false, Dead: false,
+		Description: "Passed quality control, awaiting batch maintainer's push to production"},
+	BatchStatusLive: {Status: BatchStatusLive, Live: true, Dead: false,
+		Description: "Live in production, awaiting archiving"},
+	BatchStatusLiveDone: {Status: BatchStatusLiveDone, Live: true, Dead: false,
+		Description: "Live in production and archived: no longer available in NCA workflow"},
+}
+
 // Batch contains metadata for generating a batch XML.  Issues can be
 // associated with a single batch, and a batch will typically have many issues
 // assigned to it.
@@ -31,9 +61,62 @@ type Batch struct {
 	CreatedAt   time.Time
 	ArchivedAt  time.Time
 	Status      string
+	StatusMeta  BatchStatus `sql:"-"`
 	Location    string
 
 	issues []*Issue
+}
+
+func bs(s string) BatchStatus {
+	return statusMap[s]
+}
+
+// allBatches returns every batch except those considered dead.  We don't
+// anticipate more than a hundred new batches even in a super-busy year, so
+// this should be pulling a pretty small dataset for the next century or so.
+func allBatches() ([]*Batch, error) {
+	var list = make([]*Batch, 0)
+	var op = dbi.DB.Operation()
+	op.Dbg = dbi.Debug
+	var deadStatuses []interface{}
+	var placeholders []string
+	for _, st := range statusMap {
+		if st.Dead {
+			deadStatuses = append(deadStatuses, st.Status)
+			placeholders = append(placeholders, "?")
+		}
+	}
+	var condition = "status NOT IN (" + strings.Join(placeholders, ", ") + ")"
+
+	op.Select("batches", &Batch{}).Where(condition, deadStatuses...).AllObjects(&list)
+	for _, b := range list {
+		b.StatusMeta = bs(b.Status)
+		if b.StatusMeta == noStatus {
+			return nil, fmt.Errorf("invalid status %q on batch %s", b.Status, b.FullName())
+		}
+	}
+
+	return list, op.Err()
+}
+
+// PendingBatches returns all batches in the database that are not live, but
+// also not deleted (or otherwise "dead")
+func PendingBatches() ([]*Batch, error) {
+	var list, err = allBatches()
+	if err != nil {
+		return nil, err
+	}
+
+	// Internally I'm calling these undead. They're not live and they're not
+	// dead. Deal with it.
+	var undead []*Batch
+	for _, b := range list {
+		if !bs(b.Status).Live {
+			undead = append(undead, b)
+		}
+	}
+
+	return undead, nil
 }
 
 // FindBatch looks for a batch by its id
