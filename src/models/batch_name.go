@@ -10,6 +10,14 @@ import (
 // lists would be the same size, just to make for absolute uniqueness per
 // iteration, but that isn't worth worrying over.
 var batchNameLists = [][]string{
+	// Random prefixes to prevent the "birthday problem". We purposely choose
+	// just a letter and a number to avoid any weird accidental inappropriate
+	// text. With these prefixes our permutations exceed 10 million, requiring
+	// over 400 batches generated on a single day to reach even a 1% chance of
+	// collision.
+	{"B", "C", "D", "F", "G", "H", "J", "K", "L", "M", "N", "P", "Q", "R", "S", "T", "V", "W", "X", "Z"},
+	{"0", "1", "2", "3", "4", "5", "6", "7", "8", "9"},
+
 	// Materials (as if this were a work of art chiseled / carved from these)
 	{
 		// Earthy stuff: stone / metal / gemstone
@@ -41,6 +49,7 @@ var batchNameLists = [][]string{
 
 	// Creatures
 	{
+		// Mythical
 		"Dracaenae",
 		"Gargouille",
 		"Gendenwitha",
@@ -61,16 +70,30 @@ var batchNameLists = [][]string{
 		"Werewolf",
 		"Cthulu",
 		"Yeti",
+
+		// Real
+		"Alpaca",
+		"Grasshopper",
+		"Centipede",
+		"Zebra",
+		"Kangaroo",
+		"Eagle",
+		"Dolphin",
+		"Pangolin",
+		"Liger",
+		"Duck",
 	},
 
 	// Connecting words
 	{
+		"Near",
 		"Behind",
 		"Harvesting",
 		"Planting",
 		"SurroundedBy",
 		"Trampling",
 		"Eating",
+		"Carrying",
 	},
 
 	// Vegetation
@@ -87,6 +110,12 @@ var batchNameLists = [][]string{
 		"Amaranth",
 		"Kelp",
 		"PricklyPear",
+		"Daisies",
+		"Pumpkins",
+		"Maize",
+		"Nightshade",
+		"RiverMint",
+		"Chervil",
 	},
 }
 
