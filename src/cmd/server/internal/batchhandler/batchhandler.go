@@ -10,7 +10,6 @@ import (
 	"github.com/uoregon-libraries/newspaper-curation-app/src/config"
 	"github.com/uoregon-libraries/newspaper-curation-app/src/internal/logger"
 	"github.com/uoregon-libraries/newspaper-curation-app/src/models"
-	"github.com/uoregon-libraries/newspaper-curation-app/src/privilege"
 	"github.com/uoregon-libraries/newspaper-curation-app/src/web/tmpl"
 )
 
@@ -25,7 +24,7 @@ var (
 	// listTmpl is the template which shows all batches and actions
 	listTmpl *tmpl.Template
 
-	// viewTmpl is the batch view for showing details about a batch and comments under it
+	// viewTmpl is the batch view for showing details about a batch
 	viewTmpl *tmpl.Template
 )
 
@@ -36,13 +35,11 @@ func Setup(r *mux.Router, baseWebPath string, c *config.Config) {
 	var s = r.PathPrefix(basePath).Subrouter()
 	s.Path("").Handler(canView(listHandler))
 	s.Path("/{batch_id}").Methods("GET").Handler(canView(viewHandler))
-	s.Path("/{batch_id}/comment").Methods("POST").Handler(canComment(commentSaveHandler))
 
 	layout = responder.Layout.Clone()
 	layout.Funcs(tmpl.FuncMap{
 		"BatchesHomeURL": func() string { return basePath },
 		"ViewURL":        func(id int) string { return path.Join(basePath, strconv.Itoa(id)) },
-		"CommentsURL":    func(id int) string { return path.Join(basePath, strconv.Itoa(id), "comment") },
 	})
 	layout.Path = path.Join(layout.Path, "batches")
 
@@ -67,17 +64,4 @@ func listHandler(w http.ResponseWriter, req *http.Request) {
 func viewHandler(w http.ResponseWriter, req *http.Request) {
 	var r = responder.Response(w, req)
 	r.Error(http.StatusInternalServerError, "Not implemented")
-}
-
-func commentSaveHandler(w http.ResponseWriter, req *http.Request) {
-	var r = responder.Response(w, req)
-	r.Error(http.StatusInternalServerError, "Not implemented")
-}
-
-func canView(h http.HandlerFunc) http.Handler {
-	return responder.MustHavePrivilege(privilege.ViewBatches, h)
-}
-
-func canComment(h http.HandlerFunc) http.Handler {
-	return responder.MustHavePrivilege(privilege.CommentBatches, h)
 }

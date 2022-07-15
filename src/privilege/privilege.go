@@ -32,10 +32,9 @@ var (
 	// the moment
 	SearchIssues = newPrivilege(RoleWorkflowManager)
 
-	// Batch management - probably more people could view, but commenting and
-	// beyond should be locked down
-	ViewBatches    = newPrivilege(RoleBatchReviewer)
-	CommentBatches = newPrivilege(RoleBatchReviewer)
+	// View batch status: anybody who can see the batch status page, regardless
+	// of what they can/can't do there
+	ViewBatchStatus = newPrivilege(RoleBatchReviewer)
 
 	// Admins only
 	ModifyValidatedLCCNs = newPrivilege()
