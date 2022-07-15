@@ -90,9 +90,9 @@ func allBatches() ([]*Batch, error) {
 
 	op.Select("batches", &Batch{}).Where(condition, deadStatuses...).AllObjects(&list)
 	for _, b := range list {
-		b.StatusMeta = bs(b.Status)
-		if b.StatusMeta == noStatus {
-			return nil, fmt.Errorf("invalid status %q on batch %s", b.Status, b.FullName())
+		var err = b.deserialize()
+		if err != nil {
+			return nil, err
 		}
 	}
 
@@ -127,6 +127,10 @@ func FindBatch(id int) (*Batch, error) {
 	var ok = op.Select("batches", b).Where("id = ?", id).First(b)
 	if !ok {
 		return nil, op.Err()
+	}
+	var err = b.deserialize()
+	if err != nil {
+		return nil, err
 	}
 	return b, op.Err()
 }
@@ -280,4 +284,13 @@ func (b *Batch) Close() error {
 
 	b.Status = BatchStatusLiveDone
 	return b.Save()
+}
+
+func (b *Batch) deserialize() error {
+	b.StatusMeta = bs(b.Status)
+	if b.StatusMeta == noStatus {
+		return fmt.Errorf("invalid status %q on batch %s", b.Status, b.FullName())
+	}
+
+	return nil
 }
