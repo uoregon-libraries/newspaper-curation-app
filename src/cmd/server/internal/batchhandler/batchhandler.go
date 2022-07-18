@@ -52,7 +52,7 @@ func listHandler(w http.ResponseWriter, req *http.Request) {
 	var err error
 	var r = responder.Response(w, req)
 	r.Vars.Title = "Batches"
-	r.Vars.Data["Batches"], err = models.PendingBatches()
+	r.Vars.Data["Batches"], err = models.InProcessBatches()
 	if err != nil {
 		logger.Errorf("Unable to load batches: %s", err)
 		r.Error(http.StatusInternalServerError, "Error trying to pull batch list - try again or contact support")

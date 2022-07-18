@@ -3,7 +3,6 @@ package models
 import (
 	"fmt"
 	"hash/crc32"
-	"strings"
 	"time"
 
 	"github.com/Nerdmaster/magicsql"
@@ -71,96 +70,43 @@ func bs(s string) BatchStatus {
 	return statusMap[s]
 }
 
-// allBatches returns every batch except those considered dead.  We don't
-// anticipate more than a hundred new batches even in a super-busy year, so
-// this should be pulling a pretty small dataset for the next century or so.
-func allBatches() ([]*Batch, error) {
-	var list = make([]*Batch, 0)
+// findBatches wraps all the job finding functionality so helpers can be
+// one-liners.  This is purposely *not* exported to enforce a stricter API.
+//
+// NOTE: All instantiations from the database must go through this function to
+// properly deserialize their data!
+func findBatches(where string, args ...any) ([]*Batch, error) {
 	var op = dbi.DB.Operation()
 	op.Dbg = dbi.Debug
-	var deadStatuses []interface{}
-	var placeholders []string
-	for _, st := range statusMap {
-		if st.Dead {
-			deadStatuses = append(deadStatuses, st.Status)
-			placeholders = append(placeholders, "?")
-		}
-	}
-	var condition = "status NOT IN (" + strings.Join(placeholders, ", ") + ")"
-
-	op.Select("batches", &Batch{}).Where(condition, deadStatuses...).AllObjects(&list)
-	for _, b := range list {
-		var err = b.deserialize()
+	var list []*Batch
+	op.Select("batches", &Batch{}).Where(where, args...).AllObjects(&list)
+	for _, j := range list {
+		var err = j.deserialize()
 		if err != nil {
-			return nil, err
+			return nil, fmt.Errorf("error decoding batch %d: %s", j.ID, err)
 		}
 	}
-
 	return list, op.Err()
-}
-
-// PendingBatches returns all batches in the database that are not live, but
-// also not deleted (or otherwise "dead")
-func PendingBatches() ([]*Batch, error) {
-	var list, err = allBatches()
-	if err != nil {
-		return nil, err
-	}
-
-	// Internally I'm calling these undead. They're not live and they're not
-	// dead. Deal with it.
-	var undead []*Batch
-	for _, b := range list {
-		if !bs(b.Status).Live {
-			undead = append(undead, b)
-		}
-	}
-
-	return undead, nil
 }
 
 // FindBatch looks for a batch by its id
 func FindBatch(id int) (*Batch, error) {
-	var op = dbi.DB.Operation()
-	op.Dbg = dbi.Debug
-	var b = &Batch{}
-	var ok = op.Select("batches", b).Where("id = ?", id).First(b)
-	if !ok {
-		return nil, op.Err()
-	}
-	var err = b.deserialize()
-	if err != nil {
+	var list, err = findBatches("id = ?", id)
+	if len(list) == 0 {
 		return nil, err
 	}
-	return b, op.Err()
+	return list[0], err
 }
 
 // InProcessBatches returns the full list of in-process batches (not live, not pending)
 func InProcessBatches() ([]*Batch, error) {
-	var op = dbi.DB.Operation()
-	op.Dbg = dbi.Debug
-
-	var list []*Batch
-	op.Select("batches", &Batch{}).Where(
-		"status IN (?, ?, ?, ?)",
-		BatchStatusStagingReady, BatchStatusQCReady, BatchStatusFailedQC, BatchStatusPassedQC,
-	).AllObjects(&list)
-
-	return list, op.Err()
+	return findBatches("status IN (?, ?, ?, ?)", BatchStatusStagingReady, BatchStatusQCReady, BatchStatusFailedQC, BatchStatusPassedQC)
 }
 
 // FindLiveArchivedBatches returns all batches that are still live, but have an
 // archived_at value
 func FindLiveArchivedBatches() ([]*Batch, error) {
-	var op = dbi.DB.Operation()
-	op.Dbg = dbi.Debug
-
-	var list []*Batch
-	op.Select("batches", &Batch{}).
-		Where("status = ? AND archived_at > ?", BatchStatusLive, time.Time{}).
-		AllObjects(&list)
-
-	return list, op.Err()
+	return findBatches("status = ? AND archived_at > ?", BatchStatusLive, time.Time{})
 }
 
 // CreateBatch creates a batch in the database, using its ID combined with the
