@@ -12,14 +12,14 @@ import (
 
 // These are all possible batch status values
 const (
-	BatchStatusDeleted   = "deleted"    // Batch wasn't fixable and had to be removed
-	BatchStatusPending   = "pending"    // Not yet built or in the process of being built
-	BatchStatusQCReady   = "qc_ready"   // Ready for ingest onto staging
-	BatchStatusOnStaging = "on_staging" // On the staging server awaiting QC
-	BatchStatusFailedQC  = "failed_qc"  // On staging, but QC failed it; it needs to be pulled and fixed
-	BatchStatusPassedQC  = "passed_qc"  // On staging, passed QC; it needs to be pulled from staging and pushed live
-	BatchStatusLive      = "live"       // Batch has gone live; batch and its issues need to be archived
-	BatchStatusLiveDone  = "live_done"  // Batch has gone live; batch and its issues have been archived and are no longer on the filesystem
+	BatchStatusDeleted      = "deleted"       // Batch wasn't fixable and had to be removed
+	BatchStatusPending      = "pending"       // Not yet built or in the process of being built
+	BatchStatusStagingReady = "staging_ready" // Batch is built but not deployed to staging yet
+	BatchStatusQCReady      = "qc_ready"      // Batch is on staging and ready for QC pass
+	BatchStatusFailedQC     = "failed_qc"     // On staging, but QC failed it; it needs to be pulled and fixed
+	BatchStatusPassedQC     = "passed_qc"     // On staging, passed QC; it needs to be pulled from staging and pushed live
+	BatchStatusLive         = "live"          // Batch has gone live; batch and its issues need to be archived
+	BatchStatusLiveDone     = "live_done"     // Batch has gone live; batch and its issues have been archived and are no longer on the filesystem
 )
 
 // BatchStatus describes the metadata corresponding to a database status
@@ -35,9 +35,9 @@ var noStatus BatchStatus
 var statusMap = map[string]BatchStatus{
 	BatchStatusPending: {Status: BatchStatusPending, Live: false, Dead: false,
 		Description: "Pending: build job is scheduled but hasn't yet run"},
-	BatchStatusQCReady: {Status: BatchStatusQCReady, Live: false, Dead: false,
+	BatchStatusStagingReady: {Status: BatchStatusStagingReady, Live: false, Dead: false,
 		Description: "Ready for ingest onto staging server"},
-	BatchStatusOnStaging: {Status: BatchStatusOnStaging, Live: false, Dead: false,
+	BatchStatusQCReady: {Status: BatchStatusQCReady, Live: false, Dead: false,
 		Description: "On staging, awaiting quality control check"},
 	BatchStatusFailedQC: {Status: BatchStatusFailedQC, Live: false, Dead: false,
 		Description: "Failed quality control, awaiting batch maintainer fixes"},
@@ -143,7 +143,7 @@ func InProcessBatches() ([]*Batch, error) {
 	var list []*Batch
 	op.Select("batches", &Batch{}).Where(
 		"status IN (?, ?, ?, ?)",
-		BatchStatusQCReady, BatchStatusOnStaging, BatchStatusFailedQC, BatchStatusPassedQC,
+		BatchStatusStagingReady, BatchStatusQCReady, BatchStatusFailedQC, BatchStatusPassedQC,
 	).AllObjects(&list)
 
 	return list, op.Err()

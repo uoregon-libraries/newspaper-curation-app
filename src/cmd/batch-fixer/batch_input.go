@@ -12,7 +12,7 @@ import (
 func (i *Input) makeBatchMenu() (*menu, string) {
 	var m = i.makeMenu()
 	var st = i.batch.db.Status
-	if st == models.BatchStatusQCReady || st == models.BatchStatusOnStaging {
+	if st == models.BatchStatusQCReady || st == models.BatchStatusStagingReady {
 		m.add("failqc", "Marks the batch as needing work before being put into production", i.failQCHandler)
 	}
 	if st == models.BatchStatusFailedQC {
