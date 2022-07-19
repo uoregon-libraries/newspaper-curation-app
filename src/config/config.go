@@ -26,10 +26,11 @@ type Config struct {
 	OPJDecompress string `setting:"OPJ_DECOMPRESS"`
 
 	// Web configuration
-	Webroot     string `setting:"WEBROOT" type:"url"`
-	BindAddress string `setting:"BIND_ADDRESS"`
-	IIIFBaseURL string `setting:"IIIF_BASE_URL" type:"url"`
-	NewsWebroot string `setting:"NEWS_WEBROOT" type:"url"`
+	Webroot            string `setting:"WEBROOT" type:"url"`
+	BindAddress        string `setting:"BIND_ADDRESS"`
+	IIIFBaseURL        string `setting:"IIIF_BASE_URL" type:"url"`
+	NewsWebroot        string `setting:"NEWS_WEBROOT" type:"url"`
+	StagingNewsWebroot string `setting:"STAGING_NEWS_WEBROOT" type:"url"`
 
 	// MARC location(s) for getting XML for unknown titles
 	MARCLocation1 string `setting:"MARC_LOCATION_1"`
