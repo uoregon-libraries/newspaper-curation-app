@@ -18,7 +18,7 @@ func Can(u *models.User) *CanValidation {
 
 // View returns true if the user's privileges allow seeing details for b, based
 // primarily on its status
-func (c *CanValidation) View(b *models.Batch) bool {
+func (c *CanValidation) View(b *Batch) bool {
 	// Allow admins to view any batch. We have some statuses we don't normally
 	// show, but there's no harm in allowing them to be displayed to admins if
 	// they for some odd reason choose to hack up the URL.
@@ -41,4 +41,21 @@ func (c *CanValidation) View(b *models.Batch) bool {
 	}
 
 	return false
+}
+
+// Load is true if the user can load batches *and* b is in a loadable state
+func (c *CanValidation) Load(b *Batch) bool {
+	if !c.user.PermittedTo(privilege.LoadBatches) {
+		return false
+	}
+	return b.Status == models.BatchStatusStagingReady || b.Status == models.BatchStatusPassedQC
+}
+
+// Approve is true if the user can approve batches and b is in need of approval
+func (c *CanValidation) Approve(b *Batch) bool {
+	if !c.user.PermittedTo(privilege.ApproveQCReadyBatches) {
+		return false
+	}
+
+	return b.Status == models.BatchStatusQCReady
 }

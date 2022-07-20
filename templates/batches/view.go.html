@@ -1,0 +1,68 @@
+{{block "content" .}}
+
+{{with .Data.Batch}}
+<div class="col-md-6">
+  <h2>Status / Info</h2>
+  <dl>
+    <dt>Full Name</dt>
+    <dd>{{.FullName}}</dd>
+
+    <dt>Status</dt>
+    <dd>
+      <code>{{.Status}}</code>:
+      {{.StatusMeta.Description}}
+    </dd>
+
+    <dt>Issue Count</dt>
+    <dd>{{len .Issues}}</dd>
+  <dl>
+
+  <h2>Links</h2>
+  <ul>
+    <li><a href="{{ViewURL .}}">NCA Batch View Permalink</a> (this page)</li>
+    <li><a href="">Issue List</a> (TODO)</li>
+    <li><a href="">Calendar</a> (TODO)</li>
+    {{if .StatusMeta.Staging}}<li><a href="{{StagingBatchURL .}}">Staging</a></li>{{end}}
+    {{if .StatusMeta.Live}}<li><a href="{{ProdBatchURL .}}">Production</a></li>{{end}}
+  </ul>
+</div>
+{{end}}
+
+<div class="col-md-6">
+  <h2>Actions</h2>
+
+  <!-- Batch has no actions -->
+  {{if .Data.Batch.Unavailable}}
+  <strong>This batch is not in a state that allows user actions</strong>
+  {{end}}
+
+  <!-- Batch needs to be pushed to staging -->
+  {{if and .Data.Batch.ReadyForStaging (.Data.Can.Load .Data.Batch)}}
+  <p><strong>{{.Data.Batch.Name}} is ready to be loaded onto staging. This is a manual process.</strong></p>
+  <p>Load the batch:</p>
+  {{template "batchload" .Data.Batch}}
+
+  <p>Then mark it ready for QC:</p>
+  <form action="{{SetQCReadyURL .Data.Batch}}" method="POST">
+    <button class="btn btn-primary" type="submit">Set QC Ready</button>
+  </form>
+  {{end}}
+
+  <!-- Needs QC pass -->
+  {{if and .Data.Batch.ReadyForQC (.Data.Can.Approve .Data.Batch)}}
+  <p>{{.Data.Batch.Name}} needs approval to move to production (or a rejection if it needs to be fixed).</p>
+
+  <a href="{{ApproveURL .Data.Batch}}" class="btn btn-primary">Approve...</a>
+  <a href="{{RejectURL .Data.Batch}}" class="btn btn-danger">Reject...</a>
+  {{end}}
+
+  <!-- TODO: other statuses -->
+</div>
+{{end}}
+
+{{define "batchload"}}
+<pre><code># ssh into the appropriate server first!
+cd /opt/openoni
+source ENV/bin/activate
+./manage.py load_batch {{.Location}}</code></pre>
+{{end}}

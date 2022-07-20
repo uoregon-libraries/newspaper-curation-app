@@ -25,28 +25,70 @@ const (
 type BatchStatus struct {
 	Status      string
 	Live        bool
+	Staging     bool
 	Dead        bool
+	NeedsAction bool
 	Description string
 }
 
 var noStatus BatchStatus
 
 var statusMap = map[string]BatchStatus{
-	BatchStatusPending: {Status: BatchStatusPending, Live: false, Dead: false,
+	BatchStatusPending: {
+		Status:      BatchStatusPending,
+		Live:        false,
+		Staging:     false,
+		Dead:        false,
+		NeedsAction: false,
 		Description: "Pending: build job is scheduled but hasn't yet run"},
-	BatchStatusStagingReady: {Status: BatchStatusStagingReady, Live: false, Dead: false,
+	BatchStatusStagingReady: {
+		Status:      BatchStatusStagingReady,
+		Live:        false,
+		Staging:     false,
+		Dead:        false,
+		NeedsAction: true,
 		Description: "Ready for ingest onto staging server"},
-	BatchStatusQCReady: {Status: BatchStatusQCReady, Live: false, Dead: false,
+	BatchStatusQCReady: {
+		Status:      BatchStatusQCReady,
+		Live:        false,
+		Staging:     true,
+		Dead:        false,
+		NeedsAction: true,
 		Description: "On staging, awaiting quality control check"},
-	BatchStatusFailedQC: {Status: BatchStatusFailedQC, Live: false, Dead: false,
+	BatchStatusFailedQC: {
+		Status:      BatchStatusFailedQC,
+		Live:        false,
+		Staging:     true,
+		Dead:        false,
+		NeedsAction: true,
 		Description: "Failed quality control, awaiting batch maintainer fixes"},
-	BatchStatusDeleted: {Status: BatchStatusDeleted, Live: false, Dead: true,
+	BatchStatusDeleted: {
+		Status:      BatchStatusDeleted,
+		Live:        false,
+		Staging:     false,
+		Dead:        true,
+		NeedsAction: false,
 		Description: "Removed from the system.  Likely rebuilt under a new name."},
-	BatchStatusPassedQC: {Status: BatchStatusPassedQC, Live: false, Dead: false,
+	BatchStatusPassedQC: {
+		Status:      BatchStatusPassedQC,
+		Live:        false,
+		Staging:     true,
+		Dead:        false,
+		NeedsAction: true,
 		Description: "Passed quality control, awaiting batch maintainer's push to production"},
-	BatchStatusLive: {Status: BatchStatusLive, Live: true, Dead: false,
+	BatchStatusLive: {
+		Status:      BatchStatusLive,
+		Live:        true,
+		Staging:     false,
+		Dead:        false,
+		NeedsAction: true,
 		Description: "Live in production, awaiting archiving"},
-	BatchStatusLiveDone: {Status: BatchStatusLiveDone, Live: true, Dead: false,
+	BatchStatusLiveDone: {
+		Status:      BatchStatusLiveDone,
+		Live:        true,
+		Staging:     false,
+		Dead:        false,
+		NeedsAction: false,
 		Description: "Live in production and archived: no longer available in NCA workflow"},
 }
 
