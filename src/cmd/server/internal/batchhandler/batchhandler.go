@@ -70,16 +70,17 @@ func Setup(r *mux.Router, baseWebPath string, c *config.Config) {
 
 // listHandler spits out the list of batches
 func listHandler(w http.ResponseWriter, req *http.Request) {
-	var err error
 	var r = responder.Response(w, req)
 	r.Vars.Title = "Batches"
-	r.Vars.Data["Batches"], err = models.InProcessBatches()
-	r.Vars.Data["Can"] = Can(r.Vars.User)
+	var list, err = models.InProcessBatches()
 	if err != nil {
 		logger.Errorf("Unable to load batches: %s", err)
 		r.Error(http.StatusInternalServerError, "Error trying to pull batch list - try again or contact support")
 		return
 	}
+
+	r.Vars.Data["Batches"] = wrapBatches(list)
+	r.Vars.Data["Can"] = Can(r.Vars.User)
 	r.Render(listTmpl)
 }
 
