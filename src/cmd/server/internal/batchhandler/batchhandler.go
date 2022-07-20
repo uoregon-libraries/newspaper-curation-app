@@ -28,6 +28,14 @@ var (
 	viewTmpl *tmpl.Template
 )
 
+func batchURL(b *models.Batch, other ...string) string {
+	var parts = []string{basePath, strconv.Itoa(b.ID)}
+	if len(other) > 0 {
+		parts = append(parts, other...)
+	}
+	return path.Join(parts...)
+}
+
 // Setup sets up all the routing rules and other configuration
 func Setup(r *mux.Router, baseWebPath string, c *config.Config) {
 	conf = c
@@ -39,7 +47,7 @@ func Setup(r *mux.Router, baseWebPath string, c *config.Config) {
 	layout = responder.Layout.Clone()
 	layout.Funcs(tmpl.FuncMap{
 		"BatchesHomeURL": func() string { return basePath },
-		"ViewURL":        func(id int) string { return path.Join(basePath, strconv.Itoa(id)) },
+		"ViewURL":        func(b *models.Batch) string { return batchURL(b) },
 	})
 	layout.Path = path.Join(layout.Path, "batches")
 
@@ -53,6 +61,7 @@ func listHandler(w http.ResponseWriter, req *http.Request) {
 	var r = responder.Response(w, req)
 	r.Vars.Title = "Batches"
 	r.Vars.Data["Batches"], err = models.InProcessBatches()
+	r.Vars.Data["Can"] = Can(r.Vars.User)
 	if err != nil {
 		logger.Errorf("Unable to load batches: %s", err)
 		r.Error(http.StatusInternalServerError, "Error trying to pull batch list - try again or contact support")
