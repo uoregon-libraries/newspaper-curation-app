@@ -29,6 +29,7 @@ import (
 	"strings"
 
 	"github.com/uoregon-libraries/gopkg/fileutil"
+	"github.com/uoregon-libraries/gopkg/fileutil/manifest"
 	"github.com/uoregon-libraries/gopkg/logger"
 	"github.com/uoregon-libraries/gopkg/wordutils"
 )
@@ -150,6 +151,8 @@ func moveSFTPs(testDir string) {
 		} else {
 			linkFiles(issueSrcPath, outPath, ".pdf")
 		}
+
+		makeManifest(outPath)
 	}
 }
 
@@ -252,5 +255,19 @@ func moveScans(testDir string) {
 
 		var issueSrcPath = filepath.Join(scansSourcePath, info.Name())
 		linkFiles(issueSrcPath, outPath, ".pdf", ".tif", ".tiff")
+
+		makeManifest(outPath)
+	}
+}
+
+func makeManifest(pth string) {
+	var m = manifest.New(pth)
+	var err = m.Build()
+	if err != nil {
+		l.Fatalf("Unable to build manifest for %q: %s", pth, err)
+	}
+	err = m.Write()
+	if err != nil {
+		l.Fatalf("Unable to write manifest for %q: %s", pth, err)
 	}
 }

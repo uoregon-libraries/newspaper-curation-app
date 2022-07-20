@@ -11,9 +11,11 @@ import (
 	"sort"
 	"strconv"
 	"strings"
+	"time"
 
 	"github.com/uoregon-libraries/gopkg/fileutil"
 	"github.com/uoregon-libraries/newspaper-curation-app/src/apperr"
+	"github.com/uoregon-libraries/newspaper-curation-app/src/internal/lastmod"
 	"github.com/uoregon-libraries/newspaper-curation-app/src/internal/logger"
 )
 
@@ -332,6 +334,21 @@ func (i *Issue) addChildError() {
 	}
 	i.addError(apperr.New("one or more files are invalid"))
 	i.hasChildErrors = true
+}
+
+// LastModified tells us when *any* change happened in an issue's folder.  This
+// will return a meaningless value on live issues.
+func (i *Issue) LastModified() time.Time {
+	if i.WorkflowStep == WSInProduction {
+		return time.Time{}
+	}
+	var t, err = lastmod.Time(i.Location)
+	if err != nil {
+		logger.Errorf("Unable to get last mod time: %s", err)
+		return time.Now()
+	}
+
+	return t
 }
 
 // METSFile returns the canonical path to an issue's METS file
