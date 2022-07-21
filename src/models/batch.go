@@ -3,6 +3,7 @@ package models
 import (
 	"fmt"
 	"hash/crc32"
+	"strings"
 	"time"
 
 	"github.com/Nerdmaster/magicsql"
@@ -142,7 +143,16 @@ func FindBatch(id int) (*Batch, error) {
 
 // InProcessBatches returns the full list of in-process batches (not live, not pending)
 func InProcessBatches() ([]*Batch, error) {
-	return findBatches("status IN (?, ?, ?, ?)", BatchStatusStagingReady, BatchStatusQCReady, BatchStatusFailedQC, BatchStatusPassedQC)
+	var statusList []any
+	var placeholders []string
+	for status, data := range statusMap {
+		if data.NeedsAction {
+			statusList = append(statusList, status)
+			placeholders = append(placeholders, "?")
+		}
+	}
+	var qry = fmt.Sprintf("status IN (%s)", strings.Join(placeholders, ", "))
+	return findBatches(qry, statusList...)
 }
 
 // FindLiveArchivedBatches returns all batches that are still live, but have an
