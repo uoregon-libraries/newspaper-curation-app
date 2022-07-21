@@ -24,6 +24,10 @@ var (
 
 	// viewTmpl is the batch view for showing details about a batch
 	viewTmpl *tmpl.Template
+
+	// approveFormTmpl is the (very simple) form to ensure QCer is certain they
+	// want to push a batch to prod
+	approveFormTmpl *tmpl.Template
 )
 
 func batchNewsURL(root string, b *Batch) string {
@@ -47,6 +51,9 @@ func Setup(r *mux.Router, baseWebPath string, c *config.Config) {
 	var s = r.PathPrefix(basePath).Subrouter()
 	s.Path("").Handler(canView(listHandler))
 	s.Path("/{batch_id}").Methods("GET").Handler(canView(viewHandler))
+	s.Path("/{batch_id}/qc-ready").Methods("POST").Handler(canLoad(qcReadyHandler))
+	s.Path("/{batch_id}/approve").Methods("GET").Handler(canLoad(qcApproveFormHandler))
+	s.Path("/{batch_id}/approve").Methods("POST").Handler(canLoad(qcApproveHandler))
 
 	layout = responder.Layout.Clone()
 	layout.Funcs(tmpl.FuncMap{
@@ -63,4 +70,5 @@ func Setup(r *mux.Router, baseWebPath string, c *config.Config) {
 	layout.MustReadPartials("_batch_metadata.go.html", "_load_purge.go.html")
 	listTmpl = layout.MustBuild("list.go.html")
 	viewTmpl = layout.MustBuild("view.go.html")
+	approveFormTmpl = layout.MustBuild("approve_form.go.html")
 }
