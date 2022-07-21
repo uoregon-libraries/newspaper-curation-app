@@ -60,6 +60,7 @@ func Setup(r *mux.Router, baseWebPath string, c *config.Config) {
 	})
 	layout.Path = path.Join(layout.Path, "batches")
 
+	layout.MustReadPartials("_batch_metadata.go.html", "_load_purge.go.html")
 	listTmpl = layout.MustBuild("list.go.html")
 	viewTmpl = layout.MustBuild("view.go.html")
 }
