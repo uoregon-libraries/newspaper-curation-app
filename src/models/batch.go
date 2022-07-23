@@ -244,6 +244,11 @@ func (b *Batch) AwardYear() int {
 
 // Save creates or updates the Batch in the batches table
 func (b *Batch) Save() error {
+	// Validate the batch status before doing anything else
+	var st = bs(b.Status)
+	if st.Description == "" {
+		return fmt.Errorf("invalid batch status: %s", b.Status)
+	}
 	var op = dbi.DB.Operation()
 	op.Dbg = dbi.Debug
 	return b.SaveOp(op)
