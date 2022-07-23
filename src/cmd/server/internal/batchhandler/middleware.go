@@ -23,3 +23,7 @@ func canView(h http.HandlerFunc) http.Handler {
 func canLoad(h http.HandlerFunc) http.Handler {
 	return responder.MustHavePrivilege(privilege.LoadBatches, h)
 }
+
+func canApprove(h http.HandlerFunc) http.Handler {
+	return responder.MustHavePrivilege(privilege.ApproveQCReadyBatches, h)
+}

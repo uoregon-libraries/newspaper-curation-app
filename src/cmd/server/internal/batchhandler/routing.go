@@ -52,8 +52,8 @@ func Setup(r *mux.Router, baseWebPath string, c *config.Config) {
 	s.Path("").Handler(canView(listHandler))
 	s.Path("/{batch_id}").Methods("GET").Handler(canView(viewHandler))
 	s.Path("/{batch_id}/qc-ready").Methods("POST").Handler(canLoad(qcReadyHandler))
-	s.Path("/{batch_id}/approve").Methods("GET").Handler(canLoad(qcApproveFormHandler))
-	s.Path("/{batch_id}/approve").Methods("POST").Handler(canLoad(qcApproveHandler))
+	s.Path("/{batch_id}/approve").Methods("GET").Handler(canApprove(qcApproveFormHandler))
+	s.Path("/{batch_id}/approve").Methods("POST").Handler(canApprove(qcApproveHandler))
 
 	layout = responder.Layout.Clone()
 	layout.Funcs(tmpl.FuncMap{
