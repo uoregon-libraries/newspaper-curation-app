@@ -1,5 +1,12 @@
 {{define "batch-metadata"}}
 <h2>Status / Info</h2>
+{{template "batch-metadata-info" .}}
+
+<h2>Links</h2>
+{{template "batch-metadata-links" .}}
+{{end}}
+
+{{define "batch-metadata-info"}}
 <dl>
   <dt>Full Name</dt>
   <dd>{{.FullName}}</dd>
@@ -13,8 +20,9 @@
   <dt>Issue Count</dt>
   <dd>{{len .Issues}}</dd>
 <dl>
+{{end}}
 
-<h2>Links</h2>
+{{define "batch-metadata-links"}}
 <ul>
   <li><a href="{{ViewURL .}}">NCA Batch View Permalink</a> (this page)</li>
   <li><a href="">Issue List</a> (TODO)</li>
