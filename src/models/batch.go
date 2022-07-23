@@ -16,7 +16,8 @@ const (
 	BatchStatusPending      = "pending"       // Not yet built or in the process of being built
 	BatchStatusStagingReady = "staging_ready" // Batch is built but not deployed to staging yet
 	BatchStatusQCReady      = "qc_ready"      // Batch is on staging and ready for QC pass
-	BatchStatusFailedQC     = "failed_qc"     // On staging, but QC failed it; it needs to be pulled and fixed
+	BatchStatusQCFlagIssues = "qc_flagging"   // Batch failed QC; problem issues need to be identified and removed
+	BatchStatusFailedQC     = "failed_qc"     // Batch failed QC and needs to be removed from staging and rebuilt
 	BatchStatusPassedQC     = "passed_qc"     // On staging, passed QC; it needs to be pulled from staging and pushed live
 	BatchStatusLive         = "live"          // Batch has gone live; batch and its issues need to be archived
 	BatchStatusLiveDone     = "live_done"     // Batch has gone live; batch and its issues have been archived and are no longer on the filesystem
@@ -58,6 +59,14 @@ var statusMap = map[string]BatchStatus{
 		Dead:        false,
 		NeedsAction: true,
 		Description: "On staging, awaiting quality control check",
+	},
+	BatchStatusQCFlagIssues: {
+		Status:      BatchStatusQCFlagIssues,
+		Live:        false,
+		Staging:     true,
+		Dead:        false,
+		NeedsAction: true,
+		Description: "Failed quality control, awaiting QC issue flagging",
 	},
 	BatchStatusFailedQC: {
 		Status:      BatchStatusFailedQC,

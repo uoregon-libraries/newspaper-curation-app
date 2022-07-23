@@ -28,6 +28,9 @@ var (
 	// approveFormTmpl is the (very simple) form to ensure QCer is certain they
 	// want to push a batch to prod
 	approveFormTmpl *tmpl.Template
+
+	// rejectFormTmpl is the form for verifying a batch failed QC
+	rejectFormTmpl *tmpl.Template
 )
 
 func batchNewsURL(root string, b *Batch) string {
@@ -54,6 +57,8 @@ func Setup(r *mux.Router, baseWebPath string, c *config.Config) {
 	s.Path("/{batch_id}/qc-ready").Methods("POST").Handler(canLoad(qcReadyHandler))
 	s.Path("/{batch_id}/approve").Methods("GET").Handler(canApprove(qcApproveFormHandler))
 	s.Path("/{batch_id}/approve").Methods("POST").Handler(canApprove(qcApproveHandler))
+	s.Path("/{batch_id}/reject").Methods("GET").Handler(canReject(qcRejectFormHandler))
+	s.Path("/{batch_id}/reject").Methods("POST").Handler(canReject(qcRejectHandler))
 
 	layout = responder.Layout.Clone()
 	layout.Funcs(tmpl.FuncMap{
@@ -71,4 +76,5 @@ func Setup(r *mux.Router, baseWebPath string, c *config.Config) {
 	listTmpl = layout.MustBuild("list.go.html")
 	viewTmpl = layout.MustBuild("view.go.html")
 	approveFormTmpl = layout.MustBuild("approve_form.go.html")
+	rejectFormTmpl = layout.MustBuild("reject_form.go.html")
 }

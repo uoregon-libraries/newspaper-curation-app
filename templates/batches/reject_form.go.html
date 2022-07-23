@@ -1,0 +1,19 @@
+{{block "content" .}}
+
+<div class="col-md-6">
+  {{template "batch-metadata" .Data.Batch}}
+</div>
+
+<div class="col-md-6">
+  <h2>Actions</h2>
+  <p>
+    You are about to reject {{.Data.Batch.Name}}, marking it as unsuitable for
+    production loading. Once rejected, issues can be removed and the batch can
+    be rebuilt and re-QCed.
+  </p>
+  <form action="{{RejectURL .Data.Batch}}" method="POST">
+    <button class="btn btn-primary" type="submit">Reject</button>
+    <a href="{{ViewURL .Data.Batch}}" class="btn btn-secondary">Cancel</a>
+  </form>
+</div>
+{{end}}

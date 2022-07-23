@@ -27,3 +27,7 @@ func canLoad(h http.HandlerFunc) http.Handler {
 func canApprove(h http.HandlerFunc) http.Handler {
 	return responder.MustHavePrivilege(privilege.ApproveQCReadyBatches, h)
 }
+
+func canReject(h http.HandlerFunc) http.Handler {
+	return responder.MustHavePrivilege(privilege.RejectQCReadyBatches, h)
+}

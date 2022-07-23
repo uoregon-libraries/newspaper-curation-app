@@ -107,3 +107,35 @@ func qcApproveHandler(w http.ResponseWriter, req *http.Request) {
 	http.SetCookie(r.Writer, &http.Cookie{Name: "Info", Value: r.batch.Name + ": approved for production load", Path: "/"})
 	http.Redirect(w, req, basePath, http.StatusFound)
 }
+
+func qcRejectFormHandler(w http.ResponseWriter, req *http.Request) {
+	var r, ok = getBatchResponder(w, req)
+	if !ok {
+		return
+	}
+	if !r.can.Reject(r.batch) {
+		r.Error(http.StatusForbidden, "You are not permitted to reject this batch")
+		return
+	}
+
+	r.Vars.Title = "Reject batch?"
+	r.Render(rejectFormTmpl)
+}
+
+func qcRejectHandler(w http.ResponseWriter, req *http.Request) {
+	var r, ok = getBatchResponder(w, req)
+	if !ok {
+		return
+	}
+	if !r.can.Reject(r.batch) {
+		r.Error(http.StatusForbidden, "You are not permitted to reject this batch")
+		return
+	}
+
+	if !setStatus(r, models.BatchStatusQCFlagIssues, rejectFormTmpl) {
+		return
+	}
+
+	http.SetCookie(r.Writer, &http.Cookie{Name: "Info", Value: r.batch.Name + ": failed QC, ready to flag issues for removal", Path: "/"})
+	http.Redirect(w, req, basePath, http.StatusFound)
+}
