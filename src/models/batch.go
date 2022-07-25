@@ -262,7 +262,6 @@ func (b *Batch) SaveOp(op *magicsql.Operation) error {
 }
 
 // Delete removes all issues from this batch and sets its status to "deleted".
-// Caller must clean up the filesystem.
 func (b *Batch) Delete() error {
 	var op = dbi.DB.Operation()
 	op.Dbg = dbi.Debug
