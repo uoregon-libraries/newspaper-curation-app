@@ -21,7 +21,7 @@ func setStatus(r *Responder, status string, t *tmpl.Template) bool {
 		// Since we're merely re-rending the template, we must put the batch back
 		// to its original state or the template could be weird/broken
 		r.batch.Status = oldStatus
-		logger.Errorf("Unable to set batch %d (%s) status to %s: %s", r.batch.ID, r.batch.FullName(), status, err)
+		logger.Criticalf("Unable to set batch %d (%s) status to %s: %s", r.batch.ID, r.batch.FullName(), status, err)
 		r.Vars.Title = "Error saving batch"
 		r.Vars.Alert = template.HTML("Unable to update batch status. Try again or contact support.")
 		r.Render(t)
@@ -37,7 +37,7 @@ func listHandler(w http.ResponseWriter, req *http.Request) {
 	r.Vars.Title = "Batches"
 	var list, err = models.InProcessBatches()
 	if err != nil {
-		logger.Errorf("Unable to load batches: %s", err)
+		logger.Criticalf("Unable to load batches: %s", err)
 		r.Error(http.StatusInternalServerError, "Error trying to pull batch list - try again or contact support")
 		return
 	}
