@@ -161,7 +161,7 @@ func prepFlagging(w http.ResponseWriter, req *http.Request) (r *Responder, ok bo
 		return r, false
 	}
 
-	r.Vars.Title = "Rejecting batch"
+	r.Vars.Title = "Rejecting batch " + r.batch.Name
 	return r, true
 }
 
@@ -253,7 +253,7 @@ func qcFlagIssuesHandler(w http.ResponseWriter, req *http.Request) {
 		key, err = parseIssueKeyStd(key)
 	}
 	if err != nil {
-		r.Vars.Title = "Error - Rejecting batch"
+		r.Vars.Title = "Error - " + r.Vars.Title
 		r.Vars.Alert = template.HTML(errAlert + ": " + err.Error())
 		r.Vars.Data["ShowURLHelp"] = showURLHelp
 		r.Vars.Data["ShowKeyHelp"] = showKeyHelp
@@ -270,7 +270,7 @@ func qcFlagIssuesHandler(w http.ResponseWriter, req *http.Request) {
 		return
 	}
 	if i == nil {
-		r.Vars.Title = "Issue not found - Rejecting batch"
+		r.Vars.Title = "Issue not found - " + r.Vars.Title
 		r.Vars.Alert = template.HTML(errAlert + ": no such issue exists. Double-check your input and try again.")
 		r.Vars.Data["ShowURLHelp"] = showURLHelp
 		r.Vars.Data["ShowKeyHelp"] = showKeyHelp
@@ -278,7 +278,7 @@ func qcFlagIssuesHandler(w http.ResponseWriter, req *http.Request) {
 		return
 	}
 	if i.BatchID != r.batch.ID {
-		r.Vars.Title = "Error - Rejecting batch"
+		r.Vars.Title = "Error - " + r.Vars.Title
 		r.Vars.Alert = template.HTML(fmt.Sprintf("%s: an issue matches your entry, but it is not part of batch %s. Double-check your input and try again.", errAlert, r.batch.Name))
 		r.Render(flagIssuesFormTmpl)
 		return
