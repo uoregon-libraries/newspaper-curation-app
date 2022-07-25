@@ -227,6 +227,55 @@ func (b *Batch) Issues() ([]*Issue, error) {
 	return b.issues, err
 }
 
+// FlaggedIssue is a record indicating an issue which was flagged for removal
+// from a batch
+type FlaggedIssue struct {
+	Issue  *Issue
+	User   *User
+	When   time.Time
+	Reason string
+}
+
+// FlaggedIssues returns all issues flagged for removal from this batch
+func (b *Batch) FlaggedIssues() ([]*FlaggedIssue, error) {
+	var op = dbi.DB.Operation()
+	op.Dbg = dbi.Debug
+
+	type _row struct {
+		IssueID         int
+		FlaggedByUserID int
+		Reason          string
+		CreatedAt       time.Time
+	}
+	var rows []*_row
+	op.Select("batches_flagged_issues", &_row{}).Where("batch_id = ?", b.ID).AllObjects(&rows)
+
+	var issues = make([]*FlaggedIssue, len(rows))
+	for i, row := range rows {
+		var issue, err = FindIssue(row.IssueID)
+		if err != nil {
+			return nil, fmt.Errorf("FlaggedIssues(): error querying issue %d: %w", row.IssueID, err)
+		}
+		if issue == nil {
+			return nil, fmt.Errorf("FlaggedIssues(): error querying issue %d: no issue found", row.IssueID)
+		}
+
+		var user = FindUserByID(row.FlaggedByUserID)
+		if user == EmptyUser {
+			return nil, fmt.Errorf("FlaggedIssues(): unable to find user %d", row.FlaggedByUserID)
+		}
+
+		issues[i] = &FlaggedIssue{
+			Issue:  issue,
+			User:   user,
+			Reason: row.Reason,
+			When:   row.CreatedAt,
+		}
+	}
+
+	return issues, op.Err()
+}
+
 // FullName returns the name of a batch as it is needed for chronam / ONI.
 //
 // Note that currently we assume all generated batches will be _ver01, because
@@ -258,6 +307,24 @@ func (b *Batch) Save() error {
 // easier transactions
 func (b *Batch) SaveOp(op *magicsql.Operation) error {
 	op.Save("batches", b)
+	return op.Err()
+}
+
+// FlagIssue marks an issue as needing to be removed from this batch
+func (b *Batch) FlagIssue(i *Issue, who *User, reason string) error {
+	// Caller should have already validated the batch and the issue, but we
+	// *really* don't want data to be busted
+	if b.Status != BatchStatusQCFlagIssues {
+		return fmt.Errorf("cannot flag issue %s: batch %s is not allowed to have issues flagged", i.Key(), b.Name)
+	}
+	if i.BatchID != b.ID {
+		return fmt.Errorf("cannot flag issue %s: not part of batch %s", i.Key(), b.Name)
+	}
+
+	var op = dbi.DB.Operation()
+	op.Dbg = dbi.Debug
+	op.Exec(`INSERT INTO batches_flagged_issues (flagged_by_user_id, batch_id, issue_id, reason) VALUES (?, ?, ?, ?)`,
+		who.ID, b.ID, i.ID, reason)
 	return op.Err()
 }
 
