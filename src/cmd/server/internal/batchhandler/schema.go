@@ -35,3 +35,9 @@ func (b *Batch) ReadyForStaging() bool {
 func (b *Batch) ReadyForQC() bool {
 	return b.Status == models.BatchStatusQCReady
 }
+
+// ReadyForFlaggingIssues is true if the batch is ready for a batch reviewer to
+// flag which issues need to be removed
+func (b *Batch) ReadyForFlaggingIssues() bool {
+	return b.Status == models.BatchStatusQCFlagIssues
+}

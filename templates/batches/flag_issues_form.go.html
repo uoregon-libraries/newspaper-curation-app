@@ -1,0 +1,123 @@
+{{block "content" .}}
+<div class="row">
+  <div class="col-md-6">
+    <h2>Identify Problem Issues</h2>
+    <p>
+      Find an issue, then briefly describe the problem. As you reject issues,
+      the "Rejected Issues" list will be updated.
+    </p>
+
+    <form action="{{FlagIssuesURL .Data.Batch}}" method="POST">
+      <div class="form-group">
+        {{if .Data.ShowKeyHelp}}
+        <div class="alert alert-info">
+          You must enter a ten-character LCCN followed by a slash and then a
+          ten-digit date + edition string; e.g.,
+          <code>sn12345678/2021010201</code> would represent the title
+          <code>sn12345678</code>'s January 2nd, 2021 first edition issue.
+        </div>
+        {{end}}
+        {{if .Data.ShowURLHelp}}
+        <div class="alert alert-info">
+          URLs must be a standard ONI permalink to the issue on the staging
+          server, e.g.,
+          <code>{{StagingRootURL}}/lccn/sn12345678/2021-01-02/ed-1/</code>.
+          A page link (same as the issue link, but with "/seq-1" on the end,
+          for instance) is permissable as well.
+        </div>
+        {{end}}
+
+        <label for="issue-key">Issue</label>
+        <input class="form-control" list="issue-keys" id="issue-key" name="issue-key" autocomplete="off" aria-describedby="issue-key-help" value="{{.Data.IssueKey}}" />
+        <p class="form-text text-muted" id="issue-key-help">
+          Start typing an LCCN and/or date to search for an issue, or manually
+          enter an issue "key" (in the form <code>LCCN/YYYYMMDDEE</code>) or
+          paste in a URL (e.g., from the staging server).
+        </p>
+        <datalist id="issue-keys">
+        {{range .Data.Batch.Issues}}
+        <option value="{{.Key}}">{{.Title.MARCTitle}}, {{.Date}}, ed. {{.Edition}} ({{.Key}})</option>
+        {{end}}
+        </datalist>
+      </div>
+
+      <div class="form-group">
+        <label for="issue-desc">Description of problem</label>
+        <textarea class="form-control" name="issue-desc" id="issue-desc" aria-describedby="issue-desc-help" rows="2" >{{.Data.IssueDescription}}</textarea>
+        <p class="form-text text-muted" id="issue-desc-help">
+          Briefly describe the problem, e.g., "Page 4 is rotated". The person
+          doing remediation will use this information to decide on what
+          kind of remediation is required.
+        </p>
+      </div>
+      <button class="btn btn-primary" type="submit">Add Issue To Removal Queue</button>
+    </form>
+
+    <h2>Finalize</h2>
+    <p>
+      When you're certain you've identified all problem issues, select
+      "Finalize" below. <em>This will effectively lock the batch from further
+      updates, so be certain you're done!</em>
+    </p>
+    <form action="{{ApproveURL .Data.Batch}}" method="POST">
+      <button class="btn btn-primary" type="submit">Finalize</button>
+    </form>
+  </div>
+
+  <div class="col-md-6">
+    <h2>Information / Help</h2>
+    <p>
+      Issues identified here will be removed from the batch and put into the NCA
+      workflow. Once the bad issues are removed, the batch will be set as needing
+      to be loaded to staging again. Once it's back on staging, you may re-review
+      and then flag it as ready for production.
+    </p>
+    <p>
+      Note that you may return to this view at any time, and you don't have to
+      flag the issues all at once. Issues marked for removal will be
+      automatically flagged and saved as you enter them, but they won't be
+      removed until you flag the issue as "done".
+    </p>
+
+    <h2>Rejected Issues</h2>
+    <p>
+      These issues have been identified as having problems, and will be removed
+      from the batch.
+    </p>
+    {{if .Data.FlaggedIssues}}
+    <div class="panel panel-default">
+      <div class="panel-body">
+        {{range .Data.FlaggedIssues}}
+        <div class="row">
+          <div class="col-md-12">
+            <h3 class="h4">{{.Issue.Title.MARCTitle}} ({{.Issue.LCCN}}), {{.Issue.Date}} ed. {{.Issue.Edition}}</h3>
+          </div>
+        </div>
+        <div class="row">
+          <div class="col-md-12">
+            <em>{{.Reason}}</em>
+          </div>
+          <div class="col-md-12">
+            <p class="text-muted">
+              Flagged by {{.User.Login}} on {{.When.Format "2006-01-02"}}.
+            </p>
+          </div>
+        </div>
+        {{end}}
+      </div>
+    </div>
+    {{end}}
+  </div>
+</div>
+
+<div class="row">
+  <h2>Batch Summary</h2>
+  <div class="col-md-6">
+    {{template "batch-metadata-info" .Data.Batch}}
+  </div>
+
+  <div class="col-md-6">
+    {{template "batch-metadata-links" .Data.Batch}}
+  </div>
+</div>
+{{end}}

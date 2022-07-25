@@ -32,6 +32,16 @@
   <a href="{{RejectURL .Data.Batch}}" class="btn btn-danger">Reject...</a>
   {{end}}
 
+  <!-- Needs batch reviewer to flag issues -->
+  {{if and .Data.Batch.ReadyForFlaggingIssues (.Data.Can.FlagIssues .Data.Batch)}}
+  <p>
+    {{.Data.Batch.Name}} has failed QC. You can mark issues that need to be
+    removed and then send the batch back to staging.
+  </p>
+
+  <a href="{{FlagIssuesURL .Data.Batch}}" class="btn btn-primary">Flag Issues...</a>
+  {{end}}
+
   <!-- TODO: other statuses -->
 </div>
 {{end}}

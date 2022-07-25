@@ -31,6 +31,10 @@ var (
 
 	// rejectFormTmpl is the form for verifying a batch failed QC
 	rejectFormTmpl *tmpl.Template
+
+	// flagIssuesFormTmpl is the form for defining what needs to be fixed on a
+	// batch which failed QC
+	flagIssuesFormTmpl *tmpl.Template
 )
 
 func batchNewsURL(root string, b *Batch) string {
@@ -47,6 +51,10 @@ func batchURL(b *Batch, other ...string) string {
 	return path.Join(parts...)
 }
 
+func flagIssuesURL(b *Batch) string {
+	return batchURL(b, "flag-issues")
+}
+
 // Setup sets up all the routing rules and other configuration
 func Setup(r *mux.Router, baseWebPath string, c *config.Config) {
 	conf = c
@@ -59,14 +67,18 @@ func Setup(r *mux.Router, baseWebPath string, c *config.Config) {
 	s.Path("/{batch_id}/approve").Methods("POST").Handler(canApprove(qcApproveHandler))
 	s.Path("/{batch_id}/reject").Methods("GET").Handler(canReject(qcRejectFormHandler))
 	s.Path("/{batch_id}/reject").Methods("POST").Handler(canReject(qcRejectHandler))
+	s.Path("/{batch_id}/flag-issues").Methods("GET").Handler(canReject(qcFlagIssuesFormHandler))
+	s.Path("/{batch_id}/flag-issues").Methods("POST").Handler(canReject(qcFlagIssuesHandler))
 
 	layout = responder.Layout.Clone()
 	layout.Funcs(tmpl.FuncMap{
 		"BatchesHomeURL":  func() string { return basePath },
+		"StagingRootURL":  func() string { return conf.StagingNewsWebroot },
 		"ViewURL":         func(b *Batch) string { return batchURL(b) },
 		"SetQCReadyURL":   func(b *Batch) string { return batchURL(b, "qc-ready") },
 		"ApproveURL":      func(b *Batch) string { return batchURL(b, "approve") },
 		"RejectURL":       func(b *Batch) string { return batchURL(b, "reject") },
+		"FlagIssuesURL":   flagIssuesURL,
 		"StagingBatchURL": func(b *Batch) string { return batchNewsURL(conf.StagingNewsWebroot, b) },
 		"ProdBatchURL":    func(b *Batch) string { return batchNewsURL(conf.NewsWebroot, b) },
 	})
@@ -77,4 +89,5 @@ func Setup(r *mux.Router, baseWebPath string, c *config.Config) {
 	viewTmpl = layout.MustBuild("view.go.html")
 	approveFormTmpl = layout.MustBuild("approve_form.go.html")
 	rejectFormTmpl = layout.MustBuild("reject_form.go.html")
+	flagIssuesFormTmpl = layout.MustBuild("flag_issues_form.go.html")
 }

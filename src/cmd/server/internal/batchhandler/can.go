@@ -68,3 +68,13 @@ func (c *CanValidation) Reject(b *Batch) bool {
 
 	return b.Status == models.BatchStatusQCReady
 }
+
+// FlagIssues is true if the user can reject in-QC batches and b is ready for
+// issue flagging
+func (c *CanValidation) FlagIssues(b *Batch) bool {
+	if !c.user.PermittedTo(privilege.RejectQCReadyBatches) {
+		return false
+	}
+
+	return b.Status == models.BatchStatusQCFlagIssues
+}

@@ -4,6 +4,9 @@ import (
 	"fmt"
 	"html/template"
 	"net/http"
+	"net/url"
+	"strings"
+	"time"
 
 	"github.com/uoregon-libraries/newspaper-curation-app/src/cmd/server/internal/responder"
 	"github.com/uoregon-libraries/newspaper-curation-app/src/internal/logger"
@@ -138,4 +141,156 @@ func qcRejectHandler(w http.ResponseWriter, req *http.Request) {
 
 	http.SetCookie(r.Writer, &http.Cookie{Name: "Info", Value: r.batch.Name + ": failed QC, ready to flag issues for removal", Path: "/"})
 	http.Redirect(w, req, basePath, http.StatusFound)
+}
+
+func prepFlagging(w http.ResponseWriter, req *http.Request) (r *Responder, ok bool) {
+	r, ok = getBatchResponder(w, req)
+	if !ok {
+		return r, false
+	}
+	if !r.can.FlagIssues(r.batch) {
+		r.Error(http.StatusForbidden, "You are not permitted to flag issues for removal from this batch")
+		return r, false
+	}
+
+	var err error
+	r.Vars.Data["FlaggedIssues"], err = r.batch.FlaggedIssues()
+	if err != nil {
+		logger.Criticalf("Error reading flagged issues for batch %d (%s): %s", r.batch.ID, r.batch.Name, err)
+		r.Error(http.StatusInternalServerError, "Error trying to read batch's issues - try again or contact support")
+		return r, false
+	}
+
+	r.Vars.Title = "Rejecting batch"
+	return r, true
+}
+
+func qcFlagIssuesFormHandler(w http.ResponseWriter, req *http.Request) {
+	var r, ok = prepFlagging(w, req)
+	if ok {
+		r.Render(flagIssuesFormTmpl)
+	}
+}
+
+func parseIssueKeyURL(val string) (string, error) {
+	var u, err = url.Parse(val)
+	if err != nil {
+		return "", fmt.Errorf("%q is not a URL: %s", val, err)
+	}
+	var parts = strings.Split(u.Path, "/")
+	for i, part := range parts {
+		if part == "lccn" {
+			if len(parts) < i+4 {
+				return "", fmt.Errorf("%q is not a full URL to an issue", val)
+			}
+			var ed = parts[i+3]
+			if !strings.HasPrefix(ed, "ed-") || len(ed) < 4 {
+				return "", fmt.Errorf("%q doesn't have a valid edition", val)
+			}
+			ed = ed[3:]
+			if len(ed) == 1 {
+				ed = "0" + ed
+			}
+			val = parts[i+1] + "/" + strings.Replace(parts[i+2], "-", "", 2) + ed
+			return val, nil
+		}
+	}
+	return "", fmt.Errorf("%q is not a valid issue URL", val)
+}
+
+func parseIssueKeyStd(val string) (string, error) {
+	// Issue keys must be exactly 21 characters: 10 for LCCN, slash, 10 for date
+	// + edition
+	if len(val) < 21 {
+		return "", fmt.Errorf("%q is too short", val)
+	}
+	if len(val) > 21 {
+		return "", fmt.Errorf("%q is too long", val)
+	}
+	var parts = strings.Split(val, "/")
+	var lccn, dte string
+	if len(parts) == 2 {
+		lccn, dte = parts[0], parts[1]
+	}
+	if len(lccn) != 10 || len(dte) != 10 {
+		return "", fmt.Errorf("%q is not an issue key", val)
+	}
+
+	var dt = dte[:8]
+	var _, err = time.Parse("20060102", dt)
+	if err != nil {
+		return "", fmt.Errorf("%q is not a valid issue key: date part (%q) is not a real date", val, dt)
+	}
+
+	return val, nil
+}
+
+func qcFlagIssuesHandler(w http.ResponseWriter, req *http.Request) {
+	var r, ok = prepFlagging(w, req)
+	if !ok {
+		return
+	}
+
+	req.ParseForm()
+	var key = req.Form.Get("issue-key")
+	var desc = req.Form.Get("issue-desc")
+
+	// In just about every case where we render the template rather than
+	// redirect, we need the following things set up
+	r.Vars.Data["IssueKey"] = key
+	r.Vars.Data["IssueDescription"] = desc
+
+	var err error
+	var errAlert string
+	var showURLHelp, showKeyHelp bool
+	if len(key) > 4 && key[:4] == "http" {
+		errAlert = "Invalid issue URL"
+		showURLHelp = true
+		key, err = parseIssueKeyURL(key)
+	} else {
+		errAlert = "Invalid issue key"
+		showKeyHelp = true
+		key, err = parseIssueKeyStd(key)
+	}
+	if err != nil {
+		r.Vars.Title = "Error - Rejecting batch"
+		r.Vars.Alert = template.HTML(errAlert + ": " + err.Error())
+		r.Vars.Data["ShowURLHelp"] = showURLHelp
+		r.Vars.Data["ShowKeyHelp"] = showKeyHelp
+		r.Render(flagIssuesFormTmpl)
+		return
+	}
+
+	// Find issue and add it to the removal queue
+	var i *models.Issue
+	i, err = models.FindIssueByKey(key)
+	if err != nil {
+		logger.Criticalf("Error adding issue %q to batch %d (%s) for removal: %s", key, r.batch.ID, r.batch.Name, err)
+		r.Error(http.StatusInternalServerError, "Database error trying to reject the issue. Try again or contact support.")
+		return
+	}
+	if i == nil {
+		r.Vars.Title = "Issue not found - Rejecting batch"
+		r.Vars.Alert = template.HTML(errAlert + ": no such issue exists. Double-check your input and try again.")
+		r.Vars.Data["ShowURLHelp"] = showURLHelp
+		r.Vars.Data["ShowKeyHelp"] = showKeyHelp
+		r.Render(flagIssuesFormTmpl)
+		return
+	}
+	if i.BatchID != r.batch.ID {
+		r.Vars.Title = "Error - Rejecting batch"
+		r.Vars.Alert = template.HTML(fmt.Sprintf("%s: an issue matches your entry, but it is not part of batch %s. Double-check your input and try again.", errAlert, r.batch.Name))
+		r.Render(flagIssuesFormTmpl)
+		return
+	}
+
+	err = r.batch.FlagIssue(i, r.Vars.User, desc)
+	if err != nil {
+		logger.Criticalf("Error adding issue %q to batch %d (%s) for removal: %s", key, r.batch.ID, r.batch.Name, err)
+		r.Error(http.StatusInternalServerError, "Database error trying to reject the issue. Try again or contact support.")
+		return
+	}
+
+	http.SetCookie(r.Writer, &http.Cookie{Name: "Info", Value: fmt.Sprintf("Flagged issue %s for removal", i.Key()), Path: "/"})
+	http.Redirect(w, req, flagIssuesURL(r.batch), http.StatusFound)
 }
