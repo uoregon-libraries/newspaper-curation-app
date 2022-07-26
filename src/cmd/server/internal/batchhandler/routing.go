@@ -65,10 +65,13 @@ func Setup(r *mux.Router, baseWebPath string, c *config.Config) {
 	s.Path("/{batch_id}/qc-ready").Methods("POST").Handler(canLoad(qcReadyHandler))
 	s.Path("/{batch_id}/approve").Methods("GET").Handler(canApprove(qcApproveFormHandler))
 	s.Path("/{batch_id}/approve").Methods("POST").Handler(canApprove(qcApproveHandler))
+
+	// All these paths are related to the same multi-step operation (rejecting a
+	// batch, flagging issues, and finalizing it for rebuilding)
 	s.Path("/{batch_id}/reject").Methods("GET").Handler(canReject(qcRejectFormHandler))
 	s.Path("/{batch_id}/reject").Methods("POST").Handler(canReject(qcRejectHandler))
-	s.Path("/{batch_id}/flag-issues").Methods("GET").Handler(canReject(qcFlagIssuesFormHandler))
-	s.Path("/{batch_id}/flag-issues").Methods("POST").Handler(canReject(qcFlagIssuesHandler))
+	s.Path("/{batch_id}/flag-issues").Methods("GET").Handler(canReject(flagIssuesFormHandler))
+	s.Path("/{batch_id}/flag-issues").Methods("POST").Handler(canReject(flagIssuesHandler))
 
 	layout = responder.Layout.Clone()
 	layout.Funcs(tmpl.FuncMap{

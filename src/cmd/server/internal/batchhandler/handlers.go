@@ -166,7 +166,7 @@ func prepFlagging(w http.ResponseWriter, req *http.Request) (r *Responder, ok bo
 	return r, true
 }
 
-func qcFlagIssuesFormHandler(w http.ResponseWriter, req *http.Request) {
+func flagIssuesFormHandler(w http.ResponseWriter, req *http.Request) {
 	var r, ok = prepFlagging(w, req)
 	if ok {
 		r.Render(flagIssuesFormTmpl)
@@ -226,7 +226,7 @@ func parseIssueKeyStd(val string) (string, error) {
 	return val, nil
 }
 
-func qcFlagIssuesHandler(w http.ResponseWriter, req *http.Request) {
+func flagIssuesHandler(w http.ResponseWriter, req *http.Request) {
 	var r, ok = prepFlagging(w, req)
 	if !ok {
 		return
