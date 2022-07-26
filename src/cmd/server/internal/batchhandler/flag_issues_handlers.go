@@ -23,10 +23,12 @@ func flagIssuesHandler(w http.ResponseWriter, req *http.Request) {
 
 	req.ParseForm()
 	switch req.Form.Get("action") {
+	case "flag-issue":
+		flagIssue(r)
 	case "unflag-issue":
 		unflagIssue(r)
 	default:
-		flagIssue(r)
+		r.Error(http.StatusBadRequest, "Invalid request. Try again or contact support")
 	}
 }
 

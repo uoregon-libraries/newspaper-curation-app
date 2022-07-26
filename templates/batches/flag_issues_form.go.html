@@ -8,6 +8,7 @@
     </p>
 
     <form action="{{FlagIssuesURL .Data.Batch}}" method="POST">
+      <input type="hidden" name="action" value="flag-issue" />
       <div class="form-group">
         {{if .Data.ShowKeyHelp}}
         <div class="alert alert-info">
