@@ -234,7 +234,7 @@ func qcFlagIssuesHandler(w http.ResponseWriter, req *http.Request) {
 
 	req.ParseForm()
 	switch req.Form.Get("action") {
-	case "undo":
+	case "unflag-issue":
 		unflagIssue(r)
 	default:
 		flagIssue(r)

@@ -93,10 +93,10 @@
           <div class="col-md-10">
             <h3 class="h4">{{.Issue.Title.MARCTitle}} ({{.Issue.LCCN}}), {{.Issue.Date}} ed. {{.Issue.Edition}}</h3>
           </div>
-          <div class="col-md-2 undo-form">
+          <div class="col-md-2 unflag-form">
             <form action="{{FlagIssuesURL $.Data.Batch}}" method="POST">
               <input type="hidden" name="issue-id" value="{{.Issue.ID}}" />
-              <input type="hidden" name="action" value="undo" />
+              <input type="hidden" name="action" value="unflag-issue" />
               <button class="btn btn-danger btn-xs" type="submit">Undo</button>
             </form>
           </div>
