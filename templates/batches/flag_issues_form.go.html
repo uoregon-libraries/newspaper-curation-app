@@ -82,17 +82,26 @@
     <h2>Rejected Issues</h2>
     <p>
       These issues have been identified as having problems, and will be removed
-      from the batch.
+      from the batch when it is finalized. The "undo" button can be used to
+      remove an incorrectly flagged issue.
     </p>
     {{if .Data.FlaggedIssues}}
     <div class="panel panel-default">
       <div class="panel-body">
         {{range .Data.FlaggedIssues}}
         <div class="row">
-          <div class="col-md-12">
+          <div class="col-md-10">
             <h3 class="h4">{{.Issue.Title.MARCTitle}} ({{.Issue.LCCN}}), {{.Issue.Date}} ed. {{.Issue.Edition}}</h3>
           </div>
+          <div class="col-md-2 undo-form">
+            <form action="{{FlagIssuesURL $.Data.Batch}}" method="POST">
+              <input type="hidden" name="issue-id" value="{{.Issue.ID}}" />
+              <input type="hidden" name="action" value="undo" />
+              <button class="btn btn-danger btn-xs" type="submit">Undo</button>
+            </form>
+          </div>
         </div>
+
         <div class="row">
           <div class="col-md-12">
             {{if .Reason}}

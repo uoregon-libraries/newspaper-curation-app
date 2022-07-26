@@ -328,6 +328,25 @@ func (b *Batch) FlagIssue(i *Issue, who *User, reason string) error {
 	return op.Err()
 }
 
+// UnflagIssue removes an issue from the "bad issue" queue
+func (b *Batch) UnflagIssue(i *Issue) error {
+	// Caller should validate this stuff, but just in case, we do it, too
+	if b.Status != BatchStatusQCFlagIssues {
+		return fmt.Errorf("cannot unflag issue %s: batch %s is not allowed to have issues flagged", i.Key(), b.Name)
+	}
+	if i.BatchID != b.ID {
+		return fmt.Errorf("cannot unflag issue %s: not part of batch %s", i.Key(), b.Name)
+	}
+
+	// Technically we could have an "error" here if the issue wasn't flagged to
+	// begin with. But in that case, alerting the user is potentially confusing
+	// since the thing they want to happen is essentially already done.
+	var op = dbi.DB.Operation()
+	op.Dbg = dbi.Debug
+	op.Exec(`DELETE FROM batches_flagged_issues WHERE batch_id = ? AND issue_id = ?`, b.ID, i.ID)
+	return op.Err()
+}
+
 // Delete removes all issues from this batch and sets its status to "deleted".
 func (b *Batch) Delete() error {
 	var op = dbi.DB.Operation()

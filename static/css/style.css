@@ -131,3 +131,8 @@ button[role=tab] h4, button[role=tab] h5, button[role=tab] h6 {
 #json-status[data-faded=true] {
   color: white;
 }
+
+/* Improve alignment of "undo" button on the batch "flag issues" page */
+.undo-form {
+  margin-top: 8px;
+}

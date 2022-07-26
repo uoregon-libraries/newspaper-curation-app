@@ -5,6 +5,7 @@ import (
 	"html/template"
 	"net/http"
 	"net/url"
+	"strconv"
 	"strings"
 	"time"
 
@@ -232,8 +233,48 @@ func qcFlagIssuesHandler(w http.ResponseWriter, req *http.Request) {
 	}
 
 	req.ParseForm()
-	var key = req.Form.Get("issue-key")
-	var desc = req.Form.Get("issue-desc")
+	switch req.Form.Get("action") {
+	case "undo":
+		unflagIssue(r)
+	default:
+		flagIssue(r)
+	}
+}
+
+func unflagIssue(r *Responder) {
+	var id, _ = strconv.Atoi(r.Request.Form.Get("issue-id"))
+	if id < 1 {
+		http.SetCookie(r.Writer, &http.Cookie{Name: "Alert", Value: "Invalid issue to unflag", Path: "/"})
+		http.Redirect(r.Writer, r.Request, flagIssuesURL(r.batch), http.StatusBadRequest)
+		return
+	}
+
+	var issue, err = models.FindIssue(id)
+	if err != nil {
+		logger.Criticalf("Unable to look up issue %d: %s", id, err)
+		r.Error(http.StatusInternalServerError, "Database error trying to unflag the issue. Try again or contact support.")
+		return
+	}
+	if issue == nil {
+		http.SetCookie(r.Writer, &http.Cookie{Name: "Alert", Value: "Unable to find issue to unflag. Try again or contact support.", Path: "/"})
+		http.Redirect(r.Writer, r.Request, flagIssuesURL(r.batch), http.StatusNotFound)
+		return
+	}
+
+	err = r.batch.UnflagIssue(issue)
+	if err != nil {
+		logger.Criticalf("Unable to unflag issue %d for batch %d (%s): %s", id, r.batch.ID, r.batch.Name, err)
+		r.Error(http.StatusInternalServerError, "Database error trying to unflag the issue. Try again or contact support.")
+		return
+	}
+
+	http.SetCookie(r.Writer, &http.Cookie{Name: "Info", Value: fmt.Sprintf("Took issue %s off the flagged-issue list", issue.Key()), Path: "/"})
+	http.Redirect(r.Writer, r.Request, flagIssuesURL(r.batch), http.StatusFound)
+}
+
+func flagIssue(r *Responder) {
+	var key = r.Request.Form.Get("issue-key")
+	var desc = r.Request.Form.Get("issue-desc")
 
 	// In just about every case where we render the template rather than
 	// redirect, we need the following things set up
@@ -292,5 +333,5 @@ func qcFlagIssuesHandler(w http.ResponseWriter, req *http.Request) {
 	}
 
 	http.SetCookie(r.Writer, &http.Cookie{Name: "Info", Value: fmt.Sprintf("Flagged issue %s for removal", i.Key()), Path: "/"})
-	http.Redirect(w, req, flagIssuesURL(r.batch), http.StatusFound)
+	http.Redirect(r.Writer, r.Request, flagIssuesURL(r.batch), http.StatusFound)
 }
