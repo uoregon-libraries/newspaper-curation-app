@@ -28,7 +28,7 @@ func flagIssuesHandler(w http.ResponseWriter, req *http.Request) {
 	case "unflag-issue":
 		unflagIssue(r)
 	default:
-		r.Error(http.StatusBadRequest, "Invalid request. Try again or contact support")
+		r.Error(http.StatusBadRequest, "Invalid request. Try again or contact support.")
 	}
 }
 
