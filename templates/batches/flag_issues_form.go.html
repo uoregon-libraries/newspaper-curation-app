@@ -59,6 +59,8 @@
       When you're certain you've identified all problem issues, select
       "Finalize" below. <em>This will effectively lock the batch from further
       updates, so be certain you're done!</em>
+      {{if not .Data.FlaggedIssues}}<strong>Note: you haven't selected any
+      issues yet, so finalizing is not an option.</strong>{{end}}
     </p>
     <p>
       If this batch doesn't need any issues removed (i.e., it was failed by
