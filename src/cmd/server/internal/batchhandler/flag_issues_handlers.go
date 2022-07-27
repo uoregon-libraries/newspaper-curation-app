@@ -27,6 +27,8 @@ func flagIssuesHandler(w http.ResponseWriter, req *http.Request) {
 		flagIssue(r)
 	case "unflag-issue":
 		unflagIssue(r)
+	case "abort":
+		abortBatch(r)
 	default:
 		r.Error(http.StatusBadRequest, "Invalid request. Try again or contact support.")
 	}
@@ -216,4 +218,16 @@ func flagIssue(r *Responder) {
 
 	http.SetCookie(r.Writer, &http.Cookie{Name: "Info", Value: fmt.Sprintf("Flagged issue %s for removal", i.Key()), Path: "/"})
 	http.Redirect(r.Writer, r.Request, flagIssuesURL(r.batch), http.StatusFound)
+}
+
+func abortBatch(r *Responder) {
+	var err = r.batch.AbortIssueFlagging()
+	if err != nil {
+		logger.Criticalf("Unable to abort issue flagging for batch %d (%s): %s", r.batch.ID, r.batch.Name, err)
+		r.Error(http.StatusInternalServerError, "Database error trying to reset the batch. Try again or contact support.")
+		return
+	}
+
+	http.SetCookie(r.Writer, &http.Cookie{Name: "Info", Value: fmt.Sprintf("Batch %q has been reset and is ready for QC again", r.batch.Name), Path: "/"})
+	http.Redirect(r.Writer, r.Request, batchURL(r.batch), http.StatusFound)
 }

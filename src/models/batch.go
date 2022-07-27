@@ -347,6 +347,28 @@ func (b *Batch) UnflagIssue(i *Issue) error {
 	return op.Err()
 }
 
+// AbortIssueFlagging returns the batch state to BatchStatusQCReady and removes
+// all flagged issues tied to it
+func (b *Batch) AbortIssueFlagging() error {
+	if b.Status != BatchStatusQCFlagIssues {
+		return fmt.Errorf("abort issue flagging: invalid batch status %s", b.Status)
+	}
+
+	var op = dbi.DB.Operation()
+	op.Dbg = dbi.Debug
+	op.BeginTransaction()
+	defer op.EndTransaction()
+
+	b.Status = BatchStatusQCReady
+	var err = b.SaveOp(op)
+	if err != nil {
+		return err
+	}
+
+	op.Exec(`DELETE FROM batches_flagged_issues WHERE batch_id = ?`, b.ID)
+	return op.Err()
+}
+
 // Delete removes all issues from this batch and sets its status to "deleted".
 func (b *Batch) Delete() error {
 	var op = dbi.DB.Operation()
