@@ -54,14 +54,59 @@
       <button class="btn btn-primary" type="submit">Add Issue To Removal Queue</button>
     </form>
 
-    <h2>Finalize</h2>
+    <h2>Finalize / Cancel</h2>
     <p>
       When you're certain you've identified all problem issues, select
       "Finalize" below. <em>This will effectively lock the batch from further
       updates, so be certain you're done!</em>
     </p>
-    <form action="{{ApproveURL .Data.Batch}}" method="POST">
-      <button class="btn btn-primary" type="submit">Finalize</button>
+    <p>
+      If this batch doesn't need any issues removed (i.e., it was failed by
+      mistake), you may reset its status to "ready for QC" via the "Abort"
+      button. <em>This will clear all flagged issues and return the batch to
+      its prior state.</em>
+    </p>
+    <form action="{{FlagIssuesURL .Data.Batch}}" method="POST">
+      <cta-modal>
+        <div slot="button" class="inline">
+          {{if .Data.FlaggedIssues}}
+          <button class="btn btn-primary cta-modal-toggle">Finalize</button>
+          {{else}}
+          <button class="btn btn-disabled" disabled="disabled">Finalize</button>
+          {{end}}
+        </div>
+
+        <div slot="modal">
+          <h2>Finalize Batch?</h2>
+          <p>
+            You are about to finalize {{.Data.Batch.Name}}. The
+            {{.Data.FlaggedIssues|len}} flagged issue(s) will be removed from
+            the batch and put into the "Unfixable Errors" tab in the NCA
+            workflow, then the batch will be rebuilt and pushed up to staging
+            again.
+          </p>
+          <button class="btn btn-primary" type="submit" name="action" value="finalize">Confirm</button>
+          <button class="btn btn-secondary cta-modal-toggle">Cancel</button>
+        </div>
+      </cta-modal>
+
+      <cta-modal>
+        <div slot="button" class="inline">
+          <button class="btn btn-danger cta-modal-toggle">Abort</button>
+        </div>
+
+        <div slot="modal">
+          <h2>Cancel Issue Flagging?</h2>
+          <p>
+            You are about to "reset" {{.Data.Batch.Name}} to be back in the
+            "ready for QC" state. The {{.Data.FlaggedIssues|len}} flagged
+            issue(s) will be un-flagged and treated normally. The batch can
+            then be approved or you can start flagging issues again.
+          </p>
+          <button class="btn btn-primary" type="submit" name="action" value="abort">Confirm</button>
+          <button class="btn btn-secondary cta-modal-toggle">Cancel</button>
+        </div>
+      </cta-modal>
     </form>
   </div>
 
