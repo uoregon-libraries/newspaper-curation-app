@@ -30,7 +30,7 @@
 <meta itemprop="name" content="Technical Details">
 <meta itemprop="description" content="Deeper explanation of NCA&#39;s various workflows">
 
-<meta itemprop="wordCount" content="1147">
+<meta itemprop="wordCount" content="1161">
 <meta itemprop="keywords" content="" /></head>
 <body><div class="container"><header>
 <h1>Newspaper Curation App</h1><a href="https://github.com/uoregon-libraries/newspaper-curation-app/" class="github"><i class="fab fa-github"></i></a>
@@ -140,8 +140,9 @@ happen while somebody is reviewing the batch on a staging server, but the batch
 should <strong>not be considered production-ready</strong> until the bagit files are
 generated.  You can monitor the status of the job in the database directly, or
 just watch for a valid tag manifest file.</p>
-<p>If the batch has any bad issues, it must be <a href="../../workflow/fixing-batches">fixed</a>
-with a command-line tool and then rebatched.</p>
+<p>If the batch has any bad issues, it must be fixed by somebody with the &ldquo;batch
+reviewer&rdquo; role and then rebatched (these users will have access to a &ldquo;Batches&rdquo;
+page in NCA).</p>
 <p>Once the batch has been approved in staging, (TODO: another utility!) run the
 <a href="../../workflow/batch-manual-golive">manual go-live</a> process to get the batch and
 its issues to be properly recognized by the rest of NCA as no longer being part
@@ -188,7 +189,6 @@ of the workflow.</p>
 <li class=""><a href="https://uoregon-libraries.github.io/newspaper-curation-app/workflow/handling-page-review-problems/">Handling Page Review Problems</a></li>
 <li class=""><a href="https://uoregon-libraries.github.io/newspaper-curation-app/workflow/fixing-stuck-issues/">Fixing &#34;Stuck&#34; Issues</a></li>
 <li class=""><a href="https://uoregon-libraries.github.io/newspaper-curation-app/workflow/fixing-flagged-workflow-issues/">Fixing Flagged Workflow Issues</a></li>
-<li class=""><a href="https://uoregon-libraries.github.io/newspaper-curation-app/workflow/fixing-batches/">Fixing Batches</a></li>
 <li class=""><a href="https://uoregon-libraries.github.io/newspaper-curation-app/workflow/fixing-live-batches/">Replacing Live Issues</a></li>
 <li class=""><a href="https://uoregon-libraries.github.io/newspaper-curation-app/workflow/batch-manual-golive/">Batch Manual Go-live Procedure</a></li>
 <li class=""><a href="https://uoregon-libraries.github.io/newspaper-curation-app/workflow/undo-batch-golive/">&#34;Un-push&#34; Batch From Production</a></li>

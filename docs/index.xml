@@ -185,16 +185,6 @@ Manual Testing This is clunky and hacky, but it&amp;rsquo;s what we&amp;rsquo;ve
     </item>
     
     <item>
-      <title>Fixing Batches</title>
-      <link>https://uoregon-libraries.github.io/newspaper-curation-app/workflow/fixing-batches/</link>
-      <pubDate>Mon, 01 Jan 0001 00:00:00 +0000</pubDate>
-      
-      <guid>https://uoregon-libraries.github.io/newspaper-curation-app/workflow/fixing-batches/</guid>
-      <description>Install Build and run the batch fixer tool. You&amp;rsquo;ll need the same prerequisites as are necessary for the rest of the toolsuite, and you&amp;rsquo;ll need to run it on your production system in order to manipulate batch files.
-git clone https://github.com/uoregon-libraries/newspaper-curation-app.git cd newspaper-curation-app make ./bin/batch-fixer -c ./settings The tool is an interactive command-line application. You can type &amp;ldquo;help&amp;rdquo; at any time to get a full list of commands for your current context.</description>
-    </item>
-    
-    <item>
       <title>Replacing Live Issues</title>
       <link>https://uoregon-libraries.github.io/newspaper-curation-app/workflow/fixing-live-batches/</link>
       <pubDate>Mon, 01 Jan 0001 00:00:00 +0000</pubDate>
