@@ -40,6 +40,7 @@ const (
 	JobTypeKillDir              JobType = "delete_directory"
 	JobTypeRenameDir            JobType = "rename_directory"
 	JobTypeCleanFiles           JobType = "clean_files"
+	JobTypeRemoveFile           JobType = "remove_file"
 	JobTypeRenumberPages        JobType = "renumber_pages"
 	JobTypeIssueAction          JobType = "record_issue_action"
 )
@@ -66,6 +67,7 @@ var ValidJobTypes = []JobType{
 	JobTypeKillDir,
 	JobTypeRenameDir,
 	JobTypeCleanFiles,
+	JobTypeRemoveFile,
 	JobTypeRenumberPages,
 	JobTypeIssueAction,
 }
