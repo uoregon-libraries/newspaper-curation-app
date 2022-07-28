@@ -25,7 +25,7 @@ func (job *BuildMETS) Process(c *config.Config) bool {
 
 	// Set up variables
 	job.templatePath = c.METSXMLTemplatePath
-	job.outputXMLPath = job.Issue.METSFile()
+	job.outputXMLPath = job.DBIssue.METSFile()
 
 	var err error
 	job.Title, err = models.FindTitle("lccn = ?", job.DBIssue.LCCN)

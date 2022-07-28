@@ -2,6 +2,7 @@ package models
 
 import (
 	"fmt"
+	"path/filepath"
 	"strconv"
 	"strings"
 	"time"
@@ -295,6 +296,12 @@ func (i *Issue) Key() string {
 // DateEdition returns the date+edition string used by our general schema
 func (i *Issue) DateEdition() string {
 	return schema.IssueDateEdition(i.Date, i.Edition)
+}
+
+// METSFile returns the canonical path to an issue's METS file. This will only
+// have meaning for issues still on a filesystem somewhere.
+func (i *Issue) METSFile() string {
+	return filepath.Join(i.Location, i.DateEdition()+".xml")
 }
 
 // AllWorkflowActions loads all actions tied to this issue and orders them in

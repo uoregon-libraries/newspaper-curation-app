@@ -98,17 +98,12 @@ func FindIssue(id int) (*Issue, error) {
 // verify sanity first by checking that the issue's directory does indeed
 // exist (and is a directory as opposed to a file).
 func (i *Issue) removeMETS() error {
-	var si, err = i.db.SchemaIssue()
-	if err != nil {
-		return fmt.Errorf("unable to get a schema.Issue from the models.Issue: %s", err)
-	}
-
 	// Make sure the dir exists, since lack of a mets file isn't a failure
 	if !fileutil.IsDir(i.db.Location) {
 		return fmt.Errorf("issue directory %q does not exist; aborting", i.db.Location)
 	}
 
-	err = os.Remove(si.METSFile())
+	var err = os.Remove(i.db.METSFile())
 	if !os.IsNotExist(err) && err != nil {
 		return fmt.Errorf("unable to remove METS file: %s", err)
 	}

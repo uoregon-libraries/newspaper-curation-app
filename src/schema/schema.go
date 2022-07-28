@@ -352,11 +352,6 @@ func (i *Issue) LastModified() time.Time {
 	return t
 }
 
-// METSFile returns the canonical path to an issue's METS file
-func (i *Issue) METSFile() string {
-	return filepath.Join(i.Location, i.DateEdition()+".xml")
-}
-
 // CheckDupes centralizes the logic for seeing if an issue has a duplicate in a
 // given lookup, adding a duplication error if there is a dupe and that dupe is
 // considered to be more "canonical" than this issue.  e.g., if there's an
