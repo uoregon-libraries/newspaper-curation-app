@@ -464,7 +464,7 @@ func (i *Issue) Save(action ActionType, userID int, message string) error {
 func (i *Issue) SaveWithoutAction() error {
 	var op = dbi.DB.Operation()
 	op.Dbg = dbi.Debug
-	return i.saveOp(op)
+	return i.SaveOpWithoutAction(op)
 }
 
 // SaveOp creates or updates the Issue in the issues table with a custom operation
@@ -475,11 +475,13 @@ func (i *Issue) SaveOp(op *magicsql.Operation, action ActionType, userID int, me
 	i.actions = append(i.actions, a)
 
 	a.SaveOp(op)
-	i.saveOp(op)
+	i.SaveOpWithoutAction(op)
 	return op.Err()
 }
 
-func (i *Issue) saveOp(op *magicsql.Operation) error {
+// SaveOpWithoutAction is the transaction-friendly SaveWithoutAction. This
+// should of course be used sparingly.
+func (i *Issue) SaveOpWithoutAction(op *magicsql.Operation) error {
 	var valid bool
 	for _, validWS := range allowedWorkflowSteps {
 		if string(i.WorkflowStep) == string(validWS) {
