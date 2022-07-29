@@ -469,7 +469,7 @@ func (i *Issue) SaveWithoutAction() error {
 
 // SaveOp creates or updates the Issue in the issues table with a custom operation
 func (i *Issue) SaveOp(op *magicsql.Operation, action ActionType, userID int, message string) error {
-	var a = newIssueAction(i.ID, action)
+	var a = NewIssueAction(i.ID, action)
 	a.UserID = userID
 	a.Message = message
 	i.actions = append(i.actions, a)
