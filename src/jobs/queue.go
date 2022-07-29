@@ -220,9 +220,15 @@ func QueueFinalizeIssue(issue *models.Issue) error {
 // Nothing can happen automatically after all this until the batch is verified
 // on staging.
 func QueueMakeBatch(batch *models.Batch, batchOutputPath string) error {
-	var wipDir = filepath.Join(batchOutputPath, ".wip-"+batch.FullName())
-	var finalDir = filepath.Join(batchOutputPath, batch.FullName())
-	return QueueSerial(
+	return QueueSerial(getJobsForMakeBatch(batch, batchOutputPath)...)
+}
+
+// getJobsForMakeBatch returns all jobs needed to generate a batch. This is needed
+// by two different higher-level tasks.
+func getJobsForMakeBatch(batch *models.Batch, pth string) []*models.Job {
+	var wipDir = filepath.Join(pth, ".wip-"+batch.FullName())
+	var finalDir = filepath.Join(pth, batch.FullName())
+	return []*models.Job{
 		PrepareBatchJobAdvanced(models.JobTypeCreateBatchStructure, batch, makeLocArgs(wipDir)),
 		PrepareBatchJobAdvanced(models.JobTypeSetBatchLocation, batch, makeLocArgs(wipDir)),
 		PrepareBatchJobAdvanced(models.JobTypeMakeBatchXML, batch, nil),
@@ -230,7 +236,7 @@ func QueueMakeBatch(batch *models.Batch, batchOutputPath string) error {
 		PrepareBatchJobAdvanced(models.JobTypeSetBatchLocation, batch, makeLocArgs(finalDir)),
 		PrepareBatchJobAdvanced(models.JobTypeSetBatchStatus, batch, makeBSArgs(models.BatchStatusQCReady)),
 		PrepareBatchJobAdvanced(models.JobTypeWriteBagitManifest, batch, nil),
-	)
+	}
 }
 
 // QueueRemoveErroredIssue builds jobs necessary to take an issue permanently
@@ -289,4 +295,47 @@ func GetJobsForRemoveErroredIssue(issue *models.Issue, erroredIssueRoot string) 
 	)
 
 	return jobs
+}
+
+// QueueBatchFinalizeIssueFlagging generates jobs for removing flagged issues
+// from a batch which failed QC, then rebuilding the batch
+func QueueBatchFinalizeIssueFlagging(batch *models.Batch, flagged []*models.FlaggedIssue, batchOutputPath string) error {
+	// This is yet another set of jobs that has steps we build out rather than
+	// just having a hard-coded list queued up
+	var jobs []*models.Job
+
+	// Destroy batch dir jobs - note that the batch dir contains hard links and
+	// easily rebuilt metadata (e.g., the bagit info), so this is not truly a
+	// destructive operation
+	jobs = append(jobs,
+		PrepareBatchJobAdvanced(models.JobTypeSetBatchStatus, batch, makeBSArgs(models.BatchStatusPending)),
+		PrepareJobAdvanced(models.JobTypeKillDir, makeLocArgs(batch.Location)),
+		PrepareBatchJobAdvanced(models.JobTypeSetBatchLocation, batch, makeLocArgs("")),
+	)
+
+	// Remove issues one at a time so we can easily resume / restart. Removing an
+	// issue means we first remove the METS XML file, and only when that succeeds
+	// do we do that database side. Filesystem jobs can fail in totally stupid
+	// ways (NFS mount dropping) and we want those to retry separately from the
+	// rest of the job.
+	//
+	// Note that in a perfect world each issue job could actually be running
+	// concurrently, but the job runner doesn't have the capability for one job
+	// to be dependent on a group of jobs. We'd prefer to keep the issues
+	// separate jobs and take that small performance hit rather than trying to
+	// add that level of complexity to job processing.
+	for _, i := range flagged {
+		jobs = append(jobs,
+			PrepareIssueJobAdvanced(models.JobTypeRemoveFile, i.Issue, makeLocArgs(i.Issue.METSFile())),
+			PrepareIssueJobAdvanced(models.JobTypeFinalizeBatchFlaggedIssue, i.Issue, nil),
+		)
+	}
+
+	// Remove all the no-longer-useful flagged issue data
+	jobs = append(jobs, PrepareBatchJobAdvanced(models.JobTypeEmptyBatchFlaggedIssuesList, batch, nil))
+
+	// Regenerate batch
+	jobs = append(jobs, getJobsForMakeBatch(batch, batchOutputPath)...)
+
+	return QueueSerial(jobs...)
 }
