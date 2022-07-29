@@ -15,6 +15,8 @@ func DBJobToProcessor(dbJob *models.Job) Processor {
 		return &SetIssueBackupLoc{IssueJob: NewIssueJob(dbJob)}
 	case models.JobTypeSetIssueLocation:
 		return &SetIssueLocation{IssueJob: NewIssueJob(dbJob)}
+	case models.JobTypeFinalizeBatchFlaggedIssue:
+		return &FinalizeBatchFlaggedIssue{IssueJob: NewIssueJob(dbJob)}
 	case models.JobTypeIgnoreIssue:
 		return &IgnoreIssue{IssueJob: NewIssueJob(dbJob)}
 	case models.JobTypePageSplit:

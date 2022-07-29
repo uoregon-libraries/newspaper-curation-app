@@ -376,6 +376,7 @@ func runAllQueues(c *config.Config) {
 				models.JobTypeSetIssueWS,
 				models.JobTypeSetIssueBackupLoc,
 				models.JobTypeSetIssueLocation,
+				models.JobTypeFinalizeBatchFlaggedIssue,
 				models.JobTypeIgnoreIssue,
 				models.JobTypeSetBatchStatus,
 				models.JobTypeSetBatchLocation,

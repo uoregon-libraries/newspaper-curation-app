@@ -227,53 +227,9 @@ func (b *Batch) Issues() ([]*Issue, error) {
 	return b.issues, err
 }
 
-// FlaggedIssue is a record indicating an issue which was flagged for removal
-// from a batch
-type FlaggedIssue struct {
-	Issue  *Issue
-	User   *User
-	When   time.Time
-	Reason string
-}
-
 // FlaggedIssues returns all issues flagged for removal from this batch
 func (b *Batch) FlaggedIssues() ([]*FlaggedIssue, error) {
-	var op = dbi.DB.Operation()
-	op.Dbg = dbi.Debug
-
-	type _row struct {
-		IssueID         int
-		FlaggedByUserID int
-		Reason          string
-		CreatedAt       time.Time
-	}
-	var rows []*_row
-	op.Select("batches_flagged_issues", &_row{}).Where("batch_id = ?", b.ID).AllObjects(&rows)
-
-	var issues = make([]*FlaggedIssue, len(rows))
-	for i, row := range rows {
-		var issue, err = FindIssue(row.IssueID)
-		if err != nil {
-			return nil, fmt.Errorf("FlaggedIssues(): error querying issue %d: %w", row.IssueID, err)
-		}
-		if issue == nil {
-			return nil, fmt.Errorf("FlaggedIssues(): error querying issue %d: no issue found", row.IssueID)
-		}
-
-		var user = FindUserByID(row.FlaggedByUserID)
-		if user == EmptyUser {
-			return nil, fmt.Errorf("FlaggedIssues(): unable to find user %d", row.FlaggedByUserID)
-		}
-
-		issues[i] = &FlaggedIssue{
-			Issue:  issue,
-			User:   user,
-			Reason: row.Reason,
-			When:   row.CreatedAt,
-		}
-	}
-
-	return issues, op.Err()
+	return findFlaggedIssues("batch_id = ?", b.ID)
 }
 
 // FullName returns the name of a batch as it is needed for chronam / ONI.

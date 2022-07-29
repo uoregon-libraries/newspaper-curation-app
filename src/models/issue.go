@@ -73,6 +73,66 @@ type Issue struct {
 	actions []*Action
 }
 
+// FlaggedIssue is a record indicating an issue which was flagged for removal
+// from a batch
+type FlaggedIssue struct {
+	Issue  *Issue
+	User   *User
+	When   time.Time
+	Reason string
+}
+
+func findFlaggedIssues(where string, args ...interface{}) ([]*FlaggedIssue, error) {
+	type _row struct {
+		IssueID         int
+		FlaggedByUserID int
+		Reason          string
+		CreatedAt       time.Time
+	}
+	var rows []*_row
+
+	var op = dbi.DB.Operation()
+	op.Dbg = dbi.Debug
+	op.Select("batches_flagged_issues", &_row{}).Where(where, args...).AllObjects(&rows)
+
+	var issues = make([]*FlaggedIssue, len(rows))
+	for i, row := range rows {
+		var issue, err = FindIssue(row.IssueID)
+		if err != nil {
+			return nil, fmt.Errorf("findFlaggedIssues(): error querying issue %d: %w", row.IssueID, err)
+		}
+		if issue == nil {
+			return nil, fmt.Errorf("findFlaggedIssues(): error querying issue %d: no issue found", row.IssueID)
+		}
+
+		var user = FindUserByID(row.FlaggedByUserID)
+		if user == EmptyUser {
+			return nil, fmt.Errorf("findFlaggedIssues(): unable to find user %d", row.FlaggedByUserID)
+		}
+
+		issues[i] = &FlaggedIssue{
+			Issue:  issue,
+			User:   user,
+			Reason: row.Reason,
+			When:   row.CreatedAt,
+		}
+	}
+
+	return issues, nil
+}
+
+// FindFlaggedIssue returns a flagged issue identified by the issue's batch id and id
+func FindFlaggedIssue(batchID, issueID int) (*FlaggedIssue, error) {
+	var list, err = findFlaggedIssues("batch_id = ? AND issue_id = ?", batchID, issueID)
+	if err != nil {
+		return nil, err
+	}
+	if len(list) == 0 {
+		return nil, nil
+	}
+	return list[0], err
+}
+
 // NewIssue creates an issue ready for saving to the issues table
 func NewIssue(moc, lccn, dt string, ed int) *Issue {
 	return &Issue{MARCOrgCode: moc, LCCN: lccn, Date: dt, Edition: ed, WorkflowStep: schema.WSAwaitingProcessing}
