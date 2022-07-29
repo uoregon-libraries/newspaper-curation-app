@@ -180,11 +180,14 @@ type RemoveFile struct {
 	*Job
 }
 
-// Valid is always true since filesystem jobs identify their errors nicely, and
-// FS problems that would cause real problems in Process will also be problems
-// here (e.g., trying to validate the existence of a directory on an NFS mount
-// that dropped)
+// Valid is always true as long as there is *any* location arg. We don't check
+// that it's a real file because Valid is a check to prevent panics, not to
+// ensure the operation will succeed.
 func (j *RemoveFile) Valid() bool {
+	if j.db.Args[locArg] == "" {
+		j.Logger.Errorf("RemoveFile job created with no location arg")
+		return false
+	}
 	return true
 }
 
@@ -194,11 +197,6 @@ func (j *RemoveFile) Process(*config.Config) bool {
 	var fname = j.db.Args[locArg]
 
 	j.Logger.Debugf("RemoveFile: attempting to remove %q", fname)
-
-	if fname == "" {
-		j.Logger.Errorf("RemoveFile job created with no location arg")
-		return false
-	}
 
 	var err = os.Remove(fname)
 	if err == nil {
