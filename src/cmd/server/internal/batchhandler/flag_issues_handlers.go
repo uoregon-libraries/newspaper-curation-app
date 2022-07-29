@@ -49,13 +49,14 @@ func prepFlagging(w http.ResponseWriter, req *http.Request) (r *Responder, ok bo
 	}
 
 	var err error
-	r.Vars.Data["FlaggedIssues"], err = r.batch.FlaggedIssues()
+	r.flaggedIssues, err = r.batch.FlaggedIssues()
 	if err != nil {
 		logger.Criticalf("Error reading flagged issues for batch %d (%s): %s", r.batch.ID, r.batch.Name, err)
 		r.Error(http.StatusInternalServerError, "Error trying to read batch's issues - try again or contact support")
 		return r, false
 	}
 
+	r.Vars.Data["FlaggedIssues"] = r.flaggedIssues
 	r.Vars.Title = "Rejecting batch " + r.batch.Name
 	return r, true
 }

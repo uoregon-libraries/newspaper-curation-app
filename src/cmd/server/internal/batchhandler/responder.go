@@ -17,6 +17,10 @@ type Responder struct {
 	*responder.Responder
 	batch *Batch
 	can   *CanValidation
+
+	// This is only set up for some handlers, but when we need it we don't want
+	// to have to re-pull from the database, check errors, etc.
+	flaggedIssues []*models.FlaggedIssue
 }
 
 // getBatchResponder centralizes the most common handler logic where we require
