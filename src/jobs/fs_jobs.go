@@ -200,9 +200,11 @@ func (j *RemoveFile) Process(*config.Config) bool {
 
 	var err = os.Remove(fname)
 	if err == nil {
+		j.Logger.Debugf("RemoveFile: successfully deleted %q", fname)
 		return true
 	}
 	if os.IsNotExist(err) {
+		j.Logger.Debugf("RemoveFile: %q was not present (success is implied)", fname)
 		return true
 	}
 
