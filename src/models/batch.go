@@ -325,6 +325,15 @@ func (b *Batch) AbortIssueFlagging() error {
 	return op.Err()
 }
 
+// EmptyFlaggedIssuesList clears issues flagged for removal from this batch
+func (b *Batch) EmptyFlaggedIssuesList() error {
+	var op = dbi.DB.Operation()
+	op.Dbg = dbi.Debug
+
+	op.Exec(`DELETE FROM batches_flagged_issues WHERE batch_id = ?`, b.ID)
+	return op.Err()
+}
+
 // Delete removes all issues from this batch and sets its status to "deleted".
 func (b *Batch) Delete() error {
 	var op = dbi.DB.Operation()

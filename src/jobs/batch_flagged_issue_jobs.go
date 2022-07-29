@@ -91,3 +91,20 @@ func (j *FinalizeBatchFlaggedIssue) Process(*config.Config) bool {
 	j.Logger.Debugf("Successfully finalized issue")
 	return true
 }
+
+// EmptyBatchFlaggedIssuesList is a simple job to clear the
+// batches_flagged_issues table of entries related to this job's batch
+type EmptyBatchFlaggedIssuesList struct {
+	*BatchJob
+}
+
+// Process just executes AbortIssueFlagging to clear the table
+func (j *EmptyBatchFlaggedIssuesList) Process(*config.Config) bool {
+	j.Logger.Debugf("Removing issues flagged for removal from batch %d (%s)", j.DBBatch.ID, j.DBBatch.Name)
+	var err = j.DBBatch.AbortIssueFlagging()
+	if err != nil {
+		j.Logger.Errorf("Database error clearing table: %s", err)
+		return false
+	}
+	return true
+}
