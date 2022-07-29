@@ -1,3 +1,8 @@
+// remove_errored_issue_jobs.go houses the jobs responsible for taking an issue
+// out of NCA entirely. WriteActionLog could be repurposed, and maybe should be
+// moved somewhere more generic, but the takeaway here is that for the most
+// part you don't use jobs here unless you mean to purge the issue from NCA.
+
 package jobs
 
 import (
