@@ -34,14 +34,15 @@ This process is awful and you need to know what you're doing, but here's the rou
   - e.g., `/mnt/news/outgoing/batch_foo_20180918BasaltVampireTramplingCrabgrass_ver01`
 - "Un-ignore" the issues, clear their batch id, and set their state
   "ReadyForRebatching" rather than the typical "ReadyForBatching". This is
-  important to avoid accidentally
-  putting these into new batches before you've fixed things.
+  important to avoid accidentally putting these into new batches before you've
+  fixed things.
   - e.g., `UPDATE issues SET batch_id = 0, ignored = 0, workflow_step = 'ReadyForRebatching' WHERE batch_id = ?`
   - This isn't scary because you made a database backup. Right?
 - Mark the batch 'deleted':
   - `UPDATE batches SET location = '' AND status = 'deleted' WHERE id = ?`
   - Still not scary.
-- Do whatever fixes you need to (in our case, altering the `marc_org_code` for a bunch of issues)
+- Do whatever fixes you need to (in our case, altering the `marc_org_code` for
+  a bunch of issues)
 - Create a new fixed-issue batch (or batches):
   - `/path/to/nca/bin/queue-batches -c /path/to/nca/settings --redo`
   - This will rebatch *all* issues at the `ReadyForRebatching` workflow step.

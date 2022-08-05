@@ -73,8 +73,8 @@ you just copied
 </li>
 <li>&ldquo;Un-ignore&rdquo; the issues, clear their batch id, and set their state
 &ldquo;ReadyForRebatching&rdquo; rather than the typical &ldquo;ReadyForBatching&rdquo;. This is
-important to avoid accidentally
-putting these into new batches before you&rsquo;ve fixed things.
+important to avoid accidentally putting these into new batches before you&rsquo;ve
+fixed things.
 <ul>
 <li>e.g., <code>UPDATE issues SET batch_id = 0, ignored = 0, workflow_step = 'ReadyForRebatching' WHERE batch_id = ?</code></li>
 <li>This isn&rsquo;t scary because you made a database backup. Right?</li>
@@ -86,7 +86,8 @@ putting these into new batches before you&rsquo;ve fixed things.
 <li>Still not scary.</li>
 </ul>
 </li>
-<li>Do whatever fixes you need to (in our case, altering the <code>marc_org_code</code> for a bunch of issues)</li>
+<li>Do whatever fixes you need to (in our case, altering the <code>marc_org_code</code> for
+a bunch of issues)</li>
 <li>Create a new fixed-issue batch (or batches):
 <ul>
 <li><code>/path/to/nca/bin/queue-batches -c /path/to/nca/settings --redo</code></li>
