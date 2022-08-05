@@ -30,7 +30,7 @@
 <meta itemprop="name" content="&#34;Un-push&#34; Batch From Production">
 <meta itemprop="description" content="Safely removing generated batches from production">
 
-<meta itemprop="wordCount" content="496">
+<meta itemprop="wordCount" content="576">
 <meta itemprop="keywords" content="" /></head>
 <body><div class="container"><header>
 <h1>Newspaper Curation App</h1><a href="https://github.com/uoregon-libraries/newspaper-curation-app/" class="github"><i class="fab fa-github"></i></a>
@@ -71,18 +71,40 @@ you just copied
 <li>e.g., <code>/mnt/news/outgoing/batch_foo_20180918BasaltVampireTramplingCrabgrass_ver01</code></li>
 </ul>
 </li>
-<li>&ldquo;Un-ignore&rdquo; the issues, but set their state &ldquo;ReadyForRebatching&rdquo; rather than
-the typical &ldquo;ReadyForBatching&rdquo;. This is important to avoid accidentally
+<li>&ldquo;Un-ignore&rdquo; the issues, clear their batch id, and set their state
+&ldquo;ReadyForRebatching&rdquo; rather than the typical &ldquo;ReadyForBatching&rdquo;. This is
+important to avoid accidentally
 putting these into new batches before you&rsquo;ve fixed things.
 <ul>
-<li>e.g., <code>UPDATE issues SET ignored=0, workflow_step = 'ReadyForRebatching' WHERE batch_id = ?</code></li>
+<li>e.g., <code>UPDATE issues SET batch_id = 0, ignored = 0, workflow_step = 'ReadyForRebatching' WHERE batch_id = ?</code></li>
+<li>This isn&rsquo;t scary because you made a database backup. Right?</li>
+</ul>
+</li>
+<li>Mark the batch &lsquo;deleted&rsquo;:
+<ul>
+<li><code>UPDATE batches SET location = '' AND status = 'deleted' WHERE id = ?</code></li>
+<li>Still not scary.</li>
 </ul>
 </li>
 <li>Do whatever fixes you need to (in our case, altering the <code>marc_org_code</code> for a bunch of issues)</li>
-<li>Purge the batch from staging <strong>and</strong> production.
+<li>Create a new fixed-issue batch (or batches):
+<ul>
+<li><code>/path/to/nca/bin/queue-batches -c /path/to/nca/settings --redo</code></li>
+<li>This will rebatch <em>all</em> issues at the <code>ReadyForRebatching</code> workflow step.
+If you only process one problem batch at a time, though, this shouldn&rsquo;t do
+anything but rebuild whatever was busted (meaning you may not need to re-QC
+it, or if you do, it&rsquo;s at least an isolated set of issues).</li>
+</ul>
+</li>
+<li>Purge the original batch from staging <strong>and</strong> production.
 <ul>
 <li>This seems scary, but at this point you still have the live batch, the
 archival files, <em>and</em> a database backup.</li>
+</ul>
+</li>
+<li>Make the new batch(es) live on staging and production.
+<ul>
+<li>See <a href="../../workflow/batch-manual-golive">batch manual go-live</a> docs</li>
 </ul>
 </li>
 <li><em>Delete</em> the batch from your live location.
@@ -92,25 +114,13 @@ docs, your live files are just a subset of the archived batch which you
 just copied into the &ldquo;ready for ingest&rdquo; location.</li>
 </ul>
 </li>
-<li>Mark the batch &lsquo;deleted&rsquo;:
+<li><strong>Delete your archived batch</strong>. This is the original batch you moved from the
+archive location early in this process.
 <ul>
-<li><code>UPDATE batches SET status = 'deleted' WHERE id = ?</code></li>
-<li>This isn&rsquo;t scary because you made a database backup. Right?</li>
-</ul>
-</li>
-<li>Remove batch-issue connection for affected issues:
-<ul>
-<li><code>UPDATE issues SET batch_id = 0 WHERE batch_id = ?</code></li>
-<li>Still not scary</li>
-</ul>
-</li>
-<li>Create a new fixed-issue batch (or batches):
-<ul>
-<li><code>/path/to/nca/bin/queue-batches -c /path/to/nca/settings --redo</code></li>
-<li>This will rebatch <em>all</em> issues at the <code>ReadyForRebatching</code> workflow step.
-If you only process one problem batch at a time, though, this shouldn&rsquo;t do
-anything but rebuild whatever was busted (meaning you may not need to re-QC
-it, or if you do, it&rsquo;s at least an isolated set of issues).</li>
+<li>This is kind of scary, but you should now have a new batch (or multiple
+batches) containing all the issues which were in the original batch. The
+files are all the same, the database still has metadata, and the old
+archive&rsquo;s only difference is whatever mistake you were rectifying.</li>
 </ul>
 </li>
 </ul>

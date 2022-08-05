@@ -32,27 +32,34 @@ This process is awful and you need to know what you're doing, but here's the rou
 - In the database, set the batch's `location` to the *full path* to the batch
   you just copied
   - e.g., `/mnt/news/outgoing/batch_foo_20180918BasaltVampireTramplingCrabgrass_ver01`
-- "Un-ignore" the issues, but set their state "ReadyForRebatching" rather than
-  the typical "ReadyForBatching". This is important to avoid accidentally
+- "Un-ignore" the issues, clear their batch id, and set their state
+  "ReadyForRebatching" rather than the typical "ReadyForBatching". This is
+  important to avoid accidentally
   putting these into new batches before you've fixed things.
-  - e.g., `UPDATE issues SET ignored=0, workflow_step = 'ReadyForRebatching' WHERE batch_id = ?`
-- Do whatever fixes you need to (in our case, altering the `marc_org_code` for a bunch of issues)
-- Purge the batch from staging **and** production.
-  - This seems scary, but at this point you still have the live batch, the
-    archival files, *and* a database backup.
-- *Delete* the batch from your live location.
-  - This seems scary, but if you're following the [manual go-live](/workflow/batch-manual-golive)
-    docs, your live files are just a subset of the archived batch which you
-    just copied into the "ready for ingest" location.
-- Mark the batch 'deleted':
-  - `UPDATE batches SET status = 'deleted' WHERE id = ?`
+  - e.g., `UPDATE issues SET batch_id = 0, ignored = 0, workflow_step = 'ReadyForRebatching' WHERE batch_id = ?`
   - This isn't scary because you made a database backup. Right?
-- Remove batch-issue connection for affected issues:
-  - `UPDATE issues SET batch_id = 0 WHERE batch_id = ?`
-  - Still not scary
+- Mark the batch 'deleted':
+  - `UPDATE batches SET location = '' AND status = 'deleted' WHERE id = ?`
+  - Still not scary.
+- Do whatever fixes you need to (in our case, altering the `marc_org_code` for a bunch of issues)
 - Create a new fixed-issue batch (or batches):
   - `/path/to/nca/bin/queue-batches -c /path/to/nca/settings --redo`
   - This will rebatch *all* issues at the `ReadyForRebatching` workflow step.
     If you only process one problem batch at a time, though, this shouldn't do
     anything but rebuild whatever was busted (meaning you may not need to re-QC
     it, or if you do, it's at least an isolated set of issues).
+- Purge the original batch from staging **and** production.
+  - This seems scary, but at this point you still have the live batch, the
+    archival files, *and* a database backup.
+- Make the new batch(es) live on staging and production.
+  - See [batch manual go-live](/workflow/batch-manual-golive) docs
+- *Delete* the batch from your live location.
+  - This seems scary, but if you're following the [manual go-live](/workflow/batch-manual-golive)
+    docs, your live files are just a subset of the archived batch which you
+    just copied into the "ready for ingest" location.
+- **Delete your archived batch**. This is the original batch you moved from the
+  archive location early in this process.
+  - This is kind of scary, but you should now have a new batch (or multiple
+    batches) containing all the issues which were in the original batch. The
+    files are all the same, the database still has metadata, and the old
+    archive's only difference is whatever mistake you were rectifying.
