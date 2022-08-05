@@ -3,11 +3,11 @@
 <head><meta charset="utf-8">
 <meta http-equiv="X-UA-Compatible" content="IE=edge">
 <meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1, user-scalable=no">
-<title>Fixing &#34;Stuck&#34; Issues - Newspaper Curation App</title>
-<meta name="description" content="Removing issues from NCA which can&#39;t get derivatives generated or have other issues leaving them stuck but invisible to the UI">
+<title>&#34;Un-push&#34; Batch From Production - Newspaper Curation App</title>
+<meta name="description" content="Safely removing generated batches from production">
 <meta name="generator" content="Hugo 0.85.0" />
 <link href="https://uoregon-libraries.github.io/newspaper-curation-app//index.xml" rel="alternate" type="application/rss+xml">
-<link rel="canonical" href="https://uoregon-libraries.github.io/newspaper-curation-app/workflow/fixing-stuck-issues/">
+<link rel="canonical" href="https://uoregon-libraries.github.io/newspaper-curation-app/workflow/undo-batch-golive/">
 <link rel="stylesheet" href="https://uoregon-libraries.github.io/newspaper-curation-app/css/theme.min.css">
 <script src="https://use.fontawesome.com/releases/v5.0.6/js/all.js"></script>
 <link rel="stylesheet" href="https://uoregon-libraries.github.io/newspaper-curation-app/css/chroma.min.css">
@@ -17,77 +17,107 @@
 <script src="https://uoregon-libraries.github.io/newspaper-curation-app/js/bundle.js"></script><style>
 :root {}
 </style>
-<meta property="og:title" content="Fixing &#34;Stuck&#34; Issues" />
-<meta property="og:description" content="Removing issues from NCA which can&#39;t get derivatives generated or have other issues leaving them stuck but invisible to the UI" />
+<meta property="og:title" content="&#34;Un-push&#34; Batch From Production" />
+<meta property="og:description" content="Safely removing generated batches from production" />
 <meta property="og:type" content="article" />
-<meta property="og:url" content="https://uoregon-libraries.github.io/newspaper-curation-app/workflow/fixing-stuck-issues/" /><meta property="article:section" content="workflow" />
+<meta property="og:url" content="https://uoregon-libraries.github.io/newspaper-curation-app/workflow/undo-batch-golive/" /><meta property="article:section" content="workflow" />
 
 
 
 <meta name="twitter:card" content="summary"/>
-<meta name="twitter:title" content="Fixing &#34;Stuck&#34; Issues"/>
-<meta name="twitter:description" content="Removing issues from NCA which can&#39;t get derivatives generated or have other issues leaving them stuck but invisible to the UI"/>
-<meta itemprop="name" content="Fixing &#34;Stuck&#34; Issues">
-<meta itemprop="description" content="Removing issues from NCA which can&#39;t get derivatives generated or have other issues leaving them stuck but invisible to the UI">
+<meta name="twitter:title" content="&#34;Un-push&#34; Batch From Production"/>
+<meta name="twitter:description" content="Safely removing generated batches from production"/>
+<meta itemprop="name" content="&#34;Un-push&#34; Batch From Production">
+<meta itemprop="description" content="Safely removing generated batches from production">
 
-<meta itemprop="wordCount" content="439">
+<meta itemprop="wordCount" content="496">
 <meta itemprop="keywords" content="" /></head>
 <body><div class="container"><header>
 <h1>Newspaper Curation App</h1><a href="https://github.com/uoregon-libraries/newspaper-curation-app/" class="github"><i class="fab fa-github"></i></a>
 </header>
 
 <div class="content-container">
-<main><h1>Fixing &#34;Stuck&#34; Issues</h1>
-<p>Sometimes a publisher will upload a broken PDF that NCA cannot process.  There
-is a safeguard against these kinds of issues: only queue uploaded issues after
-careful review.  But it&rsquo;s often infeasible to do this, especially if you have
-enough publishers that you get hundreds of pages uploaded each week.</p>
-<p>When an issue gets stuck, NCA currently has no way to indicate this.  This is
-one area where a developer used to have to clean up the filesystem and database
-manually.  As of NCA v3.8.0, there is a tool which can handle this in a
-significantly less painful way.</p>
-<h2 id="purging-dead-issues">Purging Dead Issues</h2>
-<p>A normal invocation of <code>make</code> creates <code>bin/purge-dead-issues</code>.  This is a
-destructive operation, and you will need to be prepared prior to running it so
-that you can decide how best to handle the broken issues.  Please read this
-document fully!</p>
-<p>When run, <code>purge-dead-issues</code> will do a lot of logging to STDERR, print out a
-&ldquo;report&rdquo; of which issues were purged, and write a <code>purge.json</code> file describing
-each purged issue in some detail.</p>
-<p>By default, <code>purge-dead-issues</code> will not actually make any changes.  It scans
-the database and reports the issues which would be purged, but it doesn&rsquo;t
-actually purge them.  Because the process is exactly the same as a live run,
-this allows you to carefully review what will happen without anything
-destructive occurring.</p>
-<p>When you&rsquo;re ready, run the command with the <code>--live</code> flag.</p>
-<h2 id="technical-details">Technical Details</h2>
-<p>Under the hood, this command does the following:</p>
+<main><h1>&#34;Un-push&#34; Batch From Production</h1>
+<p>Sometimes a batch is messed up enough that it needs to be completely removed,
+rebuilt, and reingested, but it&rsquo;s already in production. In the (rare) cases
+this happens <em>and</em> we haven&rsquo;t already archived all the original files, we can
+un-push the batch and requeue the necessary issues.</p>
+<p>This procedure helps &ldquo;un-push&rdquo; batches, but only when all of the following are true:</p>
 <ul>
-<li>Finds all issues that are valid candidates for purging.  To be valid, an issue:
+<li>The batch was created by NCA, not a vendor. There&rsquo;s currently no procedure
+for reading a non-NCA batch and putting its issues in the database.</li>
+<li>The batch is live, but hasn&rsquo;t been fully archived yet
 <ul>
-<li>Is in the &ldquo;awaiting processing&rdquo; state</li>
-<li>Has at least one failed job - as in &ldquo;failed&rdquo;, which means failed forever,
-not <code>failed_done</code>, which indicates a temporary failure which was retried.</li>
-<li>Is not tied to a batch</li>
-<li>Has no jobs that are pending or in process</li>
+<li>In theory you could still do this after archival, but the work gets a lot
+more involved and isn&rsquo;t in scope here.</li>
 </ul>
 </li>
-<li>Ends all jobs that were stuck - this means failed jobs as well as any &ldquo;on
-hold&rdquo; jobs that had been waiting for a failed jobs to finish</li>
-<li>Creates a new job to purge the issue.  This uses the same logic as issues
-that are flagged as having errors and removed from NCA.</li>
+<li>All issues are still in NCA&rsquo;s database and their files are still in the NCA
+&ldquo;workflow&rdquo; location on disk (this is usually true until archival).</li>
 </ul>
-<p>All operations are just database changes, and as such a transaction is able to
-wrap the entire command.  A single critical failure of any kind prevents any
-changes from being made, ensuring a pretty safe run.</p>
-<p>In fact, when <code>--live</code> is not specified, the transaction is rolled back right
-before the code would normally commit it.  This is why the command is able to
-give a complete report as if everything had been run without altering the
-application&rsquo;s state in any way.</p>
+<p>This process is awful and you need to know what you&rsquo;re doing, but here&rsquo;s the rough outline:</p>
+<ul>
+<li>If at all possible, turn off NCA&rsquo;s services (workers and http). If you can&rsquo;t
+do this, things could get messy if you have a problem and have to rollback
+database or filesystem changes.</li>
+<li><strong>Back up your database!</strong> The filesystem may be too much to back up, so it
+can be a pain if you need to fix something, but it&rsquo;s still really helpful to
+at least have a &ldquo;good DB state&rdquo;.</li>
+<li>Move your batch to the the &ldquo;ready for ingest&rdquo; location (e.g.,
+<code>/mnt/news/outoging</code>) from wherever it goes to be archived</li>
+<li>In the database, set the batch&rsquo;s <code>location</code> to the <em>full path</em> to the batch
+you just copied
+<ul>
+<li>e.g., <code>/mnt/news/outgoing/batch_foo_20180918BasaltVampireTramplingCrabgrass_ver01</code></li>
+</ul>
+</li>
+<li>&ldquo;Un-ignore&rdquo; the issues, but set their state &ldquo;ReadyForRebatching&rdquo; rather than
+the typical &ldquo;ReadyForBatching&rdquo;. This is important to avoid accidentally
+putting these into new batches before you&rsquo;ve fixed things.
+<ul>
+<li>e.g., <code>UPDATE issues SET ignored=0, workflow_step = 'ReadyForRebatching' WHERE batch_id = ?</code></li>
+</ul>
+</li>
+<li>Do whatever fixes you need to (in our case, altering the <code>marc_org_code</code> for a bunch of issues)</li>
+<li>Purge the batch from staging <strong>and</strong> production.
+<ul>
+<li>This seems scary, but at this point you still have the live batch, the
+archival files, <em>and</em> a database backup.</li>
+</ul>
+</li>
+<li><em>Delete</em> the batch from your live location.
+<ul>
+<li>This seems scary, but if you&rsquo;re following the <a href="../../workflow/batch-manual-golive">manual go-live</a>
+docs, your live files are just a subset of the archived batch which you
+just copied into the &ldquo;ready for ingest&rdquo; location.</li>
+</ul>
+</li>
+<li>Mark the batch &lsquo;deleted&rsquo;:
+<ul>
+<li><code>UPDATE batches SET status = 'deleted' WHERE id = ?</code></li>
+<li>This isn&rsquo;t scary because you made a database backup. Right?</li>
+</ul>
+</li>
+<li>Remove batch-issue connection for affected issues:
+<ul>
+<li><code>UPDATE issues SET batch_id = 0 WHERE batch_id = ?</code></li>
+<li>Still not scary</li>
+</ul>
+</li>
+<li>Create a new fixed-issue batch (or batches):
+<ul>
+<li><code>/path/to/nca/bin/queue-batches -c /path/to/nca/settings --redo</code></li>
+<li>This will rebatch <em>all</em> issues at the <code>ReadyForRebatching</code> workflow step.
+If you only process one problem batch at a time, though, this shouldn&rsquo;t do
+anything but rebuild whatever was busted (meaning you may not need to re-QC
+it, or if you do, it&rsquo;s at least an isolated set of issues).</li>
+</ul>
+</li>
+</ul>
 <div class="edit-meta">
 
-<br></div><nav class="pagination"><a class="nav nav-prev" href="https://uoregon-libraries.github.io/newspaper-curation-app/workflow/handling-page-review-problems/" title="Handling Page Review Problems"><i class="fas fa-arrow-left" aria-hidden="true"></i>&nbsp;Prev - Handling Page Review Problems</a>
-<a class="nav nav-next" href="https://uoregon-libraries.github.io/newspaper-curation-app/workflow/fixing-flagged-workflow-issues/" title="Fixing Flagged Workflow Issues">Next - Fixing Flagged Workflow Issues <i class="fas fa-arrow-right" aria-hidden="true"></i></a>
+<br></div><nav class="pagination"><a class="nav nav-prev" href="https://uoregon-libraries.github.io/newspaper-curation-app/workflow/batch-manual-golive/" title="Batch Manual Go-live Procedure"><i class="fas fa-arrow-left" aria-hidden="true"></i>&nbsp;Prev - Batch Manual Go-live Procedure</a>
+<a class="nav nav-next" href="https://uoregon-libraries.github.io/newspaper-curation-app/contributing/" title="Contributing">Next - Contributing <i class="fas fa-arrow-right" aria-hidden="true"></i></a>
 </nav><footer><p class="powered">Powered by <a href="https://gohugo.io">Hugo</a>. Theme by <a href="https://themes.gohugo.io/hugo-theme-techdoc/">TechDoc</a>. Designed by <a href="https://github.com/thingsym/hugo-theme-techdoc">Thingsym</a>.</p>
 </footer>
 </main>
@@ -124,12 +154,12 @@ application&rsquo;s state in any way.</p>
 <li class=""><a href="https://uoregon-libraries.github.io/newspaper-curation-app/workflow/technical/">Technical Details</a></li>
 <li class=""><a href="https://uoregon-libraries.github.io/newspaper-curation-app/workflow/adding-titles/">Adding Titles</a></li>
 <li class=""><a href="https://uoregon-libraries.github.io/newspaper-curation-app/workflow/handling-page-review-problems/">Handling Page Review Problems</a></li>
-<li class="active"><a href="https://uoregon-libraries.github.io/newspaper-curation-app/workflow/fixing-stuck-issues/">Fixing &#34;Stuck&#34; Issues</a></li>
+<li class=""><a href="https://uoregon-libraries.github.io/newspaper-curation-app/workflow/fixing-stuck-issues/">Fixing &#34;Stuck&#34; Issues</a></li>
 <li class=""><a href="https://uoregon-libraries.github.io/newspaper-curation-app/workflow/fixing-flagged-workflow-issues/">Fixing Flagged Workflow Issues</a></li>
 <li class=""><a href="https://uoregon-libraries.github.io/newspaper-curation-app/workflow/fixing-batches/">Fixing Batches</a></li>
 <li class=""><a href="https://uoregon-libraries.github.io/newspaper-curation-app/workflow/fixing-live-batches/">Replacing Live Issues</a></li>
 <li class=""><a href="https://uoregon-libraries.github.io/newspaper-curation-app/workflow/batch-manual-golive/">Batch Manual Go-live Procedure</a></li>
-<li class=""><a href="https://uoregon-libraries.github.io/newspaper-curation-app/workflow/undo-batch-golive/">&#34;Un-push&#34; Batch From Production</a></li>
+<li class="active"><a href="https://uoregon-libraries.github.io/newspaper-curation-app/workflow/undo-batch-golive/">&#34;Un-push&#34; Batch From Production</a></li>
 </ul>
   
 </li>

@@ -216,5 +216,16 @@ To run: go run scripts/help-remove-issues.go &amp;lt;lccn&amp;gt; &amp;lt;issue 
 # $src is something like: # /mnt/news/outgoing/batch_foo_20180918BasaltVampireTramplingCrabgrass_ver01 # $dest_batch is something like: # /mnt/production/batch_foo_20180918BasaltVampireTramplingCrabgrass_ver01 rsync -av flags --delete \  --exclude=&amp;#34;*.tif&amp;#34; --exclude=&amp;#34;*.tiff&amp;#34; --exclude=&amp;#34;*.TIF&amp;#34; --exclude=&amp;#34;*.TIFF&amp;#34; \  --exclude=&amp;#34;*.</description>
     </item>
     
+    <item>
+      <title>&#34;Un-push&#34; Batch From Production</title>
+      <link>https://uoregon-libraries.github.io/newspaper-curation-app/workflow/undo-batch-golive/</link>
+      <pubDate>Mon, 01 Jan 0001 00:00:00 +0000</pubDate>
+      
+      <guid>https://uoregon-libraries.github.io/newspaper-curation-app/workflow/undo-batch-golive/</guid>
+      <description>Sometimes a batch is messed up enough that it needs to be completely removed, rebuilt, and reingested, but it&amp;rsquo;s already in production. In the (rare) cases this happens and we haven&amp;rsquo;t already archived all the original files, we can un-push the batch and requeue the necessary issues.
+This procedure helps &amp;ldquo;un-push&amp;rdquo; batches, but only when all of the following are true:
+ The batch was created by NCA, not a vendor.</description>
+    </item>
+    
   </channel>
 </rss>
