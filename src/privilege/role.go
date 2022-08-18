@@ -42,7 +42,7 @@ var (
 	RoleWorkflowManager = newRole("workflow manager", "Can queue SFTP and scanned issues for processing")
 	RoleBatchReviewer   = newRole("batch reviewer",
 		"Can view, reject, and approve batches which NCA has built but which are not yet in production.")
-	RoleBatchManager = newRole("batch manager", "Can manage all aspects of a batch's life cycle.")
+	RoleBatchLoader = newRole("batch loader", "Can load and purge batches on staging and production. This role states the user has these abilities, but in NCA this really just means they can view and flag batches as being loaded / ready for QC.")
 )
 
 // roles is our internal map of string to Role object
