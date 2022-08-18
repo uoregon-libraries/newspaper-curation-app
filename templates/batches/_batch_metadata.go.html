@@ -25,8 +25,6 @@
 {{define "batch-metadata-links"}}
 <ul>
   <li><a href="{{ViewURL .}}">NCA Batch View Permalink</a></li>
-  <li><a href="">Issue List</a> (TODO)</li>
-  <li><a href="">Calendar</a> (TODO)</li>
   {{if .StatusMeta.Staging}}<li><a href="{{StagingBatchURL .}}">Staging</a></li>{{end}}
   {{if .StatusMeta.Live}}<li><a href="{{ProdBatchURL .}}">Production</a></li>{{end}}
 </ul>
