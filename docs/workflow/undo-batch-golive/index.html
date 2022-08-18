@@ -1,0 +1,217 @@
+<!DOCTYPE html>
+<html lang="en-us">
+<head><meta charset="utf-8">
+<meta http-equiv="X-UA-Compatible" content="IE=edge">
+<meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1, user-scalable=no">
+<title>&#34;Un-push&#34; Batch From Production - Newspaper Curation App</title>
+<meta name="description" content="Safely removing generated batches from production">
+<meta name="generator" content="Hugo 0.85.0" />
+<link href="https://uoregon-libraries.github.io/newspaper-curation-app//index.xml" rel="alternate" type="application/rss+xml">
+<link rel="canonical" href="https://uoregon-libraries.github.io/newspaper-curation-app/workflow/undo-batch-golive/">
+<link rel="stylesheet" href="https://uoregon-libraries.github.io/newspaper-curation-app/css/theme.min.css">
+<script src="https://use.fontawesome.com/releases/v5.0.6/js/all.js"></script>
+<link rel="stylesheet" href="https://uoregon-libraries.github.io/newspaper-curation-app/css/chroma.min.css">
+<script src="https://cdn.jsdelivr.net/npm/jquery@3.4.1/dist/jquery.min.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/jquery.easing@1.4.1/jquery.easing.min.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/clipboard@2.0.6/dist/clipboard.min.js"></script>
+<script src="https://uoregon-libraries.github.io/newspaper-curation-app/js/bundle.js"></script><style>
+:root {}
+</style>
+<meta property="og:title" content="&#34;Un-push&#34; Batch From Production" />
+<meta property="og:description" content="Safely removing generated batches from production" />
+<meta property="og:type" content="article" />
+<meta property="og:url" content="https://uoregon-libraries.github.io/newspaper-curation-app/workflow/undo-batch-golive/" /><meta property="article:section" content="workflow" />
+
+
+
+<meta name="twitter:card" content="summary"/>
+<meta name="twitter:title" content="&#34;Un-push&#34; Batch From Production"/>
+<meta name="twitter:description" content="Safely removing generated batches from production"/>
+<meta itemprop="name" content="&#34;Un-push&#34; Batch From Production">
+<meta itemprop="description" content="Safely removing generated batches from production">
+
+<meta itemprop="wordCount" content="576">
+<meta itemprop="keywords" content="" /></head>
+<body><div class="container"><header>
+<h1>Newspaper Curation App</h1><a href="https://github.com/uoregon-libraries/newspaper-curation-app/" class="github"><i class="fab fa-github"></i></a>
+</header>
+
+<div class="content-container">
+<main><h1>&#34;Un-push&#34; Batch From Production</h1>
+<p>Sometimes a batch is messed up enough that it needs to be completely removed,
+rebuilt, and reingested, but it&rsquo;s already in production. In the (rare) cases
+this happens <em>and</em> we haven&rsquo;t already archived all the original files, we can
+un-push the batch and requeue the necessary issues.</p>
+<p>This procedure helps &ldquo;un-push&rdquo; batches, but only when all of the following are true:</p>
+<ul>
+<li>The batch was created by NCA, not a vendor. There&rsquo;s currently no procedure
+for reading a non-NCA batch and putting its issues in the database.</li>
+<li>The batch is live, but hasn&rsquo;t been fully archived yet
+<ul>
+<li>In theory you could still do this after archival, but the work gets a lot
+more involved and isn&rsquo;t in scope here.</li>
+</ul>
+</li>
+<li>All issues are still in NCA&rsquo;s database and their files are still in the NCA
+&ldquo;workflow&rdquo; location on disk (this is usually true until archival).</li>
+</ul>
+<p>This process is awful and you need to know what you&rsquo;re doing, but here&rsquo;s the rough outline:</p>
+<ul>
+<li>If at all possible, turn off NCA&rsquo;s services (workers and http). If you can&rsquo;t
+do this, things could get messy if you have a problem and have to rollback
+database or filesystem changes.</li>
+<li><strong>Back up your database!</strong> The filesystem may be too much to back up, so it
+can be a pain if you need to fix something, but it&rsquo;s still really helpful to
+at least have a &ldquo;good DB state&rdquo;.</li>
+<li>Move your batch to the the &ldquo;ready for ingest&rdquo; location (e.g.,
+<code>/mnt/news/outoging</code>) from wherever it goes to be archived</li>
+<li>In the database, set the batch&rsquo;s <code>location</code> to the <em>full path</em> to the batch
+you just copied
+<ul>
+<li>e.g., <code>/mnt/news/outgoing/batch_foo_20180918BasaltVampireTramplingCrabgrass_ver01</code></li>
+</ul>
+</li>
+<li>&ldquo;Un-ignore&rdquo; the issues, clear their batch id, and set their state
+&ldquo;ReadyForRebatching&rdquo; rather than the typical &ldquo;ReadyForBatching&rdquo;. This is
+important to avoid accidentally putting these into new batches before you&rsquo;ve
+fixed things.
+<ul>
+<li>e.g., <code>UPDATE issues SET batch_id = 0, ignored = 0, workflow_step = 'ReadyForRebatching' WHERE batch_id = ?</code></li>
+<li>This isn&rsquo;t scary because you made a database backup. Right?</li>
+</ul>
+</li>
+<li>Mark the batch &lsquo;deleted&rsquo;:
+<ul>
+<li><code>UPDATE batches SET location = '' AND status = 'deleted' WHERE id = ?</code></li>
+<li>Still not scary.</li>
+</ul>
+</li>
+<li>Do whatever fixes you need to (in our case, altering the <code>marc_org_code</code> for
+a bunch of issues)</li>
+<li>Create a new fixed-issue batch (or batches):
+<ul>
+<li><code>/path/to/nca/bin/queue-batches -c /path/to/nca/settings --redo</code></li>
+<li>This will rebatch <em>all</em> issues at the <code>ReadyForRebatching</code> workflow step.
+If you only process one problem batch at a time, though, this shouldn&rsquo;t do
+anything but rebuild whatever was busted (meaning you may not need to re-QC
+it, or if you do, it&rsquo;s at least an isolated set of issues).</li>
+</ul>
+</li>
+<li>Purge the original batch from staging <strong>and</strong> production.
+<ul>
+<li>This seems scary, but at this point you still have the live batch, the
+archival files, <em>and</em> a database backup.</li>
+</ul>
+</li>
+<li>Make the new batch(es) live on staging and production.
+<ul>
+<li>See <a href="../../workflow/batch-manual-golive">batch manual go-live</a> docs</li>
+</ul>
+</li>
+<li><em>Delete</em> the batch from your live location.
+<ul>
+<li>This seems scary, but if you&rsquo;re following the <a href="../../workflow/batch-manual-golive">manual go-live</a>
+docs, your live files are just a subset of the archived batch which you
+just copied into the &ldquo;ready for ingest&rdquo; location.</li>
+</ul>
+</li>
+<li><strong>Delete your archived batch</strong>. This is the original batch you moved from the
+archive location early in this process.
+<ul>
+<li>This is kind of scary, but you should now have a new batch (or multiple
+batches) containing all the issues which were in the original batch. The
+files are all the same, the database still has metadata, and the old
+archive&rsquo;s only difference is whatever mistake you were rectifying.</li>
+</ul>
+</li>
+</ul>
+<div class="edit-meta">
+
+<br></div><nav class="pagination"><a class="nav nav-prev" href="https://uoregon-libraries.github.io/newspaper-curation-app/workflow/batch-manual-golive/" title="Batch Manual Go-live Procedure"><i class="fas fa-arrow-left" aria-hidden="true"></i>&nbsp;Prev - Batch Manual Go-live Procedure</a>
+<a class="nav nav-next" href="https://uoregon-libraries.github.io/newspaper-curation-app/contributing/" title="Contributing">Next - Contributing <i class="fas fa-arrow-right" aria-hidden="true"></i></a>
+</nav><footer><p class="powered">Powered by <a href="https://gohugo.io">Hugo</a>. Theme by <a href="https://themes.gohugo.io/hugo-theme-techdoc/">TechDoc</a>. Designed by <a href="https://github.com/thingsym/hugo-theme-techdoc">Thingsym</a>.</p>
+</footer>
+</main>
+<div class="sidebar">
+
+<nav class="open-menu">
+<ul>
+<li class=""><a href="https://uoregon-libraries.github.io/newspaper-curation-app/">Home</a></li>
+
+<li class=""><a href="https://uoregon-libraries.github.io/newspaper-curation-app/setup/">Setup and Installation</a>
+  
+<ul class="sub-menu">
+<li class=""><a href="https://uoregon-libraries.github.io/newspaper-curation-app/setup/services/">Services and Apps</a></li>
+<li class=""><a href="https://uoregon-libraries.github.io/newspaper-curation-app/setup/server-setup/">Server Setup</a></li>
+<li class=""><a href="https://uoregon-libraries.github.io/newspaper-curation-app/setup/installation/">Installation</a></li>
+<li class=""><a href="https://uoregon-libraries.github.io/newspaper-curation-app/setup/user-setup/">Users</a></li>
+<li class=""><a href="https://uoregon-libraries.github.io/newspaper-curation-app/setup/creating-publishers/">Onboarding A Publisher</a></li>
+</ul>
+  
+</li>
+
+<li class=""><a href="https://uoregon-libraries.github.io/newspaper-curation-app/specs/">NCA Terms, Specs, and Information</a>
+  
+<ul class="sub-menu">
+<li class=""><a href="https://uoregon-libraries.github.io/newspaper-curation-app/specs/glossary/">Glossary</a></li>
+<li class=""><a href="https://uoregon-libraries.github.io/newspaper-curation-app/specs/upload-specs/">Uploads: Folder and File Specs</a></li>
+</ul>
+  
+</li>
+
+<li class="parent"><a href="https://uoregon-libraries.github.io/newspaper-curation-app/workflow/">Workflow</a>
+  
+<ul class="sub-menu">
+<li class=""><a href="https://uoregon-libraries.github.io/newspaper-curation-app/workflow/technical/">Technical Details</a></li>
+<li class=""><a href="https://uoregon-libraries.github.io/newspaper-curation-app/workflow/adding-titles/">Adding Titles</a></li>
+<li class=""><a href="https://uoregon-libraries.github.io/newspaper-curation-app/workflow/handling-page-review-problems/">Handling Page Review Problems</a></li>
+<li class=""><a href="https://uoregon-libraries.github.io/newspaper-curation-app/workflow/fixing-stuck-issues/">Fixing &#34;Stuck&#34; Issues</a></li>
+<li class=""><a href="https://uoregon-libraries.github.io/newspaper-curation-app/workflow/fixing-flagged-workflow-issues/">Fixing Flagged Workflow Issues</a></li>
+<li class=""><a href="https://uoregon-libraries.github.io/newspaper-curation-app/workflow/fixing-batches/">Fixing Batches</a></li>
+<li class=""><a href="https://uoregon-libraries.github.io/newspaper-curation-app/workflow/fixing-live-batches/">Replacing Live Issues</a></li>
+<li class=""><a href="https://uoregon-libraries.github.io/newspaper-curation-app/workflow/batch-manual-golive/">Batch Manual Go-live Procedure</a></li>
+<li class="active"><a href="https://uoregon-libraries.github.io/newspaper-curation-app/workflow/undo-batch-golive/">&#34;Un-push&#34; Batch From Production</a></li>
+</ul>
+  
+</li>
+
+<li class=""><a href="https://uoregon-libraries.github.io/newspaper-curation-app/contributing/">Contributing</a>
+  
+<ul class="sub-menu">
+<li class=""><a href="https://uoregon-libraries.github.io/newspaper-curation-app/contributing/dev-guide/">Developer&#39;s Guide</a></li>
+<li class=""><a href="https://uoregon-libraries.github.io/newspaper-curation-app/contributing/not-compiling-locally/">Not Compiling Locally</a></li>
+<li class=""><a href="https://uoregon-libraries.github.io/newspaper-curation-app/contributing/documentation/">Contributing to Documentation</a></li>
+<li class=""><a href="https://uoregon-libraries.github.io/newspaper-curation-app/contributing/testing/">Testing</a></li>
+
+<li class=""><a href="https://uoregon-libraries.github.io/newspaper-curation-app/contributing/dev-howto/">How do I...?</a>
+  
+<ul class="sub-menu">
+<li class=""><a href="https://uoregon-libraries.github.io/newspaper-curation-app/contributing/dev-howto/add-job-types/">Add Job Types</a></li>
+</ul>
+  
+</li>
+</ul>
+  
+</li>
+</ul>
+</nav>
+
+
+
+<div class="sidebar-footer"></div>
+</div>
+
+</div><a href="#" id="backtothetop-fixed" class="backtothetop"
+ data-backtothetop-duration="600"
+ data-backtothetop-easing="easeOutQuart"
+ data-backtothetop-fixed-fadeIn="1000"
+ data-backtothetop-fixed-fadeOut="1000"
+ data-backtothetop-fixed-bottom="10"
+ data-backtothetop-fixed-right="20">
+<span class="fa-layers fa-fw">
+<i class="fas fa-circle"></i>
+<i class="fas fa-arrow-circle-up"></i>
+</span></a>
+</div>
+</body>
+</html>

@@ -95,13 +95,21 @@ func newBatchQueue(minPages, maxPages int) *batchQueue {
 
 // FindReadyIssues looks at all issues in the database which are able to be
 // batched and adds them to internal queues per MARC Org Code.  Some basic
-// metadata validation takes place here as well.
+// metadata validation takes place here as well. If redo is true, only issues
+// in the "ready for rebatching" state will be considered; otherwise only
+// issues in the "ready for batching" state are examined.
 //
 // TODO: Ensure files haven't changed (add sha checksums when issues first move
 // to the metadata entry phase; store file-level info in the database so we
 // have an easy checksum that's 100% separate from the filesystem)
-func (q *batchQueue) FindReadyIssues() {
-	var issues, err = models.Issues().InWorkflowStep(schema.WSReadyForBatching).BatchID(0).Fetch()
+func (q *batchQueue) FindReadyIssues(redo bool) {
+	var ws schema.WorkflowStep
+	if redo {
+		ws = schema.WSReadyForRebatching
+	} else {
+		ws = schema.WSReadyForBatching
+	}
+	var issues, err = models.Issues().InWorkflowStep(ws).BatchID(0).Fetch()
 	if err != nil {
 		logger.Fatalf("Error trying to find issues: %s", err)
 	}

@@ -12,6 +12,7 @@ import (
 // Command-line options
 type _opts struct {
 	cli.BaseOptions
+	Redo bool `long:"redo" description:"only queue issues needing a re-batch"`
 }
 
 var opts _opts
@@ -23,6 +24,11 @@ func getOpts() *config.Config {
 		"issues in the database which are flagged as ready for batching.  See " +
 		"the MAX_BATCH_SIZE and MIN_BATCH_SIZE settings to control how many " +
 		"pages a batch may contain.")
+	c.AppendUsage(`If --redo is specified, issues must be in a special "ready for ` +
+		`rebatching" state in order to be queued. This is not a state NCA sets ` +
+		`normally, and is only needed when there are manual fixes that require ` +
+		`hacking the database. In other words, if you don't know what this means, ` +
+		`you don't need it.`)
 	var conf = c.GetConf()
 	var err = dbi.Connect(conf.DatabaseConnect)
 	if err != nil {
@@ -44,7 +50,7 @@ func main() {
 	logger.Infof("Scanning ready issues for batchability")
 
 	var q = newBatchQueue(conf.MinBatchSize, conf.MaxBatchSize)
-	q.FindReadyIssues()
+	q.FindReadyIssues(opts.Redo)
 	for {
 		var batch, ok = q.NextBatch()
 		if !ok {

@@ -38,6 +38,7 @@ const (
 	WSUnfixableMetadataError              = "UnfixableMetadataError"
 	WSReadyForMETSXML                     = "ReadyForMETSXML"
 	WSReadyForBatching                    = "ReadyForBatching"
+	WSReadyForRebatching                  = "ReadyForRebatching"
 	WSInProduction                        = "InProduction"
 )
 
@@ -421,6 +422,9 @@ func (ws WorkflowStep) Text() string {
 	case WSReadyForBatching:
 		return "an issue waiting to be batched"
 
+	case WSReadyForRebatching:
+		return "an issue waiting to be rebatched"
+
 	case WSInProduction:
 		return "a live issue"
 
@@ -466,6 +470,10 @@ var stepOrder = map[WorkflowStep]int{
 	// here anyway, so these are considered equal
 	WSReadyForMETSXML:  60,
 	WSReadyForBatching: 60,
+
+	// If something is awaiting rebatching, that means it used to be live - it's
+	// closer to "real" than anything else
+	WSReadyForRebatching: 70,
 
 	// Let's just make sure in-production always comes after everything else,
 	// even the unknown awaiting-processing issues

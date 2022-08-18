@@ -131,6 +131,9 @@ func (i *Issue) TaskDescription() string {
 	case schema.WSReadyForBatching:
 		return "Ready to be built in a batch and loaded"
 
+	case schema.WSReadyForRebatching:
+		return "Was previously live; ready to be rebuilt in a batch and loaded"
+
 	default:
 		logger.Criticalf("Invalid workflow step for issue %d: %q", i.ID, i.WorkflowStepString)
 		return "UNKNOWN!"
