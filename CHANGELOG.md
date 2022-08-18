@@ -34,6 +34,67 @@ Brief description, if necessary
 ### Migration
 -->
 
+## v3.13.0
+
+Batch partial-automation mega-update! Bug fixes, too.
+
+### Fixed
+
+- Issues will no longer be able to move into NCA while still being uploaded
+  (see "Changed" section for details)
+- Fixed test scripts often printing out an irrelevant error: `chmod: cannot access './fakemount/workflow/*': No such file or directory`
+
+### Added
+
+- Batch Status Pages:
+  - A new section of NCA has been added: the "Batch" status page. Here batch
+    loaders (generally developers) can see what's waiting for a staging load or
+    production load, flag batches as ready for QC, etc. Batch reviewers can use
+    this area of the site to flag bad issues and/or mark batches ready for
+    loading into production.
+  - Several new types of background jobs are now supported to help with the new
+    batch status page actions and to replace functionality previously in the
+    "batch fixer" tool.
+  - New roles for above: batch reviewer and batch loader
+  - New setting for designating the URL to a staging server running ONI
+    (separately from the production ONI URL)
+  - **Note**: this part of NCA is a work in progress. There are a few areas
+    where we've yet to implement planned features, but holding this any longer
+    didn't make sense. There are still quite a few operations a dev has to do
+    to get batches pushed live, for instance. There are also a few areas where
+    one may still need to refer to the outdated go-live docs, so we've kept
+    those around, just not as part of the official documentation site. (See
+    "OLD-golive.md" in the project root)
+- New command flag for `queue-batches` to only create batches for issues which
+  need a "redo". This only works when a manual fix is done in the database
+  (described in the documentation), so it is rarely going to be useful, but it
+  will help when a batch just went live and was found to need an immediate fix.
+
+### Changed
+
+- Major change to how an issue's "last modified" date is determined. Instead of
+  relying on the files' creation/modification times, we now generate a manifest
+  file that tells us what the files' sizes and last modified dates are at a
+  given point in time. This will make NCA slower when scanning issues, but some
+  filesystem copy operations don't seem to properly tell us when the file was
+  first copied, instead reporting the file's original creation time. The new
+  algorithm will instead let us know the first time NCA sees a file *in
+  addition* to when a file changes.
+
+### Removed
+
+- Explanation of batch manual go-live process has been removed from the
+  official documentation site.
+- "Batch fixer" command-line tool was removed as it should no longer be
+  necessary (or even helpful)
+
+### Migration
+
+- Add a value for the new `STAGING_NEWS_WEBROOT` setting, e.g., `https://oni-staging.example.edu`.
+- Shut down NCA entirely, deploy the new version, and run the database
+  migrations, e.g., with `goose`:
+  - `goose -dir ./db/migrations/ mysql "<user>:<password>@tcp(<db host>:3306)/<database name>" up`
+
 ## v3.12.1
 
 A better new-setup experience!
