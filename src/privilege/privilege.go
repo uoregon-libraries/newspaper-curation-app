@@ -32,6 +32,24 @@ var (
 	// the moment
 	SearchIssues = newPrivilege(RoleWorkflowManager)
 
+	// View batch status: anybody who can see the batch status page, regardless
+	// of what they can/can't do there
+	ViewBatchStatus = newPrivilege(RoleBatchReviewer, RoleBatchLoader)
+
+	// View and manage batches awaiting QC (on staging)
+	ViewQCReadyBatches    = newPrivilege(RoleBatchReviewer)
+	ApproveQCReadyBatches = newPrivilege(RoleBatchReviewer)
+	RejectQCReadyBatches  = newPrivilege(RoleBatchReviewer)
+
+	// View and (eventually) manage batches that need to be loaded or fixed.
+	// Staging/prod perms could be divided more granularly if it ever makes sense
+	// to do so.
+	ViewQCFailedBatches = newPrivilege(RoleBatchLoader)
+	ViewQCPassedBatches = newPrivilege(RoleBatchLoader)
+	LoadBatches         = newPrivilege(RoleBatchLoader)
+	PurgeBatches        = newPrivilege(RoleBatchLoader)
+	ArchiveBatches      = newPrivilege(RoleBatchLoader)
+
 	// Admins only
 	ModifyValidatedLCCNs = newPrivilege()
 	ModifyTitleSFTP      = newPrivilege()

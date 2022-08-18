@@ -2,6 +2,7 @@ package models
 
 import (
 	"fmt"
+	"path/filepath"
 	"strconv"
 	"strings"
 	"time"
@@ -70,6 +71,66 @@ type Issue struct {
 	// actions holds the lazy-loaded list of actions tied to an issue, ordered
 	// by the most recent to the oldest
 	actions []*Action
+}
+
+// FlaggedIssue is a record indicating an issue which was flagged for removal
+// from a batch
+type FlaggedIssue struct {
+	Issue  *Issue
+	User   *User
+	When   time.Time
+	Reason string
+}
+
+func findFlaggedIssues(where string, args ...interface{}) ([]*FlaggedIssue, error) {
+	type _row struct {
+		IssueID         int
+		FlaggedByUserID int
+		Reason          string
+		CreatedAt       time.Time
+	}
+	var rows []*_row
+
+	var op = dbi.DB.Operation()
+	op.Dbg = dbi.Debug
+	op.Select("batches_flagged_issues", &_row{}).Where(where, args...).AllObjects(&rows)
+
+	var issues = make([]*FlaggedIssue, len(rows))
+	for i, row := range rows {
+		var issue, err = FindIssue(row.IssueID)
+		if err != nil {
+			return nil, fmt.Errorf("findFlaggedIssues(): error querying issue %d: %w", row.IssueID, err)
+		}
+		if issue == nil {
+			return nil, fmt.Errorf("findFlaggedIssues(): error querying issue %d: no issue found", row.IssueID)
+		}
+
+		var user = FindUserByID(row.FlaggedByUserID)
+		if user == EmptyUser {
+			return nil, fmt.Errorf("findFlaggedIssues(): unable to find user %d", row.FlaggedByUserID)
+		}
+
+		issues[i] = &FlaggedIssue{
+			Issue:  issue,
+			User:   user,
+			Reason: row.Reason,
+			When:   row.CreatedAt,
+		}
+	}
+
+	return issues, nil
+}
+
+// FindFlaggedIssue returns a flagged issue identified by the issue's batch id and id
+func FindFlaggedIssue(batchID, issueID int) (*FlaggedIssue, error) {
+	var list, err = findFlaggedIssues("batch_id = ? AND issue_id = ?", batchID, issueID)
+	if err != nil {
+		return nil, err
+	}
+	if len(list) == 0 {
+		return nil, nil
+	}
+	return list[0], err
 }
 
 // NewIssue creates an issue ready for saving to the issues table
@@ -297,6 +358,12 @@ func (i *Issue) DateEdition() string {
 	return schema.IssueDateEdition(i.Date, i.Edition)
 }
 
+// METSFile returns the canonical path to an issue's METS file. This will only
+// have meaning for issues still on a filesystem somewhere.
+func (i *Issue) METSFile() string {
+	return filepath.Join(i.Location, i.DateEdition()+".xml")
+}
+
 // AllWorkflowActions loads all actions tied to this issue and orders them in
 // chronological order (the newest are at the end of the list)
 func (i *Issue) AllWorkflowActions() []*Action {
@@ -457,22 +524,24 @@ func (i *Issue) Save(action ActionType, userID int, message string) error {
 func (i *Issue) SaveWithoutAction() error {
 	var op = dbi.DB.Operation()
 	op.Dbg = dbi.Debug
-	return i.saveOp(op)
+	return i.SaveOpWithoutAction(op)
 }
 
 // SaveOp creates or updates the Issue in the issues table with a custom operation
 func (i *Issue) SaveOp(op *magicsql.Operation, action ActionType, userID int, message string) error {
-	var a = newIssueAction(i.ID, action)
+	var a = NewIssueAction(i.ID, action)
 	a.UserID = userID
 	a.Message = message
 	i.actions = append(i.actions, a)
 
 	a.SaveOp(op)
-	i.saveOp(op)
+	i.SaveOpWithoutAction(op)
 	return op.Err()
 }
 
-func (i *Issue) saveOp(op *magicsql.Operation) error {
+// SaveOpWithoutAction is the transaction-friendly SaveWithoutAction. This
+// should of course be used sparingly.
+func (i *Issue) SaveOpWithoutAction(op *magicsql.Operation) error {
 	var valid bool
 	for _, validWS := range allowedWorkflowSteps {
 		if string(i.WorkflowStep) == string(validWS) {

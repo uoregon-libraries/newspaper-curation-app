@@ -1,0 +1,13 @@
+{{define "batch-manual-load"}}
+<pre><code># ssh into the appropriate server first!
+cd /opt/openoni
+source ENV/bin/activate
+./manage.py load_batch {{.Location}}</code></pre>
+{{end}}
+
+{{define "batch-manual-purge"}}
+<pre><code># ssh into the appropriate server first!
+cd /opt/openoni
+source ENV/bin/activate
+./manage.py purge_batch {{.FullName}}</code></pre>
+{{end}}

@@ -363,6 +363,7 @@ func runAllQueues(c *config.Config) {
 				models.JobTypeMakeBatchXML,
 				models.JobTypeRenameDir,
 				models.JobTypeCleanFiles,
+				models.JobTypeRemoveFile,
 				models.JobTypeWriteActionLog,
 				models.JobTypeRenumberPages,
 			)
@@ -375,6 +376,8 @@ func runAllQueues(c *config.Config) {
 				models.JobTypeSetIssueWS,
 				models.JobTypeSetIssueBackupLoc,
 				models.JobTypeSetIssueLocation,
+				models.JobTypeFinalizeBatchFlaggedIssue,
+				models.JobTypeEmptyBatchFlaggedIssuesList,
 				models.JobTypeIgnoreIssue,
 				models.JobTypeSetBatchStatus,
 				models.JobTypeSetBatchLocation,

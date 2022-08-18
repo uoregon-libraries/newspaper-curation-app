@@ -174,3 +174,40 @@ func (j *CleanFiles) Process(*config.Config) bool {
 
 	return true
 }
+
+// RemoveFile is a simple job with one purpose: delete a file
+type RemoveFile struct {
+	*Job
+}
+
+// Valid is always true as long as there is *any* location arg. We don't check
+// that it's a real file because Valid is a check to prevent panics, not to
+// ensure the operation will succeed.
+func (j *RemoveFile) Valid() bool {
+	if j.db.Args[locArg] == "" {
+		j.Logger.Errorf("RemoveFile job created with no location arg")
+		return false
+	}
+	return true
+}
+
+// Process removes the file. If the file doesn't exist, this is considered a
+// success because the location identified was likely already deleted.
+func (j *RemoveFile) Process(*config.Config) bool {
+	var fname = j.db.Args[locArg]
+
+	j.Logger.Debugf("RemoveFile: attempting to remove %q", fname)
+
+	var err = os.Remove(fname)
+	if err == nil {
+		j.Logger.Debugf("RemoveFile: successfully deleted %q", fname)
+		return true
+	}
+	if os.IsNotExist(err) {
+		j.Logger.Debugf("RemoveFile: %q was not present (success is implied)", fname)
+		return true
+	}
+
+	j.Logger.Errorf("Unable to remove %q: %s", fname, err)
+	return false
+}

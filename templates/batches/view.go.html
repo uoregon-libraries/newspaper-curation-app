@@ -1,0 +1,47 @@
+{{block "content" .}}
+
+<div class="col-md-6">
+  {{template "batch-metadata" .Data.Batch}}
+</div>
+
+<div class="col-md-6">
+  <h2>Actions</h2>
+
+  <!-- Batch has no actions -->
+  {{if .Data.Batch.Unavailable}}
+  <strong>This batch is not in a state that allows user actions</strong>
+  {{end}}
+
+  <!-- Batch needs to be pushed to staging -->
+  {{if and .Data.Batch.ReadyForStaging (.Data.Can.Load .Data.Batch)}}
+  <p><strong>{{.Data.Batch.Name}} is ready to be loaded onto staging. This is a manual process.</strong></p>
+  <p>Load the batch:</p>
+  {{template "batch-manual-load" .Data.Batch}}
+
+  <p>Then mark it ready for QC:</p>
+  <form action="{{SetQCReadyURL .Data.Batch}}" method="POST">
+    <button class="btn btn-primary" type="submit">Set QC Ready</button>
+  </form>
+  {{end}}
+
+  <!-- Needs QC pass -->
+  {{if and .Data.Batch.ReadyForQC (.Data.Can.Approve .Data.Batch)}}
+  <p>{{.Data.Batch.Name}} needs approval to move to production (or a rejection if it needs to be fixed).</p>
+
+  <a href="{{ApproveURL .Data.Batch}}" class="btn btn-primary">Approve...</a>
+  <a href="{{RejectURL .Data.Batch}}" class="btn btn-danger">Reject...</a>
+  {{end}}
+
+  <!-- Needs batch reviewer to flag issues -->
+  {{if and .Data.Batch.ReadyForFlaggingIssues (.Data.Can.FlagIssues .Data.Batch)}}
+  <p>
+    {{.Data.Batch.Name}} has failed QC. You can mark issues that need to be
+    removed and then send the batch back to staging.
+  </p>
+
+  <a href="{{FlagIssuesURL .Data.Batch}}" class="btn btn-primary">Flag Issues...</a>
+  {{end}}
+
+  <!-- TODO: other statuses -->
+</div>
+{{end}}

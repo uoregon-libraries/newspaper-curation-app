@@ -23,11 +23,11 @@
         <td>
           {{if $.User.CanModifyUser .}}
 
-          <div class="button-form">
+          <div class="inline">
             <a href="{{UsersHomeURL}}/edit?id={{.ID}}" class="btn btn-default">Edit</a>
           </div>
 
-          <div class="button-form">
+          <div class="inline">
             <form action="{{UsersHomeURL}}/deactivate" method="post">
               <input type="hidden" name="id" value="{{.ID}}" />
               <button type="submit" class="btn btn-danger">Deactivate</button>

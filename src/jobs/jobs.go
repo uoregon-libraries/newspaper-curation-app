@@ -15,6 +15,10 @@ func DBJobToProcessor(dbJob *models.Job) Processor {
 		return &SetIssueBackupLoc{IssueJob: NewIssueJob(dbJob)}
 	case models.JobTypeSetIssueLocation:
 		return &SetIssueLocation{IssueJob: NewIssueJob(dbJob)}
+	case models.JobTypeFinalizeBatchFlaggedIssue:
+		return &FinalizeBatchFlaggedIssue{IssueJob: NewIssueJob(dbJob)}
+	case models.JobTypeEmptyBatchFlaggedIssuesList:
+		return &EmptyBatchFlaggedIssuesList{BatchJob: NewBatchJob(dbJob)}
 	case models.JobTypeIgnoreIssue:
 		return &IgnoreIssue{IssueJob: NewIssueJob(dbJob)}
 	case models.JobTypePageSplit:
@@ -47,6 +51,8 @@ func DBJobToProcessor(dbJob *models.Job) Processor {
 		return &RenameDir{Job: NewJob(dbJob)}
 	case models.JobTypeCleanFiles:
 		return &CleanFiles{Job: NewJob(dbJob)}
+	case models.JobTypeRemoveFile:
+		return &RemoveFile{Job: NewJob(dbJob)}
 	case models.JobTypeRenumberPages:
 		return &RenumberPages{IssueJob: NewIssueJob(dbJob)}
 	case models.JobTypeIssueAction:

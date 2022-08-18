@@ -81,8 +81,8 @@ func newAction() *Action {
 	return &Action{CreatedAt: time.Now()}
 }
 
-// newIssueAction returns an action pre-filled with some basic issue metadata
-func newIssueAction(id int, aType ActionType) *Action {
+// NewIssueAction returns an action pre-filled with some basic issue metadata
+func NewIssueAction(id int, aType ActionType) *Action {
 	var a = newAction()
 	a.ObjectType = actionObjectTypeIssue
 	a.ActionType = string(aType)

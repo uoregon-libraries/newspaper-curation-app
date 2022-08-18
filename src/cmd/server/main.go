@@ -12,6 +12,7 @@ import (
 	"github.com/gorilla/mux"
 	flags "github.com/jessevdk/go-flags"
 	"github.com/uoregon-libraries/newspaper-curation-app/src/cmd/server/internal/audithandler"
+	"github.com/uoregon-libraries/newspaper-curation-app/src/cmd/server/internal/batchhandler"
 	"github.com/uoregon-libraries/newspaper-curation-app/src/cmd/server/internal/issuefinderhandler"
 	"github.com/uoregon-libraries/newspaper-curation-app/src/cmd/server/internal/mochandler"
 	"github.com/uoregon-libraries/newspaper-curation-app/src/cmd/server/internal/responder"
@@ -116,6 +117,7 @@ func startServer() {
 	workflowhandler.Setup(r, path.Join(hp, "workflow"), conf, watcher)
 	issuefinderhandler.Setup(r, path.Join(hp, "find"), conf, watcher)
 	mochandler.Setup(r, path.Join(hp, "mocs"), conf)
+	batchhandler.Setup(r, path.Join(hp, "batches"), conf)
 	userhandler.Setup(r, path.Join(hp, "users"), conf)
 	titlehandler.Setup(r, path.Join(hp, "titles"), conf)
 	audithandler.Setup(r, path.Join(hp, "logs"), conf)

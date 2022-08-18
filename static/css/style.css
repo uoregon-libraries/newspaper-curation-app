@@ -69,9 +69,9 @@ form.actions {
   margin-left: 220px;
 }
 
-/* button-form lets us drop multiple <form> tags in a line when the form is
- * nothing but a single button, such as "Delete" */
-.button-form {
+/* inline lets us force side-by-side elements such as form buttons that are
+ * wrapped in other elements, e.g., form tags, divs, etc. */
+.inline {
   display: inline-block;
 }
 
@@ -130,4 +130,9 @@ button[role=tab] h4, button[role=tab] h5, button[role=tab] h6 {
 }
 #json-status[data-faded=true] {
   color: white;
+}
+
+/* Improve alignment of "undo" button on the batch "flag issues" page */
+.unflag-form {
+  margin-top: 8px;
 }

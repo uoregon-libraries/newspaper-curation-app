@@ -129,8 +129,9 @@ should **not be considered production-ready** until the bagit files are
 generated.  You can monitor the status of the job in the database directly, or
 just watch for a valid tag manifest file.
 
-If the batch has any bad issues, it must be [fixed](/workflow/fixing-batches)
-with a command-line tool and then rebatched.
+If the batch has any bad issues, it must be fixed by somebody with the "batch
+reviewer" role and then rebatched (these users will have access to a "Batches"
+page in NCA).
 
 Once the batch has been approved in staging, (TODO: another utility!) run the
 [manual go-live](/workflow/batch-manual-golive) process to get the batch and

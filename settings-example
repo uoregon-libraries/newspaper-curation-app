@@ -32,6 +32,11 @@ IIIF_BASE_URL="https://my.server.com/iiif"
 # live batches' / issues' detail pages
 NEWS_WEBROOT="https://news.somewhere.edu"
 
+# Full URL to the staging news site for directing admins to batches which are
+# ready for review. In theory this could point toward production, allowing a
+# more loose "test it live" approach.
+STAGING_NEWS_WEBROOT="https://news-staging.somewhere.edu"
+
 # Locations (usually a URL) to pull marc records when a new newspaper title is
 # added.  If a location begins with http/https, an HTTP request is made,
 # otherwise it is treated as a path to a file.  The string "{{lccn}}" is

@@ -1,0 +1,31 @@
+{{define "batch-metadata"}}
+<h2>Status / Info</h2>
+{{template "batch-metadata-info" .}}
+
+<h2>Links</h2>
+{{template "batch-metadata-links" .}}
+{{end}}
+
+{{define "batch-metadata-info"}}
+<dl>
+  <dt>Full Name</dt>
+  <dd>{{.FullName}}</dd>
+
+  <dt>Status</dt>
+  <dd>
+    <code>{{.Status}}</code>:
+    {{.StatusMeta.Description}}
+  </dd>
+
+  <dt>Issue Count</dt>
+  <dd>{{len .Issues}}</dd>
+<dl>
+{{end}}
+
+{{define "batch-metadata-links"}}
+<ul>
+  <li><a href="{{ViewURL .}}">NCA Batch View Permalink</a></li>
+  {{if .StatusMeta.Staging}}<li><a href="{{StagingBatchURL .}}">Staging</a></li>{{end}}
+  {{if .StatusMeta.Live}}<li><a href="{{ProdBatchURL .}}">Production</a></li>{{end}}
+</ul>
+{{end}}

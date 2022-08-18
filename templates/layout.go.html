@@ -15,6 +15,7 @@
     {{IncludeJS "sortabletable"}}
     {{IncludeCSS "disclosure"}}
     {{IncludeJS "disclosureButton"}}
+    {{RawJS "cta-modal/cta-modal.js"}}
   </head>
 
   <body>
@@ -43,6 +44,10 @@
 
               {{if .User.PermittedTo ViewUploadedIssues}}
               <li><a href="{{FullPath "uploadedissues"}}">Uploaded Issues</a></li>
+              {{end}}
+
+              {{if .User.PermittedTo ViewBatchStatus}}
+              <li><a href="{{FullPath "batches"}}">Batches</a></li>
               {{end}}
 
               {{if .User.PermittedTo ViewMetadataWorkflow}}

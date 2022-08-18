@@ -3,6 +3,7 @@ package models
 import (
 	"fmt"
 	"hash/crc32"
+	"strings"
 	"time"
 
 	"github.com/Nerdmaster/magicsql"
@@ -11,15 +12,103 @@ import (
 
 // These are all possible batch status values
 const (
-	BatchStatusDeleted   = "deleted"    // Batch wasn't fixable and had to be removed
-	BatchStatusPending   = "pending"    // Not yet built or in the process of being built
-	BatchStatusQCReady   = "qc_ready"   // Ready for ingest onto staging
-	BatchStatusOnStaging = "on_staging" // On the staging server awaiting QC
-	BatchStatusFailedQC  = "failed_qc"  // On staging, but QC failed it; it needs to be pulled and fixed
-	BatchStatusPassedQC  = "passed_qc"  // On staging, passed QC; it needs to be pulled from staging and pushed live
-	BatchStatusLive      = "live"       // Batch has gone live; batch and its issues need to be archived
-	BatchStatusLiveDone  = "live_done"  // Batch has gone live; batch and its issues have been archived and are no longer on the filesystem
+	BatchStatusDeleted      = "deleted"       // Batch wasn't fixable and had to be removed
+	BatchStatusPending      = "pending"       // Not yet built or in the process of being built
+	BatchStatusStagingReady = "staging_ready" // Batch is built but not deployed to staging yet
+	BatchStatusQCReady      = "qc_ready"      // Batch is on staging and ready for QC pass
+	BatchStatusQCFlagIssues = "qc_flagging"   // Batch failed QC; problem issues need to be identified and removed
+	BatchStatusFailedQC     = "failed_qc"     // Batch failed QC and needs to be removed from staging and rebuilt
+	BatchStatusPassedQC     = "passed_qc"     // On staging, passed QC; it needs to be pulled from staging and pushed live
+	BatchStatusLive         = "live"          // Batch has gone live; batch and its issues need to be archived
+	BatchStatusLiveDone     = "live_done"     // Batch has gone live; batch and its issues have been archived and are no longer on the filesystem
 )
+
+// BatchStatus describes the metadata corresponding to a database status
+type BatchStatus struct {
+	Status      string
+	Live        bool
+	Staging     bool
+	Dead        bool
+	NeedsAction bool
+	Description string
+}
+
+var noStatus BatchStatus
+
+var statusMap = map[string]BatchStatus{
+	BatchStatusPending: {
+		Status:      BatchStatusPending,
+		Live:        false,
+		Staging:     false,
+		Dead:        false,
+		NeedsAction: false,
+		Description: "Pending: build job is scheduled but hasn't yet run",
+	},
+	BatchStatusStagingReady: {
+		Status:      BatchStatusStagingReady,
+		Live:        false,
+		Staging:     false,
+		Dead:        false,
+		NeedsAction: true,
+		Description: "Ready for ingest onto staging server",
+	},
+	BatchStatusQCReady: {
+		Status:      BatchStatusQCReady,
+		Live:        false,
+		Staging:     true,
+		Dead:        false,
+		NeedsAction: true,
+		Description: "On staging, awaiting quality control check",
+	},
+	BatchStatusQCFlagIssues: {
+		Status:      BatchStatusQCFlagIssues,
+		Live:        false,
+		Staging:     true,
+		Dead:        false,
+		NeedsAction: true,
+		Description: "Failed quality control, awaiting QC issue flagging",
+	},
+	BatchStatusFailedQC: {
+		Status:      BatchStatusFailedQC,
+		Live:        false,
+		Staging:     true,
+		Dead:        false,
+		NeedsAction: true,
+		Description: "Failed quality control, awaiting batch maintainer to fix and push back to staging",
+	},
+	BatchStatusDeleted: {
+		Status:      BatchStatusDeleted,
+		Live:        false,
+		Staging:     false,
+		Dead:        true,
+		NeedsAction: false,
+		Description: "Removed from the system.  Likely rebuilt under a new name.",
+	},
+	BatchStatusPassedQC: {
+		Status:      BatchStatusPassedQC,
+		Live:        false,
+		Staging:     true,
+		Dead:        false,
+		NeedsAction: true,
+		Description: "Passed quality control, awaiting batch maintainer to load on production",
+	},
+	BatchStatusLive: {
+		Status:      BatchStatusLive,
+		Live:        true,
+		Staging:     false,
+		Dead:        false,
+		NeedsAction: true,
+		Description: "Live in production, awaiting archiving",
+	},
+	BatchStatusLiveDone: {
+		Status:      BatchStatusLiveDone,
+		Live:        true,
+		Staging:     false,
+		Dead:        false,
+		NeedsAction: false,
+		Description: "Live in production and archived: no longer available in NCA workflow",
+	},
+}
 
 // Batch contains metadata for generating a batch XML.  Issues can be
 // associated with a single batch, and a batch will typically have many issues
@@ -31,49 +120,62 @@ type Batch struct {
 	CreatedAt   time.Time
 	ArchivedAt  time.Time
 	Status      string
+	StatusMeta  BatchStatus `sql:"-"`
 	Location    string
 
 	issues []*Issue
 }
 
-// FindBatch looks for a batch by its id
-func FindBatch(id int) (*Batch, error) {
+func bs(s string) BatchStatus {
+	return statusMap[s]
+}
+
+// findBatches wraps all the job finding functionality so helpers can be
+// one-liners.  This is purposely *not* exported to enforce a stricter API.
+//
+// NOTE: All instantiations from the database must go through this function to
+// properly deserialize their data!
+func findBatches(where string, args ...any) ([]*Batch, error) {
 	var op = dbi.DB.Operation()
 	op.Dbg = dbi.Debug
-	var b = &Batch{}
-	var ok = op.Select("batches", b).Where("id = ?", id).First(b)
-	if !ok {
-		return nil, op.Err()
+	var list []*Batch
+	op.Select("batches", &Batch{}).Where(where, args...).AllObjects(&list)
+	for _, j := range list {
+		var err = j.deserialize()
+		if err != nil {
+			return nil, fmt.Errorf("error decoding batch %d: %s", j.ID, err)
+		}
 	}
-	return b, op.Err()
+	return list, op.Err()
+}
+
+// FindBatch looks for a batch by its id
+func FindBatch(id int) (*Batch, error) {
+	var list, err = findBatches("id = ?", id)
+	if len(list) == 0 {
+		return nil, err
+	}
+	return list[0], err
 }
 
 // InProcessBatches returns the full list of in-process batches (not live, not pending)
 func InProcessBatches() ([]*Batch, error) {
-	var op = dbi.DB.Operation()
-	op.Dbg = dbi.Debug
-
-	var list []*Batch
-	op.Select("batches", &Batch{}).Where(
-		"status IN (?, ?, ?, ?)",
-		BatchStatusQCReady, BatchStatusOnStaging, BatchStatusFailedQC, BatchStatusPassedQC,
-	).AllObjects(&list)
-
-	return list, op.Err()
+	var statusList []any
+	var placeholders []string
+	for status, data := range statusMap {
+		if data.NeedsAction {
+			statusList = append(statusList, status)
+			placeholders = append(placeholders, "?")
+		}
+	}
+	var qry = fmt.Sprintf("status IN (%s)", strings.Join(placeholders, ", "))
+	return findBatches(qry, statusList...)
 }
 
 // FindLiveArchivedBatches returns all batches that are still live, but have an
 // archived_at value
 func FindLiveArchivedBatches() ([]*Batch, error) {
-	var op = dbi.DB.Operation()
-	op.Dbg = dbi.Debug
-
-	var list []*Batch
-	op.Select("batches", &Batch{}).
-		Where("status = ? AND archived_at > ?", BatchStatusLive, time.Time{}).
-		AllObjects(&list)
-
-	return list, op.Err()
+	return findBatches("status = ? AND archived_at > ?", BatchStatusLive, time.Time{})
 }
 
 // CreateBatch creates a batch in the database, using its ID combined with the
@@ -125,6 +227,11 @@ func (b *Batch) Issues() ([]*Issue, error) {
 	return b.issues, err
 }
 
+// FlaggedIssues returns all issues flagged for removal from this batch
+func (b *Batch) FlaggedIssues() ([]*FlaggedIssue, error) {
+	return findFlaggedIssues("batch_id = ?", b.ID)
+}
+
 // FullName returns the name of a batch as it is needed for chronam / ONI.
 //
 // Note that currently we assume all generated batches will be _ver01, because
@@ -142,6 +249,11 @@ func (b *Batch) AwardYear() int {
 
 // Save creates or updates the Batch in the batches table
 func (b *Batch) Save() error {
+	// Validate the batch status before doing anything else
+	var st = bs(b.Status)
+	if st.Description == "" {
+		return fmt.Errorf("invalid batch status: %s", b.Status)
+	}
 	var op = dbi.DB.Operation()
 	op.Dbg = dbi.Debug
 	return b.SaveOp(op)
@@ -154,8 +266,75 @@ func (b *Batch) SaveOp(op *magicsql.Operation) error {
 	return op.Err()
 }
 
+// FlagIssue marks an issue as needing to be removed from this batch
+func (b *Batch) FlagIssue(i *Issue, who *User, reason string) error {
+	// Caller should have already validated the batch and the issue, but we
+	// *really* don't want data to be busted
+	if b.Status != BatchStatusQCFlagIssues {
+		return fmt.Errorf("cannot flag issue %s: batch %s is not allowed to have issues flagged", i.Key(), b.Name)
+	}
+	if i.BatchID != b.ID {
+		return fmt.Errorf("cannot flag issue %s: not part of batch %s", i.Key(), b.Name)
+	}
+
+	var op = dbi.DB.Operation()
+	op.Dbg = dbi.Debug
+	op.Exec(`INSERT INTO batches_flagged_issues (flagged_by_user_id, batch_id, issue_id, reason) VALUES (?, ?, ?, ?)`,
+		who.ID, b.ID, i.ID, reason)
+	return op.Err()
+}
+
+// UnflagIssue removes an issue from the "bad issue" queue
+func (b *Batch) UnflagIssue(i *Issue) error {
+	// Caller should validate this stuff, but just in case, we do it, too
+	if b.Status != BatchStatusQCFlagIssues {
+		return fmt.Errorf("cannot unflag issue %s: batch %s is not allowed to have issues flagged", i.Key(), b.Name)
+	}
+	if i.BatchID != b.ID {
+		return fmt.Errorf("cannot unflag issue %s: not part of batch %s", i.Key(), b.Name)
+	}
+
+	// Technically we could have an "error" here if the issue wasn't flagged to
+	// begin with. But in that case, alerting the user is potentially confusing
+	// since the thing they want to happen is essentially already done.
+	var op = dbi.DB.Operation()
+	op.Dbg = dbi.Debug
+	op.Exec(`DELETE FROM batches_flagged_issues WHERE batch_id = ? AND issue_id = ?`, b.ID, i.ID)
+	return op.Err()
+}
+
+// AbortIssueFlagging returns the batch state to BatchStatusQCReady and removes
+// all flagged issues tied to it
+func (b *Batch) AbortIssueFlagging() error {
+	if b.Status != BatchStatusQCFlagIssues {
+		return fmt.Errorf("abort issue flagging: invalid batch status %s", b.Status)
+	}
+
+	var op = dbi.DB.Operation()
+	op.Dbg = dbi.Debug
+	op.BeginTransaction()
+	defer op.EndTransaction()
+
+	b.Status = BatchStatusQCReady
+	var err = b.SaveOp(op)
+	if err != nil {
+		return err
+	}
+
+	op.Exec(`DELETE FROM batches_flagged_issues WHERE batch_id = ?`, b.ID)
+	return op.Err()
+}
+
+// EmptyFlaggedIssuesList clears issues flagged for removal from this batch
+func (b *Batch) EmptyFlaggedIssuesList() error {
+	var op = dbi.DB.Operation()
+	op.Dbg = dbi.Debug
+
+	op.Exec(`DELETE FROM batches_flagged_issues WHERE batch_id = ?`, b.ID)
+	return op.Err()
+}
+
 // Delete removes all issues from this batch and sets its status to "deleted".
-// Caller must clean up the filesystem.
 func (b *Batch) Delete() error {
 	var op = dbi.DB.Operation()
 	op.Dbg = dbi.Debug
@@ -197,4 +376,13 @@ func (b *Batch) Close() error {
 
 	b.Status = BatchStatusLiveDone
 	return b.Save()
+}
+
+func (b *Batch) deserialize() error {
+	b.StatusMeta = bs(b.Status)
+	if b.StatusMeta == noStatus {
+		return fmt.Errorf("invalid status %q on batch %s", b.Status, b.FullName())
+	}
+
+	return nil
 }

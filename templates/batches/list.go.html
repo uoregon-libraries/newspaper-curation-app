@@ -1,0 +1,40 @@
+{{block "content" .}}
+
+<h2>Batches needing attention</h2>
+
+{{if .Data.Batches}}
+{{template "batch-table" .}}
+{{else}}
+There are no batches currently in need of any action!
+{{end}}
+
+{{end}}
+
+{{define "batch-table"}}
+<table class="table table-striped table-bordered table-condensed sortable">
+  <thead>
+    <tr>
+      <th scope="col" data-sorttype="alpha">Name</th>
+      <th scope="col" data-sorttype="alpha">Status</th>
+      <th scope="col" data-sorttype="alpha">MOC</th>
+      <th scope="col" data-sorttype="date">Created</th>
+    </tr>
+  </thead>
+
+  <tbody>
+  {{range .Data.Batches}}
+  {{if $.Data.Can.View .}}
+  <tr>
+    <th scope="row"><a href="{{ViewURL .}}">{{.Name}}</a></th>
+    <td>
+      <code>{{.Status}}</code>:
+      {{.StatusMeta.Description}}
+    </td>
+    <td>{{.MARCOrgCode}}</td>
+    <td>{{.CreatedAt.Format "2006-01-02"}}</td>
+  </tr>
+  {{end}}
+  {{end}}
+  </tbody>
+</table>
+{{end}}
