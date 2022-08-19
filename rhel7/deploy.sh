@@ -49,7 +49,6 @@ goose -dir $src/db/migrations mysql "$DB_USER:$DB_PASSWORD@tcp($DB_HOST:3306)/$D
 echo Copying in the new stuff
 sudo cp $src/bin/server $ncadir/
 sudo cp $src/bin/run-jobs $ncadir/
-sudo cp $src/bin/batch-fixer $ncadir/
 sudo cp $src/bin/queue-batches $ncadir/
 sudo cp $src/bin/bulk-issue-queue $ncadir/
 sudo cp $src/bin/delete-live-done-issues $ncadir/
