@@ -222,7 +222,11 @@ func (b *Batch) Issues() ([]*Issue, error) {
 		return b.issues, nil
 	}
 
-	var issues, err = Issues().BatchID(b.ID).Fetch()
+	var finder = Issues().BatchID(b.ID)
+	if bs(b.Status).Live {
+		finder = finder.AllowIgnored()
+	}
+	var issues, err = finder.Fetch()
 	b.issues = issues
 	return b.issues, err
 }
