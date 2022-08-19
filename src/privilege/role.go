@@ -58,6 +58,8 @@ var AssignableRoles = []*Role{
 	RoleUserManager,
 	RoleMOCManager,
 	RoleWorkflowManager,
+	RoleBatchReviewer,
+	RoleBatchLoader,
 }
 
 // newRole is internal as the list of roles shouldn't be modified by anything external
