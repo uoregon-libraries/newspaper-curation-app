@@ -234,7 +234,7 @@ func getJobsForMakeBatch(batch *models.Batch, pth string) []*models.Job {
 		PrepareBatchJobAdvanced(models.JobTypeMakeBatchXML, batch, nil),
 		PrepareJobAdvanced(models.JobTypeRenameDir, makeSrcDstArgs(wipDir, finalDir)),
 		PrepareBatchJobAdvanced(models.JobTypeSetBatchLocation, batch, makeLocArgs(finalDir)),
-		PrepareBatchJobAdvanced(models.JobTypeSetBatchStatus, batch, makeBSArgs(models.BatchStatusQCReady)),
+		PrepareBatchJobAdvanced(models.JobTypeSetBatchStatus, batch, makeBSArgs(models.BatchStatusStagingReady)),
 		PrepareBatchJobAdvanced(models.JobTypeWriteBagitManifest, batch, nil),
 	}
 }
