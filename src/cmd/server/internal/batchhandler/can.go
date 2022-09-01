@@ -1,6 +1,7 @@
 package batchhandler
 
 import (
+	"github.com/uoregon-libraries/newspaper-curation-app/src/internal/logger"
 	"github.com/uoregon-libraries/newspaper-curation-app/src/models"
 	"github.com/uoregon-libraries/newspaper-curation-app/src/privilege"
 )
@@ -32,14 +33,19 @@ func (c *CanValidation) View(b *Batch) bool {
 		return has(privilege.LoadBatches)
 	case models.BatchStatusQCReady:
 		return has(privilege.ViewQCReadyBatches)
+	case models.BatchStatusQCFlagIssues:
+		return has(privilege.RejectQCReadyBatches)
 	case models.BatchStatusFailedQC:
-		return has(privilege.LoadBatches) && has(privilege.PurgeBatches)
+		return has(privilege.ViewQCFailedBatches)
 	case models.BatchStatusPassedQC:
 		return has(privilege.LoadBatches)
 	case models.BatchStatusLive:
 		return has(privilege.ArchiveBatches)
+	case models.BatchStatusDeleted, models.BatchStatusPending, models.BatchStatusLiveDone:
+		return false
 	}
 
+	logger.Errorf("Can view batch: Unhandled status %q", b.Status)
 	return false
 }
 
