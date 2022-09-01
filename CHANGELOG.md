@@ -61,10 +61,7 @@ Batch partial-automation mega-update! Bug fixes, too.
   - **Note**: this part of NCA is a work in progress. There are a few areas
     where we've yet to implement planned features, but holding this any longer
     didn't make sense. There are still quite a few operations a dev has to do
-    to get batches pushed live, for instance. There are also a few areas where
-    one may still need to refer to the outdated go-live docs, so we've kept
-    those around, just not as part of the official documentation site. (See
-    "OLD-golive.md" in the project root)
+    to get batches pushed live, for instance.
 - New command flag for `queue-batches` to only create batches for issues which
   need a "redo". This only works when a manual fix is done in the database
   (described in the documentation), so it is rarely going to be useful, but it
@@ -83,8 +80,6 @@ Batch partial-automation mega-update! Bug fixes, too.
 
 ### Removed
 
-- Explanation of batch manual go-live process has been removed from the
-  official documentation site.
 - "Batch fixer" command-line tool was removed as it should no longer be
   necessary (or even helpful)
 

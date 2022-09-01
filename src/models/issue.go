@@ -201,6 +201,13 @@ func (f *IssueFinder) BatchID(batchID int) *IssueFinder {
 	return f
 }
 
+// AllowIgnored removes the standard "ignored = false" clause. This is useful
+// for some very specific cases, like showing issues belonging to live batches.
+func (f *IssueFinder) AllowIgnored() *IssueFinder {
+	delete(f.conditions, "ignored = ?")
+	return f
+}
+
 // OnDesk filters issues "owned" by a given user id
 func (f *IssueFinder) OnDesk(userID int) *IssueFinder {
 	f.conditions["workflow_owner_id = ?"] = userID
