@@ -34,6 +34,46 @@ Brief description, if necessary
 ### Migration
 -->
 
+## v3.13.1
+
+Code-named "batch status page hotfixes". As promised, there were indeed several
+very exciting bugs with v3.13.0. This release aims to fix the bugs we've
+managed to catch so far after a bit of live use.
+
+### Fixed
+
+- Changelog no longer claims things were removed which in fact were not. Yeah,
+  even the changelog had bugs.
+- Batch status is properly set to "Ready for staging" after a batch is built
+  instead of claiming to already be ready for QC (which means it's *on*
+  staging).
+
+### Added
+
+- Batch reviewer and batch loader roles can now be assigned in the UI!
+
+### Removed
+
+- Batch fixer CLI docs are properly removed. The page was removed from our Hugo
+  docs, but the resulting HTML was accidentally not properly updated.
+
+### Migration
+
+If you generated any batches, their status will claim they're ready for QC. You
+should load the batches onto staging such that that status is correct. Once
+this fix is deployed, newly generated batches will correctly tell you they need
+to be loaded onto staging.
+
+You can also get around this by manually changing the batches' statuses to
+`staging_ready` in the database, but this can be riskier if you don't know
+precisely which batches in the database need to be changed.
+
+The SQL **might** look like the below example. Tweak to suit your situation!
+
+```sql
+UPDATE batches SET status = 'staging_ready' WHERE status = 'qc_ready';
+```
+
 ## v3.13.0
 
 Batch partial-automation mega-update! Bug fixes, too.
