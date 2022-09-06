@@ -76,8 +76,6 @@ sudo install -Dm755 sftpgo /usr/bin/sftpgo
 # install the default configuration file, edit it if required
 sudo install -Dm644 sftpgo.json /etc/sftpgo/
 # override some configuration keys using environment variables
-sudo sh -c 'echo "SFTPGO_HTTPD__TEMPLATES_PATH=/usr/share/sftpgo/templates" > /etc/sftpgo/sftpgo.env'
-sudo sh -c 'echo "SFTPGO_HTTPD__STATIC_FILES_PATH=/usr/share/sftpgo/static" >> /etc/sftpgo/sftpgo.env'
 sudo sh -c 'echo "SFTPGO_HTTPD__BACKUPS_PATH=/var/lib/sftpgo/backups" >> /etc/sftpgo/sftpgo.env'
 sudo sh -c 'echo "SFTPGO_DATA_PROVIDER__CREDENTIALS_PATH=/var/lib/sftpgo/credentials" >> /etc/sftpgo/sftpgo.env'
 # if you use a file based data provider such as sqlite or bolt consider to set the database path too, for example:
@@ -85,7 +83,7 @@ sudo sh -c 'echo "SFTPGO_DATA_PROVIDER__CREDENTIALS_PATH=/var/lib/sftpgo/credent
 # also set the provider's PATH as env var to get initprovider to work with SQLite provider:
 #export SFTPGO_DATA_PROVIDER__NAME=/var/lib/sftpgo/sftpgo.db
 # install static files and templates for the web UI
-sudo cp -r static templates /usr/share/sftpgo/
+sudo cp -r static templates openapi /usr/share/sftpgo/
 # set files and directory permissions
 sudo chown -R sftpgo:sftpgo /etc/sftpgo /var/lib/sftpgo
 sudo chmod 750 /etc/sftpgo /var/lib/sftpgo
