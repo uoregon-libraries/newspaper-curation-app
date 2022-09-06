@@ -34,7 +34,7 @@ https://github.com/drakkan/sftpgo/blob/main/docs/build-from-source.md
 
 ```
 go build \
-  -tags nomysql,nopgsql,nosqlite \
+  -tags nomysql,nopgsql,nosqlite,nogcs,nos3,noazblob \
   -ldflags "-s -w -X github.com/drakkan/sftpgo/v2/version.commit=$(git describe --always --dirty) -X github.com/drakkan/sftpgo/v2/version.date=$(date -u +%FT%TZ)" \
   -o sftpgo
 ```
