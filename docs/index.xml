@@ -169,7 +169,7 @@ The metadata entry person flags errors to say essentially, &amp;ldquo;NCA&amp;rs
       
       <guid>https://uoregon-libraries.github.io/newspaper-curation-app/setup/creating-publishers/</guid>
       <description>Creating a publisher in NCA, at least for UO, requires several manual processes take place:
- Add a title to NCA with sftp credential information. If necessary, import the title to your ONI site (for example, oregonnews.uoregon.edu).  See Adding Titles for details   Add a user to the sftp server  At UO, we have an internal sftp script at /usr/local/scripts/addsftpuser.sh. e.g., /usr/local/scripts/addsftpuser.sh &amp;quot;newpublisher&amp;quot; &amp;quot;Pas$w0rd&amp;quot;   Symlink the sftp server&amp;rsquo;s location so NCA can see it.</description>
+ Add a title to NCA with sftp credential information. If necessary, import the title&amp;rsquo;s MARC record to your ONI site (for example, oregonnews.uoregon.edu).  See Adding Titles for details   Set up a user for sftp access  We use NCA&amp;rsquo;s integrated SFTPGo setup for this. See SFTPGo Integration.    </description>
     </item>
     
     <item>
@@ -182,6 +182,15 @@ The metadata entry person flags errors to say essentially, &amp;ldquo;NCA&amp;rs
 make test  This compiles all of the code and tests any *_test.go files. Test coverage is spotty at best right now, but the compile-time checks catch the most common problems, like typos in variable names.
 Contributors: feel free to add more unit tests to improve overall coverage!
 Manual Testing This is clunky and hacky, but it&amp;rsquo;s what we&amp;rsquo;ve got for now. How it all works:</description>
+    </item>
+    
+    <item>
+      <title>SFTPGo Integration</title>
+      <link>https://uoregon-libraries.github.io/newspaper-curation-app/setup/sftpgo-integration/</link>
+      <pubDate>Mon, 01 Jan 0001 00:00:00 +0000</pubDate>
+      
+      <guid>https://uoregon-libraries.github.io/newspaper-curation-app/setup/sftpgo-integration/</guid>
+      <description>SFTPGo is an sftp server that exposes APIs and a web interface for administration tasks. We&amp;rsquo;ve chosen to integrate NCA with SFTPGo in order to simplify the process of creating a new publisher. If you choose not to use it, publisher uploads will have to be managed entirely by you (as was the case prior to this integration), and NCA will not track SFTP data (which is a change from NCA 3.</description>
     </item>
     
     <item>
