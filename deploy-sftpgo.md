@@ -12,7 +12,7 @@ Communication:
 
 SFTP Server:
 
-- Replace manual install of SFTPGo with latest 2.1.x
+- Replace manual install of SFTPGo with latest
   - More painful to manage than using their custom RPMs, but guaranteed not to
     conflict with automated server updates
   - Building from source (easier to pull new tags for updates) - see below
