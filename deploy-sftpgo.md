@@ -12,6 +12,7 @@ Communication:
 
 SFTP Server:
 
+- Make sure the latest Go compiler is installed!
 - Replace manual install of SFTPGo with latest
   - More painful to manage than using their custom RPMs, but guaranteed not to
     conflict with automated server updates
