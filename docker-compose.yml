@@ -67,6 +67,10 @@ services:
     expose:
       - 8080
       - 2022
+    environment:
+      - SFTPGO_DATA_PROVIDER__CREATE_DEFAULT_ADMIN=true
+      - SFTPGO_DEFAULT_ADMIN_USERNAME=admin
+      - SFTPGO_DEFAULT_ADMIN_PASSWORD=password
 
   workers:
     build:
