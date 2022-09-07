@@ -30,7 +30,7 @@
 <meta itemprop="name" content="SFTPGo Integration">
 <meta itemprop="description" content="Setting up NCA for SFTPGo integration">
 
-<meta itemprop="wordCount" content="688">
+<meta itemprop="wordCount" content="847">
 <meta itemprop="keywords" content="" /></head>
 <body><div class="container"><header>
 <h1>Newspaper Curation App</h1><a href="https://github.com/uoregon-libraries/newspaper-curation-app/" class="github"><i class="fab fa-github"></i></a>
@@ -75,20 +75,35 @@ settings.</p>
 <p>Don&rsquo;t try to skimp on the proxy settings. If you are using nginx and you don&rsquo;t
 use <strong>all four</strong> proxy settings we put in our <code>sftpgo.env</code> file, you&rsquo;ll drown
 in weird form token errors when you try to log in.</p>
+<p>If you&rsquo;re using docker, an admin user (login: <code>admin</code>, password: <code>password</code>) is
+created for you automatically, but is extremely insecure: you must change the
+default admin user&rsquo;s password at a minimum, or better yet use a docker override
+to set up an admin that has a unique name <em>and</em> a good password.</p>
+<p>If you aren&rsquo;t using docker, you will need an admin user. The first time you
+connect to the SFTPGo web UI, you will be required to create an admin account,
+though you can also use the <code>create_default_admin</code> SFTPGo setting to
+automatically create one when sftpgo first runs. See the &ldquo;Configuration file&rdquo;
+section of the SFTPGo configuration documentation for details.</p>
 <h2 id="nca-setup">NCA Setup</h2>
-<p>First, set the URL appropriately to the API endpoint.  For our docker setup, we
-expose SFTPGo internally docker-compose services at the URL
-<code>http://sftpgo:8080</code>.  The API is just that host combined with the path
-<code>/api/v2</code>, leaving us with this:</p>
+<p>Open up your settings file and jump to the SFTPGo section. If you&rsquo;re upgrading
+from an older version of NCA, you will have to copy this section from the
+example settings file into your production settings.</p>
+<p>You&rsquo;ll need to tell NCA how to connect to SFTPGo: set the API URL, store your
+admin credentials, and choose a default quota for new users.</p>
+<p>The API endpoint is simply the SFTPGo host combined with the path <code>/api/v2</code>.
+For our docker setup, the internal service is <code>http://sftpgo:8080</code>, so our API
+configuration looks like this:</p>
 <pre><code>SFTPGO_API_URL=&quot;http://sftpgo:8080/api/v2&quot;
 </code></pre>
-<p>Next, create an admin user in SFTPGo and then decomission the default admin
-(&ldquo;admin&rdquo;), or at least alter the default user&rsquo;s password to be significantly
-more secure than simply &ldquo;password&rdquo;, and then update the credentials in NCA&rsquo;s
-settings file.</p>
-<p>Finally, choose a default quota for new users.  This ensures one publisher
-can&rsquo;t blast hundreds of gigs (or even terabytes) of data, preventing all other
-publishers from uploading anything.</p>
+<p>The credentials simply need to match the admin account you created when setting
+up SFTPGo. e.g.:</p>
+<pre><code>SFTPGO_ADMIN_LOGIN=admin
+SFTPGO_ADMIN_PASSWORD=password
+</code></pre>
+<p>The default quota is five gigabytes, but you can adjust this as needed. You
+will likely want <em>something</em>, however: this ensures one publisher can&rsquo;t blast
+hundreds of gigs (or even terabytes) of data, taking your server down and
+preventing all other publishers from uploading anything.</p>
 <h2 id="usage">Usage</h2>
 <p>Once SFTPGo is integrated, any titles created in NCA will be sent to SFTPGo.
 If you had been doing sftp the traditional way (local accounts using ssh with
