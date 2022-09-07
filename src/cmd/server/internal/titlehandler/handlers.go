@@ -84,7 +84,7 @@ func getTitle(r *responder.Responder) (t *Title, handled bool) {
 	if conf.SFTPGoEnabled && dbt.SFTPConnected {
 		var u, err = dbi.SFTP.GetUser(dbt.SFTPUser)
 		if err != nil {
-			logger.Errorf("Unable to look up title %q in SFTPGo: %s", id, err)
+			logger.Errorf("Unable to look up title %q in SFTPGo: %s", dbt.SFTPUser, err)
 			r.Error(http.StatusInternalServerError, "Unable to find title - try again or contact support")
 			return nil, true
 		}
