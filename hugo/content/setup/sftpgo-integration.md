@@ -6,10 +6,12 @@ description: Setting up NCA for SFTPGo integration
 
 [SFTPGo](https://github.com/drakkan/sftpgo) is an sftp server that exposes APIs
 and a web interface for administration tasks.  We've chosen to integrate NCA
-with SFTPGo in order to simplify the process of creating a new publisher.  If
-you choose not to use it, publisher uploads will have to be managed entirely by
-you (as was the case prior to this integration), and NCA will not track SFTP
-data (which is a change from NCA 3.x and prior).
+with SFTPGo in order to simplify the process of creating titles for a publisher
+that's uploading newspaper PDFs.
+
+If you choose not to use this integration, publisher uploads will have to be
+managed entirely by you (as was the case prior to this integration), and NCA
+will not track SFTP data (which is a change from NCA 3.x and prior).
 
 ## Opt out
 
@@ -19,10 +21,43 @@ To disable SFTPGo integration, assign "-" to the `SFTPGO_API_URL` setting:
 
 This ensures that NCA will not try to connect to a nonexistent server.
 
-## Setup
+## SFTPGo Setup
 
-If you use SFTPGo, you'll need to use the SFTPGo documentation to set it up
-however it makes sense for your system, and then make NCA aware of it.
+If you do opt to use SFTPGo, you'll need to use the SFTPGo documentation to set
+it up however it makes sense for your system. Once that's done, you have to
+then make NCA aware of it.
+
+Our configuration files can be found in the NCA project's root under the
+`sftpgo` directory. It's obviously somewhat specific to our bare-metal RHEL
+system, but they should help get you up and running.
+
+We use nginx to proxy the SFTPGo web interface. This isn't necessary -- SFTPGo
+can be exposed directly. We prefer the granular control nginx gives us (e.g.,
+being able to lock down certain paths by IP).
+
+For the sftp daemon itself, we just expose that directly.
+
+Install nginx, configure it (again, see our configuration if necessary), and
+then install SFTPGo as a service. See the ["Running SFTPGo as a service"][1]
+page in the official SFTPGo documentation.
+
+SFTPGo configuration: unless you're a masochist, don't try to adapt the huge
+`sftpgo.json` file to your needs only to wonder "what did we change again?" the
+next time SFTPGo is updated. Use an environment file (`/etc/sftpgo.env`) and
+set only those configuration options you need to change. On Linux, SFTPGo's
+systemd unit file automatically loads those environment variables on startup.
+Make sure you understand how the environment overrides work (see "Environment
+variables" on the ["Configuring SFTPGo"][2] page) if you need to add your own
+settings.
+
+Don't try to skimp on the proxy settings. If you are using nginx and you don't
+use **all four** proxy settings we put in our `sftpgo.env` file, you'll drown
+in weird form token errors when you try to log in.
+
+[1]: <https://github.com/drakkan/sftpgo/blob/main/docs/service.md>
+[2]: <https://github.com/drakkan/sftpgo/blob/main/docs/full-configuration.md>
+
+## NCA Setup
 
 First, set the URL appropriately to the API endpoint.  For our docker setup, we
 expose SFTPGo internally docker-compose services at the URL
