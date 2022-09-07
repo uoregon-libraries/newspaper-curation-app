@@ -178,13 +178,15 @@ func setTitleData(r *responder.Responder, t *Title) (vErrors []string, handled b
 		}
 		t.SFTPPass = form.Get("sftppass")
 
-		var quota = form.Get("sftpquota")
-		if quota == "" {
+		var raw = form.Get("sftpquota")
+		if raw == "" {
 			vErrors = append(vErrors, "SFTP quota cannot be blank")
 		}
-		t.SFTPQuota, err = datasize.New(quota)
-		if err != nil {
-			vErrors = append(vErrors, fmt.Sprintf("Invalid SFTP quota %q: %s", t.SFTPQuota, err))
+		var quota, err = datasize.New(raw)
+		if err == nil {
+			t.SFTPQuota = quota
+		} else {
+			vErrors = append(vErrors, fmt.Sprintf("Invalid SFTP quota %q: %s", raw, err))
 		}
 	}
 

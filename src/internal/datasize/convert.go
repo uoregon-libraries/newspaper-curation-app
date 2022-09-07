@@ -66,17 +66,17 @@ func (d *Datasize) UnmarshalText(data []byte) error {
 	case "e", "eb":
 		mult = EB
 	default:
-		return fmt.Errorf("datasize.New(%q): %q is not a valid size suffix", val, size)
+		return fmt.Errorf("%q is not a valid size suffix", size)
 	}
 
 	var base, err = strconv.ParseInt(numeric, 10, 64)
 	if err != nil {
-		return fmt.Errorf("datasize.New(%q): %q is an invalid number: %s", val, numeric, err)
+		return fmt.Errorf("%q is an invalid number: %s", numeric, err)
 	}
 
 	var total = base * mult
 	if total/mult != base {
-		return fmt.Errorf("datasize.New(%q): outside int64 range", numeric)
+		return fmt.Errorf("outside int64 range")
 	}
 
 	*d = Datasize(int64(total))
