@@ -190,7 +190,8 @@ Manual Testing This is clunky and hacky, but it&amp;rsquo;s what we&amp;rsquo;ve
       <pubDate>Mon, 01 Jan 0001 00:00:00 +0000</pubDate>
       
       <guid>https://uoregon-libraries.github.io/newspaper-curation-app/setup/sftpgo-integration/</guid>
-      <description>SFTPGo is an sftp server that exposes APIs and a web interface for administration tasks. We&amp;rsquo;ve chosen to integrate NCA with SFTPGo in order to simplify the process of creating a new publisher. If you choose not to use it, publisher uploads will have to be managed entirely by you (as was the case prior to this integration), and NCA will not track SFTP data (which is a change from NCA 3.</description>
+      <description>SFTPGo is an sftp server that exposes APIs and a web interface for administration tasks. We&amp;rsquo;ve chosen to integrate NCA with SFTPGo in order to simplify the process of creating titles for a publisher that&amp;rsquo;s uploading newspaper PDFs.
+If you choose not to use this integration, publisher uploads will have to be managed entirely by you (as was the case prior to this integration), and NCA will not track SFTP data (which is a change from NCA 3.</description>
     </item>
     
     <item>
