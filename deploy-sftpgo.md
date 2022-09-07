@@ -47,11 +47,14 @@ First, to remove everything from a prior install:
 
 ```
 sudo systemctl stop sftpgo
-sudo rm -rf /etc/sftpgo \
-    /var/lib/sftpgo \
-    /usr/share/sftpgo \
-    /usr/bin/sftpgo \
-    /etc/systemd/system/sftpgo.service
+
+entries="/etc/sftpgo /var/lib/sftpgo /usr/share/sftpgo /usr/bin/sftpgo /etc/systemd/system/sftpgo.service"
+
+# Make a backup of all removed files/dirs just in case...
+sudo tar -czf /root/sftpgo-backup-$(date +"%Y-%m-%d").tgz $entries
+
+# Remove things
+sudo rm -rf $entries
 ```
 
 Full command list from docs, in case they get removed or something:
