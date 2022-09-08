@@ -1,8 +1,9 @@
 // copy-sources.go hard-links source issues' files into the fakemount to test
 // various aspects of processing.  We hard-link PDFs in sources/sftp into
-// fakemount/sftp, sometimes combining the pages into a new PDF first (to test page
-// splitting), other times just copying them as-is.  We then hard-link TIFF and
-// PDF files in sources/scans into fakemount/scans.  Directories for SFTP
+// fakemount/sftp, sometimes combining the pages into a new PDF first (to test
+// page splitting), other times just copying them as-is. SFTP dir names are
+// translated to match what we use in our seed data.  We then hard-link TIFF
+// and PDF files in sources/scans into fakemount/scans.  Directories for SFTP
 // publisher are taken by splitting the sources dir on hyphen, and the same
 // happens for scans, but we also expect an org code.
 //
@@ -71,6 +72,29 @@ type issue struct {
 	edition string
 }
 
+// sftpdir returns the sftp dirname based on our known seed data. This is
+// hard-coded and really bad since we don't provide seed data, but it is a
+// necessary evil to move this test suite forward(ish) for the SFTPGo feature.
+func (i *issue) sftpdir() string {
+	switch i.lccn {
+	case "2004260523":
+		return "appealtribune"
+	case "sn00063621":
+		return "keizertimes"
+	case "sn83008376":
+		return "astorian"
+	case "sn96088087":
+		return "polkitemizer"
+	case "sn99063854":
+		return "vernoniaeagle"
+	}
+
+	//  If we don't have a match we just return the LCCN as-is rather than try to
+	//  look anything up. Long-term, though, we really should just connect to the
+	//  NCA database for this whole process.
+	return i.lccn
+}
+
 // getDirParts splits dirname on hyphens, and translates the data such that:
 // - an error is returned if dirname had neither 2 nor 3 hyphens
 // - moc is only set if dirname had 3 hyphens
@@ -132,7 +156,7 @@ func moveSFTPs(testDir string) {
 			l.Fatalf("Unable to parse directory %q: too many hyphens", dirName)
 		}
 
-		var outPath = filepath.Join(sftpDestPath, issue.lccn, issue.date)
+		var outPath = filepath.Join(sftpDestPath, issue.sftpdir(), issue.date)
 		err = os.RemoveAll(outPath)
 		if err != nil {
 			l.Fatalf("Unable to clear SFTP destination directory %q: %s", outPath, err)

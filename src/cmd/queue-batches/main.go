@@ -30,7 +30,7 @@ func getOpts() *config.Config {
 		`hacking the database. In other words, if you don't know what this means, ` +
 		`you don't need it.`)
 	var conf = c.GetConf()
-	var err = dbi.Connect(conf.DatabaseConnect)
+	var err = dbi.DBConnect(conf.DatabaseConnect)
 	if err != nil {
 		logger.Fatalf("Error trying to connect to database: %s", err)
 	}

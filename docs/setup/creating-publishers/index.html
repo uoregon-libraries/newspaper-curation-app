@@ -30,7 +30,7 @@
 <meta itemprop="name" content="Onboarding A Publisher">
 <meta itemprop="description" content="Setting up a new NCA toolsuite">
 
-<meta itemprop="wordCount" content="88">
+<meta itemprop="wordCount" content="61">
 <meta itemprop="keywords" content="" /></head>
 <body><div class="container"><header>
 <h1>Newspaper Curation App</h1><a href="https://github.com/uoregon-libraries/newspaper-curation-app/" class="github"><i class="fab fa-github"></i></a>
@@ -42,26 +42,23 @@
 take place:</p>
 <ul>
 <li>Add a title to NCA with sftp credential information.</li>
-<li>If necessary, import the title to your ONI site (for example,
+<li>If necessary, import the title&rsquo;s MARC record to your ONI site (for example,
 oregonnews.uoregon.edu).
 <ul>
 <li>See <a href="../../workflow/adding-titles">Adding Titles</a> for details</li>
 </ul>
 </li>
-<li>Add a user to the sftp server
+<li>Set up a user for sftp access
 <ul>
-<li>At UO, we have an internal sftp script at <code>/usr/local/scripts/addsftpuser.sh</code>.</li>
-<li>e.g., <code>/usr/local/scripts/addsftpuser.sh &quot;newpublisher&quot; &quot;Pas$w0rd&quot;</code></li>
+<li>We use NCA&rsquo;s integrated SFTPGo setup for this.  See
+<a href="../../setup/sftpgo-integration">SFTPGo Integration</a>.</li>
 </ul>
 </li>
-<li>Symlink the sftp server&rsquo;s location so NCA can see it.  NCA&rsquo;s server has a
-helper script at <code>/usr/local/scripts/add-sftp-symlinks.sh</code> which lists which
-publishers' directories may need links.</li>
 </ul>
 <div class="edit-meta">
 
 <br></div><nav class="pagination"><a class="nav nav-prev" href="https://uoregon-libraries.github.io/newspaper-curation-app/setup/user-setup/" title="Users"><i class="fas fa-arrow-left" aria-hidden="true"></i>&nbsp;Prev - Users</a>
-<a class="nav nav-next" href="https://uoregon-libraries.github.io/newspaper-curation-app/specs/" title="NCA Terms, Specs, and Information">Next - NCA Terms, Specs, and Information <i class="fas fa-arrow-right" aria-hidden="true"></i></a>
+<a class="nav nav-next" href="https://uoregon-libraries.github.io/newspaper-curation-app/setup/sftpgo-integration/" title="SFTPGo Integration">Next - SFTPGo Integration <i class="fas fa-arrow-right" aria-hidden="true"></i></a>
 </nav><footer><p class="powered">Powered by <a href="https://gohugo.io">Hugo</a>. Theme by <a href="https://themes.gohugo.io/hugo-theme-techdoc/">TechDoc</a>. Designed by <a href="https://github.com/thingsym/hugo-theme-techdoc">Thingsym</a>.</p>
 </footer>
 </main>
@@ -79,6 +76,7 @@ publishers' directories may need links.</li>
 <li class=""><a href="https://uoregon-libraries.github.io/newspaper-curation-app/setup/installation/">Installation</a></li>
 <li class=""><a href="https://uoregon-libraries.github.io/newspaper-curation-app/setup/user-setup/">Users</a></li>
 <li class="active"><a href="https://uoregon-libraries.github.io/newspaper-curation-app/setup/creating-publishers/">Onboarding A Publisher</a></li>
+<li class=""><a href="https://uoregon-libraries.github.io/newspaper-curation-app/setup/sftpgo-integration/">SFTPGo Integration</a></li>
 </ul>
   
 </li>

@@ -137,7 +137,7 @@ func getOpts() (*config.Config, []string) {
 		logger.Fatalf("Invalid configuration: %s", err)
 	}
 
-	err = dbi.Connect(c.DatabaseConnect)
+	err = dbi.DBConnect(c.DatabaseConnect)
 	if err != nil {
 		logger.Fatalf("Unable to connect to the database: %s", err)
 	}

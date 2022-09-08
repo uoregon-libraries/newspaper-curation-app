@@ -88,40 +88,59 @@
     </div>
   </div>
 
-  {{if .User.PermittedTo ModifyTitleSFTP}}
-  <div class="form-group">
-    <label class="col-sm-4 control-label" for="sftpdir">SFTP directory</label>
-    <div class="col-sm-8">
-      <input id="sftpdir" name="sftpdir" value="{{.Data.Title.SFTPDir}}" class="form-control" />
-    </div>
-  </div>
-
+  <!-- No sftp data is shown/editable if we aren't connected to SFTPGo.  Too much pain. -->
+  {{if SFTPGoEnabled}}
   <div class="form-group">
     <label class="col-sm-4 control-label" for="sftpuser">SFTP username</label>
     <div class="col-sm-8">
-      <input id="sftpuser" name="sftpuser" value="{{.Data.Title.SFTPUser}}" class="form-control" />
-    </div>
-  </div>
-
-  <div class="form-group">
-    <label class="col-sm-4 control-label" for="sftppass">SFTP password</label>
-    <div class="col-sm-8">
-      <input id="sftppass" name="sftppass" value="{{.Data.Title.SFTPPass}}" class="form-control" />
-    </div>
-  </div>
-
-  {{else if and (ne .Data.Title.ID 0) (.User.PermittedTo ViewTitleSFTPCredentials)}}
-  <div class="form-group">
-    <label class="col-sm-4 control-label" for="sftpuser">SFTP username</label>
-    <div class="col-sm-8">
+      <!-- SFTPGo has an account for this title: username cannot be changed -->
+      {{if .Data.Title.SFTPConnected}}
       <p id="sftpuser" class="form-control-static">{{.Data.Title.SFTPUser}}</p>
+      <p id="sftpuser-help" class="help-block">
+        This title's SFTP credentials have already been generated in our
+        external SFTPGo system, so the SFTP Username can no longer be modified.
+      </p>
+
+      <!-- No account, so username can be set -->
+      {{else}}
+      <input id="sftpuser" name="sftpuser" class="form-control" value="{{.Data.Title.SFTPUser}}" aria-describedby="sftpuser-help" />
+      <p id="sftpuser-help" class="help-block">
+        Enter a login name for this title if the publisher will send issues via SFTP.
+        <strong>Note</strong>: NCA will use this to provision an external
+        account, and it <strong>cannot be changed</strong> once set.
+        <br /><br />
+        Leave this blank to indicate the title isn't being uploaded externally
+        (e.g., if it's for in-house scanning).
+      </p>
+      {{end}}
     </div>
   </div>
 
   <div class="form-group">
     <label class="col-sm-4 control-label" for="sftppass">SFTP password</label>
     <div class="col-sm-8">
-      <p id="sftppass" class="form-control-static">{{.Data.Title.SFTPPass}}</p>
+      <input id="sftppass" name="sftppass" class="form-control" value="{{.Data.Title.SFTPPass}}" aria-describedby="sftppass-help" />
+      <p id="sftppass-help" class="help-block">
+        {{if .Data.Title.SFTPConnected}}
+        Optional: if filled in, the SFTP user's password will be changed
+        {{else}}
+        Optional: leave blank to let NCA generate a random password for this user's SFTP login
+        {{end}}
+      </p>
+    </div>
+  </div>
+
+  <div class="form-group">
+    <label class="col-sm-4 control-label" for="sftpquota">SFTP Quota</label>
+    <div class="col-sm-8">
+      <input id="sftpquota" name="sftpquota" class="form-control" value="{{.Data.Title.SFTPQuota.String}}" aria-describedby="sftpquota-help" />
+      <p id="sftpquota-help" class="help-block">
+        Maximum amount of space allowed to be used by this title's SFTP
+        uploads.  You can enter a shorthand value, e.g., "5gb" means 5
+        gigabytes.  Anything which results in a zero value (blank, "0", "0 B",
+        etc.) means the SFTP account has unlimited storage.  This is
+        <strong>not recommended</strong>.
+      </p>
     </div>
   </div>
   {{end}}

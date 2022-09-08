@@ -50,9 +50,16 @@ func getConf() {
 		logger.Fatalf("Config error: %s", err)
 	}
 
-	err = dbi.Connect(conf.DatabaseConnect)
+	err = dbi.DBConnect(conf.DatabaseConnect)
 	if err != nil {
 		logger.Fatalf("Error trying to connect to database: %s", err)
+	}
+
+	if conf.SFTPGoEnabled {
+		err = dbi.SFTPConnect(conf.SFTPGoAPIURL, conf.SFTPGoAdminLogin, conf.SFTPGoAdminPassword)
+		if err != nil {
+			logger.Fatalf("Error trying to connect to SFTPGo: %s", err)
+		}
 	}
 
 	// We can ignore the error here because the config magic already verified
@@ -150,5 +157,6 @@ func home(w http.ResponseWriter, req *http.Request) {
 func main() {
 	getConf()
 	migrateIssuesMissingMetadataEntry()
+	migrate3xTitlesToSFTPGo()
 	startServer()
 }

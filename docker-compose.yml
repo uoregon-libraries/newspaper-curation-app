@@ -7,6 +7,8 @@ version: '2'
 volumes:
   db:
   issue-cache:
+  sftpgo-backups:
+  sftpgo-home:
 
 services:
   db:
@@ -42,6 +44,9 @@ services:
     environment: &ncaenv
       - NCA_WEBROOT=$APP_URL
       - NCA_DB_HOST=db
+      - NCA_SFTP_API_URL=http://sftpgo:8080/api/v2
+      - NCA_SFTP_USER=admin
+      - NCA_SFTP_PASSWORD=password
       # The redundancy here ensures we get a warning if $NCA_NEWS_WEBROOT isn't set
       - NCA_NEWS_WEBROOT=$NCA_NEWS_WEBROOT
       - NCA_IIIF_BASE_URL=$APP_URL/images/iiif
@@ -49,7 +54,23 @@ services:
       - 8080
     depends_on:
       - db
+      - sftpgo
+      - iiif
     command: ./bin/server -c ./settings
+
+  sftpgo:
+    image: drakkan/sftpgo:v2.3-alpine
+    volumes:
+      - /mnt/news/sftp:/srv/sftpgo/data:z
+      - sftpgo-backups:/srv/sftpgo/backups
+      - sftpgo-home:/var/lib/sftpgo
+    expose:
+      - 8080
+      - 2022
+    environment:
+      - SFTPGO_DATA_PROVIDER__CREATE_DEFAULT_ADMIN=true
+      - SFTPGO_DEFAULT_ADMIN_USERNAME=admin
+      - SFTPGO_DEFAULT_ADMIN_PASSWORD=password
 
   workers:
     build:
@@ -68,3 +89,4 @@ services:
     depends_on:
       - web
       - iiif
+      - sftpgo

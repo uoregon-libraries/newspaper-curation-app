@@ -48,7 +48,7 @@ func getOpts() {
 		"refine the search.")
 	conf = c.GetConf()
 
-	var err = dbi.Connect(conf.DatabaseConnect)
+	var err = dbi.DBConnect(conf.DatabaseConnect)
 	if err != nil {
 		logger.Fatalf("Error trying to connect to database: %s", err)
 	}
@@ -85,8 +85,9 @@ func getOpts() {
 			c.UsageFail("Invalid issue search key %#v: %s", ik, err)
 		}
 
-		// See if a title's directory was given and convert to LCCN if so
-		var t = titles.FindByDirectory(searchKey.LCCN)
+		// Find the title in the database via our generic title finder and make
+		// sure we really have an LCCN in the search key
+		var t = titles.Find(searchKey.LCCN)
 		if t != nil {
 			searchKey.LCCN = t.LCCN
 		}

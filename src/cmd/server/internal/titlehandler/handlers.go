@@ -1,7 +1,9 @@
 package titlehandler
 
 import (
+	"encoding/base64"
 	"fmt"
+	"html/template"
 	"net/http"
 	"path"
 	"strconv"
@@ -9,7 +11,9 @@ import (
 	"github.com/gorilla/mux"
 	"github.com/uoregon-libraries/newspaper-curation-app/src/cmd/server/internal/responder"
 	"github.com/uoregon-libraries/newspaper-curation-app/src/config"
+	"github.com/uoregon-libraries/newspaper-curation-app/src/dbi"
 	"github.com/uoregon-libraries/newspaper-curation-app/src/duration"
+	"github.com/uoregon-libraries/newspaper-curation-app/src/internal/datasize"
 	"github.com/uoregon-libraries/newspaper-curation-app/src/internal/logger"
 	"github.com/uoregon-libraries/newspaper-curation-app/src/models"
 	"github.com/uoregon-libraries/newspaper-curation-app/src/privilege"
@@ -45,6 +49,7 @@ func Setup(r *mux.Router, baseWebPath string, c *config.Config) {
 	layout = responder.Layout.Clone()
 	layout.Funcs(tmpl.FuncMap{
 		"TitlesHomeURL": func() string { return basePath },
+		"SFTPGoEnabled": func() bool { return c.SFTPGoEnabled },
 	})
 	layout.Path = path.Join(layout.Path, "titles")
 
@@ -72,7 +77,22 @@ func getTitle(r *responder.Responder) (t *Title, handled bool) {
 		return nil, true
 	}
 
-	return WrapTitle(dbt), false
+	var wrapped = WrapTitle(dbt)
+
+	// If we've got a connection to SFTPGo, we have to read from there, too, not
+	// just the database
+	if conf.SFTPGoEnabled && dbt.SFTPConnected {
+		var u, err = dbi.SFTP.GetUser(dbt.SFTPUser)
+		if err != nil {
+			logger.Errorf("Unable to look up title %q in SFTPGo: %s", dbt.SFTPUser, err)
+			r.Error(http.StatusInternalServerError, "Unable to find title - try again or contact support")
+			return nil, true
+		}
+
+		wrapped.SFTPQuota = datasize.Datasize(u.QuotaSize)
+	}
+
+	return wrapped, false
 }
 
 // listHandler spits out the list of titles
@@ -151,10 +171,23 @@ func setTitleData(r *responder.Responder, t *Title) (vErrors []string, handled b
 		t.EmbargoPeriod = embargoPeriod.String()
 	}
 
-	if r.Vars.User.PermittedTo(privilege.ModifyTitleSFTP) {
-		t.SFTPDir = form.Get("sftpdir")
-		t.SFTPUser = form.Get("sftpuser")
+	if conf.SFTPGoEnabled {
+		var newUser = form.Get("sftpuser")
+		if newUser != "" && !t.SFTPConnected {
+			t.SFTPUser = newUser
+		}
 		t.SFTPPass = form.Get("sftppass")
+
+		var raw = form.Get("sftpquota")
+		if raw == "" {
+			vErrors = append(vErrors, "SFTP quota cannot be blank")
+		}
+		var quota, err = datasize.New(raw)
+		if err == nil {
+			t.SFTPQuota = quota
+		} else {
+			vErrors = append(vErrors, fmt.Sprintf("Invalid SFTP quota %q: %s", raw, err))
+		}
 	}
 
 	if !t.ValidLCCN || r.Vars.User.PermittedTo(privilege.ModifyValidatedLCCNs) {
@@ -187,8 +220,8 @@ func setTitleData(r *responder.Responder, t *Title) (vErrors []string, handled b
 		if t.LCCN == t2.LCCN {
 			vErrors = append(vErrors, fmt.Sprintf("LCCN %q is already in use", t.LCCN))
 		}
-		if t.SFTPDir != "" && t.SFTPDir == t2.SFTPDir {
-			vErrors = append(vErrors, fmt.Sprintf("SFTPDir %q is already in use", t.SFTPDir))
+		if t.SFTPUser != "" && t.SFTPUser == t2.SFTPUser {
+			vErrors = append(vErrors, fmt.Sprintf("SFTP Username %s is already in use", t.SFTPUser))
 		}
 	}
 
@@ -222,10 +255,14 @@ func saveHandler(w http.ResponseWriter, req *http.Request) {
 		return
 	}
 
-	var err = t.Save()
+	// Title saving is complex because of SFTPGo integration, so it's tucked away
+	var msg, err = saveTitle(t)
 	if err != nil {
 		logger.Errorf("Unable to save title %q: %s", t.Name, err)
-		r.Error(http.StatusInternalServerError, "Error trying to save title - try again or contact support")
+		r.Vars.Data["Title"] = t
+		r.Vars.Title = "Error saving title " + t.Name
+		r.Vars.Alert = template.HTML(msg)
+		r.Render(formTmpl)
 		return
 	}
 
@@ -238,8 +275,73 @@ func saveHandler(w http.ResponseWriter, req *http.Request) {
 	}
 
 	r.Audit(models.AuditActionSaveTitle, fmt.Sprintf("%#v", r.Request.Form))
-	http.SetCookie(w, &http.Cookie{Name: "Info", Value: "Title saved", Path: "/"})
+
+	http.SetCookie(w, &http.Cookie{
+		Name:  "Info",
+		Value: "base64" + base64.StdEncoding.EncodeToString([]byte(msg)),
+		Path:  "/",
+	})
 	http.Redirect(w, r.Request, basePath, http.StatusFound)
+}
+
+func saveTitle(t *Title) (msg string, err error) {
+	// If there's no SFTPGo connection, we just save and return
+	if !conf.SFTPGoEnabled {
+		return "Title saved", t.Save()
+	}
+
+	// If the title isn't connected, but username is blank, we also return
+	if !t.SFTPConnected && t.SFTPUser == "" {
+		return "Title saved", t.Save()
+	}
+
+	// We connect to SFTPGo, so we need a transaction
+	var op = dbi.DB.Operation()
+	op.Dbg = dbi.Debug
+	op.BeginTransaction()
+
+	// We'll need to save the title, and set its connection flag to true
+	var wasConnected = t.SFTPConnected
+	t.SFTPConnected = true
+	err = t.SaveOp(op)
+	var sftpMessage string
+	if err != nil {
+		return "database write failure", err
+	}
+
+	sftpMessage, err = integrateSFTP(t, wasConnected)
+	if err != nil {
+		// rollback and set the in-memory title's sftp connection to its prior value
+		op.Rollback()
+		t.SFTPConnected = wasConnected
+		return "couldn't integrate title into SFTP server", fmt.Errorf("Error in SFTPGo integration for title %q (SFTPUser %q): %s", t.Name, t.SFTPUser, err)
+	}
+
+	op.EndTransaction()
+	return "Title saved.  SFTP Integration successful: " + sftpMessage, op.Err()
+}
+
+// integrateSFTP attempts to create or update a user in SFTPGo
+func integrateSFTP(t *Title, connected bool) (msg string, err error) {
+	if !conf.SFTPGoEnabled {
+		return "", nil
+	}
+
+	// If the title already has an SFTP connection, we perform an update
+	if connected {
+		err = dbi.SFTP.UpdateUser(t.SFTPUser, t.SFTPPass, int64(t.SFTPQuota))
+		if err != nil {
+			return fmt.Sprintf("Error updating SFTP password for user %q: try again or contact support", t.SFTPUser), err
+		}
+		return "update complete", nil
+	}
+
+	var pass string
+	pass, err = dbi.SFTP.CreateUser(t.SFTPUser, t.SFTPPass, int64(t.SFTPQuota), t.Name+" / "+t.LCCN)
+	if err != nil {
+		return fmt.Sprintf("Error provisioning the SFTP user %q: try again or contact support", t.SFTPUser), err
+	}
+	return fmt.Sprintf("SFTP credentials: Username %q; Password %q", t.SFTPUser, pass), nil
 }
 
 func validateHandler(w http.ResponseWriter, req *http.Request) {

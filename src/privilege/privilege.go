@@ -24,9 +24,6 @@ var (
 	ViewUploadedIssues   = newPrivilege(RoleWorkflowManager)
 	ModifyUploadedIssues = newPrivilege(RoleWorkflowManager)
 
-	// View the SFTP credentials for a title
-	ViewTitleSFTPCredentials = newPrivilege(RoleTitleManager)
-
 	// Search for issues across all locations - this could really be more open,
 	// but I don't see it being necessary for anybody but workflow managers at
 	// the moment
@@ -52,7 +49,6 @@ var (
 
 	// Admins only
 	ModifyValidatedLCCNs = newPrivilege()
-	ModifyTitleSFTP      = newPrivilege()
 	ListAuditLogs        = newPrivilege()
 )
 

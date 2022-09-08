@@ -6,6 +6,7 @@ import (
 	"strings"
 
 	"github.com/uoregon-libraries/newspaper-curation-app/src/duration"
+	"github.com/uoregon-libraries/newspaper-curation-app/src/internal/datasize"
 	"github.com/uoregon-libraries/newspaper-curation-app/src/models"
 	"github.com/uoregon-libraries/newspaper-curation-app/src/schema"
 )
@@ -16,13 +17,19 @@ var noWordRE = regexp.MustCompile(`\W+`)
 // Title wraps a models.Title for web display
 type Title struct {
 	*models.Title
-	SortName string
+	SortName  string
+	SFTPPass  string // SFTPPass is a temp field so we can send password updates to SFTPGo
+	SFTPQuota datasize.Datasize
 }
 
 // WrapTitle converts a models.Title to a Title, giving it a useful "SortName"
 // based on its name (stripped of common prefixes) and LCCN
 func WrapTitle(t *models.Title) *Title {
-	return &Title{t, strings.ToLower(re.ReplaceAllString(schema.TrimCommonPrefixes(t.Name)+t.LCCN, "-"))}
+	return &Title{
+		Title:     t,
+		SortName:  strings.ToLower(re.ReplaceAllString(schema.TrimCommonPrefixes(t.Name)+t.LCCN, "-")),
+		SFTPQuota: conf.SFTPGoNewUserQuota,
+	}
 }
 
 // WrapTitles takes a models.TitleList and wraps each title individually
