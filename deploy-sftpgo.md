@@ -57,6 +57,8 @@ sudo tar -czf /root/sftpgo-backup-$(date +"%Y-%m-%d").tgz $entries
 sudo rm -rf $entries
 ```
 
+**Make sure `sftpgo.env` is set up properly prior to starting the daemon!**
+
 Full command list from docs, in case they get removed or something:
 
 ```
@@ -108,19 +110,6 @@ sudo sh -c '/usr/bin/sftpgo gen completion bash > /usr/share/bash-completion/com
 sudo /usr/bin/sftpgo gen man -d /usr/share/man/man1
 ```
 
-Make sure bolt is the configured data store, e.g. in `/etc/sftpgo/sftpgo.json`:
-
-```
-...
-
-  "data_provider": {
-    "driver": "bolt",
-    "name": "sftpgo.db",
-    "host": "",
-...
-
-```
-
 May need to run `systemctl daemon-reload` prior to restarting the service.
 
 ## Downtime
@@ -135,10 +124,19 @@ NCA:
 
 SFTP Server:
 
-- Add a temporary firewall rule on SFTP server to block port 22 from external users
+- Add a temporary firewall rule on SFTP server to block port 22 *only* from
+  external users
+  - `firewall-cmd --remove-service=ssh`
+  - `rule family="ipv4" source address="..." service name="ssh" accept`
 - Swap sshd to port 2022
+  - Make sure 2022 is accessible from campus / library IPs!
+  - `rule family="ipv4" source address="..." port port="2022" protocol="tcp" accept`
+  - This is permanent - we'll keep this locked down to local ranges forever
+  - SELinux needs this: `semanage port -a -t ssh_port_t -p tcp 2022`
 - Configure SFTPGo to use port 22
-- Lock down 2022 to UO ranges (maybe just library staff?)
+  - Add this to /etc/sftpgo.env: `SFTPGO_SFTPD__BINDINGS__0__PORT=22`
+  - Configure binary to be allowed to do this: `setcap cap_net_bind_service=+ep /usr/bin/sftpgo`
+- Start sftpgo service, create an admin, test basic connectivity
 
 NCA:
 
@@ -166,3 +164,5 @@ Communication:
 - ODNP team: system is live and NCA is usable again
 - Give publishers new ssh key fingerprint and let them know that they can
   resume uploads
+  - SHA256:GpnjjLaSxmBgCQ4POY/znztxxieCC6XQ7wmCSJcrPTA
+  - MD5:60:41:97:ed:1e:11:12:69:4c:a3:1a:dd:8b:8d:2d:84
