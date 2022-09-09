@@ -158,6 +158,8 @@ Communication:
 SFTP Server:
 
 - Remove temporary firewall rule to block port 22 from outside UO
+  - Remove rich rule(s): `rule family="ipv4" source address="..." service name="ssh" accept`
+  - `firewall-cmd --add-service=ssh`
 
 Communication:
 
