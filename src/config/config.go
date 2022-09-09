@@ -105,7 +105,7 @@ func Parse(filename string) (*Config, error) {
 	var quota = bc.Get("SFTPGO_NEW_USER_QUOTA")
 	c.SFTPGoNewUserQuota, err = datasize.New(quota)
 	if err != nil {
-		errors = append(errors, fmt.Sprintf("invalid SFPTGoNewUserQuota: %s", err))
+		errors = append(errors, fmt.Sprintf("invalid SFTPGoNewUserQuota: %s", err))
 	}
 
 	if c.MinimumIssuePages < 1 {
