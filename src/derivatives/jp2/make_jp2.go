@@ -108,7 +108,7 @@ func (t *Transformer) makePNG() {
 
 	t.tmpPNG, err = fileutil.TempNamedFile("", "", ".png")
 	if err != nil {
-		t.err = fmt.Errorf("unable to create temporary PNG: %s", err)
+		t.err = fmt.Errorf("unable to create temporary PNG: %w", err)
 		return
 	}
 
@@ -151,14 +151,14 @@ func (t *Transformer) makeJP2() {
 	// capturing things like errors on Write, Close, etc. isn't possible.
 	t.tmpJP2, err = fileutil.TempNamedFile("", "", ".jp2")
 	if err != nil {
-		t.err = fmt.Errorf("unable to create test JP2: %s", err)
+		t.err = fmt.Errorf("unable to create test JP2: %w", err)
 		return
 	}
 
 	// Create a stable test PNG for use in the JP2 decode verification(s)
 	t.tmpPNGTest, err = fileutil.TempNamedFile("", "", ".png")
 	if err != nil {
-		t.err = fmt.Errorf("unable to create test PNG: %s", err)
+		t.err = fmt.Errorf("unable to create test PNG: %w", err)
 		return
 	}
 
@@ -187,7 +187,7 @@ func (t *Transformer) moveTempJP2() {
 		var copyErr = fileutil.CopyVerify(t.tmpJP2, t.OutputJP2)
 		if copyErr != nil {
 			os.Remove(t.OutputJP2)
-			t.err = fmt.Errorf("unable to link or copy JP2: %s / %s", err, copyErr)
+			t.err = fmt.Errorf("unable to link or copy JP2: %w / %s", err, copyErr)
 			return
 		}
 	}
@@ -197,7 +197,7 @@ func (t *Transformer) moveTempJP2() {
 	err = os.Chmod(t.OutputJP2, 0644)
 	if err != nil {
 		os.Remove(t.OutputJP2)
-		t.err = fmt.Errorf("unable to set JP2 permissions: %s", err)
+		t.err = fmt.Errorf("unable to set JP2 permissions: %w", err)
 	}
 }
 

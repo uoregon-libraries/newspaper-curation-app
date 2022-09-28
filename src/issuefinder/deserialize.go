@@ -15,7 +15,7 @@ import (
 func Deserialize(filename string) (*Finder, error) {
 	var content, err = ioutil.ReadFile(filename)
 	if err != nil {
-		return nil, fmt.Errorf("unable to read file %#v: %s", filename, err)
+		return nil, fmt.Errorf("unable to read file %#v: %w", filename, err)
 	}
 
 	// Register all the error types
@@ -27,7 +27,7 @@ func Deserialize(filename string) (*Finder, error) {
 	var cf cachedFinder
 	err = dec.Decode(&cf)
 	if err != nil {
-		return nil, fmt.Errorf("unable to deserialize %#v: %s", filename, err)
+		return nil, fmt.Errorf("unable to deserialize %#v: %w", filename, err)
 	}
 
 	return cf.finder(), nil

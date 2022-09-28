@@ -62,7 +62,7 @@ func (j *ArchiveBackups) buildArchive() error {
 	var infos, err = ioutil.ReadDir(src)
 	if err != nil {
 		f.Cancel()
-		return fmt.Errorf("couldn't read %q: %s", src, err)
+		return fmt.Errorf("couldn't read %q: %w", src, err)
 	}
 
 	for _, info := range infos {
@@ -87,7 +87,7 @@ func (j *ArchiveBackups) buildArchive() error {
 		}
 		if err != nil {
 			f.Cancel()
-			return fmt.Errorf("couldn't write %q to tar: %s", fname, err)
+			return fmt.Errorf("couldn't write %q to tar: %w", fname, err)
 		}
 	}
 
@@ -95,13 +95,13 @@ func (j *ArchiveBackups) buildArchive() error {
 	err = tw.Close()
 	if err != nil {
 		f.Cancel()
-		return fmt.Errorf("couldn't close tarfile: %s", err)
+		return fmt.Errorf("couldn't close tarfile: %w", err)
 	}
 
 	j.Logger.Debugf("Moving tarfile from temp file to final location %q", j.tarfile)
 	err = f.Close()
 	if err != nil {
-		return fmt.Errorf("couldn't move temp tarfile to %q: %s", j.tarfile, err)
+		return fmt.Errorf("couldn't move temp tarfile to %q: %w", j.tarfile, err)
 	}
 
 	return nil

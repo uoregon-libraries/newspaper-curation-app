@@ -20,7 +20,7 @@ type issue struct {
 func wrapIssue(dbIssue *models.Issue) (*issue, error) {
 	var issueDate, err = time.Parse("2006-01-02", dbIssue.Date)
 	if err != nil {
-		return nil, fmt.Errorf("%q is an invalid date: %s", dbIssue.Date, err)
+		return nil, fmt.Errorf("%q is an invalid date: %w", dbIssue.Date, err)
 	}
 
 	var i = &issue{Issue: dbIssue, pages: len(dbIssue.PageLabels)}
@@ -33,7 +33,7 @@ func wrapIssue(dbIssue *models.Issue) (*issue, error) {
 	var embargoLiftDate time.Time
 	embargoLiftDate, err = i.title.CalculateEmbargoLiftDate(issueDate)
 	if err != nil {
-		return nil, fmt.Errorf("Unable to parse title's embargo duration: %s", err)
+		return nil, fmt.Errorf("Unable to parse title's embargo duration: %w", err)
 	}
 
 	if embargoLiftDate.After(time.Now()) {

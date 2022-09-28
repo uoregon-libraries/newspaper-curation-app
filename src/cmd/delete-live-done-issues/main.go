@@ -94,7 +94,7 @@ func warning(issues []*models.Issue) {
 func purgeIssues() error {
 	var issues, err = models.FindCompletedIssuesReadyForRemoval()
 	if err != nil {
-		return fmt.Errorf("error looking for issues in live_done batches: %s", err)
+		return fmt.Errorf("error looking for issues in live_done batches: %w", err)
 	}
 	if opts.Live {
 		warning(issues)
@@ -114,12 +114,12 @@ func purgeIssues() error {
 		fmt.Printf("Removing %q\n", issue.Location)
 		err = os.RemoveAll(issue.Location)
 		if err != nil {
-			return fmt.Errorf("unable to remove issue location %q: %s", issue.Location, err)
+			return fmt.Errorf("unable to remove issue location %q: %w", issue.Location, err)
 		}
 		issue.Location = ""
 		err = issue.SaveWithoutAction()
 		if err != nil {
-			return fmt.Errorf("unable to remove issue %d's location (%s) from database: %s", issue.ID, issue.Location, err)
+			return fmt.Errorf("unable to remove issue %d's location (%s) from database: %w", issue.ID, issue.Location, err)
 		}
 	}
 

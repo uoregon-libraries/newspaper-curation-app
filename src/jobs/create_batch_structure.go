@@ -66,7 +66,7 @@ func (j *CreateBatchStructure) Process(*config.Config) bool {
 func linkFiles(src string, dest string) error {
 	var files, err = ioutil.ReadDir(src)
 	if err != nil {
-		return fmt.Errorf("couldn't scan for source files: %s", err)
+		return fmt.Errorf("couldn't scan for source files: %w", err)
 	}
 
 	for _, file := range files {
@@ -78,7 +78,7 @@ func linkFiles(src string, dest string) error {
 		var destPath = filepath.Join(dest, name)
 		err = os.Link(srcPath, destPath)
 		if err != nil {
-			return fmt.Errorf("couldn't link %q to %q: %s", srcPath, destPath, err)
+			return fmt.Errorf("couldn't link %q to %q: %w", srcPath, destPath, err)
 		}
 	}
 	return nil

@@ -76,7 +76,7 @@ func flagIssuesFormHandler(w http.ResponseWriter, req *http.Request) {
 func parseIssueKeyURL(val string) (string, error) {
 	var u, err = url.Parse(val)
 	if err != nil {
-		return "", fmt.Errorf("%q is not a URL: %s", val, err)
+		return "", fmt.Errorf("%q is not a URL: %w", val, err)
 	}
 	var parts = strings.Split(u.Path, "/")
 	for i, part := range parts {

@@ -49,7 +49,7 @@ func New(templatePath string, outputFileName string, issue *models.Issue, title 
 		},
 	}
 	if err != nil {
-		t.err = fmt.Errorf("unable to aggregate issue's pages: %s", err)
+		t.err = fmt.Errorf("unable to aggregate issue's pages: %w", err)
 		return t
 	}
 
@@ -66,21 +66,21 @@ func (t *Transformer) Transform() error {
 	var buf = new(bytes.Buffer)
 	var err = t.tmpl.Execute(buf, t.d)
 	if err != nil {
-		return fmt.Errorf("unable to execute METS template: %s", err)
+		return fmt.Errorf("unable to execute METS template: %w", err)
 	}
 
 	// Write to temp file, then copy if we're successful
 	var f = fileutil.NewSafeFile(t.outFile)
 	if f.Err != nil {
 		f.Cancel()
-		return fmt.Errorf("unable to create METS temp output file: %s", f.Err)
+		return fmt.Errorf("unable to create METS temp output file: %w", f.Err)
 	}
 
 	f.Write([]byte(xml.Header))
 	io.Copy(f, buf)
 	f.Close()
 	if f.Err != nil {
-		return fmt.Errorf("unable to write to METS temp output file: %s", f.Err)
+		return fmt.Errorf("unable to write to METS temp output file: %w", f.Err)
 	}
 
 	return nil

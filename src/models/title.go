@@ -95,7 +95,7 @@ func (t *Title) SaveOp(op *magicsql.Operation) error {
 func (t *Title) CalculateEmbargoLiftDate(dt time.Time) (time.Time, error) {
 	var d, err = duration.Parse(t.EmbargoPeriod)
 	if err != nil {
-		return time.Time{}, fmt.Errorf("invalid duration: %s", err)
+		return time.Time{}, fmt.Errorf("invalid duration: %w", err)
 	}
 
 	// If there's no embargo period, the issue's embargo lift date is essentially
