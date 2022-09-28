@@ -55,12 +55,12 @@ func (s *Searcher) findOrCreateWebTitle(c *httpcache.Client, uri string) (*schem
 	var request = httpcache.AutoRequest(uri, "titles")
 	var contents, err = c.GetCachedBytes(request)
 	if err != nil {
-		return nil, fmt.Errorf("unable to GET %#v: %s", uri, err)
+		return nil, fmt.Errorf("unable to GET %#v: %w", uri, err)
 	}
 	var tJSON *chronam.TitleJSON
 	tJSON, err = chronam.ParseTitleJSON(contents)
 	if err != nil {
-		return nil, fmt.Errorf("unable to parse title JSON for %#v: %s", uri, err)
+		return nil, fmt.Errorf("unable to parse title JSON for %#v: %w", uri, err)
 	}
 
 	s.addTitle(&schema.Title{

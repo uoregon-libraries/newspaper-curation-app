@@ -238,7 +238,7 @@ func doPurge(dbop *magicsql.Operation, issue *models.Issue, purgeJobs []*models.
 	var joblist = jobs.GetJobsForRemoveErroredIssue(issue, erroredIssuesPath)
 	var err = jobs.QueueSerialOp(dbop, joblist...)
 	if err != nil {
-		return fmt.Errorf("queueing jobs to purge issue %d: %s", issue.ID, err)
+		return fmt.Errorf("queueing jobs to purge issue %d: %w", issue.ID, err)
 	}
 
 	return nil

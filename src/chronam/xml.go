@@ -32,13 +32,13 @@ func ParseBatchXML(xmlFile string) (*BatchXML, error) {
 
 	var contents, err = ioutil.ReadFile(xmlFile)
 	if err != nil {
-		return nil, fmt.Errorf("batch XML file (%q) can't be read: %s", xmlFile, err)
+		return nil, fmt.Errorf("batch XML file (%q) can't be read: %w", xmlFile, err)
 	}
 
 	var bx BatchXML
 	err = xml.Unmarshal(contents, &bx)
 	if err != nil {
-		return nil, fmt.Errorf("unable to unmarshal batch XML %q: %s", xmlFile, err)
+		return nil, fmt.Errorf("unable to unmarshal batch XML %q: %w", xmlFile, err)
 	}
 
 	return &bx, nil

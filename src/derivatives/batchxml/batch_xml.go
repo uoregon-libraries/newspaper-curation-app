@@ -49,14 +49,14 @@ func (t *Transformer) Transform() error {
 	var buf = new(bytes.Buffer)
 	var err = t.tmpl.Execute(buf, t.d)
 	if err != nil {
-		return fmt.Errorf("unable to execute batch XML template: %s", err)
+		return fmt.Errorf("unable to execute batch XML template: %w", err)
 	}
 
 	// Write to temp file, then copy if we're successful
 	var f *os.File
 	f, err = fileutil.TempFile("", "", "")
 	if err != nil {
-		return fmt.Errorf("unable to create batch XML temp output file: %s", err)
+		return fmt.Errorf("unable to create batch XML temp output file: %w", err)
 	}
 	defer f.Close()
 	defer os.Remove(f.Name())
@@ -64,13 +64,13 @@ func (t *Transformer) Transform() error {
 	f.Write([]byte(xml.Header))
 	_, err = io.Copy(f, buf)
 	if err != nil {
-		return fmt.Errorf("unable to write to batch XML temp output file: %s", err)
+		return fmt.Errorf("unable to write to batch XML temp output file: %w", err)
 	}
 
 	err = fileutil.CopyFile(f.Name(), t.outFile)
 	if err != nil {
 		os.Remove(t.outFile)
-		return fmt.Errorf("unable to write to batch XML temp output file: %s", err)
+		return fmt.Errorf("unable to write to batch XML temp output file: %w", err)
 	}
 
 	return nil

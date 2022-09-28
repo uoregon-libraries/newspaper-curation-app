@@ -34,13 +34,13 @@ type DescriptiveMetadata struct {
 func ParseMETSIssueXML(filename string) (*METSIssue, error) {
 	var contents, err = ioutil.ReadFile(filename)
 	if err != nil {
-		return nil, fmt.Errorf("reading file: %s", err)
+		return nil, fmt.Errorf("reading file: %w", err)
 	}
 
 	var mets METSIssue
 	err = xml.Unmarshal(contents, &mets)
 	if err != nil {
-		return nil, fmt.Errorf("unmarshal: %s", err)
+		return nil, fmt.Errorf("unmarshal: %w", err)
 	}
 
 	return &mets, nil

@@ -119,7 +119,7 @@ func (c *Client) PrepCacheFile(r *Request) (string, error) {
 	dir := path.Dir(fullpath)
 	err := os.MkdirAll(dir, 0755)
 	if err != nil {
-		return "", fmt.Errorf("unable to create directory '%s': %s", dir, err)
+		return "", fmt.Errorf("unable to create directory '%s': %w", dir, err)
 	}
 
 	return fullpath, nil
@@ -135,14 +135,14 @@ func (c *Client) GetAndStore(u, filepath string) (io.ReadCloser, error) {
 	f, err := os.Create(filepath)
 	if err != nil {
 		body.Close()
-		return nil, fmt.Errorf("unable to cache URL request: %s", err)
+		return nil, fmt.Errorf("unable to cache URL request: %w", err)
 	}
 	defer f.Close()
 
 	_, err = io.Copy(f, body)
 	body.Close()
 	if err != nil {
-		return nil, fmt.Errorf("unable to cache URL request: %s", err)
+		return nil, fmt.Errorf("unable to cache URL request: %w", err)
 	}
 
 	// This is really stupid, but when I built this library apparently I didn't

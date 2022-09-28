@@ -35,7 +35,7 @@ func (t *Transformer) transform() {
 	var html Doc
 	var err = xml.Unmarshal(t.html, &html)
 	if err != nil {
-		t.err = fmt.Errorf("invalid html to unmarshal into XML: %s", err)
+		t.err = fmt.Errorf("invalid html to unmarshal into XML: %w", err)
 		return
 	}
 
@@ -69,7 +69,7 @@ func (t *Transformer) transform() {
 	var buf = &bytes.Buffer{}
 	err = altoTemplate.Execute(buf, tvar)
 	if err != nil {
-		t.err = fmt.Errorf("unable to run ALTO template: %s", err)
+		t.err = fmt.Errorf("unable to run ALTO template: %w", err)
 		return
 	}
 

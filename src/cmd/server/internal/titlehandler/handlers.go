@@ -314,7 +314,7 @@ func saveTitle(t *Title) (msg string, err error) {
 		// rollback and set the in-memory title's sftp connection to its prior value
 		op.Rollback()
 		t.SFTPConnected = wasConnected
-		return "couldn't integrate title into SFTP server", fmt.Errorf("Error in SFTPGo integration for title %q (SFTPUser %q): %s", t.Name, t.SFTPUser, err)
+		return "couldn't integrate title into SFTP server", fmt.Errorf("Error in SFTPGo integration for title %q (SFTPUser %q): %w", t.Name, t.SFTPUser, err)
 	}
 
 	op.EndTransaction()
