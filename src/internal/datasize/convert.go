@@ -71,7 +71,7 @@ func (d *Datasize) UnmarshalText(data []byte) error {
 
 	var base, err = strconv.ParseInt(numeric, 10, 64)
 	if err != nil {
-		return fmt.Errorf("%q is an invalid number: %s", numeric, err)
+		return fmt.Errorf("%q is an invalid number: %w", numeric, err)
 	}
 
 	var total = base * mult

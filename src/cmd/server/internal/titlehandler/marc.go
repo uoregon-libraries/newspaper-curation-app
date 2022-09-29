@@ -88,7 +88,7 @@ func lookupMARC(t *Title, marcLoc string) error {
 	data, err = ioutil.ReadAll(reader)
 	// An error reading the response is also not a deal-breaker, but a bit weirder
 	if err != nil {
-		return fmt.Errorf("reading response body: %s", err)
+		return fmt.Errorf("reading response body: %w", err)
 	}
 
 	var m marc
@@ -125,7 +125,7 @@ func lookupMARC(t *Title, marcLoc string) error {
 	// Hopefully this saves, but if not we're not losing irreplacable data, so we just log the error and move on
 	err = t.Save()
 	if err != nil {
-		return fmt.Errorf("unable to save title (id %d) after MARC data pull: %s", t.ID, err)
+		return fmt.Errorf("unable to save title (id %d) after MARC data pull: %w", t.ID, err)
 	}
 
 	return nil

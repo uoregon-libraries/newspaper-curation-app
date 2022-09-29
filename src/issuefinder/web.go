@@ -26,7 +26,7 @@ func (s *Searcher) FindWebBatches(cachePath string) error {
 
 	var batchMetadataList, err = s.findAllLiveBatches(cachePath)
 	if err != nil {
-		return fmt.Errorf("unable to load batch list from %#v: %s", s.Location, err)
+		return fmt.Errorf("unable to load batch list from %#v: %w", s.Location, err)
 	}
 
 	// We (slightly) throttle batch JSON requests as there can be a few hundred of these
@@ -44,12 +44,12 @@ func (s *Searcher) FindWebBatches(cachePath string) error {
 		var issueMetadataList []*chronam.IssueMetadata
 		issueMetadataList, err = s.findBatchedIssueMetadata(c, batchMetadata.URL)
 		if err != nil {
-			return fmt.Errorf("unable to load live issues from %#v: %s", batchMetadata.URL, err)
+			return fmt.Errorf("unable to load live issues from %#v: %w", batchMetadata.URL, err)
 		}
 		for _, meta := range issueMetadataList {
 			var t, err = s.findOrCreateWebTitle(c, meta.Title.URL)
 			if err != nil {
-				return fmt.Errorf("unable to load live title %#v: %s", meta.Title.URL, err)
+				return fmt.Errorf("unable to load live title %#v: %w", meta.Title.URL, err)
 			}
 			s.cacheLiveIssue(batch, t, meta)
 		}
@@ -88,13 +88,13 @@ func (s *Searcher) findBatchedIssueMetadata(c *httpcache.Client, batchURL string
 	var request = httpcache.AutoRequest(batchURL, "batches")
 	var contents, err = c.GetCachedBytes(request)
 	if err != nil {
-		return nil, fmt.Errorf("unable to GET %#v: %s", batchURL, err)
+		return nil, fmt.Errorf("unable to GET %#v: %w", batchURL, err)
 	}
 
 	var batch *chronam.BatchJSON
 	batch, err = chronam.ParseBatchJSON(contents)
 	if err != nil {
-		return nil, fmt.Errorf("invalid JSON in %#v: %s", batchURL, err)
+		return nil, fmt.Errorf("invalid JSON in %#v: %w", batchURL, err)
 	}
 
 	return batch.Issues, nil

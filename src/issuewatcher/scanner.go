@@ -103,28 +103,28 @@ func (s *Scanner) Scan() error {
 	if !s.skipweb {
 		_, err = f.FindWebBatches(s.Webroot, s.Tempdir)
 		if err != nil {
-			return fmt.Errorf("unable to cache web batches: %s", err)
+			return fmt.Errorf("unable to cache web batches: %w", err)
 		}
 	}
 
 	if !s.skipdb {
 		_, err = f.FindInProcessIssues()
 		if err != nil {
-			return fmt.Errorf("unable to cache in-process issues: %s", err)
+			return fmt.Errorf("unable to cache in-process issues: %w", err)
 		}
 	}
 
 	if !s.skipsftp {
 		_, err = f.FindSFTPIssues(s.PDFUpload, s.PDFBatchMARCOrgCode)
 		if err != nil {
-			return fmt.Errorf("unable to cache sftp issues: %s", err)
+			return fmt.Errorf("unable to cache sftp issues: %w", err)
 		}
 	}
 
 	if !s.skipscan {
 		_, err = f.FindScannedIssues(s.ScanUpload)
 		if err != nil {
-			return fmt.Errorf("unable to cache scanned issues: %s", err)
+			return fmt.Errorf("unable to cache scanned issues: %w", err)
 		}
 	}
 

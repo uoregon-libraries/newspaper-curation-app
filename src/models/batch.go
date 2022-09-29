@@ -143,7 +143,7 @@ func findBatches(where string, args ...any) ([]*Batch, error) {
 	for _, j := range list {
 		var err = j.deserialize()
 		if err != nil {
-			return nil, fmt.Errorf("error decoding batch %d: %s", j.ID, err)
+			return nil, fmt.Errorf("error decoding batch %d: %w", j.ID, err)
 		}
 	}
 	return list, op.Err()

@@ -85,7 +85,7 @@ func (t *Transformer) pdfToText() {
 
 	var tmpfile, err = fileutil.TempNamedFile("", "", ".html")
 	if err != nil {
-		t.err = fmt.Errorf("unable to create tempfile for HTML output: %s", err)
+		t.err = fmt.Errorf("unable to create tempfile for HTML output: %w", err)
 		return
 	}
 	defer os.Remove(tmpfile)
@@ -98,14 +98,14 @@ func (t *Transformer) pdfToText() {
 	var f *os.File
 	f, err = os.Open(tmpfile)
 	if err != nil {
-		t.err = fmt.Errorf("error opening HTML file: %s", err)
+		t.err = fmt.Errorf("error opening HTML file: %w", err)
 		return
 	}
 	defer f.Close()
 
 	t.html, err = ioutil.ReadAll(f)
 	if err != nil {
-		t.err = fmt.Errorf("error reading HTML file: %s", err)
+		t.err = fmt.Errorf("error reading HTML file: %w", err)
 	}
 }
 

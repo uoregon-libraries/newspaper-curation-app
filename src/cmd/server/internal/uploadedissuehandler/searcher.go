@@ -74,13 +74,13 @@ func (s *Searcher) watch() {
 func (s *Searcher) scan() error {
 	var err = s.BuildInProcessList()
 	if err != nil {
-		return fmt.Errorf("unable to build in-process issue list: %s", err)
+		return fmt.Errorf("unable to build in-process issue list: %w", err)
 	}
 
 	var nextScanner = issuewatcher.NewScanner(s.conf).DisableDB().DisableWeb()
 	err = nextScanner.Scan()
 	if err != nil {
-		return fmt.Errorf("unable to scan filesystem: %s", err)
+		return fmt.Errorf("unable to scan filesystem: %w", err)
 	}
 
 	s.Lock()
@@ -175,7 +175,7 @@ func (s *Searcher) BuildInProcessList() error {
 
 	var issues, err = models.Issues().InWorkflowStep(schema.WSAwaitingProcessing).Fetch()
 	if err != nil {
-		return fmt.Errorf("unable to find in-process issues: %s", err)
+		return fmt.Errorf("unable to find in-process issues: %w", err)
 	}
 
 	for _, issue := range issues {
