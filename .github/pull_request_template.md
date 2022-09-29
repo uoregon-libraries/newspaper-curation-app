@@ -12,7 +12,7 @@ I have done all of the following:
 - [ ] Documentation has been updated as necessary (`hugo/content/`)
 - [ ] @mention individual(s) you would like to review the PR
 
-[1]: <changelogs/template.md>
+[1]: <https://github.com/uoregon-libraries/newspaper-curation-app/blob/main/changelogs/template.md>
 
 ## Release deployer
 
