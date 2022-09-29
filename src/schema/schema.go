@@ -274,7 +274,7 @@ func (i *Issue) TSV() string {
 // issue directory, appending it to the now-empty list.  This will silently
 // fail when the issue's location is invalid, not readable, or isn't an
 // absolute path beginning with "/".  This is only meant for issues already
-// discovered on the filesystem.
+// discovered on the filesystem. Ignores ".manifest" files.
 func (i *Issue) FindFiles() {
 	i.Files = nil
 
@@ -289,8 +289,10 @@ func (i *Issue) FindFiles() {
 	}
 
 	for _, file := range fileutil.InfosToFiles(infos) {
-		var loc = filepath.Join(i.Location, file.Name)
-		i.Files = append(i.Files, &File{File: file, Issue: i, Location: loc})
+		if file.Name != ".manifest" {
+			var loc = filepath.Join(i.Location, file.Name)
+			i.Files = append(i.Files, &File{File: file, Issue: i, Location: loc})
+		}
 	}
 }
 
