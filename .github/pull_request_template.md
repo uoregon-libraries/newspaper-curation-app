@@ -18,19 +18,20 @@ I have done all of the following:
 
 I have done all of the following:
 
-- [ ] Put the contents `changelogs/*` into `CHANGELOG.md`, rewording as
+- [ ] Put the contents of `changelogs/*` into `CHANGELOG.md`, rewording as
   necessary
 - [ ] Delete `changelogs/*` (not the template of course)
-- [ ] Set an appropriate version number in the changelog
+- [ ] Set an appropriate version number in the changelog per semantic
+  versioning specs
 - [ ] Compiled the hugo documentation and verified very carefully that it is
   correctly generated
 - [ ] Tested the code carefully, thoroughly, meticulously, and lovingly. It is
   production-ready.
 
 Once this merges, *I swear on all I hold dear* not to forget any of the
-post-deploy steps. I will set up a reminder in Outlook, gmail, or via some
-smart device.
+post-deploy steps. I will set up a reminder in Outlook, gmail, via some smart
+device, etc.
 
-- [ ] Create and push a tag per semantic versioning specs
+- [ ] Create and push a tag
 - [ ] Create a github release from aforementioned tag, describing the changes
   briefly and linking to the full changelog.
