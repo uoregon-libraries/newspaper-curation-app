@@ -72,7 +72,7 @@ func TestToken(t *testing.T) {
 		t.Errorf(`Access token should have been "faketoken", but was %q`, a.token.AccessToken)
 	}
 
-	var expected = time.Date(2021, 1, 17, 9, 32, 29, 0, time.UTC)
+	var expected = time.Date(2021, 1, 17, 9, 25, 10, 0, time.UTC)
 	if a.token.ExpiresAt != expected {
 		t.Errorf(`ExpiresAt should have been %q, but was %q`, expected.Format(time.RFC3339Nano), a.token.ExpiresAt.Format(time.RFC3339Nano))
 	}
@@ -89,13 +89,14 @@ func TestToken(t *testing.T) {
 	}
 
 	// Make sure the token isn't requested a second time if it hasn't expired
+	a.token.ExpiresAt = a.now().Add(time.Second)
 	a.GetToken()
 	if len(s.requests) != 1 {
 		t.Errorf("doToken caused an extra HTTP request despite token still being valid")
 	}
 
-	// If the token's about to expire, a new one should be issued
-	a.token.ExpiresAt = time.Date(2021, 1, 17, 9, 26, 0, 0, time.UTC)
+	// If the token has expired, a new one should be issued immediately
+	a.token.ExpiresAt = a.now().Add(-time.Second)
 	a.GetToken()
 	if len(s.requests) != 2 {
 		t.Errorf("doToken should have requested a new token since the current is expired")
