@@ -13,6 +13,8 @@ import (
 	"path"
 	"sync"
 	"time"
+
+	"github.com/uoregon-libraries/newspaper-curation-app/src/internal/logger"
 )
 
 func rndPass() string {
@@ -143,6 +145,7 @@ func (a *API) rpc(method, function string, data string) ([]byte, error) {
 			return nil, err
 		}
 	}
+	logger.Debugf("Trying to get token via %#v", endpoint.String())
 
 	var c = &http.Client{Timeout: time.Minute}
 	var req, err = http.NewRequest(method, endpoint.String(), bytes.NewBuffer([]byte(data)))
@@ -181,6 +184,8 @@ func (a *API) GetToken() error {
 	a.m.Lock()
 	defer a.m.Unlock()
 
+	logger.Debugf("Token expires at %#v", a.token.ExpiresAt)
+	logger.Debugf("Now: %#v", a.now())
 	if a.token.ExpiresAt.After(a.now()) {
 		return nil
 	}
