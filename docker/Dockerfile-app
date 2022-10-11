@@ -45,6 +45,7 @@ RUN dnf install -y GraphicsMagick ghostscript
 RUN dnf install -y tar
 RUN dnf install -y git
 RUN dnf install -y mariadb
+RUN dnf install -y jq
 
 # Install Go
 RUN curl https://dl.google.com/go/go1.18.2.linux-amd64.tar.gz >/tmp/go.tgz
@@ -79,6 +80,7 @@ RUN cp -r ./bin /usr/local/nca/bin
 # vendored sources, sensitive settings, etc.; we want to make sure this
 # dockerfile stands on its own
 COPY ./db/migrations /usr/local/nca/db/migrations
+COPY ./sftpgo/*.sh /usr/local/nca/sftpgo/
 COPY ./static /usr/local/nca/static
 COPY ./templates /usr/local/nca/templates
 COPY ./settings-example /usr/local/nca/settings

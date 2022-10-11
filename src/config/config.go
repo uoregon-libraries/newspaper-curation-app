@@ -23,11 +23,11 @@ type Config struct {
 	DBPort int `setting:"DB_PORT" type:"int"`
 
 	// SFTPGo settings
-	SFTPGoEnabled       bool
-	SFTPGoAPIURL        *url.URL
-	SFTPGoAdminLogin    string `setting:"SFTPGO_ADMIN_LOGIN"`
-	SFTPGoAdminPassword string `setting:"SFTPGO_ADMIN_PASSWORD"`
-	SFTPGoNewUserQuota  datasize.Datasize
+	SFTPGoEnabled      bool
+	SFTPGoAPIURL       *url.URL
+	SFTPGoAdminLogin   string `setting:"SFTPGO_ADMIN_LOGIN"`
+	SFTPGoAdminAPIKey  string `setting:"SFTPGO_ADMIN_API_KEY"`
+	SFTPGoNewUserQuota datasize.Datasize
 
 	// Binary paths
 	GhostScript   string `setting:"GHOSTSCRIPT"`

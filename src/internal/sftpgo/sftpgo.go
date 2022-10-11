@@ -11,10 +11,7 @@ import (
 	"net/http"
 	"net/url"
 	"path"
-	"sync"
 	"time"
-
-	"github.com/uoregon-libraries/newspaper-curation-app/src/internal/logger"
 )
 
 func rndPass() string {
@@ -34,35 +31,27 @@ func rndPass() string {
 	return hex.EncodeToString(data)
 }
 
-type token struct {
-	AccessToken string    `json:"access_token"`
-	ExpiresAt   time.Time `json:"expires_at"`
-}
-
 // API is used to send API requests to the SFTPGo daemon
 type API struct {
-	m       sync.Mutex
 	url     *url.URL
 	login   string
-	pass    string
-	token   *token
+	apikey  string
 	now     func() time.Time
 	do      func(c *http.Client, req *http.Request) ([]byte, error)
 	rndPass func() string
 }
 
 // New returns a new API instance for sending requests to SFTPGo
-func New(apiURL *url.URL, login, pass string) *API {
+func New(apiURL *url.URL, login, apikey string) *API {
 	if apiURL == nil {
 		panic("cannot instantiate API with no URL")
 	}
 
 	var a = &API{
 		login:   login,
-		pass:    pass,
+		apikey:  apikey,
 		url:     apiURL,
 		now:     time.Now,
-		token:   &token{},
 		rndPass: rndPass,
 	}
 	a.do = a._do
@@ -136,27 +125,14 @@ func (a *API) rpc(method, function string, data string) ([]byte, error) {
 	var endpoint = *a.url
 	endpoint.Path = path.Join(endpoint.Path, function)
 
-	// if function is "token", we have to supply credentials
-	if function == "token" {
-		endpoint.User = url.UserPassword(a.login, a.pass)
-	} else {
-		var err = a.GetToken()
-		if err != nil {
-			return nil, err
-		}
-	}
-	logger.Debugf("Trying to get token via %#v", endpoint.String())
-
 	var c = &http.Client{Timeout: time.Minute}
 	var req, err = http.NewRequest(method, endpoint.String(), bytes.NewBuffer([]byte(data)))
 	if err != nil {
 		return nil, err
 	}
 
-	// If the function is *not* token, we have to supply a bearer token header
-	if function != "token" {
-		req.Header.Set("Authorization", "Bearer "+a.token.AccessToken)
-	}
+	// Supply API key with all requests
+	req.Header.Set("X-SFTPGO-API-KEY", a.apikey)
 
 	return a.do(c, req)
 }
@@ -178,27 +154,12 @@ func (a *API) _do(c *http.Client, req *http.Request) ([]byte, error) {
 	return data, err
 }
 
-// GetToken procures a time-sensitive authorization token from SFTPGo.  This
-// doesn't need to be called directly, but can be used as a "health check".
-func (a *API) GetToken() error {
-	a.m.Lock()
-	defer a.m.Unlock()
-
-	logger.Debugf("Token expires at %#v", a.token.ExpiresAt)
-	logger.Debugf("Now: %#v", a.now())
-	if a.token.ExpiresAt.After(a.now()) {
-		return nil
-	}
-
-	var data, err = a.rpc("GET", "token", "")
+// GetStatus requests SFTPgo server status to verify API key use is successful
+func (a *API) GetStatus() error {
+	var _, err = a.rpc("GET", "status", "")
 	if err != nil {
-		return fmt.Errorf("unable to retrieve token: %w", err)
+		return fmt.Errorf("Unable to retrieve server status: %w", err)
 	}
 
-	// Hack up the expiry time to be extremely short. SFTPGo seems to either be
-	// giving us incorrect times or expiring too soon.
-	err = json.Unmarshal(data, a.token)
-	a.token.ExpiresAt = a.now().Add(time.Second * 10)
-
-	return err
+	return nil
 }
