@@ -310,7 +310,7 @@ func (b *Batch) UnflagIssue(i *Issue) error {
 // AbortIssueFlagging returns the batch state to BatchStatusQCReady and removes
 // all flagged issues tied to it
 func (b *Batch) AbortIssueFlagging() error {
-	if b.Status != BatchStatusQCFlagIssues {
+	if b.Status != BatchStatusQCFlagIssues && b.Status != BatchStatusPending {
 		return fmt.Errorf("abort issue flagging: invalid batch status %s", b.Status)
 	}
 

@@ -137,5 +137,5 @@ func qcRejectHandler(w http.ResponseWriter, req *http.Request) {
 	}
 
 	http.SetCookie(r.Writer, &http.Cookie{Name: "Info", Value: r.batch.Name + ": failed QC, ready to flag issues for removal", Path: "/"})
-	http.Redirect(w, req, basePath, http.StatusFound)
+	http.Redirect(w, req, batchURL(r.batch), http.StatusFound)
 }

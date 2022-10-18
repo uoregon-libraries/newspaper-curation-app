@@ -9,6 +9,12 @@ nuke() {
   echo "Done (Deleting the stack)"
 }
 
+dcup() {
+  echo "Starting up key docker services"
+  docker-compose up -d iiif sftpgo db
+  echo "Done (Starting up key docker services)"
+}
+
 backup() {
   dir=$(realpath $1)
   mkdir -p $dir
@@ -28,6 +34,8 @@ backup() {
   sudo tar -cf $fakemount ./test/fakemount
   sudo su -c "cd /var/lib/docker/volumes && tar -cf $vols ./nca*"
   echo "Done (Writing new backup files)"
+
+  dcup
 }
 
 migrate() {
@@ -49,6 +57,8 @@ restore() {
   sudo tar -xf $fakemount ./test/fakemount
   sudo su -c "cd /var/lib/docker/volumes && tar -xf $vols"
   echo "Done (Restoring from $dir)"
+
+  dcup
 }
 
 build() {
