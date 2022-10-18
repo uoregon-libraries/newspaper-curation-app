@@ -1,6 +1,7 @@
 package models
 
 import (
+	"database/sql"
 	"fmt"
 	"path/filepath"
 	"strconv"
@@ -128,7 +129,7 @@ func FindFlaggedIssue(batchID, issueID int) (*FlaggedIssue, error) {
 		return nil, err
 	}
 	if len(list) == 0 {
-		return nil, nil
+		return nil, sql.ErrNoRows
 	}
 	return list[0], err
 }

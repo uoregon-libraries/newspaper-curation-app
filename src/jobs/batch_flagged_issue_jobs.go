@@ -47,6 +47,7 @@ func (j *FinalizeBatchFlaggedIssue) Process(*config.Config) bool {
 	j.Logger.Debugf("Successfully created 'removed from batch' issue action")
 
 	// Update database: clear batch, workflow metadata, and set status
+	var oldBatchID = i.BatchID
 	i.BatchID = 0
 	i.WorkflowOwnerID = 0
 	i.WorkflowOwnerExpiresAt = time.Time{}
@@ -61,7 +62,7 @@ func (j *FinalizeBatchFlaggedIssue) Process(*config.Config) bool {
 
 	// Find flagged issue to get the error message
 	var flagged *models.FlaggedIssue
-	flagged, err = models.FindFlaggedIssue(i.BatchID, i.ID)
+	flagged, err = models.FindFlaggedIssue(oldBatchID, i.ID)
 	if err != nil {
 		j.Logger.Errorf("Unable to create 'removed from batch' issue action: %s", err)
 		op.Rollback()
