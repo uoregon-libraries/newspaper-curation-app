@@ -247,5 +247,5 @@ func finalizeBatch(r *Responder) {
 	}
 
 	http.SetCookie(r.Writer, &http.Cookie{Name: "Info", Value: fmt.Sprintf("A background job has been queued to finalize batch %q", r.batch.Name), Path: "/"})
-	http.Redirect(r.Writer, r.Request, batchURL(r.batch), http.StatusFound)
+	http.Redirect(r.Writer, r.Request, basePath, http.StatusFound)
 }
