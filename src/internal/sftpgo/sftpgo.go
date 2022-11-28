@@ -34,7 +34,6 @@ func rndPass() string {
 // API is used to send API requests to the SFTPGo daemon
 type API struct {
 	url     *url.URL
-	login   string
 	apikey  string
 	now     func() time.Time
 	do      func(c *http.Client, req *http.Request) ([]byte, error)
@@ -42,13 +41,12 @@ type API struct {
 }
 
 // New returns a new API instance for sending requests to SFTPGo
-func New(apiURL *url.URL, login, apikey string) *API {
+func New(apiURL *url.URL, apikey string) *API {
 	if apiURL == nil {
 		panic("cannot instantiate API with no URL")
 	}
 
 	var a = &API{
-		login:   login,
 		apikey:  apikey,
 		url:     apiURL,
 		now:     time.Now,

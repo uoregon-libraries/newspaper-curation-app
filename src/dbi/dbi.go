@@ -42,8 +42,8 @@ func DBConnect(connect string) error {
 }
 
 // SFTPConnect sets up the global SFTPGo API instance and checks server status
-func SFTPConnect(u *url.URL, user, apikey string) error {
-	SFTP = sftpgo.New(u, user, apikey)
+func SFTPConnect(u *url.URL, apikey string) error {
+	SFTP = sftpgo.New(u, apikey)
 	var err = SFTP.GetStatus()
 	return err
 }

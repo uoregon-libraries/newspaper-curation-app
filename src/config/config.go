@@ -25,7 +25,6 @@ type Config struct {
 	// SFTPGo settings
 	SFTPGoEnabled      bool
 	SFTPGoAPIURL       *url.URL
-	SFTPGoAdminLogin   string `setting:"SFTPGO_ADMIN_LOGIN"`
 	SFTPGoAdminAPIKey  string `setting:"SFTPGO_ADMIN_API_KEY"`
 	SFTPGoNewUserQuota datasize.Datasize
 

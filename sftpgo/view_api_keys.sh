@@ -15,6 +15,10 @@ fi
 
 source ${SETTINGS_PATH}
 
+if [[ "${SFTPGO_ADMIN_LOGIN}" == "" ]]; then
+  read -p "Enter SFTPgo admin user: " SFTPGO_ADMIN_LOGIN
+fi
+
 if [[ "${SFTPGO_ADMIN_PASSWORD}" == "" ]]; then
   read -p "Enter SFTPgo admin password: " SFTPGO_ADMIN_PASSWORD
 fi

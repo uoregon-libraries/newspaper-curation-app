@@ -21,6 +21,10 @@ if [[ ! $(grep "!sftpgo_admin_api_key!" ${SETTINGS_PATH}) ]]; then
   exit 0
 fi
 
+if [[ "${SFTPGO_ADMIN_LOGIN}" == "" ]]; then
+  read -p "Enter SFTPgo admin user: " SFTPGO_ADMIN_LOGIN
+fi
+
 if [[ "${SFTPGO_ADMIN_PASSWORD}" == "" ]]; then
   read -p "Enter SFTPgo admin password: " SFTPGO_ADMIN_PASSWORD
 fi

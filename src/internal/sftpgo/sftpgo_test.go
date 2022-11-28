@@ -44,12 +44,12 @@ func (s *spy) do(c *http.Client, req *http.Request) ([]byte, error) {
 }
 
 // newAPI returns a hacked-up API and its spy (mock?  double?  Meh).  By
-// default the API will use the spy to send fake requests, with a token request
+// default the API will use the spy to send fake requests, with an api request
 // already pre-set-up.  The API's "now" method will also default to a time just
 // before the token expiry for easier testing.
 func newAPI(t *testing.T) (*API, *spy) {
 	var u, _ = url.Parse("http://example.org/api/v2")
-	var a = New(u, "user", "pass")
+	var a = New(u, "pass")
 	var s = makeSpy()
 	a.now = makeNow(time.Date(2021, 1, 17, 9, 25, 0, 0, time.UTC))
 	a.do = s.do

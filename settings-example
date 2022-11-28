@@ -73,9 +73,6 @@ DB_DATABASE="nca"
 # be the same URL you'd use in a browser for web-based administration.
 SFTPGO_API_URL="http://sftpgo:8080/api/v2"
 
-# The SFTPGo username for API requests
-SFTPGO_ADMIN_LOGIN=admin
-
 # The SFTPGo API key for API requests
 # Reset to 'sftpgo_admin_api_key' surrounded by exclamation points
 # and run sftpgo/get_admin_api_key.sh to get a new API key

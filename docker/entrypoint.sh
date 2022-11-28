@@ -14,7 +14,7 @@ lockfile=/mnt/news/goose-running
 source settings && flock $lockfile -c "goose -dir ./db/migrations mysql '$DB_USER:$DB_PASSWORD@tcp(db:3306)/$DB_DATABASE' up"
 
 echo "Get SFTPgo admin API key and store in NCA settings file"
-SETTINGS_PATH=settings SFTPGO_ADMIN_PASSWORD=password sftpgo/get_admin_api_key.sh
+SETTINGS_PATH=settings SFTPGO_ADMIN_USER=admin SFTPGO_ADMIN_PASSWORD=password sftpgo/get_admin_api_key.sh
 
 echo "Ensuring directories are present"
 source settings && mkdir -p $PDF_UPLOAD_PATH
