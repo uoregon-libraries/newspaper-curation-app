@@ -74,8 +74,8 @@ Open up your settings file and jump to the SFTPGo section. If you're upgrading
 from an older version of NCA, you will have to copy this section from the
 example settings file into your production settings.
 
-You'll need to tell NCA how to connect to SFTPGo: set the API URL, store your
-admin credentials, and choose a default quota for new users.
+You'll need to tell NCA how to connect to SFTPGo: set the API URL and choose a
+default quota for new users.
 
 The API endpoint is simply the SFTPGo host combined with the path `/api/v2`.
 For our docker setup, the internal service is `http://sftpgo:8080`, so our API
@@ -83,16 +83,23 @@ configuration looks like this:
 
     SFTPGO_API_URL="http://sftpgo:8080/api/v2"
 
-The credentials simply need to match the admin account you created when setting
-up SFTPGo. e.g.:
-
-    SFTPGO_ADMIN_LOGIN=admin
-    SFTPGO_ADMIN_PASSWORD=password
-
 The default quota is five gigabytes, but you can adjust this as needed. You
 will likely want *something*, however: this ensures one publisher can't blast
 hundreds of gigs (or even terabytes) of data, taking your server down and
 preventing all other publishers from uploading anything.
+
+### SFTPGo API Key
+
+NCA connects to SFTPGo via an API key for a user with admin privileges. If you
+are using Docker with defaults for development, this API key is created and
+assigned in your NCA `settings` file automatically. For any non-development use,
+one will have to use the Bash scripts in the `sftpgo/` directory.
+`sftpgo/get_admin_api_key.sh` is the only script that *must* be run. It will
+prompt for admin user credentials, use them to request an API key for that user,
+and store the key in the NCA `settings` file automatically.
+
+Additional scripts are provided to list all API keys, test using the API key
+stored in the NCA `settings` file, and delete an API key.
 
 ## Usage
 
