@@ -35,8 +35,6 @@ func (c *CanValidation) View(b *Batch) bool {
 		return has(privilege.ViewQCReadyBatches)
 	case models.BatchStatusQCFlagIssues:
 		return has(privilege.RejectQCReadyBatches)
-	case models.BatchStatusFailedQC:
-		return has(privilege.ViewQCFailedBatches)
 	case models.BatchStatusPassedQC:
 		return has(privilege.LoadBatches)
 	case models.BatchStatusLive:

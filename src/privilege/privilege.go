@@ -41,7 +41,6 @@ var (
 	// View and (eventually) manage batches that need to be loaded or fixed.
 	// Staging/prod perms could be divided more granularly if it ever makes sense
 	// to do so.
-	ViewQCFailedBatches = newPrivilege(RoleBatchLoader)
 	ViewQCPassedBatches = newPrivilege(RoleBatchLoader)
 	LoadBatches         = newPrivilege(RoleBatchLoader)
 	PurgeBatches        = newPrivilege(RoleBatchLoader)
