@@ -100,6 +100,7 @@ func qcApproveHandler(w http.ResponseWriter, req *http.Request) {
 		r.Error(http.StatusForbidden, "You are not permitted to approve this batch for a production load")
 		return
 	}
+	r.batch.NeedStagingPurge = r.batch.StatusMeta.Staging
 	if !setStatus(r, models.BatchStatusPassedQC, approveFormTmpl) {
 		return
 	}
@@ -132,6 +133,7 @@ func qcRejectHandler(w http.ResponseWriter, req *http.Request) {
 		return
 	}
 
+	r.batch.NeedStagingPurge = r.batch.StatusMeta.Staging
 	if !setStatus(r, models.BatchStatusQCFlagIssues, rejectFormTmpl) {
 		return
 	}

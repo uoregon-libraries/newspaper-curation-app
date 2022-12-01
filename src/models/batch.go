@@ -114,6 +114,11 @@ type Batch struct {
 	StatusMeta  BatchStatus `sql:"-"`
 	Location    string
 
+	// NeedStagingPurge is true if the batch needs to be removed from staging;
+	// this is just a stop-gap measure until more automation exists, at which
+	// point this should be replaced
+	NeedStagingPurge bool
+
 	issues []*Issue
 }
 
