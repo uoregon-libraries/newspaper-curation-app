@@ -18,7 +18,7 @@
   {{template "batch-manual-purge" .Data.Batch}}
 
   <p>Then remove the "needs purging" flag:</p>
-  <form action="" method="POST">
+  <form action="{{ClearPurgeFlagURL .Data.Batch}}" method="POST">
     <button class="btn btn-primary" type="submit">Batch Purge Complete</button>
   </form>
 

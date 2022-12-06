@@ -109,6 +109,35 @@ func qcApproveHandler(w http.ResponseWriter, req *http.Request) {
 	http.Redirect(w, req, basePath, http.StatusFound)
 }
 
+func clearBatchStagingPurgeFlagHandler(w http.ResponseWriter, req *http.Request) {
+	var r, ok = getBatchResponder(w, req)
+	if !ok {
+		return
+	}
+	if !r.can.Load(r.batch) {
+		r.Error(http.StatusForbidden, "You are not permitted to reject this batch")
+		return
+	}
+
+	var old = r.batch.NeedStagingPurge
+	r.batch.NeedStagingPurge = false
+	var err = r.batch.Save()
+	if err != nil {
+		// Since we're merely re-rending the template, we must put the batch back
+		// to its original state or the template could be weird/broken
+		r.batch.NeedStagingPurge = old
+		logger.Criticalf(`Unable to clear batch %d (%s) "needs staging purge" flag: %s`,
+			r.batch.ID, r.batch.FullName(), err)
+		r.Vars.Title = "Error saving batch"
+		r.Vars.Alert = template.HTML(`Unable to clear "needs staging purge" flag. Try again or contact support.`)
+		r.Render(viewTmpl)
+		return
+	}
+
+	http.SetCookie(r.Writer, &http.Cookie{Name: "Info", Value: r.batch.Name + ": purged from staging", Path: "/"})
+	http.Redirect(w, req, batchURL(r.batch), http.StatusFound)
+}
+
 func qcRejectFormHandler(w http.ResponseWriter, req *http.Request) {
 	var r, ok = getBatchResponder(w, req)
 	if !ok {
