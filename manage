@@ -31,8 +31,8 @@ backup() {
   echo "Done (Deleting old backups (if any))"
 
   echo "Writing new backup files"
-  sudo tar -cf $fakemount ./test/fakemount
-  sudo su -c "cd /var/lib/docker/volumes && tar -cf $vols ./nca*"
+  sudo tar -cspf $fakemount ./test/fakemount
+  sudo su -c "cd /var/lib/docker/volumes && tar -cspf $vols ./nca*"
   echo "Done (Writing new backup files)"
 
   dcup
@@ -54,11 +54,16 @@ restore() {
   echo "Restoring from $dir"
   vols="$dir/vols.tar"
   fakemount="$dir/fakemount.tar"
-  sudo tar -xf $fakemount ./test/fakemount
-  sudo su -c "cd /var/lib/docker/volumes && tar -xf $vols"
+  sudo tar -xspf $fakemount ./test/fakemount
+  sudo su -c "cd /var/lib/docker/volumes && tar -mxspf $vols"
   echo "Done (Restoring from $dir)"
 
   dcup
+
+  sleep 2
+  echo "Hacking SFTPGo 'home' volume permissions"
+  sudo chown $(whoami):$(whoami) /var/lib/docker/volumes/nca_sftpgo-home/_data
+  echo "Done (Hacking SFTPGo 'home' volume permissions)"
 }
 
 build() {
