@@ -138,6 +138,37 @@ func clearBatchStagingPurgeFlagHandler(w http.ResponseWriter, req *http.Request)
 	http.Redirect(w, req, batchURL(r.batch), http.StatusFound)
 }
 
+func setLiveHandler(w http.ResponseWriter, req *http.Request) {
+	var r, ok = getBatchResponder(w, req)
+	if !ok {
+		return
+	}
+	if !r.can.Load(r.batch) {
+		r.Error(http.StatusForbidden, "You are not permitted to load batches or flag them for having been loaded")
+		return
+	}
+
+	var err = r.batch.SetLive()
+	if err != nil {
+		logger.Criticalf(`Unable to set batch %d (%s) to "live": %s`, r.batch.ID, r.batch.FullName(), err)
+
+		// Too many things occur in the handler to just undo the status, so we
+		// reload the batch from DB in order to re-render the template
+		r, ok = getBatchResponder(w, req)
+		if !ok {
+			return
+		}
+
+		r.Vars.Title = `Error marking batch "live"`
+		r.Vars.Alert = template.HTML(`Unable to set batch as "live". Try again or contact support.`)
+		r.Render(viewTmpl)
+		return
+	}
+
+	http.SetCookie(r.Writer, &http.Cookie{Name: "Info", Value: r.batch.Name + ": marked batch as 'live'", Path: "/"})
+	http.Redirect(w, req, basePath, http.StatusFound)
+}
+
 func qcRejectFormHandler(w http.ResponseWriter, req *http.Request) {
 	var r, ok = getBatchResponder(w, req)
 	if !ok {

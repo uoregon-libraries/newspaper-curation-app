@@ -48,6 +48,32 @@
   </p>
 
   <a href="{{FlagIssuesURL .Data.Batch}}" class="btn btn-primary">Flag Issues...</a>
+
+  <!-- Needs production load -->
+  {{else if and .Data.Batch.ReadyForProduction (.Data.Can.Load .Data.Batch)}}
+  <p><strong>{{.Data.Batch.Name}} is ready to be loaded onto production. This is a manual process.</strong></p>
+  <p>Copy the batch files, minus its TIFFs, to production. e.g.:</p>
+
+<pre><code># ssh into the appropriate server first!
+# $dest_batch is something like:
+#   /mnt/production/{{.Data.Batch.FullName}}
+rsync -av flags --delete \
+  --exclude="*.tif" --exclude="*.tiff" --exclude="*.TIF" --exclude="*.TIFF" \
+  --exclude="*.tar.bz" --exclude="*.tar" \
+  {{.Data.Batch.Location}}/ \
+  $dest_batch</code>
+
+<button class="copy">Copy</button>
+</pre>
+
+  <p>Load the batch:</p>
+  {{template "batch-manual-load" .Data.Batch}}
+
+  <p>Then mark it as "live":</p>
+  <form action="{{SetLiveURL .Data.Batch}}" method="POST">
+    <button class="btn btn-primary" type="submit">Mark Batch "Live"</button>
+  </form>
+
   {{end}}
 
   <!-- TODO: other statuses -->

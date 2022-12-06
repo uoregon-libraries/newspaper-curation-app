@@ -334,6 +334,11 @@ func (b *Batch) EmptyFlaggedIssuesList() error {
 	return op.Err()
 }
 
+// SetLive flags a batch as being live as of now, and adjusts all its issues to be ignored by NCA
+func (b *Batch) SetLive() error {
+	return fmt.Errorf("not implemented")
+}
+
 // Delete removes all issues from this batch and sets its status to "deleted".
 func (b *Batch) Delete() error {
 	var op = dbi.DB.Operation()

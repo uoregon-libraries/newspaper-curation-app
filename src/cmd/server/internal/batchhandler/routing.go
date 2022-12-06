@@ -66,6 +66,7 @@ func Setup(r *mux.Router, baseWebPath string, c *config.Config) {
 	s.Path("/{batch_id}/approve").Methods("GET").Handler(canApprove(qcApproveFormHandler))
 	s.Path("/{batch_id}/approve").Methods("POST").Handler(canApprove(qcApproveHandler))
 	s.Path("/{batch_id}/purge-staging").Methods("POST").Handler(canLoad(clearBatchStagingPurgeFlagHandler))
+	s.Path("/{batch_id}/live").Methods("POST").Handler(canLoad(setLiveHandler))
 
 	// All these paths are related to the same multi-step operation (rejecting a
 	// batch, flagging issues, and finalizing it for rebuilding)
@@ -80,6 +81,7 @@ func Setup(r *mux.Router, baseWebPath string, c *config.Config) {
 		"StagingRootURL":    func() string { return conf.StagingNewsWebroot },
 		"ViewURL":           func(b *Batch) string { return batchURL(b) },
 		"SetQCReadyURL":     func(b *Batch) string { return batchURL(b, "qc-ready") },
+		"SetLiveURL":        func(b *Batch) string { return batchURL(b, "live") },
 		"ApproveURL":        func(b *Batch) string { return batchURL(b, "approve") },
 		"RejectURL":         func(b *Batch) string { return batchURL(b, "reject") },
 		"ClearPurgeFlagURL": func(b *Batch) string { return batchURL(b, "purge-staging") },
