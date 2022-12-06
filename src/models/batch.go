@@ -8,6 +8,7 @@ import (
 
 	"github.com/Nerdmaster/magicsql"
 	"github.com/uoregon-libraries/newspaper-curation-app/src/dbi"
+	"github.com/uoregon-libraries/newspaper-curation-app/src/schema"
 )
 
 // These are all possible batch status values
@@ -110,6 +111,7 @@ type Batch struct {
 	Name        string
 	CreatedAt   time.Time
 	ArchivedAt  time.Time
+	WentLiveAt  time.Time
 	Status      string
 	StatusMeta  BatchStatus `sql:"-"`
 	Location    string
@@ -336,7 +338,17 @@ func (b *Batch) EmptyFlaggedIssuesList() error {
 
 // SetLive flags a batch as being live as of now, and adjusts all its issues to be ignored by NCA
 func (b *Batch) SetLive() error {
-	return fmt.Errorf("not implemented")
+	var op = dbi.DB.Operation()
+	op.Dbg = dbi.Debug
+	op.BeginTransaction()
+	defer op.EndTransaction()
+
+	b.Status = BatchStatusLive
+	b.WentLiveAt = time.Now()
+	b.SaveOp(op)
+	op.Exec(`UPDATE issues SET ignored=1, workflow_step = ? WHERE batch_id = ?`, schema.WSInProduction, b.ID)
+
+	return op.Err()
 }
 
 // Delete removes all issues from this batch and sets its status to "deleted".
