@@ -66,7 +66,10 @@ rsync -av flags --delete \
 <button class="copy">Copy</button>
 </pre>
 
-  <p>Load the batch:</p>
+  <p>
+    Load the batch on production; load it on staging as well if your staging
+    environment mirrors production:
+  </p>
   {{template "batch-manual-load" .Data.Batch}}
 
   <p>Then mark it as "live":</p>
