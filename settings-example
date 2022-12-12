@@ -118,6 +118,11 @@ PDF_PAGE_REVIEW_PATH="/mnt/news/page-review"
 # Once processing happens, batches are put here
 BATCH_OUTPUT_PATH="/mnt/news/outgoing"
 
+# When a batch is ready to be pushed to production, this location is where the
+# ONI-required files live (basically everything but TIFFs and born-digital
+# original file backups). Basically the final home for the always-online files.
+BATCH_PRODUCTION_PATH="/mnt/news/production-batches"
+
 # This is where scanned issues and SFTPed issues go after all manual processing
 # is done.  Issues moved here shouldn't be accessible to anybody for manual
 # modification, and all metadata will live in the database.

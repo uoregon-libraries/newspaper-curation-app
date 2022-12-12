@@ -50,6 +50,7 @@ type Config struct {
 	PDFBackupPath        string `setting:"ORIGINAL_PDF_BACKUP_PATH" type:"path"`
 	PDFPageReviewPath    string `setting:"PDF_PAGE_REVIEW_PATH" type:"path"`
 	BatchOutputPath      string `setting:"BATCH_OUTPUT_PATH" type:"path"`
+	BatchProductionPath  string `setting:"BATCH_PRODUCTION_PATH" type:"path"`
 	WorkflowPath         string `setting:"WORKFLOW_PATH" type:"path"`
 	ErroredIssuesPath    string `setting:"ERRORED_ISSUES_PATH" type:"path"`
 	IssueCachePath       string `setting:"ISSUE_CACHE_PATH" type:"path"`
