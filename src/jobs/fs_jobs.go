@@ -34,6 +34,7 @@ func (j *SyncDir) Valid() bool {
 func (j *SyncDir) Process(*config.Config) bool {
 	var src = j.db.Args[srcArg]
 	var dst = j.db.Args[destArg]
+	var exclusions = strings.Split(j.db.Args[excludeArg], ",")
 
 	var parent = filepath.Dir(dst)
 	j.Logger.Infof("Creating parent dir %q", parent)
@@ -43,8 +44,11 @@ func (j *SyncDir) Process(*config.Config) bool {
 		return false
 	}
 
-	j.Logger.Infof("Syncing %q to %q", src, dst)
-	err = fileutil.SyncDirectory(src, dst)
+	// We re-join exclusions here so logs show what this job will actually do,
+	// which *should* be the same as what was requested, but could be different
+	// if something is busted
+	j.Logger.Infof("Syncing %q to %q. Exclusion list: %q", src, dst, strings.Join(exclusions, ","))
+	err = fileutil.SyncDirectoryExcluding(src, dst, exclusions)
 	if err != nil {
 		j.Logger.Errorf("Unable to sync %q to %q: %s", src, dst, err)
 	}
