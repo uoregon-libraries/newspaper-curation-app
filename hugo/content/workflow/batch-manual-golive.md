@@ -9,7 +9,7 @@ at least for the UO workflow:
 
 - Make sure the batch has a valid `tagmanifest-sha256.txt` file
 - Visit the batch management page for the batch for rsync and load/purge instructions
-- One the batch is purged from staging and loaded to production (and optionally
+- Once the batch is purged from staging and loaded to production (and optionally
   re-loaded on staging from the production location), set it as having gone
   live in the batch management page.
 
