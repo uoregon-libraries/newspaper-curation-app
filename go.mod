@@ -7,7 +7,7 @@ require (
 	github.com/go-sql-driver/mysql v1.3.0
 	github.com/gorilla/mux v1.7.0
 	github.com/jessevdk/go-flags v1.4.0
-	github.com/uoregon-libraries/gopkg v0.20.0
+	github.com/uoregon-libraries/gopkg v0.22.0
 	golang.org/x/crypto v0.0.0-20210711020723-a769d52b0f97
 )
 
