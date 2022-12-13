@@ -4,7 +4,6 @@ go 1.18
 
 require (
 	github.com/Nerdmaster/magicsql v0.11.0
-	github.com/Nerdmaster/terminal v0.12.1
 	github.com/go-sql-driver/mysql v1.3.0
 	github.com/gorilla/mux v1.7.0
 	github.com/jessevdk/go-flags v1.4.0
