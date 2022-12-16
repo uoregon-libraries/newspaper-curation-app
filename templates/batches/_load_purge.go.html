@@ -2,12 +2,18 @@
 <pre><code># ssh into the appropriate server first!
 cd /opt/openoni
 source ENV/bin/activate
-./manage.py load_batch {{.Location}}</code></pre>
+./manage.py load_batch {{.Location}}</code>
+
+<button class="copy">Copy</button>
+</pre>
 {{end}}
 
 {{define "batch-manual-purge"}}
 <pre><code># ssh into the appropriate server first!
 cd /opt/openoni
 source ENV/bin/activate
-./manage.py purge_batch {{.FullName}}</code></pre>
+./manage.py purge_batch {{.FullName}}</code>
+
+<button class="copy">Copy</button>
+</pre>
 {{end}}

@@ -132,7 +132,6 @@ func InitRootTemplate(templatePath string) {
 		"ViewQCReadyBatches":    func() *privilege.Privilege { return privilege.ViewQCReadyBatches },
 		"ApproveQCReadyBatches": func() *privilege.Privilege { return privilege.ApproveQCReadyBatches },
 		"RejectQCReadyBatches":  func() *privilege.Privilege { return privilege.RejectQCReadyBatches },
-		"ViewQCFailedBatches":   func() *privilege.Privilege { return privilege.ViewQCFailedBatches },
 		"ViewQCPassedBatches":   func() *privilege.Privilege { return privilege.ViewQCPassedBatches },
 		"LoadBatches":           func() *privilege.Privilege { return privilege.LoadBatches },
 		"PurgeBatches":          func() *privilege.Privilege { return privilege.PurgeBatches },

@@ -36,7 +36,7 @@ func getBatchResponder(w http.ResponseWriter, req *http.Request) (r *Responder, 
 	var b *models.Batch
 	b, err = models.FindBatch(id)
 	if err != nil {
-		logger.Errorf("Unable to load batch %d: %s", id, err)
+		logger.Criticalf("Unable to load batch %d: %s", id, err)
 		r.Error(http.StatusInternalServerError, "Error loading batch - try again or contact support")
 		return r, false
 	}

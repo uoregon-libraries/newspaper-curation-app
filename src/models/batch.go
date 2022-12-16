@@ -8,6 +8,7 @@ import (
 
 	"github.com/Nerdmaster/magicsql"
 	"github.com/uoregon-libraries/newspaper-curation-app/src/dbi"
+	"github.com/uoregon-libraries/newspaper-curation-app/src/schema"
 )
 
 // These are all possible batch status values
@@ -17,7 +18,6 @@ const (
 	BatchStatusStagingReady = "staging_ready" // Batch is built but not deployed to staging yet
 	BatchStatusQCReady      = "qc_ready"      // Batch is on staging and ready for QC pass
 	BatchStatusQCFlagIssues = "qc_flagging"   // Batch failed QC; problem issues need to be identified and removed
-	BatchStatusFailedQC     = "failed_qc"     // Batch failed QC and needs to be removed from staging and rebuilt
 	BatchStatusPassedQC     = "passed_qc"     // On staging, passed QC; it needs to be pulled from staging and pushed live
 	BatchStatusLive         = "live"          // Batch has gone live; batch and its issues need to be archived
 	BatchStatusLiveDone     = "live_done"     // Batch has gone live; batch and its issues have been archived and are no longer on the filesystem
@@ -68,14 +68,6 @@ var statusMap = map[string]BatchStatus{
 		NeedsAction: true,
 		Description: "Failed quality control, awaiting QC issue flagging",
 	},
-	BatchStatusFailedQC: {
-		Status:      BatchStatusFailedQC,
-		Live:        false,
-		Staging:     true,
-		Dead:        false,
-		NeedsAction: true,
-		Description: "Failed quality control, awaiting batch maintainer to fix and push back to staging",
-	},
 	BatchStatusDeleted: {
 		Status:      BatchStatusDeleted,
 		Live:        false,
@@ -119,9 +111,15 @@ type Batch struct {
 	Name        string
 	CreatedAt   time.Time
 	ArchivedAt  time.Time
+	WentLiveAt  time.Time
 	Status      string
 	StatusMeta  BatchStatus `sql:"-"`
 	Location    string
+
+	// NeedStagingPurge is true if the batch needs to be removed from staging;
+	// this is just a stop-gap measure until more automation exists, at which
+	// point this should be replaced
+	NeedStagingPurge bool
 
 	issues []*Issue
 }
@@ -335,6 +333,21 @@ func (b *Batch) EmptyFlaggedIssuesList() error {
 	op.Dbg = dbi.Debug
 
 	op.Exec(`DELETE FROM batches_flagged_issues WHERE batch_id = ?`, b.ID)
+	return op.Err()
+}
+
+// SetLive flags a batch as being live as of now, and adjusts all its issues to be ignored by NCA
+func (b *Batch) SetLive() error {
+	var op = dbi.DB.Operation()
+	op.Dbg = dbi.Debug
+	op.BeginTransaction()
+	defer op.EndTransaction()
+
+	b.Status = BatchStatusLive
+	b.WentLiveAt = time.Now()
+	b.SaveOp(op)
+	op.Exec(`UPDATE issues SET ignored=1, workflow_step = ? WHERE batch_id = ?`, schema.WSInProduction, b.ID)
+
 	return op.Err()
 }
 

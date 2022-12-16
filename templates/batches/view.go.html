@@ -10,10 +10,20 @@
   <!-- Batch has no actions -->
   {{if .Data.Batch.Unavailable}}
   <strong>This batch is not in a state that allows user actions</strong>
-  {{end}}
+
+  <!-- Batch needs to be purged from staging: this overrides all other considerations -->
+  {{else if and .Data.Batch.NeedStagingPurge (.Data.Can.Load .Data.Batch)}}
+  <p><strong>{{.Data.Batch.Name}} needs to be purged from staging. This is a manual process.</strong></p>
+  <p>Purge the batch:</p>
+  {{template "batch-manual-purge" .Data.Batch}}
+
+  <p>Then remove the "needs purging" flag:</p>
+  <form action="{{ClearPurgeFlagURL .Data.Batch}}" method="POST">
+    <button class="btn btn-primary" type="submit">Batch Purge Complete</button>
+  </form>
 
   <!-- Batch needs to be pushed to staging -->
-  {{if and .Data.Batch.ReadyForStaging (.Data.Can.Load .Data.Batch)}}
+  {{else if and .Data.Batch.ReadyForStaging (.Data.Can.Load .Data.Batch)}}
   <p><strong>{{.Data.Batch.Name}} is ready to be loaded onto staging. This is a manual process.</strong></p>
   <p>Load the batch:</p>
   {{template "batch-manual-load" .Data.Batch}}
@@ -22,24 +32,51 @@
   <form action="{{SetQCReadyURL .Data.Batch}}" method="POST">
     <button class="btn btn-primary" type="submit">Set QC Ready</button>
   </form>
-  {{end}}
 
   <!-- Needs QC pass -->
-  {{if and .Data.Batch.ReadyForQC (.Data.Can.Approve .Data.Batch)}}
+  {{else if and .Data.Batch.ReadyForQC (.Data.Can.Approve .Data.Batch)}}
   <p>{{.Data.Batch.Name}} needs approval to move to production (or a rejection if it needs to be fixed).</p>
 
   <a href="{{ApproveURL .Data.Batch}}" class="btn btn-primary">Approve...</a>
   <a href="{{RejectURL .Data.Batch}}" class="btn btn-danger">Reject...</a>
-  {{end}}
 
   <!-- Needs batch reviewer to flag issues -->
-  {{if and .Data.Batch.ReadyForFlaggingIssues (.Data.Can.FlagIssues .Data.Batch)}}
+  {{else if and .Data.Batch.ReadyForFlaggingIssues (.Data.Can.FlagIssues .Data.Batch)}}
   <p>
     {{.Data.Batch.Name}} has failed QC. You can mark issues that need to be
     removed and then send the batch back to staging.
   </p>
 
   <a href="{{FlagIssuesURL .Data.Batch}}" class="btn btn-primary">Flag Issues...</a>
+
+  <!-- Needs production load -->
+  {{else if and .Data.Batch.ReadyForProduction (.Data.Can.Load .Data.Batch)}}
+  <p><strong>{{.Data.Batch.Name}} is ready to be loaded onto production. This is a manual process.</strong></p>
+  <p>Copy the batch files, minus its TIFFs, to production. e.g.:</p>
+
+<pre><code># ssh into the appropriate server first!
+# $dest_batch is something like:
+#   /mnt/production/{{.Data.Batch.FullName}}
+rsync -av flags --delete \
+  --exclude="*.tif" --exclude="*.tiff" --exclude="*.TIF" --exclude="*.TIFF" \
+  --exclude="*.tar.bz" --exclude="*.tar" \
+  {{.Data.Batch.Location}}/ \
+  $dest_batch</code>
+
+<button class="copy">Copy</button>
+</pre>
+
+  <p>
+    Load the batch on production; load it on staging as well if your staging
+    environment mirrors production:
+  </p>
+  {{template "batch-manual-load" .Data.Batch}}
+
+  <p>Then mark it as "live":</p>
+  <form action="{{SetLiveURL .Data.Batch}}" method="POST">
+    <button class="btn btn-primary" type="submit">Mark Batch "Live"</button>
+  </form>
+
   {{end}}
 
   <!-- TODO: other statuses -->

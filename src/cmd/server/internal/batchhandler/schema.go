@@ -31,6 +31,11 @@ func (b *Batch) ReadyForStaging() bool {
 	return b.Status == models.BatchStatusStagingReady
 }
 
+// ReadyForProduction is true if the batch has passed QC
+func (b *Batch) ReadyForProduction() bool {
+	return b.Status == models.BatchStatusPassedQC
+}
+
 // ReadyForQC is true if the batch is awaiting a quality control check
 func (b *Batch) ReadyForQC() bool {
 	return b.Status == models.BatchStatusQCReady
