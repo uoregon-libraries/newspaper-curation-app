@@ -32,8 +32,8 @@ type ValidateTagManifest struct {
 
 // Process implements Processor, verifying the tag manifest
 func (j *ValidateTagManifest) Process(*config.Config) bool {
-	var a, b = bagit.New(j.DBBatch.Location), bagit.New(j.DBBatch.Location)
-	var err = a.ReadManifests()
+	var b = bagit.New(j.DBBatch.Location)
+	var err = b.ReadManifests()
 	if err != nil {
 		j.Logger.Errorf("Unable to read bagit manifests for %q: %s", j.DBBatch.Location, err)
 		return false
@@ -45,17 +45,16 @@ func (j *ValidateTagManifest) Process(*config.Config) bool {
 		return false
 	}
 
+	var discrepancies = bagit.Compare("tag manifest", b.ManifestTagSums, b.ActualTagSums)
+
 	// An invalid manifest *should* mean the bagit process is incomplete, so we
 	// don't log this as a HOLY WTF error
-	if len(a.Checksums) != len(b.Checksums) {
+	if len(discrepancies) > 0 {
 		j.Logger.Warnf("Checksums didn't match, failing job...")
-		return false
-	}
-	for i := range a.Checksums {
-		if *a.Checksums[i] != *b.Checksums[i] {
-			j.Logger.Warnf("Checksums didn't match, failing job...")
-			return false
+		for _, s := range discrepancies {
+			j.Logger.Debugf("- %s", s)
 		}
+		return false
 	}
 
 	return true
