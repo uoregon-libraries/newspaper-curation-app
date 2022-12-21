@@ -21,8 +21,8 @@ wait_for_database() {
 
 # Resets the database, deleting and rebuilding all the seed data
 resetdb() {
-  docker-compose down -v
-  docker-compose up -d db iiif sftpgo
+  docker compose down -v
+  docker compose up -d db iiif sftpgo
   wait_for_database && migrate && load_seed_data
 }
 
@@ -39,9 +39,9 @@ prep_for_testing() {
 
   # Reset the IIIF and SFTPGo services since they'll be looking at a mount
   # point we just deleted
-  docker-compose stop iiif sftpgo
-  docker-compose rm -f iiif sftpgo
-  docker-compose up -d iiif sftpgo
+  docker compose stop iiif sftpgo
+  docker compose rm -f iiif sftpgo
+  docker compose up -d iiif sftpgo
 }
 
 # Sets up all fake uploads from the test/fakemount dir, then bulk-queues all
@@ -85,7 +85,7 @@ upload_server() {
 }
 
 server() {
-  docker-compose up -d db iiif sftpgo
+  docker compose up -d db iiif sftpgo
   wait_for_database
   make bin/server || return 1
   echo
@@ -99,7 +99,7 @@ server() {
 }
 
 workers() {
-  docker-compose up -d db iiif sftpgo
+  docker compose up -d db iiif sftpgo
   wait_for_database
   make bin/run-jobs || return 1
   ./bin/run-jobs -c ./settings -v watchall
