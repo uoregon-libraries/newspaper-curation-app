@@ -7,6 +7,7 @@ import (
 
 	"github.com/uoregon-libraries/newspaper-curation-app/src/cmd/server/internal/responder"
 	"github.com/uoregon-libraries/newspaper-curation-app/src/internal/logger"
+	"github.com/uoregon-libraries/newspaper-curation-app/src/jobs"
 	"github.com/uoregon-libraries/newspaper-curation-app/src/models"
 	"github.com/uoregon-libraries/newspaper-curation-app/src/web/tmpl"
 )
@@ -100,8 +101,21 @@ func qcApproveHandler(w http.ResponseWriter, req *http.Request) {
 		r.Error(http.StatusForbidden, "You are not permitted to approve this batch for a production load")
 		return
 	}
-	r.batch.NeedStagingPurge = r.batch.StatusMeta.Staging
-	if !setStatus(r, models.BatchStatusPassedQC, approveFormTmpl) {
+
+	var err = jobs.QueueCopyBatchForProduction(r.batch.Batch, conf.BatchProductionPath)
+	if err != nil {
+		logger.Criticalf(`Unable to queue batch-copy job for batch %d (%s): %s`, r.batch.ID, r.batch.FullName(), err)
+
+		// Fully reset the batch so we can re-render without risk the job queue did
+		// something weird
+		r, ok = getBatchResponder(w, req)
+		if !ok {
+			return
+		}
+
+		r.Vars.Title = `Error approving batch`
+		r.Vars.Alert = template.HTML(`Unable to approve this batch. Try again or contact support.`)
+		r.Render(viewTmpl)
 		return
 	}
 
