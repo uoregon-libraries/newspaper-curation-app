@@ -4,11 +4,11 @@ weight: 60
 description: Pushing generated batches to production
 ---
 
-Once a batch has been approved in staging, the following steps must be taken,
-at least for the UO workflow:
+Once a batch has been approved in staging, all essential files (e.g., no TIFFs)
+will be copied to the configured `BATCH_PRODUCTION_PATH` location and then NCA
+will mark the batch as ready to go live. At that point:
 
-- Make sure the batch has a valid `tagmanifest-sha256.txt` file
-- Visit the batch management page for the batch for rsync and load/purge instructions
+- Visit the batch management page for the batch for load/purge instructions
 - Once the batch is purged from staging and loaded to production (and optionally
   re-loaded on staging from the production location), set it as having gone
   live in the batch management page.

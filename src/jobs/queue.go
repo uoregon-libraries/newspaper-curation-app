@@ -14,13 +14,14 @@ import (
 // These constants let us define arg names in a way that ensures we don't screw
 // up by setting an arg and then misspelling the reader of said arg
 const (
-	wsArg     = "WorkflowStep"
-	bsArg     = "BatchStatus"
-	locArg    = "Location"
-	srcArg    = "Source"
-	destArg   = "Destination"
-	forcedArg = "Forced"
-	msgArg    = "Message"
+	wsArg      = "WorkflowStep"
+	bsArg      = "BatchStatus"
+	locArg     = "Location"
+	srcArg     = "Source"
+	destArg    = "Destination"
+	forcedArg  = "Forced"
+	msgArg     = "Message"
+	excludeArg = "Exclude"
 )
 
 // PrepareJobAdvanced gets a job of any kind set up with sensible defaults
@@ -338,4 +339,33 @@ func QueueBatchFinalizeIssueFlagging(batch *models.Batch, flagged []*models.Flag
 	jobs = append(jobs, getJobsForMakeBatch(batch, batchOutputPath)...)
 
 	return QueueSerial(jobs...)
+}
+
+// QueueCopyBatchForProduction sets the given batch to pending, then queues up
+// the necessary jobs to get it ready for a production load
+func QueueCopyBatchForProduction(batch *models.Batch, prodBatchRoot string) error {
+	var op = dbi.DB.Operation()
+	op.Dbg = dbi.Debug
+	op.BeginTransaction()
+	defer op.EndTransaction()
+
+	// We need batch status and staging purge flag to be updated instantly, not
+	// dependent on the speed of the job runner
+	batch.Status = models.BatchStatusPending
+	batch.NeedStagingPurge = true
+	var err = batch.SaveOp(op)
+	if err != nil {
+		return err
+	}
+
+	// Our sync job is special - it requires us to have exclusions, so we're just
+	// building a custom args list
+	var args = makeSrcDstArgs(batch.Location, filepath.Join(prodBatchRoot, batch.FullName()))
+	args[excludeArg] = `*.tif,*.tiff,*.TIF,*.TIFF,*.tar.bz,*.tar`
+
+	return QueueSerialOp(op,
+		PrepareBatchJobAdvanced(models.JobTypeValidateTagManifest, batch, nil),
+		PrepareJobAdvanced(models.JobTypeSyncDir, args),
+		PrepareBatchJobAdvanced(models.JobTypeSetBatchStatus, batch, makeBSArgs(models.BatchStatusPassedQC)),
+	)
 }

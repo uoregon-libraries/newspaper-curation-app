@@ -366,6 +366,7 @@ func runAllQueues(c *config.Config) {
 				models.JobTypeRemoveFile,
 				models.JobTypeWriteActionLog,
 				models.JobTypeRenumberPages,
+				models.JobTypeValidateTagManifest,
 			)
 		},
 		func() {

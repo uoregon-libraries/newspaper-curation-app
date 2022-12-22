@@ -38,6 +38,7 @@ const (
 	JobTypeMakeBatchXML                JobType = "make_batch_xml"
 	JobTypeWriteActionLog              JobType = "write_action_log"
 	JobTypeWriteBagitManifest          JobType = "write_bagit_manifest"
+	JobTypeValidateTagManifest         JobType = "validate_tagmanifest"
 	JobTypeSyncDir                     JobType = "sync_directory"
 	JobTypeKillDir                     JobType = "delete_directory"
 	JobTypeRenameDir                   JobType = "rename_directory"
@@ -67,6 +68,7 @@ var ValidJobTypes = []JobType{
 	JobTypeMakeBatchXML,
 	JobTypeWriteActionLog,
 	JobTypeWriteBagitManifest,
+	JobTypeValidateTagManifest,
 	JobTypeSyncDir,
 	JobTypeKillDir,
 	JobTypeRenameDir,

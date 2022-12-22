@@ -31,8 +31,8 @@ backup() {
   echo "Done (Deleting old backups (if any))"
 
   echo "Writing new backup files"
-  sudo tar -cspf $fakemount ./test/fakemount
-  sudo su -c "cd /var/lib/docker/volumes && tar -cspf $vols ./nca*"
+  sudo tar -cpf $fakemount ./test/fakemount
+  sudo su -c "cd /var/lib/docker/volumes && tar -cpf $vols ./nca*"
   echo "Done (Writing new backup files)"
 
   dcup
