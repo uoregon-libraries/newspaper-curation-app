@@ -3,15 +3,15 @@ set -eu
 
 nuke() {
   echo "Deleting the stack"
-  docker-compose kill
-  docker-compose down -v
+  docker compose kill
+  docker compose down -v
   rm ./test/fakemount/* -rf
   echo "Done (Deleting the stack)"
 }
 
 dcup() {
   echo "Starting up key docker services"
-  docker-compose up -d iiif sftpgo db
+  docker compose up -d iiif sftpgo db
   echo "Done (Starting up key docker services)"
 }
 
@@ -20,7 +20,7 @@ backup() {
   mkdir -p $dir
 
   echo "Taking down the stack gracefully"
-  docker-compose down
+  docker compose down
   echo "Done (Taking down the stack gracefully)"
 
   echo "Deleting old backups (if any)"
@@ -39,12 +39,12 @@ backup() {
 }
 
 migrate() {
-  docker-compose run --rm workers wait_for_database
+  docker compose run --rm workers wait_for_database
 }
 
 load_seed_data() {
-  docker-compose run --rm workers wait_for_database
-  docker-compose run --rm workers mysql -unca -pnca -Dnca -hdb < ./docker/mysql/nca-seed-data.sql
+  docker compose run --rm workers wait_for_database
+  docker compose run --rm workers mysql -unca -pnca -Dnca -hdb < ./docker/mysql/nca-seed-data.sql
 }
 
 restore() {
@@ -68,7 +68,7 @@ restore() {
 
 build() {
   echo "Building NCA images"
-  docker-compose build
+  docker compose build
   echo "Done (Building NCA images)"
 }
 
@@ -85,7 +85,7 @@ resetfakemount() {
 reset() {
   echo "Resetting the stack"
   build
-  docker-compose down -v
+  docker compose down -v
   migrate
   load_seed_data
   resetfakemount

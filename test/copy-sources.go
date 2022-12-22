@@ -13,7 +13,7 @@
 // in any direct way.
 //
 // Eventually this should be part of a bigger test suite which lives in its own
-// test-only docker-compose setup, runs various jobs, and tests output.
+// test-only docker compose setup, runs various jobs, and tests output.
 
 package main
 

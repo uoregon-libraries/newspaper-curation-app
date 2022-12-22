@@ -22,7 +22,7 @@ This is clunky and hacky, but it's what we've got for now.  How it all works:
 
 ### Setup
 
-- Get NCA working via docker-compose (see our
+- Get NCA working via docker compose (see our
   [Development Guide](/contributing/dev-guide); this whole <s>brittle mess</s>
   test suite depends on testing on a docker-enabled system)
 - Make sure your docker compose overrides mount `test/fakemount` as
@@ -120,11 +120,11 @@ directory has issues, you're ready to actually use the data:
   - `make-older.sh` will fake the files' age so the issues can be processed in
     the app without the "too new" warning.
   - *Wait*.  It takes a few minutes for the workers to scan for page reviews
-    (you can watch them via `docker-compose logs -f workers`), and then a few
+    (you can watch them via `docker compose logs -f workers`), and then a few
     more for the web cache to get updated.
 - Enter metadata, review metadata, and fire off a batch when ready
   - Queueing a batch through docker:
-    - `docker-compose exec workers /usr/local/nca/bin/queue-batches -c ./settings`
+    - `docker compose exec workers /usr/local/nca/bin/queue-batches -c ./settings`
   - The batch will end up in `test/fakemount/outgoing`
 
 ### Saving State

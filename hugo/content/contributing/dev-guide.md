@@ -24,7 +24,7 @@ simpler install, but there are a few considerations.  See
 ### Docker
 
 Install [Docker CE](https://docs.docker.com/install/), which will give you the
-`docker` and `docker-compose` commands.
+`docker` and `docker compose` commands.
 
 As mentioned before, Docker is the preferred method for development.  Manual
 setup instructions would be needlessly complicated to handle installing the
@@ -58,7 +58,7 @@ debug mode.
     cp env-example .env
     vim .env
 
-`.env` sets up default environment variables which `docker-compose` commands
+`.env` sets up default environment variables which `docker compose` commands
 will use.  A sample file might look like this:
 
 ```bash
@@ -82,8 +82,8 @@ into the container.
 
 #### Get all images
 
-    docker-compose build
-    docker-compose pull
+    docker compose build
+    docker compose pull
 
 Building the NCA application image will take a long time.  Grab some coffee.
 And maybe a nap....
@@ -94,7 +94,7 @@ openjpeg) and only update what has changed (e.g., NCA source code).
 
 #### Start the stack
 
-Run `docker-compose up`, and the application will be available at
+Run `docker compose up`, and the application will be available at
 `$APP_URL/nca`.  Note that on the first run it will take a while to respond as
 the system is caching all known issues - including those on the defined live
 site.
@@ -135,7 +135,7 @@ comprehensive end-to-end testing is explained in the
 Here's a nice shortcut one can use to speed up the process since, unlike PHP,
 this project requires compilation before it starts up:
 
-    alias dc='docker-compose'
+    alias dc='docker compose'
     make fast
     dc restart web proxy workers
     dc logs -f web proxy workers
