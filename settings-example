@@ -123,6 +123,11 @@ BATCH_OUTPUT_PATH="/mnt/news/outgoing"
 # original file backups). Basically the final home for the always-online files.
 BATCH_PRODUCTION_PATH="/mnt/news/production-batches"
 
+# When a batch is live, its source files, including TIFF and backups, move to
+# an archival location. This can be a dark archive, a "transfer" location for
+# prepping bulk DA moves, or a location you manually manage in some way.
+BATCH_ARCHIVE_PATH="/mnt/news/batch-archive"
+
 # This is where scanned issues and SFTPed issues go after all manual processing
 # is done.  Issues moved here shouldn't be accessible to anybody for manual
 # modification, and all metadata will live in the database.
