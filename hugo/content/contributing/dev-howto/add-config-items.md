@@ -29,6 +29,9 @@ settings:
 
 Notes:
 
+- If you need more validation than what is provided, you can add that to the
+  `Parse()` function. `MinimumIssuePages`, for instance, ensures it's always at
+  least 1.
 - If you add a workflow path, you may need to alter [`test/copy-sources.go`][2]
   in order to automatically create that path for testing.
 
