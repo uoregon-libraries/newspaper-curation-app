@@ -27,4 +27,10 @@ settings:
   (bash-style comments) explaning what it does and how it should be used. When
   you can, make sure the default "just works" with a standard docker setup.
 
+Notes:
+
+- If you add a workflow path, you may need to alter [`test/copy-sources.go`][2]
+  in order to automatically create that path for testing.
+
 [1]: <https://github.com/uoregon-libraries/newspaper-curation-app/blob/main/src/config/config.go>
+[2]: <https://github.com/uoregon-libraries/newspaper-curation-app/blob/main/test/copy-sources.go>

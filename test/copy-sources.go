@@ -125,7 +125,7 @@ func getDirParts(dirName string) (*issue, error) {
 }
 
 func refreshFakemount(testDir string) {
-	for _, dir := range []string{"backup/originals", "outgoing", "production-batches", "page-review", "scans", "sftp", "workflow", "errors"} {
+	for _, dir := range []string{"backup/originals", "outgoing", "production-batches", "page-review", "scans", "sftp", "workflow", "errors", "batch-archive"} {
 		var fullPath = filepath.Join(testDir, "fakemount", dir)
 		if err := os.RemoveAll(fullPath); err != nil {
 			l.Criticalf("Unable to delete %q: %s", fullPath, err)
