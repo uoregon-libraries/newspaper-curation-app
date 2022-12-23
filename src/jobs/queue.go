@@ -369,3 +369,28 @@ func QueueCopyBatchForProduction(batch *models.Batch, prodBatchRoot string) erro
 		PrepareBatchJobAdvanced(models.JobTypeSetBatchStatus, batch, makeBSArgs(models.BatchStatusPassedQC)),
 	)
 }
+
+// QueueBatchGoLiveProcess fires off all jobs needed to call a batch live and
+// ready for archiving. These jobs should only be queued up after a batch has
+// been ingested into the production ONI instance.
+func QueueBatchGoLiveProcess(batch *models.Batch, batchArchivePath string) error {
+	var op = dbi.DB.Operation()
+	op.Dbg = dbi.Debug
+	op.BeginTransaction()
+	defer op.EndTransaction()
+
+	// Batch needs to be marked as in-process before any background jobs get queued
+	batch.Status = models.BatchStatusPending
+	var err = batch.SaveOp(op)
+	if err != nil {
+		return err
+	}
+
+	var finalPath = filepath.Join(batchArchivePath, batch.FullName())
+	return QueueSerialOp(op,
+		PrepareJobAdvanced(models.JobTypeSyncDir, makeSrcDstArgs(batch.Location, finalPath)),
+		PrepareJobAdvanced(models.JobTypeKillDir, makeLocArgs(batch.Location)),
+		PrepareBatchJobAdvanced(models.JobTypeSetBatchLocation, batch, makeLocArgs("")),
+		PrepareBatchJobAdvanced(models.JobTypeMarkBatchLive, batch, nil),
+	)
+}

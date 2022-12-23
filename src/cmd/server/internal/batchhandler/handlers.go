@@ -162,12 +162,11 @@ func setLiveHandler(w http.ResponseWriter, req *http.Request) {
 		return
 	}
 
-	var err = r.batch.SetLive()
+	var err = jobs.QueueBatchGoLiveProcess(r.batch.Batch, conf.BatchArchivePath)
 	if err != nil {
-		logger.Criticalf(`Unable to set batch %d (%s) to "live": %s`, r.batch.ID, r.batch.FullName(), err)
+		logger.Criticalf(`Unable to go live (queueing archive-copy jobs) for batch %d (%s): %s`, r.batch.ID, r.batch.FullName(), err)
 
-		// Too many things occur in the handler to just undo the status, so we
-		// reload the batch from DB in order to re-render the template
+		// Reload the batch and rerender
 		r, ok = getBatchResponder(w, req)
 		if !ok {
 			return
