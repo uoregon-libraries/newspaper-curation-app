@@ -20,6 +20,7 @@ const (
 	BatchStatusQCFlagIssues = "qc_flagging"   // Batch failed QC; problem issues need to be identified and removed
 	BatchStatusPassedQC     = "passed_qc"     // On staging, passed QC; it needs to be pulled from staging and pushed live
 	BatchStatusLive         = "live"          // Batch has gone live; batch and its issues need to be archived
+	BatchStatusLiveArchived = "live_archived" // Batch is archived; its issues can be cleaned up in a few weeks
 	BatchStatusLiveDone     = "live_done"     // Batch has gone live; batch and its issues have been archived and are no longer on the filesystem
 )
 
@@ -91,6 +92,14 @@ var statusMap = map[string]BatchStatus{
 		Dead:        false,
 		NeedsAction: true,
 		Description: "Live in production, awaiting archiving",
+	},
+	BatchStatusLiveArchived: {
+		Status:      BatchStatusLiveArchived,
+		Live:        true,
+		Staging:     false,
+		Dead:        false,
+		NeedsAction: false,
+		Description: "Live in production and archived: awaiting local file cleanup",
 	},
 	BatchStatusLiveDone: {
 		Status:      BatchStatusLiveDone,
