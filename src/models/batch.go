@@ -179,10 +179,9 @@ func InProcessBatches() ([]*Batch, error) {
 	return findBatches(qry, statusList...)
 }
 
-// FindLiveArchivedBatches returns all batches that are still live, but have an
-// archived_at value
+// FindLiveArchivedBatches returns all batches that are live and archived
 func FindLiveArchivedBatches() ([]*Batch, error) {
-	return findBatches("status = ? AND archived_at > ?", BatchStatusLive, time.Time{})
+	return findBatches("status = ?", BatchStatusLiveArchived)
 }
 
 // CreateBatch creates a batch in the database, using its ID combined with the
@@ -392,12 +391,13 @@ func (b *Batch) Delete() error {
 // don't get if you close the batch manually, e.g., it must be in the "live"
 // status and it must have been archived at least four weeks ago.
 func (b *Batch) Close() error {
-	if b.Status != BatchStatusLive {
-		return fmt.Errorf("cannot close batch unless its status is live")
+	var reqStatus = BatchStatusLiveArchived
+	if b.Status != reqStatus {
+		return fmt.Errorf("cannot close batch unless its status is %q", reqStatus)
 	}
 	var fourWeeksAgo = time.Now().Add(-time.Hour * 24 * 7 * 4)
 	if !b.ArchivedAt.Before(fourWeeksAgo) {
-		return fmt.Errorf("cannot close live batches archived fewer than four weeks ago")
+		return fmt.Errorf("cannot close batches archived fewer than four weeks ago")
 	}
 
 	b.Status = BatchStatusLiveDone
