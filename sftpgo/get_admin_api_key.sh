@@ -15,10 +15,12 @@ fi
 
 source ${SETTINGS_PATH}
 
-if [[ ! $(grep "!sftpgo_admin_api_key!" ${SETTINGS_PATH}) ]]; then
-  echo "SFTPgo admin API key already set in NCA settings"
-  $(dirname $0)/view_api_keys.sh
-  exit 0
+if [[ ${1:-} != '--force' ]]; then
+  if [[ ! $(grep "!sftpgo_admin_api_key!" ${SETTINGS_PATH}) ]]; then
+    echo "SFTPgo admin API key already set in NCA settings"
+    $(dirname $0)/view_api_keys.sh
+    exit 0
+  fi
 fi
 
 if [[ "${SFTPGO_ADMIN_LOGIN}" == "" ]]; then
@@ -91,7 +93,7 @@ chmod o-rwx ${SETTINGS_PATH}
 
 echo "Writing SFTPgo admin API key to NCA settings file: ${SETTINGS_PATH}"
 # Copy approach needed to work with mounting settings file via Docker
-sed "s/!sftpgo_admin_api_key!/${APIKEY}/" ${SETTINGS_PATH} > /tmp/settings-updated
+sed "s/^SFTPGO_ADMIN_API_KEY=.*$/SFTPGO_ADMIN_API_KEY=${APIKEY}/" ${SETTINGS_PATH} > /tmp/settings-updated
 cp /tmp/settings-updated ${SETTINGS_PATH}
 rm /tmp/settings-updated
 
