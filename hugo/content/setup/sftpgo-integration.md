@@ -92,7 +92,7 @@ preventing all other publishers from uploading anything.
 
 NCA connects to SFTPGo via an API key for a user with admin privileges. If you
 are using Docker with defaults for development, this API key is created and
-assigned in your NCA `settings` file automatically. For any non-development use,
+assigned in your NCA `settings` file automatically. For any non-docker use,
 one will have to use the Bash scripts in the `sftpgo/` directory. You will need
 to provide the environment variable `SETTINGS_PATH` with a value corresponding
 to the path to your NCA `settings` file to these Bash scripts.
@@ -101,6 +101,15 @@ that *must* be run. It will prompt for admin user credentials, use them to
 request an API key for that user, store the key in the NCA `settings` file
 automatically, and then call the accompanying script `test_api_key.sh` to test
 that API key.
+
+Normally you only run `get_admin_api_key.sh` once, but if you need to reacquire
+a key, you must reset your `settings` file (set
+`SFTPGO_ADMIN_API_KEY=!sftpgo_admin_api_key!`) and then re-run this script.
+
+Note that you can instead run `get_admin_api_key.sh` with the `--force` flag to
+overwrite an existing key in your `settings` file. This should rarely be
+necessary in a production environment, but can be useful on a development or
+staging system where the stack may be destroyed and rebuilt regularly.
 
 Other accompanying scripts are provided to list all API keys and delete an API
 key.
