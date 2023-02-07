@@ -41,9 +41,9 @@ type API struct {
 }
 
 // New returns a new API instance for sending requests to SFTPGo
-func New(apiURL *url.URL, apikey string) *API {
+func New(apiURL *url.URL, apikey string) (*API, error) {
 	if apiURL == nil {
-		panic("cannot instantiate API with no URL")
+		return nil, fmt.Errorf("cannot instantiate sftpgo.API with no URL")
 	}
 
 	var a = &API{
@@ -54,7 +54,7 @@ func New(apiURL *url.URL, apikey string) *API {
 	}
 	a.do = a._do
 
-	return a
+	return a, nil
 }
 
 // CreateUser adds a new user to the sftpgo daemon with the given password and
