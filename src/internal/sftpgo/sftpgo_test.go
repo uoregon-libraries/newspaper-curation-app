@@ -34,7 +34,7 @@ func makeSpy() *spy {
 	return s
 }
 
-func (s *spy) do(c *http.Client, req *http.Request) ([]byte, error) {
+func (s *spy) do(_ *http.Client, req *http.Request) ([]byte, error) {
 	var function = strings.Replace(req.URL.Path, "/api/v2/", "", 1)
 	s.requests = append(s.requests, request{function: function, headers: req.Header, url: req.URL.String()})
 	if s.responses[function] == nil {

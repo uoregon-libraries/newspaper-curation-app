@@ -39,7 +39,7 @@ func loadTitles() (schema.TitleList, error) {
 
 // homeHandler shows claimed workflow items that need to be finished as well as
 // pending items which can be claimed
-func homeHandler(resp *responder.Responder, i *Issue) {
+func homeHandler(resp *responder.Responder, _ *Issue) {
 	resp.Vars.Title = "Workflow"
 
 	var err error
@@ -127,7 +127,7 @@ func getJSONIssues(resp *responder.Responder) *jsonResponse {
 
 // jsonHandler produces a JSON feed of issue information to enable
 // rendering a subset of issues
-func jsonHandler(resp *responder.Responder, i *Issue) {
+func jsonHandler(resp *responder.Responder, _ *Issue) {
 	var response = getJSONIssues(resp)
 	resp.Writer.Header().Add("Content-Type", "application/json")
 	resp.Writer.WriteHeader(response.Code)

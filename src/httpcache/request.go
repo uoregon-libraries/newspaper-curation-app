@@ -19,14 +19,6 @@ type Request struct {
 	Subdirectory string
 }
 
-// NewRequest sets up a Request object for use in a Client's various
-// cache-enabled functions.  The filename and extension are often not a direct
-// part of the URL, or else need to be more precise than a URL provides, so we
-// require them to be specified here.
-func NewRequest(url, filename, extension string) *Request {
-	return &Request{url, filename, extension, ""}
-}
-
 // AutoRequest uses the URL to figure out filename and extension, but requires
 // a sub-directory to avoid collisions since filename from URL can be overly
 // simple, lacking in context, or just not very unique.  Even so, we hash the

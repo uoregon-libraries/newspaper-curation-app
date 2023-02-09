@@ -6,9 +6,6 @@ import (
 	"testing"
 )
 
-func TestJSON(t *testing.T) {
-}
-
 func TestUnmarshal(t *testing.T) {
 	var tests = map[string]struct {
 		input     string
