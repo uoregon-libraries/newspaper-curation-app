@@ -93,7 +93,6 @@ func saveDraft(resp *responder.Responder, i *Issue, changes map[string]string) {
 	}
 	http.SetCookie(resp.Writer, &http.Cookie{Name: "Info", Value: "Saved Metadata", Path: "/"})
 	http.Redirect(resp.Writer, resp.Request, i.Path("metadata"), http.StatusFound)
-	return
 }
 
 func saveQueue(resp *responder.Responder, i *Issue, changes map[string]string) {
