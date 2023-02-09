@@ -28,7 +28,7 @@ func splitExt(fname string) (prefix, ext string) {
 }
 
 // Process renumbers all page filenames
-func (j *RenumberPages) Process(c *config.Config) bool {
+func (j *RenumberPages) Process(*config.Config) bool {
 	j.Logger.Debugf("Starting renumber-pages job for issue id %d", j.DBIssue.ID)
 
 	j.Issue.FindFiles()
