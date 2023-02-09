@@ -10,7 +10,7 @@ err() {
 
 IFS=''
 unformatted=$(find src/ -name "*.go" | xargs goimports -l)
-linter=$(golint src/...)
+linter=$(make lint)
 vet=$(go vet -printfuncs Debugf,Infof,Warnf,Errorf,Criticalf,Fatalf ./src/...  2>&1 || true)
 
 result=0
