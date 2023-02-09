@@ -75,11 +75,11 @@ func FindAllFailedJobs() (jobs []*Job) {
 	var dbJobs, err = models.FindJobsByStatus(models.JobStatusFailed)
 	if err != nil {
 		logger.Criticalf("Unable to look up failed jobs: %s", err)
-		return
+		return jobs
 	}
 
 	for _, dbj := range dbJobs {
 		jobs = append(jobs, NewJob(dbj))
 	}
-	return
+	return jobs
 }
