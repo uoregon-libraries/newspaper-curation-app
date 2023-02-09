@@ -79,7 +79,6 @@ func (c *CLI) Parse() {
 		}
 		c.UsageFail("Error: %q", err)
 	}
-
 }
 
 // Wrap is a helper to wrap a usage message at 80 characters and print a

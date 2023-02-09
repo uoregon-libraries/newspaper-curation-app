@@ -43,7 +43,6 @@ func fakeFile() *File {
 			Location: "/tmp/fake.pdf",
 		},
 	}
-
 }
 
 func TestValidateDPIGood(t *testing.T) {
