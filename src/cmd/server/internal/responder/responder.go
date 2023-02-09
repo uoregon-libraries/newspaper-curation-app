@@ -18,7 +18,7 @@ import (
 )
 
 // GenericVars holds anything specialized that doesn't make sense to have in PageVars
-type GenericVars map[string]interface{}
+type GenericVars map[string]any
 
 // PageVars is the generic list of data all pages may need, and the catch-all
 // "Data" map for specialized one-off data

@@ -49,7 +49,7 @@ func New(err string) Error {
 }
 
 // Errorf stands in for fmt.Errorf as a simpler way to generate an Error
-func Errorf(format string, args ...interface{}) Error {
+func Errorf(format string, args ...any) Error {
 	return New(fmt.Sprintf(format, args...))
 }
 

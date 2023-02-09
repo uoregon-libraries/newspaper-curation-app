@@ -19,7 +19,7 @@ import (
 	"github.com/uoregon-libraries/newspaper-curation-app/src/mods"
 )
 
-func fail(format string, args ...interface{}) {
+func fail(format string, args ...any) {
 	fmt.Fprintf(os.Stderr, format, args...)
 	fmt.Fprintln(os.Stderr)
 	os.Exit(1)

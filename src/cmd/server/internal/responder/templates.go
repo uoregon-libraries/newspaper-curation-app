@@ -41,11 +41,11 @@ func HTMLComment(s string) template.HTML {
 	return template.HTML(fmt.Sprintf("<!-- %s -->", s))
 }
 
-func dict(values ...interface{}) (map[string]interface{}, error) {
+func dict(values ...any) (map[string]any, error) {
 	if len(values)%2 != 0 {
 		return nil, errors.New("dict: values must be in pairs")
 	}
-	var dict = make(map[string]interface{}, len(values)/2)
+	var dict = make(map[string]any, len(values)/2)
 	for i := 0; i < len(values); i += 2 {
 		key, ok := values[i].(string)
 		if !ok {
@@ -105,7 +105,7 @@ func InitRootTemplate(templatePath string) {
 		"debug":         func() bool { return settings.DEBUG },
 		"dict":          dict,
 		"option":        option,
-		"log":           func(val interface{}) string { logger.Debugf("%#v", val); return "" },
+		"log":           func(val any) string { logger.Debugf("%#v", val); return "" },
 
 		// This hack helps with dynamic heading - Go's templating system seems to
 		// be confused when we have something like "<{{.Something}}>" - it decides

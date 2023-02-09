@@ -160,7 +160,7 @@ func FindJob(id int) (*Job, error) {
 //
 // NOTE: All instantiations from the database must go through this function to
 // properly set up their args map!
-func findJobs(where string, args ...interface{}) ([]*Job, error) {
+func findJobs(where string, args ...any) ([]*Job, error) {
 	var op = dbi.DB.Operation()
 	op.Dbg = dbi.Debug
 	var list []*Job
@@ -185,7 +185,7 @@ func PopNextPendingJob(types []JobType) (*Job, error) {
 
 	// Wrangle the IN pain...
 	var j = &Job{}
-	var args []interface{}
+	var args []any
 	var placeholders []string
 	args = append(args, string(JobStatusPending), time.Now())
 	for _, t := range types {

@@ -81,7 +81,7 @@ func wrapBullet(msg string) {
 	}
 }
 
-func usageFail(format string, args ...interface{}) {
+func usageFail(format string, args ...any) {
 	wrap(fmt.Sprintf(format, args...))
 	fmt.Fprintln(os.Stderr)
 	p.WriteHelp(os.Stderr)

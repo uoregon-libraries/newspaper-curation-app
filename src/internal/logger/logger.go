@@ -17,32 +17,32 @@ import (
 var Logger = l.New(l.Debug, false)
 
 // Debugf logs a debug-level message
-func Debugf(format string, args ...interface{}) {
+func Debugf(format string, args ...any) {
 	Logger.Debugf(fmt.Sprintf(format, args...))
 }
 
 // Infof logs an info-level message
-func Infof(format string, args ...interface{}) {
+func Infof(format string, args ...any) {
 	Logger.Infof(fmt.Sprintf(format, args...))
 }
 
 // Warnf logs a warn-level message
-func Warnf(format string, args ...interface{}) {
+func Warnf(format string, args ...any) {
 	Logger.Warnf(fmt.Sprintf(format, args...))
 }
 
 // Errorf logs an error-level message
-func Errorf(format string, args ...interface{}) {
+func Errorf(format string, args ...any) {
 	Logger.Errorf(fmt.Sprintf(format, args...))
 }
 
 // Criticalf logs a critical-level message
-func Criticalf(format string, args ...interface{}) {
+func Criticalf(format string, args ...any) {
 	Logger.Criticalf(fmt.Sprintf(format, args...))
 }
 
 // Fatalf logs a critical-level message, then exits
-func Fatalf(format string, args ...interface{}) {
+func Fatalf(format string, args ...any) {
 	Logger.Fatalf(fmt.Sprintf(format, args...))
 	os.Exit(1)
 }

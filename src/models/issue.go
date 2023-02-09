@@ -83,7 +83,7 @@ type FlaggedIssue struct {
 	Reason string
 }
 
-func findFlaggedIssues(where string, args ...interface{}) ([]*FlaggedIssue, error) {
+func findFlaggedIssues(where string, args ...any) ([]*FlaggedIssue, error) {
 	type _row struct {
 		IssueID         int
 		FlaggedByUserID int
@@ -143,7 +143,7 @@ func NewIssue(moc, lccn, dt string, ed int) *Issue {
 // know the underlying table structure
 type IssueFinder struct {
 	// see AuditLogFinder: this map is weird but useful
-	conditions map[string]interface{}
+	conditions map[string]any
 	op         *magicsql.Operation
 	ord        string
 	lim        int
@@ -152,7 +152,7 @@ type IssueFinder struct {
 // Issues returns an IssueFinder: a scoped object for simple filtering of the
 // issues table with a very narrow DSL
 func Issues() *IssueFinder {
-	var f = &IssueFinder{conditions: make(map[string]interface{}), op: dbi.DB.Operation()}
+	var f = &IssueFinder{conditions: make(map[string]any), op: dbi.DB.Operation()}
 	f.conditions["ignored = ?"] = false
 	f.op.Dbg = dbi.Debug
 	return f
@@ -250,7 +250,7 @@ func (f *IssueFinder) OrderBy(order string) *IssueFinder {
 
 func (f *IssueFinder) selector() magicsql.Select {
 	var where []string
-	var args []interface{}
+	var args []any
 	for k, v := range f.conditions {
 		where = append(where, "("+k+")")
 		if v != nil {
