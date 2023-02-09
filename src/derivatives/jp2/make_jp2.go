@@ -172,7 +172,6 @@ func (t *Transformer) makeJP2() {
 	}
 
 	t.err = fmt.Errorf("could not create a valid JP2")
-	return
 }
 
 func (t *Transformer) moveTempJP2() {

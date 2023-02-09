@@ -80,8 +80,6 @@ func (s *Searcher) cacheLiveIssue(batch *schema.Batch, title *schema.Title, meta
 	title.AddIssue(issue)
 	batch.AddIssue(issue)
 	s.Issues = append(s.Issues, issue)
-
-	return
 }
 
 func (s *Searcher) findBatchedIssueMetadata(c *httpcache.Client, batchURL string) ([]*chronam.IssueMetadata, error) {
