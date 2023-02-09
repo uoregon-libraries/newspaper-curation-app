@@ -61,8 +61,10 @@ func (t *Transformer) Transform() error {
 	defer f.Close()
 	defer os.Remove(f.Name())
 
-	f.Write([]byte(xml.Header))
-	_, err = io.Copy(f, buf)
+	_, err = f.Write([]byte(xml.Header))
+	if err == nil {
+		_, err = io.Copy(f, buf)
+	}
 	if err != nil {
 		return fmt.Errorf("unable to write to batch XML temp output file: %w", err)
 	}

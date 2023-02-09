@@ -1,6 +1,8 @@
 package main
 
 import (
+	"os"
+
 	"github.com/uoregon-libraries/newspaper-curation-app/src/dbi"
 	"github.com/uoregon-libraries/newspaper-curation-app/src/internal/logger"
 	"github.com/uoregon-libraries/newspaper-curation-app/src/models"
@@ -19,7 +21,11 @@ func migrate3xTitlesToSFTPGo() {
 	for _, title := range titles {
 		if !title.SFTPConnected && title.SFTPUser != "" && title.LegacyPass != "" {
 			logger.Infof("Connecting title %s (%s) to use SFTPGo...", title.Name, title.SFTPUser)
-			_migrationCreateSFTPGoTitle(title)
+			err = _migrationCreateSFTPGoTitle(title)
+			if err != nil {
+				logger.Criticalf("Unable to migrate title %s! Error: %s. Closing NCA!", title.Name, err)
+				os.Exit(255)
+			}
 		}
 	}
 }

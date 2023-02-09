@@ -193,9 +193,15 @@ func (ps *PageSplit) moveIssue() (ok bool) {
 	var err = fileutil.CopyDirectory(ps.TempDir, ps.OutputDir)
 	if err != nil {
 		ps.Logger.Errorf("Unable to move temporary directory %q to %q: %s", ps.TempDir, ps.OutputDir, err)
+		return false
 	}
 
 	// Make sure RAIS, Apache, etc. can read the copied dir
-	os.Chmod(ps.OutputDir, 0755)
-	return err == nil
+	err = os.Chmod(ps.OutputDir, 0755)
+	if err != nil {
+		ps.Logger.Errorf("Unable to change permissions on %q: %s", ps.OutputDir, err)
+		return false
+	}
+
+	return true
 }

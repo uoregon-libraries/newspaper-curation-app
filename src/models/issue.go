@@ -542,8 +542,8 @@ func (i *Issue) SaveOp(op *magicsql.Operation, action ActionType, userID int, me
 	a.Message = message
 	i.actions = append(i.actions, a)
 
-	a.SaveOp(op)
-	i.SaveOpWithoutAction(op)
+	_ = a.SaveOp(op)
+	_ = i.SaveOpWithoutAction(op)
 	return op.Err()
 }
 

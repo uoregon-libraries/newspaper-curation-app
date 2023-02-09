@@ -92,7 +92,11 @@ func lookupMARC(t *Title, marcLoc string) error {
 	}
 
 	var m marc
-	xml.Unmarshal(data, &m)
+	err = xml.Unmarshal(data, &m)
+	if err != nil {
+		return fmt.Errorf("unmarshaling response body: %w", err)
+	}
+
 	for _, df := range m.Datafields {
 		if df.Tag == "245" {
 			for _, sf := range df.Subfields {
