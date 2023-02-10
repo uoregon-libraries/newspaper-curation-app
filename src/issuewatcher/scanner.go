@@ -130,7 +130,7 @@ func (s *Scanner) Scan() error {
 
 	// Create a new lookup using the new finder's data
 	s.Lookup = schema.NewLookup()
-	s.Lookup.Populate(f.Issues)
+	err = s.Lookup.Populate(f.Issues)
 	if err != nil {
 		return fmt.Errorf("cannot build issue lookup for Scanner: %w", err)
 	}
