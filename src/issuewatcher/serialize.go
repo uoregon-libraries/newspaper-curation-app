@@ -30,7 +30,10 @@ func (s *Scanner) Deserialize() error {
 		}
 		s.Finder = finder
 		s.Lookup = schema.NewLookup()
-		s.Lookup.Populate(s.Finder.Issues)
+		err = s.Lookup.Populate(s.Finder.Issues)
+		if err != nil {
+			return err
+		}
 	}
 	return nil
 }
