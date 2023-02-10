@@ -30,28 +30,34 @@ func Deserialize(filename string) (*Finder, error) {
 		return nil, fmt.Errorf("unable to deserialize %#v: %w", filename, err)
 	}
 
-	return cf.finder(), nil
+	return cf.finder()
 }
 
 // finder iterates over the cachedFinder's searchers and puts their data into a
 // Finder
-func (cf cachedFinder) finder() *Finder {
+func (cf cachedFinder) finder() (*Finder, error) {
 	var f = New()
 	for _, cSrch := range cf.Searchers {
-		var srch = cSrch.addSearcher()
+		var srch, err = cSrch.addSearcher()
+		if err != nil {
+			return nil, err
+		}
 		f.storeSearcher(srch)
 	}
 	f.Aggregate()
-	return f
+	return f, nil
 }
 
 // searcher internally converts the cache-friendly data to a Searcher instance
-func (cs cachedSearcher) addSearcher() *Searcher {
+func (cs cachedSearcher) addSearcher() (*Searcher, error) {
 	var batchLookup = make(map[cacheID]*schema.Batch)
 	var titleLookup = make(map[cacheID]*schema.Title)
 	var issueLookup = make(map[cacheID]*schema.Issue)
 	var fileLookup = make(map[cacheID]*schema.File)
-	var srch = NewSearcher(cs.Namespace, cs.Location)
+	var srch, err = NewSearcher(cs.Namespace, cs.Location)
+	if err != nil {
+		return nil, err
+	}
 
 	// Build the basic schema objects with associations
 	for _, cb := range cs.Batches {
@@ -105,5 +111,5 @@ func (cs cachedSearcher) addSearcher() *Searcher {
 	// Copy the Errors list
 	srch.Errors = cs.Errors
 
-	return srch
+	return srch, nil
 }
