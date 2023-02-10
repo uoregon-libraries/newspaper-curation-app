@@ -93,6 +93,16 @@ enableAllRules = true
 # accidentally rely on magicsql's error aggregation and then forget about it.
 # This at least hits you with a warning if you forget to explicitly skip the
 # error....
+#
+# Note that this is *not* a catch-all - there are outstanding bugs (see below)
+# where this rule doesn't catch problems, and which we may have a lot of in our
+# codebase. We need to check on this regularly (or if time permits try to help
+# address the issue, though the descriptions suggest this is a very non-trivial
+# fix) because unhandled errors are probably one of NCA's biggest weaknesses.
+#
+# Relevant issues:
+#   - https://github.com/mgechev/revive/issues/350
+#   - https://github.com/mgechev/revive/issues/582
 [rule.unhandled-error]
   arguments =[
     "fmt\\.Print.*", "fmt\\.Fprint.*", "os\\.File\\.WriteString", "io\\.Closer\\.Close",
