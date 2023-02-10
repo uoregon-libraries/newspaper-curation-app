@@ -7,9 +7,13 @@ import (
 
 // FindInProcessIssues aggregates all issues which have been indexed in the database
 func (s *Searcher) FindInProcessIssues() error {
-	s.init()
+	var err = s.init()
+	if err != nil {
+		return err
+	}
 
-	var issues, err = models.FindInProcessIssues()
+	var issues []*models.Issue
+	issues, err = models.FindInProcessIssues()
 	if err != nil {
 		return apperr.Errorf("unable to scan in-process issues from database: %s", err)
 	}

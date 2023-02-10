@@ -16,10 +16,14 @@ import (
 
 // FindScannedIssues aggregates all the in-house scans waiting for processing
 func (s *Searcher) FindScannedIssues() error {
-	s.init()
+	var err = s.init()
+	if err != nil {
+		return err
+	}
 
 	// First find all MARC org code directories
-	var mocPaths, err = fileutil.FindDirectories(s.Location)
+	var mocPaths []string
+	mocPaths, err = fileutil.FindDirectories(s.Location)
 	if err != nil {
 		return err
 	}

@@ -12,10 +12,14 @@ import (
 
 // FindSFTPIssues aggregates all the uploaded born-digital PDFs
 func (s *Searcher) FindSFTPIssues(orgCode string) error {
-	s.init()
+	var err = s.init()
+	if err != nil {
+		return err
+	}
 
 	// First find all titles
-	var titlePaths, err = fileutil.FindDirectories(s.Location)
+	var titlePaths []string
+	titlePaths, err = fileutil.FindDirectories(s.Location)
 	if err != nil {
 		return err
 	}
