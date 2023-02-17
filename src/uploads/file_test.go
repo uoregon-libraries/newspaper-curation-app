@@ -29,7 +29,7 @@ func add(x, y, w, h int) {
 }
 
 // testDPIFunc overrides the dpi function to return the list of DPIs generated above
-func testDPIFunc(loc string) ([]*pdf.Image, error) {
+func testDPIFunc(_ string) ([]*pdf.Image, error) {
 	return dpis, nil
 }
 
@@ -43,7 +43,6 @@ func fakeFile() *File {
 			Location: "/tmp/fake.pdf",
 		},
 	}
-
 }
 
 func TestValidateDPIGood(t *testing.T) {

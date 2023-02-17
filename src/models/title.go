@@ -27,7 +27,7 @@ type Title struct {
 }
 
 // FindTitle searches the database for a single title
-func FindTitle(where string, args ...interface{}) (*Title, error) {
+func FindTitle(where string, args ...any) (*Title, error) {
 	var op = dbi.DB.Operation()
 	op.Dbg = dbi.Debug
 	var t = &Title{}

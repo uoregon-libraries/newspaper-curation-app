@@ -54,15 +54,15 @@ func New(pdfFile, altoFile string, pdfDPI int, imgNo int, overwrite bool) *Trans
 // nil, the ALTO XML will not have been created.
 func (t *Transformer) Transform() error {
 	if fileutil.Exists(t.ALTOOutputFilename) {
-		if t.OverwriteXML {
-			t.Logger.Debugf("Removing existing ALTO XML file %q", t.ALTOOutputFilename)
-			var err = os.Remove(t.ALTOOutputFilename)
-			if err != nil {
-				return fmt.Errorf("removing existing ALTO XML in Transform(): %w", err)
-			}
-		} else {
+		if !t.OverwriteXML {
 			t.Logger.Infof("Not generating ALTO XML file %q; file already exists", t.ALTOOutputFilename)
 			return nil
+		}
+
+		t.Logger.Debugf("Removing existing ALTO XML file %q", t.ALTOOutputFilename)
+		var err = os.Remove(t.ALTOOutputFilename)
+		if err != nil {
+			return fmt.Errorf("removing existing ALTO XML in Transform(): %w", err)
 		}
 	}
 

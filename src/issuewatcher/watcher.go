@@ -6,6 +6,7 @@ package issuewatcher
 
 import (
 	"os"
+	"runtime"
 	"strings"
 	"sync"
 	"time"
@@ -83,12 +84,8 @@ func (w *Watcher) Watch(interval time.Duration) {
 	var lastRefresh time.Time
 	for {
 		if time.Since(lastRefresh) > interval {
-			w.refresh()
+			w.process()
 			lastRefresh = time.Now()
-			var err = w.Scanner.Serialize()
-			if err != nil {
-				logger.Warnf("Unable to cache to %#v: %s", w.Scanner.CacheFile(), err)
-			}
 		}
 		time.Sleep(time.Second * 1)
 
@@ -100,6 +97,26 @@ func (w *Watcher) Watch(interval time.Duration) {
 			w.done <- true
 			return
 		}
+	}
+}
+
+// process refreshes the watcher's data and serializes it out
+func (w *Watcher) process() {
+	// Never let a crash stop us. This could result in an absurd amount of
+	// bad-data logging, but every production crash NCA has had thus far was a
+	// temporary problem we didn't handle well (DB outages, NFS drops, etc.)
+	defer func() {
+		if r := recover(); r != nil {
+			var buf = make([]byte, 100000)
+			buf = buf[:runtime.Stack(buf, false)]
+			logger.Criticalf("issuewatcher: panic refreshing or serializing data: %v\n%s", r, buf)
+		}
+	}()
+
+	w.refresh()
+	var err = w.Scanner.Serialize()
+	if err != nil {
+		logger.Warnf("Unable to cache to %#v: %s", w.Scanner.CacheFile(), err)
 	}
 }
 

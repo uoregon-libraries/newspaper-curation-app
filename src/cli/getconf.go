@@ -16,7 +16,7 @@ import (
 // CLI centralizes the CLI parser as well as functionality around it
 type CLI struct {
 	p         *flags.Parser
-	opts      interface{}
+	opts      any
 	postUsage []string
 }
 
@@ -28,7 +28,7 @@ type BaseOptions struct {
 }
 
 // New returns a CLI instance for parsing flags into the given structure
-func New(opts interface{}) *CLI {
+func New(opts any) *CLI {
 	return &CLI{p: flags.NewParser(opts, flags.HelpFlag|flags.PassDoubleDash), opts: opts}
 }
 
@@ -79,7 +79,6 @@ func (c *CLI) Parse() {
 		}
 		c.UsageFail("Error: %q", err)
 	}
-
 }
 
 // Wrap is a helper to wrap a usage message at 80 characters and print a
@@ -103,7 +102,7 @@ func (c *CLI) HelpExit(code int) {
 
 // UsageFail exits the application after printing out a message and the
 // parser's help
-func (c *CLI) UsageFail(format string, args ...interface{}) {
+func (c *CLI) UsageFail(format string, args ...any) {
 	Wrap(fmt.Sprintf(format, args...))
 	fmt.Fprintln(os.Stderr)
 	c.HelpExit(1)

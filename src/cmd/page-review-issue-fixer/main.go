@@ -91,7 +91,7 @@ func getIssues(keys []string) ([]*models.Issue, error) {
 	var errors []string
 	var issues []*models.Issue
 
-	for _, k := range opts.Keys {
+	for _, k := range keys {
 		var i, err = models.FindIssueByKey(k)
 		if err != nil {
 			errors = append(errors, fmt.Sprintf("unable to retrieve issue: %s", err))

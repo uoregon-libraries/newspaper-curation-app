@@ -203,7 +203,7 @@ func CreateBatch(webroot, moc string, issues []*Issue) (*Batch, error) {
 	b.Name = RandomBatchName(uint32(b.ID) + chksum)
 	for _, i := range issues {
 		i.BatchID = b.ID
-		i.SaveOp(op, ActionTypeInternalProcess, SystemUser.ID, fmt.Sprintf("added to batch %q", b.Name))
+		_ = i.SaveOp(op, ActionTypeInternalProcess, SystemUser.ID, fmt.Sprintf("added to batch %q", b.Name))
 	}
 
 	err = b.SaveOp(op)
@@ -345,7 +345,7 @@ func (b *Batch) SetLive() error {
 
 	b.Status = BatchStatusLive
 	b.WentLiveAt = time.Now()
-	b.SaveOp(op)
+	_ = b.SaveOp(op)
 	op.Exec(`UPDATE issues SET ignored=1, workflow_step = ? WHERE batch_id = ?`, schema.WSInProduction, b.ID)
 
 	return op.Err()
@@ -373,7 +373,7 @@ func (b *Batch) Delete() error {
 
 	for _, i := range issues {
 		i.BatchID = 0
-		i.SaveOp(op, ActionTypeInternalProcess, SystemUser.ID, fmt.Sprintf("removed from batch %q - batch deleted", b.Name))
+		_ = i.SaveOp(op, ActionTypeInternalProcess, SystemUser.ID, fmt.Sprintf("removed from batch %q - batch deleted", b.Name))
 	}
 	return op.Err()
 }

@@ -4,6 +4,7 @@ import (
 	"fmt"
 	"os"
 	"path/filepath"
+	"runtime"
 	"sync/atomic"
 	"time"
 
@@ -79,14 +80,7 @@ func (r *Runner) Watch(interval time.Duration) {
 	var nextAttempt time.Time
 	for !r.done() {
 		if time.Now().After(nextAttempt) {
-			// Loop until there aren't any jobs left to process
-			for r.processNext() {
-				// If r.done() became true, we need to stop looping and let nature take
-				// its course....
-				if r.done() {
-					break
-				}
-			}
+			r.loopAvailableJobs()
 			nextAttempt = time.Now().Add(interval)
 		}
 
@@ -95,6 +89,31 @@ func (r *Runner) Watch(interval time.Duration) {
 	}
 
 	r.logger.Infof("Done watching jobs")
+}
+
+// loopAvailableJobs runs a single "loop" of a runner's jobs, gathering all jobs in a
+// ready state and running them, and catching any crashes in the process.
+func (r *Runner) loopAvailableJobs() {
+	// Catch any job-running crashes and report them. Hopefully these are
+	// rare-to-never, as process() will get called a *lot*, and a job that's
+	// mid-processing can get stuck indefinitely until we add some kind of
+	// job-crash-resume mechanic here.
+	defer func() {
+		if err := recover(); err != nil {
+			var buf = make([]byte, 100000)
+			buf = buf[:runtime.Stack(buf, false)]
+			r.logger.Criticalf("jobs: panic running a job: %v\n%s", err, buf)
+		}
+	}()
+
+	// Loop until there aren't any jobs left to process
+	for r.processNext() {
+		// If r.done() became true, we need to stop looping and let nature take
+		// its course....
+		if r.done() {
+			break
+		}
+	}
 }
 
 // Stop signals this job to stop looping once the current job is done

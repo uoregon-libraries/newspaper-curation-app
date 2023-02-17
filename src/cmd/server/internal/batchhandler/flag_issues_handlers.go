@@ -22,7 +22,13 @@ func flagIssuesHandler(w http.ResponseWriter, req *http.Request) {
 		return
 	}
 
-	req.ParseForm()
+	var err = req.ParseForm()
+	if err != nil {
+		logger.Errorf("Unable to read form in flagIssuesHandler: %s", err)
+		r.Error(http.StatusInternalServerError, "Error processing submission. Try again or contact support.")
+		return
+	}
+
 	switch req.Form.Get("action") {
 	case "flag-issue":
 		flagIssue(r)

@@ -58,7 +58,7 @@ ENV PATH $PATH:$GOROOT/bin:$GOPATH/bin
 
 # Golang dependencies
 RUN go install github.com/pressly/goose/v3/cmd/goose@latest
-RUN go install golang.org/x/lint/golint@latest
+RUN go install github.com/mgechev/revive@latest
 RUN go install golang.org/x/tools/cmd/goimports@latest
 
 WORKDIR /usr/local/src/nca

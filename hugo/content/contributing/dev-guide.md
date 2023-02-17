@@ -13,7 +13,7 @@ relatively simple process of compiling binaries.
 
 - A supported version of [Go](https://golang.org/dl/) (e.g., if 1.16 is the
   latest, you want 1.15 or 1.16)
-- [golint](https://github.com/golang/lint): `go install golang.org/x/lint/golint@latest`
+- [revive](https://github.com/mgechev/revive): `go install github.com/mgechev/revive@latest`
 - Set up your `GOPATH`: https://golang.org/doc/code.html#GOPATH
   - Add `$GOPATH/bin` to your path
 

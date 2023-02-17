@@ -76,9 +76,11 @@ func (t *Transformer) Transform() error {
 		return fmt.Errorf("unable to create METS temp output file: %w", f.Err)
 	}
 
-	f.Write([]byte(xml.Header))
-	io.Copy(f, buf)
-	f.Close()
+	// We ignore returned errors everywhere because SafeFile will carry its error
+	// for us until we need to check
+	_, _ = f.Write([]byte(xml.Header))
+	_, _ = io.Copy(f, buf)
+	_ = f.Close()
 	if f.Err != nil {
 		return fmt.Errorf("unable to write to METS temp output file: %w", f.Err)
 	}

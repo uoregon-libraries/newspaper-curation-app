@@ -56,12 +56,11 @@ func pullMARCForTitle(t *Title) {
 			return
 		}
 		var msg = "Unable to pull MARC XML from %q: %s"
-		if i < last {
-			logger.Warnf(msg+" -- trying next location", marcLocs[i], err)
-		} else {
+		if i >= last {
 			logger.Errorf(msg, marcLocs[i], err)
 			return
 		}
+		logger.Warnf(msg+" -- trying next location", marcLocs[i], err)
 	}
 }
 
@@ -92,7 +91,11 @@ func lookupMARC(t *Title, marcLoc string) error {
 	}
 
 	var m marc
-	xml.Unmarshal(data, &m)
+	err = xml.Unmarshal(data, &m)
+	if err != nil {
+		return fmt.Errorf("unmarshaling response body: %w", err)
+	}
+
 	for _, df := range m.Datafields {
 		if df.Tag == "245" {
 			for _, sf := range df.Subfields {
@@ -116,11 +119,11 @@ func lookupMARC(t *Title, marcLoc string) error {
 			t.LangCode3 = string(runes[35:38])
 		}
 	}
-	if t.MARCTitle != "" && t.MARCLocation != "" {
-		t.ValidLCCN = true
-	} else {
+	if t.MARCTitle == "" || t.MARCLocation == "" {
 		return fmt.Errorf("invalid xml response: title and location must not be blank")
 	}
+
+	t.ValidLCCN = true
 
 	// Hopefully this saves, but if not we're not losing irreplacable data, so we just log the error and move on
 	err = t.Save()

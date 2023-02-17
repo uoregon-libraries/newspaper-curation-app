@@ -38,11 +38,11 @@ full stack and configuration.
 
 Compilation requires:
 - [Go](https://golang.org/dl/) 1.18 or later
-- [golint](https://github.com/golang/lint): `go install golang.org/x/lint/golint@latest`
+- [revive](https://github.com/mgechev/revive): `go install github.com/mgechev/revive@latest`
 
 The easiest way to compile is simply running `make` in the source directory.
 This will grab various Go packages the application requires, validate the
-current code (via golint, gofmt, and go vet, for development purposes), and
+current code (via revive, gofmt, and go vet, for development purposes), and
 build all the binaries.
 
 A full compilation from a clean repository should take about 15 seconds, though

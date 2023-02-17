@@ -29,7 +29,7 @@ type PageSplit struct {
 // Process combines, splits, and then renames files so they're sequential in a
 // "best guess" order.  Files are then put into place for manual processors to
 // reorder if necessary, remove duped pages, etc.
-func (ps *PageSplit) Process(config *config.Config) bool {
+func (ps *PageSplit) Process(conf *config.Config) bool {
 	ps.Logger.Debugf("Processing issue id %d (%q)", ps.DBIssue.ID, ps.Issue.Key())
 	if !ps.makeTempFiles() {
 		return false
@@ -42,8 +42,8 @@ func (ps *PageSplit) Process(config *config.Config) bool {
 		return false
 	}
 
-	ps.GhostScript = config.GhostScript
-	ps.MinPages = config.MinimumIssuePages
+	ps.GhostScript = conf.GhostScript
+	ps.MinPages = conf.MinimumIssuePages
 	return ps.process()
 }
 
@@ -193,9 +193,15 @@ func (ps *PageSplit) moveIssue() (ok bool) {
 	var err = fileutil.CopyDirectory(ps.TempDir, ps.OutputDir)
 	if err != nil {
 		ps.Logger.Errorf("Unable to move temporary directory %q to %q: %s", ps.TempDir, ps.OutputDir, err)
+		return false
 	}
 
 	// Make sure RAIS, Apache, etc. can read the copied dir
-	os.Chmod(ps.OutputDir, 0755)
-	return err == nil
+	err = os.Chmod(ps.OutputDir, 0755)
+	if err != nil {
+		ps.Logger.Errorf("Unable to change permissions on %q: %s", ps.OutputDir, err)
+		return false
+	}
+
+	return true
 }

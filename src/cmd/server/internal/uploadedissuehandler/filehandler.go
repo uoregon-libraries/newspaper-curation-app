@@ -45,12 +45,16 @@ func FileHandler(w http.ResponseWriter, req *http.Request) {
 
 	var f, err = os.Open(path)
 	if err != nil {
-		logger.Errorf("Unable to read %q", path)
+		logger.Errorf("Unable to read %q: %s", path, err)
 		r.Error(http.StatusInternalServerError, fmt.Sprintf("Unable to read %q!", path))
 		return
 	}
 	defer f.Close()
 
 	w.Header().Set("Content-Type", mime.TypeByExtension(ext))
-	io.Copy(w, f)
+	_, err = io.Copy(w, f)
+	if err != nil {
+		logger.Errorf("Unable to send PDF %q to the browser: %s", path, err)
+		r.Error(http.StatusInternalServerError, fmt.Sprintf("Unable to render PDF"))
+	}
 }

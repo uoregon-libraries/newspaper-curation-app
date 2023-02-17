@@ -34,7 +34,7 @@ func makeSpy() *spy {
 	return s
 }
 
-func (s *spy) do(c *http.Client, req *http.Request) ([]byte, error) {
+func (s *spy) do(_ *http.Client, req *http.Request) ([]byte, error) {
 	var function = strings.Replace(req.URL.Path, "/api/v2/", "", 1)
 	s.requests = append(s.requests, request{function: function, headers: req.Header, url: req.URL.String()})
 	if s.responses[function] == nil {
@@ -49,7 +49,10 @@ func (s *spy) do(c *http.Client, req *http.Request) ([]byte, error) {
 // before the token expiry for easier testing.
 func newAPI(t *testing.T) (*API, *spy) {
 	var u, _ = url.Parse("http://example.org/api/v2")
-	var a = New(u, "pass")
+	var a, err = New(u, "pass")
+	if err != nil {
+		t.Fatalf("Unable to create sftpgo API: %s", err)
+	}
 	var s = makeSpy()
 	a.now = makeNow(time.Date(2021, 1, 17, 9, 25, 0, 0, time.UTC))
 	a.do = s.do

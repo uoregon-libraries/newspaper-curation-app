@@ -131,7 +131,7 @@ type AuditLogFinder struct {
 	// this looks weird, but making a map of conditions allows us to have helpers
 	// that just replace data instead of having to worry about deduping it. e.g.,
 	// if somebody calls f.ForUser("foo").ForUser("bar")
-	conditions map[string]interface{}
+	conditions map[string]any
 	ord        string
 	lim        int
 }
@@ -147,7 +147,7 @@ func (f *AuditLogFinder) order(order string) *AuditLogFinder {
 //
 //   AuditLogs().Between(time.Date(), time.Now()).ForUser("jechols").Limit(100).Fetch()
 func AuditLogs() *AuditLogFinder {
-	var f = &AuditLogFinder{conditions: make(map[string]interface{})}
+	var f = &AuditLogFinder{conditions: make(map[string]any)}
 	f.conditions["action <> 'autosave'"] = nil
 	f.ord = "`when` desc"
 	return f
@@ -194,7 +194,7 @@ func (f *AuditLogFinder) Fetch() ([]*AuditLog, uint64, error) {
 	var list []*AuditLog
 
 	var where []string
-	var args []interface{}
+	var args []any
 	for k, v := range f.conditions {
 		// Magic "IN" qualifier because this ORMy approach wasn't well-thought-out.
 		// Thanks, past self. AGAIN.

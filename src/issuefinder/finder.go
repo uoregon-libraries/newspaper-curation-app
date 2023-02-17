@@ -5,6 +5,8 @@
 package issuefinder
 
 import (
+	"fmt"
+
 	"github.com/uoregon-libraries/newspaper-curation-app/src/apperr"
 	"github.com/uoregon-libraries/newspaper-curation-app/src/models"
 	"github.com/uoregon-libraries/newspaper-curation-app/src/schema"
@@ -76,25 +78,27 @@ func New() *Finder {
 
 // NewSearcher instantiates a Searcher on its own, and typically isn't needed,
 // but could be useful for specific one-off scripts
-func NewSearcher(ns Namespace, loc string) *Searcher {
+func NewSearcher(ns Namespace, loc string) (*Searcher, error) {
 	var s = &Searcher{Namespace: ns, Location: loc}
-	s.init()
-	return s
+	var err = s.init()
+	return s, err
 }
 
-func (s *Searcher) init() {
+func (s *Searcher) init() error {
 	s.Issues = make(schema.IssueList, 0)
 	s.Batches = make([]*schema.Batch, 0)
 	s.Titles = make(schema.TitleList, 0)
 	s.titleByLoc = make(map[string]*schema.Title)
 	s.Errors.Clear()
 
-	// Make sure titles are loaded from the DB, and puke on any errors
+	// Make sure titles are loaded from the DB, and returns errors
 	var err error
 	s.dbTitles, err = models.Titles()
 	if err != nil {
-		panic(err)
+		return fmt.Errorf("reading titles from database for new Searcher: %s", err)
 	}
+
+	return nil
 }
 
 func (f *Finder) storeSearcher(s *Searcher) {
@@ -104,12 +108,18 @@ func (f *Finder) storeSearcher(s *Searcher) {
 // createAndProcessSearcher instantiates a new Searcher, passes it to
 // Processor, aggregates its data in the Finder, and returns the error, if any
 func (f *Finder) createAndProcessSearcher(ns Namespace, loc string, processor func(s *Searcher) error) (*Searcher, error) {
-	var s = NewSearcher(ns, loc)
-	var err = processor(s)
-	f.storeSearcher(s)
+	var s, err = NewSearcher(ns, loc)
+	if err == nil {
+		err = processor(s)
+	}
+	if err != nil {
+		return nil, err
+	}
 
+	f.storeSearcher(s)
 	f.aggregate(s)
-	return s, err
+
+	return s, nil
 }
 
 // FindSFTPIssues creates and runs an SFTP Searcher, aggregates its data,

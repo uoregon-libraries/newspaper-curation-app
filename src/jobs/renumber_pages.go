@@ -18,7 +18,7 @@ type RenumberPages struct {
 
 // splitExt uses the same logic filepath.Ext uses to get a file's extension,
 // but gives the prefix in addition to the extension
-func splitExt(fname string) (string, string) {
+func splitExt(fname string) (prefix, ext string) {
 	for i := len(fname) - 1; i >= 0 && !os.IsPathSeparator(fname[i]); i-- {
 		if fname[i] == '.' {
 			return fname[:i], fname[i:]
@@ -28,7 +28,7 @@ func splitExt(fname string) (string, string) {
 }
 
 // Process renumbers all page filenames
-func (j *RenumberPages) Process(c *config.Config) bool {
+func (j *RenumberPages) Process(*config.Config) bool {
 	j.Logger.Debugf("Starting renumber-pages job for issue id %d", j.DBIssue.ID)
 
 	j.Issue.FindFiles()

@@ -22,9 +22,13 @@ import (
 // As with other searches, this returns an error only on unexpected behaviors,
 // like the site not responding.
 func (s *Searcher) FindWebBatches(cachePath string) error {
-	s.init()
+	var err = s.init()
+	if err != nil {
+		return err
+	}
 
-	var batchMetadataList, err = s.findAllLiveBatches(cachePath)
+	var batchMetadataList []*chronam.BatchMetadata
+	batchMetadataList, err = s.findAllLiveBatches(cachePath)
 	if err != nil {
 		return fmt.Errorf("unable to load batch list from %#v: %w", s.Location, err)
 	}
@@ -80,8 +84,6 @@ func (s *Searcher) cacheLiveIssue(batch *schema.Batch, title *schema.Title, meta
 	title.AddIssue(issue)
 	batch.AddIssue(issue)
 	s.Issues = append(s.Issues, issue)
-
-	return
 }
 
 func (s *Searcher) findBatchedIssueMetadata(c *httpcache.Client, batchURL string) ([]*chronam.IssueMetadata, error) {

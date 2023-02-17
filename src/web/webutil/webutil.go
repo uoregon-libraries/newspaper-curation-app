@@ -55,32 +55,32 @@ func ImageURL(file string) string {
 // given file's CSS.  ".css" is automatically appended to the filename for less
 // verbose use.
 func IncludeCSS(file string) template.HTML {
-	var path = StaticPath("css", file+".css")
-	return template.HTML(fmt.Sprintf(`<link rel="stylesheet" type="text/css" href="%s" />`, path))
+	var pth = StaticPath("css", file+".css")
+	return template.HTML(fmt.Sprintf(`<link rel="stylesheet" type="text/css" href="%s" />`, pth))
 }
 
 // RawCSS generates a <link> tag with an absolute path for including the
 // given file's CSS.  It doesn't assume the path is /css, and it doesn't
 // auto-append ".css".
 func RawCSS(file string) template.HTML {
-	var path = StaticPath("", file)
-	return template.HTML(fmt.Sprintf(`<link rel="stylesheet" type="text/css" href="%s" />`, path))
+	var pth = StaticPath("", file)
+	return template.HTML(fmt.Sprintf(`<link rel="stylesheet" type="text/css" href="%s" />`, pth))
 }
 
 // IncludeJS generates a <script> tag with an absolute path for including the
 // given file's JS.  ".js" is automatically appended to the filename for less
 // verbose use.
 func IncludeJS(file string) template.HTML {
-	var path = StaticPath("js", file+".js")
-	return template.HTML(fmt.Sprintf(`<script src="%s"></script>`, path))
+	var pth = StaticPath("js", file+".js")
+	return template.HTML(fmt.Sprintf(`<script src="%s"></script>`, pth))
 }
 
 // RawJS generates a <script> tag with an absolute path for including the given
 // file's JS.  It doesn't assume the path is /js, and it doesn't auto-append
 // ".js".
 func RawJS(file string) template.HTML {
-	var path = StaticPath("", file)
-	return template.HTML(fmt.Sprintf(`<script src="%s"></script>`, path))
+	var pth = StaticPath("", file)
+	return template.HTML(fmt.Sprintf(`<script src="%s"></script>`, pth))
 }
 
 // IIIFInfoURL returns what a IIIF viewer needs to find a JP2

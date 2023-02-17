@@ -70,15 +70,15 @@ func (t *Transformer) getRate() float64 {
 // using a different quality)
 func (t *Transformer) Transform() error {
 	if fileutil.Exists(t.OutputJP2) {
-		if t.OverwriteJP2 {
-			t.Logger.Debugf("Removing existing JP2 file %q", t.OutputJP2)
-			var err = os.Remove(t.OutputJP2)
-			if err != nil {
-				return fmt.Errorf("removing existing JP2 in Transform(): %w", err)
-			}
-		} else {
+		if !t.OverwriteJP2 {
 			t.Logger.Infof("Not generating JP2 file %q; file already exists", t.OutputJP2)
 			return nil
+		}
+
+		t.Logger.Debugf("Removing existing JP2 file %q", t.OutputJP2)
+		var err = os.Remove(t.OutputJP2)
+		if err != nil {
+			return fmt.Errorf("removing existing JP2 in Transform(): %w", err)
 		}
 	}
 
@@ -172,7 +172,6 @@ func (t *Transformer) makeJP2() {
 	}
 
 	t.err = fmt.Errorf("could not create a valid JP2")
-	return
 }
 
 func (t *Transformer) moveTempJP2() {

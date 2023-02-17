@@ -135,7 +135,7 @@ func writeReport(purged []*models.Issue) {
 	// Errors in marshaling shouldn't be possible with the current Issue structure
 	var data, err = json.MarshalIndent(jsonIssues, "", "\t")
 	if err != nil {
-		panic(err)
+		logger.Fatalf("Unable to marshal issues to json: %s", err)
 	}
 
 	err = os.WriteFile("purge.json", data, 0644)

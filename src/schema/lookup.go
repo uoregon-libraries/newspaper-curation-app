@@ -1,6 +1,7 @@
 package schema
 
 import (
+	"fmt"
 	"sync"
 )
 
@@ -42,21 +43,30 @@ func NewLookup() *Lookup {
 }
 
 // Populate stores the given list of issues in the various maps
-func (l *Lookup) Populate(issues IssueList) {
+func (l *Lookup) Populate(issues IssueList) error {
 	l.Lock()
 	defer l.Unlock()
+
+	var err error
 	for _, issue := range issues {
-		l.cacheIssueLookup(issue)
+		err = l.cacheIssueLookup(issue)
+		if err != nil {
+			return err
+		}
 	}
+
+	return nil
 }
 
 // cacheIssueLookup shortcuts the process of getting an issue's key and storing
 // issue data in the various caches
-func (l *Lookup) cacheIssueLookup(i *Issue) {
+func (l *Lookup) cacheIssueLookup(i *Issue) error {
 	var k = i.Key()
 
+	// This shouldn't be able to happen, but a panic here blows up the whole app,
+	// so let's handle it anyway
 	if i.Title == nil {
-		panic("found an issue missing a title")
+		return fmt.Errorf("cannot cache issue %q (dbid %d): no title", i.Key(), i.DatabaseID)
 	}
 
 	// Normal lookup by full key
@@ -77,6 +87,8 @@ func (l *Lookup) cacheIssueLookup(i *Issue) {
 	// No year - which also means no slash
 	k = k[:len(k)-5]
 	l.IssueNoYear[k] = append(l.IssueNoYear[k], i)
+
+	return nil
 }
 
 // getLookup returns the appropriate issue map to use when looking up
