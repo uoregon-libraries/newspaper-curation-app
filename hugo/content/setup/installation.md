@@ -51,6 +51,12 @@ github.  Subsequent compiles generally take under 5 seconds.  If that's still
 too long, and you don't mind skipping the code validations, `make fast` will
 skip the validator entirely, usually saving 1-2 seconds.
 
+If you're in a *serious* rush (say you want to auto-build every time code
+changes just to see if compilation failed), you can also just build a single
+binary via `make <binary target>`, e.g., `make bin/server`. This skips all
+validations and only builds the binary you request, and generally takes less
+than a second.
+
 Once you've compiled, the two key binaries are going to be `bin/server` for the
 HTTP listener, and `bin/run-jobs`, the job queue processor.
 
