@@ -11,3 +11,7 @@ for file in $(find fakemount/page-review/ -name "*.pdf" | sort); do
   newfile=$(printf "%04d.pdf" $c)
   mv $file $dir/$newfile
 done
+
+for dir in $(find fakemount/page-review -mindepth 1 -type d); do
+  go run make-manifest.go $dir
+done
