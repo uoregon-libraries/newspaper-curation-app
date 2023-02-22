@@ -20,7 +20,7 @@ sql() {
 }
 
 strip_dbids() {
-  sed 's|\.wip-|XXWIPXX|g' | sed 's|\(..........-..........\)-[0-9]\+|\1|g'
+  sed 's|\.wip-|XXWIPXX|g' | sed 's|\(..........-..........\)-[0-9]\+|\1|g' | sed 's|\(notouchie-..........\)-[0-9]\+|\1|g'
 }
 
 repname=${1:-}
