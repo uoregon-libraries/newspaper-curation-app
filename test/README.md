@@ -89,3 +89,10 @@ When all jobs are complete (you may have to look in the `jobs` table manually
 for this, e.g., `select * from jobs where status not in ('success',
 'on_hold');`), you should see all *valid* issues moved either to the NCA
 workflow location (scanned issues) or the page review location (sftp issues).
+
+## Enter dummy metadata
+
+If you're looking to test things that come after metadata entry, run
+`enter-metadata.go`. This will iterate over all issues that are awaiting
+metadata entry, create "good enough for testing" data as the admin user, and
+push them to the review queue.
