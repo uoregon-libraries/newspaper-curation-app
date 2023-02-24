@@ -10,14 +10,22 @@ import (
 	"github.com/uoregon-libraries/newspaper-curation-app/src/cli"
 	"github.com/uoregon-libraries/newspaper-curation-app/src/config"
 	"github.com/uoregon-libraries/newspaper-curation-app/src/dbi"
+	"github.com/uoregon-libraries/newspaper-curation-app/src/jobs"
 	"github.com/uoregon-libraries/newspaper-curation-app/src/models"
 	"github.com/uoregon-libraries/newspaper-curation-app/src/schema"
 )
 
 var conf *config.Config
 
-var opts cli.BaseOptions
+type _opts struct {
+	cli.BaseOptions
+	Operation string `long:"operation" description:"Type of operation to perform: 'curate' or 'review'" required:"true"`
+}
+
+var opts _opts
 var l = logger.New(logger.Debug, false)
+var process func(*models.User, *models.Issue)
+var ws schema.WorkflowStep
 
 func getOpts() {
 	var c = cli.New(&opts)
@@ -27,27 +35,40 @@ func getOpts() {
 	if err != nil {
 		l.Fatalf("Error trying to connect to database: %s", err)
 	}
+
+	switch opts.Operation {
+	case "curate":
+		l.Infof("Will curate all issues needing metadata entry")
+		process = curate
+		ws = schema.WSReadyForMetadataEntry
+	case "review":
+		l.Infof("Will approve all issues which have been queued for review")
+		process = review
+		ws = schema.WSAwaitingMetadataReview
+	default:
+		c.UsageFail("%q is not a valid operation", opts.Operation)
+	}
 }
 
 func main() {
 	getOpts()
 
 	// We grab all issues here so the debug output is helpful
-	var issues, err = models.Issues().Fetch()
+	var allIssues, err = models.Issues().Fetch()
 	if err != nil {
-		l.Fatalf("Unable to find in-process issues to enter dummy metadata: %s", err)
+		l.Fatalf("Unable to find in-process issues in the database: %s", err)
 	}
-	var process []*models.Issue
-	for _, i := range issues {
-		if i.WorkflowStep == schema.WSReadyForMetadataEntry {
-			process = append(process, i)
+	var toProcess []*models.Issue
+	for _, i := range allIssues {
+		if i.WorkflowStep == ws {
+			toProcess = append(toProcess, i)
 			l.Debugf("Queueing issue %s", i.Key())
 		} else {
-			l.Debugf("Skipping issue %s: workflow step is %s", i.Key(), i.WorkflowStep)
+			l.Debugf("Skipping issue %s: workflow step is %q (we want %q)", i.Key(), i.WorkflowStep, ws)
 		}
 	}
-	if len(process) == 0 {
-		l.Infof("No issues were found that need metadata entry; exiting")
+	if len(toProcess) == 0 {
+		l.Infof("No issues were found in %q; exiting", ws)
 		os.Exit(0)
 	}
 
@@ -56,9 +77,9 @@ func main() {
 		l.Fatalf("Cannot enter dummy metadata: no user")
 	}
 
-	for _, i := range process {
-		l.Infof("Entering metadata for %s", i.Key())
-		curate(u, i)
+	for _, i := range toProcess {
+		l.Infof("Processing %s", i.Key())
+		process(u, i)
 	}
 }
 
@@ -79,7 +100,22 @@ func curate(u *models.User, i *models.Issue) {
 		i.PageLabels = append(i.PageLabels, "0")
 	}
 
-	i.QueueForMetadataReview(u.ID)
+	err = i.QueueForMetadataReview(u.ID)
+	if err != nil {
+		l.Fatalf("Unable to queue issue %s for review: %s", i.Key(), err)
+	}
+}
+
+func review(u *models.User, i *models.Issue) {
+	i.Claim(u.ID)
+	var err = i.ApproveMetadata(u.ID)
+	if err != nil {
+		l.Fatalf("Unable to approve metadata for issue %s: %s", i.Key(), err)
+	}
+	err = jobs.QueueFinalizeIssue(i)
+	if err != nil {
+		l.Fatalf("Unable to queue issue finalization job for issue %s: %s", i.Key(), err)
+	}
 }
 
 func getFiles(dir string, exts ...string) ([]string, error) {
