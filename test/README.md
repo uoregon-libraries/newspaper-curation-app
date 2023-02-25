@@ -90,9 +90,29 @@ for this, e.g., `select * from jobs where status not in ('success',
 'on_hold');`), you should see all *valid* issues moved either to the NCA
 workflow location (scanned issues) or the page review location (sftp issues).
 
-## Enter dummy metadata
+## Curation and Review
 
-If you're looking to test things that come after metadata entry, run
-`enter-metadata.go`. This will iterate over all issues that are awaiting
-metadata entry, create "good enough for testing" data as the admin user, and
-push them to the review queue.
+If you're looking to test things that come after metadata entry and/or metadata
+review, the `run-workflow.go` script can automate one or both pieces.
+
+To enter metadata:
+
+```bash
+go run run-workflow.go -c ../settings --operation curate
+```
+
+To review metadata, the command is the same, but the operation is
+"review":
+
+```bash
+go run run-workflow.go -c ../settings --operation review
+```
+
+This script iterates over all issues that are in need of the given operation
+and then runs said operation: if you ask for curation, all issues awaiting
+metadata entry will have dummy data entered, while asking for review simply
+approves all issues awaiting metadata review.
+
+For review, it also queues the job which finalizes the metadata (generating
+METS XML). Once those jobs run, issues will be ready for batching via the
+standard `queue-batches` command.
