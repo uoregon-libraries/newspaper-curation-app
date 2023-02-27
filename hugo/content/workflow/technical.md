@@ -118,22 +118,83 @@ is necessary to handle cases where an issue had to have special treatment after
 the bulk of a batch was completed, and would otherwise just sit and wait
 indefinitely.
 
-Once batches are generated, they will appear in the configured
-`BATCH_OUTPUT_PATH`.  The `batches` table in the database will show the batch
-with a `status` of `qc_ready`.
+## Batch Management
 
-Please note that a bagit job will still be running in the background.  Bag
-files are unnecessary to load a batch into ONI or Chronam, so the job can
-happen while somebody is reviewing the batch on a staging server, but the batch
-should **not be considered production-ready** until the bagit files are
-generated.  You can monitor the status of the job in the database directly, or
-just watch for a valid tag manifest file.
+Once a batch is generated and all jobs related to it are complete, the files
+will be put into the configured `BATCH_OUTPUT_PATH` and the "Batches" page in NCA
+will show it to users with the "batch loader" role.
 
-If the batch has any bad issues, it must be fixed by somebody with the "batch
-reviewer" role and then rebatched (these users will have access to a "Batches"
-page in NCA).
+At this point the batch can be loaded into staging. NCA's batch page,
+accessible by activating the relevant link in the batch list, will use your
+configuration to provide bash commands that batch loaders can copy and paste in
+order to get the batch onto your staging ONI instance.
 
-Once the batch has been approved in staging, (TODO: another utility!) run the
-[manual go-live](/workflow/batch-manual-golive) process to get the batch and
-its issues to be properly recognized by the rest of NCA as no longer being part
-of the workflow.
+*Note: if your staging system mounts files differently than your NCA
+server, the commands may have to be altered. e.g., NCA might use
+`/mnt/news/outgoing` while staging uses `/mnt/libnca`.*
+
+Once loaded onto staging, the batch loader flags a batch as being ready for QC
+(quality control). After some processing, the batch will be visible to batch
+reviewers in NCA. The batch page will have a link to the staging environment's
+batch page for easier review, as well as two possible actions to take: approve
+the batch for production or reject it from staging due to problems in one or
+more issues.
+
+If rejected, batch reviewers will need to find and flag the problem issues so
+NCA can process the rest of the batch. Issues will be flagged as unfixable
+(moving to a state where issue managers will have to take action), and the
+batch reviewer will need to enter a comment to help identify what was wrong.
+Once issues are done being flagged, the batch reviewer can finalize the batch,
+rebuilding it with only the good issues, and moving it into the "ready for
+staging" state, where a batch loader is guided through purging and reloading
+the batch for another round of QC.
+
+Once a batch has been approved in staging, all essential files (e.g., no TIFFs)
+will be copied to the configured `BATCH_PRODUCTION_PATH` location and then NCA
+will mark the batch as ready to go live. Upon visiting the batch page in NCA,
+the batch loader will get instructions for purging the batch from staging and
+then loading the batch to production. *The same caveat applies here as when
+loading to staging: if file mounts differ from NCA's mount locations, the batch
+loader will need to adjust the commands NCA provides.*
+
+After batches are live, the batch loader flags it as such in NCA, and NCA will
+move the original batch and any backups (the source PDFs for born-digital
+batches, for instance) to the archival location specificed by the configured
+`BATCH_ARCHIVE_PATH`. At this point the batch is ready for final archival.
+
+## Batch Archival
+
+At UO, our archive path is actually a holding tank as we move things to the
+final archive location in large batches rather than every time something is
+considered "done". Your process may not be quite the same, but hopefully this
+is of help even if only to understand why NCA handles batches the way it does.
+
+Once we have enough content to justify a push to the dark archive, our archival
+team runs the process (they generate their own manifests, for instance, and
+sync all files to the archive). When batches have been confirmed as being in
+our final archive location, we flag them in NCA as being archived.
+
+Whether or not you follow that process, you will still need to specify an
+archive path (`BATCH_ARCHIVE_PATH`) in your `settings` file and flag batches as
+being live. Your archive path may be a direct mount to your final archive, a
+location you manage manually, or some dummy location you simply delete if you
+aren't preserving the original content for some reason.
+
+Once flagged as archived, NCA stores the archival date and time. This is
+important for knowing when it's safe to clean up the files. The issue deletion
+script (`bin/delete-live-done-issues`, created by a standard `make` rune) will
+look for batches archived more than **four weeks ago** and then *completely
+delete all files in NCA tied to these batches*. The files in your archive will
+not be removed, of course, but NCA will ensure its workflow directories are
+cleaned up to make room for new incoming files.
+
+The four-week "timer" was originally put in place to ensure files have had a
+chance to be fully backed up offsite, but it also serves another purpose: *it
+gives you a chance to handle problems that weren't caught during the QC
+process*. Once NCA's workflow files are removed, reprocessing a batch becomes
+significantly more difficult.
+
+Unless you have very few batches, very small batches, or a lot of disk space,
+`bin/delete-live-done-issues` should be run regularly to avoid running out of
+storage. NCA can handle most problems gracefully, but running out of storage
+is almost guaranteed to cause you some headaches.
