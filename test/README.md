@@ -101,6 +101,10 @@ To tell NCA these issues were processed a while ago, run `make-older.sh`. This
 hacks all manifests to say the issue was last changed four days ago, which will
 allow you to queue these issues for processing.
 
+Note that you may want to manually (re)start the job runner. It checks the
+filesystem fairly infrequently, so if it's already running, it could take
+several minutes for the issues to make their way into NCA.
+
 ## Curation and Review
 
 If you're looking to test things that come after metadata entry and/or metadata
