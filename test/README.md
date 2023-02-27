@@ -90,6 +90,17 @@ for this, e.g., `select * from jobs where status not in ('success',
 'on_hold');`), you should see all *valid* issues moved either to the NCA
 workflow location (scanned issues) or the page review location (sftp issues).
 
+## Page Review
+
+To simulate a page review pass, the script `rename-page-review.sh` will get the
+issues in page review ready for ingest into NCA. It renames to the NCA file
+naming spec (0001.pdf, 0002.pdf, etc.) and then generates a manifest file for
+each issue (so that you don't have to wait for NCA's server to do that).
+
+To tell NCA these issues were processed a while ago, run `make-older.sh`. This
+hacks all manifests to say the issue was last changed four days ago, which will
+allow you to queue these issues for processing.
+
 ## Curation and Review
 
 If you're looking to test things that come after metadata entry and/or metadata
