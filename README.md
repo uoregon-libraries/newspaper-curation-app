@@ -1,5 +1,4 @@
-Newspaper Curation App
-===
+# Newspaper Curation App
 
 **Note**: this project should not be considered production-ready unless you
 have a developer who can make sense of some of the inner workings.  The
@@ -26,15 +25,24 @@ workflow rules, template theming, etc.
 
 Ye be warned.
 
-Project
----
+## Project
 
-This project consists of various scripts for converting
-[born-digital](https://en.wikipedia.org/wiki/Born-digital) PDF newspapers, as
-well as scanned newspapers, into a one-batch
-[bag](https://en.wikipedia.org/wiki/BagIt) which can be ingested into
-[ONI](https://github.com/open-oni/open-oni).
+This project consists of various scripts for converting [born-digital][1] PDF
+newspapers, as well as scanned newspapers, into a one-batch [bag][2] which can
+be ingested into [ONI][3].
 
-Please refer to
-[NCA's online documentation](https://uoregon-libraries.github.io/newspaper-curation-app/) for
-detailed documentation.
+Please refer to [NCA's online documentation][4] for detailed documentation.
+Please note that our documentation is for the *latest stable release*, not
+necessarily what's in our `main` branch.
+
+If you're looking for bleeding edge documentation, you can either browse the
+[hugo documentation directly in our source][5], or check out the repo and use
+hugo directly to build and host docs yourself. The ["Contributing to
+Documentation" document][6] describes how to generate docs manually.
+
+[1]: <https://en.wikipedia.org/wiki/Born-digital>
+[2]: <https://en.wikipedia.org/wiki/BagIt>
+[3]: <https://github.com/open-oni/open-oni>
+[4]: <https://uoregon-libraries.github.io/newspaper-curation-app/>
+[5]: <https://github.com/uoregon-libraries/newspaper-curation-app/tree/main/hugo/content>
+[6]: <https://uoregon-libraries.github.io/newspaper-curation-app/contributing/documentation/>
