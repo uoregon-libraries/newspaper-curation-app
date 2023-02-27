@@ -204,6 +204,10 @@ func combinePDF(src, dst string) {
 	if err != nil {
 		l.Fatalf("Unable to scan for PDF files in %q: %s", src, err)
 	}
+	if len(pdfs) == 0 {
+		l.Warnf("No PDFs in %q: skipping", src)
+		return
+	}
 
 	var args = append(pdfs, filepath.Join(dst, "original.pdf"))
 	var cmd = exec.Command("pdfunite", args...)
