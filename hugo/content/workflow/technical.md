@@ -182,7 +182,7 @@ aren't preserving the original content for some reason.
 
 Once flagged as archived, NCA stores the archival date and time. This is
 important for knowing when it's safe to clean up the files. The issue deletion
-script (`bin/delete-live-done-issues`, created by a standard `make` rune) will
+script (`bin/delete-live-done-issues`, created by a standard `make` run) will
 look for batches archived more than **four weeks ago** and then *completely
 delete all files in NCA tied to these batches*. The files in your archive will
 not be removed, of course, but NCA will ensure its workflow directories are
