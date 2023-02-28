@@ -42,7 +42,6 @@ func main() {
 	getConfig()
 
 	var batches, err = models.FindLiveArchivedBatches()
-
 	if err != nil {
 		logger.Fatalf("Unable to query for batches needing to be closed out: %s", err)
 	}
