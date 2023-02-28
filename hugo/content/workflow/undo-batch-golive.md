@@ -53,14 +53,17 @@ This process is awful and you need to know what you're doing, but here's the rou
   - This seems scary, but at this point you still have the live batch, the
     archival files, *and* a database backup.
 - Make the new batch(es) live on staging and production.
-  - See [batch manual go-live](/workflow/batch-manual-golive) docs
+  - See [technical workflow][1] docs for information about batch management.
 - *Delete* the batch from your live location.
-  - This seems scary, but if you're following the [manual go-live](/workflow/batch-manual-golive)
-    docs, your live files are just a subset of the archived batch which you
-    just copied into the "ready for ingest" location.
+  - This seems scary, but when you mark batches as being ready for production,
+    NCA is copying a subset of them to the "ready for ingest" location. The
+    originals are kept for a while even after a batch is flagged for archival
+    - Again, see our [technical workflow][1] docs for details.
 - **Delete your archived batch**. This is the original batch you moved from the
   archive location early in this process.
   - This is kind of scary, but you should now have a new batch (or multiple
     batches) containing all the issues which were in the original batch. The
     files are all the same, the database still has metadata, and the old
     archive's only difference is whatever mistake you were rectifying.
+
+[1]: </workflow/technical>
