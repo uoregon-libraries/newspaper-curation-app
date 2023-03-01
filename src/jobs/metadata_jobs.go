@@ -161,7 +161,7 @@ type CancelJob struct {
 // guarding against canceling jobs which should still stay as-is.
 func (j *CancelJob) Process(*config.Config) bool {
 	var js = models.JobStatus(j.TargetJob.Status)
-	if js != models.JobStatusOnHold || js != models.JobStatusFailedDone {
+	if js != models.JobStatusOnHold && js != models.JobStatusFailedDone {
 		j.Logger.Errorf("Cannot cancel job id %d: invalid job status (%q)", j.TargetJob.ID, j.TargetJob.Status)
 		return false
 	}
