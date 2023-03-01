@@ -150,3 +150,28 @@ func (j *MarkBatchLive) Process(*config.Config) bool {
 	}
 	return err == nil
 }
+
+// CancelJob simply ends a job that was either on hold or had failed by putting
+// it into a finalized state (failed-done).
+type CancelJob struct {
+	*JobJob
+}
+
+// Process deals with changing the targeted job's status to failed_done while
+// guarding against canceling jobs which should still stay as-is.
+func (j *CancelJob) Process(*config.Config) bool {
+	var js = models.JobStatus(j.TargetJob.Status)
+	if js != models.JobStatusOnHold || js != models.JobStatusFailedDone {
+		j.Logger.Errorf("Cannot cancel job id %d: invalid job status (%q)", j.TargetJob.ID, j.TargetJob.Status)
+		return false
+	}
+
+	j.TargetJob.Status = string(models.JobStatusFailedDone)
+	var err = j.TargetJob.Save()
+	if err != nil {
+		j.Logger.Errorf("Cannot cancel job id %d: %s", j.TargetJob.ID, err)
+		return false
+	}
+
+	return true
+}
