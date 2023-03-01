@@ -20,6 +20,7 @@ const (
 	BatchStatusQCFlagIssues = "qc_flagging"   // Batch failed QC; problem issues need to be identified and removed
 	BatchStatusPassedQC     = "passed_qc"     // On staging, passed QC; it needs to be pulled from staging and pushed live
 	BatchStatusLive         = "live"          // Batch has gone live; batch and its issues need to be archived
+	BatchStatusLiveArchived = "live_archived" // Batch is archived; its issues can be cleaned up in a few weeks
 	BatchStatusLiveDone     = "live_done"     // Batch has gone live; batch and its issues have been archived and are no longer on the filesystem
 )
 
@@ -91,6 +92,14 @@ var statusMap = map[string]BatchStatus{
 		Dead:        false,
 		NeedsAction: true,
 		Description: "Live in production, awaiting archiving",
+	},
+	BatchStatusLiveArchived: {
+		Status:      BatchStatusLiveArchived,
+		Live:        true,
+		Staging:     false,
+		Dead:        false,
+		NeedsAction: false,
+		Description: "Live in production and archived: awaiting local file cleanup",
 	},
 	BatchStatusLiveDone: {
 		Status:      BatchStatusLiveDone,
@@ -170,10 +179,9 @@ func InProcessBatches() ([]*Batch, error) {
 	return findBatches(qry, statusList...)
 }
 
-// FindLiveArchivedBatches returns all batches that are still live, but have an
-// archived_at value
+// FindLiveArchivedBatches returns all batches that are live and archived
 func FindLiveArchivedBatches() ([]*Batch, error) {
-	return findBatches("status = ? AND archived_at > ?", BatchStatusLive, time.Time{})
+	return findBatches("status = ?", BatchStatusLiveArchived)
 }
 
 // CreateBatch creates a batch in the database, using its ID combined with the
@@ -380,15 +388,16 @@ func (b *Batch) Delete() error {
 
 // Close finalizes a batch that's live and archived by setting its status to
 // BatchStatusLiveDone.  This has some of our "safety first" business logic you
-// don't get if you close the batch manually, e.g., it must be in the "live"
-// status and it must have been archived at least four weeks ago.
+// don't get if you close the batch manually, e.g., it must be in the
+// "live_archived" status and it must have been archived four weeks ago.
 func (b *Batch) Close() error {
-	if b.Status != BatchStatusLive {
-		return fmt.Errorf("cannot close batch unless its status is live")
+	var reqStatus = BatchStatusLiveArchived
+	if b.Status != reqStatus {
+		return fmt.Errorf("cannot close batch unless its status is %q", reqStatus)
 	}
 	var fourWeeksAgo = time.Now().Add(-time.Hour * 24 * 7 * 4)
 	if !b.ArchivedAt.Before(fourWeeksAgo) {
-		return fmt.Errorf("cannot close live batches archived fewer than four weeks ago")
+		return fmt.Errorf("cannot close batches archived fewer than four weeks ago")
 	}
 
 	b.Status = BatchStatusLiveDone

@@ -135,3 +135,18 @@ func (j *RecordIssueAction) Process(*config.Config) bool {
 
 	return true
 }
+
+// MarkBatchLive sets a batch's go-live metadata and tells NCA to ignore all
+// its issues, as they are no longer considered to be in the workflow
+type MarkBatchLive struct {
+	*BatchJob
+}
+
+// Process updates the batch status and go-live date, and saves to the database
+func (j *MarkBatchLive) Process(*config.Config) bool {
+	var err = j.DBBatch.SetLive()
+	if err != nil {
+		j.Logger.Errorf("Unable to mark batch %d as being live: %s", j.DBBatch.ID, err)
+	}
+	return err == nil
+}

@@ -41,6 +41,15 @@ func (b *Batch) ReadyForQC() bool {
 	return b.Status == models.BatchStatusQCReady
 }
 
+// ReadyForArchive is true if the batch has gone live and has been moved to the
+// archival destination (dark-archive xfer location for UO, but could be the
+// final archive location for others)
+func (b *Batch) ReadyForArchive() bool {
+	// This status isn't set until *after* the batch is moved out of NCA, so we
+	// can rely on the status alone here
+	return b.Status == models.BatchStatusLive
+}
+
 // ReadyForFlaggingIssues is true if the batch is ready for a batch reviewer to
 // flag which issues need to be removed
 func (b *Batch) ReadyForFlaggingIssues() bool {

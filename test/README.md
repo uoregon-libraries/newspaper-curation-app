@@ -37,7 +37,7 @@ Naming conventions must be adhered to for the test code to properly put issues i
 - SFTPed issues: `sources/sftp/<LCCN>-<Date><Edition>`.
 
 The MARC org code is going to be something like "oru", and is typically three
-letters. LCCN is always 10 characters. Date is 10 characters in the form of
+letters. LCCN is always 10 characters. Date is 8 characters in the form of
 `YYYYMMDD`, so January 2nd, 2006 would be `20060102`. Edition is a two-digit
 value for the issue's edition in case there were two editions published the
 same day. This is almost always `01`.

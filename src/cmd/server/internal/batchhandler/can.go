@@ -39,7 +39,7 @@ func (c *CanValidation) View(b *Batch) bool {
 		return has(privilege.LoadBatches)
 	case models.BatchStatusLive:
 		return has(privilege.ArchiveBatches)
-	case models.BatchStatusDeleted, models.BatchStatusPending, models.BatchStatusLiveDone:
+	case models.BatchStatusDeleted, models.BatchStatusPending, models.BatchStatusLiveDone, models.BatchStatusLiveArchived:
 		return false
 	}
 
@@ -53,6 +53,14 @@ func (c *CanValidation) Load(b *Batch) bool {
 		return false
 	}
 	return b.Status == models.BatchStatusStagingReady || b.Status == models.BatchStatusPassedQC
+}
+
+// Archive is true if the user can archive batches and b is ready for archiving
+func (c *CanValidation) Archive(b *Batch) bool {
+	if !c.user.PermittedTo(privilege.ArchiveBatches) {
+		return false
+	}
+	return b.ReadyForArchive()
 }
 
 // Approve is true if the user can approve batches and b is in need of approval

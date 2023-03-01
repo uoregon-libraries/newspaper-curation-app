@@ -63,6 +63,27 @@
     <button class="btn btn-primary" type="submit">Mark Batch "Live"</button>
   </form>
 
+  <!-- On production, copied to archive location, needs to be flagged for the
+       issue-cleanup countdown to start -->
+  {{else if and .Data.Batch.ReadyForArchive (.Data.Can.Archive .Data.Batch)}}
+  <p><strong>{{.Data.Batch.Name}} is live and has been copied to the archival location.</strong></p>
+  <p>
+    When the archive has been finalized, flag it as complete below. This starts
+    a <strong>28-day</strong> countdown, after which NCA deletes <em>all local
+    issues' files</em> from disk.
+  </p>
+  <p>
+    If your archival location is the final destination for archives, you can
+    activate this at any time. If you move files to a location where they are
+    batch-archived at a later date, activate this after the batch archive
+    occurs to ensure the countdown doesn't start until the files have actually
+    started moving to the final archive.
+  </p>
+
+  <form action="{{SetArchivedURL .Data.Batch}}" method="POST">
+    <button class="btn btn-primary" type="submit">Mark Batch "Archived"</button>
+  </form>
+
   {{end}}
 
   <!-- TODO: other statuses -->

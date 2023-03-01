@@ -4,6 +4,7 @@ import (
 	"fmt"
 	"html/template"
 	"net/http"
+	"time"
 
 	"github.com/uoregon-libraries/newspaper-curation-app/src/cmd/server/internal/responder"
 	"github.com/uoregon-libraries/newspaper-curation-app/src/internal/logger"
@@ -162,12 +163,11 @@ func setLiveHandler(w http.ResponseWriter, req *http.Request) {
 		return
 	}
 
-	var err = r.batch.SetLive()
+	var err = jobs.QueueBatchGoLiveProcess(r.batch.Batch, conf.BatchArchivePath)
 	if err != nil {
-		logger.Criticalf(`Unable to set batch %d (%s) to "live": %s`, r.batch.ID, r.batch.FullName(), err)
+		logger.Criticalf(`Unable to go live (queueing archive-copy jobs) for batch %d (%s): %s`, r.batch.ID, r.batch.FullName(), err)
 
-		// Too many things occur in the handler to just undo the status, so we
-		// reload the batch from DB in order to re-render the template
+		// Reload the batch and rerender
 		r, ok = getBatchResponder(w, req)
 		if !ok {
 			return
@@ -180,6 +180,38 @@ func setLiveHandler(w http.ResponseWriter, req *http.Request) {
 	}
 
 	http.SetCookie(r.Writer, &http.Cookie{Name: "Info", Value: r.batch.Name + ": marked batch as 'live'", Path: "/"})
+	http.Redirect(w, req, basePath, http.StatusFound)
+}
+
+func setArchivedHandler(w http.ResponseWriter, req *http.Request) {
+	var r, ok = getBatchResponder(w, req)
+	if !ok {
+		return
+	}
+	if !r.can.Archive(r.batch) {
+		r.Error(http.StatusForbidden, "You are not permitted to flag batches as having been archived")
+		return
+	}
+
+	r.batch.Status = models.BatchStatusLiveArchived
+	r.batch.ArchivedAt = time.Now()
+	var err = r.batch.Save()
+	if err != nil {
+		logger.Criticalf(`Unable to flag batch %d (%s) as archived: %s`, r.batch.ID, r.batch.FullName(), err)
+
+		// Reload the batch and rerender
+		r, ok = getBatchResponder(w, req)
+		if !ok {
+			return
+		}
+
+		r.Vars.Title = `Error marking batch "archived"`
+		r.Vars.Alert = template.HTML(`Unable to set batch as "archived". Try again or contact support.`)
+		r.Render(viewTmpl)
+		return
+	}
+
+	http.SetCookie(r.Writer, &http.Cookie{Name: "Info", Value: r.batch.Name + ": marked batch as 'archived'", Path: "/"})
 	http.Redirect(w, req, basePath, http.StatusFound)
 }
 
