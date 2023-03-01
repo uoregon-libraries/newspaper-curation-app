@@ -387,10 +387,10 @@ func QueueBatchGoLiveProcess(batch *models.Batch, batchArchivePath string) error
 	}
 
 	var finalPath = filepath.Join(batchArchivePath, batch.FullName())
-	return QueueSerialOp(op,
-		PrepareJobAdvanced(models.JobTypeSyncDir, makeSrcDstArgs(batch.Location, finalPath)),
-		PrepareJobAdvanced(models.JobTypeKillDir, makeLocArgs(batch.Location)),
-		PrepareBatchJobAdvanced(models.JobTypeSetBatchLocation, batch, makeLocArgs("")),
-		PrepareBatchJobAdvanced(models.JobTypeMarkBatchLive, batch, nil),
+	return queueSerialOp(op,
+		prepareJobAdvanced(models.JobTypeSyncDir, makeSrcDstArgs(batch.Location, finalPath)),
+		prepareJobAdvanced(models.JobTypeKillDir, makeLocArgs(batch.Location)),
+		prepareBatchJobAdvanced(models.JobTypeSetBatchLocation, batch, makeLocArgs("")),
+		prepareBatchJobAdvanced(models.JobTypeMarkBatchLive, batch, nil),
 	)
 }
