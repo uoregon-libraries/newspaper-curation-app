@@ -12,23 +12,21 @@ properly in order to ensure it is used, set up, and processed by NCA.
   as `JobTypeRenameDir`.
   - Read and make sure you understand *all structs* in `src/jobs` that
     implement `Process`
-- Create a new `JobType` in [`src/models/job.go`](https://github.com/uoregon-libraries/newspaper-curation-app/blob/main/src/models/job.go).
+- Create a new `JobType` in [`src/models/job.go`][1].
   - Add the `JobType` to the const list
     - Make sure the string is 100% unique within that list!
   - Add the new `JobType` to the `ValidJobTypes` list
 - Create a new struct that implements the `Process` method.
-  - Use an existing Go file if it makes sense (e.g., another metadata or filesystem job) or
-    create a new one in `src/jobs/`.
+  - Use an existing Go file if it makes sense (e.g., another metadata or
+    filesystem job) or create a new one in `src/jobs/`.
   - Make sure you document the type!  What is its purpose?
   - Need an example?  The metadata jobs are very simple and can be found in
-    [`src/jobs/metadata_jobs.go`](https://github.com/uoregon-libraries/newspaper-curation-app/blob/main/src/jobs/metadata_jobs.go).
+    [`src/jobs/metadata_jobs.go`][2].
 - Wire up the `JobType` to the concrete `Process` implementor
-  - This is done in
-    [`src/jobs/jobs.go`](https://github.com/uoregon-libraries/newspaper-curation-app/blob/main/src/jobs/jobs.go),
-    in the `DBJobToProcessor` function
+  - This is done in [`src/jobs/jobs.go`][3], in the `DBJobToProcessor` function
 - Queue a job of the new type.
-  - See [`src/jobs/queue.go`](https://github.com/uoregon-libraries/newspaper-curation-app/blob/main/src/jobs/queue.go)
-  - You might create a new `Prepare...Job` function, or simply use an existing
+  - See [`src/jobs/queue.go`][4]
+  - You might create a new `prepare...Job` function, or simply use an existing
     one with the new type
   - You might need to create a new arg value, like `srcArg`, `forcedArg`, etc.
     for the processor to use
@@ -36,6 +34,12 @@ properly in order to ensure it is used, set up, and processed by NCA.
     Typically this happens in a `Queue...` function.
 - Make something run jobs of the new type.
   - For almost any new job, you'll just add the type to an existing runner
-    function in [`src/cmd/run-jobs/main.go`](https://github.com/uoregon-libraries/newspaper-curation-app/blob/main/src/cmd/run-jobs/main.go)
-    (`runAllQueues`).  This ensures a simple job runner invocation (with the
-    `watchall` argument) will run your new job type.
+    function in [`src/cmd/run-jobs/main.go`][5] (`runAllQueues`).  This ensures
+    a simple job runner invocation (with the `watchall` argument) will run your
+    new job type.
+
+[1]: <https://github.com/uoregon-libraries/newspaper-curation-app/blob/main/src/models/job.go>
+[2]: <https://github.com/uoregon-libraries/newspaper-curation-app/blob/main/src/jobs/metadata_jobs.go>
+[3]: <https://github.com/uoregon-libraries/newspaper-curation-app/blob/main/src/jobs/jobs.go>
+[4]: <https://github.com/uoregon-libraries/newspaper-curation-app/blob/main/src/jobs/queue.go>
+[5]: <https://github.com/uoregon-libraries/newspaper-curation-app/blob/main/src/cmd/run-jobs/main.go>
