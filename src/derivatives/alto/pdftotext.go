@@ -3,6 +3,10 @@
 
 package alto
 
+import (
+	"unicode"
+)
+
 // Rect is a common structure embedded in most pdftotext elements
 type Rect struct {
 	XMin float64 `xml:"xMin,attr"`
@@ -27,11 +31,34 @@ type Doc struct {
 	Page Page `xml:"page"`
 }
 
+// Clean returns a copy of d with all non-printable unicode removed from all
+// "word" elements, and any empty elements removed entirely
+func (d Doc) Clean() Doc {
+	var cleaned = d
+	cleaned.Page = d.Page.clean()
+
+	return cleaned
+}
+
 // Page holds the outer <page> wrapper around all the <flow> elements
 type Page struct {
 	Flows  []Flow  `xml:"flow"`
 	Width  float64 `xml:"width,attr"`
 	Height float64 `xml:"height,attr"`
+}
+
+func (p Page) clean() Page {
+	var cleaned = p
+	cleaned.Flows = nil
+
+	for _, flow := range p.Flows {
+		var f = flow.clean()
+		if len(f.Blocks) > 0 {
+			cleaned.Flows = append(cleaned.Flows, f)
+		}
+	}
+
+	return cleaned
 }
 
 // Flow is just a container of blocks, theoretically grouped in a meaningful
@@ -40,10 +67,38 @@ type Flow struct {
 	Blocks []Block `xml:"block"`
 }
 
+func (f Flow) clean() Flow {
+	var cleaned = f
+	cleaned.Blocks = nil
+
+	for _, block := range f.Blocks {
+		var b = block.clean()
+		if len(b.Lines) > 0 {
+			cleaned.Blocks = append(cleaned.Blocks, b)
+		}
+	}
+
+	return cleaned
+}
+
 // A Block contains lines and a rectangle around them
 type Block struct {
 	Rect
 	Lines []Line `xml:"line"`
+}
+
+func (b Block) clean() Block {
+	var cleaned = b
+	cleaned.Lines = nil
+
+	for _, line := range b.Lines {
+		var l = line.clean()
+		if len(l.Words) > 0 {
+			cleaned.Lines = append(cleaned.Lines, l)
+		}
+	}
+
+	return cleaned
 }
 
 // A Line contains the individual word elements, and a rectangle
@@ -52,9 +107,35 @@ type Line struct {
 	Words []Word `xml:"word"`
 }
 
+func (l Line) clean() Line {
+	var cleaned = l
+	cleaned.Words = nil
+
+	for _, word := range l.Words {
+		var w = word.clean()
+		if w.Text != "" {
+			cleaned.Words = append(cleaned.Words, w)
+		}
+	}
+
+	return cleaned
+}
+
 // A Word is the most granular element we get, containing a rectangle around
 // the text and the text itself
 type Word struct {
 	Rect
 	Text string `xml:",chardata"`
+}
+
+func (w Word) clean() Word {
+	var cleaned = w
+	cleaned.Text = ""
+	for _, r := range []rune(w.Text) {
+		if unicode.IsPrint(r) {
+			cleaned.Text = cleaned.Text + string(r)
+		}
+	}
+
+	return cleaned
 }

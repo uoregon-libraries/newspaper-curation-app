@@ -32,12 +32,15 @@ func (t *Transformer) transform() {
 	t.Logger.Infof("Converting pdftotext HTML to ALTO XML")
 
 	// Parse XML to get at page attributes
-	var html Doc
-	var err = xml.Unmarshal(t.html, &html)
+	var source Doc
+	var err = xml.Unmarshal(t.html, &source)
 	if err != nil {
 		t.err = fmt.Errorf("invalid html to unmarshal into XML: %w", err)
 		return
 	}
+
+	// Fix all "word" elements to avoid non-printable runes
+	var html = source.Clean()
 
 	// Set up template vars
 	var blockNum int
