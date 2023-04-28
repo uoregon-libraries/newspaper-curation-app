@@ -6,16 +6,12 @@ import (
 	"fmt"
 	"io/ioutil"
 	"os"
-	"regexp"
 
 	"github.com/uoregon-libraries/gopkg/fileutil"
 	ltype "github.com/uoregon-libraries/gopkg/logger"
 	"github.com/uoregon-libraries/newspaper-curation-app/src/internal/logger"
 	"github.com/uoregon-libraries/newspaper-curation-app/src/shell"
 )
-
-// lowASCIIRegex strips all low-ASCII that isn't printable
-var lowASCIIRegex = regexp.MustCompile(`[\x00-\x08\x0b\x0c\x0e-\x1f]`)
 
 // Transformer holds onto various data needed to convert a PDF into
 // ALTO-compatible XML, halting the process at the first error
@@ -122,7 +118,6 @@ func (t *Transformer) extractDoc() {
 	var start = bytes.Index(t.html, []byte("<doc>"))
 	var end = bytes.Index(t.html, []byte("</doc>"))
 	t.html = t.html[start : end+6]
-	t.html = lowASCIIRegex.ReplaceAllLiteral(t.html, nil)
 }
 
 func (t *Transformer) writeALTOFile() {
