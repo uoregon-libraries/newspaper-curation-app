@@ -39,9 +39,6 @@ else
   sudo cp $src/settings-example $ncadir/settings
 fi
 
-echo Removing the cache
-sudo rm /tmp/nca/finder.cache -f
-
 echo Migrating the database
 source $ncadir/settings
 goose -dir $src/db/migrations mysql "$DB_USER:$DB_PASSWORD@tcp($DB_HOST:3306)/$DB_DATABASE" up
