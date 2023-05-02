@@ -49,3 +49,38 @@ func TestDocClean(t *testing.T) {
 		t.Fatalf(diff)
 	}
 }
+
+func TestDocCleanWithSoftHyphens(t *testing.T) {
+	var wd, err = os.Getwd()
+	if err != nil {
+		t.Fatalf("Unable to get working directory: %s", err)
+	}
+
+	var data []byte
+	data, err = os.ReadFile(filepath.Join(wd, "testdata", "hyphens.xml"))
+	if err != nil {
+		t.Fatalf("Unable to read test file: %s", err)
+	}
+
+	var source Doc
+	err = xml.Unmarshal(data, &source)
+	if err != nil {
+		t.Fatalf("Unable to parse test file: %s", err)
+	}
+
+	var cleaned = source.Clean()
+	var cleanedXML []byte
+	cleanedXML, err = xml.MarshalIndent(cleaned, "", "  ")
+	if err != nil {
+		t.Fatalf("Unable to re-marshal XML: %s", err)
+	}
+
+	// vim puts a newline at the end of a file, so we'll inject one into our
+	// cleaned XML for the diff
+	cleanedXML = append(cleanedXML, '\n')
+
+	var diff = cmp.Diff(string(cleanedXML), string(data))
+	if diff != "" {
+		t.Fatalf(diff)
+	}
+}
