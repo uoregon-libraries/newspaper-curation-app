@@ -34,6 +34,15 @@ rm -rf $repdir
 mkdir ./$repdir
 find ./fakemount | sort | strip_dbids > $repdir/raw-files.txt
 
+# Store all XML to be sure our ALTO conversion isn't busted
+for xml in $(find ./fakemount -name "*.xml" | sort); do
+  fname=$(echo ${xml#./fakemount/} | sed 's|/|__|g')
+  cat $xml | \
+    sed 's|<softwareVersion>.*</softwareVersion>|<softwareVersion>XYZZY</softwareVersion>|' | \
+    sed 's|<fileName>.*</fileName>|<fileName>XYZZY</fileName>|' \
+    > $repdir/$fname
+done
+
 find ./fakemount -name "*.tiff" -or -name "*.tif" | sort | xargs -l1 md5sum | strip_dbids > $repdir/tiffsums.txt
 
 # Dump critical info from the database without having useless churn like
