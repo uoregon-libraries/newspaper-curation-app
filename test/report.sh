@@ -39,7 +39,8 @@ for xml in $(find ./fakemount -name "*.xml" | sort); do
   fname=$(echo ${xml#./fakemount/} | sed 's|/|__|g' | strip_dbids)
   cat $xml | \
     sed 's|<softwareVersion>.*</softwareVersion>|<softwareVersion>XYZZY</softwareVersion>|' | \
-    sed 's|<fileName>.*</fileName>|<fileName>XYZZY</fileName>|' \
+    sed 's|<fileName>.*</fileName>|<fileName>XYZZY</fileName>|' | \
+    sed 's|\bID="TB\.[^"]*"|ID="XYZZY"|g' \
     > $repdir/$fname
 done
 
