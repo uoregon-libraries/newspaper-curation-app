@@ -132,9 +132,10 @@ func (w Word) clean() Word {
 	var cleaned = w
 	cleaned.Text = ""
 	for _, r := range []rune(w.Text) {
-		if unicode.IsPrint(r) {
-			cleaned.Text = cleaned.Text + string(r)
+		if unicode.In(r, unicode.Cc, unicode.Co, unicode.Cs) {
+			continue
 		}
+		cleaned.Text = cleaned.Text + string(r)
 	}
 
 	return cleaned
