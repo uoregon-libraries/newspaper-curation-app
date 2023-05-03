@@ -50,6 +50,13 @@ Examples:
   Bohemia Nugget*, using the MARC org code representing "University of Oregon
   Libraries".
 
+### Want A Subset?
+
+The `test/` directory ignores anything below it beginning with "sources", so if
+you want, you could have a huge list of source issues in something like
+"sources-all", and just copy in a subset of issues when you are testing a
+specific situation. This will make the ingest and curation a lot faster.
+
 ## Ingest Sources
 
 The easiest way to blow away the database and get the data started ingesting is

@@ -1,0 +1,58 @@
+<Doc>
+  <page width="810" height="1026">
+    <flow>
+      <block xMin="587.493" yMin="45.502796" xMax="765.000719" yMax="56.558">
+        <line xMin="587.493" yMin="45.502796" xMax="765.000719" yMax="56.558">
+          <word xMin="682.25084" yMin="45.602" xMax="697.04547" yMax="56.558">July</word>
+          <word xMin="699.161453" yMin="45.602" xMax="710.969199" yMax="56.558">17,</word>
+          <word xMin="713.083034" yMin="45.602" xMax="731.922653" yMax="56.558">2015</word>
+          <word xMin="736.24184" yMin="45.503187" xMax="738.631835" yMax="55.503167">|</word>
+          <word xMin="742.67856" yMin="47.002405" xMax="759.458836" yMax="56.152387">PAGE</word>
+          <word xMin="760.740728" yMin="47.002405" xMax="765.000719" yMax="56.152387">3</word>
+        </line>
+      </block>
+    </flow>
+    <flow>
+      <block xMin="337.796671" yMin="120.933" xMax="472.243108" yMax="479.317">
+        <line xMin="348.598484" yMin="204.933" xMax="472.212325" yMax="215.317">
+          <word xMin="348.598484" yMin="204.933" xMax="365.901971" yMax="215.317">The</word>
+          <word xMin="369.248383" yMin="204.933" xMax="415.875936" yMax="215.317">Southwest</word>
+          <word xMin="419.027499" yMin="204.933" xMax="472.212325" yMax="215.317">Washington</word>
+        </line>
+        <line xMin="337.798484" yMin="216.933" xMax="472.175463" yMax="227.317">
+          <word xMin="337.798484" yMin="216.933" xMax="369.983119" yMax="227.317">Central</word>
+          <word xMin="373.194813" yMin="216.933" xMax="399.330367" yMax="227.317">Labor</word>
+          <word xMin="402.541207" yMin="216.933" xMax="437.177035" yMax="227.317">Council</word>
+          <word xMin="440.390708" yMin="216.933" xMax="454.987203" yMax="227.317">has</word>
+          <word xMin="458.194968" yMin="216.933" xMax="472.175463" yMax="227.317">en-</word>
+        </line>
+        <line xMin="337.798484" yMin="228.933" xMax="472.22225" yMax="239.317">
+          <word xMin="337.798484" yMin="228.933" xMax="369.598489" yMax="239.317">dorsed</word>
+          <word xMin="376.31021" yMin="228.933" xMax="427.21689" yMax="239.317">Ridgefield</word>
+          <word xMin="433.929008" yMin="228.933" xMax="472.22225" yMax="239.317">resident</word>
+        </line>
+        <line xMin="337.798484" yMin="240.933" xMax="450.741469" yMax="251.317">
+          <word xMin="337.798484" yMin="241.307" xMax="368.092259" yMax="251.185">Chuck</word>
+          <word xMin="370.291893" yMin="241.307" xMax="398.542328" yMax="251.185">Green</word>
+          <word xMin="400.742284" yMin="240.933" xMax="413.127952" yMax="251.317">for</word>
+          <word xMin="415.328244" yMin="240.933" xMax="428.332743" yMax="251.317">the</word>
+          <word xMin="430.533425" yMin="240.933" xMax="450.741469" yMax="251.317">post.</word>
+        </line>
+        <line xMin="340.676697" yMin="250.37" xMax="472.230704" yMax="264.791">
+          <word xMin="351.705224" yMin="252.933" xMax="377.479151" yMax="263.317">Green</word>
+          <word xMin="379.895556" yMin="252.933" xMax="386.958704" yMax="263.317">is</word>
+          <word xMin="389.373498" yMin="252.933" xMax="402.267426" yMax="263.317">the</word>
+          <word xMin="404.683758" yMin="252.933" xMax="433.585149" yMax="263.317">project</word>
+          <word xMin="436.003898" yMin="252.933" xMax="472.230704" yMax="263.317">manager</word>
+        </line>
+        <line xMin="337.798624" yMin="264.933" xMax="472.211593" yMax="275.317">
+          <word xMin="337.798624" yMin="264.933" xMax="350.313588" yMax="275.317">for</word>
+          <word xMin="353.348257" yMin="264.933" xMax="390.989699" yMax="275.317">C-Tran’s</word>
+          <word xMin="394.023243" yMin="264.933" xMax="410.827255" yMax="275.317">Bus</word>
+          <word xMin="413.8608" yMin="264.933" xMax="439.51988" yMax="275.317">Rapid</word>
+          <word xMin="442.361677" yMin="264.933" xMax="472.211593" yMax="275.317">Transit</word>
+        </line>
+      </block>
+    </flow>
+  </page>
+</Doc>
