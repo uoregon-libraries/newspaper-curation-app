@@ -4,6 +4,7 @@
 package alto
 
 import (
+	"strings"
 	"unicode"
 )
 
@@ -113,7 +114,7 @@ func (l Line) clean() Line {
 
 	for _, word := range l.Words {
 		var w = word.clean()
-		if w.Text != "" {
+		if strings.TrimSpace(w.Text) != "" {
 			cleaned.Words = append(cleaned.Words, w)
 		}
 	}
