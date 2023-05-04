@@ -23,8 +23,14 @@ func DBJobToProcessor(dbJob *models.Job) Processor {
 		return &IgnoreIssue{IssueJob: NewIssueJob(dbJob)}
 	case models.JobTypePageSplit:
 		return &PageSplit{IssueJob: NewIssueJob(dbJob)}
+
+	// Derivative jobs need a custom maxRetries value since failures are almost
+	// always fatal here (bad version of poppler, broken PDF, etc.)
 	case models.JobTypeMakeDerivatives:
-		return &MakeDerivatives{IssueJob: NewIssueJob(dbJob)}
+		var j = &MakeDerivatives{IssueJob: NewIssueJob(dbJob)}
+		j.maxRetries = 4
+		return j
+
 	case models.JobTypeMoveDerivatives:
 		return &MoveDerivatives{IssueJob: NewIssueJob(dbJob)}
 	case models.JobTypeBuildMETS:
