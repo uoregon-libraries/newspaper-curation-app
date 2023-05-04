@@ -1,6 +1,7 @@
 package jobs
 
 import (
+	"fmt"
 	"path/filepath"
 	"time"
 
@@ -57,6 +58,16 @@ func prepareBatchJobAdvanced(t models.JobType, batch *models.Batch, args map[str
 	var j = prepareJobAdvanced(t, args)
 	j.ObjectID = batch.ID
 	j.ObjectType = models.JobObjectTypeBatch
+	return j
+}
+
+// prepareJobJobAdvanced sets up a job to manipulate... another job.
+// Jobception? I think we need one more layer to achieve it, but we're getting
+// pretty close.
+func prepareJobJobAdvanced(t models.JobType, job *models.Job, args map[string]string) *models.Job {
+	var j = prepareJobAdvanced(t, args)
+	j.ObjectID = job.ID
+	j.ObjectType = models.JobObjectTypeJob
 	return j
 }
 
@@ -260,6 +271,34 @@ func getJobsForMakeBatch(batch *models.Batch, pth string) []*models.Job {
 // - The derivatives are put under a sibling sub-dir from the primary files
 func QueueRemoveErroredIssue(issue *models.Issue, erroredIssueRoot string) error {
 	var jobs = getJobsForRemoveErroredIssue(issue, erroredIssueRoot)
+	return queueSerial(jobs...)
+}
+
+// QueuePurgeStuckIssue builds jobs for removing an issue that had critical
+// failures on one or more jobs. Any waiting (on-hold) jobs still tied to the
+// issue are removed, as are failed jobs, and then the issue is purged with
+// data a dev can use to look into the problem more closely.
+func QueuePurgeStuckIssue(issue *models.Issue, erroredIssueRoot string) error {
+	var allJobs, err = models.FindJobsForIssueID(issue.ID)
+	if err != nil {
+		return err
+	}
+
+	var purgeReason = "Issue failed getting through workflow:\n"
+	var jobs []*models.Job
+	for _, j := range allJobs {
+		switch models.JobStatus(j.Status) {
+		case models.JobStatusFailed, models.JobStatusOnHold:
+			if j.Status == string(models.JobStatusFailed) {
+				purgeReason += fmt.Sprintf("- Job %d (%s) failed too many times\n", j.ID, j.Type)
+			}
+			var jj = prepareJobJobAdvanced(models.JobTypeCancelJob, j, nil)
+			jobs = append(jobs, jj)
+		}
+	}
+	jobs = append(jobs, prepareIssueActionJob(issue, purgeReason))
+	jobs = append(jobs, getJobsForRemoveErroredIssue(issue, erroredIssueRoot)...)
+
 	return queueSerial(jobs...)
 }
 
