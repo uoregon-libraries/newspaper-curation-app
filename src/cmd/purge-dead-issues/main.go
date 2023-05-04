@@ -14,11 +14,7 @@ import (
 	"github.com/uoregon-libraries/newspaper-curation-app/src/schema"
 )
 
-// Command-line options
-type _opts struct {
-	cli.BaseOptions
-	Live bool `long:"live" description:"Run the issue purge operation rather than just showing what would be done"`
-}
+var opts cli.BaseOptions
 
 // Stupid error wrapper to make it easy to know if an issue's inability to
 // purge was something critical like a database failure or just an issue that
@@ -27,7 +23,6 @@ type fatalError struct {
 	error
 }
 
-var opts _opts
 var database *sql.DB
 var erroredIssuesPath string
 
@@ -63,11 +58,6 @@ func main() {
 	err = purge(op, issues)
 	if err != nil {
 		logger.Warnf("One or more errors were encountered: aborting transaction")
-		op.Rollback()
-	}
-
-	if !opts.Live {
-		logger.Warnf("DRY RUN: aborting transaction")
 		op.Rollback()
 	}
 
