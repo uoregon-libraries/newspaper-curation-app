@@ -14,12 +14,6 @@ import (
 	"github.com/uoregon-libraries/newspaper-curation-app/src/schema"
 )
 
-const csi = "\033["
-const ansiReset = csi + "0m"
-const ansiBold = csi + "1m"
-const ansiIntenseGreen = csi + "32;1m"
-const ansiIntenseRed = csi + "31;1m"
-
 // Command-line options
 type _opts struct {
 	cli.BaseOptions
