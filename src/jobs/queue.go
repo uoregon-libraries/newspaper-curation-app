@@ -68,10 +68,56 @@ func prepareIssueActionJob(issue *models.Issue, msg string) *models.Job {
 	return prepareIssueJobAdvanced(models.JobTypeIssueAction, issue, map[string]string{msgArg: msg})
 }
 
-// queueSerial attempts to save the jobs (in a transaction), setting the first
-// one as ready to run while the others become effectively dependent on the
-// prior job in the list
-func queueSerial(jobs ...*models.Job) error {
+// queueForIssue sets the issue to awaiting processing, then queues the jobs,
+// all in a single DB transaction to ensure the state doesn't change if the
+// jobs can't queue up
+func queueForIssue(issue *models.Issue, jobs ...*models.Job) error {
+	var op = dbi.DB.Operation()
+	op.BeginTransaction()
+	defer op.EndTransaction()
+
+	issue.WorkflowStep = schema.WSAwaitingProcessing
+	var err = issue.SaveOpWithoutAction(op)
+	if err != nil {
+		return err
+	}
+	return queueSerialOp(op, jobs...)
+}
+
+// queueForBatch sets the batch status to pending, then queues the jobs, all in
+// a single DB transaction to ensure the state doesn't change if the jobs can't
+// queue up
+func queueForBatch(batch *models.Batch, jobs ...*models.Job) error {
+	var op = dbi.DB.Operation()
+	op.BeginTransaction()
+	defer op.EndTransaction()
+
+	batch.Status = models.BatchStatusPending
+	var err = batch.SaveOp(op)
+	if err != nil {
+		return err
+	}
+	return queueSerialOp(op, jobs...)
+}
+
+// queueSimple queues up the given set of jobs. This must *never* be used on an
+// issue- or batch-focused set of jobs, as those need to have their state set
+// up by queueFor(Issue|Batch).
+func queueSimple(jobs ...*models.Job) error {
+	// Shouldn't be possible, but I'd rather not crash
+	if len(jobs) == 0 {
+		return nil
+	}
+
+	// Don't allow the first job to be an object-focused one. This won't protect
+	// against every possible scenario, but most of the time an object-focused
+	// job-set will start with the object in question, so this should prevent
+	// accidental calls that should have used an object-focused function
+	// (queueForX)
+	if jobs[0].ObjectType == models.JobObjectTypeBatch || jobs[0].ObjectType == models.JobObjectTypeIssue {
+		return fmt.Errorf("queueSimple called with object type %s", jobs[0].ObjectType)
+	}
+
 	var op = dbi.DB.Operation()
 	op.BeginTransaction()
 	defer op.EndTransaction()
@@ -79,8 +125,7 @@ func queueSerial(jobs ...*models.Job) error {
 }
 
 // queueSerialOp attempts to save the jobs using an existing operation (for
-// when a transaction needs to wrap more than just the job queueing), but is
-// otherwise the same as queueSerial.
+// when a transaction needs to wrap more than just the job queueing)
 func queueSerialOp(op *magicsql.Operation, jobs ...*models.Job) error {
 	// Iterate over jobs in reverse so we can set the prior job's next-run id
 	// without saving things twice
@@ -133,9 +178,7 @@ func QueueSFTPIssueMove(issue *models.Issue, c *config.Config) error {
 	var pageReviewWIPDir = filepath.Join(c.PDFPageReviewPath, ".wip-"+issue.HumanName)
 	var backupLoc = filepath.Join(c.PDFBackupPath, issue.HumanName)
 
-	return queueSerial(
-		prepareIssueJobAdvanced(models.JobTypeSetIssueWS, issue, makeWSArgs(schema.WSAwaitingProcessing)),
-
+	return queueForIssue(issue,
 		// Move the issue to the workflow location
 		prepareJobAdvanced(models.JobTypeSyncDir, makeSrcDstArgs(issue.Location, workflowWIPDir)),
 		prepareJobAdvanced(models.JobTypeKillDir, makeLocArgs(issue.Location)),
@@ -174,9 +217,7 @@ func QueueMoveIssueForDerivatives(issue *models.Issue, workflowPath string) erro
 	var workflowDir = filepath.Join(workflowPath, issue.HumanName)
 	var workflowWIPDir = filepath.Join(workflowPath, ".wip-"+issue.HumanName)
 
-	return queueSerial(
-		prepareIssueJobAdvanced(models.JobTypeSetIssueWS, issue, makeWSArgs(schema.WSAwaitingProcessing)),
-
+	return queueForIssue(issue,
 		prepareJobAdvanced(models.JobTypeSyncDir, makeSrcDstArgs(issue.Location, workflowWIPDir)),
 		prepareJobAdvanced(models.JobTypeKillDir, makeLocArgs(issue.Location)),
 		prepareJobAdvanced(models.JobTypeRenameDir, makeSrcDstArgs(workflowWIPDir, workflowDir)),
@@ -196,8 +237,7 @@ func QueueMoveIssueForDerivatives(issue *models.Issue, workflowPath string) erro
 // completion of the other jobs.
 func QueueForceDerivatives(issue *models.Issue) error {
 	var currentStep = issue.WorkflowStep
-	return queueSerial(
-		prepareIssueJobAdvanced(models.JobTypeSetIssueWS, issue, makeWSArgs(schema.WSAwaitingProcessing)),
+	return queueForIssue(issue,
 		prepareIssueJobAdvanced(models.JobTypeMakeDerivatives, issue, makeForcedArgs()),
 		prepareIssueJobAdvanced(models.JobTypeBuildMETS, issue, makeForcedArgs()),
 		prepareIssueJobAdvanced(models.JobTypeSetIssueWS, issue, makeWSArgs(currentStep)),
@@ -223,7 +263,7 @@ func QueueFinalizeIssue(issue *models.Issue) error {
 	jobs = append(jobs, prepareIssueJobAdvanced(models.JobTypeSetIssueWS, issue, makeWSArgs(schema.WSReadyForBatching)))
 	jobs = append(jobs, prepareIssueActionJob(issue, "Issue prepped for batching"))
 
-	return queueSerial(jobs...)
+	return queueForIssue(issue, jobs...)
 }
 
 // QueueMakeBatch sets up the jobs for generating a batch on disk: generating
@@ -232,7 +272,7 @@ func QueueFinalizeIssue(issue *models.Issue) error {
 // Nothing can happen automatically after all this until the batch is verified
 // on staging.
 func QueueMakeBatch(batch *models.Batch, batchOutputPath string) error {
-	return queueSerial(getJobsForMakeBatch(batch, batchOutputPath)...)
+	return queueForBatch(batch, getJobsForMakeBatch(batch, batchOutputPath)...)
 }
 
 // getJobsForMakeBatch returns all jobs needed to generate a batch. This is needed
@@ -260,7 +300,7 @@ func getJobsForMakeBatch(batch *models.Batch, pth string) []*models.Job {
 // - The derivatives are put under a sibling sub-dir from the primary files
 func QueueRemoveErroredIssue(issue *models.Issue, erroredIssueRoot string) error {
 	var jobs = getJobsForRemoveErroredIssue(issue, erroredIssueRoot)
-	return queueSerial(jobs...)
+	return queueForIssue(issue, jobs...)
 }
 
 // QueuePurgeStuckIssue builds jobs for removing an issue that had critical
@@ -288,11 +328,11 @@ func QueuePurgeStuckIssue(issue *models.Issue, erroredIssueRoot string) error {
 	jobs = append(jobs, prepareIssueActionJob(issue, purgeReason))
 	jobs = append(jobs, getJobsForRemoveErroredIssue(issue, erroredIssueRoot)...)
 
-	return queueSerial(jobs...)
+	return queueSimple(jobs...)
 }
 
 // getJobsForRemoveErroredIssue returns the list of jobs for removing the given
-// errored issue, suitable for use in a queueSerial or queueSerialOp call
+// errored issue, suitable for use in a queue* call
 func getJobsForRemoveErroredIssue(issue *models.Issue, erroredIssueRoot string) []*models.Job {
 	var dt = time.Now()
 	var dateSubdir = dt.Format("2006-01")
@@ -377,19 +417,19 @@ func QueueBatchFinalizeIssueFlagging(batch *models.Batch, flagged []*models.Flag
 	// Regenerate batch
 	jobs = append(jobs, getJobsForMakeBatch(batch, batchOutputPath)...)
 
-	return queueSerial(jobs...)
+	return queueForBatch(batch, jobs...)
 }
 
 // QueueCopyBatchForProduction sets the given batch to pending, then queues up
 // the necessary jobs to get it ready for a production load
 func QueueCopyBatchForProduction(batch *models.Batch, prodBatchRoot string) error {
+	// We need batch status *and* staging purge flag to be updated instantly, so
+	// we start a tx here and queue manually instead of using queueForBatch.
 	var op = dbi.DB.Operation()
 	op.Dbg = dbi.Debug
 	op.BeginTransaction()
 	defer op.EndTransaction()
 
-	// We need batch status and staging purge flag to be updated instantly, not
-	// dependent on the speed of the job runner
 	batch.Status = models.BatchStatusPending
 	batch.NeedStagingPurge = true
 	var err = batch.SaveOp(op)
@@ -413,20 +453,8 @@ func QueueCopyBatchForProduction(batch *models.Batch, prodBatchRoot string) erro
 // ready for archiving. These jobs should only be queued up after a batch has
 // been ingested into the production ONI instance.
 func QueueBatchGoLiveProcess(batch *models.Batch, batchArchivePath string) error {
-	var op = dbi.DB.Operation()
-	op.Dbg = dbi.Debug
-	op.BeginTransaction()
-	defer op.EndTransaction()
-
-	// Batch needs to be marked as in-process before any background jobs get queued
-	batch.Status = models.BatchStatusPending
-	var err = batch.SaveOp(op)
-	if err != nil {
-		return err
-	}
-
 	var finalPath = filepath.Join(batchArchivePath, batch.FullName())
-	return queueSerialOp(op,
+	return queueForBatch(batch,
 		prepareJobAdvanced(models.JobTypeSyncDir, makeSrcDstArgs(batch.Location, finalPath)),
 		prepareJobAdvanced(models.JobTypeKillDir, makeLocArgs(batch.Location)),
 		prepareBatchJobAdvanced(models.JobTypeSetBatchLocation, batch, makeLocArgs("")),
