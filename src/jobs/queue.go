@@ -8,7 +8,6 @@ import (
 	"github.com/Nerdmaster/magicsql"
 	"github.com/uoregon-libraries/newspaper-curation-app/src/config"
 	"github.com/uoregon-libraries/newspaper-curation-app/src/dbi"
-	"github.com/uoregon-libraries/newspaper-curation-app/src/internal/logger"
 	"github.com/uoregon-libraries/newspaper-curation-app/src/models"
 	"github.com/uoregon-libraries/newspaper-curation-app/src/schema"
 )
@@ -37,11 +36,6 @@ func prepareJobAdvanced(t models.JobType, args map[string]string) *models.Job {
 // should queue a specific job ID after completion, should set the WorkflowStep
 // to a custom value rather than whatever the job would normally do, etc.
 func prepareIssueJobAdvanced(t models.JobType, issue *models.Issue, args map[string]string) *models.Job {
-	if issue.WorkflowStep != schema.WSAwaitingProcessing {
-		logger.Fatalf("Preparing issue job %s for issue %s, but issue workflow step is %s",
-			t, issue.Key(), issue.WorkflowStep)
-	}
-
 	var j = prepareJobAdvanced(t, args)
 	j.ObjectID = issue.ID
 	j.ObjectType = models.JobObjectTypeIssue
@@ -50,11 +44,6 @@ func prepareIssueJobAdvanced(t models.JobType, issue *models.Issue, args map[str
 
 // prepareBatchJobAdvanced gets a batch job ready for being used elsewhere
 func prepareBatchJobAdvanced(t models.JobType, batch *models.Batch, args map[string]string) *models.Job {
-	if batch.Status != models.BatchStatusPending {
-		logger.Fatalf("Preparing batch job %s for batch %s, but batch status is %s",
-			t, batch.Name, batch.Status)
-	}
-
 	var j = prepareJobAdvanced(t, args)
 	j.ObjectID = batch.ID
 	j.ObjectType = models.JobObjectTypeBatch
