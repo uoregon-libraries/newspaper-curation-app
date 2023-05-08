@@ -109,3 +109,19 @@ func (j *EmptyBatchFlaggedIssuesList) Process(*config.Config) bool {
 	}
 	return true
 }
+
+// DeleteBatch removes all issues from a batch and flags it as deleted
+type DeleteBatch struct {
+	*BatchJob
+}
+
+// Process just runs batch.Delete. Easy!
+func (j *DeleteBatch) Process(*config.Config) bool {
+	j.Logger.Debugf("Removing issues and deleting batch %d (%s)", j.DBBatch.ID, j.DBBatch.Name)
+	var err = j.DBBatch.Delete()
+	if err != nil {
+		j.Logger.Errorf("Database error deleting batch: %s", err)
+		return false
+	}
+	return true
+}

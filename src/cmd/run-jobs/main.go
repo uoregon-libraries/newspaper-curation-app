@@ -385,6 +385,7 @@ func runAllQueues(c *config.Config) {
 				models.JobTypeSetBatchLocation,
 				models.JobTypeIssueAction,
 				models.JobTypeCancelJob,
+				models.JobTypeDeleteBatch,
 			)
 			addRunner(r)
 			r.Watch(time.Second * 1)

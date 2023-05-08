@@ -53,6 +53,8 @@ func DBJobToProcessor(dbJob *models.Job) Processor {
 		return &ValidateTagManifest{BatchJob: NewBatchJob(dbJob)}
 	case models.JobTypeMarkBatchLive:
 		return &MarkBatchLive{BatchJob: NewBatchJob(dbJob)}
+	case models.JobTypeDeleteBatch:
+		return &DeleteBatch{BatchJob: NewBatchJob(dbJob)}
 	case models.JobTypeSyncDir:
 		return &SyncDir{Job: NewJob(dbJob)}
 	case models.JobTypeKillDir:
