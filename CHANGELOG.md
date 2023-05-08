@@ -36,7 +36,13 @@ Brief description, if necessary
 
 ## v4.0.0 (unreleased)
 
-SFTPGo integration and documentation
+The NCA 4 release fixes and improves a lot of areas, but the biggest change is
+our SFTPGo integration and documentation! This means you don't have to try and
+figure out how to get publishers' content into NCA if you just stand up an
+SFTPGo instance and "connect" NCA to it.
+
+It's mentioned below, but to upgrade to 4.0, you should first read the
+[SFTPGo documentation](https://uoregon-libraries.github.io/newspaper-curation-app/setup/sftpgo-integration/).
 
 ### Fixed
 
