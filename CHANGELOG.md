@@ -42,6 +42,8 @@ SFTPGo integration and documentation
 
 - `.manifest` files are now ignored in the UI, as they are "internal" to NCA
   and not something curators need (or want) to see
+- Flagging issues from the batch status view will no longer result in a crash
+  of the workers daemon. OUCH.
 
 ### Added
 
