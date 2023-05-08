@@ -57,6 +57,7 @@ func prepFlagging(w http.ResponseWriter, req *http.Request) (r *Responder, ok bo
 		return r, false
 	}
 
+	r.Vars.Data["RemainingIssues"] = len(r.issues) - len(r.flaggedIssues)
 	r.Vars.Title = "Rejecting batch " + r.batch.Name
 	return r, true
 }
