@@ -14,6 +14,7 @@ import (
 const (
 	JobObjectTypeBatch = "batch"
 	JobObjectTypeIssue = "issue"
+	JobObjectTypeJob   = "job"
 )
 
 // JobType represents all possible jobs the system queues and processes
@@ -47,6 +48,7 @@ const (
 	JobTypeRemoveFile                  JobType = "remove_file"
 	JobTypeRenumberPages               JobType = "renumber_pages"
 	JobTypeIssueAction                 JobType = "record_issue_action"
+	JobTypeCancelJob                   JobType = "cancel_job"
 )
 
 // ValidJobTypes is the full list of job types which can exist in the jobs
@@ -78,6 +80,7 @@ var ValidJobTypes = []JobType{
 	JobTypeRemoveFile,
 	JobTypeRenumberPages,
 	JobTypeIssueAction,
+	JobTypeCancelJob,
 }
 
 // JobStatus represents the different states in which a job can exist

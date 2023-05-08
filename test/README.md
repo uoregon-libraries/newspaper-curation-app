@@ -138,3 +138,13 @@ approves all issues awaiting metadata review.
 For review, it also queues the job which finalizes the metadata (generating
 METS XML). Once those jobs run, issues will be ready for batching via the
 standard `queue-batches` command.
+
+## Recipes
+
+If you're looking for some test recipes, we now have AT LEAST ONE! And it's
+almost certainly not going to be useful beyond its original use-case!! Wow!
+
+But seriously: in the [recipes subdirectory](./recipes) subdir, we'll start
+putting in any potentially useful tidbits for doing end-to-end tests. These
+will never likely work exactly as written for other situations, but they should
+be a useful guide to help construct your own tests.
