@@ -38,6 +38,11 @@ Brief description, if necessary
 
 SFTPGo integration and documentation
 
+### Fixed
+
+- `.manifest` files are now ignored in the UI, as they are "internal" to NCA
+  and not something curators need (or want) to see
+
 ### Added
 
 - [SFTPGo](https://github.com/drakkan/sftpgo) is now integrated with NCA for
