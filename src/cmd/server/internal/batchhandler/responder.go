@@ -47,6 +47,7 @@ func getBatchResponder(w http.ResponseWriter, req *http.Request) (r *Responder, 
 		return r, false
 	}
 
+	r.batch = wrapBatch(b)
 	r.flaggedIssues, err = r.batch.FlaggedIssues()
 	if err != nil {
 		logger.Criticalf("Error reading flagged issues for batch %d (%s): %s", r.batch.ID, r.batch.Name, err)
@@ -61,7 +62,6 @@ func getBatchResponder(w http.ResponseWriter, req *http.Request) (r *Responder, 
 	}
 
 	r.Vars.Data["FlaggedIssues"] = r.flaggedIssues
-	r.batch = wrapBatch(b)
 	r.can = Can(r.Vars.User)
 	r.Vars.Data["Batch"] = r.batch
 	r.Vars.Data["Can"] = r.can
