@@ -64,18 +64,18 @@ It's mentioned below, but to upgrade to 4.0, you should first read the
 
 - [SFTPGo](https://github.com/drakkan/sftpgo) is now integrated with NCA for
   managing titles' uploads.
-- The `manage` script restarts key services after shutting them down
-- Various instructions and status-setting buttons have been added to the batch
-  management page for batch loaders
-- Instructions for batch loaders' manual tasks now have a "copy" button, which
-  should make manual tasks a bit easier
-- Batches which were once on staging now have to be marked as purged from
-  staging before they can move to other statuses (e.g., loading to production)
-- A new setting, `BATCH_PRODUCTION_PATH`, has been introduced. Set this to the
-  location NCA should copy your batches when they're ready for being ingested
-  into production.
-  - On QC approval, batches are automatically synced to the location specified by
-    the new setting (`BATCH_PRODUCTION_PATH`).
+- Batch Management:
+  - Various instructions and status-setting buttons have been added to the batch
+    management page for batch loaders
+  - Instructions for batch loaders' manual tasks now have a "copy" button, which
+    should make manual tasks a bit easier
+  - Batches which were once on staging now have to be marked as purged from
+    staging before they can move to other statuses (e.g., loading to production)
+  - A new setting, `BATCH_PRODUCTION_PATH`, has been introduced. Set this to the
+    location NCA should copy your batches when they're ready for being ingested
+    into production.
+    - On QC approval, batches are automatically synced to the location specified by
+      the new setting (`BATCH_PRODUCTION_PATH`).
 - Error handling:
   - Many functions were returning errors which were silently being ignored, and
     are now properly being looked at (or at least explicitly ignored where the
@@ -87,9 +87,11 @@ It's mentioned below, but to upgrade to 4.0, you should first read the
     possible, though there are still some paths which can't be made 100%
     foolproof. Even so, if there *are* areas that can still crash, (a) we will
     fix them when we find them, and (b) they should be ridiculously rare.
-- New document added to the "test" directory to help explain how to create data
-  and use helper scripts when manually testing NCA in a real-world-like setting
-- New test script to enter and review dummy metadata for quicker testing
+- General:
+  - The `manage` script restarts key services after shutting them down
+  - New document added to the "test" directory to help explain how to create data
+    and use helper scripts when manually testing NCA in a real-world-like setting
+  - New test script to enter and review dummy metadata for quicker testing
 
 ### Changed
 
