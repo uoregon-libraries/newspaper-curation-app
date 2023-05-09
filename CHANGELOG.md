@@ -36,13 +36,27 @@ Brief description, if necessary
 
 ## v4.0.0 (unreleased)
 
-The NCA 4 release fixes and improves a lot of areas, but the biggest change is
-our SFTPGo integration and documentation! This means you don't have to try and
-figure out how to get publishers' content into NCA if you just stand up an
-SFTPGo instance and "connect" NCA to it.
+**Note**: 4.0.0 is still unreleased. Peruse these notes to know what to expect,
+or if you're just running the latest (and not stable) release. But beware that
+these changelogs *will* continue to evolve.
 
-It's mentioned below, but to upgrade to 4.0, you should first read the
-[SFTPGo documentation](https://uoregon-libraries.github.io/newspaper-curation-app/setup/sftpgo-integration/).
+The NCA 4 release fixes and improves a lot of areas, but there are some
+*exciting* and **amazing** things you'll really want to look at:
+
+- Probably the biggest change is our SFTPGo integration and documentation! This
+  means you don't have to try and figure out how to get publishers' content
+  into NCA if you just stand up an SFTPGo instance and "connect" NCA to it.
+- The other major improvement is the batch management pages, adding a slew of
+  features to reduce manual command-line work when creating, copying, and
+  archiving batches.
+- Massive changes to error handling and code resilience in general. Users won't
+  likely notice anything, but some rare crashes have been dealt with.
+- Manual testing is a whole lot easier, and even has a good deal of
+  documentation now. Users won't care, but devs will <3 this.
+
+**Read the migration notes carefully**! There's a lot of change in here!
+
+Exciting! Amazing!
 
 ### Fixed
 
