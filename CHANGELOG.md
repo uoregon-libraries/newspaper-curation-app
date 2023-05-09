@@ -85,8 +85,13 @@ It's mentioned below, but to upgrade to 4.0, you should first read the
     you will lose this functionality. Due to maintenance difficulties and
     complexity in trying to wrangle conditional use of this data, NCA will no
     longer manage those fields or even display them.
-- If you switch from a traditional sftp daemon to sftpgo, there will be a
-  service disruption publishers need to be made aware of.
+  - If you switch from a traditional sftp daemon to sftpgo, there will be a
+    service disruption publishers need to be made aware of. Plan for an entire
+    day just to be on the safe side, as you'll need to shut down your existing
+    service, copy anything over to sftpgo's location (or make sure you get
+    through the queue of what's in your sftp server first), stand up sftpgo,
+    connect NCA and then test uploading, downloading, etc. to be sure you've
+    got all your OS-level permissions set up properly.
 
 ## v3.13.1
 
