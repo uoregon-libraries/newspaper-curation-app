@@ -59,6 +59,10 @@ It's mentioned below, but to upgrade to 4.0, you should first read the
 - Two horrible panic calls from deep within NCA's bowels have been replaced
   with error returns, which should dramatically reduce the risk of a runtime
   crash. These were already rare, but now *should* be nonexistent.
+- Invalid unicode characters (anything defined as a control rune, private-use
+  rune, or "surrogate" rune) are stripped from the output `pdftotext` gives us
+  just prior to generating ALTO XML. This prevents MySQL and MariaDB errors
+  when ingesting into ONI.
 
 ### Added
 
