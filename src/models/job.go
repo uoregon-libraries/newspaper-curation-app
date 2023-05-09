@@ -41,6 +41,7 @@ const (
 	JobTypeWriteBagitManifest          JobType = "write_bagit_manifest"
 	JobTypeValidateTagManifest         JobType = "validate_tagmanifest"
 	JobTypeMarkBatchLive               JobType = "mark_batch_live"
+	JobTypeDeleteBatch                 JobType = "delete_batch"
 	JobTypeSyncDir                     JobType = "sync_directory"
 	JobTypeKillDir                     JobType = "delete_directory"
 	JobTypeRenameDir                   JobType = "rename_directory"
@@ -73,6 +74,7 @@ var ValidJobTypes = []JobType{
 	JobTypeWriteBagitManifest,
 	JobTypeValidateTagManifest,
 	JobTypeMarkBatchLive,
+	JobTypeDeleteBatch,
 	JobTypeSyncDir,
 	JobTypeKillDir,
 	JobTypeRenameDir,

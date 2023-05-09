@@ -18,13 +18,15 @@ type Responder struct {
 	batch *Batch
 	can   *CanValidation
 
-	// This is only set up for some handlers, but when we need it we don't want
-	// to have to re-pull from the database, check errors, etc.
+	// These are only set up for some handlers, but when we need this data we
+	// don't want to have to re-pull from the database, check errors, etc.
 	flaggedIssues []*models.FlaggedIssue
+	issues        []*models.Issue
 }
 
 // getBatchResponder centralizes the most common handler logic where we require
-// a valid batch id in the request
+// a valid batch id in the request, and the flagged and normal issues
+// associated with the batch
 func getBatchResponder(w http.ResponseWriter, req *http.Request) (r *Responder, ok bool) {
 	r = &Responder{Responder: responder.Response(w, req)}
 	var idStr = mux.Vars(req)["batch_id"]
@@ -46,6 +48,20 @@ func getBatchResponder(w http.ResponseWriter, req *http.Request) (r *Responder, 
 	}
 
 	r.batch = wrapBatch(b)
+	r.flaggedIssues, err = r.batch.FlaggedIssues()
+	if err != nil {
+		logger.Criticalf("Error reading flagged issues for batch %d (%s): %s", r.batch.ID, r.batch.Name, err)
+		r.Error(http.StatusInternalServerError, "Error trying to read batch's issues - try again or contact support")
+		return r, false
+	}
+	r.issues, err = r.batch.Issues()
+	if err != nil {
+		logger.Criticalf("Error reading issues for batch %d (%s): %s", r.batch.ID, r.batch.Name, err)
+		r.Error(http.StatusInternalServerError, "Error trying to read batch's issues - try again or contact support")
+		return r, false
+	}
+
+	r.Vars.Data["FlaggedIssues"] = r.flaggedIssues
 	r.can = Can(r.Vars.User)
 	r.Vars.Data["Batch"] = r.batch
 	r.Vars.Data["Can"] = r.can

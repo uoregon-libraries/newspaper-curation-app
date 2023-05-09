@@ -84,8 +84,12 @@
             You are about to finalize {{.Data.Batch.Name}}. The
             {{.Data.FlaggedIssues|len}} flagged issue(s) will be removed from
             the batch and put into the "Unfixable Errors" tab in the NCA
-            workflow, then the batch will be rebuilt and pushed up to staging
-            again.
+            workflow, then
+            {{if eq 0 .Data.RemainingIssues}}
+            the batch will be deleted (all issues were flagged for removal).
+            {{else}}
+            the batch will be rebuilt and pushed up to staging again.
+            {{end}}
           </p>
           <button class="btn btn-primary" type="submit" name="action" value="finalize">Confirm</button>
           <button class="btn btn-secondary cta-modal-toggle">Cancel</button>

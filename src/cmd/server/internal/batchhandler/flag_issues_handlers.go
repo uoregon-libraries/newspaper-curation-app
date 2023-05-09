@@ -57,15 +57,7 @@ func prepFlagging(w http.ResponseWriter, req *http.Request) (r *Responder, ok bo
 		return r, false
 	}
 
-	var err error
-	r.flaggedIssues, err = r.batch.FlaggedIssues()
-	if err != nil {
-		logger.Criticalf("Error reading flagged issues for batch %d (%s): %s", r.batch.ID, r.batch.Name, err)
-		r.Error(http.StatusInternalServerError, "Error trying to read batch's issues - try again or contact support")
-		return r, false
-	}
-
-	r.Vars.Data["FlaggedIssues"] = r.flaggedIssues
+	r.Vars.Data["RemainingIssues"] = len(r.issues) - len(r.flaggedIssues)
 	r.Vars.Title = "Rejecting batch " + r.batch.Name
 	return r, true
 }
@@ -243,6 +235,12 @@ func abortBatch(r *Responder) {
 }
 
 func finalizeBatch(r *Responder) {
+	// If all issues were flagged for removal, we delete the batch entirely
+	if len(r.issues) == len(r.flaggedIssues) {
+		deleteBatch(r)
+		return
+	}
+
 	// There are enough moving pieces here that we have to queue this up in the
 	// background rather than just run a quick DB operation or something
 	var err = jobs.QueueBatchFinalizeIssueFlagging(r.batch.Batch, r.flaggedIssues, conf.BatchOutputPath)
@@ -254,4 +252,17 @@ func finalizeBatch(r *Responder) {
 
 	http.SetCookie(r.Writer, &http.Cookie{Name: "Info", Value: fmt.Sprintf("A background job has been queued to finalize batch %q", r.batch.Name), Path: "/"})
 	http.Redirect(r.Writer, r.Request, basePath, http.StatusFound)
+}
+
+func deleteBatch(r *Responder) {
+	var err = jobs.QueueBatchForDeletion(r.batch.Batch, r.flaggedIssues)
+	if err != nil {
+		logger.Criticalf("Unable to queue job to delete batch %d (%s): %s", r.batch.ID, r.batch.Name, err)
+		r.Error(http.StatusInternalServerError, "Error trying to finalize the batch. Try again or contact support.")
+		return
+	}
+
+	http.SetCookie(r.Writer, &http.Cookie{Name: "Info", Value: fmt.Sprintf("A background job has been queued to finalize batch %q", r.batch.Name), Path: "/"})
+	http.Redirect(r.Writer, r.Request, basePath, http.StatusFound)
+	return
 }

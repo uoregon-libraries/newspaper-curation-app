@@ -420,6 +420,37 @@ func QueueBatchFinalizeIssueFlagging(batch *models.Batch, flagged []*models.Flag
 	return queueForBatch(batch, jobs...)
 }
 
+// QueueBatchForDeletion is used when all issues in a batch need to be
+// rejected, rendering the batch unnecessary (and useless).
+func QueueBatchForDeletion(batch *models.Batch, flagged []*models.FlaggedIssue) error {
+	// This is essentially a copy of the finalization job list, except there's no
+	// regenerate-batch step
+	var jobs []*models.Job
+
+	// Destroy batch dir
+	jobs = append(jobs,
+		prepareBatchJobAdvanced(models.JobTypeSetBatchStatus, batch, makeBSArgs(models.BatchStatusPending)),
+		prepareJobAdvanced(models.JobTypeKillDir, makeLocArgs(batch.Location)),
+		prepareBatchJobAdvanced(models.JobTypeSetBatchLocation, batch, makeLocArgs("")),
+	)
+
+	// Finalize flagged issues
+	for _, i := range flagged {
+		jobs = append(jobs,
+			prepareIssueJobAdvanced(models.JobTypeRemoveFile, i.Issue, makeLocArgs(i.Issue.METSFile())),
+			prepareIssueJobAdvanced(models.JobTypeFinalizeBatchFlaggedIssue, i.Issue, nil),
+		)
+	}
+
+	// Remove all the no-longer-useful flagged issue data
+	jobs = append(jobs, prepareBatchJobAdvanced(models.JobTypeEmptyBatchFlaggedIssuesList, batch, nil))
+
+	// Destroy the batch
+	jobs = append(jobs, prepareBatchJobAdvanced(models.JobTypeDeleteBatch, batch, nil))
+
+	return queueForBatch(batch, jobs...)
+}
+
 // QueueCopyBatchForProduction sets the given batch to pending, then queues up
 // the necessary jobs to get it ready for a production load
 func QueueCopyBatchForProduction(batch *models.Batch, prodBatchRoot string) error {
