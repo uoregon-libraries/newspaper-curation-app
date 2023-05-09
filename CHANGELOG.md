@@ -50,11 +50,15 @@ It's mentioned below, but to upgrade to 4.0, you should first read the
   and not something curators need (or want) to see
 - Flagging issues from the batch status view will no longer result in a crash
   of the workers daemon. OUCH.
+- Batches that have issues removed will no longer "stall" in the job queue
+  (`Batch.AbortIssueFlagging` allows pending batches now in addition to those
+  flagged as needing QC)
 
 ### Added
 
 - [SFTPGo](https://github.com/drakkan/sftpgo) is now integrated with NCA for
   managing titles' uploads.
+- The `manage` script restarts key services after shutting them down
 
 ### Changed
 
@@ -62,6 +66,7 @@ It's mentioned below, but to upgrade to 4.0, you should first read the
   including SFTP data. Since we no longer store plaintext passwords, there's
   no reason to do the weird half-editing setup we had before where only admins
   could edit the SFTP stuff.
+- More intuitive redirects from batch management pages
 
 ### Removed
 
