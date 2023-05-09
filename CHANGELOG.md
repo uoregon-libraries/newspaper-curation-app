@@ -160,7 +160,7 @@ It's mentioned below, but to upgrade to 4.0, you should first read the
 - Do not update if you have batches in the `failed_qc` status. Get batches out
   of this status (e.g., by running the now-defunct batch fixer command-line
   tool), because it is no longer valid.
-- Make sure you have compose installed as a plugin.
+- Make sure you have "docker compose" installed as a plugin.
 
 ## v3.13.1
 
