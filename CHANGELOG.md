@@ -59,6 +59,12 @@ It's mentioned below, but to upgrade to 4.0, you should first read the
 - [SFTPGo](https://github.com/drakkan/sftpgo) is now integrated with NCA for
   managing titles' uploads.
 - The `manage` script restarts key services after shutting them down
+- Various instructions and status-setting buttons have been added to the batch
+  management page for batch loaders
+- Instructions for batch loaders' manual tasks now have a "copy" button, which
+  should make manual tasks a bit easier
+- Batches which were once on staging now have to be marked as purged from
+  staging before they can move to other statuses (e.g., loading to production)
 
 ### Changed
 
@@ -67,12 +73,15 @@ It's mentioned below, but to upgrade to 4.0, you should first read the
   no reason to do the weird half-editing setup we had before where only admins
   could edit the SFTP stuff.
 - More intuitive redirects from batch management pages
+- In the batch management handlers, inability to load a batch due to a database
+  failure now logs as "critical", not just "error".
 
 ### Removed
 
 - SFTP Password and SFTP directory fields are no longer stored in NCA, as
   neither of these fields had any way to tie to a backend SFTP daemon, and got
   out of sync too easily
+- "Failed QC" has been removed as a batch status, as it is no longer in use
 
 ### Migration
 
@@ -92,6 +101,9 @@ It's mentioned below, but to upgrade to 4.0, you should first read the
     through the queue of what's in your sftp server first), stand up sftpgo,
     connect NCA and then test uploading, downloading, etc. to be sure you've
     got all your OS-level permissions set up properly.
+- Do not update if you have batches in the `failed_qc` status. Get batches out
+  of this status (e.g., by running the now-defunct batch fixer command-line
+  tool), because it is no longer valid.
 
 ## v3.13.1
 
