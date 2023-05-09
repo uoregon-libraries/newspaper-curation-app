@@ -36,25 +36,145 @@ Brief description, if necessary
 
 ## v4.0.0 (unreleased)
 
-SFTPGo integration and documentation
+**Note**: 4.0.0 is still unreleased. Peruse these notes to know what to expect,
+or if you're just running the latest (and not stable) release. But beware that
+these changelogs *will* continue to evolve.
+
+The NCA 4 release fixes and improves a lot of areas, but there are some
+*exciting* and **amazing** things you'll really want to look at:
+
+- Probably the biggest change is our SFTPGo integration and documentation! This
+  means you don't have to try and figure out how to get publishers' content
+  into NCA if you just stand up an SFTPGo instance and "connect" NCA to it.
+- The other major improvement is the batch management pages, adding a slew of
+  features to reduce manual command-line work when creating, copying, and
+  archiving batches.
+- Massive changes to error handling and code resilience in general. Users won't
+  likely notice anything, but some rare crashes have been dealt with.
+- Manual testing is a whole lot easier, and even has a good deal of
+  documentation now. Users won't care, but devs will <3 this.
+
+**Read the migration notes carefully**! There's a lot of change in here!
+
+Exciting! Amazing!
+
+### Fixed
+
+- `.manifest` files are now ignored in the UI, as they are "internal" to NCA
+  and not something curators need (or want) to see
+- Flagging issues from the batch status view will no longer result in a crash
+  of the workers daemon. OUCH.
+- Batches that have issues removed will no longer "stall" in the job queue
+  (`Batch.AbortIssueFlagging` allows pending batches now in addition to those
+  flagged as needing QC)
+- On some systems, `.manifest` files were seen by NCA as constantly changing,
+  which prevented issues from getting metadata entered or even entering the
+  workflow at all. This should no longer be a problem.
+- Two horrible panic calls from deep within NCA's bowels have been replaced
+  with error returns, which should dramatically reduce the risk of a runtime
+  crash. These were already rare, but now *should* be nonexistent.
+- Invalid unicode characters (anything defined as a control rune, private-use
+  rune, or "surrogate" rune) are stripped from the output `pdftotext` gives us
+  just prior to generating ALTO XML. This prevents MySQL and MariaDB errors
+  when ingesting into ONI.
+- All issue- and batch-specific jobs are first setting the object's state and
+  saving it, and only on success queueing up jobs. This fixes rare issues where
+  a slow or dead job runner would allow a user to try to take action on an
+  issue/batch that was already scheduled to have a different action taken.
+  Rare, but disastrous.
+- "Finalize" button in batch status page now queues up a batch deletion job if
+  all issues in a batch were flagged for removal
 
 ### Added
 
 - [SFTPGo](https://github.com/drakkan/sftpgo) is now integrated with NCA for
   managing titles' uploads.
+- Batch Management:
+  - Various instructions and status-setting buttons have been added to the
+    batch management page for batch loaders
+  - Instructions for batch loaders' manual tasks now have a "copy" button,
+    which should make manual tasks a bit easier
+  - Batches which were once on staging now have to be marked as purged from
+    staging before they can move to other statuses (e.g., loading to
+    production)
+  - A new setting, `BATCH_PRODUCTION_PATH`, has been introduced. Set this to
+    the location NCA should copy your batches when they're ready for being
+    ingested into production.
+    - On QC approval, batches are automatically synced to the location
+      specified by the new setting (`BATCH_PRODUCTION_PATH`).
+  - A new setting, `BATCH_ARCHIVE_PATH`, has been introduced. Set this to the
+    location NCA should move your batches after they're live.
+    - Once a batch is marked live, NCA will kick off a job to move all files
+      out of NCA and into this location.
+  - Batch loaders can now mark issues as live, which moves them to the
+    aforementioned location, and as archived, which allows
+    `delete-live-done-issues` to remove their workflow files (after a delay).
+- Error handling:
+  - Many functions were returning errors which were silently being ignored, and
+    are now properly being looked at (or at least explicitly ignored where the
+    error truly didn't matter)
+  - Hard crashes should no longer be possible in the web server (the `nca-http`
+    service) even if we have missed some error handling or there's some crazy
+    crash we haven't yet found.
+  - Hard crashes from workers (the `nca-workers` service) should no longer be
+    possible, though there are still some paths which can't be made 100%
+    foolproof. Even so, if there *are* areas that can still crash, (a) we will
+    fix them when we find them, and (b) they should be ridiculously rare.
+- General:
+  - The `manage` script restarts key services after shutting them down and use
+    helper scripts when manually testing NCA in a real-world-like setting
+  - New test script to enter and review dummy metadata for quicker testing
+  - New documentation created to help devs create new configuration settings.
+  - New documentation added to the "test" directory to help explain how to
+    create data, and in-depth "recipes" for manual testing. (See the `test/`
+    directory's `README.md`)
 
 ### Changed
 
 - Users with the role "Title Manager" can now edit all aspects of a title,
-  including SFTP data. Since we no longer store plaintext passwords, there's
-  no reason to do the weird half-editing setup we had before where only admins
+  including SFTP data. Since we no longer store plaintext passwords, there's no
+  reason to do the weird half-editing setup we had before where only admins
   could edit the SFTP stuff.
+- More intuitive redirects from batch management pages
+- In the batch management handlers, inability to load a batch due to a database
+  failure now logs as "critical", not just "error".
+- All invocations of `docker-compose` are now `docker compose` (note the space
+  instead of the hyphen) so people installing docker and compose in the past
+  year or two aren't confused (or laughing at how outdated NCA is).
+- For devs:
+  - We replaced `golint` with `revive`. `golint` is deprecated, and `revive`
+    offers a lot more rules to catch potential errors and/or style issues
+  - We replaced "interface{}" with "any" for readability now that we're well
+    past Go 1.18
+- Massive overhaul of workflow and batch management documentation to match the
+  new processes
+- Derivative-generating jobs now fail after only 4 retries (5 tries total)
+  instead of 25 (26 total). Failures with these jobs are almost always fatal,
+  and we want them out of NCA sooner in order to fix the underlying problems
+  manually (e.g., a corrupt PDF).
+- For devs: the `jobs` package no longer exposes a bunch of low-level
+  functionality for a more predictable app. Nothing outside `jobs` can just
+  toss random jobs into a queue without creating a high-level function.
+- The `purge-dead-issues` command is now very basic as a result of needing to
+  stop letting it do very low-level work with the `jobs` package. The end
+  results are the same, it just doesn't give as much output and no longer has a
+  dry-run default.
 
 ### Removed
 
 - SFTP Password and SFTP directory fields are no longer stored in NCA, as
   neither of these fields had any way to tie to a backend SFTP daemon, and got
   out of sync too easily
+- "Failed QC" has been removed as a batch status, as it is no longer in use
+- Various bits of dead code have been removed. Some were technically part of
+  the public API, but NCA's code isn't meant to be imported elsewhere, so if
+  this breaks anything I will be absolutely FLABBERGASTED. Yeah, I said
+  "flabbergasted". Deal with it.
+- Most manual testing documentation in hugo has been removed in favor of the
+  test directory being more self-documenting. We chose to gut the hugo side
+  because our approach to manual testing is somewhat UO-specific, and a lot
+  more internal than what we want in our public docs - only core devs will care
+  about this stuff.
 
 ### Migration
 
@@ -67,8 +187,19 @@ SFTPGo integration and documentation
     you will lose this functionality. Due to maintenance difficulties and
     complexity in trying to wrangle conditional use of this data, NCA will no
     longer manage those fields or even display them.
-- If you switch from a traditional sftp daemon to sftpgo, there will be a
-  service disruption publishers need to be made aware of.
+  - If you switch from a traditional sftp daemon to sftpgo, there will be a
+    service disruption publishers need to be made aware of. Plan for an entire
+    day just to be on the safe side, as you'll need to shut down your existing
+    service, copy anything over to sftpgo's location (or make sure you get
+    through the queue of what's in your sftp server first), stand up sftpgo,
+    connect NCA and then test uploading, downloading, etc. to be sure you've
+    got all your OS-level permissions set up properly.
+- Get every pending batch out of NCA and into your production systems,
+  otherwise batches might get processed incorrectly.
+- Do not update if you have batches in the `failed_qc` status. Get batches out
+  of this status (e.g., by running the now-defunct batch fixer command-line
+  tool), because it is no longer valid.
+- Make sure you have "docker compose" installed as a plugin.
 
 ## v3.13.1
 
