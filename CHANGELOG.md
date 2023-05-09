@@ -68,6 +68,11 @@ It's mentioned below, but to upgrade to 4.0, you should first read the
   should make manual tasks a bit easier
 - Batches which were once on staging now have to be marked as purged from
   staging before they can move to other statuses (e.g., loading to production)
+- A new setting, `BATCH_PRODUCTION_PATH`, has been introduced. Set this to the
+  location NCA should copy your batches when they're ready for being ingested
+  into production.
+  - On QC approval, batches are automatically synced to the location specified by
+    the new setting (`BATCH_PRODUCTION_PATH`).
 
 ### Changed
 
