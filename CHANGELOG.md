@@ -63,6 +63,11 @@ It's mentioned below, but to upgrade to 4.0, you should first read the
   rune, or "surrogate" rune) are stripped from the output `pdftotext` gives us
   just prior to generating ALTO XML. This prevents MySQL and MariaDB errors
   when ingesting into ONI.
+- All issue- and batch-specific jobs are first setting the object's state and
+  saving it, and only on success queueing up jobs. This fixes rare issues where
+  a slow or dead job runner would allow a user to try to take action on an
+  issue/batch that was already scheduled to have a different action taken.
+  Rare, but disastrous.
 
 ### Added
 
@@ -100,10 +105,12 @@ It's mentioned below, but to upgrade to 4.0, you should first read the
     fix them when we find them, and (b) they should be ridiculously rare.
 - General:
   - The `manage` script restarts key services after shutting them down
-  - New document added to the "test" directory to help explain how to create data
     and use helper scripts when manually testing NCA in a real-world-like setting
   - New test script to enter and review dummy metadata for quicker testing
   - New documentation created to help devs create new configuration settings.
+  - New documentation added to the "test" directory to help explain how to
+    create data, and in-depth "recipes" for manual testing. (See the `test/`
+    directory's `README.md`)
 
 ### Changed
 
@@ -128,6 +135,13 @@ It's mentioned below, but to upgrade to 4.0, you should first read the
   instead of 25 (26 total). Failures with these jobs are almost always fatal,
   and we want them out of NCA sooner in order to fix the underlying problems
   manually (e.g., a corrupt PDF).
+- For devs: the `jobs` package no longer exposes a bunch of low-level
+  functionality for a more predictable app. Nothing outside `jobs` can just
+  toss random jobs into a queue without creating a high-level function.
+- The `purge-dead-issues` command is now very basic as a result of needing to
+  stop letting it do very low-level work with the `jobs` package. The end
+  results are the same, it just doesn't give as much output and no longer has a
+  dry-run default.
 
 ### Removed
 
