@@ -34,11 +34,7 @@ Brief description, if necessary
 ### Migration
 -->
 
-## v4.0.0 (unreleased)
-
-**Note**: 4.0.0 is still unreleased. Peruse these notes to know what to expect,
-or if you're just running the latest (and not stable) release. But beware that
-these changelogs *will* continue to evolve.
+## v4.0.0
 
 The NCA 4 release fixes and improves a lot of areas, but there are some
 *exciting* and **amazing** things you'll really want to look at:
