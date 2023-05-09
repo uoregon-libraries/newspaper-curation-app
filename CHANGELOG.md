@@ -56,6 +56,9 @@ It's mentioned below, but to upgrade to 4.0, you should first read the
 - On some systems, `.manifest` files were seen by NCA as constantly changing,
   which prevented issues from getting metadata entered or even entering the
   workflow at all. This should no longer be a problem.
+- Two horrible panic calls from deep within NCA's bowels have been replaced
+  with error returns, which should dramatically reduce the risk of a runtime
+  crash. These were already rare, but now *should* be nonexistent.
 
 ### Added
 
@@ -73,6 +76,17 @@ It's mentioned below, but to upgrade to 4.0, you should first read the
   into production.
   - On QC approval, batches are automatically synced to the location specified by
     the new setting (`BATCH_PRODUCTION_PATH`).
+- Error handling:
+  - Many functions were returning errors which were silently being ignored, and
+    are now properly being looked at (or at least explicitly ignored where the
+    error truly didn't matter)
+  - Hard crashes should no longer be possible in the web server (the `nca-http`
+    service) even if we have missed some error handling or there's some crazy
+    crash we haven't yet found.
+  - Hard crashes from workers (the `nca-workers` service) should no longer be
+    possible, though there are still some paths which can't be made 100%
+    foolproof. Even so, if there *are* areas that can still crash, (a) we will
+    fix them when we find them, and (b) they should be ridiculously rare.
 
 ### Changed
 
@@ -86,6 +100,11 @@ It's mentioned below, but to upgrade to 4.0, you should first read the
 - All invocations of `docker-compose` are now `docker compose` (note the space
   instead of the hyphen) so people installing docker and compose in the past
   year or two aren't confused (or laughing at how outdated NCA is).
+- For devs:
+  - We replaced `golint` with `revive`. `golint` is deprecated, and `revive`
+    offers a lot more rules to catch potential errors and/or style issues
+  - We replaced "interface{}" with "any" for readability now that we're well
+    past Go 1.18
 
 ### Removed
 
@@ -93,6 +112,10 @@ It's mentioned below, but to upgrade to 4.0, you should first read the
   neither of these fields had any way to tie to a backend SFTP daemon, and got
   out of sync too easily
 - "Failed QC" has been removed as a batch status, as it is no longer in use
+- Various bits of dead code have been removed. Some were technically part of
+  the public API, but NCA's code isn't meant to be imported elsewhere, so if
+  this breaks anything I will be absolutely FLABBERGASTED. Yeah, I said
+  "flabbergasted". Deal with it.
 
 ### Migration
 
