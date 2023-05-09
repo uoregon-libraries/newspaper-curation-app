@@ -88,24 +88,25 @@ Exciting! Amazing!
 - [SFTPGo](https://github.com/drakkan/sftpgo) is now integrated with NCA for
   managing titles' uploads.
 - Batch Management:
-  - Various instructions and status-setting buttons have been added to the batch
-    management page for batch loaders
-  - Instructions for batch loaders' manual tasks now have a "copy" button, which
-    should make manual tasks a bit easier
+  - Various instructions and status-setting buttons have been added to the
+    batch management page for batch loaders
+  - Instructions for batch loaders' manual tasks now have a "copy" button,
+    which should make manual tasks a bit easier
   - Batches which were once on staging now have to be marked as purged from
-    staging before they can move to other statuses (e.g., loading to production)
-  - A new setting, `BATCH_PRODUCTION_PATH`, has been introduced. Set this to the
-    location NCA should copy your batches when they're ready for being ingested
-    into production.
-    - On QC approval, batches are automatically synced to the location specified by
-      the new setting (`BATCH_PRODUCTION_PATH`).
+    staging before they can move to other statuses (e.g., loading to
+    production)
+  - A new setting, `BATCH_PRODUCTION_PATH`, has been introduced. Set this to
+    the location NCA should copy your batches when they're ready for being
+    ingested into production.
+    - On QC approval, batches are automatically synced to the location
+      specified by the new setting (`BATCH_PRODUCTION_PATH`).
   - A new setting, `BATCH_ARCHIVE_PATH`, has been introduced. Set this to the
     location NCA should move your batches after they're live.
     - Once a batch is marked live, NCA will kick off a job to move all files
       out of NCA and into this location.
   - Batch loaders can now mark issues as live, which moves them to the
     aforementioned location, and as archived, which allows
-    `bin/delete-live-done-issues` to remove their workflow files (after a delay).
+    `delete-live-done-issues` to remove their workflow files (after a delay).
 - Error handling:
   - Many functions were returning errors which were silently being ignored, and
     are now properly being looked at (or at least explicitly ignored where the
@@ -118,8 +119,8 @@ Exciting! Amazing!
     foolproof. Even so, if there *are* areas that can still crash, (a) we will
     fix them when we find them, and (b) they should be ridiculously rare.
 - General:
-  - The `manage` script restarts key services after shutting them down
-    and use helper scripts when manually testing NCA in a real-world-like setting
+  - The `manage` script restarts key services after shutting them down and use
+    helper scripts when manually testing NCA in a real-world-like setting
   - New test script to enter and review dummy metadata for quicker testing
   - New documentation created to help devs create new configuration settings.
   - New documentation added to the "test" directory to help explain how to
@@ -129,8 +130,8 @@ Exciting! Amazing!
 ### Changed
 
 - Users with the role "Title Manager" can now edit all aspects of a title,
-  including SFTP data. Since we no longer store plaintext passwords, there's
-  no reason to do the weird half-editing setup we had before where only admins
+  including SFTP data. Since we no longer store plaintext passwords, there's no
+  reason to do the weird half-editing setup we had before where only admins
   could edit the SFTP stuff.
 - More intuitive redirects from batch management pages
 - In the batch management handlers, inability to load a batch due to a database
