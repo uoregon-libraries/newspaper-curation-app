@@ -53,6 +53,9 @@ It's mentioned below, but to upgrade to 4.0, you should first read the
 - Batches that have issues removed will no longer "stall" in the job queue
   (`Batch.AbortIssueFlagging` allows pending batches now in addition to those
   flagged as needing QC)
+- On some systems, `.manifest` files were seen by NCA as constantly changing,
+  which prevented issues from getting metadata entered or even entering the
+  workflow at all. This should no longer be a problem.
 
 ### Added
 
