@@ -82,6 +82,8 @@ Exciting! Amazing!
   a slow or dead job runner would allow a user to try to take action on an
   issue/batch that was already scheduled to have a different action taken.
   Rare, but disastrous.
+- "Finalize" button in batch status page now queues up a batch deletion job if
+  all issues in a batch were flagged for removal
 
 ### Added
 
