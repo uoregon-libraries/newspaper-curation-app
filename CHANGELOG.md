@@ -76,6 +76,13 @@ It's mentioned below, but to upgrade to 4.0, you should first read the
     into production.
     - On QC approval, batches are automatically synced to the location specified by
       the new setting (`BATCH_PRODUCTION_PATH`).
+  - A new setting, `BATCH_ARCHIVE_PATH`, has been introduced. Set this to the
+    location NCA should move your batches after they're live.
+    - Once a batch is marked live, NCA will kick off a job to move all files
+      out of NCA and into this location.
+  - Batch loaders can now mark issues as live, which moves them to the
+    aforementioned location, and as archived, which allows
+    `bin/delete-live-done-issues` to remove their workflow files (after a delay).
 - Error handling:
   - Many functions were returning errors which were silently being ignored, and
     are now properly being looked at (or at least explicitly ignored where the
@@ -92,6 +99,7 @@ It's mentioned below, but to upgrade to 4.0, you should first read the
   - New document added to the "test" directory to help explain how to create data
     and use helper scripts when manually testing NCA in a real-world-like setting
   - New test script to enter and review dummy metadata for quicker testing
+  - New documentation created to help devs create new configuration settings.
 
 ### Changed
 
@@ -110,6 +118,8 @@ It's mentioned below, but to upgrade to 4.0, you should first read the
     offers a lot more rules to catch potential errors and/or style issues
   - We replaced "interface{}" with "any" for readability now that we're well
     past Go 1.18
+- Massive overhaul of workflow and batch management documentation to match the
+  new processes
 
 ### Removed
 
@@ -145,6 +155,8 @@ It's mentioned below, but to upgrade to 4.0, you should first read the
     through the queue of what's in your sftp server first), stand up sftpgo,
     connect NCA and then test uploading, downloading, etc. to be sure you've
     got all your OS-level permissions set up properly.
+- Get every pending batch out of NCA and into your production systems,
+  otherwise batches might get processed incorrectly.
 - Do not update if you have batches in the `failed_qc` status. Get batches out
   of this status (e.g., by running the now-defunct batch fixer command-line
   tool), because it is no longer valid.
