@@ -128,6 +128,7 @@ Exciting! Amazing!
   - New documentation added to the "test" directory to help explain how to
     create data, and in-depth "recipes" for manual testing. (See the `test/`
     directory's `README.md`)
+  - New Makefile recipe for more easily testing hugo doc changes
 
 ### Changed
 
