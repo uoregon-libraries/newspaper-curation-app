@@ -124,6 +124,10 @@ It's mentioned below, but to upgrade to 4.0, you should first read the
     past Go 1.18
 - Massive overhaul of workflow and batch management documentation to match the
   new processes
+- Derivative-generating jobs now fail after only 4 retries (5 tries total)
+  instead of 25 (26 total). Failures with these jobs are almost always fatal,
+  and we want them out of NCA sooner in order to fix the underlying problems
+  manually (e.g., a corrupt PDF).
 
 ### Removed
 
