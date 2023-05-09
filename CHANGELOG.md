@@ -78,6 +78,9 @@ It's mentioned below, but to upgrade to 4.0, you should first read the
 - More intuitive redirects from batch management pages
 - In the batch management handlers, inability to load a batch due to a database
   failure now logs as "critical", not just "error".
+- All invocations of `docker-compose` are now `docker compose` (note the space
+  instead of the hyphen) so people installing docker and compose in the past
+  year or two aren't confused (or laughing at how outdated NCA is).
 
 ### Removed
 
@@ -107,6 +110,7 @@ It's mentioned below, but to upgrade to 4.0, you should first read the
 - Do not update if you have batches in the `failed_qc` status. Get batches out
   of this status (e.g., by running the now-defunct batch fixer command-line
   tool), because it is no longer valid.
+- Make sure you have compose installed as a plugin.
 
 ## v3.13.1
 
