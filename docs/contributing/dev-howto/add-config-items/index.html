@@ -3,10 +3,11 @@
 <head><meta charset="utf-8">
 <meta http-equiv="X-UA-Compatible" content="IE=edge">
 <meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1, user-scalable=no">
-<title>404 Page not found - Newspaper Curation App</title>
+<title>Add Configuration Settings - Newspaper Curation App</title>
+<meta name="description" content="Adding a new configuration setting">
 <meta name="generator" content="Hugo 0.85.0" />
 <link href="https://uoregon-libraries.github.io/newspaper-curation-app//index.xml" rel="alternate" type="application/rss+xml">
-<link rel="canonical" href="https://uoregon-libraries.github.io/newspaper-curation-app/404.html">
+<link rel="canonical" href="https://uoregon-libraries.github.io/newspaper-curation-app/contributing/dev-howto/add-config-items/">
 <link rel="stylesheet" href="https://uoregon-libraries.github.io/newspaper-curation-app/css/theme.min.css">
 <script src="https://use.fontawesome.com/releases/v5.0.6/js/all.js"></script>
 <link rel="stylesheet" href="https://uoregon-libraries.github.io/newspaper-curation-app/css/chroma.min.css">
@@ -16,22 +17,66 @@
 <script src="https://uoregon-libraries.github.io/newspaper-curation-app/js/bundle.js"></script><style>
 :root {}
 </style>
-<meta property="og:title" content="404 Page not found" />
-<meta property="og:description" content="" />
-<meta property="og:type" content="website" />
-<meta property="og:url" content="https://uoregon-libraries.github.io/newspaper-curation-app/404.html" />
+<meta property="og:title" content="Add Configuration Settings" />
+<meta property="og:description" content="Adding a new configuration setting" />
+<meta property="og:type" content="article" />
+<meta property="og:url" content="https://uoregon-libraries.github.io/newspaper-curation-app/contributing/dev-howto/add-config-items/" /><meta property="article:section" content="contributing" />
+
+
 
 <meta name="twitter:card" content="summary"/>
-<meta name="twitter:title" content="404 Page not found"/>
-<meta name="twitter:description" content=""/>
-<meta itemprop="name" content="404 Page not found">
-<meta itemprop="description" content=""></head>
+<meta name="twitter:title" content="Add Configuration Settings"/>
+<meta name="twitter:description" content="Adding a new configuration setting"/>
+<meta itemprop="name" content="Add Configuration Settings">
+<meta itemprop="description" content="Adding a new configuration setting">
+
+<meta itemprop="wordCount" content="266">
+<meta itemprop="keywords" content="" /></head>
 <body><div class="container"><header>
 <h1>Newspaper Curation App</h1><a href="https://github.com/uoregon-libraries/newspaper-curation-app/" class="github"><i class="fab fa-github"></i></a>
 </header>
 
 <div class="content-container">
-<main><h1>404 Not Found</h1><footer><p class="powered">Powered by <a href="https://gohugo.io">Hugo</a>. Theme by <a href="https://themes.gohugo.io/hugo-theme-techdoc/">TechDoc</a>. Designed by <a href="https://github.com/thingsym/hugo-theme-techdoc">Thingsym</a>.</p>
+<main><h1>Add Configuration Settings</h1>
+<p>Occasionally we need a new setting to be created so that users have a bit more
+control over the inner workings of NCA. This details the process of adding
+settings:</p>
+<ul>
+<li>Open up <a href="https://github.com/uoregon-libraries/newspaper-curation-app/blob/main/src/config/config.go"><code>src/config/config.go</code></a> and add a value to the Config struct.</li>
+<li>Choose the data type. In most cases a primitive is fine: string, int,
+float64, etc.</li>
+<li>Decide if the value should be pulled directly from the settings file or if
+you need to massage data manually. The former is usually the best option, but
+not always possible.</li>
+<li>If the value is pulled directly from settings, set up the struct tags:
+<ul>
+<li>At a minimum you must define which settings value will populate the Go
+config structure; e.g., the <code>config.Ghostscript</code> value specifies
+<code>setting:&quot;GHOSTSCRIPT&quot;</code> in the struct tag, telling us the <code>settings</code> file&rsquo;s
+&ldquo;GHOSTSCRIPT&rdquo; value is to be used.</li>
+<li>If you want validation, use a &ldquo;type&rdquo; struct tag, e.g., the &ldquo;Webroot&rdquo;
+setting uses <code>type:&quot;url&quot;</code> to specify that the value <em>must</em> be a valid URL.</li>
+</ul>
+</li>
+<li>If the value is not directly pulled from settings, modify <code>Parse()</code> to read
+the raw setting and set the config field accordingly.</li>
+<li>Open <code>settings-example</code> and add the setting with some documentation
+(bash-style comments) explaning what it does and how it should be used. When
+you can, make sure the default &ldquo;just works&rdquo; with a standard docker setup.</li>
+</ul>
+<p>Notes:</p>
+<ul>
+<li>If you need more validation than what is provided, you can add that to the
+<code>Parse()</code> function. <code>MinimumIssuePages</code>, for instance, ensures it&rsquo;s always at
+least 1.</li>
+<li>If you add a workflow path, you may need to alter <a href="https://github.com/uoregon-libraries/newspaper-curation-app/blob/main/test/copy-sources.go"><code>test/copy-sources.go</code></a>
+in order to automatically create that path for testing.</li>
+</ul>
+<div class="edit-meta">
+
+<br></div><nav class="pagination"><a class="nav nav-prev" href="https://uoregon-libraries.github.io/newspaper-curation-app/contributing/dev-howto/add-job-types/" title="Add Job Types"><i class="fas fa-arrow-left" aria-hidden="true"></i>&nbsp;Prev - Add Job Types</a>
+<a class="nav nav-next" href="https://uoregon-libraries.github.io/newspaper-curation-app/contributing/dev-howto/add-job-types/" title="Add Job Types">Next - Add Job Types <i class="fas fa-arrow-right" aria-hidden="true"></i></a>
+</nav><footer><p class="powered">Powered by <a href="https://gohugo.io">Hugo</a>. Theme by <a href="https://themes.gohugo.io/hugo-theme-techdoc/">TechDoc</a>. Designed by <a href="https://github.com/thingsym/hugo-theme-techdoc">Thingsym</a>.</p>
 </footer>
 </main>
 <div class="sidebar">
@@ -76,7 +121,7 @@
   
 </li>
 
-<li class=""><a href="https://uoregon-libraries.github.io/newspaper-curation-app/contributing/">Contributing</a>
+<li class="parent"><a href="https://uoregon-libraries.github.io/newspaper-curation-app/contributing/">Contributing</a>
   
 <ul class="sub-menu">
 <li class=""><a href="https://uoregon-libraries.github.io/newspaper-curation-app/contributing/dev-guide/">Developer&#39;s Guide</a></li>
@@ -84,11 +129,11 @@
 <li class=""><a href="https://uoregon-libraries.github.io/newspaper-curation-app/contributing/documentation/">Contributing to Documentation</a></li>
 <li class=""><a href="https://uoregon-libraries.github.io/newspaper-curation-app/contributing/testing/">Testing</a></li>
 
-<li class=""><a href="https://uoregon-libraries.github.io/newspaper-curation-app/contributing/dev-howto/">How do I...?</a>
+<li class="parent"><a href="https://uoregon-libraries.github.io/newspaper-curation-app/contributing/dev-howto/">How do I...?</a>
   
 <ul class="sub-menu">
 <li class=""><a href="https://uoregon-libraries.github.io/newspaper-curation-app/contributing/dev-howto/add-job-types/">Add Job Types</a></li>
-<li class=""><a href="https://uoregon-libraries.github.io/newspaper-curation-app/contributing/dev-howto/add-config-items/">Add Configuration Settings</a></li>
+<li class="active"><a href="https://uoregon-libraries.github.io/newspaper-curation-app/contributing/dev-howto/add-config-items/">Add Configuration Settings</a></li>
 </ul>
   
 </li>

@@ -30,7 +30,7 @@
 <meta itemprop="name" content="Testing">
 <meta itemprop="description" content="Automated and manual testing of NCA">
 
-<meta itemprop="wordCount" content="967">
+<meta itemprop="wordCount" content="292">
 <meta itemprop="keywords" content="" /></head>
 <body><div class="container"><header>
 <h1>Newspaper Curation App</h1><a href="https://github.com/uoregon-libraries/newspaper-curation-app/" class="github"><i class="fab fa-github"></i></a>
@@ -47,122 +47,18 @@ is spotty at best right now, but the compile-time checks catch the most common
 problems, like typos in variable names.</p>
 <p>Contributors: feel free to add more unit tests to improve overall coverage!</p>
 <h2 id="manual-testing">Manual Testing</h2>
-<p>This is clunky and hacky, but it&rsquo;s what we&rsquo;ve got for now.  How it all works:</p>
-<h3 id="setup">Setup</h3>
-<ul>
-<li>Get NCA working via docker-compose (see our
-<a href="../../contributing/dev-guide">Development Guide</a>; this whole <!-- raw HTML omitted -->brittle mess<!-- raw HTML omitted -->
-test suite depends on testing on a docker-enabled system)</li>
-<li>Make sure your docker compose overrides mount <code>test/fakemount</code> as
-<code>/mnt/news</code>.  The override example is set up to do this, so just copying
-that, as explained in the development guide, will get you up and running.</li>
-<li>Set up titles and MARC org codes in your dockerized NCA instance</li>
-</ul>
-<p>Put some test issues into <code>test/sources/scans</code> and <code>test/sources/sftp</code>:</p>
-<h4 id="copying-titles-manually">Copying titles manually</h4>
-<ul>
-<li>The issues should be exact copies of production issues with all the PDF,
-JP2, and XML files.  For scanned issues, the TIFFs should also be included.
-<ul>
-<li>The JP2 files are pretty optional, but if you can get them quickly, they
-can be handy for verifying that what NCA produces looks roughly the same</li>
-<li>The XML files are also optional, but again can be helpful for verifying
-that NCA did things correctly</li>
-</ul>
-</li>
-<li>Each issue will have a folder name that defines it:
-<ul>
-<li>SFTP: <code>LCCN-DateEdition</code>; e.g., <code>test/sources/sftp/sn12345678-2001020301</code>
-would be the February 3, 2001 edition of the title with LCCN <code>sn12345678</code></li>
-<li>Scans: <code>OrgCode-LCCN-DateEdition</code>; e.g.,
-<code>test/sources/scans/oru-sn12345678-2001020301</code> would be the February 3,
-2001 edition of the title with LCCN <code>sn12345678</code>, and attributed to the
-awardee <code>oru</code>.</li>
-</ul>
-</li>
-</ul>
-<p>Example of copying from UO&rsquo;s dark archive:</p>
-<pre><code>cp -r /path/to/newspapers/batch_oru_20160627AggressiveEclair_ver01/data/sn00063621/print/2015022001 \
-      ./test/sources/sftp/sn00063621-2015022001
-</code></pre>
-<p>A command like this can get you set up for fake SFTP file processing.  If we
-had TIFFs in this issue, the command would look like this:</p>
-<pre><code>cp -r /path/to/newspapers/batch_oru_20160627AggressiveEclair_ver01/data/sn00063621/print/2015022001 \
-      ./test/sources/scans/oru-sn00063621-2015022001
-</code></pre>
-<h4 id="pulling-external-titles">Pulling external titles</h4>
-<p>The <code>pull-issue.sh</code> script is a good example of grabbing all but the JP2s of
-another site&rsquo;s issue and faking it as having been a born-digital upload.  You
-may have to tinker with the command some, but it should be easily modified to
-copy any live issues you may want to test.</p>
-<h4 id="using-uos-test-issues">Using UO&rsquo;s test issues</h4>
-<p>Get into the <code>test</code> directory and clone our test source issues:</p>
-<pre><code>cd test
-git clone git@github.com:uoregon-libraries/nca-test-data.git sources
-</code></pre>
-<p>Despite the size of the download, this represents very few
-useful test cases.  It&rsquo;s more of a way to get started with the app than any
-kind of comprehensive set of test issues.  Also note that some of the data is
-purposefully incorrect or broken in order to test how NCA responds to it.</p>
-<p>In other words, you should probably craft your own test data, but this <em>is</em>
-available to help get you started if you need it.</p>
-<h3 id="test">Test</h3>
-<p><strong>You need to install the UO gopkg project for this to work</strong>:</p>
-<pre><code>go get -u github.com/uoregon-libraries/gopkg/...
-</code></pre>
-<p><em>Note that most shell scripts you&rsquo;ll run need sudo - they assume docker is
-controlling your files, which means you need to be root to change them.  The
-scripts actually switch ownership back to whatever <code>whoami</code> evaluates to.</em></p>
-<p><em><strong>Another Note</strong></em>: You can manually run the <code>makemine.sh</code> script occasionally if you
-need to look at the data that&rsquo;s owned by root.  This script is called by the
-other scripts and is an encapsulated way to just change ownership quickly.</p>
-<p>Once you have the titles and MOCs set up in the front-end, and your <code>sources</code>
-directory has issues, you&rsquo;re ready to actually use the data:</p>
-<ul>
-<li>Run <code>reset.sh</code>.  This will delete all issues, batches, jobs, and job logs
-from the database.  It will then copy (hard-link to avoid disk space bloat)
-the files in <code>test/sources</code> into <code>test/fakemount</code>.  Assuming the folder names
-are correct in <code>test/sources</code>, the layout will be correct in
-<code>test/fakemount</code>.
-<ul>
-<li><code>reset.sh</code> requires the stack to be up and running.  It&rsquo;s exceedingly naive
-in its approach to ensuring the database is in a good &ldquo;starting&rdquo; state.  If
-the script fails, make sure to start up your stack first.</li>
-</ul>
-</li>
-<li>Look at the Uploads section of the NCA web app - you should see whatever
-issues you&rsquo;ve put in for testing, and you can queue them for processing</li>
-<li>Queue issues, make sure the &ldquo;workers&rdquo; container doesn&rsquo;t throw up
-<ul>
-<li>If an issue was from sftp (these are born digital issues), they will have
-some preprocessing done and then get moved to the page review area,
-<code>test/fakemount/page-review</code></li>
-<li>If an issue was scanned, it will have derivatives build and get put into
-the workflow area, <code>test/fakemount/workflow</code></li>
-</ul>
-</li>
-<li>Fake-process the page-review issues:
-<ul>
-<li><code>rename-page-review.sh</code> assumes all born-digital issues' pages are in order
-and just names them in the correct format (0001.pdf, 0002.pdf, etc.)</li>
-<li><code>make-older.sh</code> will fake the files' age so the issues can be processed in
-the app without the &ldquo;too new&rdquo; warning.</li>
-<li><em>Wait</em>.  It takes a few minutes for the workers to scan for page reviews
-(you can watch them via <code>docker-compose logs -f workers</code>), and then a few
-more for the web cache to get updated.</li>
-</ul>
-</li>
-<li>Enter metadata, review metadata, and fire off a batch when ready
-<ul>
-<li>Queueing a batch through docker:
-<ul>
-<li><code>docker-compose exec workers /usr/local/nca/bin/queue-batches -c ./settings</code></li>
-</ul>
-</li>
-<li>The batch will end up in <code>test/fakemount/outgoing</code></li>
-</ul>
-</li>
-</ul>
+<p>Manually testing NCA can be time-consuming, as you have to find, copy, and then
+load issues into NCA, enter metadata, etc. If you repeat this often enough, you
+may find the project&rsquo;s &ldquo;test&rdquo; directory helpful. It contains documentation and
+scripts which are meant to make real-world-like testing a bit easier.</p>
+<p>The most difficult piece of this is that you will need to set up NCA as
+outlined in the &ldquo;Advanced Users&rdquo; section of the <a href="../../contributing/dev-guide">Development
+Guide</a>. You can likely make things work in any
+environment, but the scripts and documentation assume you do it our way. This
+process is not beginner-friendly, and likely never will be; it&rsquo;s meant for
+power developers who are doing a <em>lot</em> of testing and need the extra
+automation.</p>
+<p>View the README.me file in the test directory for details.</p>
 <h3 id="saving-state">Saving State</h3>
 <p>At any time you can save and restore the application&rsquo;s state via the top-level
 <code>manage</code> script.  This script has a variety of commands, but <code>./manage backup</code>
@@ -217,7 +113,6 @@ tweak settings (or code).</p>
 <li class=""><a href="https://uoregon-libraries.github.io/newspaper-curation-app/workflow/fixing-stuck-issues/">Fixing &#34;Stuck&#34; Issues</a></li>
 <li class=""><a href="https://uoregon-libraries.github.io/newspaper-curation-app/workflow/fixing-flagged-workflow-issues/">Fixing Flagged Workflow Issues</a></li>
 <li class=""><a href="https://uoregon-libraries.github.io/newspaper-curation-app/workflow/fixing-live-batches/">Replacing Live Issues</a></li>
-<li class=""><a href="https://uoregon-libraries.github.io/newspaper-curation-app/workflow/batch-manual-golive/">Batch Manual Go-live Procedure</a></li>
 <li class=""><a href="https://uoregon-libraries.github.io/newspaper-curation-app/workflow/undo-batch-golive/">&#34;Un-push&#34; Batch From Production</a></li>
 </ul>
   
@@ -235,6 +130,7 @@ tweak settings (or code).</p>
   
 <ul class="sub-menu">
 <li class=""><a href="https://uoregon-libraries.github.io/newspaper-curation-app/contributing/dev-howto/add-job-types/">Add Job Types</a></li>
+<li class=""><a href="https://uoregon-libraries.github.io/newspaper-curation-app/contributing/dev-howto/add-config-items/">Add Configuration Settings</a></li>
 </ul>
   
 </li>

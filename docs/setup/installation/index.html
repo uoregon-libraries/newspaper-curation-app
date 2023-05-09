@@ -30,7 +30,7 @@
 <meta itemprop="name" content="Installation">
 <meta itemprop="description" content="How to build and compile NCA">
 
-<meta itemprop="wordCount" content="425">
+<meta itemprop="wordCount" content="479">
 <meta itemprop="keywords" content="" /></head>
 <body><div class="container"><header>
 <h1>Newspaper Curation App</h1><a href="https://github.com/uoregon-libraries/newspaper-curation-app/" class="github"><i class="fab fa-github"></i></a>
@@ -71,17 +71,22 @@ full stack and configuration.</p>
 <p>Compilation requires:</p>
 <ul>
 <li><a href="https://golang.org/dl/">Go</a> 1.18 or later</li>
-<li><a href="https://github.com/golang/lint">golint</a>: <code>go install golang.org/x/lint/golint@latest</code></li>
+<li><a href="https://github.com/mgechev/revive">revive</a>: <code>go install github.com/mgechev/revive@latest</code></li>
 </ul>
 <p>The easiest way to compile is simply running <code>make</code> in the source directory.
 This will grab various Go packages the application requires, validate the
-current code (via golint, gofmt, and go vet, for development purposes), and
+current code (via revive, gofmt, and go vet, for development purposes), and
 build all the binaries.</p>
 <p>A full compilation from a clean repository should take about 15 seconds, though
 this can depend on network speed the first time dependencies are pulled from
 github.  Subsequent compiles generally take under 5 seconds.  If that&rsquo;s still
 too long, and you don&rsquo;t mind skipping the code validations, <code>make fast</code> will
 skip the validator entirely, usually saving 1-2 seconds.</p>
+<p>If you&rsquo;re in a <em>serious</em> rush (say you want to auto-build every time code
+changes just to see if compilation failed), you can also just build a single
+binary via <code>make &lt;binary target&gt;</code>, e.g., <code>make bin/server</code>. This skips all
+validations and only builds the binary you request, and generally takes less
+than a second.</p>
 <p>Once you&rsquo;ve compiled, the two key binaries are going to be <code>bin/server</code> for the
 HTTP listener, and <code>bin/run-jobs</code>, the job queue processor.</p>
 <p>Note that even if you do use Docker, you&rsquo;ll probably want to have your dev
@@ -144,7 +149,6 @@ migration, just use the steps above inside the web container.</p>
 <li class=""><a href="https://uoregon-libraries.github.io/newspaper-curation-app/workflow/fixing-stuck-issues/">Fixing &#34;Stuck&#34; Issues</a></li>
 <li class=""><a href="https://uoregon-libraries.github.io/newspaper-curation-app/workflow/fixing-flagged-workflow-issues/">Fixing Flagged Workflow Issues</a></li>
 <li class=""><a href="https://uoregon-libraries.github.io/newspaper-curation-app/workflow/fixing-live-batches/">Replacing Live Issues</a></li>
-<li class=""><a href="https://uoregon-libraries.github.io/newspaper-curation-app/workflow/batch-manual-golive/">Batch Manual Go-live Procedure</a></li>
 <li class=""><a href="https://uoregon-libraries.github.io/newspaper-curation-app/workflow/undo-batch-golive/">&#34;Un-push&#34; Batch From Production</a></li>
 </ul>
   
@@ -162,6 +166,7 @@ migration, just use the steps above inside the web container.</p>
   
 <ul class="sub-menu">
 <li class=""><a href="https://uoregon-libraries.github.io/newspaper-curation-app/contributing/dev-howto/add-job-types/">Add Job Types</a></li>
+<li class=""><a href="https://uoregon-libraries.github.io/newspaper-curation-app/contributing/dev-howto/add-config-items/">Add Configuration Settings</a></li>
 </ul>
   
 </li>

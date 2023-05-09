@@ -34,7 +34,7 @@ If you&amp;rsquo;re doing a manual installation rather than container-based, you
       
       <guid>https://uoregon-libraries.github.io/newspaper-curation-app/contributing/dev-guide/</guid>
       <description>It is assumed developers will use Docker for the stack, other than the relatively simple process of compiling binaries.
-Requirements / Setup Local compilation (recommended)  A supported version of Go (e.g., if 1.16 is the latest, you want 1.15 or 1.16) golint: go install golang.org/x/lint/golint@latest Set up your GOPATH: https://golang.org/doc/code.html#GOPATH  Add $GOPATH/bin to your path    If you choose not to compile on your host machine, you will have a slightly simpler install, but there are a few considerations.</description>
+Requirements / Setup Local compilation (recommended)  A supported version of Go (e.g., if 1.16 is the latest, you want 1.15 or 1.16) revive: go install github.com/mgechev/revive@latest Set up your GOPATH: https://golang.org/doc/code.html#GOPATH  Add $GOPATH/bin to your path    If you choose not to compile on your host machine, you will have a slightly simpler install, but there are a few considerations.</description>
     </item>
     
     <item>
@@ -65,6 +65,16 @@ Somebody will want to monitor the output from the various automated processes, s
       <guid>https://uoregon-libraries.github.io/newspaper-curation-app/workflow/technical/</guid>
       <description>This document attempts to explain the entire workflow from upload to batch generation in a way that developers can understand what&amp;rsquo;s needed and how to at least begin investigating if something goes wrong.
 Jobs and the Job Queue The job runner regularly scans the database looking for jobs to run. The default setup splits jobs up to ensure quick jobs, like moving an issue from one location to another on the filesystem, are run separately from slow jobs like generating JP2 files.</description>
+    </item>
+    
+    <item>
+      <title>Add Configuration Settings</title>
+      <link>https://uoregon-libraries.github.io/newspaper-curation-app/contributing/dev-howto/add-config-items/</link>
+      <pubDate>Mon, 01 Jan 0001 00:00:00 +0000</pubDate>
+      
+      <guid>https://uoregon-libraries.github.io/newspaper-curation-app/contributing/dev-howto/add-config-items/</guid>
+      <description>Occasionally we need a new setting to be created so that users have a bit more control over the inner workings of NCA. This details the process of adding settings:
+ Open up src/config/config.go and add a value to the Config struct. Choose the data type. In most cases a primitive is fine: string, int, float64, etc. Decide if the value should be pulled directly from the settings file or if you need to massage data manually.</description>
     </item>
     
     <item>
@@ -181,7 +191,7 @@ The metadata entry person flags errors to say essentially, &amp;ldquo;NCA&amp;rs
       <description>Unit Testing Running unit tests is easy:
 make test  This compiles all of the code and tests any *_test.go files. Test coverage is spotty at best right now, but the compile-time checks catch the most common problems, like typos in variable names.
 Contributors: feel free to add more unit tests to improve overall coverage!
-Manual Testing This is clunky and hacky, but it&amp;rsquo;s what we&amp;rsquo;ve got for now. How it all works:</description>
+Manual Testing Manually testing NCA can be time-consuming, as you have to find, copy, and then load issues into NCA, enter metadata, etc.</description>
     </item>
     
     <item>
@@ -202,18 +212,6 @@ If you choose not to use this integration, publisher uploads will have to be man
       <guid>https://uoregon-libraries.github.io/newspaper-curation-app/workflow/fixing-live-batches/</guid>
       <description>Helper Script We&amp;rsquo;ve put together a helper script which can automate a lot of the preparation steps when a single LCCN needs a lot of issues pulled. It is hacky and hard-coded at the moment, but it doesn&amp;rsquo;t make any changes to anything, so it&amp;rsquo;s safe to try out, and even modify to suit other use-cases.
 To run: go run scripts/help-remove-issues.go &amp;lt;lccn&amp;gt; &amp;lt;issue dates filename&amp;gt; &amp;lt;path to NCA dir&amp;gt; &amp;lt;path to live batches&amp;gt;.</description>
-    </item>
-    
-    <item>
-      <title>Batch Manual Go-live Procedure</title>
-      <link>https://uoregon-libraries.github.io/newspaper-curation-app/workflow/batch-manual-golive/</link>
-      <pubDate>Mon, 01 Jan 0001 00:00:00 +0000</pubDate>
-      
-      <guid>https://uoregon-libraries.github.io/newspaper-curation-app/workflow/batch-manual-golive/</guid>
-      <description>Once a batch has been approved in staging, the following steps must be taken, at least for the UO workflow:
-  Make sure the batch has a valid tagmanifest-sha256.txt file
-  Copy the batch (sans TIFFs) to the newspaper batch network store, e.g.:
-# $src is something like: # /mnt/news/outgoing/batch_foo_20180918BasaltVampireTramplingCrabgrass_ver01 # $dest_batch is something like: # /mnt/production/batch_foo_20180918BasaltVampireTramplingCrabgrass_ver01 rsync -av flags --delete \  --exclude=&amp;#34;*.tif&amp;#34; --exclude=&amp;#34;*.tiff&amp;#34; --exclude=&amp;#34;*.TIF&amp;#34; --exclude=&amp;#34;*.TIFF&amp;#34; \  --exclude=&amp;#34;*.</description>
     </item>
     
     <item>

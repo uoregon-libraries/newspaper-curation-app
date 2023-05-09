@@ -30,7 +30,7 @@
 <meta itemprop="name" content="&#34;Un-push&#34; Batch From Production">
 <meta itemprop="description" content="Safely removing generated batches from production">
 
-<meta itemprop="wordCount" content="576">
+<meta itemprop="wordCount" content="597">
 <meta itemprop="keywords" content="" /></head>
 <body><div class="container"><header>
 <h1>Newspaper Curation App</h1><a href="https://github.com/uoregon-libraries/newspaper-curation-app/" class="github"><i class="fab fa-github"></i></a>
@@ -105,14 +105,18 @@ archival files, <em>and</em> a database backup.</li>
 </li>
 <li>Make the new batch(es) live on staging and production.
 <ul>
-<li>See <a href="../../workflow/batch-manual-golive">batch manual go-live</a> docs</li>
+<li>See <a href="../../workflow/technical">technical workflow</a> docs for information about batch management.</li>
 </ul>
 </li>
 <li><em>Delete</em> the batch from your live location.
 <ul>
-<li>This seems scary, but if you&rsquo;re following the <a href="../../workflow/batch-manual-golive">manual go-live</a>
-docs, your live files are just a subset of the archived batch which you
-just copied into the &ldquo;ready for ingest&rdquo; location.</li>
+<li>This seems scary, but when you mark batches as being ready for production,
+NCA is copying a subset of them to the &ldquo;ready for ingest&rdquo; location. The
+originals are kept for a while even after a batch is flagged for archival
+<ul>
+<li>Again, see our <a href="../../workflow/technical">technical workflow</a> docs for details.</li>
+</ul>
+</li>
 </ul>
 </li>
 <li><strong>Delete your archived batch</strong>. This is the original batch you moved from the
@@ -127,7 +131,7 @@ archive&rsquo;s only difference is whatever mistake you were rectifying.</li>
 </ul>
 <div class="edit-meta">
 
-<br></div><nav class="pagination"><a class="nav nav-prev" href="https://uoregon-libraries.github.io/newspaper-curation-app/workflow/batch-manual-golive/" title="Batch Manual Go-live Procedure"><i class="fas fa-arrow-left" aria-hidden="true"></i>&nbsp;Prev - Batch Manual Go-live Procedure</a>
+<br></div><nav class="pagination"><a class="nav nav-prev" href="https://uoregon-libraries.github.io/newspaper-curation-app/workflow/fixing-live-batches/" title="Replacing Live Issues"><i class="fas fa-arrow-left" aria-hidden="true"></i>&nbsp;Prev - Replacing Live Issues</a>
 <a class="nav nav-next" href="https://uoregon-libraries.github.io/newspaper-curation-app/contributing/" title="Contributing">Next - Contributing <i class="fas fa-arrow-right" aria-hidden="true"></i></a>
 </nav><footer><p class="powered">Powered by <a href="https://gohugo.io">Hugo</a>. Theme by <a href="https://themes.gohugo.io/hugo-theme-techdoc/">TechDoc</a>. Designed by <a href="https://github.com/thingsym/hugo-theme-techdoc">Thingsym</a>.</p>
 </footer>
@@ -169,7 +173,6 @@ archive&rsquo;s only difference is whatever mistake you were rectifying.</li>
 <li class=""><a href="https://uoregon-libraries.github.io/newspaper-curation-app/workflow/fixing-stuck-issues/">Fixing &#34;Stuck&#34; Issues</a></li>
 <li class=""><a href="https://uoregon-libraries.github.io/newspaper-curation-app/workflow/fixing-flagged-workflow-issues/">Fixing Flagged Workflow Issues</a></li>
 <li class=""><a href="https://uoregon-libraries.github.io/newspaper-curation-app/workflow/fixing-live-batches/">Replacing Live Issues</a></li>
-<li class=""><a href="https://uoregon-libraries.github.io/newspaper-curation-app/workflow/batch-manual-golive/">Batch Manual Go-live Procedure</a></li>
 <li class="active"><a href="https://uoregon-libraries.github.io/newspaper-curation-app/workflow/undo-batch-golive/">&#34;Un-push&#34; Batch From Production</a></li>
 </ul>
   
@@ -187,6 +190,7 @@ archive&rsquo;s only difference is whatever mistake you were rectifying.</li>
   
 <ul class="sub-menu">
 <li class=""><a href="https://uoregon-libraries.github.io/newspaper-curation-app/contributing/dev-howto/add-job-types/">Add Job Types</a></li>
+<li class=""><a href="https://uoregon-libraries.github.io/newspaper-curation-app/contributing/dev-howto/add-config-items/">Add Configuration Settings</a></li>
 </ul>
   
 </li>
