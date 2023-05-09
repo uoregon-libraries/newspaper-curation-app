@@ -87,6 +87,9 @@ It's mentioned below, but to upgrade to 4.0, you should first read the
     possible, though there are still some paths which can't be made 100%
     foolproof. Even so, if there *are* areas that can still crash, (a) we will
     fix them when we find them, and (b) they should be ridiculously rare.
+- New document added to the "test" directory to help explain how to create data
+  and use helper scripts when manually testing NCA in a real-world-like setting
+- New test script to enter and review dummy metadata for quicker testing
 
 ### Changed
 
@@ -116,6 +119,11 @@ It's mentioned below, but to upgrade to 4.0, you should first read the
   the public API, but NCA's code isn't meant to be imported elsewhere, so if
   this breaks anything I will be absolutely FLABBERGASTED. Yeah, I said
   "flabbergasted". Deal with it.
+- Most manual testing documentation in hugo has been removed in favor of the
+  test directory being more self-documenting. We chose to gut the hugo side
+  because our approach to manual testing is somewhat UO-specific, and a lot
+  more internal than what we want in our public docs - only core devs will care
+  about this stuff.
 
 ### Migration
 
