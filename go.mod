@@ -8,7 +8,7 @@ require (
 	github.com/google/go-cmp v0.3.1
 	github.com/gorilla/mux v1.7.0
 	github.com/jessevdk/go-flags v1.4.0
-	github.com/uoregon-libraries/gopkg v0.22.0
+	github.com/uoregon-libraries/gopkg v0.23.0
 	golang.org/x/crypto v0.6.0
 )
 
