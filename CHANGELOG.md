@@ -80,6 +80,8 @@ Exciting! Amazing!
   Rare, but disastrous.
 - "Finalize" button in batch status page now queues up a batch deletion job if
   all issues in a batch were flagged for removal
+- Directory sync jobs now retry during the job a few times before an error is
+  returned. This should help with small I/O "hiccups".
 
 ### Added
 
