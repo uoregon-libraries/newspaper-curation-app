@@ -34,11 +34,7 @@ Brief description, if necessary
 ### Migration
 -->
 
-## v4.0.0 (unreleased)
-
-**Note**: 4.0.0 is still unreleased. Peruse these notes to know what to expect,
-or if you're just running the latest (and not stable) release. But beware that
-these changelogs *will* continue to evolve.
+## v4.0.0
 
 The NCA 4 release fixes and improves a lot of areas, but there are some
 *exciting* and **amazing** things you'll really want to look at:
@@ -84,6 +80,8 @@ Exciting! Amazing!
   Rare, but disastrous.
 - "Finalize" button in batch status page now queues up a batch deletion job if
   all issues in a batch were flagged for removal
+- Directory sync jobs now retry during the job a few times before an error is
+  returned. This should help with small I/O "hiccups".
 
 ### Added
 
@@ -128,6 +126,7 @@ Exciting! Amazing!
   - New documentation added to the "test" directory to help explain how to
     create data, and in-depth "recipes" for manual testing. (See the `test/`
     directory's `README.md`)
+  - New Makefile recipe for more easily testing hugo doc changes
 
 ### Changed
 

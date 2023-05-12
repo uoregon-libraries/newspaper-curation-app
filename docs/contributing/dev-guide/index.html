@@ -30,7 +30,7 @@
 <meta itemprop="name" content="Developer&#39;s Guide">
 <meta itemprop="description" content="Developing on NCA">
 
-<meta itemprop="wordCount" content="1034">
+<meta itemprop="wordCount" content="1040">
 <meta itemprop="keywords" content="" /></head>
 <body><div class="container"><header>
 <h1>Newspaper Curation App</h1><a href="https://github.com/uoregon-libraries/newspaper-curation-app/" class="github"><i class="fab fa-github"></i></a>
@@ -45,7 +45,7 @@ relatively simple process of compiling binaries.</p>
 <ul>
 <li>A supported version of <a href="https://golang.org/dl/">Go</a> (e.g., if 1.16 is the
 latest, you want 1.15 or 1.16)</li>
-<li><a href="https://github.com/golang/lint">golint</a>: <code>go install golang.org/x/lint/golint@latest</code></li>
+<li><a href="https://github.com/mgechev/revive">revive</a>: <code>go install github.com/mgechev/revive@latest</code></li>
 <li>Set up your <code>GOPATH</code>: <a href="https://golang.org/doc/code.html#GOPATH">https://golang.org/doc/code.html#GOPATH</a>
 <ul>
 <li>Add <code>$GOPATH/bin</code> to your path</li>
@@ -57,7 +57,7 @@ simpler install, but there are a few considerations.  See
 <a href="../../contributing/not-compiling-locally">Not Compiling Locally</a>.</p>
 <h3 id="docker">Docker</h3>
 <p>Install <a href="https://docs.docker.com/install/">Docker CE</a>, which will give you the
-<code>docker</code> and <code>docker-compose</code> commands.</p>
+<code>docker</code> and <code>docker compose</code> commands.</p>
 <p>As mentioned before, Docker is the preferred method for development.  Manual
 setup instructions would be needlessly complicated to handle installing the
 lower-level libraries you&rsquo;ll need, like a very specific version of
@@ -83,7 +83,7 @@ debug mode.</p>
 <pre><code>cp env-example .env
 vim .env
 </code></pre>
-<p><code>.env</code> sets up default environment variables which <code>docker-compose</code> commands
+<p><code>.env</code> sets up default environment variables which <code>docker compose</code> commands
 will use.  A sample file might look like this:</p>
 <div class="highlight"><pre style="color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4"><code class="language-bash" data-lang="bash">APP_URL<span style="color:#f92672">=</span><span style="color:#e6db74">&#34;https://jechols.uoregon.edu&#34;</span>
 NCA_NEWS_WEBROOT<span style="color:#f92672">=</span><span style="color:#e6db74">&#34;https://oregonnews.uoregon.edu&#34;</span>
@@ -99,8 +99,8 @@ have the legacy chronam JSON handlers, as described in
 <p>Binaries have to be built before starting up docker if you are mounting them
 into the container.</p>
 <h4 id="get-all-images">Get all images</h4>
-<pre><code>docker-compose build
-docker-compose pull
+<pre><code>docker compose build
+docker compose pull
 </code></pre>
 <p>Building the NCA application image will take a long time.  Grab some coffee.
 And maybe a nap&hellip;.</p>
@@ -108,7 +108,7 @@ And maybe a nap&hellip;.</p>
 cache the expensive operations (compiling custom versions of poppler and
 openjpeg) and only update what has changed (e.g., NCA source code).</p>
 <h4 id="start-the-stack">Start the stack</h4>
-<p>Run <code>docker-compose up</code>, and the application will be available at
+<p>Run <code>docker compose up</code>, and the application will be available at
 <code>$APP_URL/nca</code>.  Note that on the first run it will take a while to respond as
 the system is caching all known issues - including those on the defined live
 site.</p>
@@ -138,7 +138,7 @@ comprehensive end-to-end testing is explained in the
 <h3 id="edit--compile--test-loop">Edit + Compile + Test Loop</h3>
 <p>Here&rsquo;s a nice shortcut one can use to speed up the process since, unlike PHP,
 this project requires compilation before it starts up:</p>
-<pre><code>alias dc='docker-compose'
+<pre><code>alias dc='docker compose'
 make fast
 dc restart web proxy workers
 dc logs -f web proxy workers
@@ -236,7 +236,6 @@ the way.</p>
 <li class=""><a href="https://uoregon-libraries.github.io/newspaper-curation-app/workflow/fixing-stuck-issues/">Fixing &#34;Stuck&#34; Issues</a></li>
 <li class=""><a href="https://uoregon-libraries.github.io/newspaper-curation-app/workflow/fixing-flagged-workflow-issues/">Fixing Flagged Workflow Issues</a></li>
 <li class=""><a href="https://uoregon-libraries.github.io/newspaper-curation-app/workflow/fixing-live-batches/">Replacing Live Issues</a></li>
-<li class=""><a href="https://uoregon-libraries.github.io/newspaper-curation-app/workflow/batch-manual-golive/">Batch Manual Go-live Procedure</a></li>
 <li class=""><a href="https://uoregon-libraries.github.io/newspaper-curation-app/workflow/undo-batch-golive/">&#34;Un-push&#34; Batch From Production</a></li>
 </ul>
   
@@ -254,6 +253,7 @@ the way.</p>
   
 <ul class="sub-menu">
 <li class=""><a href="https://uoregon-libraries.github.io/newspaper-curation-app/contributing/dev-howto/add-job-types/">Add Job Types</a></li>
+<li class=""><a href="https://uoregon-libraries.github.io/newspaper-curation-app/contributing/dev-howto/add-config-items/">Add Configuration Settings</a></li>
 </ul>
   
 </li>

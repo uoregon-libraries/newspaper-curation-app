@@ -61,8 +61,8 @@ implement <code>Process</code></li>
 </li>
 <li>Create a new struct that implements the <code>Process</code> method.
 <ul>
-<li>Use an existing Go file if it makes sense (e.g., another metadata or filesystem job) or
-create a new one in <code>src/jobs/</code>.</li>
+<li>Use an existing Go file if it makes sense (e.g., another metadata or
+filesystem job) or create a new one in <code>src/jobs/</code>.</li>
 <li>Make sure you document the type!  What is its purpose?</li>
 <li>Need an example?  The metadata jobs are very simple and can be found in
 <a href="https://github.com/uoregon-libraries/newspaper-curation-app/blob/main/src/jobs/metadata_jobs.go"><code>src/jobs/metadata_jobs.go</code></a>.</li>
@@ -70,15 +70,13 @@ create a new one in <code>src/jobs/</code>.</li>
 </li>
 <li>Wire up the <code>JobType</code> to the concrete <code>Process</code> implementor
 <ul>
-<li>This is done in
-<a href="https://github.com/uoregon-libraries/newspaper-curation-app/blob/main/src/jobs/jobs.go"><code>src/jobs/jobs.go</code></a>,
-in the <code>DBJobToProcessor</code> function</li>
+<li>This is done in <a href="https://github.com/uoregon-libraries/newspaper-curation-app/blob/main/src/jobs/jobs.go"><code>src/jobs/jobs.go</code></a>, in the <code>DBJobToProcessor</code> function</li>
 </ul>
 </li>
 <li>Queue a job of the new type.
 <ul>
 <li>See <a href="https://github.com/uoregon-libraries/newspaper-curation-app/blob/main/src/jobs/queue.go"><code>src/jobs/queue.go</code></a></li>
-<li>You might create a new <code>Prepare...Job</code> function, or simply use an existing
+<li>You might create a new <code>prepare...Job</code> function, or simply use an existing
 one with the new type</li>
 <li>You might need to create a new arg value, like <code>srcArg</code>, <code>forcedArg</code>, etc.
 for the processor to use</li>
@@ -89,16 +87,16 @@ Typically this happens in a <code>Queue...</code> function.</li>
 <li>Make something run jobs of the new type.
 <ul>
 <li>For almost any new job, you&rsquo;ll just add the type to an existing runner
-function in <a href="https://github.com/uoregon-libraries/newspaper-curation-app/blob/main/src/cmd/run-jobs/main.go"><code>src/cmd/run-jobs/main.go</code></a>
-(<code>runAllQueues</code>).  This ensures a simple job runner invocation (with the
-<code>watchall</code> argument) will run your new job type.</li>
+function in <a href="https://github.com/uoregon-libraries/newspaper-curation-app/blob/main/src/cmd/run-jobs/main.go"><code>src/cmd/run-jobs/main.go</code></a> (<code>runAllQueues</code>).  This ensures
+a simple job runner invocation (with the <code>watchall</code> argument) will run your
+new job type.</li>
 </ul>
 </li>
 </ul>
 <div class="edit-meta">
 
 <br></div><nav class="pagination"><a class="nav nav-prev" href="https://uoregon-libraries.github.io/newspaper-curation-app/contributing/dev-howto/" title="How do I...?"><i class="fas fa-arrow-left" aria-hidden="true"></i>&nbsp;Prev - How do I...?</a>
-<a class="nav nav-next" href="https://uoregon-libraries.github.io/newspaper-curation-app/contributing/dev-guide/" title="Developer&#39;s Guide">Next - Developer&#39;s Guide <i class="fas fa-arrow-right" aria-hidden="true"></i></a>
+<a class="nav nav-next" href="https://uoregon-libraries.github.io/newspaper-curation-app/contributing/dev-howto/add-config-items/" title="Add Configuration Settings">Next - Add Configuration Settings <i class="fas fa-arrow-right" aria-hidden="true"></i></a>
 </nav><footer><p class="powered">Powered by <a href="https://gohugo.io">Hugo</a>. Theme by <a href="https://themes.gohugo.io/hugo-theme-techdoc/">TechDoc</a>. Designed by <a href="https://github.com/thingsym/hugo-theme-techdoc">Thingsym</a>.</p>
 </footer>
 </main>
@@ -139,7 +137,6 @@ function in <a href="https://github.com/uoregon-libraries/newspaper-curation-app
 <li class=""><a href="https://uoregon-libraries.github.io/newspaper-curation-app/workflow/fixing-stuck-issues/">Fixing &#34;Stuck&#34; Issues</a></li>
 <li class=""><a href="https://uoregon-libraries.github.io/newspaper-curation-app/workflow/fixing-flagged-workflow-issues/">Fixing Flagged Workflow Issues</a></li>
 <li class=""><a href="https://uoregon-libraries.github.io/newspaper-curation-app/workflow/fixing-live-batches/">Replacing Live Issues</a></li>
-<li class=""><a href="https://uoregon-libraries.github.io/newspaper-curation-app/workflow/batch-manual-golive/">Batch Manual Go-live Procedure</a></li>
 <li class=""><a href="https://uoregon-libraries.github.io/newspaper-curation-app/workflow/undo-batch-golive/">&#34;Un-push&#34; Batch From Production</a></li>
 </ul>
   
@@ -157,6 +154,7 @@ function in <a href="https://github.com/uoregon-libraries/newspaper-curation-app
   
 <ul class="sub-menu">
 <li class="active"><a href="https://uoregon-libraries.github.io/newspaper-curation-app/contributing/dev-howto/add-job-types/">Add Job Types</a></li>
+<li class=""><a href="https://uoregon-libraries.github.io/newspaper-curation-app/contributing/dev-howto/add-config-items/">Add Configuration Settings</a></li>
 </ul>
   
 </li>

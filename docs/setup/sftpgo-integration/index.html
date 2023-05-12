@@ -30,7 +30,7 @@
 <meta itemprop="name" content="SFTPGo Integration">
 <meta itemprop="description" content="Setting up NCA for SFTPGo integration">
 
-<meta itemprop="wordCount" content="847">
+<meta itemprop="wordCount" content="1043">
 <meta itemprop="keywords" content="" /></head>
 <body><div class="container"><header>
 <h1>Newspaper Curation App</h1><a href="https://github.com/uoregon-libraries/newspaper-curation-app/" class="github"><i class="fab fa-github"></i></a>
@@ -88,22 +88,38 @@ section of the SFTPGo configuration documentation for details.</p>
 <p>Open up your settings file and jump to the SFTPGo section. If you&rsquo;re upgrading
 from an older version of NCA, you will have to copy this section from the
 example settings file into your production settings.</p>
-<p>You&rsquo;ll need to tell NCA how to connect to SFTPGo: set the API URL, store your
-admin credentials, and choose a default quota for new users.</p>
+<p>You&rsquo;ll need to tell NCA how to connect to SFTPGo: set the API URL and choose a
+default quota for new users.</p>
 <p>The API endpoint is simply the SFTPGo host combined with the path <code>/api/v2</code>.
 For our docker setup, the internal service is <code>http://sftpgo:8080</code>, so our API
 configuration looks like this:</p>
 <pre><code>SFTPGO_API_URL=&quot;http://sftpgo:8080/api/v2&quot;
 </code></pre>
-<p>The credentials simply need to match the admin account you created when setting
-up SFTPGo. e.g.:</p>
-<pre><code>SFTPGO_ADMIN_LOGIN=admin
-SFTPGO_ADMIN_PASSWORD=password
-</code></pre>
 <p>The default quota is five gigabytes, but you can adjust this as needed. You
 will likely want <em>something</em>, however: this ensures one publisher can&rsquo;t blast
 hundreds of gigs (or even terabytes) of data, taking your server down and
 preventing all other publishers from uploading anything.</p>
+<h3 id="sftpgo-api-key">SFTPGo API Key</h3>
+<p>NCA connects to SFTPGo via an API key for a user with admin privileges. If you
+are using Docker with defaults for development, this API key is created and
+assigned in your NCA <code>settings</code> file automatically. For any non-docker use,
+one will have to use the Bash scripts in the <code>sftpgo/</code> directory. You will need
+to provide the environment variable <code>SETTINGS_PATH</code> with a value corresponding
+to the path to your NCA <code>settings</code> file to these Bash scripts.
+<code>SETTINGS_PATH=/path/to/settings sftpgo/get_admin_api_key.sh</code> is the only script
+that <em>must</em> be run. It will prompt for admin user credentials, use them to
+request an API key for that user, store the key in the NCA <code>settings</code> file
+automatically, and then call the accompanying script <code>test_api_key.sh</code> to test
+that API key.</p>
+<p>Normally you only run <code>get_admin_api_key.sh</code> once, but if you need to reacquire
+a key, you must reset your <code>settings</code> file (set
+<code>SFTPGO_ADMIN_API_KEY=!sftpgo_admin_api_key!</code>) and then re-run this script.</p>
+<p>Note that you can instead run <code>get_admin_api_key.sh</code> with the <code>--force</code> flag to
+overwrite an existing key in your <code>settings</code> file. This should rarely be
+necessary in a production environment, but can be useful on a development or
+staging system where the stack may be destroyed and rebuilt regularly.</p>
+<p>Other accompanying scripts are provided to list all API keys and delete an API
+key.</p>
 <h2 id="usage">Usage</h2>
 <p>Once SFTPGo is integrated, any titles created in NCA will be sent to SFTPGo.
 If you had been doing sftp the traditional way (local accounts using ssh with
@@ -167,7 +183,6 @@ to bulk-load SFTP users which weren&rsquo;t being managed by NCA.</p>
 <li class=""><a href="https://uoregon-libraries.github.io/newspaper-curation-app/workflow/fixing-stuck-issues/">Fixing &#34;Stuck&#34; Issues</a></li>
 <li class=""><a href="https://uoregon-libraries.github.io/newspaper-curation-app/workflow/fixing-flagged-workflow-issues/">Fixing Flagged Workflow Issues</a></li>
 <li class=""><a href="https://uoregon-libraries.github.io/newspaper-curation-app/workflow/fixing-live-batches/">Replacing Live Issues</a></li>
-<li class=""><a href="https://uoregon-libraries.github.io/newspaper-curation-app/workflow/batch-manual-golive/">Batch Manual Go-live Procedure</a></li>
 <li class=""><a href="https://uoregon-libraries.github.io/newspaper-curation-app/workflow/undo-batch-golive/">&#34;Un-push&#34; Batch From Production</a></li>
 </ul>
   
@@ -185,6 +200,7 @@ to bulk-load SFTP users which weren&rsquo;t being managed by NCA.</p>
   
 <ul class="sub-menu">
 <li class=""><a href="https://uoregon-libraries.github.io/newspaper-curation-app/contributing/dev-howto/add-job-types/">Add Job Types</a></li>
+<li class=""><a href="https://uoregon-libraries.github.io/newspaper-curation-app/contributing/dev-howto/add-config-items/">Add Configuration Settings</a></li>
 </ul>
   
 </li>

@@ -21,11 +21,20 @@ Once you have it, you can download the NCA codebase from Github and start
 editing.  Change to the `hugo` subdirectory in NCA, and you'll see all the
 content under `content/`.
 
-When you're in the `hugo` directory, you can simply run `hugo serve` to start a
+<del>When you're in the `hugo` directory, you can simply run `hugo serve` to start a
 local server where you can then browse to something like
 [`http://localhost:1313/newspaper-curation-app/`](http://localhost:1313/newspaper-curation-app)
 in order to view the site.  Hugo is again 100% standalone, so you won't need
-nodejs, Ruby, etc. to compile the documentation.
+nodejs, Ruby, etc. to compile the documentation.</del>
+
+Ignore that paragraph. Yes, *normally* you could use `hugo serve` to test out
+the documentation. But due to a bug in the theme we chose, documentation
+generation is inconsistent and doesn't actually do what it should every time.
+
+The solution: `make docserver`. This uses whatever is in `docs`, but copies it
+into a `localdocs` directory, replaces URLs to work locally, and fires up an
+Apache web server listening on localhost:8080. This ensures that what you're
+testing locally is in fact whatever you generated most recently in `docs`.
 
 ## Magic / Rules
 

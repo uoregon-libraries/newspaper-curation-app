@@ -16,5 +16,15 @@
  Make sure there aren&amp;rsquo;t already existing jobs that do what you want! There are a lot of jobs in NCA already, and some are meant to be very generic, such as JobTypeRenameDir.  Read and make sure you understand all structs in src/jobs that implement Process   Create a new JobType in src/models/job.</description>
     </item>
     
+    <item>
+      <title>Add Configuration Settings</title>
+      <link>https://uoregon-libraries.github.io/newspaper-curation-app/contributing/dev-howto/add-config-items/</link>
+      <pubDate>Mon, 01 Jan 0001 00:00:00 +0000</pubDate>
+      
+      <guid>https://uoregon-libraries.github.io/newspaper-curation-app/contributing/dev-howto/add-config-items/</guid>
+      <description>Occasionally we need a new setting to be created so that users have a bit more control over the inner workings of NCA. This details the process of adding settings:
+ Open up src/config/config.go and add a value to the Config struct. Choose the data type. In most cases a primitive is fine: string, int, float64, etc. Decide if the value should be pulled directly from the settings file or if you need to massage data manually.</description>
+    </item>
+    
   </channel>
 </rss>

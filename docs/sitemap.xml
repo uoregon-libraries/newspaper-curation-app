@@ -18,6 +18,8 @@
   </url><url>
     <loc>https://uoregon-libraries.github.io/newspaper-curation-app/workflow/technical/</loc>
   </url><url>
+    <loc>https://uoregon-libraries.github.io/newspaper-curation-app/contributing/dev-howto/add-config-items/</loc>
+  </url><url>
     <loc>https://uoregon-libraries.github.io/newspaper-curation-app/workflow/adding-titles/</loc>
   </url><url>
     <loc>https://uoregon-libraries.github.io/newspaper-curation-app/setup/installation/</loc>
@@ -49,8 +51,6 @@
     <loc>https://uoregon-libraries.github.io/newspaper-curation-app/contributing/dev-howto/</loc>
   </url><url>
     <loc>https://uoregon-libraries.github.io/newspaper-curation-app/workflow/fixing-live-batches/</loc>
-  </url><url>
-    <loc>https://uoregon-libraries.github.io/newspaper-curation-app/workflow/batch-manual-golive/</loc>
   </url><url>
     <loc>https://uoregon-libraries.github.io/newspaper-curation-app/workflow/undo-batch-golive/</loc>
   </url><url>
