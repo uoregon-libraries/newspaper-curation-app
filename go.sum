@@ -10,8 +10,8 @@ github.com/jessevdk/go-flags v1.4.0 h1:4IU2WS7AumrZ/40jfhf4QVDMsQwqA7VEHozFRrGAR
 github.com/jessevdk/go-flags v1.4.0/go.mod h1:4FA24M0QyGHXBuZZK/XkWh8h0e1EYbRYJSGM75WSRxI=
 github.com/mattn/go-sqlite3 v1.10.0 h1:jbhqpg7tQe4SupckyijYiy0mJJ/pRyHvXf7JdWK860o=
 github.com/mattn/go-sqlite3 v1.10.0/go.mod h1:FPy6KqzDD04eiIsT53CuJW3U88zkxoIYsOqkbpncsNc=
-github.com/uoregon-libraries/gopkg v0.23.0 h1:SMKCUgFVyxvfoRyUG7BbVzRIIC/V48xS/I9cy5CAAo0=
-github.com/uoregon-libraries/gopkg v0.23.0/go.mod h1:AQz5Eawxd/FlcIIF1Nan7PVHlxLFSSaF9X+KQhDIvmg=
+github.com/uoregon-libraries/gopkg v0.24.0 h1:UC34AfOJzwTdQo+IHmcolglXuL2reP3fV7AGBfnNteY=
+github.com/uoregon-libraries/gopkg v0.24.0/go.mod h1:AQz5Eawxd/FlcIIF1Nan7PVHlxLFSSaF9X+KQhDIvmg=
 golang.org/x/crypto v0.6.0 h1:qfktjS5LUO+fFKeJXZ+ikTRijMmljikvG68fpMMruSc=
 golang.org/x/crypto v0.6.0/go.mod h1:OFC/31mSvZgRz0V1QTNCzfAI1aIRzbiufJtkMIlEp58=
 golang.org/x/sys v0.5.0 h1:MUK/U/4lj1t1oPg0HfuXDN/Z1wv31ZJ/YcPiGccS4DU=
