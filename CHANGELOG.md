@@ -34,6 +34,16 @@ Brief description, if necessary
 ### Migration
 -->
 
+## v4.0.1
+
+Hotfix for possible issue that may or may not be in my head.
+
+### Fixed
+
+- This removes the iffy "quiet retry" feature when syncing directories, which
+  is responsible for annoyance and possibly file loss. At best, it's definitely
+  annoying. At worst, it's silencing problems we need to be aware of.
+
 ## v4.0.0
 
 The NCA 4 release fixes and improves a lot of areas, but there are some
