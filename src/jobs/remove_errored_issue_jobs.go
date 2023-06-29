@@ -15,6 +15,7 @@ import (
 	"github.com/uoregon-libraries/gopkg/fileutil"
 	"github.com/uoregon-libraries/gopkg/wordutils"
 	"github.com/uoregon-libraries/newspaper-curation-app/src/config"
+	"github.com/uoregon-libraries/newspaper-curation-app/src/models"
 )
 
 // WriteActionLog is a job that serializes all the actions takes on a given
@@ -87,7 +88,7 @@ type MoveDerivatives struct {
 // as anything with ".xml" or ".jp2" as its extension.
 func (j *MoveDerivatives) Process(*config.Config) bool {
 	var src = j.DBIssue.Location
-	var dst = j.db.Args[locArg]
+	var dst = j.db.Args[models.JobArgLocation]
 	if !fileutil.MustNotExist(dst) {
 		j.Logger.Errorf("Destination %q already exists", dst)
 		return false

@@ -20,7 +20,7 @@ type SetIssueWS struct {
 
 // Process updates the issue's workflow step and attempts to save it
 func (j *SetIssueWS) Process(*config.Config) bool {
-	j.DBIssue.WorkflowStep = schema.WorkflowStep(j.db.Args[wsArg])
+	j.DBIssue.WorkflowStep = schema.WorkflowStep(j.db.Args[models.JobArgWorkflowStep])
 	var err = j.DBIssue.SaveWithoutAction()
 	if err != nil {
 		j.Logger.Errorf("Unable to update workflow step for issue %d: %s", j.DBIssue.ID, err)
@@ -36,7 +36,7 @@ type SetIssueBackupLoc struct {
 
 // Process updates the issue's backup location and attempts to save it
 func (j *SetIssueBackupLoc) Process(*config.Config) bool {
-	j.DBIssue.BackupLocation = j.db.Args[locArg]
+	j.DBIssue.BackupLocation = j.db.Args[models.JobArgLocation]
 	var err = j.DBIssue.SaveWithoutAction()
 	if err != nil {
 		j.Logger.Errorf("Unable to update backup location for issue %d: %s", j.DBIssue.ID, err)
@@ -51,7 +51,7 @@ type SetIssueLocation struct {
 
 // Process just updates the issue's location field
 func (j *SetIssueLocation) Process(*config.Config) bool {
-	j.DBIssue.Location = j.db.Args[locArg]
+	j.DBIssue.Location = j.db.Args[models.JobArgLocation]
 	var err = j.DBIssue.SaveWithoutAction()
 	if err != nil {
 		j.Logger.Errorf("Error setting issue.location for id %d: %s", j.DBIssue.ID, err)
@@ -86,7 +86,7 @@ type SetBatchStatus struct {
 
 // Process simply updates the batch status and saves to the database
 func (j *SetBatchStatus) Process(*config.Config) bool {
-	j.DBBatch.Status = j.db.Args[bsArg]
+	j.DBBatch.Status = j.db.Args[models.JobArgBatchStatus]
 	var err = j.DBBatch.Save()
 	if err != nil {
 		j.Logger.Errorf("Unable to update status for batch %d: %s", j.DBBatch.ID, err)
@@ -102,7 +102,7 @@ type SetBatchLocation struct {
 
 // Process just updates the batch's location field
 func (j *SetBatchLocation) Process(*config.Config) bool {
-	j.DBBatch.Location = j.db.Args[locArg]
+	j.DBBatch.Location = j.db.Args[models.JobArgLocation]
 	var err = j.DBBatch.Save()
 	if err != nil {
 		j.Logger.Errorf("Error setting batch.location for id %d: %s", j.DBBatch.ID, err)
@@ -127,7 +127,7 @@ func (j *RecordIssueAction) Process(*config.Config) bool {
 	// in a way that is consistent.  If we add things to how issues and actions
 	// interact, we don't really want to duplicate (or else potentially break)
 	// this consistency.  Oh... and I'm lazy.
-	var err = j.DBIssue.Save(models.ActionTypeInternalProcess, models.SystemUser.ID, j.db.Args[msgArg])
+	var err = j.DBIssue.Save(models.ActionTypeInternalProcess, models.SystemUser.ID, j.db.Args[models.JobArgMessage])
 	if err != nil {
 		j.Logger.Errorf("Error recording internal issue action for id %d: %s", j.DBIssue.ID, err)
 		return false

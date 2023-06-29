@@ -10,6 +10,7 @@ import (
 	"github.com/uoregon-libraries/newspaper-curation-app/src/config"
 	"github.com/uoregon-libraries/newspaper-curation-app/src/derivatives/alto"
 	"github.com/uoregon-libraries/newspaper-curation-app/src/derivatives/jp2"
+	"github.com/uoregon-libraries/newspaper-curation-app/src/models"
 )
 
 var pdfFilenameRegex = regexp.MustCompile(`(?i:^[0-9]{4}.pdf)`)
@@ -43,7 +44,7 @@ func (md *MakeDerivatives) Process(c *config.Config) bool {
 	md.GhostScript = c.GhostScript
 	md.JP2DPI = c.DPI
 	md.JP2Quality = c.Quality
-	md.Force = md.db.Args[forcedArg] == forcedArg
+	md.Force = md.db.Args[models.JobArgForced] == models.JobArgForced
 
 	if md.DBIssue.IsFromScanner {
 		// For scanned issues, we have to verify TIFFs and use the scan DPI for

@@ -12,25 +12,25 @@ import (
 )
 
 func makeWSArgs(ws schema.WorkflowStep) map[string]string {
-	return map[string]string{wsArg: string(ws)}
+	return map[string]string{models.JobArgWorkflowStep: string(ws)}
 }
 
 func makeBSArgs(bs string) map[string]string {
-	return map[string]string{bsArg: string(bs)}
+	return map[string]string{models.JobArgBatchStatus: string(bs)}
 }
 
 func makeLocArgs(loc string) map[string]string {
-	return map[string]string{locArg: loc}
+	return map[string]string{models.JobArgLocation: loc}
 }
 
 func makeForcedArgs() map[string]string {
-	return map[string]string{forcedArg: forcedArg}
+	return map[string]string{models.JobArgForced: models.JobArgForced}
 }
 
 func makeSrcDstArgs(src, dest string) map[string]string {
 	return map[string]string{
-		srcArg:  src,
-		destArg: dest,
+		models.JobArgSource:      src,
+		models.JobArgDestination: dest,
 	}
 }
 
@@ -336,7 +336,7 @@ func QueueCopyBatchForProduction(batch *models.Batch, prodBatchRoot string) erro
 	// Our sync job is special - it requires us to have exclusions, so we're just
 	// building a custom args list
 	var args = makeSrcDstArgs(batch.Location, filepath.Join(prodBatchRoot, batch.FullName()))
-	args[excludeArg] = `*.tif,*.tiff,*.TIF,*.TIFF,*.tar.bz,*.tar`
+	args[models.JobArgExclude] = `*.tif,*.tiff,*.TIF,*.TIFF,*.tar.bz,*.tar`
 
 	return queueSerialOp(op,
 		prepareBatchJobAdvanced(models.JobTypeValidateTagManifest, batch, nil),
