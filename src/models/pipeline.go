@@ -22,18 +22,13 @@ const (
 	JobArgExclude      = "Exclude"
 )
 
-// prepareJobAdvanced gets a job of any kind set up with sensible defaults
-func prepareJobAdvanced(t JobType, args map[string]string) *Job {
-	return NewJob(t, args)
-}
-
 // prepareIssueJobAdvanced is a way to get an issue job ready with the
 // necessary base values, but not save it immediately, to allow for more
 // advanced job semantics: specifying that the job shouldn't run immediately,
 // should queue a specific job ID after completion, should set the WorkflowStep
 // to a custom value rather than whatever the job would normally do, etc.
 func prepareIssueJobAdvanced(t JobType, issue *Issue, args map[string]string) *Job {
-	var j = prepareJobAdvanced(t, args)
+	var j = NewJob(t, args)
 	j.ObjectID = issue.ID
 	j.ObjectType = JobObjectTypeIssue
 	return j
@@ -41,7 +36,7 @@ func prepareIssueJobAdvanced(t JobType, issue *Issue, args map[string]string) *J
 
 // prepareBatchJobAdvanced gets a batch job ready for being used elsewhere
 func prepareBatchJobAdvanced(t JobType, batch *Batch, args map[string]string) *Job {
-	var j = prepareJobAdvanced(t, args)
+	var j = NewJob(t, args)
 	j.ObjectID = batch.ID
 	j.ObjectType = JobObjectTypeBatch
 	return j
@@ -51,7 +46,7 @@ func prepareBatchJobAdvanced(t JobType, batch *Batch, args map[string]string) *J
 // Jobception? I think we need one more layer to achieve it, but we're getting
 // pretty close.
 func prepareJobJobAdvanced(t JobType, job *Job, args map[string]string) *Job {
-	var j = prepareJobAdvanced(t, args)
+	var j = NewJob(t, args)
 	j.ObjectID = job.ID
 	j.ObjectType = JobObjectTypeJob
 	return j

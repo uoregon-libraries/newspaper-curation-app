@@ -45,13 +45,13 @@ func QueueSFTPIssueMove(issue *models.Issue, c *config.Config) error {
 
 	return queueForIssue(issue,
 		// Move the issue to the workflow location
-		prepareJobAdvanced(models.JobTypeSyncDir, makeSrcDstArgs(issue.Location, workflowWIPDir)),
-		prepareJobAdvanced(models.JobTypeKillDir, makeLocArgs(issue.Location)),
-		prepareJobAdvanced(models.JobTypeRenameDir, makeSrcDstArgs(workflowWIPDir, workflowDir)),
+		models.NewJob(models.JobTypeSyncDir, makeSrcDstArgs(issue.Location, workflowWIPDir)),
+		models.NewJob(models.JobTypeKillDir, makeLocArgs(issue.Location)),
+		models.NewJob(models.JobTypeRenameDir, makeSrcDstArgs(workflowWIPDir, workflowDir)),
 		prepareIssueJobAdvanced(models.JobTypeSetIssueLocation, issue, makeLocArgs(workflowDir)),
 
 		// Clean dotfiles and then kick off the page splitter
-		prepareJobAdvanced(models.JobTypeCleanFiles, makeLocArgs(workflowDir)),
+		models.NewJob(models.JobTypeCleanFiles, makeLocArgs(workflowDir)),
 		prepareIssueJobAdvanced(models.JobTypePageSplit, issue, makeLocArgs(workflowWIPDir)),
 
 		// This gets a bit weird.  What's in the issue location dir is the original
@@ -59,16 +59,16 @@ func QueueSFTPIssueMove(issue *models.Issue, c *config.Config) error {
 		// these originals.  Once we've backed up (syncdir + killdir), we move the
 		// WIP files back into the proper workflow folder...  which is then
 		// promptly moved out to the page review area.
-		prepareJobAdvanced(models.JobTypeSyncDir, makeSrcDstArgs(workflowDir, backupLoc)),
-		prepareJobAdvanced(models.JobTypeKillDir, makeLocArgs(workflowDir)),
+		models.NewJob(models.JobTypeSyncDir, makeSrcDstArgs(workflowDir, backupLoc)),
+		models.NewJob(models.JobTypeKillDir, makeLocArgs(workflowDir)),
 		prepareIssueJobAdvanced(models.JobTypeSetIssueBackupLoc, issue, makeLocArgs(backupLoc)),
-		prepareJobAdvanced(models.JobTypeRenameDir, makeSrcDstArgs(workflowWIPDir, workflowDir)),
+		models.NewJob(models.JobTypeRenameDir, makeSrcDstArgs(workflowWIPDir, workflowDir)),
 
 		// Now we move the issue data to the page review area for manual
 		// processing, again in multiple idempotent steps
-		prepareJobAdvanced(models.JobTypeSyncDir, makeSrcDstArgs(workflowDir, pageReviewWIPDir)),
-		prepareJobAdvanced(models.JobTypeKillDir, makeLocArgs(workflowDir)),
-		prepareJobAdvanced(models.JobTypeRenameDir, makeSrcDstArgs(pageReviewWIPDir, pageReviewDir)),
+		models.NewJob(models.JobTypeSyncDir, makeSrcDstArgs(workflowDir, pageReviewWIPDir)),
+		models.NewJob(models.JobTypeKillDir, makeLocArgs(workflowDir)),
+		models.NewJob(models.JobTypeRenameDir, makeSrcDstArgs(pageReviewWIPDir, pageReviewDir)),
 		prepareIssueJobAdvanced(models.JobTypeSetIssueLocation, issue, makeLocArgs(pageReviewDir)),
 
 		prepareIssueJobAdvanced(models.JobTypeSetIssueWS, issue, makeWSArgs(schema.WSAwaitingPageReview)),
@@ -83,12 +83,12 @@ func QueueMoveIssueForDerivatives(issue *models.Issue, workflowPath string) erro
 	var workflowWIPDir = filepath.Join(workflowPath, ".wip-"+issue.HumanName)
 
 	return queueForIssue(issue,
-		prepareJobAdvanced(models.JobTypeSyncDir, makeSrcDstArgs(issue.Location, workflowWIPDir)),
-		prepareJobAdvanced(models.JobTypeKillDir, makeLocArgs(issue.Location)),
-		prepareJobAdvanced(models.JobTypeRenameDir, makeSrcDstArgs(workflowWIPDir, workflowDir)),
+		models.NewJob(models.JobTypeSyncDir, makeSrcDstArgs(issue.Location, workflowWIPDir)),
+		models.NewJob(models.JobTypeKillDir, makeLocArgs(issue.Location)),
+		models.NewJob(models.JobTypeRenameDir, makeSrcDstArgs(workflowWIPDir, workflowDir)),
 		prepareIssueJobAdvanced(models.JobTypeSetIssueLocation, issue, makeLocArgs(workflowDir)),
 
-		prepareJobAdvanced(models.JobTypeCleanFiles, makeLocArgs(workflowDir)),
+		models.NewJob(models.JobTypeCleanFiles, makeLocArgs(workflowDir)),
 		prepareIssueJobAdvanced(models.JobTypeRenumberPages, issue, nil),
 		prepareIssueJobAdvanced(models.JobTypeMakeDerivatives, issue, nil),
 		prepareIssueJobAdvanced(models.JobTypeSetIssueWS, issue, makeWSArgs(schema.WSReadyForMetadataEntry)),
@@ -121,7 +121,7 @@ func QueueFinalizeIssue(issue *models.Issue) error {
 
 	if issue.BackupLocation != "" {
 		jobs = append(jobs, prepareIssueJobAdvanced(models.JobTypeArchiveBackups, issue, nil))
-		jobs = append(jobs, prepareJobAdvanced(models.JobTypeKillDir, makeLocArgs(issue.BackupLocation)))
+		jobs = append(jobs, models.NewJob(models.JobTypeKillDir, makeLocArgs(issue.BackupLocation)))
 		jobs = append(jobs, prepareIssueJobAdvanced(models.JobTypeSetIssueBackupLoc, issue, makeLocArgs("")))
 	}
 
@@ -149,7 +149,7 @@ func getJobsForMakeBatch(batch *models.Batch, pth string) []*models.Job {
 		prepareBatchJobAdvanced(models.JobTypeCreateBatchStructure, batch, makeLocArgs(wipDir)),
 		prepareBatchJobAdvanced(models.JobTypeSetBatchLocation, batch, makeLocArgs(wipDir)),
 		prepareBatchJobAdvanced(models.JobTypeMakeBatchXML, batch, nil),
-		prepareJobAdvanced(models.JobTypeRenameDir, makeSrcDstArgs(wipDir, finalDir)),
+		models.NewJob(models.JobTypeRenameDir, makeSrcDstArgs(wipDir, finalDir)),
 		prepareBatchJobAdvanced(models.JobTypeSetBatchLocation, batch, makeLocArgs(finalDir)),
 		prepareBatchJobAdvanced(models.JobTypeSetBatchStatus, batch, makeBSArgs(models.BatchStatusStagingReady)),
 		prepareBatchJobAdvanced(models.JobTypeWriteBagitManifest, batch, nil),
@@ -214,8 +214,8 @@ func getJobsForRemoveErroredIssue(issue *models.Issue, erroredIssueRoot string) 
 	// move derivative images to the correct subdir so the wip/content dir
 	// consists solely of primary files, and write out the action log file.
 	jobs = append(jobs,
-		prepareJobAdvanced(models.JobTypeSyncDir, makeSrcDstArgs(issue.Location, contentDir)),
-		prepareJobAdvanced(models.JobTypeKillDir, makeLocArgs(issue.Location)),
+		models.NewJob(models.JobTypeSyncDir, makeSrcDstArgs(issue.Location, contentDir)),
+		models.NewJob(models.JobTypeKillDir, makeLocArgs(issue.Location)),
 		prepareIssueJobAdvanced(models.JobTypeSetIssueLocation, issue, makeLocArgs(contentDir)),
 		prepareIssueJobAdvanced(models.JobTypeMoveDerivatives, issue, makeLocArgs(derivDir)),
 		prepareIssueJobAdvanced(models.JobTypeWriteActionLog, issue, nil),
@@ -225,14 +225,14 @@ func getJobsForRemoveErroredIssue(issue *models.Issue, erroredIssueRoot string) 
 	if issue.BackupLocation != "" {
 		jobs = append(jobs,
 			prepareIssueJobAdvanced(models.JobTypeArchiveBackups, issue, nil),
-			prepareJobAdvanced(models.JobTypeKillDir, makeLocArgs(issue.BackupLocation)),
+			models.NewJob(models.JobTypeKillDir, makeLocArgs(issue.BackupLocation)),
 			prepareIssueJobAdvanced(models.JobTypeSetIssueBackupLoc, issue, makeLocArgs("")),
 		)
 	}
 
 	// Move to the final location and update metadata
 	jobs = append(jobs,
-		prepareJobAdvanced(models.JobTypeRenameDir, makeSrcDstArgs(wipDir, finalDir)),
+		models.NewJob(models.JobTypeRenameDir, makeSrcDstArgs(wipDir, finalDir)),
 		prepareIssueJobAdvanced(models.JobTypeIgnoreIssue, issue, nil),
 		prepareIssueJobAdvanced(models.JobTypeSetIssueLocation, issue, makeLocArgs("")),
 		prepareIssueJobAdvanced(models.JobTypeSetIssueWS, issue, makeWSArgs(schema.WSUnfixableMetadataError)),
@@ -254,7 +254,7 @@ func QueueBatchFinalizeIssueFlagging(batch *models.Batch, flagged []*models.Flag
 	// destructive operation
 	jobs = append(jobs,
 		prepareBatchJobAdvanced(models.JobTypeSetBatchStatus, batch, makeBSArgs(models.BatchStatusPending)),
-		prepareJobAdvanced(models.JobTypeKillDir, makeLocArgs(batch.Location)),
+		models.NewJob(models.JobTypeKillDir, makeLocArgs(batch.Location)),
 		prepareBatchJobAdvanced(models.JobTypeSetBatchLocation, batch, makeLocArgs("")),
 	)
 
@@ -295,7 +295,7 @@ func QueueBatchForDeletion(batch *models.Batch, flagged []*models.FlaggedIssue) 
 	// Destroy batch dir
 	jobs = append(jobs,
 		prepareBatchJobAdvanced(models.JobTypeSetBatchStatus, batch, makeBSArgs(models.BatchStatusPending)),
-		prepareJobAdvanced(models.JobTypeKillDir, makeLocArgs(batch.Location)),
+		models.NewJob(models.JobTypeKillDir, makeLocArgs(batch.Location)),
 		prepareBatchJobAdvanced(models.JobTypeSetBatchLocation, batch, makeLocArgs("")),
 	)
 
@@ -340,7 +340,7 @@ func QueueCopyBatchForProduction(batch *models.Batch, prodBatchRoot string) erro
 
 	return queueSerialOp(op,
 		prepareBatchJobAdvanced(models.JobTypeValidateTagManifest, batch, nil),
-		prepareJobAdvanced(models.JobTypeSyncDir, args),
+		models.NewJob(models.JobTypeSyncDir, args),
 		prepareBatchJobAdvanced(models.JobTypeSetBatchStatus, batch, makeBSArgs(models.BatchStatusPassedQC)),
 	)
 }
@@ -351,8 +351,8 @@ func QueueCopyBatchForProduction(batch *models.Batch, prodBatchRoot string) erro
 func QueueBatchGoLiveProcess(batch *models.Batch, batchArchivePath string) error {
 	var finalPath = filepath.Join(batchArchivePath, batch.FullName())
 	return queueForBatch(batch,
-		prepareJobAdvanced(models.JobTypeSyncDir, makeSrcDstArgs(batch.Location, finalPath)),
-		prepareJobAdvanced(models.JobTypeKillDir, makeLocArgs(batch.Location)),
+		models.NewJob(models.JobTypeSyncDir, makeSrcDstArgs(batch.Location, finalPath)),
+		models.NewJob(models.JobTypeKillDir, makeLocArgs(batch.Location)),
 		prepareBatchJobAdvanced(models.JobTypeSetBatchLocation, batch, makeLocArgs("")),
 		prepareBatchJobAdvanced(models.JobTypeMarkBatchLive, batch, nil),
 	)
