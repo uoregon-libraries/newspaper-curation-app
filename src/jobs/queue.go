@@ -323,11 +323,10 @@ func QueueCopyBatchForProduction(batch *models.Batch, prodBatchRoot string) erro
 	var args = makeSrcDstArgs(batch.Location, filepath.Join(prodBatchRoot, batch.FullName()))
 	args[models.JobArgExclude] = `*.tif,*.tiff,*.TIF,*.TIFF,*.tar.bz,*.tar`
 
-	// TODO: add a new job to set batch needs purge
-	// e.g., batch.Job(models.JobTypeSetBatchNeedsStagingPurge),
 	return models.QueueBatchJobs(batch,
 		batch.Job(models.JobTypeValidateTagManifest, nil),
 		models.NewJob(models.JobTypeSyncDir, args),
+		batch.Job(models.JobTypeSetBatchNeedsStagingPurge, nil),
 		batch.Job(models.JobTypeSetBatchStatus, makeBSArgs(models.BatchStatusPassedQC)),
 	)
 }
