@@ -22,10 +22,10 @@ const (
 	JobArgExclude      = "Exclude"
 )
 
-// queueForIssue sets the issue to awaiting processing, then queues the jobs,
+// QueueIssueJobs sets the issue to awaiting processing, then queues the jobs,
 // all in a single DB transaction to ensure the state doesn't change if the
 // jobs can't queue up
-func queueForIssue(issue *Issue, jobs ...*Job) error {
+func QueueIssueJobs(issue *Issue, jobs ...*Job) error {
 	var op = dbi.DB.Operation()
 	op.BeginTransaction()
 	defer op.EndTransaction()
@@ -38,10 +38,10 @@ func queueForIssue(issue *Issue, jobs ...*Job) error {
 	return queueSerialOp(op, jobs...)
 }
 
-// queueForBatch sets the batch status to pending, then queues the jobs, all in
-// a single DB transaction to ensure the state doesn't change if the jobs can't
-// queue up
-func queueForBatch(batch *Batch, jobs ...*Job) error {
+// QueueBatchJobs sets the batch status to pending, then queues the jobs, all
+// in a single DB transaction to ensure the state doesn't change if the jobs
+// can't queue up
+func QueueBatchJobs(batch *Batch, jobs ...*Job) error {
 	var op = dbi.DB.Operation()
 	op.BeginTransaction()
 	defer op.EndTransaction()
@@ -54,10 +54,10 @@ func queueForBatch(batch *Batch, jobs ...*Job) error {
 	return queueSerialOp(op, jobs...)
 }
 
-// queueSimple queues up the given set of jobs. This must *never* be used on an
+// QueueJobs queues up the given set of jobs. This must *never* be used on an
 // issue- or batch-focused set of jobs, as those need to have their state set
-// up by queueFor(Issue|Batch).
-func queueSimple(jobs ...*Job) error {
+// up by Queue(Issue|Batch)Jobs.
+func QueueJobs(jobs ...*Job) error {
 	// Shouldn't be possible, but I'd rather not crash
 	if len(jobs) == 0 {
 		return nil
@@ -67,9 +67,9 @@ func queueSimple(jobs ...*Job) error {
 	// against every possible scenario, but most of the time an object-focused
 	// job-set will start with the object in question, so this should prevent
 	// accidental calls that should have used an object-focused function
-	// (queueForX)
+	// (queueXJobs)
 	if jobs[0].ObjectType == JobObjectTypeBatch || jobs[0].ObjectType == JobObjectTypeIssue {
-		return fmt.Errorf("queueSimple called with object type %s", jobs[0].ObjectType)
+		return fmt.Errorf("QueueJobs called with object type %s", jobs[0].ObjectType)
 	}
 
 	var op = dbi.DB.Operation()

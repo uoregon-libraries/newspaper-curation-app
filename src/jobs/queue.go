@@ -6,7 +6,6 @@ import (
 	"time"
 
 	"github.com/uoregon-libraries/newspaper-curation-app/src/config"
-	"github.com/uoregon-libraries/newspaper-curation-app/src/dbi"
 	"github.com/uoregon-libraries/newspaper-curation-app/src/models"
 	"github.com/uoregon-libraries/newspaper-curation-app/src/schema"
 )
@@ -43,7 +42,7 @@ func QueueSFTPIssueMove(issue *models.Issue, c *config.Config) error {
 	var pageReviewWIPDir = filepath.Join(c.PDFPageReviewPath, ".wip-"+issue.HumanName)
 	var backupLoc = filepath.Join(c.PDFBackupPath, issue.HumanName)
 
-	return queueForIssue(issue,
+	return models.QueueIssueJobs(issue,
 		// Move the issue to the workflow location
 		models.NewJob(models.JobTypeSyncDir, makeSrcDstArgs(issue.Location, workflowWIPDir)),
 		models.NewJob(models.JobTypeKillDir, makeLocArgs(issue.Location)),
@@ -82,7 +81,7 @@ func QueueMoveIssueForDerivatives(issue *models.Issue, workflowPath string) erro
 	var workflowDir = filepath.Join(workflowPath, issue.HumanName)
 	var workflowWIPDir = filepath.Join(workflowPath, ".wip-"+issue.HumanName)
 
-	return queueForIssue(issue,
+	return models.QueueIssueJobs(issue,
 		models.NewJob(models.JobTypeSyncDir, makeSrcDstArgs(issue.Location, workflowWIPDir)),
 		models.NewJob(models.JobTypeKillDir, makeLocArgs(issue.Location)),
 		models.NewJob(models.JobTypeRenameDir, makeSrcDstArgs(workflowWIPDir, workflowDir)),
@@ -102,7 +101,7 @@ func QueueMoveIssueForDerivatives(issue *models.Issue, workflowPath string) erro
 // completion of the other jobs.
 func QueueForceDerivatives(issue *models.Issue) error {
 	var currentStep = issue.WorkflowStep
-	return queueForIssue(issue,
+	return models.QueueIssueJobs(issue,
 		issue.Job(models.JobTypeMakeDerivatives, makeForcedArgs()),
 		issue.Job(models.JobTypeBuildMETS, makeForcedArgs()),
 		issue.Job(models.JobTypeSetIssueWS, makeWSArgs(currentStep)),
@@ -128,7 +127,7 @@ func QueueFinalizeIssue(issue *models.Issue) error {
 	jobs = append(jobs, issue.Job(models.JobTypeSetIssueWS, makeWSArgs(schema.WSReadyForBatching)))
 	jobs = append(jobs, issue.ActionJob("Issue prepped for batching"))
 
-	return queueForIssue(issue, jobs...)
+	return models.QueueIssueJobs(issue, jobs...)
 }
 
 // QueueMakeBatch sets up the jobs for generating a batch on disk: generating
@@ -137,7 +136,7 @@ func QueueFinalizeIssue(issue *models.Issue) error {
 // Nothing can happen automatically after all this until the batch is verified
 // on staging.
 func QueueMakeBatch(batch *models.Batch, batchOutputPath string) error {
-	return queueForBatch(batch, getJobsForMakeBatch(batch, batchOutputPath)...)
+	return models.QueueBatchJobs(batch, getJobsForMakeBatch(batch, batchOutputPath)...)
 }
 
 // getJobsForMakeBatch returns all jobs needed to generate a batch. This is needed
@@ -165,7 +164,7 @@ func getJobsForMakeBatch(batch *models.Batch, pth string) []*models.Job {
 // - The derivatives are put under a sibling sub-dir from the primary files
 func QueueRemoveErroredIssue(issue *models.Issue, erroredIssueRoot string) error {
 	var jobs = getJobsForRemoveErroredIssue(issue, erroredIssueRoot)
-	return queueForIssue(issue, jobs...)
+	return models.QueueIssueJobs(issue, jobs...)
 }
 
 // QueuePurgeStuckIssue builds jobs for removing an issue that had critical
@@ -193,7 +192,7 @@ func QueuePurgeStuckIssue(issue *models.Issue, erroredIssueRoot string) error {
 	jobs = append(jobs, issue.ActionJob(purgeReason))
 	jobs = append(jobs, getJobsForRemoveErroredIssue(issue, erroredIssueRoot)...)
 
-	return queueSimple(jobs...)
+	return models.QueueJobs(jobs...)
 }
 
 // getJobsForRemoveErroredIssue returns the list of jobs for removing the given
@@ -282,7 +281,7 @@ func QueueBatchFinalizeIssueFlagging(batch *models.Batch, flagged []*models.Flag
 	// Regenerate batch
 	jobs = append(jobs, getJobsForMakeBatch(batch, batchOutputPath)...)
 
-	return queueForBatch(batch, jobs...)
+	return models.QueueBatchJobs(batch, jobs...)
 }
 
 // QueueBatchForDeletion is used when all issues in a batch need to be
@@ -313,32 +312,20 @@ func QueueBatchForDeletion(batch *models.Batch, flagged []*models.FlaggedIssue) 
 	// Destroy the batch
 	jobs = append(jobs, batch.Job(models.JobTypeDeleteBatch, nil))
 
-	return queueForBatch(batch, jobs...)
+	return models.QueueBatchJobs(batch, jobs...)
 }
 
 // QueueCopyBatchForProduction sets the given batch to pending, then queues up
 // the necessary jobs to get it ready for a production load
 func QueueCopyBatchForProduction(batch *models.Batch, prodBatchRoot string) error {
-	// We need batch status *and* staging purge flag to be updated instantly, so
-	// we start a tx here and queue manually instead of using queueForBatch.
-	var op = dbi.DB.Operation()
-	op.Dbg = dbi.Debug
-	op.BeginTransaction()
-	defer op.EndTransaction()
-
-	batch.Status = models.BatchStatusPending
-	batch.NeedStagingPurge = true
-	var err = batch.SaveOp(op)
-	if err != nil {
-		return err
-	}
-
 	// Our sync job is special - it requires us to have exclusions, so we're just
 	// building a custom args list
 	var args = makeSrcDstArgs(batch.Location, filepath.Join(prodBatchRoot, batch.FullName()))
 	args[models.JobArgExclude] = `*.tif,*.tiff,*.TIF,*.TIFF,*.tar.bz,*.tar`
 
-	return queueSerialOp(op,
+	// TODO: add a new job to set batch needs purge
+	// e.g., batch.Job(models.JobTypeSetBatchNeedsStagingPurge),
+	return models.QueueBatchJobs(batch,
 		batch.Job(models.JobTypeValidateTagManifest, nil),
 		models.NewJob(models.JobTypeSyncDir, args),
 		batch.Job(models.JobTypeSetBatchStatus, makeBSArgs(models.BatchStatusPassedQC)),
@@ -350,7 +337,7 @@ func QueueCopyBatchForProduction(batch *models.Batch, prodBatchRoot string) erro
 // been ingested into the production ONI instance.
 func QueueBatchGoLiveProcess(batch *models.Batch, batchArchivePath string) error {
 	var finalPath = filepath.Join(batchArchivePath, batch.FullName())
-	return queueForBatch(batch,
+	return models.QueueBatchJobs(batch,
 		models.NewJob(models.JobTypeSyncDir, makeSrcDstArgs(batch.Location, finalPath)),
 		models.NewJob(models.JobTypeKillDir, makeLocArgs(batch.Location)),
 		batch.Job(models.JobTypeSetBatchLocation, makeLocArgs("")),
