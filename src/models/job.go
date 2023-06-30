@@ -262,6 +262,15 @@ func (j *Job) Logs() []*JobLog {
 	return j.logs
 }
 
+// Job returns a new job to manipulate *this* job. Jobception? I think we need
+// one more layer to achieve it, but we're getting pretty close.
+func (j *Job) Job(t JobType, args map[string]string) *Job {
+	var j2 = NewJob(t, args)
+	j2.ObjectID = j.ID
+	j2.ObjectType = JobObjectTypeJob
+	return j2
+}
+
 // WriteLog stores a log message on this job
 func (j *Job) WriteLog(level string, message string) error {
 	var l = &JobLog{JobID: j.ID, LogLevel: level, Message: message}

@@ -372,6 +372,21 @@ func (i *Issue) METSFile() string {
 	return filepath.Join(i.Location, i.DateEdition()+".xml")
 }
 
+// Job returns a new Job instance for manipulating this issue in some way
+func (i *Issue) Job(t JobType, args map[string]string) *Job {
+	var j = NewJob(t, args)
+	j.ObjectID = i.ID
+	j.ObjectType = JobObjectTypeIssue
+	return j
+}
+
+// ActionJob sets up a job to record an internal system action tied to this
+// issue.  This is a very simple wrapper around Issue.Job that's meant to make
+// it easier to see jobs that solely manipulate the action log.
+func (i *Issue) ActionJob(msg string) *Job {
+	return i.Job(JobTypeIssueAction, map[string]string{JobArgMessage: msg})
+}
+
 // AllWorkflowActions loads all actions tied to this issue and orders them in
 // chronological order (the newest are at the end of the list)
 func (i *Issue) AllWorkflowActions() []*Action {

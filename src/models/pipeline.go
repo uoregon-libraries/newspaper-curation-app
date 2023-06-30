@@ -22,44 +22,6 @@ const (
 	JobArgExclude      = "Exclude"
 )
 
-// prepareIssueJobAdvanced is a way to get an issue job ready with the
-// necessary base values, but not save it immediately, to allow for more
-// advanced job semantics: specifying that the job shouldn't run immediately,
-// should queue a specific job ID after completion, should set the WorkflowStep
-// to a custom value rather than whatever the job would normally do, etc.
-func prepareIssueJobAdvanced(t JobType, issue *Issue, args map[string]string) *Job {
-	var j = NewJob(t, args)
-	j.ObjectID = issue.ID
-	j.ObjectType = JobObjectTypeIssue
-	return j
-}
-
-// prepareBatchJobAdvanced gets a batch job ready for being used elsewhere
-func prepareBatchJobAdvanced(t JobType, batch *Batch, args map[string]string) *Job {
-	var j = NewJob(t, args)
-	j.ObjectID = batch.ID
-	j.ObjectType = JobObjectTypeBatch
-	return j
-}
-
-// prepareJobJobAdvanced sets up a job to manipulate... another job.
-// Jobception? I think we need one more layer to achieve it, but we're getting
-// pretty close.
-func prepareJobJobAdvanced(t JobType, job *Job, args map[string]string) *Job {
-	var j = NewJob(t, args)
-	j.ObjectID = job.ID
-	j.ObjectType = JobObjectTypeJob
-	return j
-}
-
-// prepareIssueActionJob sets up a job to record an internal system action tied
-// to the given issue.  This is a very simple wrapper around
-// prepareIssueJobAdvanced that's meant to make it a lot easier to see whan an
-// action is being recorded.
-func prepareIssueActionJob(issue *Issue, msg string) *Job {
-	return prepareIssueJobAdvanced(JobTypeIssueAction, issue, map[string]string{JobArgMessage: msg})
-}
-
 // queueForIssue sets the issue to awaiting processing, then queues the jobs,
 // all in a single DB transaction to ensure the state doesn't change if the
 // jobs can't queue up
