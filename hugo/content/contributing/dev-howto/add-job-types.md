@@ -26,12 +26,10 @@ properly in order to ensure it is used, set up, and processed by NCA.
   - This is done in [`src/jobs/jobs.go`][3], in the `DBJobToProcessor` function
 - Queue a job of the new type.
   - See [`src/jobs/queue.go`][4]
-  - You might create a new `prepare...Job` function, or simply use an existing
-    one with the new type
-  - You might need to create a new arg value, like `srcArg`, `forcedArg`, etc.
-    for the processor to use
-  - You will certainly need to create the job and push it into a queue.
-    Typically this happens in a `Queue...` function.
+  - You might need to create a new arg value in `src/models/pipeline.go`, like
+    `JobArgSource`, `JobArgWorkflowStep`, etc.
+  - You will certainly need to create the job and push it into a queue. This
+    happens in a `Queue...` function (e.g., `QueueBatchForDeletion`).
 - Make something run jobs of the new type.
   - For almost any new job, you'll just add the type to an existing runner
     function in [`src/cmd/run-jobs/main.go`][5] (`runAllQueues`).  This ensures
