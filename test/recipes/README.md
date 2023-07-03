@@ -35,11 +35,13 @@ fix/refactor. After each run, you should generate a report. Once you have two
 reports, you can compare them using git. Example:
 
 ```bash
-git add ./test/baseline-report
+cp -r ./test/baseline-report ./test/r
+git add ./test/r
 git commit -m "UNDO"
-rm ./test/baseline-report -rf
-cp -r ./test/fix-report ./test/baseline-report
-git diff
+rm ./test/r -rf
+cp -r ./test/fix-report ./test/r
+git diff ./test/r
+git status ./test/r
 ```
 
 ## Waiting for Jobs
