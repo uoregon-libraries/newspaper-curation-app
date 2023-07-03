@@ -7,6 +7,7 @@ import (
 	"html/template"
 	"io"
 	"os"
+	"sort"
 
 	"github.com/uoregon-libraries/gopkg/fileutil"
 	"github.com/uoregon-libraries/newspaper-curation-app/src/models"
@@ -45,6 +46,12 @@ func (t *Transformer) Transform() error {
 	if t.err != nil {
 		return t.err
 	}
+
+	// Make sure the issues are sorted in a way that makes them easier to test
+	// and debug
+	sort.Slice(t.d.Issues, func(i, j int) bool {
+		return t.d.Issues[i].Key() < t.d.Issues[j].Key()
+	})
 
 	var buf = new(bytes.Buffer)
 	var err = t.tmpl.Execute(buf, t.d)

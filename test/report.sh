@@ -40,7 +40,8 @@ for xml in $(find ./fakemount -name "*.xml" | sort); do
   cat $xml | \
     sed 's|<softwareVersion>.*</softwareVersion>|<softwareVersion>XYZZY</softwareVersion>|' | \
     sed 's|<fileName>.*</fileName>|<fileName>XYZZY</fileName>|' | \
-    sed 's|\bID="TB\.[^"]*"|ID="XYZZY"|g' \
+    sed 's|\bID="TB\.[^"]*"|ID="XYZZY"|g' | \
+    sed 's|<metsHdr CREATEDATE="\(....-..-..T\)..:..:..">|<metsHdr CREATEDATE="\100:00:00">|' \
     > $repdir/$fname
 done
 
