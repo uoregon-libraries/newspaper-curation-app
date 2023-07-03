@@ -2,11 +2,38 @@ package models
 
 import (
 	"fmt"
+	"time"
 
 	"github.com/Nerdmaster/magicsql"
 	"github.com/uoregon-libraries/newspaper-curation-app/src/dbi"
 	"github.com/uoregon-libraries/newspaper-curation-app/src/schema"
 )
+
+// A Pipeline is a connected series of independent jobs which all perform tasks
+// for a single purpose. Each job is given a numeric "sequence" number, where
+// the lower the value, the higher the priority. e.g., no job may run until all
+// jobs with a lower sequence value have completed successfully.
+//
+// In complex Pipelines, some jobs might share a sequence, meaning they could
+// be run in parallel. We don't plan to implement that in the job runner, but
+// it is still a signal that those jobs are independent of one another.
+//
+// In even more complex Pipelines, a job may spawn another job meant to run
+// before whatever would have come next. This just means a "sub-job" that has
+// the same sequence as its creator, ensuring whatever would run next in the
+// sequence has to wait for the new job to run.
+type Pipeline struct {
+	ID          int       `sql:",primary"`
+	CreatedAt   time.Time `sql:",readonly"`
+	Description string
+}
+
+// newPipeline creates a pipeline with the given description. Pipelines should
+// generally not be created outside this package as they are meant to be
+// created only when queueing up a bunch of jobs.
+func newPipeline(desc string) *Pipeline {
+	return &Pipeline{Description: desc}
+}
 
 // Pipeline argument names are constants to let us define arg names in a way
 // that ensures we don't screw up by setting an arg and then misspelling the
@@ -25,7 +52,7 @@ const (
 // QueueIssueJobs sets the issue to awaiting processing, then queues the jobs,
 // all in a single DB transaction to ensure the state doesn't change if the
 // jobs can't queue up
-func QueueIssueJobs(issue *Issue, jobs ...*Job) error {
+func QueueIssueJobs(name string, issue *Issue, jobs ...*Job) error {
 	var op = dbi.DB.Operation()
 	op.BeginTransaction()
 	defer op.EndTransaction()
@@ -35,13 +62,15 @@ func QueueIssueJobs(issue *Issue, jobs ...*Job) error {
 	if err != nil {
 		return err
 	}
-	return queueSerialOp(op, jobs...)
+
+	var p = newPipeline(fmt.Sprintf("%s: issue %s", name, issue.Key()))
+	return p.queueSerialOp(op, jobs...)
 }
 
 // QueueBatchJobs sets the batch status to pending, then queues the jobs, all
 // in a single DB transaction to ensure the state doesn't change if the jobs
 // can't queue up
-func QueueBatchJobs(batch *Batch, jobs ...*Job) error {
+func QueueBatchJobs(name string, batch *Batch, jobs ...*Job) error {
 	var op = dbi.DB.Operation()
 	op.BeginTransaction()
 	defer op.EndTransaction()
@@ -51,13 +80,15 @@ func QueueBatchJobs(batch *Batch, jobs ...*Job) error {
 	if err != nil {
 		return err
 	}
-	return queueSerialOp(op, jobs...)
+
+	var p = newPipeline(fmt.Sprintf("%s: batch %s", name, batch.FullName()))
+	return p.queueSerialOp(op, jobs...)
 }
 
 // QueueJobs queues up the given set of jobs. This must *never* be used on an
 // issue- or batch-focused set of jobs, as those need to have their state set
 // up by Queue(Issue|Batch)Jobs.
-func QueueJobs(jobs ...*Job) error {
+func QueueJobs(name string, jobs ...*Job) error {
 	// Shouldn't be possible, but I'd rather not crash
 	if len(jobs) == 0 {
 		return nil
@@ -75,24 +106,32 @@ func QueueJobs(jobs ...*Job) error {
 	var op = dbi.DB.Operation()
 	op.BeginTransaction()
 	defer op.EndTransaction()
-	return queueSerialOp(op, jobs...)
+
+	var p = newPipeline(name)
+	return p.queueSerialOp(op, jobs...)
 }
 
 // queueSerialOp attempts to save the jobs using an existing operation (for
 // when a transaction needs to wrap more than just the job queueing)
-func queueSerialOp(op *magicsql.Operation, jobs ...*Job) error {
+func (p *Pipeline) queueSerialOp(op *magicsql.Operation, jobs ...*Job) error {
+	// Start by saving the pipeline itself so we have an ID for the jobs. We
+	// don't put this in a function because we don't really want anything
+	// manipulating pipelines *except* queueing.
+	op.Save("pipelines", p)
+
 	// Iterate over jobs in reverse so we can set the prior job's next-run id
 	// without saving things twice
 	var lastJobID int
 	for i := len(jobs) - 1; i >= 0; i-- {
 		var j = jobs[i]
+		j.PipelineID = p.ID
 		j.QueueJobID = lastJobID
 		if i != 0 {
 			j.Status = string(JobStatusOnHold)
 		}
 		var err = j.SaveOp(op)
 		if err != nil {
-			return err
+			return fmt.Errorf("save job %#v: %s", j, err)
 		}
 		lastJobID = j.ID
 	}

@@ -119,6 +119,8 @@ type Job struct {
 	ObjectID    int
 	ObjectType  string
 	Status      string
+	PipelineID  int
+	Sequence    int
 	RetryCount  int
 	logs        []*JobLog
 
