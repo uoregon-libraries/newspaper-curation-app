@@ -67,7 +67,8 @@ sql "
 " | strip_dbids > $repdir/dump-issues.sql
 
 sql "
-  SELECT job_type, status, object_type, extra_data
-  FROM jobs
-  ORDER BY job_type, status, object_type, extra_data
+  SELECT p.description, j.job_type, j.status, j.object_type, j.extra_data
+  FROM jobs j
+  JOIN pipelines p ON (j.pipeline_id = p.id)
+  ORDER BY p.description, j.job_type, j.status, j.object_type, j.extra_data
 " | strip_dbids > $repdir/dump-jobs.sql
