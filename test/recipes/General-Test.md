@@ -14,6 +14,8 @@ prep_for_testing
 # Wait until DB is up and start workers
 workers
 
+# Wait for jobs to finish
+
 # Renumber page review PDFs and hack their date
 cd test
 ./rename-page-review.sh && ./make-older.sh
