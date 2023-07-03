@@ -26,8 +26,8 @@ cat prep.log | grep -v " - \(INFO\|DEBUG\) - "
 ./manage backup 01-$name
 
 # Break two PDF issues
-echo "bad" > ~/projects/work/nca/test/fakemount/page-review/sn88086023-2022080401-**/seq-0026.pdf
-echo "bad" > ~/projects/work/nca/test/fakemount/page-review/2021242619-2020090201-**/seq-0003.pdf
+echo "bad" > ./test/fakemount/page-review/sn88086023-2022080401-**/seq-0026.pdf
+echo "bad" > ./test/fakemount/page-review/2021242619-2020090201-**/seq-0003.pdf
 
 # Renumber and make older
 cd test
