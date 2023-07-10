@@ -174,7 +174,6 @@ func (r *Runner) handleSuccess(pr Processor) {
 	}
 
 	r.logger.Infof("Finished job id %d - success", dbj.ID)
-	r.queueNextJob(pr)
 }
 
 func (r *Runner) attemptRetry(pr Processor) {
@@ -203,29 +202,4 @@ func (r *Runner) handleFailure(pr Processor) {
 		return
 	}
 	r.logger.Infof("Job id %d **failed** (see job logs)", dbj.ID)
-}
-
-// queueNextJob starts the next job if one was set on the current database job
-func (r *Runner) queueNextJob(pr Processor) {
-	var qid = pr.DBJob().QueueJobID
-	if qid == 0 {
-		return
-	}
-
-	var nextJob, err = models.FindJob(qid)
-	if err != nil {
-		r.logger.Criticalf("Unable to read next job from database (dbid %d): %s", qid, err)
-		return
-	}
-	if nextJob == nil {
-		r.logger.Criticalf("Unable to find next job in the database (dbid %d)", qid)
-		return
-	}
-
-	nextJob.Status = string(models.JobStatusPending)
-	err = nextJob.Save()
-	if err != nil {
-		r.logger.Criticalf("Unable to mark next job pending (dbid %d): %s", qid, err)
-		return
-	}
 }

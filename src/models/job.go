@@ -137,10 +137,6 @@ type Job struct {
 
 	// Args contains the decoded values from XDat
 	Args map[string]string `sql:"-"`
-
-	// QueueJobID tells us which job (if any) should be queued up after this one
-	// completes successfully
-	QueueJobID int
 }
 
 // NewJob sets up a job of the given type as a pending job that's ready to run

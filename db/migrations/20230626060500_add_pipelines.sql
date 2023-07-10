@@ -14,7 +14,7 @@ ALTER TABLE `jobs` ADD `pipeline_id` INT(11) DEFAULT -1;
 ALTER TABLE `jobs` MODIFY COLUMN `pipeline_id` INT(11) NOT NULL;
 ALTER TABLE `jobs` ADD `sequence` TINYINT DEFAULT -1;
 ALTER TABLE `jobs` MODIFY COLUMN `sequence` TINYINT NOT NULL;
--- TODO: ALTER TABLE `jobs` DROP COLUMN `queue_job_id`;
+ALTER TABLE `jobs` DROP COLUMN `queue_job_id`;
 CREATE INDEX jobs_pipeline_id ON `jobs` (`pipeline_id`);
 
 CREATE TRIGGER `pipelines_created_at`
@@ -26,7 +26,7 @@ CREATE TRIGGER `pipelines_created_at`
 -- SQL section 'Down' is executed when this migration is rolled back
 DROP TRIGGER `pipelines_created_at`;
 DROP INDEX jobs_pipeline_id ON `jobs`;
--- TODO: ALTER TABLE `jobs` ADD `queue_job_id` INT(11) NOT NULL;
+ALTER TABLE `jobs` ADD `queue_job_id` INT(11) NOT NULL;
 ALTER TABLE `jobs` DROP COLUMN `sequence`;
 ALTER TABLE `jobs` DROP COLUMN `pipeline_id`;
 DROP INDEX pipelines_created_at ON `pipelines`;

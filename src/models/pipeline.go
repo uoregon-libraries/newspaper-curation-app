@@ -119,21 +119,17 @@ func (p *Pipeline) queueSerialOp(op *magicsql.Operation, jobs ...*Job) error {
 	// manipulating pipelines *except* queueing.
 	op.Save("pipelines", p)
 
-	// Iterate over jobs in reverse so we can set the prior job's next-run id
-	// without saving things twice
-	var lastJobID int
-	for i := len(jobs) - 1; i >= 0; i-- {
-		var j = jobs[i]
-		j.PipelineID = p.ID
-		j.QueueJobID = lastJobID
-		if i != 0 {
-			j.Status = string(JobStatusOnHold)
-		}
-		var err = j.SaveOp(op)
+	// For now, we just add jobs and give them a sequence based on where they
+	// appear in the list. This will need to change to allow complex pipelines to
+	// manually set up job sequences.
+	for i, job := range jobs {
+		job.PipelineID = p.ID
+		job.Sequence = i + 1
+		job.Status = string(JobStatusOnHold)
+		var err = job.SaveOp(op)
 		if err != nil {
-			return fmt.Errorf("save job %#v: %s", j, err)
+			return fmt.Errorf("save job %#v: %s", job, err)
 		}
-		lastJobID = j.ID
 	}
 
 	return op.Err()
