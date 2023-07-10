@@ -30,9 +30,13 @@ Generally it's easiest to do something like `export name=baseline`, then use
 
 ## Repeat And Compare
 
-Again, you'll run the recipe twice: once on your baseline, once on your
-fix/refactor. After each run, you should generate a report. Once you have two
-reports, you can compare them using git. Example:
+You'll run the recipe twice: once on your baseline, once on your fix/refactor.
+
+Before each recipe is kicked off, **run `make`** to get all the binaries built
+for whatever code you're testing!
+
+After each run, you should generate a report. Once you have two reports, you
+can compare them using git. Example:
 
 ```bash
 cp -r ./test/baseline-report ./test/r
