@@ -221,31 +221,6 @@ func FindJobsByStatus(st JobStatus) ([]*Job, error) {
 	return findJobs("status = ?", string(st))
 }
 
-// FindJobsByStatusAndType returns all jobs of the given status and type
-func FindJobsByStatusAndType(st JobStatus, t JobType) ([]*Job, error) {
-	return findJobs("status = ? AND job_type = ?", string(st), string(t))
-}
-
-// FindRecentJobsByType grabs all jobs of the given type which were created
-// within the given duration or are still pending, for use in pulling lists of
-// issues which are in the process of doing something
-func FindRecentJobsByType(t JobType, d time.Duration) ([]*Job, error) {
-	var pendingJobs, otherJobs []*Job
-	var err error
-
-	pendingJobs, err = FindJobsByStatusAndType(JobStatusPending, t)
-	if err != nil {
-		return nil, err
-	}
-	otherJobs, err = findJobs("status <> ? AND job_type = ? AND created_at > ?",
-		string(JobStatusPending), string(t), time.Now().Add(-d))
-	if err != nil {
-		return nil, err
-	}
-
-	return append(pendingJobs, otherJobs...), nil
-}
-
 // FindJobsForIssueID returns all jobs tied to the given issue
 func FindJobsForIssueID(id int) ([]*Job, error) {
 	return findJobs("object_type = ? AND object_id = ?", JobObjectTypeIssue, id)
