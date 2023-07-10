@@ -162,6 +162,15 @@ func FindJob(id int) (*Job, error) {
 	return jobs[0], err
 }
 
+// countJobs returns a count of jobs matching the given where clause and an
+// error if any is returned
+func countJobs(where string, args ...any) (uint64, error) {
+	var op = dbi.DB.Operation()
+	op.Dbg = dbi.Debug
+	var n = op.Select("jobs", &Job{}).Where(where, args...).Count().RowCount()
+	return n, op.Err()
+}
+
 // findJobs wraps all the job finding functionality so helpers can be
 // one-liners.  This is purposely *not* exported to enforce a stricter API.
 //
@@ -171,7 +180,7 @@ func findJobs(where string, args ...any) ([]*Job, error) {
 	var op = dbi.DB.Operation()
 	op.Dbg = dbi.Debug
 	var list []*Job
-	op.Select("jobs", &Job{}).Where(where, args...).AllObjects(&list)
+	op.Select("jobs", &Job{}).Where(where, args...).Order("created_at").AllObjects(&list)
 	for _, j := range list {
 		var err = j.decodeXDat()
 		if err != nil {
@@ -182,16 +191,10 @@ func findJobs(where string, args ...any) ([]*Job, error) {
 }
 
 // PopNextPendingJob is a helper for locking the database to pull the oldest
-// job with one of the given types and set it to in-process
+// eligible job (pending + no higher-priority jobs in the pipeline) with one of
+// the given types and set it to in-process
 func PopNextPendingJob(types []JobType) (*Job, error) {
-	var op = dbi.DB.Operation()
-	op.Dbg = dbi.Debug
-
-	op.BeginTransaction()
-	defer op.EndTransaction()
-
 	// Wrangle the IN pain...
-	var j = &Job{}
 	var args []any
 	var placeholders []string
 	args = append(args, string(JobStatusPending), time.Now())
@@ -199,21 +202,32 @@ func PopNextPendingJob(types []JobType) (*Job, error) {
 		args = append(args, string(t))
 		placeholders = append(placeholders, "?")
 	}
-
 	var clause = fmt.Sprintf("status = ? AND run_at <= ? AND job_type IN (%s)", strings.Join(placeholders, ","))
-	if !op.Select("jobs", &Job{}).Where(clause, args...).Order("created_at").First(j) {
-		return nil, op.Err()
+
+	var jobs, err = findJobs(clause, args...)
+	if len(jobs) == 0 {
+		return nil, err
 	}
 
-	var err = j.decodeXDat()
-	if err != nil {
-		return nil, fmt.Errorf("error decoding job %d: %w", j.ID, err)
+	// Find the first eligible job: we already know we have the right status and
+	// job type, but we now have to be sure no jobs above it in the pipeline are
+	// waiting. This means that all higher-priority jobs must be either
+	// successful or failed-done: all other statuses indicate something that's
+	// waiting for NCA or a dev ("failed" jobs are stuck until a dev intervenes).
+	for _, j := range jobs {
+		var n, err = countJobs("pipeline_id = ? AND sequence < ? AND status NOT IN (?, ?)",
+			j.PipelineID, j.Sequence, JobStatusFailedDone, JobStatusSuccessful)
+		if err != nil {
+			return nil, err
+		}
+		if n == 0 {
+			j.Status = string(JobStatusInProcess)
+			j.StartedAt = time.Now()
+			return j, j.Save()
+		}
 	}
-	j.Status = string(JobStatusInProcess)
-	j.StartedAt = time.Now()
-	_ = j.SaveOp(op)
 
-	return j, op.Err()
+	return nil, nil
 }
 
 // FindJobsByStatus returns all jobs that have the given status
