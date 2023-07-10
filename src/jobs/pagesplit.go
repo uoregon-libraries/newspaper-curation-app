@@ -10,7 +10,6 @@ import (
 
 	"github.com/uoregon-libraries/gopkg/fileutil"
 	"github.com/uoregon-libraries/newspaper-curation-app/src/config"
-	"github.com/uoregon-libraries/newspaper-curation-app/src/models"
 	"github.com/uoregon-libraries/newspaper-curation-app/src/shell"
 )
 
@@ -37,7 +36,7 @@ func (ps *PageSplit) Process(conf *config.Config) bool {
 	}
 	defer ps.removeTempFiles()
 
-	ps.OutputDir = ps.db.Args[models.JobArgLocation]
+	ps.OutputDir = ps.db.Args[JobArgLocation]
 	if !fileutil.MustNotExist(ps.OutputDir) {
 		ps.Logger.Errorf("Output dir %q already exists", ps.OutputDir)
 		return false

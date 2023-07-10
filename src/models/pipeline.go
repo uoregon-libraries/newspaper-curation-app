@@ -35,20 +35,6 @@ func newPipeline(desc string) *Pipeline {
 	return &Pipeline{Description: desc}
 }
 
-// Pipeline argument names are constants to let us define arg names in a way
-// that ensures we don't screw up by setting an arg and then misspelling the
-// reader of said arg
-const (
-	JobArgWorkflowStep = "WorkflowStep"
-	JobArgBatchStatus  = "BatchStatus"
-	JobArgLocation     = "Location"
-	JobArgSource       = "Source"
-	JobArgDestination  = "Destination"
-	JobArgForced       = "Forced"
-	JobArgMessage      = "Message"
-	JobArgExclude      = "Exclude"
-)
-
 // QueueIssueJobs sets the issue to awaiting processing, then queues the jobs,
 // all in a single DB transaction to ensure the state doesn't change if the
 // jobs can't queue up

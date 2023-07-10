@@ -10,27 +10,45 @@ import (
 	"github.com/uoregon-libraries/newspaper-curation-app/src/schema"
 )
 
+// Job argument names are constants to let us define arg names in a way
+// that ensures we don't screw up by setting an arg and then misspelling the
+// reader of said arg
+const (
+	JobArgWorkflowStep = "WorkflowStep"
+	JobArgBatchStatus  = "BatchStatus"
+	JobArgLocation     = "Location"
+	JobArgSource       = "Source"
+	JobArgDestination  = "Destination"
+	JobArgForced       = "Forced"
+	JobArgMessage      = "Message"
+	JobArgExclude      = "Exclude"
+)
+
 func makeWSArgs(ws schema.WorkflowStep) map[string]string {
-	return map[string]string{models.JobArgWorkflowStep: string(ws)}
+	return map[string]string{JobArgWorkflowStep: string(ws)}
 }
 
 func makeBSArgs(bs string) map[string]string {
-	return map[string]string{models.JobArgBatchStatus: string(bs)}
+	return map[string]string{JobArgBatchStatus: string(bs)}
 }
 
 func makeLocArgs(loc string) map[string]string {
-	return map[string]string{models.JobArgLocation: loc}
+	return map[string]string{JobArgLocation: loc}
 }
 
 func makeForcedArgs() map[string]string {
-	return map[string]string{models.JobArgForced: models.JobArgForced}
+	return map[string]string{JobArgForced: JobArgForced}
 }
 
 func makeSrcDstArgs(src, dest string) map[string]string {
 	return map[string]string{
-		models.JobArgSource:      src,
-		models.JobArgDestination: dest,
+		JobArgSource:      src,
+		JobArgDestination: dest,
 	}
+}
+
+func makeActionArgs(msg string) map[string]string {
+	return map[string]string{JobArgMessage: msg}
 }
 
 // QueueSFTPIssueMove queues up an issue move into the workflow area followed
@@ -71,7 +89,7 @@ func QueueSFTPIssueMove(issue *models.Issue, c *config.Config) error {
 		issue.Job(models.JobTypeSetIssueLocation, makeLocArgs(pageReviewDir)),
 
 		issue.Job(models.JobTypeSetIssueWS, makeWSArgs(schema.WSAwaitingPageReview)),
-		issue.ActionJob("Moved issue from SFTP into NCA"),
+		issue.Job(models.JobTypeIssueAction, makeActionArgs("Moved issue from SFTP into NCA")),
 	)
 }
 
@@ -91,7 +109,7 @@ func QueueMoveIssueForDerivatives(issue *models.Issue, workflowPath string) erro
 		issue.Job(models.JobTypeRenumberPages, nil),
 		issue.Job(models.JobTypeMakeDerivatives, nil),
 		issue.Job(models.JobTypeSetIssueWS, makeWSArgs(schema.WSReadyForMetadataEntry)),
-		issue.ActionJob("Created issue derivatives"),
+		issue.Job(models.JobTypeIssueAction, makeActionArgs("Created issue derivatives")),
 	)
 }
 
@@ -105,7 +123,7 @@ func QueueForceDerivatives(issue *models.Issue) error {
 		issue.Job(models.JobTypeMakeDerivatives, makeForcedArgs()),
 		issue.Job(models.JobTypeBuildMETS, makeForcedArgs()),
 		issue.Job(models.JobTypeSetIssueWS, makeWSArgs(currentStep)),
-		issue.ActionJob("Force-regenerated issue derivatives"),
+		issue.Job(models.JobTypeIssueAction, makeActionArgs("Force-regenerated issue derivatives")),
 	)
 }
 
@@ -125,7 +143,7 @@ func QueueFinalizeIssue(issue *models.Issue) error {
 	}
 
 	jobs = append(jobs, issue.Job(models.JobTypeSetIssueWS, makeWSArgs(schema.WSReadyForBatching)))
-	jobs = append(jobs, issue.ActionJob("Issue prepped for batching"))
+	jobs = append(jobs, issue.Job(models.JobTypeIssueAction, makeActionArgs("Issue prepped for batching")))
 
 	return models.QueueIssueJobs("Finalize issue", issue, jobs...)
 }
@@ -189,7 +207,7 @@ func QueuePurgeStuckIssue(issue *models.Issue, erroredIssueRoot string) error {
 			jobs = append(jobs, jj)
 		}
 	}
-	jobs = append(jobs, issue.ActionJob(purgeReason))
+	jobs = append(jobs, issue.Job(models.JobTypeIssueAction, makeActionArgs(purgeReason)))
 	jobs = append(jobs, getJobsForRemoveErroredIssue(issue, erroredIssueRoot)...)
 
 	return models.QueueJobs("Purge stuck issue", jobs...)
@@ -235,7 +253,7 @@ func getJobsForRemoveErroredIssue(issue *models.Issue, erroredIssueRoot string) 
 		issue.Job(models.JobTypeIgnoreIssue, nil),
 		issue.Job(models.JobTypeSetIssueLocation, makeLocArgs("")),
 		issue.Job(models.JobTypeSetIssueWS, makeWSArgs(schema.WSUnfixableMetadataError)),
-		issue.ActionJob("Errored issue removed from NCA"),
+		issue.Job(models.JobTypeIssueAction, makeActionArgs("Errored issue removed from NCA")),
 	)
 
 	return jobs
@@ -321,7 +339,7 @@ func QueueCopyBatchForProduction(batch *models.Batch, prodBatchRoot string) erro
 	// Our sync job is special - it requires us to have exclusions, so we're just
 	// building a custom args list
 	var args = makeSrcDstArgs(batch.Location, filepath.Join(prodBatchRoot, batch.FullName()))
-	args[models.JobArgExclude] = `*.tif,*.tiff,*.TIF,*.TIFF,*.tar.bz,*.tar`
+	args[JobArgExclude] = `*.tif,*.tiff,*.TIF,*.TIFF,*.tar.bz,*.tar`
 
 	return models.QueueBatchJobs("Copy batch for production", batch,
 		batch.Job(models.JobTypeValidateTagManifest, nil),

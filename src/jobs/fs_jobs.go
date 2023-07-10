@@ -10,7 +10,6 @@ import (
 
 	"github.com/uoregon-libraries/gopkg/fileutil"
 	"github.com/uoregon-libraries/newspaper-curation-app/src/config"
-	"github.com/uoregon-libraries/newspaper-curation-app/src/models"
 )
 
 // SyncDir is a job strictly for copying everything from one directory to
@@ -33,9 +32,9 @@ func (j *SyncDir) Valid() bool {
 // Process does a sync from j.Source to j.Dest, only writing files that don't
 // exist in j.Dest or which are different
 func (j *SyncDir) Process(*config.Config) bool {
-	var src = j.db.Args[models.JobArgSource]
-	var dst = j.db.Args[models.JobArgDestination]
-	var exclusions = strings.Split(j.db.Args[models.JobArgExclude], ",")
+	var src = j.db.Args[JobArgSource]
+	var dst = j.db.Args[JobArgDestination]
+	var exclusions = strings.Split(j.db.Args[JobArgExclude], ",")
 
 	var parent = filepath.Dir(dst)
 	j.Logger.Infof("Creating parent dir %q", parent)
@@ -73,7 +72,7 @@ func (j *KillDir) Valid() bool {
 
 // Process removes files from j.Dir
 func (j *KillDir) Process(*config.Config) bool {
-	var loc = j.db.Args[models.JobArgLocation]
+	var loc = j.db.Args[JobArgLocation]
 	j.Logger.Debugf("KillDir: attempting to remove %q", loc)
 
 	if loc == "" {
@@ -103,8 +102,8 @@ func (j *RenameDir) Valid() bool {
 
 // Process moves the source dir to the destination name
 func (j *RenameDir) Process(*config.Config) bool {
-	var src = j.db.Args[models.JobArgSource]
-	var dest = j.db.Args[models.JobArgDestination]
+	var src = j.db.Args[JobArgSource]
+	var dest = j.db.Args[JobArgDestination]
 	var err = os.Rename(src, dest)
 	if err != nil {
 		j.Logger.Errorf("Unable to rename directory (%q -> %q): %s", src, dest, err)
@@ -161,7 +160,7 @@ func isFraggable(i os.FileInfo) bool {
 
 // Process runs the file cleaner against the job's location
 func (j *CleanFiles) Process(*config.Config) bool {
-	var loc = j.db.Args[models.JobArgLocation]
+	var loc = j.db.Args[JobArgLocation]
 
 	var fraggables, err = fileutil.FindIf(loc, isFraggable)
 	if err != nil {
@@ -189,7 +188,7 @@ type RemoveFile struct {
 // that it's a real file because Valid is a check to prevent panics, not to
 // ensure the operation will succeed.
 func (j *RemoveFile) Valid() bool {
-	if j.db.Args[models.JobArgLocation] == "" {
+	if j.db.Args[JobArgLocation] == "" {
 		j.Logger.Errorf("RemoveFile job created with no location arg")
 		return false
 	}
@@ -199,7 +198,7 @@ func (j *RemoveFile) Valid() bool {
 // Process removes the file. If the file doesn't exist, this is considered a
 // success because the location identified was likely already deleted.
 func (j *RemoveFile) Process(*config.Config) bool {
-	var fname = j.db.Args[models.JobArgLocation]
+	var fname = j.db.Args[JobArgLocation]
 
 	j.Logger.Debugf("RemoveFile: attempting to remove %q", fname)
 
