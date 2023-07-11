@@ -73,6 +73,7 @@ COPY ./scripts /usr/local/src/nca/scripts
 COPY ./src /usr/local/src/nca/src
 COPY ./go.mod /usr/local/src/nca/go.mod
 COPY ./go.sum /usr/local/src/nca/go.sum
+COPY ./revive.toml /usr/local/src/nca/revive.toml
 RUN make
 RUN cp -r ./bin /usr/local/nca/bin
 
