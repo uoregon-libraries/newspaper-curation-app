@@ -17,6 +17,7 @@ import (
 type CLI struct {
 	p         *flags.Parser
 	opts      any
+	Args      []string
 	postUsage []string
 }
 
@@ -71,7 +72,8 @@ func (c *CLI) GetConf() *config.Config {
 // Parse just runs the flags parser with some of our custom logic for handling
 // errors and the help flag
 func (c *CLI) Parse() {
-	var _, err = c.p.Parse()
+	var err error
+	c.Args, err = c.p.Parse()
 	if err != nil {
 		var ferr, ok = err.(*flags.Error)
 		if ok && ferr.Type == flags.ErrHelp {
