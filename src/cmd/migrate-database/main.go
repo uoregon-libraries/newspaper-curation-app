@@ -13,6 +13,10 @@ import (
 	"github.com/uoregon-libraries/newspaper-curation-app/src/cli"
 	"github.com/uoregon-libraries/newspaper-curation-app/src/config"
 	"github.com/uoregon-libraries/newspaper-curation-app/src/internal/logger"
+
+	// Finally, we have to include the migrations dir/package for its side-effect
+	// of migrations which self-register
+	_ "github.com/uoregon-libraries/newspaper-curation-app/src/cmd/migrate-database/migrations"
 )
 
 //go:embed _sql
