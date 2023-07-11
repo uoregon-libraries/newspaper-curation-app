@@ -40,8 +40,7 @@ else
 fi
 
 echo Migrating the database
-source $ncadir/settings
-goose -dir $src/db/migrations mysql "$DB_USER:$DB_PASSWORD@tcp($DB_HOST:3306)/$DB_DATABASE" up
+$src/bin/migrate-database -c ./settings up
 
 echo Copying in the new stuff
 sudo cp $src/bin/server $ncadir/

@@ -57,7 +57,6 @@ ENV GOPATH /go
 ENV PATH $PATH:$GOROOT/bin:$GOPATH/bin
 
 # Golang dependencies
-RUN go install github.com/pressly/goose/v3/cmd/goose@latest
 RUN go install github.com/mgechev/revive@latest
 RUN go install golang.org/x/tools/cmd/goimports@latest
 
@@ -80,7 +79,6 @@ RUN cp -r ./bin /usr/local/nca/bin
 # We copy other files very granularly in order to avoid copying in binaries,
 # vendored sources, sensitive settings, etc.; we want to make sure this
 # dockerfile stands on its own
-COPY ./db/migrations /usr/local/nca/db/migrations
 COPY ./sftpgo/*.sh /usr/local/nca/sftpgo/
 COPY ./static /usr/local/nca/static
 COPY ./templates /usr/local/nca/templates

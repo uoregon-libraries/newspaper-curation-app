@@ -68,16 +68,19 @@ container, allowing for quicker code changes.
 
 ## Database Setup
 
-Creating / migrating the database can be done manually by
-executing the "up" sections of the various migration files, but it's *far*
-easier to just use [goose](https://github.com/pressly/goose)
+Creating / migrating the database is easily done using the "migrate-database"
+binary compiled in a standard `make` run. This binary is a wrapper around Goose
+functionality, but you will generally only need to use the "up" command.
+Advanced users / devs may want to read more about [goose][goose] to learn how
+it works and what other commands may be used.
 
-    go install github.com/pressly/goose/v3/cmd/goose@latest
-    goose -dir ./db/migrations/ mysql "<user>:<password>@tcp(<db host>:3306)/<database name>" up
+[goose]: <https://github.com/pressly/goose>
 
-*(Obviously you must replace `<user>`, `<password>`, `<db host>`, and `<database
-name>` with appropriate values for your environment!)*
+```bash
+make
+./bin/migrate-database -c ./settings up
+```
 
 If you use docker, the entrypoint script should migrate automatically whenever
 the container starts up.  If you're doing development and break the automatic
-migration, just use the steps above inside the web container.
+migration, just run `migrate-database` inside the web container.
