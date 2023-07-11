@@ -199,7 +199,7 @@ func QueuePurgeStuckIssue(issue *models.Issue, erroredIssueRoot string) error {
 	var jobs []*models.Job
 	for _, j := range allJobs {
 		switch models.JobStatus(j.Status) {
-		case models.JobStatusFailed, models.JobStatusOnHold:
+		case models.JobStatusFailed, models.JobStatusPending:
 			if j.Status == string(models.JobStatusFailed) {
 				purgeReason += fmt.Sprintf("- Job %d (%s) failed too many times\n", j.ID, j.Type)
 			}

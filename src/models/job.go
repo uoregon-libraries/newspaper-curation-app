@@ -92,7 +92,6 @@ type JobStatus string
 
 // The full list of job statuses
 const (
-	JobStatusOnHold     JobStatus = "on_hold"     // Jobs waiting for another job to complete
 	JobStatusPending    JobStatus = "pending"     // Jobs needing to be processed
 	JobStatusInProcess  JobStatus = "in_process"  // Jobs which have been taken by a worker but aren't done
 	JobStatusSuccessful JobStatus = "success"     // Jobs which were successful
