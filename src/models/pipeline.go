@@ -37,6 +37,24 @@ func newPipeline(desc string) *Pipeline {
 	return &Pipeline{Description: desc}
 }
 
+// findPipelines returns all Pipeline instances that match the filter
+func findPipelines(where string, args ...any) ([]*Pipeline, error) {
+	var op = dbi.DB.Operation()
+	op.Dbg = dbi.Debug
+	var list []*Pipeline
+	op.Select("pipelines", &Pipeline{}).Where(where, args...).AllObjects(&list)
+	return list, op.Err()
+}
+
+// findPipeline pulls the pipeline object for the given id
+func findPipeline(id int) (*Pipeline, error) {
+	var list, err = findPipelines("id = ?", id)
+	if len(list) == 0 {
+		return nil, err
+	}
+	return list[0], err
+}
+
 // QueueIssueJobs sets the issue to awaiting processing, then queues the jobs,
 // all in a single DB transaction to ensure the state doesn't change if the
 // jobs can't queue up

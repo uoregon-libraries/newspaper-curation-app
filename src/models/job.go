@@ -213,6 +213,17 @@ func PopNextPendingJob(types []JobType) (*Job, error) {
 	j.StartedAt = time.Now()
 	_ = j.SaveOp(op)
 
+	// Make sure the pipeline's start date has been set, or else set it now
+	var p *Pipeline
+	p, err = findPipeline(j.PipelineID)
+	if err != nil {
+		return j, err
+	}
+	if p.StartedAt.IsZero() {
+		p.StartedAt = time.Now()
+		_ = p.saveOp(op)
+	}
+
 	return j, op.Err()
 }
 
