@@ -60,7 +60,7 @@ func QueueSFTPIssueMove(issue *models.Issue, c *config.Config) error {
 	var pageReviewWIPDir = filepath.Join(c.PDFPageReviewPath, ".wip-"+issue.HumanName)
 	var backupLoc = filepath.Join(c.PDFBackupPath, issue.HumanName)
 
-	return models.QueueIssueJobs("SFTP issue move", issue,
+	return models.QueueIssueJobs(models.PNSFTPIssueMove, issue,
 		// Move the issue to the workflow location
 		models.NewJob(models.JobTypeSyncDir, makeSrcDstArgs(issue.Location, workflowWIPDir)),
 		models.NewJob(models.JobTypeKillDir, makeLocArgs(issue.Location)),
@@ -99,7 +99,7 @@ func QueueMoveIssueForDerivatives(issue *models.Issue, workflowPath string) erro
 	var workflowDir = filepath.Join(workflowPath, issue.HumanName)
 	var workflowWIPDir = filepath.Join(workflowPath, ".wip-"+issue.HumanName)
 
-	return models.QueueIssueJobs("Move issue for derivatives", issue,
+	return models.QueueIssueJobs(models.PNMoveIssueForDerivatives, issue,
 		models.NewJob(models.JobTypeSyncDir, makeSrcDstArgs(issue.Location, workflowWIPDir)),
 		models.NewJob(models.JobTypeKillDir, makeLocArgs(issue.Location)),
 		models.NewJob(models.JobTypeRenameDir, makeSrcDstArgs(workflowWIPDir, workflowDir)),
@@ -119,7 +119,7 @@ func QueueMoveIssueForDerivatives(issue *models.Issue, workflowPath string) erro
 // completion of the other jobs.
 func QueueForceDerivatives(issue *models.Issue) error {
 	var currentStep = issue.WorkflowStep
-	return models.QueueIssueJobs("Force derivatives", issue,
+	return models.QueueIssueJobs(models.PNForceDerivatives, issue,
 		issue.Job(models.JobTypeMakeDerivatives, makeForcedArgs()),
 		issue.Job(models.JobTypeBuildMETS, makeForcedArgs()),
 		issue.Job(models.JobTypeSetIssueWS, makeWSArgs(currentStep)),
@@ -145,7 +145,7 @@ func QueueFinalizeIssue(issue *models.Issue) error {
 	jobs = append(jobs, issue.Job(models.JobTypeSetIssueWS, makeWSArgs(schema.WSReadyForBatching)))
 	jobs = append(jobs, issue.Job(models.JobTypeIssueAction, makeActionArgs("Issue prepped for batching")))
 
-	return models.QueueIssueJobs("Finalize issue", issue, jobs...)
+	return models.QueueIssueJobs(models.PNFinalizeIssue, issue, jobs...)
 }
 
 // QueueMakeBatch sets up the jobs for generating a batch on disk: generating
@@ -154,7 +154,7 @@ func QueueFinalizeIssue(issue *models.Issue) error {
 // Nothing can happen automatically after all this until the batch is verified
 // on staging.
 func QueueMakeBatch(batch *models.Batch, batchOutputPath string) error {
-	return models.QueueBatchJobs("Make batch", batch, getJobsForMakeBatch(batch, batchOutputPath)...)
+	return models.QueueBatchJobs(models.PNMakeBatch, batch, getJobsForMakeBatch(batch, batchOutputPath)...)
 }
 
 // getJobsForMakeBatch returns all jobs needed to generate a batch. This is needed
@@ -182,7 +182,7 @@ func getJobsForMakeBatch(batch *models.Batch, pth string) []*models.Job {
 // - The derivatives are put under a sibling sub-dir from the primary files
 func QueueRemoveErroredIssue(issue *models.Issue, erroredIssueRoot string) error {
 	var jobs = getJobsForRemoveErroredIssue(issue, erroredIssueRoot)
-	return models.QueueIssueJobs("Remove errored issue", issue, jobs...)
+	return models.QueueIssueJobs(models.PNRemoveErroredIssue, issue, jobs...)
 }
 
 // QueuePurgeStuckIssue builds jobs for removing an issue that had critical
@@ -210,7 +210,7 @@ func QueuePurgeStuckIssue(issue *models.Issue, erroredIssueRoot string) error {
 	jobs = append(jobs, issue.Job(models.JobTypeIssueAction, makeActionArgs(purgeReason)))
 	jobs = append(jobs, getJobsForRemoveErroredIssue(issue, erroredIssueRoot)...)
 
-	return models.QueueJobs("Purge stuck issue", jobs...)
+	return models.QueueJobs(models.PNPurgeStuckIssue, fmt.Sprintf("Purging issue %s and its unfinished jobs", issue.Key()), jobs...)
 }
 
 // getJobsForRemoveErroredIssue returns the list of jobs for removing the given
@@ -299,7 +299,7 @@ func QueueBatchFinalizeIssueFlagging(batch *models.Batch, flagged []*models.Flag
 	// Regenerate batch
 	jobs = append(jobs, getJobsForMakeBatch(batch, batchOutputPath)...)
 
-	return models.QueueBatchJobs("Finalize issue flagging", batch, jobs...)
+	return models.QueueBatchJobs(models.PNFinalizeIssueFlagging, batch, jobs...)
 }
 
 // QueueBatchForDeletion is used when all issues in a batch need to be
@@ -330,7 +330,7 @@ func QueueBatchForDeletion(batch *models.Batch, flagged []*models.FlaggedIssue) 
 	// Destroy the batch
 	jobs = append(jobs, batch.Job(models.JobTypeDeleteBatch, nil))
 
-	return models.QueueBatchJobs("Batch deletion", batch, jobs...)
+	return models.QueueBatchJobs(models.PNBatchDeletion, batch, jobs...)
 }
 
 // QueueCopyBatchForProduction sets the given batch to pending, then queues up
@@ -341,7 +341,7 @@ func QueueCopyBatchForProduction(batch *models.Batch, prodBatchRoot string) erro
 	var args = makeSrcDstArgs(batch.Location, filepath.Join(prodBatchRoot, batch.FullName()))
 	args[JobArgExclude] = `*.tif,*.tiff,*.TIF,*.TIFF,*.tar.bz,*.tar`
 
-	return models.QueueBatchJobs("Copy batch for production", batch,
+	return models.QueueBatchJobs(models.PNCopyBatchForProduction, batch,
 		batch.Job(models.JobTypeValidateTagManifest, nil),
 		models.NewJob(models.JobTypeSyncDir, args),
 		batch.Job(models.JobTypeSetBatchNeedsStagingPurge, nil),
@@ -354,7 +354,7 @@ func QueueCopyBatchForProduction(batch *models.Batch, prodBatchRoot string) erro
 // been ingested into the production ONI instance.
 func QueueBatchGoLiveProcess(batch *models.Batch, batchArchivePath string) error {
 	var finalPath = filepath.Join(batchArchivePath, batch.FullName())
-	return models.QueueBatchJobs("Go live process", batch,
+	return models.QueueBatchJobs(models.PNGoLiveProcess, batch,
 		models.NewJob(models.JobTypeSyncDir, makeSrcDstArgs(batch.Location, finalPath)),
 		models.NewJob(models.JobTypeKillDir, makeLocArgs(batch.Location)),
 		batch.Job(models.JobTypeSetBatchLocation, makeLocArgs("")),

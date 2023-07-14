@@ -9,6 +9,26 @@ import (
 	"github.com/uoregon-libraries/newspaper-curation-app/src/schema"
 )
 
+// PipelineName is a simple string meant to ensure a controlled list of
+// pipelines for consistency and easier filtering. All pipelines must have a
+// valid name.
+type PipelineName string
+
+// Valid pipeline names
+const (
+	PNSFTPIssueMove           PipelineName = "SFTPIssueMove"
+	PNMoveIssueForDerivatives PipelineName = "MoveIssueForDerivatives"
+	PNForceDerivatives        PipelineName = "ForceDerivatives"
+	PNFinalizeIssue           PipelineName = "FinalizeIssue"
+	PNMakeBatch               PipelineName = "MakeBatch"
+	PNRemoveErroredIssue      PipelineName = "RemoveErroredIssue"
+	PNPurgeStuckIssue         PipelineName = "PurgeStuckIssue"
+	PNFinalizeIssueFlagging   PipelineName = "FinalizeIssueFlagging"
+	PNBatchDeletion           PipelineName = "BatchDeletion"
+	PNCopyBatchForProduction  PipelineName = "CopyBatchForProduction"
+	PNGoLiveProcess           PipelineName = "GoLiveProcess"
+)
+
 // A Pipeline is a connected series of independent jobs which all perform tasks
 // for a single purpose. Each job is given a numeric "sequence" number, where
 // the lower the value, the higher the priority. e.g., no job may run until all
@@ -23,18 +43,21 @@ import (
 // the same sequence as its creator, ensuring whatever would run next in the
 // sequence has to wait for the new job to run.
 type Pipeline struct {
-	ID          int       `sql:",primary"`
+	ID          int `sql:",primary"`
+	Name        string
+	Description string
+	ObjectType  string
+	ObjectID    int
 	CreatedAt   time.Time `sql:",readonly"`
 	StartedAt   time.Time
 	CompletedAt time.Time
-	Description string
 }
 
 // newPipeline creates a pipeline with the given description. Pipelines should
 // generally not be created outside this package as they are meant to be
 // created only when queueing up a bunch of jobs.
-func newPipeline(desc string) *Pipeline {
-	return &Pipeline{Description: desc}
+func newPipeline(name PipelineName, desc string) *Pipeline {
+	return &Pipeline{Name: string(name), Description: desc}
 }
 
 // findPipelines returns all Pipeline instances that match the filter
@@ -58,7 +81,7 @@ func findPipeline(id int) (*Pipeline, error) {
 // QueueIssueJobs sets the issue to awaiting processing, then queues the jobs,
 // all in a single DB transaction to ensure the state doesn't change if the
 // jobs can't queue up
-func QueueIssueJobs(name string, issue *Issue, jobs ...*Job) error {
+func QueueIssueJobs(name PipelineName, issue *Issue, jobs ...*Job) error {
 	var op = dbi.DB.Operation()
 	op.Dbg = dbi.Debug
 	op.BeginTransaction()
@@ -70,14 +93,16 @@ func QueueIssueJobs(name string, issue *Issue, jobs ...*Job) error {
 		return err
 	}
 
-	var p = newPipeline(fmt.Sprintf("%s: issue %s", name, issue.Key()))
+	var p = newPipeline(name, fmt.Sprintf("issue %s", issue.Key()))
+	p.ObjectType = JobObjectTypeIssue
+	p.ObjectID = issue.ID
 	return p.queueSerialOp(op, jobs...)
 }
 
 // QueueBatchJobs sets the batch status to pending, then queues the jobs, all
 // in a single DB transaction to ensure the state doesn't change if the jobs
 // can't queue up
-func QueueBatchJobs(name string, batch *Batch, jobs ...*Job) error {
+func QueueBatchJobs(name PipelineName, batch *Batch, jobs ...*Job) error {
 	var op = dbi.DB.Operation()
 	op.Dbg = dbi.Debug
 	op.BeginTransaction()
@@ -89,14 +114,16 @@ func QueueBatchJobs(name string, batch *Batch, jobs ...*Job) error {
 		return err
 	}
 
-	var p = newPipeline(fmt.Sprintf("%s: batch %s", name, batch.FullName()))
+	var p = newPipeline(name, fmt.Sprintf("batch %s", batch.FullName()))
+	p.ObjectType = JobObjectTypeBatch
+	p.ObjectID = batch.ID
 	return p.queueSerialOp(op, jobs...)
 }
 
 // QueueJobs queues up the given set of jobs. This must *never* be used on an
 // issue- or batch-focused set of jobs, as those need to have their state set
 // up by Queue(Issue|Batch)Jobs.
-func QueueJobs(name string, jobs ...*Job) error {
+func QueueJobs(name PipelineName, description string, jobs ...*Job) error {
 	// Shouldn't be possible, but I'd rather not crash
 	if len(jobs) == 0 {
 		return nil
@@ -116,7 +143,7 @@ func QueueJobs(name string, jobs ...*Job) error {
 	op.BeginTransaction()
 	defer op.EndTransaction()
 
-	var p = newPipeline(name)
+	var p = newPipeline(name, description)
 	return p.queueSerialOp(op, jobs...)
 }
 
