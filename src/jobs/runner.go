@@ -164,10 +164,7 @@ func (r *Runner) process(pr Processor) {
 
 func (r *Runner) handleSuccess(pr Processor) {
 	var dbj = pr.DBJob()
-	dbj.Status = string(models.JobStatusSuccessful)
-	dbj.CompletedAt = time.Now()
-
-	var err = dbj.Save()
+	var err = models.CompleteJob(dbj)
 	if err != nil {
 		r.logger.Criticalf("Unable to update job status after success (job: %d): %s", dbj.ID, err)
 		return

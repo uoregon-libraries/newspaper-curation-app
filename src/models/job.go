@@ -311,6 +311,56 @@ func (j *Job) SaveOp(op *magicsql.Operation) error {
 	return op.Err()
 }
 
+func countJobsOp(op *magicsql.Operation, where string, args ...any) uint64 {
+	var n = op.Select("jobs", &Job{}).Where(where, args...).Count().RowCount()
+	return n
+}
+
+// CompleteJob updates the job's status and completion time, then saves the
+// job. If there are no other jobs with the same sequence, the next sequence's
+// jobs are set to pending. If there are no jobs remaining at all, the pipeline
+// is flagged as being completed.
+//
+// Though this function only takes a Job as a parameter, it mucks around with
+// other jobs as well as the job's Pipeline, so it doesn't feel right to make
+// it a function of Job as opposed to a standalone function.
+func CompleteJob(j *Job) error {
+	// We need the job's pipeline - if we can't get this, the rest of the
+	// function doesn't really matter
+	var p, err = findPipeline(j.PipelineID)
+	if err != nil {
+		return err
+	}
+
+	// Start a transaction as we might be manipulating a lot of entities here
+	var op = dbi.DB.Operation()
+	op.Dbg = dbi.Debug
+	op.BeginTransaction()
+	defer op.EndTransaction()
+
+	j.Status = string(JobStatusSuccessful)
+	j.CompletedAt = time.Now()
+	_ = j.SaveOp(op)
+
+	// If there are any unfinished jobs at the same sequence number, we don't
+	// need to do anything more
+	var n = countJobsOp(op, "pipeline_id = ? AND sequence <= ? AND status not in (?, ?)", j.PipelineID, j.Sequence, JobStatusFailedDone, JobStatusSuccessful)
+	if n > 0 {
+		return op.Err()
+	}
+
+	// If there are no jobs left, the pipeline is done and we can close it
+	n = countJobsOp(op, "pipeline_id = ? AND status not in (?, ?)", j.PipelineID, JobStatusFailedDone, JobStatusSuccessful)
+	if n == 0 {
+		p.CompletedAt = time.Now()
+		return p.saveOp(op)
+	}
+
+	// There are jobs left, but they're on hold, so let's fix that
+	op.Exec("UPDATE jobs SET status = ? WHERE pipeline_id = ? AND sequence = ?", JobStatusPending, j.PipelineID, j.Sequence+1)
+	return op.Err()
+}
+
 // Clone returns a shallow copy of the job with key data cleared (database id,
 // for instance)
 func (j *Job) Clone() *Job {
