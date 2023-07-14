@@ -100,13 +100,21 @@ func QueueJobs(name string, jobs ...*Job) error {
 	return p.queueSerialOp(op, jobs...)
 }
 
+// saveOp uses an existing DB operation to save the Pipeline. This is private
+// to avoid use of Pipelines outside of very strictly-controlled situations.
+func (p *Pipeline) saveOp(op *magicsql.Operation) error {
+	op.Save("pipelines", p)
+	return op.Err()
+}
+
 // queueSerialOp attempts to save the jobs using an existing operation (for
 // when a transaction needs to wrap more than just the job queueing)
 func (p *Pipeline) queueSerialOp(op *magicsql.Operation, jobs ...*Job) error {
-	// Start by saving the pipeline itself so we have an ID for the jobs. We
-	// don't put this in a function because we don't really want anything
-	// manipulating pipelines *except* queueing.
-	op.Save("pipelines", p)
+	// Start by saving the pipeline itself so we have an ID for the jobs
+	var err = p.saveOp(op)
+	if err != nil {
+		return fmt.Errorf("save pipeline %#v: %s", p, err)
+	}
 
 	// For now, we just add jobs and give them a sequence based on where they
 	// appear in the list. This will need to change to allow complex pipelines to
