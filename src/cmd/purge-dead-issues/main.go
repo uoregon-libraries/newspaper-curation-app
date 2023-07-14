@@ -84,7 +84,7 @@ func canPurge(i *models.Issue) (bool, error) {
 		switch models.JobStatus(j.Status) {
 		case models.JobStatusFailed:
 			hasFailedJob = true
-		case models.JobStatusSuccessful, models.JobStatusFailedDone:
+		case models.JobStatusOnHold, models.JobStatusSuccessful, models.JobStatusFailedDone:
 			continue
 		default:
 			return false, fmt.Errorf("unexpected data: issue has one or more jobs in a non-purgable status")

@@ -111,7 +111,7 @@ func (p *Pipeline) queueSerialOp(op *magicsql.Operation, jobs ...*Job) error {
 	for i, job := range jobs {
 		job.PipelineID = p.ID
 		job.Sequence = i + 1
-		job.Status = string(JobStatusPending)
+		job.Status = string(JobStatusOnHold)
 		var err = job.SaveOp(op)
 		if err != nil {
 			return fmt.Errorf("save job %#v: %s", job, err)
