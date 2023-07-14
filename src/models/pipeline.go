@@ -40,6 +40,7 @@ func newPipeline(desc string) *Pipeline {
 // jobs can't queue up
 func QueueIssueJobs(name string, issue *Issue, jobs ...*Job) error {
 	var op = dbi.DB.Operation()
+	op.Dbg = dbi.Debug
 	op.BeginTransaction()
 	defer op.EndTransaction()
 
@@ -58,6 +59,7 @@ func QueueIssueJobs(name string, issue *Issue, jobs ...*Job) error {
 // can't queue up
 func QueueBatchJobs(name string, batch *Batch, jobs ...*Job) error {
 	var op = dbi.DB.Operation()
+	op.Dbg = dbi.Debug
 	op.BeginTransaction()
 	defer op.EndTransaction()
 
@@ -90,6 +92,7 @@ func QueueJobs(name string, jobs ...*Job) error {
 	}
 
 	var op = dbi.DB.Operation()
+	op.Dbg = dbi.Debug
 	op.BeginTransaction()
 	defer op.EndTransaction()
 
