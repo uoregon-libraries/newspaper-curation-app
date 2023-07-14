@@ -25,6 +25,8 @@ import (
 type Pipeline struct {
 	ID          int       `sql:",primary"`
 	CreatedAt   time.Time `sql:",readonly"`
+	StartedAt   time.Time
+	CompletedAt time.Time
 	Description string
 }
 

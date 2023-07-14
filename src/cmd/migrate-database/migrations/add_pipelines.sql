@@ -1,6 +1,8 @@
 CREATE TABLE `pipelines` (
   `id` INT(11) NOT NULL AUTO_INCREMENT,
   `created_at` DATETIME NOT NULL,
+  `started_at` DATETIME,
+  `completed_at` DATETIME,
   `description` TEXT NOT NULL,
   PRIMARY KEY (`id`)
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8 COLLATE=utf8_bin;
