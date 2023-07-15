@@ -12,6 +12,7 @@ CREATE TABLE `pipelines` (
 
 CREATE INDEX pipelines_name ON `pipelines` (`name`);
 CREATE INDEX pipelines_created_at ON `pipelines` (`created_at`);
+CREATE INDEX pipelines_started_at ON `pipelines` (`started_at`);
 CREATE INDEX pipelines_object_type ON `pipelines` (`object_type`);
 CREATE INDEX pipelines_object_id ON `pipelines` (`object_id`);
 
