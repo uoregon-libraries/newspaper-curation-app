@@ -34,18 +34,14 @@ func runStatements(tx *sql.Tx, stmts []string) error {
 }
 
 func upAddPipelines(tx *sql.Tx) error {
-	var res, err = tx.Exec("SELECT COUNT(id) FROM jobs WHERE status NOT IN (?, ?)",
-		models.JobStatusSuccessful, models.JobStatusFailedDone)
 	var count int64
-	if err == nil {
-		count, err = res.RowsAffected()
-		if count > 0 {
-			err = fmt.Errorf("cannot migrate until all jobs are completed or canceled")
-		}
-	}
-
+	var err = tx.QueryRow("SELECT COUNT(id) FROM jobs WHERE status NOT IN (?, ?)",
+		models.JobStatusSuccessful, models.JobStatusFailedDone).Scan(&count)
 	if err != nil {
 		return fmt.Errorf("attempting to get count of unfinished jobs: %w", err)
+	}
+	if count > 0 {
+		return fmt.Errorf("cannot migrate to Pipeline feature with unfinished jobs")
 	}
 
 	// Read in and process the pipelines sql
