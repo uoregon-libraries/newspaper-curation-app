@@ -7,3 +7,4 @@
 /db/dbconf.yml
 /docker-compose.override.yml
 /.env
+/test/*-report/

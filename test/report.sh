@@ -45,6 +45,15 @@ for xml in $(find ./fakemount -name "*.xml" | sort); do
     > $repdir/$fname
 done
 
+# Grab all action texts from removed issues
+for txt in $(find ./fakemount -name "actions.txt" | sort); do
+  fname=$(echo ${txt#./fakemount/} | sed 's|/|__|g' | strip_dbids)
+  cat $txt | \
+    sed 's|on .* [0-9]\+, 20[0-9][0-9] at .*:|on DAY at TIME:|' | \
+    sed 's|Job [0-9]\+ |Job N |' \
+    > $repdir/$fname
+done
+
 find ./fakemount -name "*.tiff" -or -name "*.tif" | sort | xargs -l1 md5sum | strip_dbids > $repdir/tiffsums.txt
 
 # Dump critical info from the database without having useless churn like
@@ -67,7 +76,8 @@ sql "
 " | strip_dbids > $repdir/dump-issues.sql
 
 sql "
-  SELECT job_type, status, object_type, extra_data
-  FROM jobs
-  ORDER BY job_type, status, object_type, extra_data
+  SELECT p.name, p.description, p.object_type, j.job_type, j.status, j.object_type, j.extra_data
+  FROM jobs j
+  JOIN pipelines p ON (j.pipeline_id = p.id)
+  ORDER BY p.name, p.description, p.object_type, j.job_type, j.status, j.object_type, j.extra_data
 " | strip_dbids > $repdir/dump-jobs.sql

@@ -29,6 +29,7 @@ const (
 	JobTypeEmptyBatchFlaggedIssuesList JobType = "empty_batch_flagged_issues_list"
 	JobTypeIgnoreIssue                 JobType = "ignore_issue"
 	JobTypeSetBatchStatus              JobType = "set_batch_status"
+	JobTypeSetBatchNeedsStagingPurge   JobType = "set_batch_needs_staging_purge"
 	JobTypePageSplit                   JobType = "page_split"
 	JobTypeMakeDerivatives             JobType = "make_derivatives"
 	JobTypeMoveDerivatives             JobType = "move_derivatives"
@@ -62,6 +63,7 @@ var ValidJobTypes = []JobType{
 	JobTypeEmptyBatchFlaggedIssuesList,
 	JobTypeIgnoreIssue,
 	JobTypeSetBatchStatus,
+	JobTypeSetBatchNeedsStagingPurge,
 	JobTypePageSplit,
 	JobTypeMakeDerivatives,
 	JobTypeMoveDerivatives,
@@ -117,6 +119,8 @@ type Job struct {
 	ObjectID    int
 	ObjectType  string
 	Status      string
+	PipelineID  int
+	Sequence    int
 	RetryCount  int
 	logs        []*JobLog
 
@@ -133,10 +137,6 @@ type Job struct {
 
 	// Args contains the decoded values from XDat
 	Args map[string]string `sql:"-"`
-
-	// QueueJobID tells us which job (if any) should be queued up after this one
-	// completes successfully
-	QueueJobID int
 }
 
 // NewJob sets up a job of the given type as a pending job that's ready to run
@@ -213,42 +213,23 @@ func PopNextPendingJob(types []JobType) (*Job, error) {
 	j.StartedAt = time.Now()
 	_ = j.SaveOp(op)
 
+	// Make sure the pipeline's start date has been set, or else set it now
+	var p *Pipeline
+	p, err = findPipeline(j.PipelineID)
+	if err != nil {
+		return j, err
+	}
+	if p.StartedAt.IsZero() {
+		p.StartedAt = time.Now()
+		_ = p.saveOp(op)
+	}
+
 	return j, op.Err()
 }
 
 // FindJobsByStatus returns all jobs that have the given status
 func FindJobsByStatus(st JobStatus) ([]*Job, error) {
 	return findJobs("status = ?", string(st))
-}
-
-// FindJobsByStatusAndType returns all jobs of the given status and type
-func FindJobsByStatusAndType(st JobStatus, t JobType) ([]*Job, error) {
-	return findJobs("status = ? AND job_type = ?", string(st), string(t))
-}
-
-// FindRecentJobsByType grabs all jobs of the given type which were created
-// within the given duration or are still pending, for use in pulling lists of
-// issues which are in the process of doing something
-func FindRecentJobsByType(t JobType, d time.Duration) ([]*Job, error) {
-	var pendingJobs, otherJobs []*Job
-	var err error
-
-	pendingJobs, err = FindJobsByStatusAndType(JobStatusPending, t)
-	if err != nil {
-		return nil, err
-	}
-	otherJobs, err = findJobs("status <> ? AND job_type = ? AND created_at > ?",
-		string(JobStatusPending), string(t), time.Now().Add(-d))
-	if err != nil {
-		return nil, err
-	}
-
-	return append(pendingJobs, otherJobs...), nil
-}
-
-// FindJobsForIssueID returns all jobs tied to the given issue
-func FindJobsForIssueID(id int) ([]*Job, error) {
-	return findJobs("object_type = ? AND object_id = ?", JobObjectTypeIssue, id)
 }
 
 // Logs lazy-loads all logs for this job from the database
@@ -260,6 +241,15 @@ func (j *Job) Logs() []*JobLog {
 	}
 
 	return j.logs
+}
+
+// BuildJob returns a new job to manipulate *this* job. Jobception? I think we
+// need one more layer to achieve it, but we're getting pretty close.
+func (j *Job) BuildJob(t JobType, args map[string]string) *Job {
+	var j2 = NewJob(t, args)
+	j2.ObjectID = j.ID
+	j2.ObjectType = JobObjectTypeJob
+	return j2
 }
 
 // WriteLog stores a log message on this job
@@ -313,6 +303,56 @@ func (j *Job) Save() error {
 func (j *Job) SaveOp(op *magicsql.Operation) error {
 	j.encodeArgs()
 	op.Save("jobs", j)
+	return op.Err()
+}
+
+func countJobsOp(op *magicsql.Operation, where string, args ...any) uint64 {
+	var n = op.Select("jobs", &Job{}).Where(where, args...).Count().RowCount()
+	return n
+}
+
+// CompleteJob updates the job's status and completion time, then saves the
+// job. If there are no other jobs with the same sequence, the next sequence's
+// jobs are set to pending. If there are no jobs remaining at all, the pipeline
+// is flagged as being completed.
+//
+// Though this function only takes a Job as a parameter, it mucks around with
+// other jobs as well as the job's Pipeline, so it doesn't feel right to make
+// it a function of Job as opposed to a standalone function.
+func CompleteJob(j *Job) error {
+	// We need the job's pipeline - if we can't get this, the rest of the
+	// function doesn't really matter
+	var p, err = findPipeline(j.PipelineID)
+	if err != nil {
+		return err
+	}
+
+	// Start a transaction as we might be manipulating a lot of entities here
+	var op = dbi.DB.Operation()
+	op.Dbg = dbi.Debug
+	op.BeginTransaction()
+	defer op.EndTransaction()
+
+	j.Status = string(JobStatusSuccessful)
+	j.CompletedAt = time.Now()
+	_ = j.SaveOp(op)
+
+	// If there are any unfinished jobs at the same sequence number, we don't
+	// need to do anything more
+	var n = countJobsOp(op, "pipeline_id = ? AND sequence <= ? AND status not in (?, ?)", j.PipelineID, j.Sequence, JobStatusFailedDone, JobStatusSuccessful)
+	if n > 0 {
+		return op.Err()
+	}
+
+	// If there are no jobs left, the pipeline is done and we can close it
+	n = countJobsOp(op, "pipeline_id = ? AND status not in (?, ?)", j.PipelineID, JobStatusFailedDone, JobStatusSuccessful)
+	if n == 0 {
+		p.CompletedAt = time.Now()
+		return p.saveOp(op)
+	}
+
+	// There are jobs left, but they're on hold, so let's fix that
+	op.Exec("UPDATE jobs SET status = ? WHERE pipeline_id = ? AND sequence = ?", JobStatusPending, j.PipelineID, j.Sequence+1)
 	return op.Err()
 }
 

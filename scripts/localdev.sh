@@ -70,7 +70,7 @@ bulk_queue_borndigital() {
 }
 
 migrate() {
-  goose -dir ./db/migrations/ mysql 'nca:nca@tcp(localhost:3306)/nca' up
+  ./bin/migrate-database -c ./settings up
 }
 
 load_seed_data() {

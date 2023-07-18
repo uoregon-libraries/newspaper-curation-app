@@ -132,7 +132,7 @@ func (i *Issue) decoratePriorJobLogs() {
 	}
 
 	var dbJobs []*models.Job
-	dbJobs, err = models.FindJobsForIssueID(dbi.ID)
+	dbJobs, err = dbi.Jobs()
 	if err != nil {
 		logger.Errorf("Unable to look up jobs for issue id %d (%q): %s", dbi.ID, i.Key(), err)
 		return

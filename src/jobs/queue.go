@@ -5,168 +5,50 @@ import (
 	"path/filepath"
 	"time"
 
-	"github.com/Nerdmaster/magicsql"
 	"github.com/uoregon-libraries/newspaper-curation-app/src/config"
-	"github.com/uoregon-libraries/newspaper-curation-app/src/dbi"
 	"github.com/uoregon-libraries/newspaper-curation-app/src/models"
 	"github.com/uoregon-libraries/newspaper-curation-app/src/schema"
 )
 
-// These constants let us define arg names in a way that ensures we don't screw
-// up by setting an arg and then misspelling the reader of said arg
+// Job argument names are constants to let us define arg names in a way
+// that ensures we don't screw up by setting an arg and then misspelling the
+// reader of said arg
 const (
-	wsArg      = "WorkflowStep"
-	bsArg      = "BatchStatus"
-	locArg     = "Location"
-	srcArg     = "Source"
-	destArg    = "Destination"
-	forcedArg  = "Forced"
-	msgArg     = "Message"
-	excludeArg = "Exclude"
+	JobArgWorkflowStep = "WorkflowStep"
+	JobArgBatchStatus  = "BatchStatus"
+	JobArgLocation     = "Location"
+	JobArgSource       = "Source"
+	JobArgDestination  = "Destination"
+	JobArgForced       = "Forced"
+	JobArgMessage      = "Message"
+	JobArgExclude      = "Exclude"
 )
 
-// prepareJobAdvanced gets a job of any kind set up with sensible defaults
-func prepareJobAdvanced(t models.JobType, args map[string]string) *models.Job {
-	return models.NewJob(t, args)
-}
-
-// prepareIssueJobAdvanced is a way to get an issue job ready with the
-// necessary base values, but not save it immediately, to allow for more
-// advanced job semantics: specifying that the job shouldn't run immediately,
-// should queue a specific job ID after completion, should set the WorkflowStep
-// to a custom value rather than whatever the job would normally do, etc.
-func prepareIssueJobAdvanced(t models.JobType, issue *models.Issue, args map[string]string) *models.Job {
-	var j = prepareJobAdvanced(t, args)
-	j.ObjectID = issue.ID
-	j.ObjectType = models.JobObjectTypeIssue
-	return j
-}
-
-// prepareBatchJobAdvanced gets a batch job ready for being used elsewhere
-func prepareBatchJobAdvanced(t models.JobType, batch *models.Batch, args map[string]string) *models.Job {
-	var j = prepareJobAdvanced(t, args)
-	j.ObjectID = batch.ID
-	j.ObjectType = models.JobObjectTypeBatch
-	return j
-}
-
-// prepareJobJobAdvanced sets up a job to manipulate... another job.
-// Jobception? I think we need one more layer to achieve it, but we're getting
-// pretty close.
-func prepareJobJobAdvanced(t models.JobType, job *models.Job, args map[string]string) *models.Job {
-	var j = prepareJobAdvanced(t, args)
-	j.ObjectID = job.ID
-	j.ObjectType = models.JobObjectTypeJob
-	return j
-}
-
-// prepareIssueActionJob sets up a job to record an internal system action tied
-// to the given issue.  This is a very simple wrapper around
-// prepareIssueJobAdvanced that's meant to make it a lot easier to see whan an
-// action is being recorded.
-func prepareIssueActionJob(issue *models.Issue, msg string) *models.Job {
-	return prepareIssueJobAdvanced(models.JobTypeIssueAction, issue, map[string]string{msgArg: msg})
-}
-
-// queueForIssue sets the issue to awaiting processing, then queues the jobs,
-// all in a single DB transaction to ensure the state doesn't change if the
-// jobs can't queue up
-func queueForIssue(issue *models.Issue, jobs ...*models.Job) error {
-	var op = dbi.DB.Operation()
-	op.BeginTransaction()
-	defer op.EndTransaction()
-
-	issue.WorkflowStep = schema.WSAwaitingProcessing
-	var err = issue.SaveOpWithoutAction(op)
-	if err != nil {
-		return err
-	}
-	return queueSerialOp(op, jobs...)
-}
-
-// queueForBatch sets the batch status to pending, then queues the jobs, all in
-// a single DB transaction to ensure the state doesn't change if the jobs can't
-// queue up
-func queueForBatch(batch *models.Batch, jobs ...*models.Job) error {
-	var op = dbi.DB.Operation()
-	op.BeginTransaction()
-	defer op.EndTransaction()
-
-	batch.Status = models.BatchStatusPending
-	var err = batch.SaveOp(op)
-	if err != nil {
-		return err
-	}
-	return queueSerialOp(op, jobs...)
-}
-
-// queueSimple queues up the given set of jobs. This must *never* be used on an
-// issue- or batch-focused set of jobs, as those need to have their state set
-// up by queueFor(Issue|Batch).
-func queueSimple(jobs ...*models.Job) error {
-	// Shouldn't be possible, but I'd rather not crash
-	if len(jobs) == 0 {
-		return nil
-	}
-
-	// Don't allow the first job to be an object-focused one. This won't protect
-	// against every possible scenario, but most of the time an object-focused
-	// job-set will start with the object in question, so this should prevent
-	// accidental calls that should have used an object-focused function
-	// (queueForX)
-	if jobs[0].ObjectType == models.JobObjectTypeBatch || jobs[0].ObjectType == models.JobObjectTypeIssue {
-		return fmt.Errorf("queueSimple called with object type %s", jobs[0].ObjectType)
-	}
-
-	var op = dbi.DB.Operation()
-	op.BeginTransaction()
-	defer op.EndTransaction()
-	return queueSerialOp(op, jobs...)
-}
-
-// queueSerialOp attempts to save the jobs using an existing operation (for
-// when a transaction needs to wrap more than just the job queueing)
-func queueSerialOp(op *magicsql.Operation, jobs ...*models.Job) error {
-	// Iterate over jobs in reverse so we can set the prior job's next-run id
-	// without saving things twice
-	var lastJobID int
-	for i := len(jobs) - 1; i >= 0; i-- {
-		var j = jobs[i]
-		j.QueueJobID = lastJobID
-		if i != 0 {
-			j.Status = string(models.JobStatusOnHold)
-		}
-		var err = j.SaveOp(op)
-		if err != nil {
-			return err
-		}
-		lastJobID = j.ID
-	}
-
-	return op.Err()
-}
-
 func makeWSArgs(ws schema.WorkflowStep) map[string]string {
-	return map[string]string{wsArg: string(ws)}
+	return map[string]string{JobArgWorkflowStep: string(ws)}
 }
 
 func makeBSArgs(bs string) map[string]string {
-	return map[string]string{bsArg: string(bs)}
+	return map[string]string{JobArgBatchStatus: string(bs)}
 }
 
 func makeLocArgs(loc string) map[string]string {
-	return map[string]string{locArg: loc}
+	return map[string]string{JobArgLocation: loc}
 }
 
 func makeForcedArgs() map[string]string {
-	return map[string]string{forcedArg: forcedArg}
+	return map[string]string{JobArgForced: JobArgForced}
 }
 
 func makeSrcDstArgs(src, dest string) map[string]string {
 	return map[string]string{
-		srcArg:  src,
-		destArg: dest,
+		JobArgSource:      src,
+		JobArgDestination: dest,
 	}
+}
+
+func makeActionArgs(msg string) map[string]string {
+	return map[string]string{JobArgMessage: msg}
 }
 
 // QueueSFTPIssueMove queues up an issue move into the workflow area followed
@@ -178,36 +60,36 @@ func QueueSFTPIssueMove(issue *models.Issue, c *config.Config) error {
 	var pageReviewWIPDir = filepath.Join(c.PDFPageReviewPath, ".wip-"+issue.HumanName)
 	var backupLoc = filepath.Join(c.PDFBackupPath, issue.HumanName)
 
-	return queueForIssue(issue,
+	return models.QueueIssueJobs(models.PNSFTPIssueMove, issue,
 		// Move the issue to the workflow location
-		prepareJobAdvanced(models.JobTypeSyncDir, makeSrcDstArgs(issue.Location, workflowWIPDir)),
-		prepareJobAdvanced(models.JobTypeKillDir, makeLocArgs(issue.Location)),
-		prepareJobAdvanced(models.JobTypeRenameDir, makeSrcDstArgs(workflowWIPDir, workflowDir)),
-		prepareIssueJobAdvanced(models.JobTypeSetIssueLocation, issue, makeLocArgs(workflowDir)),
+		models.NewJob(models.JobTypeSyncDir, makeSrcDstArgs(issue.Location, workflowWIPDir)),
+		models.NewJob(models.JobTypeKillDir, makeLocArgs(issue.Location)),
+		models.NewJob(models.JobTypeRenameDir, makeSrcDstArgs(workflowWIPDir, workflowDir)),
+		issue.BuildJob(models.JobTypeSetIssueLocation, makeLocArgs(workflowDir)),
 
 		// Clean dotfiles and then kick off the page splitter
-		prepareJobAdvanced(models.JobTypeCleanFiles, makeLocArgs(workflowDir)),
-		prepareIssueJobAdvanced(models.JobTypePageSplit, issue, makeLocArgs(workflowWIPDir)),
+		models.NewJob(models.JobTypeCleanFiles, makeLocArgs(workflowDir)),
+		issue.BuildJob(models.JobTypePageSplit, makeLocArgs(workflowWIPDir)),
 
 		// This gets a bit weird.  What's in the issue location dir is the original
 		// upload, which we back up since we may need to reprocess the PDFs from
 		// these originals.  Once we've backed up (syncdir + killdir), we move the
 		// WIP files back into the proper workflow folder...  which is then
 		// promptly moved out to the page review area.
-		prepareJobAdvanced(models.JobTypeSyncDir, makeSrcDstArgs(workflowDir, backupLoc)),
-		prepareJobAdvanced(models.JobTypeKillDir, makeLocArgs(workflowDir)),
-		prepareIssueJobAdvanced(models.JobTypeSetIssueBackupLoc, issue, makeLocArgs(backupLoc)),
-		prepareJobAdvanced(models.JobTypeRenameDir, makeSrcDstArgs(workflowWIPDir, workflowDir)),
+		models.NewJob(models.JobTypeSyncDir, makeSrcDstArgs(workflowDir, backupLoc)),
+		models.NewJob(models.JobTypeKillDir, makeLocArgs(workflowDir)),
+		issue.BuildJob(models.JobTypeSetIssueBackupLoc, makeLocArgs(backupLoc)),
+		models.NewJob(models.JobTypeRenameDir, makeSrcDstArgs(workflowWIPDir, workflowDir)),
 
 		// Now we move the issue data to the page review area for manual
 		// processing, again in multiple idempotent steps
-		prepareJobAdvanced(models.JobTypeSyncDir, makeSrcDstArgs(workflowDir, pageReviewWIPDir)),
-		prepareJobAdvanced(models.JobTypeKillDir, makeLocArgs(workflowDir)),
-		prepareJobAdvanced(models.JobTypeRenameDir, makeSrcDstArgs(pageReviewWIPDir, pageReviewDir)),
-		prepareIssueJobAdvanced(models.JobTypeSetIssueLocation, issue, makeLocArgs(pageReviewDir)),
+		models.NewJob(models.JobTypeSyncDir, makeSrcDstArgs(workflowDir, pageReviewWIPDir)),
+		models.NewJob(models.JobTypeKillDir, makeLocArgs(workflowDir)),
+		models.NewJob(models.JobTypeRenameDir, makeSrcDstArgs(pageReviewWIPDir, pageReviewDir)),
+		issue.BuildJob(models.JobTypeSetIssueLocation, makeLocArgs(pageReviewDir)),
 
-		prepareIssueJobAdvanced(models.JobTypeSetIssueWS, issue, makeWSArgs(schema.WSAwaitingPageReview)),
-		prepareIssueActionJob(issue, "Moved issue from SFTP into NCA"),
+		issue.BuildJob(models.JobTypeSetIssueWS, makeWSArgs(schema.WSAwaitingPageReview)),
+		issue.BuildJob(models.JobTypeIssueAction, makeActionArgs("Moved issue from SFTP into NCA")),
 	)
 }
 
@@ -217,17 +99,17 @@ func QueueMoveIssueForDerivatives(issue *models.Issue, workflowPath string) erro
 	var workflowDir = filepath.Join(workflowPath, issue.HumanName)
 	var workflowWIPDir = filepath.Join(workflowPath, ".wip-"+issue.HumanName)
 
-	return queueForIssue(issue,
-		prepareJobAdvanced(models.JobTypeSyncDir, makeSrcDstArgs(issue.Location, workflowWIPDir)),
-		prepareJobAdvanced(models.JobTypeKillDir, makeLocArgs(issue.Location)),
-		prepareJobAdvanced(models.JobTypeRenameDir, makeSrcDstArgs(workflowWIPDir, workflowDir)),
-		prepareIssueJobAdvanced(models.JobTypeSetIssueLocation, issue, makeLocArgs(workflowDir)),
+	return models.QueueIssueJobs(models.PNMoveIssueForDerivatives, issue,
+		models.NewJob(models.JobTypeSyncDir, makeSrcDstArgs(issue.Location, workflowWIPDir)),
+		models.NewJob(models.JobTypeKillDir, makeLocArgs(issue.Location)),
+		models.NewJob(models.JobTypeRenameDir, makeSrcDstArgs(workflowWIPDir, workflowDir)),
+		issue.BuildJob(models.JobTypeSetIssueLocation, makeLocArgs(workflowDir)),
 
-		prepareJobAdvanced(models.JobTypeCleanFiles, makeLocArgs(workflowDir)),
-		prepareIssueJobAdvanced(models.JobTypeRenumberPages, issue, nil),
-		prepareIssueJobAdvanced(models.JobTypeMakeDerivatives, issue, nil),
-		prepareIssueJobAdvanced(models.JobTypeSetIssueWS, issue, makeWSArgs(schema.WSReadyForMetadataEntry)),
-		prepareIssueActionJob(issue, "Created issue derivatives"),
+		models.NewJob(models.JobTypeCleanFiles, makeLocArgs(workflowDir)),
+		issue.BuildJob(models.JobTypeRenumberPages, nil),
+		issue.BuildJob(models.JobTypeMakeDerivatives, nil),
+		issue.BuildJob(models.JobTypeSetIssueWS, makeWSArgs(schema.WSReadyForMetadataEntry)),
+		issue.BuildJob(models.JobTypeIssueAction, makeActionArgs("Created issue derivatives")),
 	)
 }
 
@@ -237,11 +119,11 @@ func QueueMoveIssueForDerivatives(issue *models.Issue, workflowPath string) erro
 // completion of the other jobs.
 func QueueForceDerivatives(issue *models.Issue) error {
 	var currentStep = issue.WorkflowStep
-	return queueForIssue(issue,
-		prepareIssueJobAdvanced(models.JobTypeMakeDerivatives, issue, makeForcedArgs()),
-		prepareIssueJobAdvanced(models.JobTypeBuildMETS, issue, makeForcedArgs()),
-		prepareIssueJobAdvanced(models.JobTypeSetIssueWS, issue, makeWSArgs(currentStep)),
-		prepareIssueActionJob(issue, "Force-regenerated issue derivatives"),
+	return models.QueueIssueJobs(models.PNForceDerivatives, issue,
+		issue.BuildJob(models.JobTypeMakeDerivatives, makeForcedArgs()),
+		issue.BuildJob(models.JobTypeBuildMETS, makeForcedArgs()),
+		issue.BuildJob(models.JobTypeSetIssueWS, makeWSArgs(currentStep)),
+		issue.BuildJob(models.JobTypeIssueAction, makeActionArgs("Force-regenerated issue derivatives")),
 	)
 }
 
@@ -252,18 +134,18 @@ func QueueFinalizeIssue(issue *models.Issue) error {
 	// Some jobs aren't queued up unless there's a backup, so we actually
 	// generate a list of jobs programatically instead of inline
 	var jobs []*models.Job
-	jobs = append(jobs, prepareIssueJobAdvanced(models.JobTypeBuildMETS, issue, nil))
+	jobs = append(jobs, issue.BuildJob(models.JobTypeBuildMETS, nil))
 
 	if issue.BackupLocation != "" {
-		jobs = append(jobs, prepareIssueJobAdvanced(models.JobTypeArchiveBackups, issue, nil))
-		jobs = append(jobs, prepareJobAdvanced(models.JobTypeKillDir, makeLocArgs(issue.BackupLocation)))
-		jobs = append(jobs, prepareIssueJobAdvanced(models.JobTypeSetIssueBackupLoc, issue, makeLocArgs("")))
+		jobs = append(jobs, issue.BuildJob(models.JobTypeArchiveBackups, nil))
+		jobs = append(jobs, models.NewJob(models.JobTypeKillDir, makeLocArgs(issue.BackupLocation)))
+		jobs = append(jobs, issue.BuildJob(models.JobTypeSetIssueBackupLoc, makeLocArgs("")))
 	}
 
-	jobs = append(jobs, prepareIssueJobAdvanced(models.JobTypeSetIssueWS, issue, makeWSArgs(schema.WSReadyForBatching)))
-	jobs = append(jobs, prepareIssueActionJob(issue, "Issue prepped for batching"))
+	jobs = append(jobs, issue.BuildJob(models.JobTypeSetIssueWS, makeWSArgs(schema.WSReadyForBatching)))
+	jobs = append(jobs, issue.BuildJob(models.JobTypeIssueAction, makeActionArgs("Issue prepped for batching")))
 
-	return queueForIssue(issue, jobs...)
+	return models.QueueIssueJobs(models.PNFinalizeIssue, issue, jobs...)
 }
 
 // QueueMakeBatch sets up the jobs for generating a batch on disk: generating
@@ -272,7 +154,7 @@ func QueueFinalizeIssue(issue *models.Issue) error {
 // Nothing can happen automatically after all this until the batch is verified
 // on staging.
 func QueueMakeBatch(batch *models.Batch, batchOutputPath string) error {
-	return queueForBatch(batch, getJobsForMakeBatch(batch, batchOutputPath)...)
+	return models.QueueBatchJobs(models.PNMakeBatch, batch, getJobsForMakeBatch(batch, batchOutputPath)...)
 }
 
 // getJobsForMakeBatch returns all jobs needed to generate a batch. This is needed
@@ -281,13 +163,13 @@ func getJobsForMakeBatch(batch *models.Batch, pth string) []*models.Job {
 	var wipDir = filepath.Join(pth, ".wip-"+batch.FullName())
 	var finalDir = filepath.Join(pth, batch.FullName())
 	return []*models.Job{
-		prepareBatchJobAdvanced(models.JobTypeCreateBatchStructure, batch, makeLocArgs(wipDir)),
-		prepareBatchJobAdvanced(models.JobTypeSetBatchLocation, batch, makeLocArgs(wipDir)),
-		prepareBatchJobAdvanced(models.JobTypeMakeBatchXML, batch, nil),
-		prepareJobAdvanced(models.JobTypeRenameDir, makeSrcDstArgs(wipDir, finalDir)),
-		prepareBatchJobAdvanced(models.JobTypeSetBatchLocation, batch, makeLocArgs(finalDir)),
-		prepareBatchJobAdvanced(models.JobTypeSetBatchStatus, batch, makeBSArgs(models.BatchStatusStagingReady)),
-		prepareBatchJobAdvanced(models.JobTypeWriteBagitManifest, batch, nil),
+		batch.BuildJob(models.JobTypeCreateBatchStructure, makeLocArgs(wipDir)),
+		batch.BuildJob(models.JobTypeSetBatchLocation, makeLocArgs(wipDir)),
+		batch.BuildJob(models.JobTypeMakeBatchXML, nil),
+		models.NewJob(models.JobTypeRenameDir, makeSrcDstArgs(wipDir, finalDir)),
+		batch.BuildJob(models.JobTypeSetBatchLocation, makeLocArgs(finalDir)),
+		batch.BuildJob(models.JobTypeSetBatchStatus, makeBSArgs(models.BatchStatusStagingReady)),
+		batch.BuildJob(models.JobTypeWriteBagitManifest, nil),
 	}
 }
 
@@ -300,7 +182,7 @@ func getJobsForMakeBatch(batch *models.Batch, pth string) []*models.Job {
 // - The derivatives are put under a sibling sub-dir from the primary files
 func QueueRemoveErroredIssue(issue *models.Issue, erroredIssueRoot string) error {
 	var jobs = getJobsForRemoveErroredIssue(issue, erroredIssueRoot)
-	return queueForIssue(issue, jobs...)
+	return models.QueueIssueJobs(models.PNRemoveErroredIssue, issue, jobs...)
 }
 
 // QueuePurgeStuckIssue builds jobs for removing an issue that had critical
@@ -308,27 +190,35 @@ func QueueRemoveErroredIssue(issue *models.Issue, erroredIssueRoot string) error
 // issue are removed, as are failed jobs, and then the issue is purged with
 // data a dev can use to look into the problem more closely.
 func QueuePurgeStuckIssue(issue *models.Issue, erroredIssueRoot string) error {
-	var allJobs, err = models.FindJobsForIssueID(issue.ID)
+	var pipelines, err = issue.Pipelines()
 	if err != nil {
-		return err
+		return fmt.Errorf("query pipelines for issue %d (%s): %s", issue.ID, issue.Key(), err)
 	}
 
-	var purgeReason = "Issue failed getting through workflow:\n"
 	var jobs []*models.Job
-	for _, j := range allJobs {
-		switch models.JobStatus(j.Status) {
-		case models.JobStatusFailed, models.JobStatusOnHold:
-			if j.Status == string(models.JobStatusFailed) {
-				purgeReason += fmt.Sprintf("- Job %d (%s) failed too many times\n", j.ID, j.Type)
+	var purgeReason = "Issue failed getting through workflow:\n"
+	for _, p := range pipelines {
+		purgeReason += fmt.Sprintf("- Pipeline %d (%s / %s):\n", p.ID, p.Name, p.Description)
+		var list []*models.Job
+		list, err = p.Jobs()
+		if err != nil {
+			return fmt.Errorf("query jobs on pipeline %d for issue %d (%s): %s", p.ID, issue.ID, issue.Key(), err)
+		}
+		for _, j := range list {
+			switch models.JobStatus(j.Status) {
+			case models.JobStatusFailed, models.JobStatusOnHold:
+				if j.Status == string(models.JobStatusFailed) {
+					purgeReason += fmt.Sprintf("  - Job %d (%s) failed too many times\n", j.ID, j.Type)
+				}
+				var jj = j.BuildJob(models.JobTypeCancelJob, nil)
+				jobs = append(jobs, jj)
 			}
-			var jj = prepareJobJobAdvanced(models.JobTypeCancelJob, j, nil)
-			jobs = append(jobs, jj)
 		}
 	}
-	jobs = append(jobs, prepareIssueActionJob(issue, purgeReason))
+	jobs = append(jobs, issue.BuildJob(models.JobTypeIssueAction, makeActionArgs(purgeReason)))
 	jobs = append(jobs, getJobsForRemoveErroredIssue(issue, erroredIssueRoot)...)
 
-	return queueSimple(jobs...)
+	return models.QueueJobs(models.PNPurgeStuckIssue, fmt.Sprintf("Purging issue %s and its unfinished jobs", issue.Key()), jobs...)
 }
 
 // getJobsForRemoveErroredIssue returns the list of jobs for removing the given
@@ -349,29 +239,29 @@ func getJobsForRemoveErroredIssue(issue *models.Issue, erroredIssueRoot string) 
 	// move derivative images to the correct subdir so the wip/content dir
 	// consists solely of primary files, and write out the action log file.
 	jobs = append(jobs,
-		prepareJobAdvanced(models.JobTypeSyncDir, makeSrcDstArgs(issue.Location, contentDir)),
-		prepareJobAdvanced(models.JobTypeKillDir, makeLocArgs(issue.Location)),
-		prepareIssueJobAdvanced(models.JobTypeSetIssueLocation, issue, makeLocArgs(contentDir)),
-		prepareIssueJobAdvanced(models.JobTypeMoveDerivatives, issue, makeLocArgs(derivDir)),
-		prepareIssueJobAdvanced(models.JobTypeWriteActionLog, issue, nil),
+		models.NewJob(models.JobTypeSyncDir, makeSrcDstArgs(issue.Location, contentDir)),
+		models.NewJob(models.JobTypeKillDir, makeLocArgs(issue.Location)),
+		issue.BuildJob(models.JobTypeSetIssueLocation, makeLocArgs(contentDir)),
+		issue.BuildJob(models.JobTypeMoveDerivatives, makeLocArgs(derivDir)),
+		issue.BuildJob(models.JobTypeWriteActionLog, nil),
 	)
 
 	// If we have a backup, archive it and remove its files
 	if issue.BackupLocation != "" {
 		jobs = append(jobs,
-			prepareIssueJobAdvanced(models.JobTypeArchiveBackups, issue, nil),
-			prepareJobAdvanced(models.JobTypeKillDir, makeLocArgs(issue.BackupLocation)),
-			prepareIssueJobAdvanced(models.JobTypeSetIssueBackupLoc, issue, makeLocArgs("")),
+			issue.BuildJob(models.JobTypeArchiveBackups, nil),
+			models.NewJob(models.JobTypeKillDir, makeLocArgs(issue.BackupLocation)),
+			issue.BuildJob(models.JobTypeSetIssueBackupLoc, makeLocArgs("")),
 		)
 	}
 
 	// Move to the final location and update metadata
 	jobs = append(jobs,
-		prepareJobAdvanced(models.JobTypeRenameDir, makeSrcDstArgs(wipDir, finalDir)),
-		prepareIssueJobAdvanced(models.JobTypeIgnoreIssue, issue, nil),
-		prepareIssueJobAdvanced(models.JobTypeSetIssueLocation, issue, makeLocArgs("")),
-		prepareIssueJobAdvanced(models.JobTypeSetIssueWS, issue, makeWSArgs(schema.WSUnfixableMetadataError)),
-		prepareIssueActionJob(issue, "Errored issue removed from NCA"),
+		models.NewJob(models.JobTypeRenameDir, makeSrcDstArgs(wipDir, finalDir)),
+		issue.BuildJob(models.JobTypeIgnoreIssue, nil),
+		issue.BuildJob(models.JobTypeSetIssueLocation, makeLocArgs("")),
+		issue.BuildJob(models.JobTypeSetIssueWS, makeWSArgs(schema.WSUnfixableMetadataError)),
+		issue.BuildJob(models.JobTypeIssueAction, makeActionArgs("Errored issue removed from NCA")),
 	)
 
 	return jobs
@@ -388,9 +278,9 @@ func QueueBatchFinalizeIssueFlagging(batch *models.Batch, flagged []*models.Flag
 	// easily rebuilt metadata (e.g., the bagit info), so this is not truly a
 	// destructive operation
 	jobs = append(jobs,
-		prepareBatchJobAdvanced(models.JobTypeSetBatchStatus, batch, makeBSArgs(models.BatchStatusPending)),
-		prepareJobAdvanced(models.JobTypeKillDir, makeLocArgs(batch.Location)),
-		prepareBatchJobAdvanced(models.JobTypeSetBatchLocation, batch, makeLocArgs("")),
+		batch.BuildJob(models.JobTypeSetBatchStatus, makeBSArgs(models.BatchStatusPending)),
+		models.NewJob(models.JobTypeKillDir, makeLocArgs(batch.Location)),
+		batch.BuildJob(models.JobTypeSetBatchLocation, makeLocArgs("")),
 	)
 
 	// Remove issues one at a time so we can easily resume / restart. Removing an
@@ -406,18 +296,18 @@ func QueueBatchFinalizeIssueFlagging(batch *models.Batch, flagged []*models.Flag
 	// add that level of complexity to job processing.
 	for _, i := range flagged {
 		jobs = append(jobs,
-			prepareIssueJobAdvanced(models.JobTypeRemoveFile, i.Issue, makeLocArgs(i.Issue.METSFile())),
-			prepareIssueJobAdvanced(models.JobTypeFinalizeBatchFlaggedIssue, i.Issue, nil),
+			i.Issue.BuildJob(models.JobTypeRemoveFile, makeLocArgs(i.Issue.METSFile())),
+			i.Issue.BuildJob(models.JobTypeFinalizeBatchFlaggedIssue, nil),
 		)
 	}
 
 	// Remove all the no-longer-useful flagged issue data
-	jobs = append(jobs, prepareBatchJobAdvanced(models.JobTypeEmptyBatchFlaggedIssuesList, batch, nil))
+	jobs = append(jobs, batch.BuildJob(models.JobTypeEmptyBatchFlaggedIssuesList, nil))
 
 	// Regenerate batch
 	jobs = append(jobs, getJobsForMakeBatch(batch, batchOutputPath)...)
 
-	return queueForBatch(batch, jobs...)
+	return models.QueueBatchJobs(models.PNFinalizeIssueFlagging, batch, jobs...)
 }
 
 // QueueBatchForDeletion is used when all issues in a batch need to be
@@ -429,54 +319,41 @@ func QueueBatchForDeletion(batch *models.Batch, flagged []*models.FlaggedIssue) 
 
 	// Destroy batch dir
 	jobs = append(jobs,
-		prepareBatchJobAdvanced(models.JobTypeSetBatchStatus, batch, makeBSArgs(models.BatchStatusPending)),
-		prepareJobAdvanced(models.JobTypeKillDir, makeLocArgs(batch.Location)),
-		prepareBatchJobAdvanced(models.JobTypeSetBatchLocation, batch, makeLocArgs("")),
+		batch.BuildJob(models.JobTypeSetBatchStatus, makeBSArgs(models.BatchStatusPending)),
+		models.NewJob(models.JobTypeKillDir, makeLocArgs(batch.Location)),
+		batch.BuildJob(models.JobTypeSetBatchLocation, makeLocArgs("")),
 	)
 
 	// Finalize flagged issues
 	for _, i := range flagged {
 		jobs = append(jobs,
-			prepareIssueJobAdvanced(models.JobTypeRemoveFile, i.Issue, makeLocArgs(i.Issue.METSFile())),
-			prepareIssueJobAdvanced(models.JobTypeFinalizeBatchFlaggedIssue, i.Issue, nil),
+			i.Issue.BuildJob(models.JobTypeRemoveFile, makeLocArgs(i.Issue.METSFile())),
+			i.Issue.BuildJob(models.JobTypeFinalizeBatchFlaggedIssue, nil),
 		)
 	}
 
 	// Remove all the no-longer-useful flagged issue data
-	jobs = append(jobs, prepareBatchJobAdvanced(models.JobTypeEmptyBatchFlaggedIssuesList, batch, nil))
+	jobs = append(jobs, batch.BuildJob(models.JobTypeEmptyBatchFlaggedIssuesList, nil))
 
 	// Destroy the batch
-	jobs = append(jobs, prepareBatchJobAdvanced(models.JobTypeDeleteBatch, batch, nil))
+	jobs = append(jobs, batch.BuildJob(models.JobTypeDeleteBatch, nil))
 
-	return queueForBatch(batch, jobs...)
+	return models.QueueBatchJobs(models.PNBatchDeletion, batch, jobs...)
 }
 
 // QueueCopyBatchForProduction sets the given batch to pending, then queues up
 // the necessary jobs to get it ready for a production load
 func QueueCopyBatchForProduction(batch *models.Batch, prodBatchRoot string) error {
-	// We need batch status *and* staging purge flag to be updated instantly, so
-	// we start a tx here and queue manually instead of using queueForBatch.
-	var op = dbi.DB.Operation()
-	op.Dbg = dbi.Debug
-	op.BeginTransaction()
-	defer op.EndTransaction()
-
-	batch.Status = models.BatchStatusPending
-	batch.NeedStagingPurge = true
-	var err = batch.SaveOp(op)
-	if err != nil {
-		return err
-	}
-
 	// Our sync job is special - it requires us to have exclusions, so we're just
 	// building a custom args list
 	var args = makeSrcDstArgs(batch.Location, filepath.Join(prodBatchRoot, batch.FullName()))
-	args[excludeArg] = `*.tif,*.tiff,*.TIF,*.TIFF,*.tar.bz,*.tar`
+	args[JobArgExclude] = `*.tif,*.tiff,*.TIF,*.TIFF,*.tar.bz,*.tar`
 
-	return queueSerialOp(op,
-		prepareBatchJobAdvanced(models.JobTypeValidateTagManifest, batch, nil),
-		prepareJobAdvanced(models.JobTypeSyncDir, args),
-		prepareBatchJobAdvanced(models.JobTypeSetBatchStatus, batch, makeBSArgs(models.BatchStatusPassedQC)),
+	return models.QueueBatchJobs(models.PNCopyBatchForProduction, batch,
+		batch.BuildJob(models.JobTypeValidateTagManifest, nil),
+		models.NewJob(models.JobTypeSyncDir, args),
+		batch.BuildJob(models.JobTypeSetBatchNeedsStagingPurge, nil),
+		batch.BuildJob(models.JobTypeSetBatchStatus, makeBSArgs(models.BatchStatusPassedQC)),
 	)
 }
 
@@ -485,10 +362,10 @@ func QueueCopyBatchForProduction(batch *models.Batch, prodBatchRoot string) erro
 // been ingested into the production ONI instance.
 func QueueBatchGoLiveProcess(batch *models.Batch, batchArchivePath string) error {
 	var finalPath = filepath.Join(batchArchivePath, batch.FullName())
-	return queueForBatch(batch,
-		prepareJobAdvanced(models.JobTypeSyncDir, makeSrcDstArgs(batch.Location, finalPath)),
-		prepareJobAdvanced(models.JobTypeKillDir, makeLocArgs(batch.Location)),
-		prepareBatchJobAdvanced(models.JobTypeSetBatchLocation, batch, makeLocArgs("")),
-		prepareBatchJobAdvanced(models.JobTypeMarkBatchLive, batch, nil),
+	return models.QueueBatchJobs(models.PNGoLiveProcess, batch,
+		models.NewJob(models.JobTypeSyncDir, makeSrcDstArgs(batch.Location, finalPath)),
+		models.NewJob(models.JobTypeKillDir, makeLocArgs(batch.Location)),
+		batch.BuildJob(models.JobTypeSetBatchLocation, makeLocArgs("")),
+		batch.BuildJob(models.JobTypeMarkBatchLive, nil),
 	)
 }

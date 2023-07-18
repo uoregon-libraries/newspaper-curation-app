@@ -20,7 +20,6 @@ services:
       - ./static:/usr/local/nca/static:z
       - ./templates:/usr/local/nca/templates:z
       - ./settings-example:/usr/local/nca/settings:z
-      - ./db/migrations:/usr/local/nca/db/migrations:z
 
   web:
     volumes:
@@ -33,7 +32,6 @@ services:
       - ./static:/usr/local/nca/static:z
       - ./templates:/usr/local/nca/templates:z
       - ./settings-example:/usr/local/nca/settings:z
-      - ./db/migrations:/usr/local/nca/db/migrations:z
     # Make sure the server always runs in debug mode
     command: ./bin/server -c ./settings --debug
 

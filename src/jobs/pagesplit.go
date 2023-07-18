@@ -36,7 +36,7 @@ func (ps *PageSplit) Process(conf *config.Config) bool {
 	}
 	defer ps.removeTempFiles()
 
-	ps.OutputDir = ps.db.Args[locArg]
+	ps.OutputDir = ps.db.Args[JobArgLocation]
 	if !fileutil.MustNotExist(ps.OutputDir) {
 		ps.Logger.Errorf("Output dir %q already exists", ps.OutputDir)
 		return false

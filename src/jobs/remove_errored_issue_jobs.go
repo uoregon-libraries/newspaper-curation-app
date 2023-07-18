@@ -87,7 +87,7 @@ type MoveDerivatives struct {
 // as anything with ".xml" or ".jp2" as its extension.
 func (j *MoveDerivatives) Process(*config.Config) bool {
 	var src = j.DBIssue.Location
-	var dst = j.db.Args[locArg]
+	var dst = j.db.Args[JobArgLocation]
 	if !fileutil.MustNotExist(dst) {
 		j.Logger.Errorf("Destination %q already exists", dst)
 		return false

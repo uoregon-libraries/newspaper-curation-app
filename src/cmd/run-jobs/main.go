@@ -264,7 +264,6 @@ func rerunJob(idString string) {
 	var clone = &temp
 	clone.ID = 0
 	clone.Status = string(models.JobStatusPending)
-	clone.QueueJobID = 0
 	var err = clone.Save()
 	if err != nil {
 		logger.Errorf("Unable to rerun job %d: %s", dj.ID, err)
@@ -382,6 +381,7 @@ func runAllQueues(c *config.Config) {
 				models.JobTypeEmptyBatchFlaggedIssuesList,
 				models.JobTypeIgnoreIssue,
 				models.JobTypeSetBatchStatus,
+				models.JobTypeSetBatchNeedsStagingPurge,
 				models.JobTypeSetBatchLocation,
 				models.JobTypeIssueAction,
 				models.JobTypeCancelJob,
