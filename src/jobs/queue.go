@@ -190,21 +190,29 @@ func QueueRemoveErroredIssue(issue *models.Issue, erroredIssueRoot string) error
 // issue are removed, as are failed jobs, and then the issue is purged with
 // data a dev can use to look into the problem more closely.
 func QueuePurgeStuckIssue(issue *models.Issue, erroredIssueRoot string) error {
-	var allJobs, err = models.FindJobsForIssueID(issue.ID)
+	var pipelines, err = issue.Pipelines()
 	if err != nil {
-		return err
+		return fmt.Errorf("query pipelines for issue %d (%s): %s", issue.ID, issue.Key(), err)
 	}
 
-	var purgeReason = "Issue failed getting through workflow:\n"
 	var jobs []*models.Job
-	for _, j := range allJobs {
-		switch models.JobStatus(j.Status) {
-		case models.JobStatusFailed, models.JobStatusOnHold:
-			if j.Status == string(models.JobStatusFailed) {
-				purgeReason += fmt.Sprintf("- Job %d (%s) failed too many times\n", j.ID, j.Type)
+	var purgeReason = "Issue failed getting through workflow:\n"
+	for _, p := range pipelines {
+		purgeReason += fmt.Sprintf("- Pipeline %d (%s / %s):\n", p.ID, p.Name, p.Description)
+		var list []*models.Job
+		list, err = p.Jobs()
+		if err != nil {
+			return fmt.Errorf("query jobs on pipeline %d for issue %d (%s): %s", p.ID, issue.ID, issue.Key(), err)
+		}
+		for _, j := range list {
+			switch models.JobStatus(j.Status) {
+			case models.JobStatusFailed, models.JobStatusOnHold:
+				if j.Status == string(models.JobStatusFailed) {
+					purgeReason += fmt.Sprintf("  - Job %d (%s) failed too many times\n", j.ID, j.Type)
+				}
+				var jj = j.Job(models.JobTypeCancelJob, nil)
+				jobs = append(jobs, jj)
 			}
-			var jj = j.Job(models.JobTypeCancelJob, nil)
-			jobs = append(jobs, jj)
 		}
 	}
 	jobs = append(jobs, issue.Job(models.JobTypeIssueAction, makeActionArgs(purgeReason)))
