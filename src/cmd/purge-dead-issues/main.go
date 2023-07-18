@@ -74,7 +74,7 @@ func purge(list []*models.Issue) {
 func canPurge(i *models.Issue) (bool, error) {
 	// We validate there are failed jobs first - everything else should be
 	// impossible if there were failed jobs
-	var joblist, err = models.FindJobsForIssueID(i.ID)
+	var joblist, err = i.Jobs()
 	if err != nil {
 		return false, err
 	}

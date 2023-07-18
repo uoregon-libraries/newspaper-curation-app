@@ -51,6 +51,8 @@ type Pipeline struct {
 	CreatedAt   time.Time `sql:",readonly"`
 	StartedAt   time.Time
 	CompletedAt time.Time
+
+	jobs []*Job
 }
 
 // newPipeline creates a pipeline with the given description. Pipelines should
@@ -181,4 +183,17 @@ func (p *Pipeline) queueSerialOp(op *magicsql.Operation, jobs ...*Job) error {
 	}
 
 	return op.Err()
+}
+
+// Jobs returns all jobs associated with the given pipeline.
+//
+// Results are cached after the first successful query, so a new Pipeline
+// should be read from the database to forcibly re-read jobs. This should
+// almost never be necessary.
+func (p *Pipeline) Jobs() ([]*Job, error) {
+	if p.jobs != nil {
+		return p.jobs, nil
+	}
+
+	return findJobs("pipeline_id = ?", p.ID)
 }

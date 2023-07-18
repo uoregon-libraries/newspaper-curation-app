@@ -72,6 +72,12 @@ type Issue struct {
 	// actions holds the lazy-loaded list of actions tied to an issue, ordered
 	// by the most recent to the oldest
 	actions []*Action
+
+	// lazy-loaded list of jobs tied to this issue, directly or indirectly via a pipeline
+	jobs []*Job
+
+	// lazy-loaded list of pipelines directly tied to this issue
+	pipelines []*Pipeline
 }
 
 // FlaggedIssue is a record indicating an issue which was flagged for removal
@@ -411,6 +417,46 @@ func (i *Issue) WorkflowActions() []*Action {
 func (i *Issue) Claim(byUserID int) error {
 	i.claim(byUserID)
 	return i.Save(ActionTypeClaim, byUserID, "")
+}
+
+// Jobs returns a list of jobs associated with this issue via its
+// issue-specific pipelines. The result is cached and must not be reused if
+// it's critical to read the latest jobs from the database.
+func (i *Issue) Jobs() ([]*Job, error) {
+	if i.jobs != nil {
+		return i.jobs, nil
+	}
+
+	var pList, err = i.Pipelines()
+	if err != nil {
+		return nil, err
+	}
+
+	// We gather jobs before putting them in i.jobs to keep i.jobs == nil until
+	// we're sure everything succeeded
+	var allJobs []*Job
+	for _, p := range pList {
+		var jList, err = p.Jobs()
+		if err != nil {
+			return nil, err
+		}
+		allJobs = append(allJobs, jList...)
+	}
+
+	i.jobs = allJobs
+	return i.jobs, nil
+}
+
+// Pipelines returns a list of pipelines associated with this issue. The result
+// is cached and must not be reused if it's critical to read the latest
+// pipelines from the database.
+func (i *Issue) Pipelines() ([]*Pipeline, error) {
+	var err error
+	if i.pipelines == nil {
+		i.pipelines, err = findPipelines("object_type = ? AND object_id = ?", JobObjectTypeIssue, i.ID)
+	}
+
+	return i.pipelines, err
 }
 
 // claim updates metadata without writing to the database so internal

@@ -232,25 +232,6 @@ func FindJobsByStatus(st JobStatus) ([]*Job, error) {
 	return findJobs("status = ?", string(st))
 }
 
-// FindJobsForIssueID returns all jobs directly or indirectly tied to the given
-// issue via the jobs' pipelines
-func FindJobsForIssueID(id int) ([]*Job, error) {
-	var list, err = findPipelines("object_type = ? AND object_id = ?", JobObjectTypeIssue, id)
-	if err != nil {
-		return nil, fmt.Errorf("find pipelines for issue id %d: %w", id, err)
-	}
-
-	var jobs []*Job
-	for _, p := range list {
-		var list, err = findJobs("pipeline_id = ?", p.ID)
-		if err != nil {
-			return nil, fmt.Errorf("find jobs for pipeline id %d: %w", p.ID, err)
-		}
-		jobs = append(jobs, list...)
-	}
-	return jobs, nil
-}
-
 // Logs lazy-loads all logs for this job from the database
 func (j *Job) Logs() []*JobLog {
 	if j.logs == nil {

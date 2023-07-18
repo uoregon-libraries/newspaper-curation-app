@@ -72,7 +72,7 @@ func (i *Issue) Queue() apperr.Error {
 	// make sure they're all failed move jobs.  We're okay closing and retrying a
 	// failed move, but anything else is a problem.
 	var jobList []*models.Job
-	jobList, err = models.FindJobsForIssueID(dbi.ID)
+	jobList, err = dbi.Jobs()
 	if err != nil {
 		logger.Criticalf("Unable to query jobs associated with issue %q: %s", i.Key(), err)
 		return dbErr()
