@@ -378,8 +378,8 @@ func (i *Issue) METSFile() string {
 	return filepath.Join(i.Location, i.DateEdition()+".xml")
 }
 
-// Job returns a new Job instance for manipulating this issue in some way
-func (i *Issue) Job(t JobType, args map[string]string) *Job {
+// BuildJob returns a new Job instance for manipulating this issue in some way
+func (i *Issue) BuildJob(t JobType, args map[string]string) *Job {
 	var j = NewJob(t, args)
 	j.ObjectID = i.ID
 	j.ObjectType = JobObjectTypeIssue

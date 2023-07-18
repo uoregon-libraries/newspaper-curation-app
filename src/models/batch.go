@@ -218,8 +218,8 @@ func CreateBatch(webroot, moc string, issues []*Issue) (*Batch, error) {
 	return b, err
 }
 
-// Job returns a new Job instance for manipulating this batch in some way
-func (b *Batch) Job(t JobType, args map[string]string) *Job {
+// BuildJob returns a new Job instance for manipulating this batch in some way
+func (b *Batch) BuildJob(t JobType, args map[string]string) *Job {
 	var j = NewJob(t, args)
 	j.ObjectID = b.ID
 	j.ObjectType = JobObjectTypeBatch

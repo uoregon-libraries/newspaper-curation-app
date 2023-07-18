@@ -243,9 +243,9 @@ func (j *Job) Logs() []*JobLog {
 	return j.logs
 }
 
-// Job returns a new job to manipulate *this* job. Jobception? I think we need
-// one more layer to achieve it, but we're getting pretty close.
-func (j *Job) Job(t JobType, args map[string]string) *Job {
+// BuildJob returns a new job to manipulate *this* job. Jobception? I think we
+// need one more layer to achieve it, but we're getting pretty close.
+func (j *Job) BuildJob(t JobType, args map[string]string) *Job {
 	var j2 = NewJob(t, args)
 	j2.ObjectID = j.ID
 	j2.ObjectType = JobObjectTypeJob
