@@ -12,12 +12,13 @@ import (
 	"github.com/uoregon-libraries/newspaper-curation-app/src/config"
 )
 
-// SyncDir is a job strictly for copying everything from one directory to
-// another.  This is typically meant to be used as the first step in a "move"
-// operation.  It's idempotent as well as being efficient, as it syncs files
-// much like a mini-rsync, rather than doing a full copy of everything
-// regardless of existing files.
-type SyncDir struct {
+// VerifyRecursive is a job that technically copies and verifies all files
+// recursively from a source to a destination directory, but it's meant to be
+// used as the final "move" step, after a faster copy operation is done. This
+// process should catch any files which weren't copied properly (network
+// filesystems can go to hell), and it's meant to run long enough after the
+// copy that disk caching won't be likely to report false positives.
+type VerifyRecursive struct {
 	*Job
 }
 
@@ -25,13 +26,15 @@ type SyncDir struct {
 // FS problems that would cause real problems in Process will also be problems
 // here (e.g., trying to validate the existence of a directory on an NFS mount
 // that dropped)
-func (j *SyncDir) Valid() bool {
+func (j *VerifyRecursive) Valid() bool {
 	return true
 }
 
 // Process does a sync from j.Source to j.Dest, only writing files that don't
-// exist in j.Dest or which are different
-func (j *SyncDir) Process(*config.Config) bool {
+// exist in j.Dest or which are different (different determined by our fileutil
+// package, which is using SHA256 to test file integrity). Excluded files are
+// of course neither checked nor copied.
+func (j *VerifyRecursive) Process(*config.Config) bool {
 	var src = j.db.Args[JobArgSource]
 	var dst = j.db.Args[JobArgDestination]
 	var exclusions = strings.Split(j.db.Args[JobArgExclude], ",")

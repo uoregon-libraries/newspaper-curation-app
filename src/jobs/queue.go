@@ -3,6 +3,7 @@ package jobs
 import (
 	"fmt"
 	"path/filepath"
+	"strings"
 	"time"
 
 	"github.com/uoregon-libraries/newspaper-curation-app/src/config"
@@ -51,66 +52,94 @@ func makeActionArgs(msg string) map[string]string {
 	return map[string]string{JobArgMessage: msg}
 }
 
+// getJobsForCopyDir combines the fast-copy job with the slow verify+recopy job
+// so that all sync operations, even when not doing a full directory move, are
+// as bulletproof as they can be.
+func getJobsForCopyDir(source, destination string, exclusions ...string) []*models.Job {
+	var args = makeSrcDstArgs(source, destination)
+	args[JobArgExclude] = strings.Join(exclusions, ",")
+	return []*models.Job{
+		models.NewJob(models.JobTypeVerifyRecursive, args),
+	}
+}
+
+// getJobsForMoveDir returns the list of jobs common to moving a directory:
+//
+// - Copy files recursively, fast, and granularly (one job created per subdir)
+//   to a "work in progress" location
+// - Sync dir - redundant, but verifies all files copied successfully long
+//   enough after the copy to hopefully avoid any NFS / CIFS file caching that
+//   reports things wrong. "Bad" copies should be rectified here.
+// - Kill old directory and all its files
+// - Rename work-in-progress directory to final directory
+func getJobsForMoveDir(source, destination string, exclusions ...string) []*models.Job {
+	// Get the parent dir of the destination so we can craft a WIP dir
+	var dir, name = filepath.Split(filepath.Clean(destination))
+	var wipDir = filepath.Join(dir, ".wip-"+name)
+	var jobs = getJobsForCopyDir(source, wipDir, exclusions...)
+	jobs = append(jobs, models.NewJob(models.JobTypeKillDir, makeLocArgs(source)))
+	jobs = append(jobs, models.NewJob(models.JobTypeRenameDir, makeSrcDstArgs(wipDir, destination)))
+
+	return jobs
+}
+
 // QueueSFTPIssueMove queues up an issue move into the workflow area followed
 // by a page-split and then a move to the page review area
+//
+// This process looks a bit weird.  What's in the issue location dir after page
+// splitting is the original upload, which we back up since we may need to
+// reprocess the PDFs from these originals.  Once we've backed up, we move the
+// page-split files back into the proper workflow folder...  which is then
+// promptly moved out to the page review area.
+//
+// TODO: Lots of fun jobs are involved in the "SFTP Issue Move" pipeline...
+// this function (and the pipeline) probably need a new name.
 func QueueSFTPIssueMove(issue *models.Issue, c *config.Config) error {
 	var workflowDir = filepath.Join(c.WorkflowPath, issue.HumanName)
-	var workflowWIPDir = filepath.Join(c.WorkflowPath, ".wip-"+issue.HumanName)
+	var workflowPageSplitDir = filepath.Join(c.WorkflowPath, ".split-"+issue.HumanName)
 	var pageReviewDir = filepath.Join(c.PDFPageReviewPath, issue.HumanName)
-	var pageReviewWIPDir = filepath.Join(c.PDFPageReviewPath, ".wip-"+issue.HumanName)
 	var backupLoc = filepath.Join(c.PDFBackupPath, issue.HumanName)
+	var jobs []*models.Job
 
-	return models.QueueIssueJobs(models.PNSFTPIssueMove, issue,
-		// Move the issue to the workflow location
-		models.NewJob(models.JobTypeSyncDir, makeSrcDstArgs(issue.Location, workflowWIPDir)),
-		models.NewJob(models.JobTypeKillDir, makeLocArgs(issue.Location)),
-		models.NewJob(models.JobTypeRenameDir, makeSrcDstArgs(workflowWIPDir, workflowDir)),
-		issue.BuildJob(models.JobTypeSetIssueLocation, makeLocArgs(workflowDir)),
+	// Move dir and update issue location
+	jobs = append(jobs, getJobsForMoveDir(issue.Location, workflowDir)...)
+	jobs = append(jobs, issue.BuildJob(models.JobTypeSetIssueLocation, makeLocArgs(workflowDir)))
 
-		// Clean dotfiles and then kick off the page splitter
-		models.NewJob(models.JobTypeCleanFiles, makeLocArgs(workflowDir)),
-		issue.BuildJob(models.JobTypePageSplit, makeLocArgs(workflowWIPDir)),
+	// Clean dotfiles and then kick off the page splitter
+	jobs = append(jobs, models.NewJob(models.JobTypeCleanFiles, makeLocArgs(workflowDir)))
+	jobs = append(jobs, issue.BuildJob(models.JobTypePageSplit, makeLocArgs(workflowPageSplitDir)))
 
-		// This gets a bit weird.  What's in the issue location dir is the original
-		// upload, which we back up since we may need to reprocess the PDFs from
-		// these originals.  Once we've backed up (syncdir + killdir), we move the
-		// WIP files back into the proper workflow folder...  which is then
-		// promptly moved out to the page review area.
-		models.NewJob(models.JobTypeSyncDir, makeSrcDstArgs(workflowDir, backupLoc)),
-		models.NewJob(models.JobTypeKillDir, makeLocArgs(workflowDir)),
-		issue.BuildJob(models.JobTypeSetIssueBackupLoc, makeLocArgs(backupLoc)),
-		models.NewJob(models.JobTypeRenameDir, makeSrcDstArgs(workflowWIPDir, workflowDir)),
+	// Back up the original files and move the split files to the issue dir
+	jobs = append(jobs, getJobsForMoveDir(workflowDir, backupLoc)...)
+	jobs = append(jobs, models.NewJob(models.JobTypeRenameDir, makeSrcDstArgs(workflowPageSplitDir, workflowDir)))
+	jobs = append(jobs, issue.BuildJob(models.JobTypeSetIssueBackupLoc, makeLocArgs(backupLoc)))
 
-		// Now we move the issue data to the page review area for manual
-		// processing, again in multiple idempotent steps
-		models.NewJob(models.JobTypeSyncDir, makeSrcDstArgs(workflowDir, pageReviewWIPDir)),
-		models.NewJob(models.JobTypeKillDir, makeLocArgs(workflowDir)),
-		models.NewJob(models.JobTypeRenameDir, makeSrcDstArgs(pageReviewWIPDir, pageReviewDir)),
-		issue.BuildJob(models.JobTypeSetIssueLocation, makeLocArgs(pageReviewDir)),
+	// Finally, sync the issue over to the page review location
+	jobs = append(jobs, getJobsForMoveDir(workflowDir, pageReviewDir)...)
+	jobs = append(jobs, issue.BuildJob(models.JobTypeSetIssueLocation, makeLocArgs(pageReviewDir)))
 
-		issue.BuildJob(models.JobTypeSetIssueWS, makeWSArgs(schema.WSAwaitingPageReview)),
-		issue.BuildJob(models.JobTypeIssueAction, makeActionArgs("Moved issue from SFTP into NCA")),
-	)
+	// It's ready for review! Easy!
+	jobs = append(jobs, issue.BuildJob(models.JobTypeSetIssueWS, makeWSArgs(schema.WSAwaitingPageReview)))
+	jobs = append(jobs, issue.BuildJob(models.JobTypeIssueAction, makeActionArgs("Moved issue from SFTP into NCA")))
+
+	return models.QueueIssueJobs(models.PNSFTPIssueMove, issue, jobs...)
 }
 
 // QueueMoveIssueForDerivatives creates jobs to move issues into the workflow,
 // make all issues' pages numbered nicely, and then generate derivatives
 func QueueMoveIssueForDerivatives(issue *models.Issue, workflowPath string) error {
 	var workflowDir = filepath.Join(workflowPath, issue.HumanName)
-	var workflowWIPDir = filepath.Join(workflowPath, ".wip-"+issue.HumanName)
+	var jobs []*models.Job
 
-	return models.QueueIssueJobs(models.PNMoveIssueForDerivatives, issue,
-		models.NewJob(models.JobTypeSyncDir, makeSrcDstArgs(issue.Location, workflowWIPDir)),
-		models.NewJob(models.JobTypeKillDir, makeLocArgs(issue.Location)),
-		models.NewJob(models.JobTypeRenameDir, makeSrcDstArgs(workflowWIPDir, workflowDir)),
-		issue.BuildJob(models.JobTypeSetIssueLocation, makeLocArgs(workflowDir)),
+	jobs = append(jobs, getJobsForMoveDir(issue.Location, workflowDir)...)
+	jobs = append(jobs, issue.BuildJob(models.JobTypeSetIssueLocation, makeLocArgs(workflowDir)))
+	jobs = append(jobs, models.NewJob(models.JobTypeCleanFiles, makeLocArgs(workflowDir)))
+	jobs = append(jobs, issue.BuildJob(models.JobTypeRenumberPages, nil))
+	jobs = append(jobs, issue.BuildJob(models.JobTypeMakeDerivatives, nil))
+	jobs = append(jobs, issue.BuildJob(models.JobTypeSetIssueWS, makeWSArgs(schema.WSReadyForMetadataEntry)))
+	jobs = append(jobs, issue.BuildJob(models.JobTypeIssueAction, makeActionArgs("Created issue derivatives")))
 
-		models.NewJob(models.JobTypeCleanFiles, makeLocArgs(workflowDir)),
-		issue.BuildJob(models.JobTypeRenumberPages, nil),
-		issue.BuildJob(models.JobTypeMakeDerivatives, nil),
-		issue.BuildJob(models.JobTypeSetIssueWS, makeWSArgs(schema.WSReadyForMetadataEntry)),
-		issue.BuildJob(models.JobTypeIssueAction, makeActionArgs("Created issue derivatives")),
-	)
+	return models.QueueIssueJobs(models.PNMoveIssueForDerivatives, issue, jobs...)
 }
 
 // QueueForceDerivatives will forcibly regenerate all derivatives for an issue.
@@ -238,13 +267,10 @@ func getJobsForRemoveErroredIssue(issue *models.Issue, erroredIssueRoot string) 
 	// The first steps are unconditional: move the issue to the WIP location,
 	// move derivative images to the correct subdir so the wip/content dir
 	// consists solely of primary files, and write out the action log file.
-	jobs = append(jobs,
-		models.NewJob(models.JobTypeSyncDir, makeSrcDstArgs(issue.Location, contentDir)),
-		models.NewJob(models.JobTypeKillDir, makeLocArgs(issue.Location)),
-		issue.BuildJob(models.JobTypeSetIssueLocation, makeLocArgs(contentDir)),
-		issue.BuildJob(models.JobTypeMoveDerivatives, makeLocArgs(derivDir)),
-		issue.BuildJob(models.JobTypeWriteActionLog, nil),
-	)
+	jobs = append(jobs, getJobsForMoveDir(issue.Location, contentDir)...)
+	jobs = append(jobs, issue.BuildJob(models.JobTypeSetIssueLocation, makeLocArgs(contentDir)))
+	jobs = append(jobs, issue.BuildJob(models.JobTypeMoveDerivatives, makeLocArgs(derivDir)))
+	jobs = append(jobs, issue.BuildJob(models.JobTypeWriteActionLog, nil))
 
 	// If we have a backup, archive it and remove its files
 	if issue.BackupLocation != "" {
@@ -344,17 +370,15 @@ func QueueBatchForDeletion(batch *models.Batch, flagged []*models.FlaggedIssue) 
 // QueueCopyBatchForProduction sets the given batch to pending, then queues up
 // the necessary jobs to get it ready for a production load
 func QueueCopyBatchForProduction(batch *models.Batch, prodBatchRoot string) error {
-	// Our sync job is special - it requires us to have exclusions, so we're just
-	// building a custom args list
-	var args = makeSrcDstArgs(batch.Location, filepath.Join(prodBatchRoot, batch.FullName()))
-	args[JobArgExclude] = `*.tif,*.tiff,*.TIF,*.TIFF,*.tar.bz,*.tar`
+	var dst = filepath.Join(prodBatchRoot, batch.FullName())
+	var jobs []*models.Job
 
-	return models.QueueBatchJobs(models.PNCopyBatchForProduction, batch,
-		batch.BuildJob(models.JobTypeValidateTagManifest, nil),
-		models.NewJob(models.JobTypeSyncDir, args),
-		batch.BuildJob(models.JobTypeSetBatchNeedsStagingPurge, nil),
-		batch.BuildJob(models.JobTypeSetBatchStatus, makeBSArgs(models.BatchStatusPassedQC)),
-	)
+	jobs = append(jobs, batch.BuildJob(models.JobTypeValidateTagManifest, nil))
+	jobs = append(jobs, getJobsForCopyDir(batch.Location, dst, "*.tif", "*.tiff", "*.TIF", "*.TIFF", "*.tar.bz", "*.tar")...)
+	jobs = append(jobs, batch.BuildJob(models.JobTypeSetBatchNeedsStagingPurge, nil))
+	jobs = append(jobs, batch.BuildJob(models.JobTypeSetBatchStatus, makeBSArgs(models.BatchStatusPassedQC)))
+
+	return models.QueueBatchJobs(models.PNCopyBatchForProduction, batch, jobs...)
 }
 
 // QueueBatchGoLiveProcess fires off all jobs needed to call a batch live and
@@ -362,10 +386,11 @@ func QueueCopyBatchForProduction(batch *models.Batch, prodBatchRoot string) erro
 // been ingested into the production ONI instance.
 func QueueBatchGoLiveProcess(batch *models.Batch, batchArchivePath string) error {
 	var finalPath = filepath.Join(batchArchivePath, batch.FullName())
-	return models.QueueBatchJobs(models.PNGoLiveProcess, batch,
-		models.NewJob(models.JobTypeSyncDir, makeSrcDstArgs(batch.Location, finalPath)),
-		models.NewJob(models.JobTypeKillDir, makeLocArgs(batch.Location)),
-		batch.BuildJob(models.JobTypeSetBatchLocation, makeLocArgs("")),
-		batch.BuildJob(models.JobTypeMarkBatchLive, nil),
-	)
+	var jobs []*models.Job
+
+	jobs = append(jobs, getJobsForMoveDir(batch.Location, finalPath)...)
+	jobs = append(jobs, batch.BuildJob(models.JobTypeSetBatchLocation, makeLocArgs("")))
+	jobs = append(jobs, batch.BuildJob(models.JobTypeMarkBatchLive, nil))
+
+	return models.QueueBatchJobs(models.PNGoLiveProcess, batch, jobs...)
 }
