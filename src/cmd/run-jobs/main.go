@@ -345,6 +345,7 @@ func runAllQueues(conf *config.Config) {
 			watchJobTypes(conf,
 				models.JobTypeArchiveBackups,
 				models.JobTypeMoveDerivatives,
+				models.JobTypeSyncRecursive,
 				models.JobTypeVerifyRecursive,
 				models.JobTypeKillDir,
 				models.JobTypeWriteBagitManifest,

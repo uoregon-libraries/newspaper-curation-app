@@ -4,13 +4,147 @@
 package jobs
 
 import (
+	"io/ioutil"
 	"os"
 	"path/filepath"
 	"strings"
 
 	"github.com/uoregon-libraries/gopkg/fileutil"
 	"github.com/uoregon-libraries/newspaper-curation-app/src/config"
+	"github.com/uoregon-libraries/newspaper-curation-app/src/models"
 )
+
+// SyncRecursive is a very special type of job that reads everything in a given
+// dir, copying files as it goes, and spawning new jobs whenever a subdir is
+// found. A file is synced with minimal verification, just ensuring that the
+// operating system didn't return any errors. This should generally be followed
+// up with a VerifyRecursive operation due to issues which can occur when a
+// mounted filesystem has "hiccups".
+type SyncRecursive struct {
+	*Job
+}
+
+// Valid is always true since filesystem jobs identify their errors nicely, and
+// FS problems that would cause real problems in Process will also be problems
+// here (e.g., trying to validate the existence of a directory on an NFS mount
+// that dropped)
+func (j *SyncRecursive) Valid() bool {
+	return true
+}
+
+// Process does a sync from j.Source to j.Dest, only writing files that don't
+// exist in j.Dest or which have a different size. Excluded files are of course
+// neither checked nor copied.
+func (j *SyncRecursive) Process(*config.Config) bool {
+	var src = j.db.Args[JobArgSource]
+	var dst = j.db.Args[JobArgDestination]
+	var exclusions = strings.Split(j.db.Args[JobArgExclude], ",")
+	var err error
+
+	var srcInfo os.FileInfo
+	srcInfo, err = os.Stat(src)
+	if err != nil {
+		j.Logger.Errorf("Unable to stat directory %q: %s", src, err)
+		return false
+	}
+
+	// Create dest dir with same permissions as source dir
+	var srcMode = srcInfo.Mode() & os.ModePerm
+	err = os.MkdirAll(dst, srcMode)
+	if err != nil {
+		j.Logger.Errorf("Unable to create destination directory %q: %s", dst, err)
+		return false
+	}
+
+	// Just in case dir was already there, we force the permissions
+	err = os.Chmod(dst, srcMode)
+	if err != nil {
+		j.Logger.Errorf("Unable to create destination directory %q: %s", dst, err)
+		return false
+	}
+
+	var infos []os.FileInfo
+	infos, err = ioutil.ReadDir(src)
+	if err != nil {
+		j.Logger.Errorf("Unable to read directory %q: %s", src, err)
+		return false
+	}
+
+	// We build, but don't save, all dir copy jobs so we can first copy all
+	// files, and only on success queue up jobs. This *should* prevent any duped
+	// jobs because we can't fail after the dirs are jobbed up in a transaction.
+	var dirJobs []*models.Job
+
+	for _, info := range infos {
+		var srcFull = filepath.Join(src, info.Name())
+		var dstFull = filepath.Join(dst, info.Name())
+
+		switch {
+		case info.Mode().IsRegular():
+			for _, pattern := range exclusions {
+				var basename = filepath.Base(srcFull)
+				var match, err = filepath.Match(pattern, basename)
+				if err != nil {
+					j.Logger.Errorf("Error checking %q against pattern %q: %s", srcFull, pattern, err)
+					return false
+				}
+				if match {
+					j.Logger.Infof("Found file %q, skipping per pattern %q", srcFull, pattern)
+					continue
+				}
+				j.Logger.Infof("Found file %q, copying to %q", srcFull, dstFull)
+				err = syncFileFast(srcFull, dstFull)
+				if err != nil {
+					j.Logger.Infof("Unable to copy %q to %q: %s", srcFull, dstFull, err)
+					return false
+				}
+			}
+
+		case info.Mode().IsDir():
+			j.Logger.Infof("Found subdirectory %q, preparing new job", srcFull)
+			var args = makeSrcDstArgs(srcFull, dstFull)
+			args[JobArgExclude] = j.db.Args[JobArgExclude]
+			dirJobs = append(dirJobs, models.NewJob(models.JobTypeSyncRecursive, args))
+
+		default:
+			j.Logger.Errorf("Invalid file type for %q, cannot continue copying", srcFull)
+			return false
+		}
+	}
+
+	err = j.db.QueueSiblingJobs(dirJobs)
+	if err != nil {
+		j.Logger.Errorf("Unable to queue subdir copy jobs: %s", err)
+		return false
+	}
+
+	j.Logger.Infof("Fast sync successful")
+	return true
+}
+
+// syncFileFast copies src file to dst if either dst doesn't exist or is a
+// different size than src. No validation is done after copying, other than
+// that there were no OS errors returned.
+func syncFileFast(src, dst string) error {
+	if fileutil.MustNotExist(dst) {
+		return fileutil.CopyFile(src, dst)
+	}
+
+	var err error
+	var si, di os.FileInfo
+	si, err = os.Stat(src)
+	if err == nil {
+		di, err = os.Stat(dst)
+	}
+	if err != nil {
+		return err
+	}
+	if si.Size() != di.Size() {
+		return fileutil.CopyFile(src, dst)
+	}
+
+	return nil
+}
 
 // VerifyRecursive is a job that technically copies and verifies all files
 // recursively from a source to a destination directory, but it's meant to be

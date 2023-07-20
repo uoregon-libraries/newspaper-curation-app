@@ -43,6 +43,7 @@ const (
 	JobTypeValidateTagManifest         JobType = "validate_tagmanifest"
 	JobTypeMarkBatchLive               JobType = "mark_batch_live"
 	JobTypeDeleteBatch                 JobType = "delete_batch"
+	JobTypeSyncRecursive               JobType = "sync_recursive"
 	JobTypeVerifyRecursive             JobType = "verify_recursive"
 	JobTypeKillDir                     JobType = "delete_directory"
 	JobTypeRenameDir                   JobType = "rename_directory"
@@ -77,6 +78,7 @@ var ValidJobTypes = []JobType{
 	JobTypeValidateTagManifest,
 	JobTypeMarkBatchLive,
 	JobTypeDeleteBatch,
+	JobTypeSyncRecursive,
 	JobTypeVerifyRecursive,
 	JobTypeKillDir,
 	JobTypeRenameDir,
@@ -370,6 +372,24 @@ func (j *Job) Clone() *Job {
 	clone = &temp
 	clone.ID = 0
 	return clone
+}
+
+// QueueSiblingJobs adds the given list of jobs to the reference job's pipeline
+// at its same sequence so they'll be executed before whatever would be next in
+// the pipeline.
+func (j *Job) QueueSiblingJobs(list []*Job) error {
+	var op = dbi.DB.Operation()
+	op.Dbg = dbi.Debug
+	op.BeginTransaction()
+	defer op.EndTransaction()
+
+	for _, sibling := range list {
+		sibling.PipelineID = j.PipelineID
+		sibling.Sequence = j.Sequence
+		_ = sibling.SaveOp(op)
+	}
+
+	return op.Err()
 }
 
 // FailAndRetry closes out j and queues a new, duplicate job ready for

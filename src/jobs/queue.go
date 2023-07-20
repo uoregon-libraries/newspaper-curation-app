@@ -59,6 +59,7 @@ func getJobsForCopyDir(source, destination string, exclusions ...string) []*mode
 	var args = makeSrcDstArgs(source, destination)
 	args[JobArgExclude] = strings.Join(exclusions, ",")
 	return []*models.Job{
+		models.NewJob(models.JobTypeSyncRecursive, args),
 		models.NewJob(models.JobTypeVerifyRecursive, args),
 	}
 }
