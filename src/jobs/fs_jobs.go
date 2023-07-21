@@ -32,6 +32,24 @@ func (j *SyncRecursive) Valid() bool {
 	return true
 }
 
+func (j *SyncRecursive) isExcluded(path string, exclusions []string) bool {
+	var basename = filepath.Base(path)
+	for _, pattern := range exclusions {
+		var match, err = filepath.Match(pattern, basename)
+		// For simplicity, a bad pattern will log an error and return false, but
+		// allow the processing to otherwise continue.
+		if err != nil {
+			j.Logger.Errorf("Error checking %q against pattern %q: %s", path, pattern, err)
+			return false
+		}
+		if match {
+			return true
+		}
+	}
+
+	return false
+}
+
 // Process does a sync from j.Source to j.Dest, only writing files that don't
 // exist in j.Dest or which have a different size. Excluded files are of course
 // neither checked nor copied.
@@ -81,18 +99,10 @@ func (j *SyncRecursive) Process(*config.Config) bool {
 
 		switch {
 		case info.Mode().IsRegular():
-			for _, pattern := range exclusions {
-				var basename = filepath.Base(srcFull)
-				var match, err = filepath.Match(pattern, basename)
-				if err != nil {
-					j.Logger.Errorf("Error checking %q against pattern %q: %s", srcFull, pattern, err)
-					return false
-				}
-				if match {
-					j.Logger.Infof("Found file %q, skipping per pattern %q", srcFull, pattern)
-					continue
-				}
-				j.Logger.Infof("Found file %q, copying to %q", srcFull, dstFull)
+			if j.isExcluded(srcFull, exclusions) {
+				j.Logger.Infof("Found file %q, skipping per exclusion list", srcFull)
+			} else {
+				j.Logger.Infof("Found file %q, copying", srcFull)
 				err = syncFileFast(srcFull, dstFull)
 				if err != nil {
 					j.Logger.Infof("Unable to copy %q to %q: %s", srcFull, dstFull, err)
