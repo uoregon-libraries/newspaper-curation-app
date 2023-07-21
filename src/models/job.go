@@ -227,6 +227,12 @@ func PopNextPendingJob(types []JobType) (*Job, error) {
 	return j, op.Err()
 }
 
+// FindUnfinishedJobs returns all jobs that aren't "complete". i.e., jobs that
+// weren't successful and haven't failed.
+func FindUnfinishedJobs() ([]*Job, error) {
+	return findJobs("status NOT IN (?, ?, ?)", JobStatusSuccessful, JobStatusFailed, JobStatusFailedDone)
+}
+
 // FindJobsByStatus returns all jobs that have the given status
 func FindJobsByStatus(st JobStatus) ([]*Job, error) {
 	return findJobs("status = ?", string(st))

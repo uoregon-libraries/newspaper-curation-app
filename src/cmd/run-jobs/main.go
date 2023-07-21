@@ -54,6 +54,7 @@ func done() bool {
 // Command-line options
 var opts struct {
 	cli.BaseOptions
+	ExitWhenDone bool `long:"exit-when-done" description:"Exit the application when there are no jobs left to run. Note that this may not do anything if running any operations other than the 'watchall' command."`
 	Verbose      bool `short:"v" long:"verbose" description:"show verbose debugging when running jobs"`
 }
 
@@ -148,6 +149,27 @@ func main() {
 
 	// On CTRL-C / kill, try to finish the current task before exiting
 	interrupts.TrapIntTerm(quit)
+
+	// If requested, we also have a goroutine watching the jobs table so this app
+	// can exit once all jobs are completed
+	if opts.ExitWhenDone {
+		go func() {
+			// Create a brief delay so there's time for filesystem scanning to catch
+			// anything that needs to be queued up. This is hacky, but auto-shutdown
+			// of the job runner isn't meant for production use anyway.
+			time.Sleep(time.Second * 30)
+			for {
+				var list, err = models.FindUnfinishedJobs()
+				if err != nil {
+					logger.Errorf("Unable to scan for unfinished jobs: %s", err)
+				} else if len(list) == 0 {
+					logger.Infof("All jobs complete, sending word to runners that it's quitting time")
+					quit()
+				}
+				time.Sleep(time.Second)
+			}
+		}()
+	}
 
 	var action string
 	action, args = args[0], args[1:]
