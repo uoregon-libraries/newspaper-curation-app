@@ -20,43 +20,69 @@ make clean
 make
 
 source scripts/localdev.sh
-prep_for_testing
 
-# Save state using the "name" variable from above
-./manage backup 00-$name
-wait_db
+if [[ ! -d ./backup/00-$name ]]; then
+  prep_for_testing
 
-# Wait until DB is up and start workers
-./bin/run-jobs -c ./settings watchall --exit-when-done
+  # Save state using the "name" variable from above
+  ./manage backup 00-$name
+else
+  echo "Detected backup 00; skipping processing"
+  if [[ ! -d ./backup/01-$name ]]; then
+    echo "Restoring backup 00 to begin step 01"
+    ./manage restore 00-$name
+  fi
+fi
 
-# Wait for jobs to finish
+if [[ ! -d ./backup/01-$name ]]; then
+  wait_db
 
-# Renumber page review PDFs and hack their date
-cd test
-./rename-page-review.sh
-./make-older.sh
-cd ..
+  # Wait until DB is up and start workers
+  ./bin/run-jobs -c ./settings watchall --exit-when-done
 
-# If necessary, restart workers to make the PDF mover re-read the filesystem quicker
-./bin/run-jobs -c ./settings watchall --exit-when-done
+  # Wait for jobs to finish
 
-# Wait for jobs to complete (~10min)
+  # Renumber page review PDFs and hack their date
+  cd test
+  ./rename-page-review.sh
+  ./make-older.sh
+  cd ..
 
-# Stop workers, save state
-./manage backup 01-$name
-wait_db
+  # If necessary, restart workers to make the PDF mover re-read the filesystem quicker
+  ./bin/run-jobs -c ./settings watchall --exit-when-done
 
-# Fake-curate, fake-review
-cd test
-go run run-workflow.go -c ../settings --operation curate
-go run run-workflow.go -c ../settings --operation review
-cd ..
+  # Wait for jobs to complete (~10min)
 
-# Start workers, wait for jobs to complete (~30sec)
-./bin/run-jobs -c ./settings watchall --exit-when-done
+  # Stop workers, save state
+  ./manage backup 01-$name
+else
+  echo "Detected backup 01; skipping processing"
+  if [[ ! -d ./backup/02-$name ]]; then
+    echo "Restoring backup 01 to begin step 02"
+    ./manage restore 01-$name
+  fi
+fi
 
-# Stop workers, save state again
-./manage backup 02-$name
+if [[ ! -d ./backup/02-$name ]]; then
+  wait_db
+
+  # Fake-curate, fake-review
+  cd test
+  go run run-workflow.go -c ../settings --operation curate
+  go run run-workflow.go -c ../settings --operation review
+  cd ..
+
+  # Start workers, wait for jobs to complete (~30sec)
+  ./bin/run-jobs -c ./settings watchall --exit-when-done
+
+  # Stop workers, save state again
+  ./manage backup 02-$name
+else
+  echo "Detected backup 02; skipping processing"
+  echo "Restoring backup 02 to begin step 03"
+  ./manage restore 02-$name
+fi
+
 wait_db
 
 # Generate batches
