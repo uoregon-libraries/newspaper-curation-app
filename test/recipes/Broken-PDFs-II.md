@@ -1,4 +1,4 @@
-# Testing Broken PDFs
+# Testing Broken PDFs Part II
 
 This recipe tests what happens when an issue job fails but leaves behind jobs
 that aren't directly tied to an issue (generic jobs like syncdir). This is
@@ -21,7 +21,9 @@ cat prep.log | grep -v " - \(INFO\|DEBUG\) - "
 # Save state using the "name" variable from above
 ./manage backup 01-$name
 
-# Break an issue so the "page_split" job fails
+# Break an issue so the "page_split" job fails. Backup the PDF first since it's
+# a hard-link of the file in sources!
+cp ./test/fakemount/sftp/polkitemizer/2010-04-19/0005.pdf ./backup.pdf
 echo "bad" > ./test/fakemount/sftp/polkitemizer/2010-04-19/0005.pdf
 
 # Hack up the job runner's exponential backoff so it maxes at one second
@@ -40,6 +42,9 @@ workers
 
 # Run workers one last time (~1 min)
 workers
+
+# Restore the bad PDF
+cp ./backup.pdf test/sources/sftp/sn96088087-2010041901/0005.pdf
 ```
 
 Wait for all jobs to complete, then create your report using `$name`. You may
