@@ -1,8 +1,9 @@
 # Test Recipes
 
-This directory contains a handful of (hopefully) helpful testing recipes, using
-NCA's manual test workflow. Each document contains an explanation and some
-general information about what's being tested and how it should be used.
+This directory contains a handful of (hopefully) helpful testing recipes and/or
+scripts, using NCA's manual test workflow. Each file contains an explanation
+and some general information about what's being tested and how it should be
+used.
 
 At a high level, these test recipes are meant to be used to make sure that a
 new function or refactor doesn't change anything you don't expect it to change,
@@ -11,13 +12,25 @@ running the recipe in isolation.
 
 Some general / common information follows.
 
+## Scripts
+
+Recipes that have been written as bash scripts can simply be run directly,
+e.g., `./test/recipes/general-test.sh baseline`. You should still read them to
+understand what they're testing and when they make sense to use directly vs.
+create a customized copy.
+
+Scripts will create a completely fresh environment, run various commands, in
+some cases direct you to take actions manually in NCA, and eventually create a
+report. You should only have to check out the branches you need and run the
+script for each branch, then compare reports.
+
 ## Disclaimer
 
-*Don't just copy and paste the shell code!* We're putting stuff in here as we
-go, and sometimes correcting our processes after the fact and trying to keep
-the recipe in sync. Some file locations may be environment-specific.
-Additionally, commands may change or even be removed in the future. Consider
-these recipes a guide, not a blind process to run!
+For markdown documents, *don't just copy and paste the shell code!* We're
+putting stuff in here as we go, and sometimes correcting our processes after
+the fact and trying to keep the recipe in sync. Some file locations may be
+environment-specific. Additionally, commands may change or even be removed in
+the future. Consider these recipes a guide, not a blind process to run!
 
 ## Names
 

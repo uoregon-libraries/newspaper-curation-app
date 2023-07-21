@@ -13,10 +13,10 @@ import (
 	"sync/atomic"
 	"time"
 
-	flags "github.com/jessevdk/go-flags"
 	"github.com/uoregon-libraries/gopkg/interrupts"
 	ltype "github.com/uoregon-libraries/gopkg/logger"
 	"github.com/uoregon-libraries/gopkg/wordutils"
+	"github.com/uoregon-libraries/newspaper-curation-app/src/cli"
 	"github.com/uoregon-libraries/newspaper-curation-app/src/config"
 	"github.com/uoregon-libraries/newspaper-curation-app/src/dbi"
 	"github.com/uoregon-libraries/newspaper-curation-app/src/internal/logger"
@@ -53,11 +53,12 @@ func done() bool {
 
 // Command-line options
 var opts struct {
-	ConfigFile string `short:"c" long:"config" description:"path to NCA config file" required:"true"`
-	Verbose    bool   `short:"v" long:"verbose" description:"show verbose debugging when running jobs"`
+	cli.BaseOptions
+	ExitWhenDone bool `long:"exit-when-done" description:"Exit the application when there are no jobs left to run. Note that this may not do anything if running any operations other than the 'watchall' command."`
+	Verbose      bool `short:"v" long:"verbose" description:"show verbose debugging when running jobs"`
 }
 
-var p *flags.Parser
+var c *cli.CLI
 var titles = make(map[string]*schema.Title)
 
 var validQueues = make(map[string]bool)
@@ -81,49 +82,40 @@ func wrapBullet(msg string) {
 	}
 }
 
-func usageFail(format string, args ...any) {
-	wrap(fmt.Sprintf(format, args...))
-	fmt.Fprintln(os.Stderr)
-	p.WriteHelp(os.Stderr)
-
-	fmt.Fprintln(os.Stderr)
-	wrap("Valid actions:")
-	fmt.Fprintln(os.Stderr)
-	wrapBullet("* requeue <job id> [<job id>...]: Creates new jobs by cloning and " +
-		`closing the given failed jobs.  Only jobs with a status of "failed" can be requeued.`)
-	wrapBullet("* watchall: Runs watchers for all queues and the page review " +
-		"issues in a relatively sane configuration.  Use this unless you need the " +
+func getOpts() (*config.Config, []string) {
+	c = cli.New(&opts)
+	var command = "\033[1;3m"
+	var warning = "\033[31;40;1m"
+	var reset = "\033[0m"
+	c.AppendUsage("Valid actions:")
+	c.AppendUsage(command + "requeue" + reset + " <job id> [<job id>...]: Creates new jobs by cloning and " +
+		`closing the given failed jobs. Only jobs with a status of "failed" can be requeued.`)
+	c.AppendUsage(command + "watchall" + reset + ": Runs watchers for all queues and the page review " +
+		"issues in a relatively sane configuration. Use this unless you need the " +
 		`more complex granularity offered by "watch" and "watch-page-review"`)
-	wrapBullet("* watch <queue name> [<queue name>...]: Watches for jobs in the " +
-		"given queue(s), processing them in a loop until CTRL+C is pressed")
-	wrapBullet("* watch-page-review: Watches for issues awaiting page review " +
+	c.AppendUsage(command + "watch" + reset + " <queue name> [<queue name>...]: Watches for jobs in the " +
+		"given queue(s), processing them in a loop until CTRL+C is pressed. " +
+		warning + "This usage is not recommended" + reset + " due to the sheer number of queue " +
+		"names now in NCA. If this is used, the queue name has to be read from code. " +
+		"Consider it a test to prove you're really serious about doing this.")
+	c.AppendUsage(command + "watch-page-review" + reset + ": Watches for issues awaiting page review " +
 		"(reordering or other manual processing) which are ready to be moved for " +
-		"metadata entry.  No job is associated with this action, hence it must run on " +
-		"its own, and should only have one copy running at a time.")
-	wrapBullet(`* watch-scans: Watches for issues in the "scans" folder which are ` +
-		"ready to be moved for metadata entry.  No job is associated with this action, " +
-		"hence it must run on its own, and should only have one copy running at a time.")
-	wrapBullet("* force-rerun <job id>: Creates a new job by cloning the " +
-		"given job and running the new clone.  This is NOT a good idea unless you know " +
-		"exactly what the job(s) you're cloning can affect.  This is wonderful for " +
+		"metadata entry. No job is associated with this action, hence it must run on " +
+		"its own, and should only have one copy running at a time. This is also " + warning +
+		"not recommended." + reset)
+	c.AppendUsage(command + "watch-scans" + reset + `: Watches for issues in the "scans" folder which are ` +
+		"ready to be moved for metadata entry. No job is associated with this action, " +
+		"hence it must run on its own, and should only have one copy running at a time. " +
+		"This is also " + warning + "not recommended." + reset)
+	c.AppendUsage(command + "force-rerun" + reset + " <job id>: Creates a new job by cloning the " +
+		"given job and running the new clone. This is NOT a good idea unless you know " +
+		"exactly what the job(s) you're cloning can affect. This is wonderful for " +
 		"testing, but should almost never be run on a production system.")
 
-	fmt.Fprintln(os.Stderr)
-	wrap(fmt.Sprintf("Valid queue names: %s", strings.Join(validQueueList, ", ")))
-
-	os.Exit(1)
-}
-
-func getOpts() (*config.Config, []string) {
-	p = flags.NewParser(&opts, flags.HelpFlag|flags.PassDoubleDash)
-	var args, err = p.Parse()
-
-	if err != nil {
-		usageFail("Error: %s", err)
-	}
+	var conf = c.GetConf()
 
 	// run-jobs' logging defaults to Info level logs, but "-v" can make it spit
-	// out debug logs.  Jobs' logs written to the database are never filtered.
+	// out debug logs. Jobs' logs written to the database are never filtered.
 	if opts.Verbose {
 		logLevel = ltype.Debug
 	} else {
@@ -131,18 +123,12 @@ func getOpts() (*config.Config, []string) {
 	}
 	logger.Logger = ltype.New(logLevel, false)
 
-	var c *config.Config
-	c, err = config.Parse(opts.ConfigFile)
-	if err != nil {
-		logger.Fatalf("Invalid configuration: %s", err)
-	}
-
-	err = dbi.DBConnect(c.DatabaseConnect)
+	var err = dbi.DBConnect(conf.DatabaseConnect)
 	if err != nil {
 		logger.Fatalf("Unable to connect to the database: %s", err)
 	}
 
-	return c, args
+	return conf, c.Args
 }
 
 // setupValidQueueNames copies in the list of valid queues for easier validation
@@ -156,13 +142,34 @@ func setupValidQueueNames() {
 
 func main() {
 	setupValidQueueNames()
-	var c, args = getOpts()
+	var conf, args = getOpts()
 	if len(args) < 1 {
-		usageFail("Error: you must specify an action")
+		c.UsageFail("Error: you must specify an action")
 	}
 
 	// On CTRL-C / kill, try to finish the current task before exiting
 	interrupts.TrapIntTerm(quit)
+
+	// If requested, we also have a goroutine watching the jobs table so this app
+	// can exit once all jobs are completed
+	if opts.ExitWhenDone {
+		go func() {
+			// Create a brief delay so there's time for filesystem scanning to catch
+			// anything that needs to be queued up. This is hacky, but auto-shutdown
+			// of the job runner isn't meant for production use anyway.
+			time.Sleep(time.Second * 30)
+			for {
+				var list, err = models.FindUnfinishedJobs()
+				if err != nil {
+					logger.Errorf("Unable to scan for unfinished jobs: %s", err)
+				} else if len(list) == 0 {
+					logger.Infof("All jobs complete, sending word to runners that it's quitting time")
+					quit()
+				}
+				time.Sleep(time.Second)
+			}
+		}()
+	}
 
 	var action string
 	action, args = args[0], args[1:]
@@ -170,23 +177,23 @@ func main() {
 	case "requeue":
 		requeue(args)
 	case "watch":
-		watch(c, args...)
+		watch(conf, args...)
 	case "watch-scans":
-		watchDigitizedScans(c)
+		watchDigitizedScans(conf)
 	case "watch-page-review":
-		watchPageReview(c)
+		watchPageReview(conf)
 	case "watchall":
-		runAllQueues(c)
+		runAllQueues(conf)
 	case "force-rerun":
 		forceRerun(args)
 	default:
-		usageFail("Error: invalid action")
+		c.UsageFail("Error: invalid action")
 	}
 }
 
 func requeue(ids []string) {
 	if len(ids) == 0 {
-		usageFail("Error: the requeue action requires at least one job id")
+		c.UsageFail("Error: the requeue action requires at least one job id")
 	}
 
 	for _, idString := range ids {
@@ -232,16 +239,16 @@ func retryJob(idString string) {
 
 func forceRerun(ids []string) {
 	if len(ids) == 0 {
-		usageFail("Error: the requeue action requires a job id")
+		c.UsageFail("Error: the requeue action requires a job id")
 	}
 
 	if ids[0] != "we'll do it live" {
-		logger.Errorf(`For safety, you must run the "force-rerun" action with an extra hidden flag.  If you're not sure how to make this happen, you shouldn't be using this tool.  Sorry.`)
+		logger.Errorf(`For safety, you must run the "force-rerun" action with an extra hidden flag. If you're not sure how to make this happen, you shouldn't be using this tool. Sorry.`)
 		os.Exit(1)
 	}
 
 	if len(ids) != 2 {
-		usageFail("You must specify exactly one job id after the hidden flag")
+		c.UsageFail("You must specify exactly one job id after the hidden flag")
 	}
 
 	rerunJob(ids[1])
@@ -258,7 +265,7 @@ func rerunJob(idString string) {
 
 	// Make a shallow clone of the job, strip its ID, set it to pending so it
 	// runs soon, remove references to the next job to queue, but keep
-	// *everything else*.  This can cause massive problems if done wrong.  This
+	// *everything else*. This can cause massive problems if done wrong. This
 	// should never be done live.
 	var temp = *dj
 	var clone = &temp
@@ -272,13 +279,13 @@ func rerunJob(idString string) {
 
 func validateJobQueue(queue string) {
 	if !validQueues[queue] {
-		usageFail("Invalid job queue %q", queue)
+		c.UsageFail("Invalid job queue %q", queue)
 	}
 }
 
-func watch(c *config.Config, queues ...string) {
+func watch(conf *config.Config, queues ...string) {
 	if len(queues) == 0 {
-		usageFail("Error: you must specify one or more queues to watch")
+		c.UsageFail("Error: you must specify one or more queues to watch")
 	}
 
 	var jobTypes = make([]models.JobType, len(queues))
@@ -286,22 +293,22 @@ func watch(c *config.Config, queues ...string) {
 		validateJobQueue(queue)
 		jobTypes[i] = models.JobType(queue)
 	}
-	watchJobTypes(c, jobTypes...)
+	watchJobTypes(conf, jobTypes...)
 }
 
-func watchJobTypes(c *config.Config, jobTypes ...models.JobType) {
-	var r = jobs.NewRunner(c, logLevel, jobTypes...)
+func watchJobTypes(conf *config.Config, jobTypes ...models.JobType) {
+	var r = jobs.NewRunner(conf, logLevel, jobTypes...)
 	addRunner(r)
 	r.Watch(time.Second * 10)
 }
 
-func watchPageReview(c *config.Config) {
+func watchPageReview(conf *config.Config) {
 	logger.Infof("Watching page review folders")
 
 	var nextAttempt time.Time
 	for !done() {
 		if time.Now().After(nextAttempt) {
-			scanPageReviewIssues(c)
+			scanPageReviewIssues(conf)
 			nextAttempt = time.Now().Add(10 * time.Minute)
 		}
 
@@ -310,13 +317,13 @@ func watchPageReview(c *config.Config) {
 	}
 }
 
-func watchDigitizedScans(c *config.Config) {
+func watchDigitizedScans(conf *config.Config) {
 	logger.Infof("Watching in-house digitization folders")
 
 	var nextAttempt time.Time
 	for !done() {
 		if time.Now().After(nextAttempt) {
-			scanScannerIssues(c)
+			scanScannerIssues(conf)
 			nextAttempt = time.Now().Add(time.Hour)
 		}
 
@@ -328,14 +335,14 @@ func watchDigitizedScans(c *config.Config) {
 // runAllQueues fires up multiple goroutines to watch all the queues in a
 // fairly sane way so that important processes like moving SFTP issues can
 // happen quickly, while CPU-bound processes won't fight each other.
-func runAllQueues(c *config.Config) {
+func runAllQueues(conf *config.Config) {
 	waitFor(
-		func() { watchPageReview(c) },
-		func() { watchDigitizedScans(c) },
+		func() { watchPageReview(conf) },
+		func() { watchDigitizedScans(conf) },
 		func() {
 			// Jobs which are exclusively disk IO are in the first runner to avoid
 			// too much FS stuff hapenning concurrently
-			watchJobTypes(c,
+			watchJobTypes(conf,
 				models.JobTypeArchiveBackups,
 				models.JobTypeMoveDerivatives,
 				models.JobTypeSyncDir,
@@ -346,17 +353,17 @@ func runAllQueues(c *config.Config) {
 		func() {
 			// Jobs which primarily use CPU are grouped next, so we aren't trying to
 			// share CPU too much
-			watchJobTypes(c,
+			watchJobTypes(conf,
 				models.JobTypePageSplit,
 				models.JobTypeMakeDerivatives,
 			)
 		},
 		func() {
 			// Fast - but not instant - jobs are here: file renaming, hard-linking,
-			// running templates for very simple XML output, etc.  These typically
+			// running templates for very simple XML output, etc. These typically
 			// take very little CPU or disk IO, but they aren't "critical" jobs that
 			// need to be real-time.
-			watchJobTypes(c,
+			watchJobTypes(conf,
 				models.JobTypeBuildMETS,
 				models.JobTypeCreateBatchStructure,
 				models.JobTypeMakeBatchXML,
@@ -373,7 +380,7 @@ func runAllQueues(c *config.Config) {
 			// Extremely fast data-setting jobs get a custom runner that operates
 			// every second to ensure nearly real-time updates to things like a job's
 			// workflow state
-			var r = jobs.NewRunner(c, logLevel,
+			var r = jobs.NewRunner(conf, logLevel,
 				models.JobTypeSetIssueWS,
 				models.JobTypeSetIssueBackupLoc,
 				models.JobTypeSetIssueLocation,
