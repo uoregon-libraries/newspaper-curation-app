@@ -91,15 +91,15 @@ wait_db
 # Start workers, wait for jobs to complete (~30sec)
 ./bin/run-jobs -c ./settings watchall --exit-when-done
 
-read -n 1 -s -r -p "Approve batches manually in NCA, then press any key to continue"
-echo
+echo "Approve batches manually in NCA, then press [ENTER] continue"
+read
 ./bin/run-jobs -c ./settings watchall --exit-when-done
 
 # Batches' statuses in NCA should read "passed_qc", no jobs should be anything
 # other than "success"
 
-read -n 1 -s -r -p "Verify all batches' statuses are 'passed_qc', then press any key to continue"
-echo
+echo "Verify all batches' statuses are 'passed_qc', then press [ENTER] to continue"
+read
 
 cd test
 ./report.sh $name
