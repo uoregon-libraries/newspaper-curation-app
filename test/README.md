@@ -141,10 +141,8 @@ standard `queue-batches` command.
 
 ## Recipes
 
-If you're looking for some test recipes, we now have AT LEAST ONE! And it's
-almost certainly not going to be useful beyond its original use-case!! Wow!
-
-But seriously: in the [recipes subdirectory](./recipes) subdir, we'll start
-putting in any potentially useful tidbits for doing end-to-end tests. These
-will never likely work exactly as written for other situations, but they should
-be a useful guide to help construct your own tests.
+If you're looking for some test recipes, we're slowly building some up in the
+[recipes subdirectory](./recipes), including runnable scripts which automate
+most of the time-consuming testing tasks for specific test cases. These will
+never likely work exactly as written for other situations, but they should be a
+useful guide to help construct your own tests.
