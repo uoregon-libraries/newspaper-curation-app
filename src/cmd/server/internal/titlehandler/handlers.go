@@ -59,7 +59,7 @@ func Setup(r *mux.Router, baseWebPath string, c *config.Config) {
 
 func getTitle(r *responder.Responder) (t *Title, handled bool) {
 	var idStr = r.Request.FormValue("id")
-	var id, _ = strconv.Atoi(idStr)
+	var id, _ = strconv.ParseInt(idStr, 10, 64)
 	if id < 1 {
 		logger.Warnf("Invalid title id for request %q (%s)", r.Request.URL.Path, idStr)
 		r.Error(http.StatusBadRequest, "Invalid title id - try again or contact support")

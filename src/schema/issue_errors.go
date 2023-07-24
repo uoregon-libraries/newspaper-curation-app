@@ -99,7 +99,7 @@ func (i *Issue) WarnTooNew() apperr.Error {
 // holds onto extra information for figuring out how to handle the dupe
 type DuplicateIssueError struct {
 	*IssueError
-	IssueID  int
+	IssueID  int64
 	Location string
 	Name     string
 	IsLive   bool

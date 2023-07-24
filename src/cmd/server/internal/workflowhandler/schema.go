@@ -154,7 +154,7 @@ func (i *Issue) IsOwned() bool {
 
 // Path returns the path for any basic actions on this issue
 func (i *Issue) Path(actionPath string) string {
-	return path.Join(basePath, strconv.Itoa(i.ID), actionPath)
+	return path.Join(basePath, strconv.FormatInt(i.ID, 10), actionPath)
 }
 
 // ValidateMetadata checks all fields for validity and sets up

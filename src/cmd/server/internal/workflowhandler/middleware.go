@@ -38,7 +38,8 @@ func handle(h HandlerFunc) http.Handler {
 		// If there's an issue_id parameter, we validate it - unless somebody
 		// deliberately hacks a URL, none of these errors should be very likely
 		if idStr != "" {
-			var id, _ = strconv.Atoi(idStr)
+			var id, _ = strconv.ParseInt(idStr, 10, 64)
+
 			if id == 0 {
 				logger.Warnf("Invalid issue id requested by %s: %s", u.Login, idStr)
 				resp.Vars.Alert = "Invalid issue"

@@ -202,7 +202,7 @@ func requeue(ids []string) {
 }
 
 func findJob(idString string) *jobs.Job {
-	var id, _ = strconv.Atoi(idString)
+	var id, _ = strconv.ParseInt(idString, 10, 64)
 	if id == 0 {
 		logger.Errorf("Invalid job id %q", idString)
 		return nil

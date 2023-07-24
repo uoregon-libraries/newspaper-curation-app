@@ -66,12 +66,12 @@ func (at ActionType) Describe() string {
 // communication can be centralized in NCA and be easily visible when, for
 // instance, curators need to respond to rejection notes.
 type Action struct {
-	ID         int       `sql:",primary"`
+	ID         int64     `sql:",primary"`
 	CreatedAt  time.Time // When was it created
 	ObjectType string    // "issue" for instance
-	ObjectID   int       // Issue id / batch id / etc
+	ObjectID   int64     // Issue id / batch id / etc
 	ActionType string    // Issue metadata rejection, User comment, etc.
-	UserID     int       // Who created the action
+	UserID     int64     // Who created the action
 	Message    string    // Free-text message
 
 	user *User
@@ -82,7 +82,7 @@ func newAction() *Action {
 }
 
 // NewIssueAction returns an action pre-filled with some basic issue metadata
-func NewIssueAction(id int, aType ActionType) *Action {
+func NewIssueAction(id int64, aType ActionType) *Action {
 	var a = newAction()
 	a.ObjectType = actionObjectTypeIssue
 	a.ActionType = string(aType)
@@ -91,7 +91,7 @@ func NewIssueAction(id int, aType ActionType) *Action {
 	return a
 }
 
-func findActionsByObjectTypeAndID(oType string, oID int) ([]*Action, error) {
+func findActionsByObjectTypeAndID(oType string, oID int64) ([]*Action, error) {
 	var list []*Action
 	var op = dbi.DB.Operation()
 	op.Dbg = dbi.Debug
@@ -105,7 +105,7 @@ func findActionsByObjectTypeAndID(oType string, oID int) ([]*Action, error) {
 
 // FindActionsForIssue returns all actions for the given issue id sorted
 // oldest first
-func FindActionsForIssue(issueID int) ([]*Action, error) {
+func FindActionsForIssue(issueID int64) ([]*Action, error) {
 	return findActionsByObjectTypeAndID(actionObjectTypeIssue, issueID)
 }
 

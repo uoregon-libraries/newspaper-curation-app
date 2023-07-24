@@ -44,7 +44,7 @@ func batchNewsURL(root string, b *Batch) string {
 }
 
 func batchURL(b *Batch, other ...string) string {
-	var parts = []string{basePath, strconv.Itoa(b.ID)}
+	var parts = []string{basePath, strconv.FormatInt(b.ID, 10)}
 	if len(other) > 0 {
 		parts = append(parts, other...)
 	}

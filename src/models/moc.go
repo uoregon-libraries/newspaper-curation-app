@@ -4,7 +4,7 @@ import "github.com/uoregon-libraries/newspaper-curation-app/src/dbi"
 
 // MOC contains MARC org codes
 type MOC struct {
-	ID   int `sql:",primary"`
+	ID   int64 `sql:",primary"`
 	Code string
 	Name string
 }
@@ -23,7 +23,7 @@ func FindMOCByCode(code string) (*MOC, error) {
 }
 
 // FindMOCByID finds the MOC by its id
-func FindMOCByID(id int) (*MOC, error) {
+func FindMOCByID(id int64) (*MOC, error) {
 	var op = dbi.DB.Operation()
 	op.Dbg = dbi.Debug
 	var moc = &MOC{}

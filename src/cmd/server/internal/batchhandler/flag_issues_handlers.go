@@ -128,7 +128,7 @@ func parseIssueKeyStd(val string) (string, error) {
 }
 
 func unflagIssue(r *Responder) {
-	var id, _ = strconv.Atoi(r.Request.Form.Get("issue-id"))
+	var id, _ = strconv.ParseInt(r.Request.Form.Get("issue-id"), 10, 64)
 	if id < 1 {
 		http.SetCookie(r.Writer, &http.Cookie{Name: "Alert", Value: "Invalid issue to unflag", Path: "/"})
 		http.Redirect(r.Writer, r.Request, flagIssuesURL(r.batch), http.StatusBadRequest)

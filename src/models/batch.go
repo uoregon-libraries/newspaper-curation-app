@@ -115,7 +115,7 @@ var statusMap = map[string]BatchStatus{
 // associated with a single batch, and a batch will typically have many issues
 // assigned to it.
 type Batch struct {
-	ID          int `sql:",primary"`
+	ID          int64 `sql:",primary"`
 	MARCOrgCode string
 	Name        string
 	CreatedAt   time.Time
@@ -157,7 +157,7 @@ func findBatches(where string, args ...any) ([]*Batch, error) {
 }
 
 // FindBatch looks for a batch by its id
-func FindBatch(id int) (*Batch, error) {
+func FindBatch(id int64) (*Batch, error) {
 	var list, err = findBatches("id = ?", id)
 	if len(list) == 0 {
 		return nil, err
