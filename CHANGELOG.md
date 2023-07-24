@@ -34,6 +34,94 @@ Brief description, if necessary
 ### Migration
 -->
 
+## v4.1.0
+
+Pipelines and filesystem job refactoring. This update is primarily focused on
+improving the syncing of batches across filesystem boundaries. All sync/verify
+jobs are completely redone to make failures (e.g., mount points dropping, CIFS
+file corruption issues) less cumbersome to fix.
+
+Some supporting changes and improvements to testing were also added, though for
+the most part these were born out needs found during the pipeline/job refactor.
+
+### Fixed
+
+- Devs: `test/report.sh` strips more DB ids correctly, making test reporting
+  far easier to scan for real changes
+
+### Added
+
+- Database migrations are now easier to run and more self-contained in a new
+  binary that reads DB settings from your configuration.
+- New flag for job runner to auto-exit when there are no more jobs to run. This
+  is primarily to enable fully scripted testing and shouldn't be used in
+  production environments.
+
+### Changed
+
+- Background jobs have been fundamentally changed:
+  - All jobs belong to a "pipeline"
+  - A pipeline is a group of jobs built to accomplish a given high-level
+    process in NCA, such as preparing a PDF for page renumbering, building a
+    batch out of a set of issues, etc.
+  - Non-devs shouldn't notice any change in NCA!
+  - Devs will be able to query the database to more easily find grouped jobs
+    for debugging, seeing what's still pending for a pipeline they're waiting
+    on, etc.
+  - Eventually we hope this helps us create a UI where you can see a pipeline
+    and all its related jobs and their statuses, runtime, etc.
+- All jobs which were previously `SyncDir` have been split into two:
+  - SyncRecursive is a light-weight, self-replicating job designed to take on
+    the majority of what `SyncDir` used to do. For a given source and
+    destination, all regular files (which don't exist or are a different file
+    size) are copied without any post-copy validation. All directories are
+    aggregated and queued up as new `SyncRecursive` jobs to be run as
+    "siblings" (same priority) in the pipeline.
+  - VerifyRecursive validates the SHA256 hash of every file in the source
+    directory matches that in the destination directory, re-copying any which
+    didn't. This is exatly the same as the prior `SyncDir` job, it just has
+    less work to do since the new `SyncRecursive` job(s) will do the initial
+    copying.
+- Devs: the "general" test recipe has been rewritten as a bash script rather
+  than a document, and can be run directly instead of reading its contents and
+  adjusting it as needed.
+  - As with all test recipes, you still need to be using the "advanced" dev
+    setup for this to work.
+  - The general test now does a bit more work and has an example of a way to
+    "resume" a test if existing backups are already on disk, allowing one to
+    build up a test gradually and/or add to an existing test without starting
+    all the way from the beginning.
+- Database IDs have more space (`BIGINT` instead of `INT`):
+  - `job_logs` and `jobs` have been altered to allow for a much larger maximum
+    ID to avoid catastrophic failures in the event one ever reaches ~2 billion
+    entries. Unlikely to happen even after a decade of heavy use, but the new
+    filesystem jobs will be a lot more numerous and have a lot more logging,
+    making this risk slightly more concerning.
+  - NCA's codebase has been updated to handle not only the `BIGINT` fields for
+    jobs and job logs, but also in any future table just in case we need bigger
+    ids elsewhere.
+
+### Migration
+
+- Drain the job queue entirely! This means no jobs should be in any status
+  other than `success` or `failed_done`.
+  - Check the database manually: `SELECT * FROM jobs WHERE status NOT IN
+    ('success', 'failed_done');`
+  - Don't add anything new to the PDF / scanned issue folders
+  - Wait for pending and on-hold jobs to complete
+  - Requeue any `failed` jobs or else cancel them (e.g., with
+    `purge-dead-issues`)
+  - **Note**: If you leave any jobs in any status other than `success` or
+    `failed_done`, the database migrations will refuse to run and you won't be
+    able to start up the NCA server.
+- Turn off all NCA processes
+- Back up your database, and make sure your backup has all the triggers in it,
+  not just a simple data export!
+- Run database migrations. *Note: this won't run if you don't drain the job
+  queue first.*
+  - `make && ./bin/migrate-database -c ./settings up`
+- Start NCA services back up
+
 ## v4.0.1
 
 Hotfix for possible issue that may or may not be in my head.
