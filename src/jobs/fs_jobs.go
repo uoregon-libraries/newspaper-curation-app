@@ -4,20 +4,23 @@
 package jobs
 
 import (
+	"io/ioutil"
 	"os"
 	"path/filepath"
 	"strings"
 
 	"github.com/uoregon-libraries/gopkg/fileutil"
 	"github.com/uoregon-libraries/newspaper-curation-app/src/config"
+	"github.com/uoregon-libraries/newspaper-curation-app/src/models"
 )
 
-// SyncDir is a job strictly for copying everything from one directory to
-// another.  This is typically meant to be used as the first step in a "move"
-// operation.  It's idempotent as well as being efficient, as it syncs files
-// much like a mini-rsync, rather than doing a full copy of everything
-// regardless of existing files.
-type SyncDir struct {
+// SyncRecursive is a very special type of job that reads everything in a given
+// dir, copying files as it goes, and spawning new jobs whenever a subdir is
+// found. A file is synced with minimal verification, just ensuring that the
+// operating system didn't return any errors. This should generally be followed
+// up with a VerifyRecursive operation due to issues which can occur when a
+// mounted filesystem has "hiccups".
+type SyncRecursive struct {
 	*Job
 }
 
@@ -25,19 +28,164 @@ type SyncDir struct {
 // FS problems that would cause real problems in Process will also be problems
 // here (e.g., trying to validate the existence of a directory on an NFS mount
 // that dropped)
-func (j *SyncDir) Valid() bool {
+func (j *SyncRecursive) Valid() bool {
+	return true
+}
+
+func (j *SyncRecursive) isExcluded(path string, exclusions []string) bool {
+	var basename = filepath.Base(path)
+	for _, pattern := range exclusions {
+		var match, err = filepath.Match(pattern, basename)
+		// For simplicity, a bad pattern will log an error and return false, but
+		// allow the processing to otherwise continue.
+		if err != nil {
+			j.Logger.Errorf("Error checking %q against pattern %q: %s", path, pattern, err)
+			return false
+		}
+		if match {
+			return true
+		}
+	}
+
+	return false
+}
+
+// Process does a sync from j.Source to j.Dest, only writing files that don't
+// exist in j.Dest or which have a different size. Excluded files are of course
+// neither checked nor copied.
+func (j *SyncRecursive) Process(*config.Config) bool {
+	var src = j.db.Args[JobArgSource]
+	var dst = j.db.Args[JobArgDestination]
+	var exclusions = strings.Split(j.db.Args[JobArgExclude], ",")
+	var err error
+
+	j.Logger.Infof("Copying %q to %q excluding %q", src, dst, strings.Join(exclusions, ","))
+	var srcInfo os.FileInfo
+	srcInfo, err = os.Stat(src)
+	if err != nil {
+		j.Logger.Errorf("Unable to stat directory %q: %s", src, err)
+		return false
+	}
+
+	// Create dest dir with same permissions as source dir
+	var srcMode = srcInfo.Mode() & os.ModePerm
+	err = os.MkdirAll(dst, srcMode)
+	if err != nil {
+		j.Logger.Errorf("Unable to create destination directory %q: %s", dst, err)
+		return false
+	}
+
+	// Just in case dir was already there, we force the permissions
+	err = os.Chmod(dst, srcMode)
+	if err != nil {
+		j.Logger.Errorf("Unable to create destination directory %q: %s", dst, err)
+		return false
+	}
+
+	var infos []os.FileInfo
+	infos, err = ioutil.ReadDir(src)
+	if err != nil {
+		j.Logger.Errorf("Unable to read directory %q: %s", src, err)
+		return false
+	}
+
+	// We build, but don't save, all dir copy jobs so we can first copy all
+	// files, and only on success queue up jobs. This *should* prevent any duped
+	// jobs because we can't fail after the dirs are jobbed up in a transaction.
+	var dirJobs []*models.Job
+
+	for _, info := range infos {
+		var srcFull = filepath.Join(src, info.Name())
+		var dstFull = filepath.Join(dst, info.Name())
+
+		switch {
+		case info.Mode().IsRegular():
+			if j.isExcluded(srcFull, exclusions) {
+				j.Logger.Debugf("Found file %q, skipping per exclusion list", srcFull)
+			} else {
+				j.Logger.Debugf("Found file %q, copying", srcFull)
+				err = syncFileFast(srcFull, dstFull)
+				if err != nil {
+					j.Logger.Errorf("Unable to copy %q to %q: %s", srcFull, dstFull, err)
+					return false
+				}
+			}
+
+		case info.Mode().IsDir():
+			j.Logger.Infof("Found subdirectory %q, preparing new job", srcFull)
+			var args = makeSrcDstArgs(srcFull, dstFull)
+			args[JobArgExclude] = j.db.Args[JobArgExclude]
+			dirJobs = append(dirJobs, models.NewJob(models.JobTypeSyncRecursive, args))
+
+		default:
+			j.Logger.Errorf("Invalid file type for %q, cannot continue copying", srcFull)
+			return false
+		}
+	}
+
+	err = j.db.QueueSiblingJobs(dirJobs)
+	if err != nil {
+		j.Logger.Errorf("Unable to queue subdir copy jobs: %s", err)
+		return false
+	}
+
+	j.Logger.Infof("Fast sync successful")
+	return true
+}
+
+// syncFileFast copies src file to dst if either dst doesn't exist or is a
+// different size than src. No validation is done after copying, other than
+// that there were no OS errors returned.
+func syncFileFast(src, dst string) error {
+	if fileutil.MustNotExist(dst) {
+		return fileutil.CopyFile(src, dst)
+	}
+
+	var err error
+	var si, di os.FileInfo
+	si, err = os.Stat(src)
+	if err == nil {
+		di, err = os.Stat(dst)
+	}
+	if err != nil {
+		return err
+	}
+	if si.Size() != di.Size() {
+		return fileutil.CopyFile(src, dst)
+	}
+
+	return nil
+}
+
+// VerifyRecursive is a job that technically copies and verifies all files
+// recursively from a source to a destination directory, but it's meant to be
+// used as the final "move" step, after a faster copy operation is done. This
+// process should catch any files which weren't copied properly (network
+// filesystems can go to hell), and it's meant to run long enough after the
+// copy that disk caching won't be likely to report false positives.
+type VerifyRecursive struct {
+	*Job
+}
+
+// Valid is always true since filesystem jobs identify their errors nicely, and
+// FS problems that would cause real problems in Process will also be problems
+// here (e.g., trying to validate the existence of a directory on an NFS mount
+// that dropped)
+func (j *VerifyRecursive) Valid() bool {
 	return true
 }
 
 // Process does a sync from j.Source to j.Dest, only writing files that don't
-// exist in j.Dest or which are different
-func (j *SyncDir) Process(*config.Config) bool {
+// exist in j.Dest or which are different (different determined by our fileutil
+// package, which is using SHA256 to test file integrity). Excluded files are
+// of course neither checked nor copied.
+func (j *VerifyRecursive) Process(*config.Config) bool {
 	var src = j.db.Args[JobArgSource]
 	var dst = j.db.Args[JobArgDestination]
 	var exclusions = strings.Split(j.db.Args[JobArgExclude], ",")
 
 	var parent = filepath.Dir(dst)
-	j.Logger.Infof("Creating parent dir %q", parent)
+	j.Logger.Debugf("Creating parent dir %q", parent)
 	var err = os.MkdirAll(parent, 0700)
 	if err != nil {
 		j.Logger.Errorf("Unable to create sync dir's parent %q: %s", parent, err)
@@ -47,12 +195,13 @@ func (j *SyncDir) Process(*config.Config) bool {
 	// We re-join exclusions here so logs show what this job will actually do,
 	// which *should* be the same as what was requested, but could be different
 	// if something is busted
-	j.Logger.Infof("Syncing %q to %q. Exclusion list: %q", src, dst, strings.Join(exclusions, ","))
+	j.Logger.Infof("Recursively verifying copy of %q to %q excluding %q", src, dst, strings.Join(exclusions, ","))
 	err = fileutil.SyncDirectoryExcluding(src, dst, exclusions)
 	if err != nil {
 		j.Logger.Errorf("Unable to sync %q to %q: %s", src, dst, err)
 	}
 
+	j.Logger.Infof("Fast sync completed")
 	return err == nil
 }
 

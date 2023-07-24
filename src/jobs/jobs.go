@@ -57,8 +57,10 @@ func DBJobToProcessor(dbJob *models.Job) Processor {
 		return &MarkBatchLive{BatchJob: NewBatchJob(dbJob)}
 	case models.JobTypeDeleteBatch:
 		return &DeleteBatch{BatchJob: NewBatchJob(dbJob)}
-	case models.JobTypeSyncDir:
-		return &SyncDir{Job: NewJob(dbJob)}
+	case models.JobTypeSyncRecursive:
+		return &SyncRecursive{Job: NewJob(dbJob)}
+	case models.JobTypeVerifyRecursive:
+		return &VerifyRecursive{Job: NewJob(dbJob)}
 	case models.JobTypeKillDir:
 		return &KillDir{Job: NewJob(dbJob)}
 	case models.JobTypeRenameDir:
