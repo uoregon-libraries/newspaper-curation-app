@@ -30,7 +30,7 @@
 <meta itemprop="name" content="Add Job Types">
 <meta itemprop="description" content="Adding a new type of job into the code">
 
-<meta itemprop="wordCount" content="288">
+<meta itemprop="wordCount" content="269">
 <meta itemprop="keywords" content="" /></head>
 <body><div class="container"><header>
 <h1>Newspaper Curation App</h1><a href="https://github.com/uoregon-libraries/newspaper-curation-app/" class="github"><i class="fab fa-github"></i></a>
@@ -76,12 +76,10 @@ filesystem job) or create a new one in <code>src/jobs/</code>.</li>
 <li>Queue a job of the new type.
 <ul>
 <li>See <a href="https://github.com/uoregon-libraries/newspaper-curation-app/blob/main/src/jobs/queue.go"><code>src/jobs/queue.go</code></a></li>
-<li>You might create a new <code>prepare...Job</code> function, or simply use an existing
-one with the new type</li>
-<li>You might need to create a new arg value, like <code>srcArg</code>, <code>forcedArg</code>, etc.
-for the processor to use</li>
-<li>You will certainly need to create the job and push it into a queue.
-Typically this happens in a <code>Queue...</code> function.</li>
+<li>You might need to create a new arg value in <code>src/models/pipeline.go</code>, like
+<code>JobArgSource</code>, <code>JobArgWorkflowStep</code>, etc.</li>
+<li>You will certainly need to create the job and push it into a queue. This
+happens in a <code>Queue...</code> function (e.g., <code>QueueBatchForDeletion</code>).</li>
 </ul>
 </li>
 <li>Make something run jobs of the new type.
