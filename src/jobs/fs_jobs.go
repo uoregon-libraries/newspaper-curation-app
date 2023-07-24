@@ -59,6 +59,7 @@ func (j *SyncRecursive) Process(*config.Config) bool {
 	var exclusions = strings.Split(j.db.Args[JobArgExclude], ",")
 	var err error
 
+	j.Logger.Infof("Copying %q to %q excluding %q", src, dst, strings.Join(exclusions, ","))
 	var srcInfo os.FileInfo
 	srcInfo, err = os.Stat(src)
 	if err != nil {
@@ -100,12 +101,12 @@ func (j *SyncRecursive) Process(*config.Config) bool {
 		switch {
 		case info.Mode().IsRegular():
 			if j.isExcluded(srcFull, exclusions) {
-				j.Logger.Infof("Found file %q, skipping per exclusion list", srcFull)
+				j.Logger.Debugf("Found file %q, skipping per exclusion list", srcFull)
 			} else {
-				j.Logger.Infof("Found file %q, copying", srcFull)
+				j.Logger.Debugf("Found file %q, copying", srcFull)
 				err = syncFileFast(srcFull, dstFull)
 				if err != nil {
-					j.Logger.Infof("Unable to copy %q to %q: %s", srcFull, dstFull, err)
+					j.Logger.Errorf("Unable to copy %q to %q: %s", srcFull, dstFull, err)
 					return false
 				}
 			}
@@ -184,7 +185,7 @@ func (j *VerifyRecursive) Process(*config.Config) bool {
 	var exclusions = strings.Split(j.db.Args[JobArgExclude], ",")
 
 	var parent = filepath.Dir(dst)
-	j.Logger.Infof("Creating parent dir %q", parent)
+	j.Logger.Debugf("Creating parent dir %q", parent)
 	var err = os.MkdirAll(parent, 0700)
 	if err != nil {
 		j.Logger.Errorf("Unable to create sync dir's parent %q: %s", parent, err)
@@ -194,12 +195,13 @@ func (j *VerifyRecursive) Process(*config.Config) bool {
 	// We re-join exclusions here so logs show what this job will actually do,
 	// which *should* be the same as what was requested, but could be different
 	// if something is busted
-	j.Logger.Infof("Syncing %q to %q. Exclusion list: %q", src, dst, strings.Join(exclusions, ","))
+	j.Logger.Infof("Recursively verifying copy of %q to %q excluding %q", src, dst, strings.Join(exclusions, ","))
 	err = fileutil.SyncDirectoryExcluding(src, dst, exclusions)
 	if err != nil {
 		j.Logger.Errorf("Unable to sync %q to %q: %s", src, dst, err)
 	}
 
+	j.Logger.Infof("Fast sync completed")
 	return err == nil
 }
 
