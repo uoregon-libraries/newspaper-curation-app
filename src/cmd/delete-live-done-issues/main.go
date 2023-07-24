@@ -62,7 +62,7 @@ func warning(issues []*models.Issue) {
 		"  %d issue(s) tied to batches which are 'closed' will be "+
 		ansiIntenseRed+"permanently removed from local disk"+ansiReset+".\n", len(issues))
 
-	var seenBatch = make(map[int]bool)
+	var seenBatch = make(map[int64]bool)
 	var batches []*models.Batch
 	for _, i := range issues {
 		if !seenBatch[i.BatchID] {

@@ -28,7 +28,7 @@ var allowedWorkflowSteps = []schema.WorkflowStep{
 
 // Issue contains metadata about an issue for the various workflow tools' use
 type Issue struct {
-	ID int `sql:",primary"`
+	ID int64 `sql:",primary"`
 
 	// Metadata
 	MARCOrgCode   string
@@ -52,20 +52,20 @@ type Issue struct {
 
 	/* Workflow information to keep track of the issue and what it needs */
 
-	BatchID                int                 // Which batch (if any) is this issue a part of?
+	BatchID                int64               // Which batch (if any) is this issue a part of?
 	Location               string              // Where is this issue on disk?
 	BackupLocation         string              // Where is the original backup located?  (born-digital only)
 	HumanName              string              // What is the issue's "human" name (for consistent folder naming)?
 	IsFromScanner          bool                // Is the issue scanned in-house?  (Born-digital == false)
 	WorkflowStepString     string              `sql:"workflow_step"` // If set, tells us what "human workflow" step we're on
 	WorkflowStep           schema.WorkflowStep `sql:"-"`
-	WorkflowOwnerID        int                 // Whose "desk" is this currently on?
+	WorkflowOwnerID        int64               // Whose "desk" is this currently on?
 	WorkflowOwnerExpiresAt time.Time           // When does the workflow owner lose ownership?
-	MetadataEntryUserID    int                 // Who entered metadata?
+	MetadataEntryUserID    int64               // Who entered metadata?
 	MetadataEnteredAt      time.Time           // When was metadata last saved for this issue?
-	ReviewedByUserID       int                 // Who reviewed metadata last?
+	ReviewedByUserID       int64               // Who reviewed metadata last?
 	MetadataApprovedAt     time.Time           // When was metadata approved / how long has this been waiting to batch?
-	RejectedByUserID       int                 // If not approved, who rejected the metadata?
+	RejectedByUserID       int64               // If not approved, who rejected the metadata?
 	Ignored                bool                // Is the issue bad / in prod / otherwise skipped from workflow scans?
 	DraftComment           string              // Any comment the curator is passing on to the reviewer
 
@@ -91,8 +91,8 @@ type FlaggedIssue struct {
 
 func findFlaggedIssues(where string, args ...any) ([]*FlaggedIssue, error) {
 	type _row struct {
-		IssueID         int
-		FlaggedByUserID int
+		IssueID         int64
+		FlaggedByUserID int64
 		Reason          string
 		CreatedAt       time.Time
 	}
@@ -129,7 +129,7 @@ func findFlaggedIssues(where string, args ...any) ([]*FlaggedIssue, error) {
 }
 
 // FindFlaggedIssue returns a flagged issue identified by the issue's batch id and id
-func FindFlaggedIssue(batchID, issueID int) (*FlaggedIssue, error) {
+func FindFlaggedIssue(batchID, issueID int64) (*FlaggedIssue, error) {
 	var list, err = findFlaggedIssues("batch_id = ? AND issue_id = ?", batchID, issueID)
 	if err != nil {
 		return nil, err
@@ -203,7 +203,7 @@ func (f *IssueFinder) InWorkflowStep(ws schema.WorkflowStep) *IssueFinder {
 }
 
 // BatchID filters issues associated with the given batch id
-func (f *IssueFinder) BatchID(batchID int) *IssueFinder {
+func (f *IssueFinder) BatchID(batchID int64) *IssueFinder {
 	f.conditions["batch_id = ?"] = batchID
 	return f
 }
@@ -216,7 +216,7 @@ func (f *IssueFinder) AllowIgnored() *IssueFinder {
 }
 
 // OnDesk filters issues "owned" by a given user id
-func (f *IssueFinder) OnDesk(userID int) *IssueFinder {
+func (f *IssueFinder) OnDesk(userID int64) *IssueFinder {
 	f.conditions["workflow_owner_id = ?"] = userID
 	f.conditions["workflow_owner_expires_at IS NOT NULL"] = nil
 	f.conditions["workflow_owner_expires_at > ?"] = time.Now()
@@ -234,7 +234,7 @@ func (f *IssueFinder) Available() *IssueFinder {
 // NotCuratedBy adds a filter for ensuring the given user didn't curate an
 // issue, for preventing us from loading hundreds of issues that cannot in fact
 // be reviewed by a given logged-in user.
-func (f *IssueFinder) NotCuratedBy(userID int) *IssueFinder {
+func (f *IssueFinder) NotCuratedBy(userID int64) *IssueFinder {
 	f.conditions["metadata_entry_user_id <> ?"] = userID
 	return f
 }
@@ -288,7 +288,7 @@ func (f *IssueFinder) Count() (uint64, error) {
 }
 
 // FindIssue looks for an issue by its id
-func FindIssue(id int) (*Issue, error) {
+func FindIssue(id int64) (*Issue, error) {
 	var op = dbi.DB.Operation()
 	op.Dbg = dbi.Debug
 	var i = &Issue{}
@@ -414,7 +414,7 @@ func (i *Issue) WorkflowActions() []*Action {
 
 // Claim sets the workflow owner to the given user id, and sets the expiration
 // time to a week from now
-func (i *Issue) Claim(byUserID int) error {
+func (i *Issue) Claim(byUserID int64) error {
 	i.claim(byUserID)
 	return i.Save(ActionTypeClaim, byUserID, "")
 }
@@ -461,7 +461,7 @@ func (i *Issue) Pipelines() ([]*Pipeline, error) {
 
 // claim updates metadata without writing to the database so internal
 // functions can use this as just one step of the update process
-func (i *Issue) claim(byUserID int) {
+func (i *Issue) claim(byUserID int64) {
 	// *Never* let an empty or system user claim anything!
 	if byUserID <= 0 {
 		return
@@ -472,7 +472,7 @@ func (i *Issue) claim(byUserID int) {
 }
 
 // Unclaim removes the workflow owner and resets the workflow expiration time
-func (i *Issue) Unclaim(byUserID int) error {
+func (i *Issue) Unclaim(byUserID int64) error {
 	i.unclaim()
 	return i.Save(ActionTypeUnclaim, byUserID, "")
 }
@@ -487,7 +487,7 @@ func (i *Issue) unclaim() {
 // QueueForMetadataReview sets the issue as being ready for review, which
 // involves changing workflow metadata as well as moving any in-draft comments
 // to the real comments list
-func (i *Issue) QueueForMetadataReview(curatorID int) error {
+func (i *Issue) QueueForMetadataReview(curatorID int64) error {
 	// Update workflow step and record the curator id
 	i.WorkflowStep = schema.WSAwaitingMetadataReview
 	i.MetadataEntryUserID = curatorID
@@ -506,7 +506,7 @@ func (i *Issue) QueueForMetadataReview(curatorID int) error {
 
 // ApproveMetadata moves the issue to the final workflow step (e.g., no more
 // manual steps) and sets the reviewer id to that which was passed in
-func (i *Issue) ApproveMetadata(reviewerID int) error {
+func (i *Issue) ApproveMetadata(reviewerID int64) error {
 	i.unclaim()
 	i.MetadataApprovedAt = time.Now()
 	i.ReviewedByUserID = reviewerID
@@ -516,7 +516,7 @@ func (i *Issue) ApproveMetadata(reviewerID int) error {
 
 // RejectMetadata sends the issue back to the metadata entry user and saves the
 // reviewer's notes
-func (i *Issue) RejectMetadata(reviewerID int, notes string) error {
+func (i *Issue) RejectMetadata(reviewerID int64, notes string) error {
 	i.claim(i.MetadataEntryUserID)
 	i.RejectedByUserID = reviewerID
 	i.WorkflowStep = schema.WSReadyForMetadataEntry
@@ -526,7 +526,7 @@ func (i *Issue) RejectMetadata(reviewerID int, notes string) error {
 // ReportError adds an error message to the issue and flags it as being in the
 // "unfixable" state.  That state basically says that nobody can use NCA to fix
 // the problem, and it needs to be pulled and processed by hand.
-func (i *Issue) ReportError(userID int, message string) error {
+func (i *Issue) ReportError(userID int64, message string) error {
 	i.WorkflowStep = schema.WSUnfixableMetadataError
 	i.unclaim()
 	return i.Save(ActionTypeReportUnfixableError, userID, message)
@@ -535,7 +535,7 @@ func (i *Issue) ReportError(userID int, message string) error {
 // returnFor implements the issue and action logic we want when returning an
 // errored issue to NCA.  If deskID is nonzero, the issue is forced to the
 // given user's desk.
-func (i *Issue) returnFor(ws schema.WorkflowStep, ac ActionType, managerID, workflowOwnerID int, msg string) error {
+func (i *Issue) returnFor(ws schema.WorkflowStep, ac ActionType, managerID, workflowOwnerID int64, msg string) error {
 	if i.WorkflowStep != schema.WSUnfixableMetadataError {
 		return fmt.Errorf("invalid WorkflowStep %q: issue must be unfixable", i.WorkflowStep)
 	}
@@ -550,28 +550,28 @@ func (i *Issue) returnFor(ws schema.WorkflowStep, ac ActionType, managerID, work
 // ReturnForCuration is a manager-only action which forces an issue back to the
 // metadata entry queue after it had been marked unfixable.  If workflowOwnerID
 // is nonzero, that user becomes the new owner of the issue.
-func (i *Issue) ReturnForCuration(managerID, workflowOwnerID int, comment string) error {
+func (i *Issue) ReturnForCuration(managerID, workflowOwnerID int64, comment string) error {
 	return i.returnFor(schema.WSReadyForMetadataEntry, ActionTypeReturnCurate, managerID, workflowOwnerID, comment)
 }
 
 // ReturnForReview is a manager-only action which forces an issue back to the
 // metadata review queue after it had been marked unfixable.  If
 // workflowOwnerID is nonzero, that user becomes the new owner of the issue.
-func (i *Issue) ReturnForReview(managerID, workflowOwnerID int, comment string) error {
+func (i *Issue) ReturnForReview(managerID, workflowOwnerID int64, comment string) error {
 	return i.returnFor(schema.WSAwaitingMetadataReview, ActionTypeReturnReview, managerID, workflowOwnerID, comment)
 }
 
 // PrepForRemoval sets up the issue's metadata such that nothing else will
 // try to process it in any way as it waits for a job (or even a manual action)
 // to remove it
-func (i *Issue) PrepForRemoval(managerID int, message string) error {
+func (i *Issue) PrepForRemoval(managerID int64, message string) error {
 	i.unclaim()
 	i.WorkflowStep = schema.WSAwaitingProcessing
 	return i.Save(ActionTypeRemoveErrorIssue, managerID, message)
 }
 
 // Save creates or updates the issue with an associated action and optional message
-func (i *Issue) Save(action ActionType, userID int, message string) error {
+func (i *Issue) Save(action ActionType, userID int64, message string) error {
 	var op = dbi.DB.Operation()
 	op.Dbg = dbi.Debug
 	op.BeginTransaction()
@@ -590,7 +590,7 @@ func (i *Issue) SaveWithoutAction() error {
 }
 
 // SaveOp creates or updates the Issue in the issues table with a custom operation
-func (i *Issue) SaveOp(op *magicsql.Operation, action ActionType, userID int, message string) error {
+func (i *Issue) SaveOp(op *magicsql.Operation, action ActionType, userID int64, message string) error {
 	var a = NewIssueAction(i.ID, action)
 	a.UserID = userID
 	a.Message = message

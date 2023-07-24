@@ -11,7 +11,7 @@ import (
 
 // User identifies a person who has logged in via Apache's auth
 type User struct {
-	ID          int    `sql:",primary"`
+	ID          int64  `sql:",primary"`
 	Login       string `sql:",noupdate"`
 	RolesString string `sql:"roles"`
 	Guest       bool   `sql:"-"`
@@ -88,7 +88,7 @@ func FindActiveUserWithLogin(l string) *User {
 
 // FindUserByID looks up a user by the given ID - this can return inactive users
 // since it's just using a database ID, so there's no possible ambiguity
-func FindUserByID(id int) *User {
+func FindUserByID(id int64) *User {
 	// Hack to ensure we can just call standard finders to get the system user
 	if id == SystemUser.ID {
 		return SystemUser

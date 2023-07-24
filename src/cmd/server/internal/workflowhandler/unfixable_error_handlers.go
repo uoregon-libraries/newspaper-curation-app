@@ -74,7 +74,7 @@ func viewRemoveUnfixableFormHandler(resp *responder.Responder, i *Issue) {
 func returnErrorIssueHandler(resp *responder.Responder, i *Issue) {
 	var action = resp.Request.FormValue("action")
 	var comment = resp.Request.FormValue("comment")
-	var wID, _ = strconv.Atoi(resp.Request.FormValue("workflow_owner_id"))
+	var wID, _ = strconv.ParseInt(resp.Request.FormValue("workflow_owner_id"), 10, 64)
 	var err error
 
 	switch action {

@@ -30,7 +30,7 @@ type Responder struct {
 func getBatchResponder(w http.ResponseWriter, req *http.Request) (r *Responder, ok bool) {
 	r = &Responder{Responder: responder.Response(w, req)}
 	var idStr = mux.Vars(req)["batch_id"]
-	var id, err = strconv.Atoi(idStr)
+	var id, err = strconv.ParseInt(idStr, 10, 64)
 	if err != nil {
 		r.Error(http.StatusBadRequest, fmt.Sprintf("Error: %q is not a valid batch id; check your URL and try again", idStr))
 		return r, false

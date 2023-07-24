@@ -97,7 +97,7 @@ func AuditActionFromString(s string) AuditAction {
 
 // AuditLog represents the audit_logs table
 type AuditLog struct {
-	ID      int       `sql:",primary"`
+	ID      int64     `sql:",primary"`
 	When    time.Time "sql:\"`when`\""
 	IP      string
 	User    string

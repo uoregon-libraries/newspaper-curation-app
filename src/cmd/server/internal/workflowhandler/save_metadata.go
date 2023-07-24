@@ -43,8 +43,8 @@ func storeIssueMetadata(resp *responder.Responder, i *Issue) map[string]string {
 	// Look for warning ignore/acceptance
 	val = resp.Request.FormValue("ignore_warnings")
 	logger.Warnf("val: %q", val)
-	valNum, _ = strconv.Atoi(val)
-	if valNum == i.ID {
+	var ignoreID, _ = strconv.ParseInt(val, 10, 64)
+	if ignoreID == i.ID {
 		i.acceptWarnings = true
 	}
 

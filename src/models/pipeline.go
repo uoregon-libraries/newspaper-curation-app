@@ -43,11 +43,11 @@ const (
 // the same sequence as its creator, ensuring whatever would run next in the
 // sequence has to wait for the new job to run.
 type Pipeline struct {
-	ID          int `sql:",primary"`
+	ID          int64 `sql:",primary"`
 	Name        string
 	Description string
 	ObjectType  string
-	ObjectID    int
+	ObjectID    int64
 	CreatedAt   time.Time `sql:",readonly"`
 	StartedAt   time.Time
 	CompletedAt time.Time
@@ -72,7 +72,7 @@ func findPipelines(where string, args ...any) ([]*Pipeline, error) {
 }
 
 // findPipeline pulls the pipeline object for the given id
-func findPipeline(id int) (*Pipeline, error) {
+func findPipeline(id int64) (*Pipeline, error) {
 	var list, err = findPipelines("id = ?", id)
 	if len(list) == 0 {
 		return nil, err

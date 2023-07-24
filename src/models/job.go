@@ -104,8 +104,8 @@ const (
 
 // JobLog is a single log entry attached to a job
 type JobLog struct {
-	ID        int `sql:",primary"`
-	JobID     int
+	ID        int64 `sql:",primary"`
+	JobID     int64
 	CreatedAt time.Time `sql:",readonly"`
 	LogLevel  string
 	Message   string
@@ -113,15 +113,15 @@ type JobLog struct {
 
 // A Job is anything the app needs to process and track in the background
 type Job struct {
-	ID          int       `sql:",primary"`
+	ID          int64     `sql:",primary"`
 	CreatedAt   time.Time `sql:",readonly"`
 	StartedAt   time.Time `sql:",noinsert"`
 	CompletedAt time.Time `sql:",noinsert"`
 	Type        string    `sql:"job_type"`
-	ObjectID    int
+	ObjectID    int64
 	ObjectType  string
 	Status      string
-	PipelineID  int
+	PipelineID  int64
 	Sequence    int
 	RetryCount  int
 	logs        []*JobLog
@@ -156,7 +156,7 @@ func NewJob(t JobType, args map[string]string) *Job {
 }
 
 // FindJob gets a job by its id
-func FindJob(id int) (*Job, error) {
+func FindJob(id int64) (*Job, error) {
 	var jobs, err = findJobs("id = ?", id)
 	if len(jobs) == 0 {
 		return nil, err

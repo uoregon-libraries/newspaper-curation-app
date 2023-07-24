@@ -165,7 +165,7 @@ func editHandler(w http.ResponseWriter, req *http.Request) {
 
 func getMOC(r *responder.Responder) (moc *models.MOC, handled bool) {
 	var idStr = r.Request.FormValue("id")
-	var id, _ = strconv.Atoi(idStr)
+	var id, _ = strconv.ParseInt(idStr, 10, 64)
 	if id < 1 {
 		logger.Warnf("Invalid MOC id for request %q (%s)", r.Request.URL.Path, idStr)
 		r.Error(http.StatusBadRequest, "Invalid MOC id - try again or contact support")

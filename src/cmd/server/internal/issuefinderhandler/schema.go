@@ -46,7 +46,7 @@ func (i *Issue) Link() template.HTML {
 
 	default:
 		contents = "NCA Read-only page viewer"
-		href = path.Join(webutil.FullPath("workflow", strconv.Itoa(i.DatabaseID), "view"))
+		href = path.Join(webutil.FullPath("workflow", strconv.FormatInt(i.DatabaseID, 10), "view"))
 	}
 
 	return template.HTML(fmt.Sprintf(`<a href="%s">%s</a>`, href, contents))

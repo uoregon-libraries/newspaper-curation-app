@@ -162,7 +162,7 @@ func errorHTML(err apperr.Error) template.HTML {
 			href = v.Location[:len(v.Location)-5]
 		} else {
 			// In-process URLs have to be manually crafted
-			href = path.Join(webutil.FullPath("workflow", strconv.Itoa(v.IssueID), "view"))
+			href = path.Join(webutil.FullPath("workflow", strconv.FormatInt(v.IssueID, 10), "view"))
 		}
 		msg += fmt.Sprintf(`: <a href="%s">%s</a>`, href, v.Name)
 	}

@@ -74,7 +74,7 @@ func (j *Job) setLogger(level ltype.LogLevel) {
 }
 
 // Find looks up the job in the database and wraps it
-func Find(id int) *Job {
+func Find(id int64) *Job {
 	var dbJob, err = models.FindJob(id)
 	if err != nil {
 		logger.Errorf("Unable to look up job id %d: %s", id, err)

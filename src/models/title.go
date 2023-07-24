@@ -12,7 +12,7 @@ import (
 
 // Title holds records from the titles table
 type Title struct {
-	ID            int `sql:",primary"`
+	ID            int64 `sql:",primary"`
 	Name          string
 	LCCN          string
 	EmbargoPeriod string
@@ -36,7 +36,7 @@ func FindTitle(where string, args ...any) (*Title, error) {
 }
 
 // FindTitleByID wraps FindTitle to simplify basic finding
-func FindTitleByID(id int) (*Title, error) {
+func FindTitleByID(id int64) (*Title, error) {
 	return FindTitle("id = ?", id)
 }
 
