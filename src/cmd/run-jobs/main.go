@@ -392,6 +392,7 @@ func runAllQueues(conf *config.Config) {
 				models.JobTypeSetBatchNeedsStagingPurge,
 				models.JobTypeSetBatchLocation,
 				models.JobTypeIssueAction,
+				models.JobTypeBatchAction,
 				models.JobTypeCancelJob,
 				models.JobTypeDeleteBatch,
 			)

@@ -51,6 +51,7 @@ const (
 	JobTypeRemoveFile                  JobType = "remove_file"
 	JobTypeRenumberPages               JobType = "renumber_pages"
 	JobTypeIssueAction                 JobType = "record_issue_action"
+	JobTypeBatchAction                 JobType = "record_batch_action"
 	JobTypeCancelJob                   JobType = "cancel_job"
 )
 
@@ -86,6 +87,7 @@ var ValidJobTypes = []JobType{
 	JobTypeRemoveFile,
 	JobTypeRenumberPages,
 	JobTypeIssueAction,
+	JobTypeBatchAction,
 	JobTypeCancelJob,
 }
 

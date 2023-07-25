@@ -111,7 +111,7 @@ func QueueBatchJobs(name PipelineName, batch *Batch, jobs ...*Job) error {
 	defer op.EndTransaction()
 
 	batch.Status = BatchStatusPending
-	var err = batch.SaveOp(op)
+	var err = batch.SaveOpWithoutAction(op)
 	if err != nil {
 		return err
 	}

@@ -10,6 +10,7 @@ import (
 // Object types for consistency in the database
 const (
 	actionObjectTypeIssue = "issue"
+	actionObjectTypeBatch = "batch"
 )
 
 // ActionType holds machine-friendly text telling us what kind of action we
@@ -85,6 +86,16 @@ func newAction() *Action {
 func NewIssueAction(id int64, aType ActionType) *Action {
 	var a = newAction()
 	a.ObjectType = actionObjectTypeIssue
+	a.ActionType = string(aType)
+	a.ObjectID = id
+
+	return a
+}
+
+// newBatchAction returns an action pre-filled with some basic batch metadata
+func newBatchAction(id int64, aType ActionType) *Action {
+	var a = newAction()
+	a.ObjectType = actionObjectTypeBatch
 	a.ActionType = string(aType)
 	a.ObjectID = id
 

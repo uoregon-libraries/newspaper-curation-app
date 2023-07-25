@@ -202,7 +202,7 @@ func CreateBatch(webroot, moc string, issues []*Issue) (*Batch, error) {
 	defer op.EndTransaction()
 
 	var b = &Batch{MARCOrgCode: moc, CreatedAt: time.Now(), issues: issues, Status: BatchStatusPending}
-	var err = b.SaveOp(op)
+	var err = b.SaveOpWithoutAction(op)
 	if err != nil {
 		return nil, err
 	}
@@ -214,7 +214,7 @@ func CreateBatch(webroot, moc string, issues []*Issue) (*Batch, error) {
 		_ = i.SaveOp(op, ActionTypeInternalProcess, SystemUser.ID, fmt.Sprintf("added to batch %q", b.Name))
 	}
 
-	err = b.SaveOp(op)
+	err = b.SaveOpWithoutAction(op)
 	return b, err
 }
 
@@ -266,20 +266,41 @@ func (b *Batch) AwardYear() int {
 }
 
 // Save creates or updates the Batch in the batches table
-func (b *Batch) Save() error {
+func (b *Batch) Save(action ActionType, userID int64, message string) error {
+	var op = dbi.DB.Operation()
+	op.Dbg = dbi.Debug
+	return b.SaveOp(op, action, userID, message)
+}
+
+// SaveWithoutAction creates or updates the Batch without associating any kind
+// of action. This should be used sparingly.
+func (b *Batch) SaveWithoutAction() error {
+	var op = dbi.DB.Operation()
+	op.Dbg = dbi.Debug
+	return b.SaveOpWithoutAction(op)
+}
+
+// SaveOp saves the batch to the batches table with a custom operation for
+// easier transactions
+func (b *Batch) SaveOp(op *magicsql.Operation, action ActionType, userID int64, message string) error {
+	var a = newBatchAction(b.ID, action)
+	a.UserID = userID
+	a.Message = message
+
+	_ = a.SaveOp(op)
+	_ = b.SaveOpWithoutAction(op)
+	return op.Err()
+}
+
+// SaveOpWithoutAction is the transaction-friendly SaveWithoutAction. This
+// should of course be used sparingly.
+func (b *Batch) SaveOpWithoutAction(op *magicsql.Operation) error {
 	// Validate the batch status before doing anything else
 	var st = bs(b.Status)
 	if st.Description == "" {
 		return fmt.Errorf("invalid batch status: %s", b.Status)
 	}
-	var op = dbi.DB.Operation()
-	op.Dbg = dbi.Debug
-	return b.SaveOp(op)
-}
 
-// SaveOp saves the batch to the batches table with a custom operation for
-// easier transactions
-func (b *Batch) SaveOp(op *magicsql.Operation) error {
 	op.Save("batches", b)
 	return op.Err()
 }
@@ -334,7 +355,7 @@ func (b *Batch) AbortIssueFlagging() error {
 	defer op.EndTransaction()
 
 	b.Status = BatchStatusQCReady
-	var err = b.SaveOp(op)
+	var err = b.SaveOpWithoutAction(op)
 	if err != nil {
 		return err
 	}
@@ -361,7 +382,7 @@ func (b *Batch) SetLive() error {
 
 	b.Status = BatchStatusLive
 	b.WentLiveAt = time.Now()
-	_ = b.SaveOp(op)
+	_ = b.SaveOpWithoutAction(op)
 	op.Exec(`UPDATE issues SET ignored=1, workflow_step = ? WHERE batch_id = ?`, schema.WSInProduction, b.ID)
 
 	return op.Err()
@@ -376,7 +397,7 @@ func (b *Batch) Delete() error {
 
 	b.Status = BatchStatusDeleted
 	b.Location = ""
-	var err = b.SaveOp(op)
+	var err = b.SaveOpWithoutAction(op)
 	if err != nil {
 		return err
 	}
@@ -409,7 +430,7 @@ func (b *Batch) Close() error {
 	}
 
 	b.Status = BatchStatusLiveDone
-	return b.Save()
+	return b.SaveWithoutAction()
 }
 
 func (b *Batch) deserialize() error {

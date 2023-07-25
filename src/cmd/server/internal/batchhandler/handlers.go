@@ -18,7 +18,7 @@ import (
 func setStatus(r *Responder, status string, t *tmpl.Template) bool {
 	var oldStatus = r.batch.Status
 	r.batch.Status = status
-	var err = r.batch.Save()
+	var err = r.batch.SaveWithoutAction()
 	if err != nil {
 		// Since we're merely re-rending the template, we must put the batch back
 		// to its original state or the template could be weird/broken
@@ -136,7 +136,7 @@ func clearBatchStagingPurgeFlagHandler(w http.ResponseWriter, req *http.Request)
 
 	var old = r.batch.NeedStagingPurge
 	r.batch.NeedStagingPurge = false
-	var err = r.batch.Save()
+	var err = r.batch.SaveWithoutAction()
 	if err != nil {
 		// Since we're merely re-rending the template, we must put the batch back
 		// to its original state or the template could be weird/broken
@@ -195,7 +195,7 @@ func setArchivedHandler(w http.ResponseWriter, req *http.Request) {
 
 	r.batch.Status = models.BatchStatusLiveArchived
 	r.batch.ArchivedAt = time.Now()
-	var err = r.batch.Save()
+	var err = r.batch.SaveWithoutAction()
 	if err != nil {
 		logger.Criticalf(`Unable to flag batch %d (%s) as archived: %s`, r.batch.ID, r.batch.FullName(), err)
 
