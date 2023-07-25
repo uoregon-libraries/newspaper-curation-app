@@ -40,7 +40,7 @@ else
 fi
 
 echo Migrating the database
-$src/bin/migrate-database -c ./settings up
+sudo $src/bin/migrate-database -c ./settings up
 
 echo Copying in the new stuff
 sudo cp $src/bin/server $ncadir/
