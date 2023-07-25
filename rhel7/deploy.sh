@@ -39,9 +39,6 @@ else
   sudo cp $src/settings-example $ncadir/settings
 fi
 
-echo Migrating the database
-sudo $src/bin/migrate-database -c ./settings up
-
 echo Copying in the new stuff
 sudo cp $src/bin/server $ncadir/
 sudo cp $src/bin/run-jobs $ncadir/
@@ -53,6 +50,9 @@ sudo cp $src/rhel7/nca-workers.service $ncadir/
 sudo cp $src/rhel7/nca-rsyslog.conf /etc/rsyslog.d/nca.conf
 sudo cp -r $src/templates/ $ncadir/
 sudo cp -r $src/static/ $ncadir/
+
+echo Migrating the database
+sudo $src/bin/migrate-database -c ./settings up
 
 echo Doing a daemon reload and starting the service
 sudo systemctl enable $ncadir/nca-httpd.service
