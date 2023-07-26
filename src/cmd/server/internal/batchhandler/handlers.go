@@ -15,10 +15,10 @@ import (
 
 // setStatus centralizes the process of setting the status and handling the
 // info/alert needed on success or error
-func setStatus(r *Responder, status string, t *tmpl.Template) bool {
+func setStatus(r *Responder, status string, action models.ActionType, t *tmpl.Template) bool {
 	var oldStatus = r.batch.Status
 	r.batch.Status = status
-	var err = r.batch.SaveWithoutAction()
+	var err = r.batch.Save(action, r.Vars.User.ID, "")
 	if err != nil {
 		// Since we're merely re-rending the template, we must put the batch back
 		// to its original state or the template could be weird/broken
@@ -71,7 +71,7 @@ func qcReadyHandler(w http.ResponseWriter, req *http.Request) {
 		r.Error(http.StatusForbidden, "You are not permitted to load batches or flag them for having been loaded")
 		return
 	}
-	if !setStatus(r, models.BatchStatusQCReady, viewTmpl) {
+	if !setStatus(r, models.BatchStatusQCReady, models.ActionTypeFlagBatchQCReady, viewTmpl) {
 		return
 	}
 
@@ -103,12 +103,19 @@ func qcApproveHandler(w http.ResponseWriter, req *http.Request) {
 		return
 	}
 
-	var err = jobs.QueueCopyBatchForProduction(r.batch.Batch, conf.BatchProductionPath)
+	var err = r.batch.Save(models.ActionTypeApproveBatch, r.Vars.User.ID, "")
 	if err != nil {
-		logger.Criticalf(`Unable to queue batch-copy job for batch %d (%s): %s`, r.batch.ID, r.batch.FullName(), err)
+		logger.Criticalf(`Unable to log "approve batch" action for batch %d (%s): %s`, r.batch.ID, r.batch.FullName(), err)
+	} else {
+		err = jobs.QueueCopyBatchForProduction(r.batch.Batch, conf.BatchProductionPath)
+		if err != nil {
+			logger.Criticalf(`Unable to queue batch-copy job for batch %d (%s): %s`, r.batch.ID, r.batch.FullName(), err)
+		}
+	}
 
-		// Fully reset the batch so we can re-render without risk the job queue did
-		// something weird
+	// If either operation above gave an error, fully reset the batch so we can
+	// re-render without risk the job queue did something weird
+	if err != nil {
 		r, ok = getBatchResponder(w, req)
 		if !ok {
 			return
@@ -240,7 +247,7 @@ func qcRejectHandler(w http.ResponseWriter, req *http.Request) {
 	}
 
 	r.batch.NeedStagingPurge = r.batch.StatusMeta.Staging
-	if !setStatus(r, models.BatchStatusQCFlagIssues, rejectFormTmpl) {
+	if !setStatus(r, models.BatchStatusQCFlagIssues, models.ActionTypeRejectBatch, rejectFormTmpl) {
 		return
 	}
 
