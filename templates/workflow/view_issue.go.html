@@ -3,7 +3,7 @@
 {{template "issue_errors" (dict "Errors" .Data.Issue.Errors "Heading" "h2")}}
 
 {{if .Data.Issue.AllWorkflowActions}}
-  <h2>All Actions / Comments</h2>
+  <h2>Activity / Comment Logs</h2>
   {{template "issue_actions" (dict "Actions" .Data.Issue.AllWorkflowActions "User" .User)}}
 {{end}}
 
