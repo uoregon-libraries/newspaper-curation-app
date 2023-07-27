@@ -36,13 +36,22 @@ Brief description, if necessary
 
 ## v4.1.0
 
-Pipelines and filesystem job refactoring. This update is primarily focused on
-improving the syncing of batches across filesystem boundaries. All sync/verify
-jobs are completely redone to make failures (e.g., mount points dropping, CIFS
-file corruption issues) less cumbersome to fix.
+Pipelines, filesystem job refactoring, and batch actions.
 
-Some supporting changes and improvements to testing were also added, though for
-the most part these were born out needs found during the pipeline/job refactor.
+This update is primarily focused on improving the syncing of batches across
+filesystem boundaries. All sync/verify jobs are completely redone to make
+failures (e.g., mount points dropping, CIFS file corruption issues) less
+cumbersome to fix.
+
+A minor but useful change was also added to give an activity log (via NCA's
+"actions" DB table) to batches. This should make it a bit easier to know how to
+handle a batch, particularly when one goes to QC, gets rejected, and then
+returns to QC. In many cases the second round of QC can be a lot quicker than
+the first, but only if the QCer remembers this batch was already examined.
+Action logs should help there.
+
+Testing had some major changes as well, making it easier to do the
+dev/test/report loop. Which affects nobody but me. Still, pretty great stuff!
 
 ### Fixed
 
@@ -56,6 +65,10 @@ the most part these were born out needs found during the pipeline/job refactor.
 - New flag for job runner to auto-exit when there are no more jobs to run. This
   is primarily to enable fully scripted testing and shouldn't be used in
   production environments.
+- The batch page now displays an action log, similar to issues' actions. These
+  have been named "activity logs" now, to make it less confusing (batches have
+  a section for "Actions" already, and these so-called "actions" are really
+  just various activities people and NCA have done to an issue or batch).
 
 ### Changed
 
