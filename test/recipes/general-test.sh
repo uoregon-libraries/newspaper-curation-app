@@ -12,8 +12,8 @@ wait_db() {
 
 name=${1:-}
 if [[ $name == "" ]]; then
-  echo "You must enter a name for backups and reports"
-  exit 1
+  name=$(git describe --tags)
+  echo "No name was provided; using commit information from git: name is '$name'"
 fi
 
 make clean
