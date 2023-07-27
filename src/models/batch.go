@@ -130,7 +130,8 @@ type Batch struct {
 	// point this should be replaced
 	NeedStagingPurge bool
 
-	issues []*Issue
+	issues  []*Issue
+	actions []*Action
 }
 
 func bs(s string) BatchStatus {
@@ -263,6 +264,17 @@ func (b *Batch) FullName() string {
 // the most similar value we can produce
 func (b *Batch) AwardYear() int {
 	return b.CreatedAt.Year()
+}
+
+// Actions loads all actions tied to this batch and orders them in
+// chronological order (the newest are at the end of the list).
+func (b *Batch) Actions() ([]*Action, error) {
+	var err error
+	if b.actions == nil {
+		b.actions, err = findActionsByObjectTypeAndID(actionObjectTypeBatch, b.ID)
+	}
+
+	return b.actions, err
 }
 
 // Save creates or updates the Batch in the batches table
