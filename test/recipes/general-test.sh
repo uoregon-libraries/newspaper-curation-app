@@ -19,6 +19,7 @@ fi
 make clean
 make
 
+rm -f workers.log
 source scripts/localdev.sh
 
 if [[ ! -d ./backup/00-$name ]]; then
@@ -38,7 +39,7 @@ if [[ ! -d ./backup/01-$name ]]; then
   wait_db
 
   # Wait until DB is up and start workers
-  ./bin/run-jobs -c ./settings watchall --exit-when-done
+  ./bin/run-jobs -c ./settings watchall --exit-when-done 2>&1 | tee -a workers.log
 
   # Wait for jobs to finish
 
@@ -49,7 +50,7 @@ if [[ ! -d ./backup/01-$name ]]; then
   cd ..
 
   # If necessary, restart workers to make the PDF mover re-read the filesystem quicker
-  ./bin/run-jobs -c ./settings watchall --exit-when-done
+  ./bin/run-jobs -c ./settings watchall --exit-when-done 2>&1 | tee -a workers.log
 
   # Wait for jobs to complete (~10min)
 
@@ -73,7 +74,7 @@ if [[ ! -d ./backup/02-$name ]]; then
   cd ..
 
   # Start workers, wait for jobs to complete (~30sec)
-  ./bin/run-jobs -c ./settings watchall --exit-when-done
+  ./bin/run-jobs -c ./settings watchall --exit-when-done 2>&1 | tee -a workers.log
 
   # Stop workers, save state again
   ./manage backup 02-$name
@@ -89,11 +90,11 @@ wait_db
 ./bin/queue-batches -c ./settings
 
 # Start workers, wait for jobs to complete (~30sec)
-./bin/run-jobs -c ./settings watchall --exit-when-done
+./bin/run-jobs -c ./settings watchall --exit-when-done 2>&1 | tee -a workers.log
 
 echo "Approve batches manually in NCA, then press [ENTER] continue"
 read
-./bin/run-jobs -c ./settings watchall --exit-when-done
+./bin/run-jobs -c ./settings watchall --exit-when-done 2>&1 | tee -a workers.log
 
 # Batches' statuses in NCA should read "passed_qc", no jobs should be anything
 # other than "success"
