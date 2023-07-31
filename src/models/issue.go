@@ -623,14 +623,14 @@ func (i *Issue) SaveOpWithoutAction(op *magicsql.Operation) error {
 
 // serialize prepares struct data to work with the database fields better
 func (i *Issue) serialize() {
-	i.PageLabelsCSV = strings.Join(i.PageLabels, ",")
+	i.PageLabelsCSV = strings.Join(i.PageLabels, "␟")
 	i.WorkflowStepString = string(i.WorkflowStep)
 }
 
 // deserialize performs operations necessary to get the database data into a more
 // useful Go structure
 func (i *Issue) deserialize() {
-	i.PageLabels = strings.Split(i.PageLabelsCSV, ",")
+	i.PageLabels = strings.Split(i.PageLabelsCSV, "␟")
 	i.WorkflowStep = schema.WorkflowStep(i.WorkflowStepString)
 	i.setHumanName()
 }
