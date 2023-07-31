@@ -67,6 +67,13 @@ sql "
 " > $repdir/dump-batches.sql
 
 sql "
+  SELECT a.object_type, a.action_type, u.login, a.message
+  FROM actions a
+  LEFT OUTER JOIN users u ON (a.user_id = u.id)
+  ORDER BY a.object_type, a.action_type, u.login, a.message
+" > $repdir/dump-actions.sql
+
+sql "
   SELECT
     marc_org_code, date, date_as_labeled, volume, issue, edition,
     edition_label, page_labels_csv, is_from_scanner, workflow_step,

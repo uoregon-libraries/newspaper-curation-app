@@ -30,7 +30,7 @@
 <meta itemprop="name" content="Contributing to Documentation">
 <meta itemprop="description" content="How to help with NCA&#39;s docs">
 
-<meta itemprop="wordCount" content="708">
+<meta itemprop="wordCount" content="743">
 <meta itemprop="keywords" content="" /></head>
 <body><div class="container"><header>
 <h1>Newspaper Curation App</h1><a href="https://github.com/uoregon-libraries/newspaper-curation-app/" class="github"><i class="fab fa-github"></i></a>
@@ -50,11 +50,13 @@ installed with minimal fuss:
 <p>Once you have it, you can download the NCA codebase from Github and start
 editing.  Change to the <code>hugo</code> subdirectory in NCA, and you&rsquo;ll see all the
 content under <code>content/</code>.</p>
-<p>When you&rsquo;re in the <code>hugo</code> directory, you can simply run <code>hugo serve</code> to start a
-local server where you can then browse to something like
-<a href="http://localhost:1313/newspaper-curation-app"><code>http://localhost:1313/newspaper-curation-app/</code></a>
-in order to view the site.  Hugo is again 100% standalone, so you won&rsquo;t need
-nodejs, Ruby, etc. to compile the documentation.</p>
+<p>Normally you could use <code>hugo serve</code> to test out the documentation. But due to a
+bug in the theme we chose, documentation generation is inconsistent and doesn&rsquo;t
+actually do what it should every time.</p>
+<p>The solution: <code>make docserver</code>. This uses whatever is in <code>docs</code>, but copies it
+into a <code>localdocs</code> directory, replaces URLs to work locally, and fires up an
+Apache web server listening on localhost:8080. This ensures that what you&rsquo;re
+testing locally is in fact whatever you generated most recently in <code>docs</code>.</p>
 <h2 id="magic--rules">Magic / Rules</h2>
 <p>Everything under <code>hugo/content</code> abides by certain rules.  These rules are few,
 but can be very confusing at first.  If you know Hugo pretty well already, this

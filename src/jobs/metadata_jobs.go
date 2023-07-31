@@ -87,7 +87,7 @@ type SetBatchStatus struct {
 // Process simply updates the batch status and saves to the database
 func (j *SetBatchStatus) Process(*config.Config) bool {
 	j.DBBatch.Status = j.db.Args[JobArgBatchStatus]
-	var err = j.DBBatch.Save()
+	var err = j.DBBatch.SaveWithoutAction()
 	if err != nil {
 		j.Logger.Errorf("Unable to update status for batch %d: %s", j.DBBatch.ID, err)
 	}
@@ -103,7 +103,7 @@ type SetBatchNeedsStagingPurge struct {
 // Process sets NeedsStagingPurge to true
 func (j *SetBatchNeedsStagingPurge) Process(*config.Config) bool {
 	j.DBBatch.NeedStagingPurge = true
-	var err = j.DBBatch.Save()
+	var err = j.DBBatch.SaveWithoutAction()
 	if err != nil {
 		j.Logger.Errorf("Unable to flag batch %d as needing a staging purge: %s", j.DBBatch.ID, err)
 	}
@@ -119,7 +119,7 @@ type SetBatchLocation struct {
 // Process just updates the batch's location field
 func (j *SetBatchLocation) Process(*config.Config) bool {
 	j.DBBatch.Location = j.db.Args[JobArgLocation]
-	var err = j.DBBatch.Save()
+	var err = j.DBBatch.SaveWithoutAction()
 	if err != nil {
 		j.Logger.Errorf("Error setting batch.location for id %d: %s", j.DBBatch.ID, err)
 		return false
@@ -146,6 +146,23 @@ func (j *RecordIssueAction) Process(*config.Config) bool {
 	var err = j.DBIssue.Save(models.ActionTypeInternalProcess, models.SystemUser.ID, j.db.Args[JobArgMessage])
 	if err != nil {
 		j.Logger.Errorf("Error recording internal issue action for id %d: %s", j.DBIssue.ID, err)
+		return false
+	}
+
+	return true
+}
+
+// RecordBatchAction adds an action to the Batch in question
+type RecordBatchAction struct {
+	*BatchJob
+}
+
+// Process adds the action to the database
+func (j *RecordBatchAction) Process(*config.Config) bool {
+	// Same as issue action: yes this is waste of cycles, but it ensures consistency
+	var err = j.DBBatch.Save(models.ActionTypeInternalProcess, models.SystemUser.ID, j.db.Args[JobArgMessage])
+	if err != nil {
+		j.Logger.Errorf("Error recording internal batch action for id %d: %s", j.DBBatch.ID, err)
 		return false
 	}
 

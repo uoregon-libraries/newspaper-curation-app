@@ -73,6 +73,8 @@ func DBJobToProcessor(dbJob *models.Job) Processor {
 		return &RenumberPages{IssueJob: NewIssueJob(dbJob)}
 	case models.JobTypeIssueAction:
 		return &RecordIssueAction{IssueJob: NewIssueJob(dbJob)}
+	case models.JobTypeBatchAction:
+		return &RecordBatchAction{BatchJob: NewBatchJob(dbJob)}
 	case models.JobTypeCancelJob:
 		return &CancelJob{JobJob: NewJobJob(dbJob)}
 	default:

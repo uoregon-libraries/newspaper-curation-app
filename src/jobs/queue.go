@@ -199,7 +199,9 @@ func getJobsForMakeBatch(batch *models.Batch, pth string) []*models.Job {
 		models.NewJob(models.JobTypeRenameDir, makeSrcDstArgs(wipDir, finalDir)),
 		batch.BuildJob(models.JobTypeSetBatchLocation, makeLocArgs(finalDir)),
 		batch.BuildJob(models.JobTypeSetBatchStatus, makeBSArgs(models.BatchStatusStagingReady)),
+		batch.BuildJob(models.JobTypeBatchAction, makeActionArgs("created batch")),
 		batch.BuildJob(models.JobTypeWriteBagitManifest, nil),
+		batch.BuildJob(models.JobTypeBatchAction, makeActionArgs("wrote bagit manifest")),
 	}
 }
 
@@ -330,6 +332,7 @@ func QueueBatchFinalizeIssueFlagging(batch *models.Batch, flagged []*models.Flag
 
 	// Remove all the no-longer-useful flagged issue data
 	jobs = append(jobs, batch.BuildJob(models.JobTypeEmptyBatchFlaggedIssuesList, nil))
+	jobs = append(jobs, batch.BuildJob(models.JobTypeBatchAction, makeActionArgs("removed flagged issues from batch")))
 
 	// Regenerate batch
 	jobs = append(jobs, getJobsForMakeBatch(batch, batchOutputPath)...)
@@ -364,6 +367,7 @@ func QueueBatchForDeletion(batch *models.Batch, flagged []*models.FlaggedIssue) 
 
 	// Destroy the batch
 	jobs = append(jobs, batch.BuildJob(models.JobTypeDeleteBatch, nil))
+	jobs = append(jobs, batch.BuildJob(models.JobTypeBatchAction, makeActionArgs("deleted batch")))
 
 	return models.QueueBatchJobs(models.PNBatchDeletion, batch, jobs...)
 }
@@ -376,6 +380,7 @@ func QueueCopyBatchForProduction(batch *models.Batch, prodBatchRoot string) erro
 
 	jobs = append(jobs, batch.BuildJob(models.JobTypeValidateTagManifest, nil))
 	jobs = append(jobs, getJobsForCopyDir(batch.Location, dst, "*.tif", "*.tiff", "*.TIF", "*.TIFF", "*.tar.bz", "*.tar")...)
+	jobs = append(jobs, batch.BuildJob(models.JobTypeBatchAction, makeActionArgs("copied core batch files to production")))
 	jobs = append(jobs, batch.BuildJob(models.JobTypeSetBatchNeedsStagingPurge, nil))
 	jobs = append(jobs, batch.BuildJob(models.JobTypeSetBatchStatus, makeBSArgs(models.BatchStatusPassedQC)))
 
@@ -390,6 +395,7 @@ func QueueBatchGoLiveProcess(batch *models.Batch, batchArchivePath string) error
 	var jobs []*models.Job
 
 	jobs = append(jobs, getJobsForMoveDir(batch.Location, finalPath)...)
+	jobs = append(jobs, batch.BuildJob(models.JobTypeBatchAction, makeActionArgs("moved batch to archive location")))
 	jobs = append(jobs, batch.BuildJob(models.JobTypeSetBatchLocation, makeLocArgs("")))
 	jobs = append(jobs, batch.BuildJob(models.JobTypeMarkBatchLive, nil))
 

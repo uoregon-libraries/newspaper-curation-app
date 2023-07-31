@@ -223,7 +223,14 @@ func flagIssue(r *Responder) {
 }
 
 func abortBatch(r *Responder) {
-	var err = r.batch.AbortIssueFlagging()
+	var err = r.batch.Save(models.ActionTypeAbortBatchRejection, r.Vars.User.ID, "")
+	if err != nil {
+		logger.Criticalf(`Unable to log "abort batch rejection" action for batch %d (%s): %s`, r.batch.ID, r.batch.Name, err)
+		r.Error(http.StatusInternalServerError, "Database error trying to reset the batch. Try again or contact support.")
+		return
+	}
+
+	err = r.batch.AbortIssueFlagging()
 	if err != nil {
 		logger.Criticalf("Unable to abort issue flagging for batch %d (%s): %s", r.batch.ID, r.batch.Name, err)
 		r.Error(http.StatusInternalServerError, "Database error trying to reset the batch. Try again or contact support.")
@@ -235,6 +242,13 @@ func abortBatch(r *Responder) {
 }
 
 func finalizeBatch(r *Responder) {
+	var err = r.batch.Save(models.ActionTypeFinalizeBatch, r.Vars.User.ID, "")
+	if err != nil {
+		logger.Criticalf(`Unable to log "finalize batch" action for batch %d (%s): %s`, r.batch.ID, r.batch.Name, err)
+		r.Error(http.StatusInternalServerError, "Error trying to finalize the batch. Try again or contact support.")
+		return
+	}
+
 	// If all issues were flagged for removal, we delete the batch entirely
 	if len(r.issues) == len(r.flaggedIssues) {
 		deleteBatch(r)
@@ -243,7 +257,7 @@ func finalizeBatch(r *Responder) {
 
 	// There are enough moving pieces here that we have to queue this up in the
 	// background rather than just run a quick DB operation or something
-	var err = jobs.QueueBatchFinalizeIssueFlagging(r.batch.Batch, r.flaggedIssues, conf.BatchOutputPath)
+	err = jobs.QueueBatchFinalizeIssueFlagging(r.batch.Batch, r.flaggedIssues, conf.BatchOutputPath)
 	if err != nil {
 		logger.Criticalf("Unable to queue job to finalize issue flagging for batch %d (%s): %s", r.batch.ID, r.batch.Name, err)
 		r.Error(http.StatusInternalServerError, "Error trying to finalize the batch. Try again or contact support.")

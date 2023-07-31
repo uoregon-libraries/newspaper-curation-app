@@ -10,6 +10,7 @@ import (
 // Object types for consistency in the database
 const (
 	actionObjectTypeIssue = "issue"
+	actionObjectTypeBatch = "batch"
 )
 
 // ActionType holds machine-friendly text telling us what kind of action we
@@ -29,6 +30,11 @@ const (
 	ActionTypeRemoveErrorIssue     ActionType = "remove-error-issue"
 	ActionTypeClaim                ActionType = "claim-issue"
 	ActionTypeUnclaim              ActionType = "unclaim-issue"
+	ActionTypeApproveBatch         ActionType = "approve-batch"
+	ActionTypeRejectBatch          ActionType = "reject-batch"
+	ActionTypeFinalizeBatch        ActionType = "finalize-batch"
+	ActionTypeAbortBatchRejection  ActionType = "abort-reject-batch"
+	ActionTypeFlagBatchQCReady     ActionType = "flag-batch-qc-ready"
 )
 
 // Describe gives a human-readable explanation of what happened when a given
@@ -57,6 +63,16 @@ func (at ActionType) Describe() string {
 		return "claimed the issue"
 	case ActionTypeUnclaim:
 		return "removed the issue from the prior owner's desk"
+	case ActionTypeApproveBatch:
+		return "approved the batch to be loaded into production"
+	case ActionTypeRejectBatch:
+		return "rejected the batch"
+	case ActionTypeAbortBatchRejection:
+		return "returned the batch to QC with no changes"
+	case ActionTypeFinalizeBatch:
+		return "finalized the batch for rebuild after rejecting one or more issues"
+	case ActionTypeFlagBatchQCReady:
+		return "flagged the batch as being ready for QC"
 	default:
 		return string(at)
 	}
@@ -85,6 +101,16 @@ func newAction() *Action {
 func NewIssueAction(id int64, aType ActionType) *Action {
 	var a = newAction()
 	a.ObjectType = actionObjectTypeIssue
+	a.ActionType = string(aType)
+	a.ObjectID = id
+
+	return a
+}
+
+// newBatchAction returns an action pre-filled with some basic batch metadata
+func newBatchAction(id int64, aType ActionType) *Action {
+	var a = newAction()
+	a.ObjectType = actionObjectTypeBatch
 	a.ActionType = string(aType)
 	a.ObjectID = id
 

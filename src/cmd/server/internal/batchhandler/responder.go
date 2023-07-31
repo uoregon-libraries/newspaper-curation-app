@@ -60,7 +60,15 @@ func getBatchResponder(w http.ResponseWriter, req *http.Request) (r *Responder, 
 		r.Error(http.StatusInternalServerError, "Error trying to read batch's issues - try again or contact support")
 		return r, false
 	}
+	var actions []*models.Action
+	actions, err = r.batch.Actions()
+	if err != nil {
+		logger.Criticalf("Error reading actions for batch %d (%s): %s", r.batch.ID, r.batch.Name, err)
+		r.Error(http.StatusInternalServerError, "Error trying to read batch's activity log - try again or contact support")
+		return r, false
+	}
 
+	r.Vars.Data["Actions"] = actions
 	r.Vars.Data["FlaggedIssues"] = r.flaggedIssues
 	r.can = Can(r.Vars.User)
 	r.Vars.Data["Batch"] = r.batch

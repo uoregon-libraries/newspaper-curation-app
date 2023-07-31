@@ -30,7 +30,7 @@
 <meta itemprop="name" content="Installation">
 <meta itemprop="description" content="How to build and compile NCA">
 
-<meta itemprop="wordCount" content="479">
+<meta itemprop="wordCount" content="487">
 <meta itemprop="keywords" content="" /></head>
 <body><div class="container"><header>
 <h1>Newspaper Curation App</h1><a href="https://github.com/uoregon-libraries/newspaper-curation-app/" class="github"><i class="fab fa-github"></i></a>
@@ -95,16 +95,16 @@ system set up to compile the binaries.  With a suitable
 <code>docker-compose.override.yml-example</code>), the binaries are mounted into the
 container, allowing for quicker code changes.</p>
 <h2 id="database-setup">Database Setup</h2>
-<p>Creating / migrating the database can be done manually by
-executing the &ldquo;up&rdquo; sections of the various migration files, but it&rsquo;s <em>far</em>
-easier to just use <a href="https://github.com/pressly/goose">goose</a></p>
-<pre><code>go install github.com/pressly/goose/v3/cmd/goose@latest
-goose -dir ./db/migrations/ mysql &quot;&lt;user&gt;:&lt;password&gt;@tcp(&lt;db host&gt;:3306)/&lt;database name&gt;&quot; up
-</code></pre>
-<p><em>(Obviously you must replace <code>&lt;user&gt;</code>, <code>&lt;password&gt;</code>, <code>&lt;db host&gt;</code>, and <code>&lt;database name&gt;</code> with appropriate values for your environment!)</em></p>
-<p>If you use docker, the entrypoint script should migrate automatically whenever
+<p>Creating / migrating the database is easily done using the &ldquo;migrate-database&rdquo;
+binary compiled in a standard <code>make</code> run. This binary is a wrapper around Goose
+functionality, but you will generally only need to use the &ldquo;up&rdquo; command.
+Advanced users / devs may want to read more about <a href="https://github.com/pressly/goose">goose</a> to learn how
+it works and what other commands may be used.</p>
+<div class="highlight"><pre style="color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4"><code class="language-bash" data-lang="bash">make
+./bin/migrate-database -c ./settings up
+</code></pre></div><p>If you use docker, the entrypoint script should migrate automatically whenever
 the container starts up.  If you&rsquo;re doing development and break the automatic
-migration, just use the steps above inside the web container.</p>
+migration, just run <code>migrate-database</code> inside the web container.</p>
 <div class="edit-meta">
 
 <br></div><nav class="pagination"><a class="nav nav-prev" href="https://uoregon-libraries.github.io/newspaper-curation-app/setup/server-setup/" title="Server Setup"><i class="fas fa-arrow-left" aria-hidden="true"></i>&nbsp;Prev - Server Setup</a>
