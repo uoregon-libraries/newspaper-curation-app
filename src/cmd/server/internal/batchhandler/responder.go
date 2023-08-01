@@ -20,8 +20,9 @@ type Responder struct {
 
 	// These are only set up for some handlers, but when we need this data we
 	// don't want to have to re-pull from the database, check errors, etc.
-	flaggedIssues []*models.FlaggedIssue
-	issues        []*models.Issue
+	flaggedIssues   []*models.FlaggedIssue
+	unflaggedIssues []*models.Issue
+	issues          []*models.Issue
 }
 
 // getBatchResponder centralizes the most common handler logic where we require
@@ -60,6 +61,18 @@ func getBatchResponder(w http.ResponseWriter, req *http.Request) (r *Responder, 
 		r.Error(http.StatusInternalServerError, "Error trying to read batch's issues - try again or contact support")
 		return r, false
 	}
+
+	var isFlagged = make(map[string]bool)
+	for _, i := range r.flaggedIssues {
+		isFlagged[i.Issue.Key()] = true
+	}
+
+	for _, i := range r.issues {
+		if !isFlagged[i.Key()] {
+			r.unflaggedIssues = append(r.unflaggedIssues, i)
+		}
+	}
+
 	var actions []*models.Action
 	actions, err = r.batch.Actions()
 	if err != nil {
@@ -70,6 +83,7 @@ func getBatchResponder(w http.ResponseWriter, req *http.Request) (r *Responder, 
 
 	r.Vars.Data["Actions"] = actions
 	r.Vars.Data["FlaggedIssues"] = r.flaggedIssues
+	r.Vars.Data["UnflaggedIssues"] = r.unflaggedIssues
 	r.can = Can(r.Vars.User)
 	r.Vars.Data["Batch"] = r.batch
 	r.Vars.Data["Can"] = r.can
