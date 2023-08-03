@@ -85,6 +85,7 @@ upload_server() {
 }
 
 server() {
+  SETTINGS_PATH=$(pwd)/settings ./sftpgo/get_admin_api_key.sh --force >/dev/null
   docker compose up -d db iiif sftpgo
   wait_for_database
   make bin/server || return 1
