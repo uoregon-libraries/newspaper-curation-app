@@ -34,6 +34,27 @@ Brief description, if necessary
 ### Migration
 -->
 
+## v4.1.1
+
+Codename: "small fixes to stuff that's been lingering far too long."
+
+### Fixed
+
+- Various dev- and CI-specific improvements
+- Page labeling no longer breaks when a page's label includes a comma
+- When flagging issues in a rejected batch, already-flagged issues are no
+  longer able to be reflagged (causing an error)
+- In the issue upload screen, issues with an invalid folder name no longer
+  cause a flurry of incorrect "This issue appears to be a duplicate..."
+  messages.
+
+### Migration
+
+- Shut down NCA workers and HTTP daemon
+- Run database migrations to fix all existing page labels:
+  - `make && ./bin/migrate-database -c ./settings up`
+- Restart services
+
 ## v4.1.0
 
 Pipelines, filesystem job refactoring, and batch actions.
