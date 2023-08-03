@@ -69,9 +69,9 @@ func (v *CanValidation) owns(i *Issue) bool {
 
 // Claim returns true if a user can claim the given issue:
 //
-// - The issue must not already be owned
-// - The user must be allowed to perform actions on issues in the given issue's
-//   workflow step
+//   - The issue must not already be owned
+//   - The user must be allowed to perform actions on issues in the given issue's
+//     workflow step
 func (v *CanValidation) Claim(i *Issue) bool {
 	v.Prefix = "You cannot claim this issue"
 	v.Context = fmt.Sprintf("user %q trying to claim issue %d", v.User.Login, i.ID)

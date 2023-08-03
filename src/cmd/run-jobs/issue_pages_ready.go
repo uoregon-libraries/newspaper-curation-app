@@ -21,7 +21,7 @@ var notRenamedRegex = regexp.MustCompile(`(?i:^seq-[0-9]{4}.pdf)`)
 //
 // * The central last-modified check returns a value that's at least minAge ago
 // * No files exist that don't match the pdf regex
-//   * Dotfiles are the exception, as we simply ignore these since Bridge and Macs drop these everywhere
+//   - Dotfiles are the exception, as we simply ignore these since Bridge and Macs drop these everywhere
 func pageReviewIssueReady(path string, minAge time.Duration) bool {
 	var t, err = lastmod.Time(path)
 	if err != nil {

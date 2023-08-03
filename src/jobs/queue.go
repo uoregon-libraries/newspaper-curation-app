@@ -66,13 +66,13 @@ func getJobsForCopyDir(source, destination string, exclusions ...string) []*mode
 
 // getJobsForMoveDir returns the list of jobs common to moving a directory:
 //
-// - Copy files recursively, fast, and granularly (one job created per subdir)
-//   to a "work in progress" location
-// - Sync dir - redundant, but verifies all files copied successfully long
-//   enough after the copy to hopefully avoid any NFS / CIFS file caching that
-//   reports things wrong. "Bad" copies should be rectified here.
-// - Kill old directory and all its files
-// - Rename work-in-progress directory to final directory
+//   - Copy files recursively, fast, and granularly (one job created per subdir)
+//     to a "work in progress" location
+//   - Sync dir - redundant, but verifies all files copied successfully long
+//     enough after the copy to hopefully avoid any NFS / CIFS file caching that
+//     reports things wrong. "Bad" copies should be rectified here.
+//   - Kill old directory and all its files
+//   - Rename work-in-progress directory to final directory
 func getJobsForMoveDir(source, destination string, exclusions ...string) []*models.Job {
 	// Get the parent dir of the destination so we can craft a WIP dir
 	var dir, name = filepath.Split(filepath.Clean(destination))
