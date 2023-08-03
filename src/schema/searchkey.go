@@ -9,7 +9,7 @@ import (
 
 // validKey defines the format for a minimal issue-key-like search
 // string: LCCN, year, month, day, and edition
-var validKey = regexp.MustCompile(`^(\w+)(/\d+)?`)
+var validKey = regexp.MustCompile(`^(\w+)(/\d+)?$`)
 
 // Key defines the precise issue (or subset of issues) we want to
 // find.  Note that the structure here is very specific to this issue finder,
