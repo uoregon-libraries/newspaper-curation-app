@@ -58,4 +58,5 @@ func TestPartialSearchKeys(t *testing.T) {
 func TestInvalidSearchKey(t *testing.T) {
 	expectError("Key with bad month", "sn12345678/2000019901", "invalid date", t)
 	expectError("Key with weird date", "sn12345678/2000010001", "invalid date", t)
+	expectError("Key with invalid date format", "sn12345678/A01", "invalid issue key format", t)
 }
