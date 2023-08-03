@@ -17,9 +17,9 @@ type FinalizeBatchFlaggedIssue struct {
 }
 
 // Process gets the issue ready for the unfixable-error state:
-// - Clear batch id and workflow owner / expiry
-// - Create two action log entries: one for removing the issue from the batch,
-//   one for the error message, attributed to the user who flagged the issue
+//   - Clear batch id and workflow owner / expiry
+//   - Create two action log entries: one for removing the issue from the batch,
+//     one for the error message, attributed to the user who flagged the issue
 //
 // This function has copious error checking and logging. While technically
 // unnecessary (the DB operation uses transactions and defers errors), it

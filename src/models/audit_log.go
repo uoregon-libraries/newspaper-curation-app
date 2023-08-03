@@ -145,7 +145,7 @@ func (f *AuditLogFinder) order(order string) *AuditLogFinder {
 // audit_logs table without needing manual SQL or deep knowledge of the
 // database. It is meant to be ORM-like but with a very narrow scope:
 //
-//   AuditLogs().Between(time.Date(), time.Now()).ForUser("jechols").Limit(100).Fetch()
+//	AuditLogs().Between(time.Date(), time.Now()).ForUser("jechols").Limit(100).Fetch()
 func AuditLogs() *AuditLogFinder {
 	var f = &AuditLogFinder{conditions: make(map[string]any)}
 	f.conditions["action <> 'autosave'"] = nil

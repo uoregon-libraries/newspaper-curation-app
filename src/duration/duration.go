@@ -1,8 +1,8 @@
 // Package duration deals with very simple durations similarly to durations
 // defined by RFC 3339, but with a very simple scope:
-//     - A duration is only granular to the day
-//     - Values may have any number of spaces in them, which are ignored
-//     - Unit names can be short or long, e.g., "w", "week", or "weeks"
+//   - A duration is only granular to the day
+//   - Values may have any number of spaces in them, which are ignored
+//   - Unit names can be short or long, e.g., "w", "week", or "weeks"
 package duration
 
 import (

@@ -57,7 +57,8 @@ func dict(values ...any) (map[string]any, error) {
 }
 
 // option generates an <option> tag like so:
-//   <option value="(value)">(text)>
+//
+//	<option value="(value)">(text)>
 //
 // If current == value, the selected attribute is also set
 func option(text, value, current string) template.HTML {
