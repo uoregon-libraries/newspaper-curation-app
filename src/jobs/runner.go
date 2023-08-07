@@ -150,7 +150,7 @@ func (r *Runner) process(pr Processor) {
 	// Invalid jobs shouldn't realistically exist, but database errors have
 	// occasionally been known to happen and we don't want runners panicking
 	if !pr.Valid() {
-		r.attemptRetry(pr)
+		r.handleFailure(pr)
 		return
 	}
 
@@ -160,10 +160,10 @@ func (r *Runner) process(pr Processor) {
 	case PRSuccess:
 		r.handleSuccess(pr)
 	case PRFailure:
-		r.attemptRetry(pr)
+		r.handleFailure(pr)
 	case PRTryLater:
 		r.logger.Infof("TODO: implement non-failure retry")
-		r.attemptRetry(pr)
+		r.handleFailure(pr)
 	default:
 		r.logger.Fatalf("Invalid return from job Process(): %#v (job: %d)", resp, dbj.ID)
 	}
@@ -180,10 +180,10 @@ func (r *Runner) handleSuccess(pr Processor) {
 	r.logger.Infof("Finished job id %d - success", dbj.ID)
 }
 
-func (r *Runner) attemptRetry(pr Processor) {
+func (r *Runner) handleFailure(pr Processor) {
 	var dbj = pr.DBJob()
 	if dbj.RetryCount >= pr.MaxRetries() {
-		r.handleFailure(pr)
+		r.handleCriticalFailure(pr)
 		return
 	}
 
@@ -196,7 +196,7 @@ func (r *Runner) attemptRetry(pr Processor) {
 		dbj.ID, retryJob.ID, retryJob.RunAt, retryJob.RetryCount)
 }
 
-func (r *Runner) handleFailure(pr Processor) {
+func (r *Runner) handleCriticalFailure(pr Processor) {
 	var dbj = pr.DBJob()
 	dbj.Status = string(models.JobStatusFailed)
 
