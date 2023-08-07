@@ -162,8 +162,7 @@ func (r *Runner) process(pr Processor) {
 	case PRFailure:
 		r.handleFailure(pr)
 	case PRTryLater:
-		r.logger.Infof("TODO: implement non-failure retry")
-		r.handleFailure(pr)
+		r.handleTryLater(pr)
 	default:
 		r.logger.Fatalf("Invalid return from job Process(): %#v (job: %d)", resp, dbj.ID)
 	}
@@ -194,6 +193,15 @@ func (r *Runner) handleFailure(pr Processor) {
 	}
 	r.logger.Warnf("Failed job %d: retrying via job %d at %s (try #%d)",
 		dbj.ID, retryJob.ID, retryJob.RunAt, retryJob.RetryCount)
+}
+
+func (r *Runner) handleTryLater(pr Processor) {
+	var dbj = pr.DBJob()
+	var err = dbj.TryLater(time.Minute)
+	if err != nil {
+		r.logger.Criticalf("Unable to set job to try later (job: %d): %s", dbj.ID, err)
+		return
+	}
 }
 
 func (r *Runner) handleCriticalFailure(pr Processor) {
