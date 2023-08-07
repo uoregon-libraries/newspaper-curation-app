@@ -35,7 +35,7 @@ type MakeDerivatives struct {
 }
 
 // Process generates the derivatives for the job's issue
-func (md *MakeDerivatives) Process(c *config.Config) bool {
+func (md *MakeDerivatives) Process(c *config.Config) ProcessResponse {
 	md.Logger.Debugf("Starting make-derivatives job for issue id %d", md.DBIssue.ID)
 
 	md.OPJCompress = c.OPJCompress
@@ -57,12 +57,10 @@ func (md *MakeDerivatives) Process(c *config.Config) bool {
 	}
 
 	// Run our serial operations, failing on the first non-ok response
-	return RunWhileTrue(
-		md.findPDFs,
-		md.findTIFFs,
-		md.validateSourceFiles,
-		md.generateDerivatives,
-	)
+	if RunWhileTrue(md.findPDFs, md.findTIFFs, md.validateSourceFiles, md.generateDerivatives) {
+		return PRSuccess
+	}
+	return PRFailure
 }
 
 // findPDFs builds the list of Alto and JP2 derivative sources

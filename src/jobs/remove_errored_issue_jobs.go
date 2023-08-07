@@ -25,7 +25,7 @@ type WriteActionLog struct {
 
 // Process iterates over all workflow actions and writes them out to a text
 // buffer, which is then written to a file in the issue directory
-func (j *WriteActionLog) Process(*config.Config) bool {
+func (j *WriteActionLog) Process(*config.Config) ProcessResponse {
 	var errPath = filepath.Join(j.DBIssue.Location, "actions.txt")
 	var f = fileutil.NewSafeFile(errPath)
 
@@ -42,18 +42,18 @@ func (j *WriteActionLog) Process(*config.Config) bool {
 		if err != nil {
 			j.Logger.Errorf("Unable to write action log to %q: %s", errPath, err)
 			f.Cancel()
-			return false
+			return PRFailure
 		}
 	}
 
 	var err = f.Close()
 	if err != nil {
 		j.Logger.Errorf("Unable to write action log to %q: %s", errPath, err)
-		return false
+		return PRFailure
 	}
 
 	j.Logger.Infof("Action log written to %q", errPath)
-	return true
+	return PRSuccess
 }
 
 func wrapMessage(msg string) string {
@@ -84,24 +84,24 @@ type MoveDerivatives struct {
 // Process finds all derivative files, and moves them from the issue location
 // to the destination-arg location.  Derivatives, in this process, are defined
 // as anything with ".xml" or ".jp2" as its extension.
-func (j *MoveDerivatives) Process(*config.Config) bool {
+func (j *MoveDerivatives) Process(*config.Config) ProcessResponse {
 	var src = j.DBIssue.Location
 	var dst = j.db.Args[JobArgLocation]
 	if !fileutil.MustNotExist(dst) {
 		j.Logger.Errorf("Destination %q already exists", dst)
-		return false
+		return PRFailure
 	}
 	var err = os.MkdirAll(dst, 0700)
 	if err != nil {
 		j.Logger.Errorf("Unable to create directory %q: %s", dst, err)
-		return false
+		return PRFailure
 	}
 
 	var entries []fs.DirEntry
 	entries, err = os.ReadDir(src)
 	if err != nil {
 		j.Logger.Errorf("Unable to read source directory %q: %s", src, err)
-		return false
+		return PRFailure
 	}
 
 	for _, entry := range entries {
@@ -115,9 +115,9 @@ func (j *MoveDerivatives) Process(*config.Config) bool {
 		err = os.Rename(srcFull, dstFull)
 		if err != nil {
 			j.Logger.Errorf("Unable to move %q -> %q: %s", srcFull, dstFull, err)
-			return false
+			return PRFailure
 		}
 	}
 
-	return true
+	return PRSuccess
 }

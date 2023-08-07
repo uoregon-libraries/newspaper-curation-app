@@ -12,15 +12,15 @@ type WriteBagitManifest struct {
 
 // Process implements Processor, writing out the data manifest, bagit.txt, and
 // the tag manifest
-func (j *WriteBagitManifest) Process(*config.Config) bool {
+func (j *WriteBagitManifest) Process(*config.Config) ProcessResponse {
 	var b = bagit.New(j.DBBatch.Location)
 	var err = b.WriteTagFiles()
 	if err != nil {
 		j.Logger.Errorf("Unable to write bagit tag files for %q: %s", j.DBBatch.Location, err)
-		return false
+		return PRFailure
 	}
 
-	return true
+	return PRSuccess
 }
 
 // ValidateTagManifest verifies that the tagmanifest file accurately represents
@@ -31,18 +31,18 @@ type ValidateTagManifest struct {
 }
 
 // Process implements Processor, verifying the tag manifest
-func (j *ValidateTagManifest) Process(*config.Config) bool {
+func (j *ValidateTagManifest) Process(*config.Config) ProcessResponse {
 	var b = bagit.New(j.DBBatch.Location)
 	var err = b.ReadManifests()
 	if err != nil {
 		j.Logger.Errorf("Unable to read bagit manifests for %q: %s", j.DBBatch.Location, err)
-		return false
+		return PRFailure
 	}
 
 	err = b.GenerateTagSums()
 	if err != nil {
 		j.Logger.Errorf("Unable to generate bagit tag manifest for %q: %s", j.DBBatch.Location, err)
-		return false
+		return PRFailure
 	}
 
 	var discrepancies = bagit.Compare("tag manifest", b.ManifestTagSums, b.ActualTagSums)
@@ -54,8 +54,8 @@ func (j *ValidateTagManifest) Process(*config.Config) bool {
 		for _, s := range discrepancies {
 			j.Logger.Debugf("- %s", s)
 		}
-		return false
+		return PRFailure
 	}
 
-	return true
+	return PRSuccess
 }

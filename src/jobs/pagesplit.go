@@ -28,22 +28,25 @@ type PageSplit struct {
 // Process combines, splits, and then renames files so they're sequential in a
 // "best guess" order.  Files are then put into place for manual processors to
 // reorder if necessary, remove duped pages, etc.
-func (ps *PageSplit) Process(conf *config.Config) bool {
+func (ps *PageSplit) Process(conf *config.Config) ProcessResponse {
 	ps.Logger.Debugf("Processing issue id %d (%q)", ps.DBIssue.ID, ps.Issue.Key())
 	if !ps.makeTempFiles() {
-		return false
+		return PRFailure
 	}
 	defer ps.removeTempFiles()
 
 	ps.OutputDir = ps.db.Args[JobArgLocation]
 	if !fileutil.MustNotExist(ps.OutputDir) {
 		ps.Logger.Errorf("Output dir %q already exists", ps.OutputDir)
-		return false
+		return PRFailure
 	}
 
 	ps.GhostScript = conf.GhostScript
 	ps.MinPages = conf.MinimumIssuePages
-	return ps.process()
+	if ps.process() {
+		return PRSuccess
+	}
+	return PRFailure
 }
 
 func (ps *PageSplit) makeTempFiles() (ok bool) {

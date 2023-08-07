@@ -155,10 +155,17 @@ func (r *Runner) process(pr Processor) {
 	}
 
 	r.logger.Infof("Starting job id %d (%q)", dbj.ID, dbj.Type)
-	if pr.Process(r.config) {
+	var resp = pr.Process(r.config)
+	switch resp {
+	case PRSuccess:
 		r.handleSuccess(pr)
-	} else {
+	case PRFailure:
 		r.attemptRetry(pr)
+	case PRTryLater:
+		r.logger.Infof("TODO: implement non-failure retry")
+		r.attemptRetry(pr)
+	default:
+		r.logger.Fatalf("Invalid return from job Process(): %#v (job: %d)", resp, dbj.ID)
 	}
 }
 

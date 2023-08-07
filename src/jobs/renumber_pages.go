@@ -28,13 +28,13 @@ func splitExt(fname string) (prefix, ext string) {
 }
 
 // Process renumbers all page filenames
-func (j *RenumberPages) Process(*config.Config) bool {
+func (j *RenumberPages) Process(*config.Config) ProcessResponse {
 	j.Logger.Debugf("Starting renumber-pages job for issue id %d", j.DBIssue.ID)
 
 	j.Issue.FindFiles()
 	if len(j.Issue.Files) == 0 {
 		j.Logger.Errorf("No files found")
-		return false
+		return PRFailure
 	}
 
 	// First gather all the prefixes so we can map, for instance, "gray0356" to
@@ -62,11 +62,11 @@ func (j *RenumberPages) Process(*config.Config) bool {
 		var err = os.Rename(f.Location, newLoc)
 		if err != nil {
 			j.Logger.Errorf("Error renaming %q to %q: %s", f.Location, newLoc, err)
-			return false
+			return PRFailure
 		}
 	}
 
 	j.Issue.FindFiles()
 	j.Logger.Debugf("Successfully renumbered pages for issue %d", j.DBIssue.ID)
-	return true
+	return PRSuccess
 }
