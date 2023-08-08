@@ -4,7 +4,7 @@
 # files and templates.  The worker system would need a bit more, like the
 # openjpeg tools, poppler, etc., but still wouldn't need the whole Go stack or
 # a Maria DB client.
-FROM fedora:33
+FROM fedora:38
 MAINTAINER Jeremy Echols <jechols@uoregon.edu>
 
 RUN dnf update -y
