@@ -1,6 +1,6 @@
 module github.com/uoregon-libraries/newspaper-curation-app
 
-go 1.18
+go 1.21
 
 require (
 	github.com/Nerdmaster/magicsql v0.11.0
