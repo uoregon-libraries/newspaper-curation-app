@@ -81,9 +81,9 @@ func do(method string, uri string, body []byte) (data []byte, response int, err 
 
 // LoadBatch sends a command to ONI to load the batch at the given path. This
 // path must be absolute, but from the ONI system's perspective.
-func (r *RPC) LoadBatch(path string) {
+func (r *RPC) LoadBatch(name string) {
 	logger.Errorf("Not implemented")
-	// _, _, _ = r.post("admin/batch/load", map[string]string{"batch_path": path})
+	// _, _, _ = r.post("admin/batch/load", map[string]string{"batch_name": name})
 }
 
 // PurgeBatch sends a command to ONI to purge the batch identified by name.
