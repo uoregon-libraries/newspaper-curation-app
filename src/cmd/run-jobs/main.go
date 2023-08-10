@@ -390,6 +390,8 @@ func runAllQueues(conf *config.Config) {
 				models.JobTypeValidateTagManifest,
 				models.JobTypeMarkBatchLive,
 				models.JobTypeONILoadBatch,
+				models.JobTypeONIPurgeBatch,
+				models.JobTypeONIWaitForJob,
 			)
 		},
 		func() {

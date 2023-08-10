@@ -59,7 +59,39 @@ func (j *ONILoadBatch) Process(c *config.Config) ProcessResponse {
 	//   - General HTTP error, temporary failure, log
 	api.LoadBatch(j.DBBatch.FullName())
 
-	// TODO: queue up job to regularly poll ONI's job until complete
+	return PRFailure
+}
 
+// ONIPurgeBatch handles API calls to request a batch purge from ONI
+type ONIPurgeBatch struct {
+	*BatchJob
+}
+
+// Valid is always true for simplicity; it should be impossible to build a
+// broken job, and any problems will be found in Process() anyway
+func (j *ONIPurgeBatch) Valid() bool {
+	return true
+}
+
+// Process connects to ONI and requests a batch be purged
+func (j *ONIPurgeBatch) Process(c *config.Config) ProcessResponse {
+	return PRFailure
+}
+
+// ONIWaitForJob is a generic job to poll ONI until it reports that a given job
+// on its end has completed
+type ONIWaitForJob struct {
+	*Job
+}
+
+// Valid is always true for simplicity; it should be impossible to build a
+// broken job, and any problems will be found in Process() anyway
+func (j *ONIWaitForJob) Valid() bool {
+	return true
+}
+
+// Process connects to ONI and checks the status of the job. If it's complete,
+// this job is done. If it's pending, this job quietly retries later.
+func (j *ONIWaitForJob) Process(c *config.Config) ProcessResponse {
 	return PRFailure
 }
