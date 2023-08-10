@@ -1,0 +1,65 @@
+package jobs
+
+import (
+	"github.com/uoregon-libraries/newspaper-curation-app/src/config"
+	"github.com/uoregon-libraries/newspaper-curation-app/src/internal/openoni"
+)
+
+const (
+	serverTypeStaging = "staging"
+	serverTypeProd    = "production"
+)
+
+func getServerURL(j *Job, c *config.Config) string {
+	var st = j.db.Args[JobArgLocation]
+	switch st {
+	case serverTypeProd:
+		return c.NewsWebroot
+
+	case serverTypeStaging:
+		return c.StagingNewsWebroot
+
+	default:
+		j.Logger.Errorf("Invalid server type(%q: %q)", JobArgLocation, st)
+		return ""
+	}
+}
+
+// ONILoadBatch calls an RPC to load a batch into ONI
+type ONILoadBatch struct {
+	*BatchJob
+}
+
+// Valid is always true for simplicity; it should be impossible to build a
+// broken job, and any problems will be found in Process() anyway
+func (j *ONILoadBatch) Valid() bool {
+	return true
+}
+
+// Process sends the RPC request and handles its response, then kicks off a new
+// job to poll ONI and wait for its work to be done
+func (j *ONILoadBatch) Process(c *config.Config) ProcessResponse {
+	var serverURL = getServerURL(j.Job, c)
+	if serverURL == "" {
+		j.Logger.Errorf("Unable to determine server URL")
+		return PRFailure
+	}
+
+	var api, err = openoni.New(serverURL)
+	if err != nil {
+		j.Logger.Errorf("Error constructing ONI RPC: %s", err)
+		return PRFailure
+	}
+
+	// TODO: handle response
+	//   - Response of 409, retry later
+	//   - Other 4xx response, critical failure (no retry), log data
+	//   - 5xx response, report temporary failure, log data returned
+	//   - 2xx response, spawn new job ("wait for API process to complete") and return success
+	//   - General HTTP error, temporary failure, log
+	api.LoadBatch(j.DBBatch.FullName())
+
+	// TODO: queue up job to regularly poll ONI's job until complete
+
+	return PRFailure
+}

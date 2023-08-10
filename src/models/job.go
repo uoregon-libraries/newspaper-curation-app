@@ -53,6 +53,7 @@ const (
 	JobTypeIssueAction                 JobType = "record_issue_action"
 	JobTypeBatchAction                 JobType = "record_batch_action"
 	JobTypeCancelJob                   JobType = "cancel_job"
+	JobTypeONILoadBatch                JobType = "oni_load_batch"
 )
 
 // ValidJobTypes is the full list of job types which can exist in the jobs
@@ -89,6 +90,7 @@ var ValidJobTypes = []JobType{
 	JobTypeIssueAction,
 	JobTypeBatchAction,
 	JobTypeCancelJob,
+	JobTypeONILoadBatch,
 }
 
 // JobStatus represents the different states in which a job can exist
