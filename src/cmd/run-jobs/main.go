@@ -406,7 +406,6 @@ func runAllQueues(conf *config.Config) {
 				models.JobTypeEmptyBatchFlaggedIssuesList,
 				models.JobTypeIgnoreIssue,
 				models.JobTypeSetBatchStatus,
-				models.JobTypeSetBatchNeedsStagingPurge,
 				models.JobTypeSetBatchLocation,
 				models.JobTypeIssueAction,
 				models.JobTypeBatchAction,

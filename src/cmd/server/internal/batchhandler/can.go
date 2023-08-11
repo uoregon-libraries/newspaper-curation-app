@@ -29,14 +29,10 @@ func (c *CanValidation) View(b *Batch) bool {
 
 	var has = c.user.PermittedTo
 	switch b.Status {
-	case models.BatchStatusStagingReady:
-		return has(privilege.LoadBatches)
 	case models.BatchStatusQCReady:
 		return has(privilege.ViewQCReadyBatches)
 	case models.BatchStatusQCFlagIssues:
 		return has(privilege.RejectQCReadyBatches)
-	case models.BatchStatusPassedQC:
-		return has(privilege.LoadBatches)
 	case models.BatchStatusLive:
 		return has(privilege.ArchiveBatches)
 	case models.BatchStatusDeleted, models.BatchStatusPending, models.BatchStatusLiveDone, models.BatchStatusLiveArchived:
@@ -45,14 +41,6 @@ func (c *CanValidation) View(b *Batch) bool {
 
 	logger.Errorf("Can view batch: Unhandled status %q", b.Status)
 	return false
-}
-
-// Load is true if the user can load batches *and* b is in a loadable state
-func (c *CanValidation) Load(b *Batch) bool {
-	if !c.user.PermittedTo(privilege.LoadBatches) {
-		return false
-	}
-	return b.Status == models.BatchStatusStagingReady || b.Status == models.BatchStatusPassedQC
 }
 
 // Archive is true if the user can archive batches and b is ready for archiving

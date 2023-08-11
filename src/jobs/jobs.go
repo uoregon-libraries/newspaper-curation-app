@@ -39,8 +39,6 @@ func DBJobToProcessor(dbJob *models.Job) Processor {
 		return &ArchiveBackups{IssueJob: NewIssueJob(dbJob)}
 	case models.JobTypeSetBatchStatus:
 		return &SetBatchStatus{BatchJob: NewBatchJob(dbJob)}
-	case models.JobTypeSetBatchNeedsStagingPurge:
-		return &SetBatchNeedsStagingPurge{BatchJob: NewBatchJob(dbJob)}
 	case models.JobTypeSetBatchLocation:
 		return &SetBatchLocation{BatchJob: NewBatchJob(dbJob)}
 	case models.JobTypeCreateBatchStructure:

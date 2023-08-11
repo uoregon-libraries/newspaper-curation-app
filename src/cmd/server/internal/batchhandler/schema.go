@@ -30,16 +30,6 @@ func (b *Batch) Unavailable() bool {
 	return !b.StatusMeta.NeedsAction
 }
 
-// ReadyForStaging is true if the batch is ready to be loaded onto staging
-func (b *Batch) ReadyForStaging() bool {
-	return b.Status == models.BatchStatusStagingReady
-}
-
-// ReadyForProduction is true if the batch has passed QC
-func (b *Batch) ReadyForProduction() bool {
-	return b.Status == models.BatchStatusPassedQC
-}
-
 // ReadyForQC is true if the batch is awaiting a quality control check
 func (b *Batch) ReadyForQC() bool {
 	return b.Status == models.BatchStatusQCReady

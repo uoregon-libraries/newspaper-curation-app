@@ -62,12 +62,9 @@ func Setup(r *mux.Router, baseWebPath string, c *config.Config) {
 	var s = r.PathPrefix(basePath).Subrouter()
 	s.Path("").Handler(canView(listHandler))
 	s.Path("/{batch_id}").Methods("GET").Handler(canView(viewHandler))
-	s.Path("/{batch_id}/qc-ready").Methods("POST").Handler(canLoad(qcReadyHandler))
 	s.Path("/{batch_id}/approve").Methods("GET").Handler(canApprove(qcApproveFormHandler))
 	s.Path("/{batch_id}/approve").Methods("POST").Handler(canApprove(qcApproveHandler))
-	s.Path("/{batch_id}/purge-staging").Methods("POST").Handler(canLoad(clearBatchStagingPurgeFlagHandler))
-	s.Path("/{batch_id}/live").Methods("POST").Handler(canLoad(setLiveHandler))
-	s.Path("/{batch_id}/archive").Methods("POST").Handler(canLoad(setArchivedHandler))
+	s.Path("/{batch_id}/archive").Methods("POST").Handler(canArchive(setArchivedHandler))
 
 	// All these paths are related to the same multi-step operation (rejecting a
 	// batch, flagging issues, and finalizing it for rebuilding)
@@ -78,22 +75,19 @@ func Setup(r *mux.Router, baseWebPath string, c *config.Config) {
 
 	layout = responder.Layout.Clone()
 	layout.Funcs(tmpl.FuncMap{
-		"BatchesHomeURL":    func() string { return basePath },
-		"StagingRootURL":    func() string { return conf.StagingNewsWebroot },
-		"ViewURL":           func(b *Batch) string { return batchURL(b) },
-		"SetQCReadyURL":     func(b *Batch) string { return batchURL(b, "qc-ready") },
-		"SetLiveURL":        func(b *Batch) string { return batchURL(b, "live") },
-		"SetArchivedURL":    func(b *Batch) string { return batchURL(b, "archive") },
-		"ApproveURL":        func(b *Batch) string { return batchURL(b, "approve") },
-		"RejectURL":         func(b *Batch) string { return batchURL(b, "reject") },
-		"ClearPurgeFlagURL": func(b *Batch) string { return batchURL(b, "purge-staging") },
-		"FlagIssuesURL":     flagIssuesURL,
-		"StagingBatchURL":   func(b *Batch) string { return batchNewsURL(conf.StagingNewsWebroot, b) },
-		"ProdBatchURL":      func(b *Batch) string { return batchNewsURL(conf.NewsWebroot, b) },
+		"BatchesHomeURL":  func() string { return basePath },
+		"StagingRootURL":  func() string { return conf.StagingNewsWebroot },
+		"ViewURL":         func(b *Batch) string { return batchURL(b) },
+		"SetArchivedURL":  func(b *Batch) string { return batchURL(b, "archive") },
+		"ApproveURL":      func(b *Batch) string { return batchURL(b, "approve") },
+		"RejectURL":       func(b *Batch) string { return batchURL(b, "reject") },
+		"FlagIssuesURL":   flagIssuesURL,
+		"StagingBatchURL": func(b *Batch) string { return batchNewsURL(conf.StagingNewsWebroot, b) },
+		"ProdBatchURL":    func(b *Batch) string { return batchNewsURL(conf.NewsWebroot, b) },
 	})
 	layout.Path = path.Join(layout.Path, "batches")
 
-	layout.MustReadPartials("_batch_metadata.go.html", "_load_purge.go.html")
+	layout.MustReadPartials("_batch_metadata.go.html")
 	listTmpl = layout.MustBuild("list.go.html")
 	viewTmpl = layout.MustBuild("view.go.html")
 	approveFormTmpl = layout.MustBuild("approve_form.go.html")
