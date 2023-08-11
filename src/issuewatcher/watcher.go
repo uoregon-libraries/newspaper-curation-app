@@ -132,7 +132,7 @@ func (w *Watcher) Stop() {
 
 	// Wait for the signal that it's done, then clean up
 	w.Lock()
-	_ = <-w.done
+	<-w.done
 	w.status = finished
 	w.cleanupTempDir()
 	w.Unlock()

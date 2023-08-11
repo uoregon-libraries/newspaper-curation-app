@@ -11,6 +11,7 @@ require (
 	github.com/pressly/goose/v3 v3.13.4
 	github.com/uoregon-libraries/gopkg v0.24.0
 	golang.org/x/crypto v0.10.0
+	golang.org/x/text v0.11.0
 )
 
 require (

@@ -22,7 +22,6 @@ import (
 	"errors"
 	"fmt"
 	"hash/crc32"
-	"io/ioutil"
 	"os"
 	"os/exec"
 	"path/filepath"
@@ -141,13 +140,13 @@ func refreshFakemount(testDir string) {
 func moveSFTPs(testDir string) {
 	var sftpSourcePath = filepath.Join(testDir, "sources", "sftp")
 	var sftpDestPath = filepath.Join(testDir, "fakemount", "sftp")
-	var infos, err = ioutil.ReadDir(sftpSourcePath)
+	var entries, err = os.ReadDir(sftpSourcePath)
 	if err != nil {
 		l.Fatalf("Unable to read ./sources/sftp: %s", err)
 	}
-	for _, info := range infos {
-		var dirName = info.Name()
-		l.Infof("Processing SFTP directory %q", info.Name())
+	for _, entry := range entries {
+		var dirName = entry.Name()
+		l.Infof("Processing SFTP directory %q", entry.Name())
 		var issue, err = getDirParts(dirName)
 		if err != nil {
 			l.Fatalf("Unable to parse directory %q: %s", dirName, err)
@@ -169,7 +168,7 @@ func moveSFTPs(testDir string) {
 
 		// Now use fake-randomness to decide if we're building a combined pdf
 		var hashval = crc32.ChecksumIEEE([]byte(issue.date))
-		var issueSrcPath = filepath.Join(sftpSourcePath, info.Name())
+		var issueSrcPath = filepath.Join(sftpSourcePath, entry.Name())
 		if hashval%2 == 0 {
 			combinePDF(issueSrcPath, outPath)
 		} else {
@@ -255,13 +254,13 @@ func linkFiles(src, dst string, extensions ...string) {
 func moveScans(testDir string) {
 	var scansSourcePath = filepath.Join(testDir, "sources", "scans")
 	var scansDestPath = filepath.Join(testDir, "fakemount", "scans")
-	var infos, err = ioutil.ReadDir(scansSourcePath)
+	var entries, err = os.ReadDir(scansSourcePath)
 	if err != nil {
 		l.Fatalf("Unable to read %q: %s", scansSourcePath, err)
 	}
-	for _, info := range infos {
-		var dirName = info.Name()
-		l.Infof("Processing scans directory %q", info.Name())
+	for _, entry := range entries {
+		var dirName = entry.Name()
+		l.Infof("Processing scans directory %q", entry.Name())
 		var issue, err = getDirParts(dirName)
 		if err != nil {
 			l.Fatalf("Unable to parse directory %q: %s", dirName, err)
@@ -281,7 +280,7 @@ func moveScans(testDir string) {
 			l.Fatalf("Unable to create scans destination directory %q: %s", outPath, err)
 		}
 
-		var issueSrcPath = filepath.Join(scansSourcePath, info.Name())
+		var issueSrcPath = filepath.Join(scansSourcePath, entry.Name())
 		linkFiles(issueSrcPath, outPath, ".pdf", ".tif", ".tiff")
 
 		makeManifest(outPath)

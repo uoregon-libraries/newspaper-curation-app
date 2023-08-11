@@ -3,6 +3,9 @@ package privilege
 import (
 	"regexp"
 	"strings"
+
+	"golang.org/x/text/cases"
+	"golang.org/x/text/language"
 )
 
 // A Role defines a grouping of privileges
@@ -88,5 +91,6 @@ func (r *Role) Privileges() []*Privilege {
 // Title returns a slightly nicer string for display
 func (r *Role) Title() string {
 	// Uppercase all words, and also ensure "MARC" is fully capitalized
-	return strings.Title(strings.Replace(r.Name, "marc", "MARC", -1))
+	var c = cases.Title(language.AmericanEnglish)
+	return c.String(strings.Replace(r.Name, "marc", "MARC", -1))
 }

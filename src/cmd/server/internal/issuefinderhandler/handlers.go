@@ -6,7 +6,6 @@ import (
 
 	"github.com/gorilla/mux"
 	"github.com/uoregon-libraries/newspaper-curation-app/src/cmd/server/internal/responder"
-	"github.com/uoregon-libraries/newspaper-curation-app/src/config"
 	"github.com/uoregon-libraries/newspaper-curation-app/src/issuewatcher"
 	"github.com/uoregon-libraries/newspaper-curation-app/src/web/tmpl"
 )
@@ -14,7 +13,6 @@ import (
 var (
 	basePath string
 	watcher  *issuewatcher.Watcher
-	conf     *config.Config
 
 	// Layout is the base template, cloned from the responder's layout, from
 	// which all subpages are built
@@ -25,8 +23,7 @@ var (
 )
 
 // Setup sets up all the routing rules and other configuration
-func Setup(r *mux.Router, baseWebPath string, c *config.Config, w *issuewatcher.Watcher) {
-	conf = c
+func Setup(r *mux.Router, baseWebPath string, w *issuewatcher.Watcher) {
 	watcher = w
 	basePath = baseWebPath
 	var s = r.PathPrefix(basePath).Subrouter()

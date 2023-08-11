@@ -137,9 +137,7 @@ func (s *Searcher) findAllLiveBatches(cachePath string) ([]*chronam.BatchMetadat
 		if err != nil {
 			return nil, err
 		}
-		for _, b := range batchList.Batches {
-			batchMetadataList = append(batchMetadataList, b)
-		}
+		batchMetadataList = append(batchMetadataList, batchList.Batches...)
 	}
 
 	return batchMetadataList, nil

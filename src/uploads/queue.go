@@ -1,8 +1,6 @@
 package uploads
 
 import (
-	"fmt"
-
 	"github.com/uoregon-libraries/newspaper-curation-app/src/apperr"
 	"github.com/uoregon-libraries/newspaper-curation-app/src/internal/logger"
 	"github.com/uoregon-libraries/newspaper-curation-app/src/jobs"
@@ -13,7 +11,7 @@ import (
 func dbErr() apperr.Error {
 	return &schema.IssueError{
 		Err:  "database connection failure",
-		Msg:  fmt.Sprintf("Error queueing issue.  Try again or contact the system administrator."),
+		Msg:  "Error queueing issue.  Try again or contact the system administrator.",
 		Prop: true,
 	}
 }
@@ -21,7 +19,7 @@ func dbErr() apperr.Error {
 func invalidErr() apperr.Error {
 	return &schema.IssueError{
 		Err:  "issue is not valid for queueing",
-		Msg:  fmt.Sprintf("Issue is no longer valid and may have been changed since attempting to queue.  Try again or contact the system administrator."),
+		Msg:  "Issue is no longer valid and may have been changed since attempting to queue.  Try again or contact the system administrator.",
 		Prop: true,
 	}
 }

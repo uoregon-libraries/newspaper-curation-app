@@ -4,7 +4,6 @@ import (
 	"encoding/xml"
 	"fmt"
 	"io"
-	"io/ioutil"
 	"net/http"
 	"os"
 	"regexp"
@@ -84,7 +83,7 @@ func lookupMARC(t *Title, marcLoc string) error {
 	defer reader.Close()
 
 	var data []byte
-	data, err = ioutil.ReadAll(reader)
+	data, err = io.ReadAll(reader)
 	// An error reading the response is also not a deal-breaker, but a bit weirder
 	if err != nil {
 		return fmt.Errorf("reading response body: %w", err)

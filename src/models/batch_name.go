@@ -155,11 +155,11 @@ func RandomBatchName(seq uint32) string {
 	seq %= iterations
 
 	// Set a constant randomization seed
-	rand.Seed(int64(0xF00D1E5 + seedPlus))
+	var r = rand.New(rand.NewSource(0xF00D1E5 + int64(seedPlus)))
 
 	// Shuffle the lists
 	for _, list := range lists {
-		rand.Shuffle(len(list), func(i, j int) {
+		r.Shuffle(len(list), func(i, j int) {
 			list[i], list[j] = list[j], list[i]
 		})
 	}

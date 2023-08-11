@@ -109,9 +109,7 @@ func (md *MakeDerivatives) _findTIFFs() (ok bool) {
 	md.Logger.Debugf("Found %d TIFFs", len(tiffs))
 
 	md.JP2DerivativeSources = make([]string, len(tiffs))
-	for i, tiff := range tiffs {
-		md.JP2DerivativeSources[i] = tiff
-	}
+	copy(md.JP2DerivativeSources, tiffs)
 
 	return true
 }

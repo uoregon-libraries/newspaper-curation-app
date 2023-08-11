@@ -8,8 +8,8 @@ package main
 import (
 	"encoding/json"
 	"fmt"
-	"io/ioutil"
 	"log"
+	"os"
 	"strings"
 
 	"github.com/uoregon-libraries/gopkg/fileutil"
@@ -59,7 +59,7 @@ func getOpts() {
 
 	// If we have an issue list, read it into opts.IssueKeys
 	if opts.IssueList != "" {
-		var contents, err = ioutil.ReadFile(opts.IssueList)
+		var contents, err = os.ReadFile(opts.IssueList)
 		if err != nil {
 			c.UsageFail("Unable to open issue list file %#v: %s", opts.IssueList, err)
 		}

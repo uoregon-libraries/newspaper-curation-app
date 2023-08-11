@@ -17,7 +17,7 @@ import (
 // searchIssueError handles generic response logic for database errors which
 // can occur when searching for issues
 func searchIssueError(resp *responder.Responder) {
-	resp.Vars.Alert = template.HTML(fmt.Sprintf("Unable to search for issues; contact support or try again later."))
+	resp.Vars.Alert = template.HTML("Unable to search for issues; contact support or try again later.")
 	resp.Writer.WriteHeader(http.StatusInternalServerError)
 	resp.Render(responder.Empty)
 }

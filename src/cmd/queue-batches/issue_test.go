@@ -49,14 +49,14 @@ func TestWrapIssue(t *testing.T) {
 	var err error
 
 	dbi = makeIssue(badlccn, goodDate)
-	i, err = wrapIssue(dbi)
+	_, err = wrapIssue(dbi)
 	if err == nil {
 		t.Errorf("Issue with bad lccn shouldn't have worked")
 	}
 	t.Logf("Got error (this is expected): %s", err)
 
 	dbi = makeIssue(lccnSimple, invalidDate)
-	i, err = wrapIssue(dbi)
+	_, err = wrapIssue(dbi)
 	if err == nil {
 		t.Errorf("Issue with bad date shouldn't have worked")
 	}

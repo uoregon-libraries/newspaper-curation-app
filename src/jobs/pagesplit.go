@@ -2,7 +2,6 @@ package jobs
 
 import (
 	"fmt"
-	"io/ioutil"
 	"os"
 	"path/filepath"
 	"regexp"
@@ -55,7 +54,7 @@ func (ps *PageSplit) makeTempFiles() (ok bool) {
 		return false
 	}
 
-	ps.TempDir, err = ioutil.TempDir("", "splitter-pages-")
+	ps.TempDir, err = os.MkdirTemp("", "splitter-pages-")
 	if err != nil {
 		ps.Logger.Errorf("Unable to create temp dir for issue processing: %s", err)
 		return false

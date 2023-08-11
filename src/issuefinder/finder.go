@@ -153,12 +153,8 @@ func (f *Finder) FindInProcessIssues() (*Searcher, error) {
 
 // aggregate just puts the searcher's data into the Finder for global use
 func (f *Finder) aggregate(s *Searcher) {
-	for _, b := range s.Batches {
-		f.Batches = append(f.Batches, b)
-	}
-	for _, t := range s.Titles {
-		f.Titles = append(f.Titles, t)
-	}
+	f.Batches = append(f.Batches, s.Batches...)
+	f.Titles = append(f.Titles, s.Titles...)
 	for _, i := range s.Issues {
 		f.Issues = append(f.Issues, i)
 		f.IssueNamespace[i] = s.Namespace
