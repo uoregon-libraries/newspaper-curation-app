@@ -96,10 +96,7 @@ echo "Approve batches manually in NCA, then press [ENTER] continue"
 read
 workonce 2>&1 | tee -a workers.log
 
-# Batches' statuses in NCA should read "passed_qc", no jobs should be anything
-# other than "success"
-
-echo "Verify all batches' statuses are 'passed_qc', then press [ENTER] to continue"
+echo "Verify all batches' statuses are 'live', then press [ENTER] to continue"
 read
 
 cd test
