@@ -30,12 +30,6 @@ type ONILoadBatch struct {
 	*BatchJob
 }
 
-// Valid is always true for simplicity; it should be impossible to build a
-// broken job, and any problems will be found in Process() anyway
-func (j *ONILoadBatch) Valid() bool {
-	return true
-}
-
 // Process sends the RPC request and handles its response, then kicks off a new
 // job to poll ONI and wait for its work to be done
 func (j *ONILoadBatch) Process(c *config.Config) ProcessResponse {
@@ -65,12 +59,6 @@ func (j *ONILoadBatch) Process(c *config.Config) ProcessResponse {
 // ONIPurgeBatch handles API calls to request a batch purge from ONI
 type ONIPurgeBatch struct {
 	*BatchJob
-}
-
-// Valid is always true for simplicity; it should be impossible to build a
-// broken job, and any problems will be found in Process() anyway
-func (j *ONIPurgeBatch) Valid() bool {
-	return true
 }
 
 // Process connects to ONI and requests a batch be purged
