@@ -83,7 +83,7 @@ func do(method string, uri string, body []byte) (data []byte, response int, err 
 // path must be absolute, but from the ONI system's perspective.
 func (r *RPC) LoadBatch(name string) {
 	logger.Errorf("Not implemented")
-	// _, _, _ = r.post("admin/batch/load", map[string]string{"batch_name": name})
+	_, _, _ = r.post("admin/batch/load", map[string]string{"batch_name": name})
 }
 
 // PurgeBatch sends a command to ONI to purge the batch identified by name.
@@ -92,12 +92,12 @@ func (r *RPC) LoadBatch(name string) {
 // when the job finishes and its status.
 func (r *RPC) PurgeBatch(name string) {
 	logger.Errorf("Not implemented")
-	// _, _, _ = r.post("admin/batch/purge", map[string]string{"batch_name": name})
+	_, _, _ = r.post("admin/batch/purge", map[string]string{"batch_name": name})
 }
 
 // CheckJobStatus returns the status of an ONI job as well as any messages ONI
 // returns in the status request
 func (r *RPC) CheckJobStatus(jobid string) {
 	logger.Errorf("Not implemented")
-	// _, _, _ = r.get("job/status", map[string]string{"job_id": jobid})
+	_, _, _ = r.get("job/status", map[string]string{"job_id": jobid})
 }
