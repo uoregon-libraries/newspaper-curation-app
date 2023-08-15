@@ -84,7 +84,8 @@ function, `prep_for_testing`, which does the following:
 
 ## Run Workers
 
-Run the NCA job runner, e.g., `workers` if you sourced in the local dev script.
+Run the NCA job runner, e.g., `workers` or `workonce` if you sourced in the
+local dev script.
 
 Depending on how many sources you defined, and what type, this could take no
 time or it could take a very long time. Scanned images are processed the moment
