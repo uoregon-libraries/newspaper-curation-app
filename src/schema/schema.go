@@ -354,6 +354,21 @@ func (i *Issue) LastModified() time.Time {
 	return t
 }
 
+// SearchKey converts an issue's data to a search key, primarily for
+// dupe-checking. This calls ParseSearchKey, but adds extra checks for the
+// issue having a full set of data, which ParseSearchKey doesn't require.
+func (i *Issue) SearchKey() (*Key, error) {
+	var sKey, err = ParseSearchKey(i.Key())
+	if err != nil {
+		return sKey, err
+	}
+	if sKey.LCCN == "" || sKey.Year == 0 || sKey.Month == 0 || sKey.Day == 0 || sKey.Ed == 0 {
+		err = fmt.Errorf("invalid issue data; cannot generate a search key")
+	}
+
+	return sKey, err
+}
+
 // CheckDupes centralizes the logic for seeing if an issue has a duplicate in a
 // given lookup, adding a duplication error if there is a dupe and that dupe is
 // considered to be more "canonical" than this issue.  e.g., if there's an
@@ -362,7 +377,7 @@ func (i *Issue) LastModified() time.Time {
 func (i *Issue) CheckDupes(lookup *Lookup) {
 	// Get a search key for this issue.  If the issue key is invalid, that
 	// probably means a bad upload, and so dupe-checking doesn't really matter
-	var sKey, err = ParseSearchKey(i.Key())
+	var sKey, err = i.SearchKey()
 	if err != nil {
 		return
 	}
@@ -379,7 +394,7 @@ func (i *Issue) CheckDupes(lookup *Lookup) {
 func (i *Issue) CheckLiveDupes(lookup *Lookup) {
 	// Get a search key for this issue.  If the issue key is invalid, that
 	// probably means a bad upload, and so dupe-checking doesn't really matter
-	var sKey, err = ParseSearchKey(i.Key())
+	var sKey, err = i.SearchKey()
 	if err != nil {
 		return
 	}
