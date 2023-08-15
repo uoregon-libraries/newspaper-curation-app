@@ -80,17 +80,25 @@ if [[ ! -d ./backup/02-$name ]]; then
   ./manage backup 02-$name
 else
   echo "Detected backup 02; skipping processing"
-  echo "Restoring backup 02 to begin step 03"
-  ./manage restore 02-$name
+  if [[ ! -d ./backup/03-$name ]]; then
+    echo "Restoring backup 02 to begin step 03"
+    ./manage restore 02-$name
+  fi
 fi
 
-wait_db
+if [[ ! -d ./backup/03-$name ]]; then
+  wait_db
 
-# Generate batches
-./bin/queue-batches -c ./settings
+  # Generate batches
+  ./bin/queue-batches -c ./settings
 
-# Start workers, wait for jobs to complete (~30sec)
-workonce 2>&1 | tee -a workers.log
+  # Start workers, wait for jobs to complete (~30sec)
+  workonce 2>&1 | tee -a workers.log
+else
+  echo "Detected backup 03; skipping processing"
+  echo "Restoring backup 03 to begin step 04"
+  ./manage restore 03-$name
+fi
 
 echo "Approve batches manually in NCA, then press [ENTER] continue"
 read
