@@ -34,6 +34,23 @@ Brief description, if necessary
 ### Migration
 -->
 
+## v4.1.2
+
+Page labels can be entered by real humans again!
+
+### Changed
+
+- Dev:
+  - The docker image is now based on Fedora 38
+  - Docker and CircleCI now use Go 1.21
+
+### Fixed
+
+- Page labeling is fixed in the UI. TIL I need to test using the front-end app
+  more often, not just via automated SQL-based data entry.
+- Dev: added `workonce` function to `scripts/localdev.sh` for running workers
+  with `--exit-when-done` for a quicker one-off job run
+
 ## v4.1.1
 
 Codename: "small fixes to stuff that's been lingering far too long."
