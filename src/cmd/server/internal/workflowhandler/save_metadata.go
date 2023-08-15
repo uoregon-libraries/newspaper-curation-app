@@ -50,7 +50,7 @@ func storeIssueMetadata(resp *responder.Responder, i *Issue) map[string]string {
 
 	// This one's funny - we have to "deserialize" the label csv since the real
 	// structure isn't what we get from the web
-	i.PageLabels = strings.Split(i.PageLabelsCSV, ",")
+	i.PageLabels = strings.Split(i.PageLabelsCSV, "␟")
 
 	return changes
 }

@@ -105,3 +105,10 @@ workers() {
   make bin/run-jobs || return 1
   ./bin/run-jobs -c ./settings -v watchall
 }
+
+workonce() {
+  docker compose up -d db iiif sftpgo
+  wait_for_database
+  make bin/run-jobs || return 1
+  ./bin/run-jobs -c ./settings -v --exit-when-done watchall
+}
