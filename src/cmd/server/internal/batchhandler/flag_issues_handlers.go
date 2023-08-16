@@ -223,14 +223,7 @@ func flagIssue(r *Responder) {
 }
 
 func abortBatch(r *Responder) {
-	var err = r.batch.Save(models.ActionTypeAbortBatchRejection, r.Vars.User.ID, "")
-	if err != nil {
-		logger.Criticalf(`Unable to log "abort batch rejection" action for batch %d (%s): %s`, r.batch.ID, r.batch.Name, err)
-		r.Error(http.StatusInternalServerError, "Database error trying to reset the batch. Try again or contact support.")
-		return
-	}
-
-	err = r.batch.AbortIssueFlagging()
+	var err = r.batch.AbortIssueFlagging(r.Vars.User)
 	if err != nil {
 		logger.Criticalf("Unable to abort issue flagging for batch %d (%s): %s", r.batch.ID, r.batch.Name, err)
 		r.Error(http.StatusInternalServerError, "Database error trying to reset the batch. Try again or contact support.")

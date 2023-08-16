@@ -102,7 +102,7 @@ type EmptyBatchFlaggedIssuesList struct {
 // Process just executes AbortIssueFlagging to clear the table
 func (j *EmptyBatchFlaggedIssuesList) Process(*config.Config) ProcessResponse {
 	j.Logger.Debugf("Removing issues flagged for removal from batch %d (%s)", j.DBBatch.ID, j.DBBatch.Name)
-	var err = j.DBBatch.AbortIssueFlagging()
+	var err = j.DBBatch.EmptyFlaggedIssuesList()
 	if err != nil {
 		j.Logger.Errorf("Database error clearing table: %s", err)
 		return PRFailure
