@@ -98,6 +98,9 @@ func getOpts() (*config.Config, []string) {
 		warning + "This usage is not recommended" + reset + " due to the sheer number of queue " +
 		"names now in NCA. If this is used, the queue name has to be read from code. " +
 		"Consider it a test to prove you're really serious about doing this.")
+	c.AppendUsage(command + "run-one" + reset + ": runs a single job and exits. This is primarily for " +
+		"debugging a long pipeline where something is going wrong and you're not sure precisely where the " +
+		"state is getting broken.")
 	c.AppendUsage(command + "watch-page-review" + reset + ": Watches for issues awaiting page review " +
 		"(reordering or other manual processing) which are ready to be moved for " +
 		"metadata entry. No job is associated with this action, hence it must run on " +
@@ -182,6 +185,8 @@ func main() {
 		watchDigitizedScans(conf)
 	case "watch-page-review":
 		watchPageReview(conf)
+	case "run-one":
+		runSingleJob(conf)
 	case "watchall":
 		runAllQueues(conf)
 	case "force-rerun":
@@ -329,6 +334,15 @@ func watchDigitizedScans(conf *config.Config) {
 
 		// Try not to eat all the CPU
 		time.Sleep(time.Second)
+	}
+}
+
+// runSingleJob simply runs a single job from the queue and exits. The
+// filesystem watchers are not invoked. This is only suitable for debugging.
+func runSingleJob(conf *config.Config) {
+	var r = jobs.NewRunner(conf, logLevel, models.ValidJobTypes...)
+	if !r.ProcessNextPendingJob() {
+		logger.Infof("No pending jobs found; exiting without work")
 	}
 }
 

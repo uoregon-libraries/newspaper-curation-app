@@ -107,7 +107,7 @@ func (r *Runner) loopAvailableJobs() {
 	}()
 
 	// Loop until there aren't any jobs left to process
-	for r.processNext() {
+	for r.ProcessNextPendingJob() {
 		// If r.done() became true, we need to stop looping and let nature take
 		// its course....
 		if r.done() {
@@ -122,10 +122,10 @@ func (r *Runner) Stop() {
 	atomic.StoreInt32(&r.isDone, 1)
 }
 
-// processNext gets the oldest job this runner can process, sets its status to
-// in-process, and processes it.  If no processor was found, the return is
-// false and nothing happens.
-func (r *Runner) processNext() bool {
+// ProcessNextPendingJob gets the oldest job this runner can process, sets its
+// status to in-process, and processes it.  If no processor was found, the
+// return is false and nothing happens.
+func (r *Runner) ProcessNextPendingJob() bool {
 	var dbJob, err = models.PopNextPendingJob(r.jobTypes)
 
 	if err != nil {
