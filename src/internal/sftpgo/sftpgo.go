@@ -6,7 +6,7 @@ import (
 	"encoding/hex"
 	"encoding/json"
 	"fmt"
-	"io/ioutil"
+	"io"
 	mrand "math/rand"
 	"net/http"
 	"net/url"
@@ -24,8 +24,8 @@ func rndPass() string {
 	// regular random call, which is both "good enough" for an sftp password
 	// *and* very unlikely to happen anyway.
 	if err != nil {
-		mrand.Seed(time.Now().UnixNano())
-		mrand.Read(data)
+		var r = mrand.New(mrand.NewSource(time.Now().UnixNano()))
+		_, _ = r.Read(data)
 	}
 
 	return hex.EncodeToString(data)
@@ -143,7 +143,7 @@ func (a *API) _do(c *http.Client, req *http.Request) ([]byte, error) {
 	defer resp.Body.Close()
 
 	var data []byte
-	data, err = ioutil.ReadAll(resp.Body)
+	data, err = io.ReadAll(resp.Body)
 	if err == nil && resp.StatusCode >= 400 {
 		return data, fmt.Errorf("sftpgo server returned an unsuccessful operation: %d %s",
 			resp.StatusCode, http.StatusText(resp.StatusCode))

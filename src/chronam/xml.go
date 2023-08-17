@@ -3,7 +3,7 @@ package chronam
 import (
 	"encoding/xml"
 	"fmt"
-	"io/ioutil"
+	"os"
 
 	"github.com/uoregon-libraries/gopkg/fileutil"
 )
@@ -30,7 +30,7 @@ func ParseBatchXML(xmlFile string) (*BatchXML, error) {
 		return nil, fmt.Errorf("%q is not a file", xmlFile)
 	}
 
-	var contents, err = ioutil.ReadFile(xmlFile)
+	var contents, err = os.ReadFile(xmlFile)
 	if err != nil {
 		return nil, fmt.Errorf("batch XML file (%q) can't be read: %w", xmlFile, err)
 	}

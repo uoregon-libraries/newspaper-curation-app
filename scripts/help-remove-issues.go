@@ -16,7 +16,6 @@ import (
 	"bytes"
 	"encoding/json"
 	"fmt"
-	"io/ioutil"
 	"log"
 	"os"
 	"os/exec"
@@ -36,7 +35,7 @@ func main() {
 	var pathToNCA = os.Args[3]
 	var pathToBatches = os.Args[4]
 
-	var data, err = ioutil.ReadFile(inputFile)
+	var data, err = os.ReadFile(inputFile)
 	if err != nil {
 		log.Fatalf("Unable to read file %q: %s", inputFile, err)
 	}
@@ -50,7 +49,7 @@ func main() {
 		keys[i] = lccn + "/" + date
 	}
 
-	err = ioutil.WriteFile("issuekeys", []byte(strings.Join(keys, "\n")), 0640)
+	err = os.WriteFile("issuekeys", []byte(strings.Join(keys, "\n")), 0640)
 	if err != nil {
 		log.Fatalf("Unable to write issuekeys: %s", err)
 	}

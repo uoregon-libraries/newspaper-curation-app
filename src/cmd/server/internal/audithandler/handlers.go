@@ -10,7 +10,6 @@ import (
 
 	"github.com/gorilla/mux"
 	"github.com/uoregon-libraries/newspaper-curation-app/src/cmd/server/internal/responder"
-	"github.com/uoregon-libraries/newspaper-curation-app/src/config"
 	"github.com/uoregon-libraries/newspaper-curation-app/src/internal/logger"
 	"github.com/uoregon-libraries/newspaper-curation-app/src/models"
 	"github.com/uoregon-libraries/newspaper-curation-app/src/privilege"
@@ -19,7 +18,6 @@ import (
 
 var (
 	basePath string
-	conf     *config.Config
 
 	// layout is the base template, cloned from the responder's layout, from
 	// which all subpages are built
@@ -35,8 +33,7 @@ func canView(h http.HandlerFunc) http.Handler {
 }
 
 // Setup sets up all the routing rules and other configuration
-func Setup(r *mux.Router, baseWebPath string, c *config.Config) {
-	conf = c
+func Setup(r *mux.Router, baseWebPath string) {
 	basePath = baseWebPath
 	var s = r.PathPrefix(basePath).Subrouter()
 	s.Path("").Handler(canView(listHandler))

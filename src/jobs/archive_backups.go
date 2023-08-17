@@ -4,7 +4,7 @@ import (
 	"archive/tar"
 	"fmt"
 	"io"
-	"io/ioutil"
+	"io/fs"
 	"os"
 	"path/filepath"
 
@@ -59,14 +59,20 @@ func (j *ArchiveBackups) buildArchive() error {
 	defer f.Close()
 
 	var tw = tar.NewWriter(f)
-	var infos, err = ioutil.ReadDir(src)
+	var entries, err = os.ReadDir(src)
 	if err != nil {
 		f.Cancel()
 		return fmt.Errorf("couldn't read %q: %w", src, err)
 	}
 
-	for _, info := range infos {
-		var fname = info.Name()
+	for _, entry := range entries {
+		var fname = entry.Name()
+		var info fs.FileInfo
+		info, err = entry.Info()
+		if err != nil {
+			f.Cancel()
+			return fmt.Errorf("couldn't get size of %q: %w", entry.Name(), err)
+		}
 		j.Logger.Debugf("Writing tar header for %q", fname)
 		var hdr = &tar.Header{
 			Name: filepath.Join("original", fname),

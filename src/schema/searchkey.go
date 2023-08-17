@@ -77,7 +77,7 @@ func ParseSearchKey(ik string) (*Key, error) {
 
 // String returns the textual representation of this search key for use in lookups
 func (k Key) String() string {
-	var keyString = fmt.Sprintf("%s", k.LCCN)
+	var keyString = k.LCCN
 	if k.Year > 0 {
 		keyString += fmt.Sprintf("/%04d", k.Year)
 	}

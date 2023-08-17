@@ -55,6 +55,6 @@ func FileHandler(w http.ResponseWriter, req *http.Request) {
 	_, err = io.Copy(w, f)
 	if err != nil {
 		logger.Errorf("Unable to send PDF %q to the browser: %s", path, err)
-		r.Error(http.StatusInternalServerError, fmt.Sprintf("Unable to render PDF"))
+		r.Error(http.StatusInternalServerError, "Unable to render PDF")
 	}
 }

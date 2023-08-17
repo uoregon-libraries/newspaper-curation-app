@@ -19,9 +19,6 @@ const (
 	EB = PB * 1024
 )
 
-// sizes: all valid datasize increments
-var sizes = []Datasize{B, KB, MB, GB, TB, PB, EB}
-
 // UnmarshalText does the dirty work of converting a string representation of
 // some number of bytes into a usable Datasize.
 //

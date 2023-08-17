@@ -3,7 +3,6 @@ package httpcache
 import (
 	"fmt"
 	"io"
-	"io/ioutil"
 	"net/http"
 	"os"
 	"path"
@@ -82,7 +81,7 @@ func (c *Client) GetCachedBytes(r *Request) ([]byte, error) {
 	}
 
 	defer body.Close()
-	return ioutil.ReadAll(body)
+	return io.ReadAll(body)
 }
 
 // ForceGet operates like GetCached except it overwrites a previously cached
@@ -104,7 +103,7 @@ func (c *Client) ForceGetBytes(r *Request) ([]byte, error) {
 	}
 
 	defer body.Close()
-	return ioutil.ReadAll(body)
+	return io.ReadAll(body)
 }
 
 // PrepCacheFile ensures the directory a request will store its cached file

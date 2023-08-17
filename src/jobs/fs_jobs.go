@@ -4,7 +4,7 @@
 package jobs
 
 import (
-	"io/ioutil"
+	"io/fs"
 	"os"
 	"path/filepath"
 	"strings"
@@ -82,8 +82,8 @@ func (j *SyncRecursive) Process(*config.Config) bool {
 		return false
 	}
 
-	var infos []os.FileInfo
-	infos, err = ioutil.ReadDir(src)
+	var entries []fs.DirEntry
+	entries, err = os.ReadDir(src)
 	if err != nil {
 		j.Logger.Errorf("Unable to read directory %q: %s", src, err)
 		return false
@@ -94,9 +94,14 @@ func (j *SyncRecursive) Process(*config.Config) bool {
 	// jobs because we can't fail after the dirs are jobbed up in a transaction.
 	var dirJobs []*models.Job
 
-	for _, info := range infos {
-		var srcFull = filepath.Join(src, info.Name())
-		var dstFull = filepath.Join(dst, info.Name())
+	for _, entry := range entries {
+		var srcFull = filepath.Join(src, entry.Name())
+		var dstFull = filepath.Join(dst, entry.Name())
+		var info, err = entry.Info()
+		if err != nil {
+			j.Logger.Errorf("Unable to read file %q: %s", entry.Name(), err)
+			return false
+		}
 
 		switch {
 		case info.Mode().IsRegular():

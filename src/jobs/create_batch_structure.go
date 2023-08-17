@@ -2,7 +2,6 @@ package jobs
 
 import (
 	"fmt"
-	"io/ioutil"
 	"os"
 	"path"
 	"path/filepath"
@@ -64,16 +63,21 @@ func (j *CreateBatchStructure) Process(*config.Config) bool {
 
 // linkFiles hard-links all regular, non-hidden files from src into dest
 func linkFiles(src string, dest string) error {
-	var files, err = ioutil.ReadDir(src)
+	var entries, err = os.ReadDir(src)
 	if err != nil {
 		return fmt.Errorf("couldn't scan for source files: %w", err)
 	}
 
-	for _, file := range files {
-		if !file.Mode().IsRegular() || strings.HasPrefix(file.Name(), ".") {
+	for _, entry := range entries {
+		var info, err = entry.Info()
+		if err != nil {
+			return fmt.Errorf("couldn't get file detail for %q: %w", entry.Name(), err)
+		}
+
+		if !info.Mode().IsRegular() || strings.HasPrefix(entry.Name(), ".") {
 			continue
 		}
-		var name = file.Name()
+		var name = entry.Name()
 		var srcPath = filepath.Join(src, name)
 		var destPath = filepath.Join(dest, name)
 		err = os.Link(srcPath, destPath)

@@ -4,7 +4,7 @@ import (
 	"bytes"
 	"encoding/gob"
 	"fmt"
-	"io/ioutil"
+	"os"
 
 	"github.com/uoregon-libraries/newspaper-curation-app/src/apperr"
 	"github.com/uoregon-libraries/newspaper-curation-app/src/schema"
@@ -13,7 +13,7 @@ import (
 // Deserialize attempts to read and deserialize the given filename into a
 // Finder, returning the Finder if successful, nil and an error otherwise
 func Deserialize(filename string) (*Finder, error) {
-	var content, err = ioutil.ReadFile(filename)
+	var content, err = os.ReadFile(filename)
 	if err != nil {
 		return nil, fmt.Errorf("unable to read file %#v: %w", filename, err)
 	}

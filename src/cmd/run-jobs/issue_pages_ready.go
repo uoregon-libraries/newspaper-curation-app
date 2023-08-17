@@ -1,7 +1,7 @@
 package main
 
 import (
-	"io/ioutil"
+	"io/fs"
 	"os"
 	"path/filepath"
 	"regexp"
@@ -34,16 +34,16 @@ func pageReviewIssueReady(path string, minAge time.Duration) bool {
 	}
 
 	// Gather info on all items in the issue path
-	var infos []os.FileInfo
-	infos, err = ioutil.ReadDir(path)
+	var entries []fs.DirEntry
+	entries, err = os.ReadDir(path)
 	if err != nil {
 		logger.Errorf("Unable to scan %q for renamed PDFs: %s", path, err)
 		return false
 	}
 
 	// Check that the filenames are all valid
-	for _, info := range infos {
-		var fName = info.Name()
+	for _, entry := range entries {
+		var fName = entry.Name()
 
 		// Ignore hidden files
 		if filepath.Base(fName)[0] == '.' {

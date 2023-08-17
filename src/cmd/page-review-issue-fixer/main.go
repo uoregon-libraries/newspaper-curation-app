@@ -2,7 +2,7 @@ package main
 
 import (
 	"fmt"
-	"io/ioutil"
+	"os"
 	"regexp"
 	"strings"
 
@@ -54,7 +54,7 @@ func getConfig() {
 	}
 
 	if opts.KeyFile != "" {
-		var data, err = ioutil.ReadFile(opts.KeyFile)
+		var data, err = os.ReadFile(opts.KeyFile)
 		if err != nil {
 			logger.Fatalf("Unable to read key file %q: %s", opts.KeyFile, err)
 		}

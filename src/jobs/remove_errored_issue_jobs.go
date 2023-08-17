@@ -7,7 +7,7 @@ package jobs
 
 import (
 	"fmt"
-	"io/ioutil"
+	"io/fs"
 	"os"
 	"path/filepath"
 	"strings"
@@ -79,7 +79,6 @@ func wrapIndent(text string) string {
 // easier to re-process if needed
 type MoveDerivatives struct {
 	*IssueJob
-	dest string
 }
 
 // Process finds all derivative files, and moves them from the issue location
@@ -98,21 +97,21 @@ func (j *MoveDerivatives) Process(*config.Config) bool {
 		return false
 	}
 
-	var infos []os.FileInfo
-	infos, err = ioutil.ReadDir(src)
+	var entries []fs.DirEntry
+	entries, err = os.ReadDir(src)
 	if err != nil {
 		j.Logger.Errorf("Unable to read source directory %q: %s", src, err)
 		return false
 	}
 
-	for _, info := range infos {
-		var ext = filepath.Ext(info.Name())
+	for _, entry := range entries {
+		var ext = filepath.Ext(entry.Name())
 		if ext != ".xml" && ext != ".jp2" {
 			continue
 		}
 
-		var srcFull = filepath.Join(src, info.Name())
-		var dstFull = filepath.Join(dst, info.Name())
+		var srcFull = filepath.Join(src, entry.Name())
+		var dstFull = filepath.Join(dst, entry.Name())
 		err = os.Rename(srcFull, dstFull)
 		if err != nil {
 			j.Logger.Errorf("Unable to move %q -> %q: %s", srcFull, dstFull, err)

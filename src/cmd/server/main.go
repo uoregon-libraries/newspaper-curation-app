@@ -122,12 +122,12 @@ func startServer() {
 	// Set up routing for various "sub-apps"
 	uploadedissuehandler.Setup(r, path.Join(hp, "uploadedissues"), conf, watcher)
 	workflowhandler.Setup(r, path.Join(hp, "workflow"), conf, watcher)
-	issuefinderhandler.Setup(r, path.Join(hp, "find"), conf, watcher)
-	mochandler.Setup(r, path.Join(hp, "mocs"), conf)
+	issuefinderhandler.Setup(r, path.Join(hp, "find"), watcher)
+	mochandler.Setup(r, path.Join(hp, "mocs"))
 	batchhandler.Setup(r, path.Join(hp, "batches"), conf)
-	userhandler.Setup(r, path.Join(hp, "users"), conf)
+	userhandler.Setup(r, path.Join(hp, "users"))
 	titlehandler.Setup(r, path.Join(hp, "titles"), conf)
-	audithandler.Setup(r, path.Join(hp, "logs"), conf)
+	audithandler.Setup(r, path.Join(hp, "logs"))
 
 	r.NewRoute().Path(hp).HandlerFunc(home)
 

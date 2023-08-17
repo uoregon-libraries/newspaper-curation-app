@@ -136,11 +136,6 @@ type AuditLogFinder struct {
 	lim        int
 }
 
-func (f *AuditLogFinder) order(order string) *AuditLogFinder {
-	f.ord = order
-	return f
-}
-
 // AuditLogs returns a scoped object for use in simple filtering of the
 // audit_logs table without needing manual SQL or deep knowledge of the
 // database. It is meant to be ORM-like but with a very narrow scope:

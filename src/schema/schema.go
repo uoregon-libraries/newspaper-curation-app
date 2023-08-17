@@ -29,17 +29,17 @@ type WorkflowStep string
 const (
 	// WSNil should only be used to indicate a workflow step is irrelevant or else unset
 	WSNil                    WorkflowStep = ""
-	WSSFTP                                = "SFTPUpload"
-	WSScan                                = "ScanUpload"
-	WSAwaitingProcessing                  = "AwaitingProcessing"
-	WSAwaitingPageReview                  = "AwaitingPageReview"
-	WSReadyForMetadataEntry               = "ReadyForMetadataEntry"
-	WSAwaitingMetadataReview              = "AwaitingMetadataReview"
-	WSUnfixableMetadataError              = "UnfixableMetadataError"
-	WSReadyForMETSXML                     = "ReadyForMETSXML"
-	WSReadyForBatching                    = "ReadyForBatching"
-	WSReadyForRebatching                  = "ReadyForRebatching"
-	WSInProduction                        = "InProduction"
+	WSSFTP                   WorkflowStep = "SFTPUpload"
+	WSScan                   WorkflowStep = "ScanUpload"
+	WSAwaitingProcessing     WorkflowStep = "AwaitingProcessing"
+	WSAwaitingPageReview     WorkflowStep = "AwaitingPageReview"
+	WSReadyForMetadataEntry  WorkflowStep = "ReadyForMetadataEntry"
+	WSAwaitingMetadataReview WorkflowStep = "AwaitingMetadataReview"
+	WSUnfixableMetadataError WorkflowStep = "UnfixableMetadataError"
+	WSReadyForMETSXML        WorkflowStep = "ReadyForMETSXML"
+	WSReadyForBatching       WorkflowStep = "ReadyForBatching"
+	WSReadyForRebatching     WorkflowStep = "ReadyForRebatching"
+	WSInProduction           WorkflowStep = "InProduction"
 )
 
 // Batch represents high-level batch information
@@ -332,7 +332,7 @@ func (i *Issue) addError(err apperr.Error) apperr.Error {
 // error on the issue itself so we can inform users just once instead of once
 // per error.
 func (i *Issue) addChildError() {
-	if i.hasChildErrors == true {
+	if i.hasChildErrors {
 		return
 	}
 	i.addError(apperr.New("one or more files are invalid"))

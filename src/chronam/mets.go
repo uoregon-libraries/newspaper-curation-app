@@ -3,7 +3,7 @@ package chronam
 import (
 	"encoding/xml"
 	"fmt"
-	"io/ioutil"
+	"os"
 
 	"github.com/uoregon-libraries/newspaper-curation-app/src/mods"
 )
@@ -32,7 +32,7 @@ type DescriptiveMetadata struct {
 
 // ParseMETSIssueXML reads the given file to extract the relevant METSIssue data
 func ParseMETSIssueXML(filename string) (*METSIssue, error) {
-	var contents, err = ioutil.ReadFile(filename)
+	var contents, err = os.ReadFile(filename)
 	if err != nil {
 		return nil, fmt.Errorf("reading file: %w", err)
 	}

@@ -4,7 +4,7 @@ import (
 	"bytes"
 	"encoding/xml"
 	"fmt"
-	"io/ioutil"
+	"io"
 	"os"
 
 	"github.com/uoregon-libraries/gopkg/fileutil"
@@ -99,7 +99,7 @@ func (t *Transformer) pdfToText() {
 	}
 	defer f.Close()
 
-	t.html, err = ioutil.ReadAll(f)
+	t.html, err = io.ReadAll(f)
 	if err != nil {
 		t.err = fmt.Errorf("error reading HTML file: %w", err)
 	}
