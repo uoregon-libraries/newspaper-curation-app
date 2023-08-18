@@ -14,9 +14,9 @@
 {{ hugo.Generator }}
 <link href="{{ .Site.BaseURL }}/index.xml" rel="alternate" type="application/rss+xml">
 <link rel="canonical" href="{{ .Permalink }}">
-<link rel="stylesheet" href="{{"css/theme.min.css" | absURL}}">
+<link rel="stylesheet" href="{{"css/theme.css" | absURL}}">
 <script src="https://use.fontawesome.com/releases/v5.0.6/js/all.js"></script>
-{{ partial "meta/chroma.html" . -}}
+<link rel="stylesheet" href="{{"css/chroma.css" | absURL}}">
 <script src="https://cdn.jsdelivr.net/npm/jquery@3.4.1/dist/jquery.min.js"></script>
 <script src="https://cdn.jsdelivr.net/npm/jquery.easing@1.4.1/jquery.easing.min.js"></script>
 <script src="https://cdn.jsdelivr.net/npm/clipboard@2.0.6/dist/clipboard.min.js"></script>
