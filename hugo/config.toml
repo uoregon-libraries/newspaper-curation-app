@@ -1,7 +1,7 @@
 baseURL = "https://uoregon-libraries.github.io/newspaper-curation-app/"
 languageCode = "en-us"
 title = "Newspaper Curation App"
-theme = "hugo-theme-techdoc"
+theme = "uolib-techdoc"
 relativeURLs = true
 
 [params]
