@@ -288,24 +288,6 @@ textarea {
 }
 
 /**
- * 1. Correct the odd appearance in Chrome and Safari.
- * 2. Correct the outline style in Safari.
- */
-[type=search] {
-  -webkit-appearance: textfield;
-  /* 1 */
-  outline-offset: -2px;
-  /* 2 */
-}
-
-/**
- * Remove the inner padding in Chrome and Safari on macOS.
- */
-[type=search]::-webkit-search-decoration {
-  -webkit-appearance: none;
-}
-
-/**
  * 1. Correct the inability to style clickable types in iOS and Safari.
  * 2. Change font properties to `inherit` in Safari.
  */
@@ -1022,14 +1004,6 @@ a.headerlink {
   margin-left: 0.4rem;
   width: 0.8rem;
   font-size: 0.75em;
-}
-
-.ais-SearchBox .ais-SearchBox-input {
-  width: 70%;
-}
-.ais-SearchBox button {
-  margin-left: 0.2rem;
-  padding: 0.4rem;
 }
 
 .ais-Stats {
