@@ -665,8 +665,6 @@ main * + blockquote,
 main * + pre,
 main * + figure,
 .table_of_contents,
-.edit-meta,
-.edit-page,
 .pagination,
 .highlight,
 .powered,
@@ -1321,15 +1319,6 @@ main {
 
 .sidebar-footer {
   padding: 1.28rem;
-}
-
-.edit-meta {
-  font-size: 80%;
-  text-align: right;
-}
-
-.edit-page {
-  font-weight: bold;
 }
 
 .powered {
