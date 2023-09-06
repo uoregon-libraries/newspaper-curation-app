@@ -7,13 +7,8 @@
         const headerlink = document.createElement('a');
         headerlink.setAttribute('class', 'headerlink');
         headerlink.setAttribute('href', '#' + el.id);
-        headerlink.setAttribute('title', 'Permalink to this headline');
-
-        const icon = document.createElement('i');
-        icon.setAttribute('class', 'fas fa-hashtag');
-        icon.setAttribute('aria-hidden', 'true');
-
-        headerlink.append(icon);
+        headerlink.innerText = "#";
+        headerlink.setAttribute('aria-label', 'Permalink to section: ' + el.innerText);
 
         el.append(headerlink);
       }

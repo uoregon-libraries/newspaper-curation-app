@@ -1020,9 +1020,10 @@ figure > figcaption h4 {
   margin-left: 10rem;
 }
 
-.headerlink > .svg-inline--fa {
+a.headerlink {
   margin-left: 0.4rem;
   width: 0.8rem;
+  font-size: 0.75em;
 }
 
 .ais-SearchBox .ais-SearchBox-input {
