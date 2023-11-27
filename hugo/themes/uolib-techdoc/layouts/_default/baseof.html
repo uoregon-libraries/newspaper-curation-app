@@ -5,23 +5,22 @@
 {{- partial "custom-head.html" . -}}
 </head>
 <body>
-{{- partial "prepend-body.html" . -}}
-<div class="container">
-{{- partial "notification.html" . -}}
-{{- partial "site-header.html" . -}}
-{{- partial "global-menu.html" . -}}
-<div class="content-container">
-<main>
-{{- block "main" . -}}{{- end -}}
-<footer>
-{{- partial "content-footer.html" . -}}
-{{- partial "powered.html" . -}}
-</footer>
-</main>
+  {{- partial "prepend-body.html" . -}}
+  <div class="container">
+    {{- partial "notification.html" . -}}
+    {{- partial "site-header.html" . -}}
+    {{- partial "global-menu.html" . -}}
 
-{{- partial "sidebar.html" . -}}
-</div>
-{{- partial "footer.html" . -}}
-</div>
+    <div class="content-container">
+      <main>
+      {{- block "main" . -}}{{- end -}}
+      <footer>
+      {{- partial "powered.html" . -}}
+      </footer>
+      </main>
+      {{- partial "sidebar.html" . -}}
+    </div>
+
+  </div>
 </body>
 </html>
