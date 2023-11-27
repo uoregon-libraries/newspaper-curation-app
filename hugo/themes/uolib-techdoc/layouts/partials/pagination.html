@@ -1,5 +1,5 @@
 {{- $currentNode := . -}}
-<nav class="pagination">
+<nav class="pagination" aria-label="Pagination">
 {{- template "pagination" dict "menu" .Site.Home "currentnode" $currentNode "menu_exclusion" .Site.Params.menu_exclusion -}}
 {{- with ($.Scratch.Get "prevPage") -}}
 <a class="nav nav-prev" href="{{ .Permalink }}" title="{{ .Title }}">← Prev - {{ .Title }}</a>
