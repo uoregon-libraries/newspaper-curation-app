@@ -955,10 +955,6 @@ main:only-child {
   background: #eee;
 }
 
-.fa-layers .fa-circle {
-  color: #fff;
-}
-
 figure > figcaption h4 {
   font-size: 80%;
   font-weight: normal;
@@ -1126,6 +1122,13 @@ header .github {
   margin-left: 0.4rem;
   font-size: 180%;
 }
+header .github img {
+  width: 1em;
+  height: 1em;
+  display: inline-block;
+  overflow: visible;
+  vertical-align: -.125em;
+}
 
 .global-menu {
   color: var(--custom-font-color, #fff);
@@ -1159,10 +1162,6 @@ header .github {
 .global-menu ul.sub-menu li a {
   color: var(--custom-font-color, #fff);
 }
-.global-menu .fa-angle-right {
-  margin-left: 0.4rem;
-  font-size: 80%;
-}
 .global-menu li.parent:hover > ul.sub-menu {
   -webkit-box-sizing: border-box;
           box-sizing: border-box;
@@ -1182,9 +1181,6 @@ header .github {
   }
   .global-menu li:last-child {
     border-bottom: none;
-  }
-  .global-menu .fa-angle-right {
-    display: none;
   }
   .global-menu ul.sub-menu {
     display: block;
@@ -1294,4 +1290,15 @@ main {
   font-size: 80%;
   text-align: right;
   color: #999;
+}
+
+.sr-only {
+  clip: rect(1px, 1px, 1px, 1px);
+  clip-path: inset(50%);
+  height: 1px;
+  width: 1px;
+  margin: -1px;
+  overflow: hidden;
+  padding: 0;
+  position: absolute;
 }
