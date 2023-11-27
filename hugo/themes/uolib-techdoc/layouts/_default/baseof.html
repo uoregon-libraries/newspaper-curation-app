@@ -5,16 +5,17 @@
 </head>
 <body>
   <div class="container">
+    {{- partial "skip-link.html" . -}}
     {{- partial "site-header.html" . -}}
 
     <div class="content-container">
-      <main>
+      {{- partial "sidebar.html" . -}}
+      <main id="maincontent">
       {{- block "main" . -}}{{- end -}}
       <footer>
       {{- partial "powered.html" . -}}
       </footer>
       </main>
-      {{- partial "sidebar.html" . -}}
     </div>
 
   </div>
