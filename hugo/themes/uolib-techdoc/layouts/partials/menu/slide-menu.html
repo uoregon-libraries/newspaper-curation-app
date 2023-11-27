@@ -1,5 +1,6 @@
 {{$currentNode := .}}
-<nav class="slide-menu">
+<nav class="slide-menu" aria-labelledby="table-of-contents">
+<h2 id="table-of-contents" class="sr-only">Table Of Contents</h2>
 <ul>
 <li class="{{ if .IsHome }}active{{ end }}"><a href="{{ .Site.BaseURL }}">Home</a></li>
 {{- if eq .Site.Params.ordersectionsby "title" -}}
