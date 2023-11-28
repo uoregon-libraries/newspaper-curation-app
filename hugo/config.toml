@@ -5,7 +5,4 @@ theme = "uolib-techdoc"
 relativeURLs = true
 
 [params]
-    # Source Code repository section
-    github_repository = "https://github.com/uoregon-libraries/newspaper-curation-app/"
-    algolia_search_enable = false
-    menu_style = "open-menu" # "open-menu" or "slide-menu" or "" blank is as no sidebar
+github_repository = "https://github.com/uoregon-libraries/newspaper-curation-app/"
