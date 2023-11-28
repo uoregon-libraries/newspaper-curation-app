@@ -654,7 +654,6 @@ main * + figure,
 .button,
 .gist,
 .twitter-tweet,
-.ais-Hits-item,
 .code {
   margin-top: var(--stack-top, unset);
   margin-bottom: var(--stack-bottom, unset);
@@ -690,9 +689,6 @@ figure > figcaption,
 .unset-stack,
 main li > ul,
 main li > ol,
-.ais-Hits-item p {
-  margin-top: unset;
-}
 
 /*-----------------------*
 		Structure
@@ -997,46 +993,6 @@ a.headerlink {
   font-size: 0.75em;
 }
 
-.ais-Stats {
-  font-size: 80%;
-  color: #70757a;
-}
-
-.ais-Hits-item h3 {
-  font-size: 140%;
-  font-weight: normal;
-}
-.ais-Hits-item p {
-  color: #3C4043;
-}
-.ais-Hits-item .lastmod {
-  font-size: 90%;
-  color: #70757a;
-}
-
-.ais-Pagination {
-  margin-top: 1em;
-}
-
-.ais-Pagination-list {
-  list-style: none;
-  padding-left: 0;
-  -webkit-box-sizing: border-box;
-          box-sizing: border-box;
-  display: -webkit-box;
-  display: -ms-flexbox;
-  display: flex;
-  -ms-flex-wrap: wrap;
-      flex-wrap: wrap;
-  -webkit-box-pack: center;
-      -ms-flex-pack: center;
-          justify-content: center;
-}
-
-.ais-Pagination-item {
-  padding: 0.6rem;
-}
-
 .code {
   -webkit-box-sizing: border-box;
           box-sizing: border-box;
@@ -1076,34 +1032,7 @@ a.headerlink {
           flex: 0 0 100%;
   max-width: 100%;
 }
-.tooltipped::after {
-  content: "Copied!";
-  background: #555;
-  display: inline-block;
-  color: #fff;
-  border-radius: 0.4rem;
-  position: absolute;
-  left: 50%;
-  top: -1.8rem;
-  -webkit-transform: translate(-50%, 0);
-          transform: translate(-50%, 0);
-  font-size: 0.75rem;
-  padding: 4px 10px 6px 10px;
-  -webkit-animation: fade-tooltip 0.5s 1s 1 forwards;
-          animation: fade-tooltip 0.5s 1s 1 forwards;
-}
 
-@-webkit-keyframes fade-tooltip {
-  to {
-    opacity: 0;
-  }
-}
-
-@keyframes fade-tooltip {
-  to {
-    opacity: 0;
-  }
-}
 header {
   color: var(--custom-font-color, #fff);
   background: var(--custom-background-color, #000);
@@ -1128,83 +1057,6 @@ header .github img {
   display: inline-block;
   overflow: visible;
   vertical-align: -.125em;
-}
-
-.global-menu {
-  color: var(--custom-font-color, #fff);
-  background: var(--custom-background-color, #000);
-  padding: 0.2rem 1.28rem;
-}
-.global-menu ul {
-  list-style: none;
-  padding: 0;
-  margin: 0;
-}
-.global-menu li {
-  display: inline-block;
-  margin-right: 1.8rem;
-  position: relative;
-}
-.global-menu ul.sub-menu {
-  display: none;
-  margin: 0;
-  position: absolute;
-  top: 1.8rem;
-  left: 0;
-  z-index: 99999;
-}
-.global-menu ul.sub-menu li {
-  padding: 0.2rem 1.28rem;
-  background: var(--custom-background-color, #000);
-  width: 140px;
-  font-size: 80%;
-}
-.global-menu ul.sub-menu li a {
-  color: var(--custom-font-color, #fff);
-}
-.global-menu li.parent:hover > ul.sub-menu {
-  -webkit-box-sizing: border-box;
-          box-sizing: border-box;
-  display: -webkit-box;
-  display: -ms-flexbox;
-  display: flex;
-  -webkit-box-orient: vertical;
-  -webkit-box-direction: normal;
-      -ms-flex-flow: column nowrap;
-          flex-flow: column nowrap;
-}
-@media screen and (max-width: 480px) {
-  .global-menu li {
-    display: block;
-    margin-right: 0;
-    border-bottom: 1px solid currentColor;
-  }
-  .global-menu li:last-child {
-    border-bottom: none;
-  }
-  .global-menu ul.sub-menu {
-    display: block;
-    position: static;
-  }
-  .global-menu ul.sub-menu li {
-    width: auto;
-    background: transparent;
-    padding: 0 0.4rem;
-  }
-  .global-menu ul.sub-menu li + li {
-    padding-top: 0.2rem;
-  }
-  .global-menu ul.sub-menu li a {
-    color: currentColor;
-  }
-}
-.global-menu a {
-  display: block;
-  color: currentColor;
-  text-decoration: none;
-}
-.global-menu a:hover {
-  text-decoration: underline;
 }
 
 main {
