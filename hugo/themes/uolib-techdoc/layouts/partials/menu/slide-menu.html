@@ -14,17 +14,17 @@
   {{ with .sect }}
     {{ if .IsSection }}
       {{- safeHTML .Params.head -}}
-      {{- $numberOfPages := (add (len .Pages) (len .Sections)) -}}
+      {{- $hasPages := or .Pages .Sections -}}
       <li class="
         {{- if .IsAncestor $currentNode }} parent{{ end -}}
         {{- if and .File $currentNode.File -}}
           {{- if eq .File.UniqueID $currentNode.File.UniqueID }} active{{ end -}}
         {{- end -}}
-        {{- if ne $numberOfPages 0 }} has-sub-menu{{ end -}}
+        {{- if $hasPages }} has-sub-menu{{ end -}}
       ">
         <a href="{{ .Permalink }}">
           {{- .Title -}}
-          {{- if ne $numberOfPages 0 -}}
+          {{- if $hasPages -}}
             {{- if .IsAncestor $currentNode -}}
               <span class="mark opened">-</span>
             {{- else -}}
@@ -32,7 +32,7 @@
             {{- end -}}
           {{- end -}}
         </a>
-        {{ if ne $numberOfPages 0 }}
+        {{ if $hasPages }}
           <ul class="sub-menu">
             {{- .Scratch.Set "pages" .Pages -}}
             {{- if .Sections -}}
