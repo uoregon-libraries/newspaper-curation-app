@@ -10,11 +10,11 @@ require (
 	github.com/jessevdk/go-flags v1.4.0
 	github.com/pressly/goose/v3 v3.13.4
 	github.com/uoregon-libraries/gopkg v0.24.0
-	golang.org/x/crypto v0.10.0
-	golang.org/x/text v0.11.0
+	golang.org/x/crypto v0.17.0
+	golang.org/x/text v0.14.0
 )
 
 require (
 	github.com/mattn/go-sqlite3 v1.10.0 // indirect
-	golang.org/x/sys v0.10.0 // indirect
+	golang.org/x/sys v0.15.0 // indirect
 )
