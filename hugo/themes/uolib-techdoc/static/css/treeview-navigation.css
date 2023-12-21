@@ -5,11 +5,11 @@
 }
 
 .treeview-navigation li li span.label {
-  padding-left: 1em;
+  padding-left: 1.5em;
 }
 
 .treeview-navigation li li li span.label {
-  padding-left: 2em;
+  padding-left: 3em;
 }
 
 .treeview-navigation[role="tree"] {
@@ -40,11 +40,11 @@
 }
 
 .treeview-navigation a[role="treeitem"] > span svg {
-  transform: translate(0, 0);
+  transform: rotate(90deg) translate(4px, 2px);
 }
 
 .treeview-navigation a[role="treeitem"][aria-expanded="false"] > span svg {
-  transform: rotate(270deg) translate(2px, 2px);
+  transform: translate(0px, 4px);
 }
 
 .treeview-navigation a[role="treeitem"] {

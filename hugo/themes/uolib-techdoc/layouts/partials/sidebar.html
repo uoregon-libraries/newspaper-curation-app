@@ -19,27 +19,44 @@
   {{- $currentNode := .currentnode -}}
   {{ with .sect }}
     {{- safeHTML .Params.head -}}
+    {{- $isCurrent := false -}}
+    {{- $expand := .IsAncestor $currentNode -}}
     {{- $hasPages := or .Pages .Sections -}}
+    {{- $sectionID := replaceRE `[^A-Za-z0-9-]` "-" .RelPermalink -}}
+
+    {{- if and .File $currentNode.File -}}
+      {{- if eq .File.UniqueID $currentNode.File.UniqueID -}}
+        {{- $isCurrent = true }}
+        {{- $expand = true }}
+      {{- end -}}
+    {{- end -}}
+
     <li role="none">
-      {{- if $hasPages -}}
-        <a role="treeitem"
-          aria-expanded="{{- if .IsAncestor $currentNode -}}true{{- else -}}false{{- end -}}"
-          aria-owns="id-about-subtree"
-          href="{{ .Permalink }}"
-          {{- if and .File $currentNode.File -}}
-            {{- if eq .File.UniqueID $currentNode.File.UniqueID }}aria-current="page"{{ end -}}
-          {{- end -}}
-        >
-          <span class="label">
-            <span class="icon">
-              <svg xmlns="http://www.w3.org/2000/svg" width="13" height="10" viewBox="0 0 13 10">
-                <polygon points="2 1, 12 1, 7 9"></polygon>
-              </svg>
-            </span>
-            {{ .Title }}
+      <a
+        role="treeitem"
+        href="{{ .Permalink }}"
+        {{ if $isCurrent -}}
+          aria-current="page"
+        {{ end -}}
+        {{ if $hasPages -}}
+          aria-owns="subtree-{{ $sectionID }}"
+          aria-expanded="{{ if $expand }}true{{ else }}false{{ end }}"
+        {{- end -}}
+      >
+        <span class="label">
+          {{- if $hasPages -}}
+          <span class="icon">
+            <svg xmlns="http://www.w3.org/2000/svg" width="18" viewBox="0 0 24 24">
+              <polygon points="2,3 22,11 2,20"></polygon>
+            </svg>
           </span>
-        </a>
-        <ul id="id-about-subtree" role="group" aria-label="About">
+          {{- end -}}
+          {{ .Title }}
+        </span>
+      </a>
+
+      {{- if $hasPages -}}
+        <ul role="group" aria-label="About" id="subtree-{{ $sectionID }}">
           {{- .Scratch.Set "pages" .Pages -}}
           {{- if .Sections -}}
             {{- .Scratch.Set "pages" (.Pages | union .Sections) -}}
@@ -49,15 +66,6 @@
             {{template "slide-menu" dict "sect" . "currentnode" $currentNode}}
           {{- end -}}
         </ul>
-      {{- else -}}
-        <a role="treeitem"
-          href="{{ .Permalink }}"
-          {{- if and .File $currentNode.File -}}
-            {{- if eq .File.UniqueID $currentNode.File.UniqueID }}aria-current="page"{{ end -}}
-          {{- end -}}
-        >
-          <span class="label">{{ .Title }}</span>
-        </a>
       {{- end -}}
     </li>
   {{ end -}}
