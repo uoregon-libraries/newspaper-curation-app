@@ -1,0 +1,80 @@
+<div class="sidebar">
+  {{$currentNode := .}}
+  <nav aria-labelledby="table-of-contents">
+    <h2 id="table-of-contents" class="sr-only">Table Of Contents</h2>
+    <ul class="treeview-navigation" role="tree" aria-label="Contents">
+      <li role="none">
+        <a role="treeitem" {{ if .IsHome }}aria-current="page"{{ end }} href="{{ .Site.BaseURL }}">
+          <span class="label">Home</span>
+        </a>
+      </li>
+      {{- range .Site.Home.Sections.ByWeight -}}
+        {{template "submenu" dict "sect" . "currentnode" $currentNode}}
+      {{- end -}}
+    </ul>
+  </nav>
+</div>
+
+{{define "submenu"}}
+  {{- $currentNode := .currentnode -}}
+  {{ with .sect }}
+    {{- if eq ($currentNode.Scratch.Get "grabnext") true -}}
+      {{- $currentNode.Scratch.Set "grabnext" false -}}
+      {{- $currentNode.Scratch.Set "navNext" . -}}
+    {{- end -}}
+
+    {{- safeHTML .Params.head -}}
+    {{- $isCurrent := false -}}
+    {{- $expand := .IsAncestor $currentNode -}}
+    {{- $hasPages := or .Pages .Sections -}}
+    {{- $sectionID := replaceRE `[^A-Za-z0-9-]` "-" .RelPermalink -}}
+
+    {{- if and .File $currentNode.File -}}
+      {{- if eq .File.UniqueID $currentNode.File.UniqueID -}}
+        {{- $isCurrent = true }}
+        {{- $expand = true }}
+        {{- $currentNode.Scratch.Set "navPrevious" ($currentNode.Scratch.Get "iter") -}}
+        {{- $currentNode.Scratch.Set "grabnext" true -}}
+      {{- end -}}
+    {{- end -}}
+
+    {{- $currentNode.Scratch.Set "iter" . -}}
+
+    <li role="none">
+      <a
+        role="treeitem"
+        href="{{ .Permalink }}"
+        {{ if $isCurrent -}}
+          aria-current="page"
+        {{ end -}}
+        {{ if $hasPages -}}
+          aria-owns="subtree-{{ $sectionID }}"
+          aria-expanded="{{ if $expand }}true{{ else }}false{{ end }}"
+        {{- end -}}
+      >
+        <span class="label">
+          {{- if $hasPages -}}
+          <span class="icon">
+            <svg xmlns="http://www.w3.org/2000/svg" width="18" viewBox="0 0 24 24">
+              <polygon points="2,3 22,11 2,20"></polygon>
+            </svg>
+          </span>
+          {{- end -}}
+          {{ .Title }}
+        </span>
+      </a>
+
+      {{- if $hasPages -}}
+        <ul role="group" aria-label="{{ .Title }}" id="subtree-{{ $sectionID }}">
+          {{- $pages := .Pages -}}
+          {{- if .Sections -}}
+            {{- $pages = (.Pages | union .Sections) -}}
+          {{- end -}}
+          {{- range $pages.ByWeight -}}
+            {{template "submenu" dict "sect" . "currentnode" $currentNode}}
+          {{- end -}}
+        </ul>
+      {{- end -}}
+    </li>
+  {{ end -}}
+{{ end }}

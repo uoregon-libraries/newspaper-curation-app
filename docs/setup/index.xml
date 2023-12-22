@@ -35,7 +35,7 @@ Somebody will want to monitor the output from the various automated processes, s
       <guid>https://uoregon-libraries.github.io/newspaper-curation-app/setup/installation/</guid>
       <description>Development If you&amp;rsquo;re developing on NCA, installation will differ from standing up a production server. Please see our Development Guide.
 Preliminary Setup Manual installation has several prerequisites:
- Go and some dependencies (see below) Poppler Utils for PDF processing OpenJPEG 2 + command-line tools for JP2 generation  The command-line tools will probably need to be manually compiled to support converting PNG files. Most distributions of Linux don&amp;rsquo;t have this by default, hence the need to manually compile.</description>
+Go and some dependencies (see below) Poppler Utils for PDF processing OpenJPEG 2 + command-line tools for JP2 generation The command-line tools will probably need to be manually compiled to support converting PNG files. Most distributions of Linux don&amp;rsquo;t have this by default, hence the need to manually compile.</description>
     </item>
     
     <item>
@@ -45,7 +45,7 @@ Preliminary Setup Manual installation has several prerequisites:
       
       <guid>https://uoregon-libraries.github.io/newspaper-curation-app/setup/user-setup/</guid>
       <description>Newspaper Curation App - User Setup First-time Setup Once the applications are installed and configured, start the NCA server in debug mode:
-./bin/server -c ./settings --debug  This lets you fake an admin login via http://your.site/users?debuguser=admin. You can then set up other users as necessary. Once you have Apache set up to do the authentication, you should never run in debug mode on production servers.
+./bin/server -c ./settings --debug This lets you fake an admin login via http://your.site/users?debuguser=admin. You can then set up other users as necessary. Once you have Apache set up to do the authentication, you should never run in debug mode on production servers.
 For development use, docker-compose.override.yml-example is already set up to run in debug mode.</description>
     </item>
     
@@ -56,7 +56,7 @@ For development use, docker-compose.override.yml-example is already set up to ru
       
       <guid>https://uoregon-libraries.github.io/newspaper-curation-app/setup/creating-publishers/</guid>
       <description>Creating a publisher in NCA, at least for UO, requires several manual processes take place:
- Add a title to NCA with sftp credential information. If necessary, import the title&amp;rsquo;s MARC record to your ONI site (for example, oregonnews.uoregon.edu).  See Adding Titles for details   Set up a user for sftp access  We use NCA&amp;rsquo;s integrated SFTPGo setup for this. See SFTPGo Integration.    </description>
+Add a title to NCA with sftp credential information. If necessary, import the title&amp;rsquo;s MARC record to your ONI site (for example, oregonnews.uoregon.edu). See Adding Titles for details Set up a user for sftp access We use NCA&amp;rsquo;s integrated SFTPGo setup for this. See SFTPGo Integration. </description>
     </item>
     
     <item>

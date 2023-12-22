@@ -1,0 +1,31 @@
+<nav class="pagination" aria-label="Pagination">
+<!--
+  Pagination is screwy:
+
+  - "Prev*" and "Next*" mean the reverse in hugo parlance
+  - A page with subpages needs its "next" link to be the first child
+  - A page with no previous sibling needs to go back to its parent, if one exists
+  - A page with no next sibling needs to go to the next available sibling of its parent, if any exist
+
+  This is too much to get working properly, so instead we're relying on hacky
+  .Scratch settings that were built up in the sidebar template, since it does a
+  lot of recursive looping to build the navigation.
+-->
+
+{{- $previous := .Scratch.Get "navPrevious" -}}
+{{- $next := .Scratch.Get "navNext" -}}
+
+{{- if and (not $next) .IsHome -}}
+  {{- $next = index .Site.Home.Sections.ByWeight 0 -}}
+{{- end -}}
+{{- if and (not $previous) (not .IsHome) -}}
+  {{- $previous = .Site.Home -}}
+{{- end -}}
+
+{{- with $previous }}
+  <a class="nav nav-prev" href="{{ .Permalink }}">← Prev - {{ .Title }}</a>
+{{ end -}}
+{{- with $next }}
+  <a class="nav nav-next" href="{{ .Permalink }}">Next - {{ .Title }} →</a>
+{{- end -}}
+</nav>

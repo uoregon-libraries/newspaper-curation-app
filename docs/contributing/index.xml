@@ -13,7 +13,7 @@
       
       <guid>https://uoregon-libraries.github.io/newspaper-curation-app/contributing/dev-guide/</guid>
       <description>It is assumed developers will use Docker for the stack, other than the relatively simple process of compiling binaries.
-Requirements / Setup Local compilation (recommended)  A supported version of Go (e.g., if 1.16 is the latest, you want 1.15 or 1.16) revive: go install github.com/mgechev/revive@latest Set up your GOPATH: https://golang.org/doc/code.html#GOPATH  Add $GOPATH/bin to your path    If you choose not to compile on your host machine, you will have a slightly simpler install, but there are a few considerations.</description>
+Requirements / Setup Local compilation (recommended) A supported version of Go (e.g., if 1.16 is the latest, you want 1.15 or 1.16) revive: go install github.com/mgechev/revive@latest Set up your GOPATH: https://golang.org/doc/code.html#GOPATH Add $GOPATH/bin to your path If you choose not to compile on your host machine, you will have a slightly simpler install, but there are a few considerations.</description>
     </item>
     
     <item>
@@ -24,7 +24,7 @@ Requirements / Setup Local compilation (recommended)  A supported version of Go 
       <guid>https://uoregon-libraries.github.io/newspaper-curation-app/contributing/not-compiling-locally/</guid>
       <description>If you want to compile NCA inside a container, you are for the most part on your own. It&amp;rsquo;s doable and pretty easy, but it&amp;rsquo;s not part of the steps we&amp;rsquo;re going to outline, because it adds some annoyances.
 Why is it best to compile on your local machine instead of inside a container?
- Go is not Ruby / Python / PHP / node. You aren&amp;rsquo;t installing a systemwide runtime or futzing with things like rbenv, nvm, virtualenv, composer, &amp;hellip;.</description>
+Go is not Ruby / Python / PHP / node. You aren&amp;rsquo;t installing a systemwide runtime or futzing with things like rbenv, nvm, virtualenv, composer, &amp;hellip;.</description>
     </item>
     
     <item>
@@ -45,7 +45,7 @@ Starting out Get Hugo installed. It&amp;rsquo;s a trivial standalone application
       
       <guid>https://uoregon-libraries.github.io/newspaper-curation-app/contributing/testing/</guid>
       <description>Unit Testing Running unit tests is easy:
-make test  This compiles all of the code and tests any *_test.go files. Test coverage is spotty at best right now, but the compile-time checks catch the most common problems, like typos in variable names.
+make test This compiles all of the code and tests any *_test.go files. Test coverage is spotty at best right now, but the compile-time checks catch the most common problems, like typos in variable names.
 Contributors: feel free to add more unit tests to improve overall coverage!
 Manual Testing Manually testing NCA can be time-consuming, as you have to find, copy, and then load issues into NCA, enter metadata, etc.</description>
     </item>

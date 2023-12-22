@@ -1,0 +1,23 @@
+<!DOCTYPE html>
+{{ with .Site.LanguageCode }}<html lang="{{ . }}">{{ else }}<html>{{ end }}
+<head>
+{{- partial "head.html" . -}}
+</head>
+<body>
+  <div class="container">
+    {{- partial "skip-link.html" . -}}
+    {{- partial "site-header.html" . -}}
+
+    <div class="content-container">
+      {{- partial "sidebar.html" . -}}
+      <main id="maincontent">
+      {{- block "main" . -}}{{- end -}}
+      <footer>
+      {{- partial "powered.html" . -}}
+      </footer>
+      </main>
+    </div>
+
+  </div>
+</body>
+</html>
