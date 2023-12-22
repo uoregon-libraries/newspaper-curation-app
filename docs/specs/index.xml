@@ -13,7 +13,7 @@
       
       <guid>https://uoregon-libraries.github.io/newspaper-curation-app/specs/glossary/</guid>
       <description>NDNP / Newspaper Catalogers These are terms I&amp;rsquo;m trying to use properly, but which I sometimes still mess up. Don&amp;rsquo;t let that happen to you!
- Title: A distinct newspaper title, such as The Daily Prophet. All titles will have a unique LCCN. LCCN: Library of Congress Control Number: https://en.wikipedia.org/wiki/Library_of_Congress_Control_Number. In terms of NCA (and ONI and chronam), this uniquely identifies a newspaper title. Issue: A single published issue of a newspaper title, such as the April 20th edition of The Daily Prophet.</description>
+Title: A distinct newspaper title, such as The Daily Prophet. All titles will have a unique LCCN. LCCN: Library of Congress Control Number: https://en.wikipedia.org/wiki/Library_of_Congress_Control_Number. In terms of NCA (and ONI and chronam), this uniquely identifies a newspaper title. Issue: A single published issue of a newspaper title, such as the April 20th edition of The Daily Prophet.</description>
     </item>
     
     <item>

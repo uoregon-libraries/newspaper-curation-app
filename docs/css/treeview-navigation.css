@@ -1,0 +1,100 @@
+.treeview-navigation ul,
+.treeview-navigation li {
+  margin: 0;
+  padding: 0;
+}
+
+.treeview-navigation li li span.label {
+  padding-left: 1.5em;
+}
+
+.treeview-navigation li li li span.label {
+  padding-left: 3em;
+}
+
+.treeview-navigation[role="tree"] {
+  margin: 0;
+  padding: 0;
+  list-style: none;
+}
+
+.treeview-navigation[role="tree"] li {
+  margin: 0;
+  padding: 0;
+  list-style: none;
+}
+
+.treeview-navigation a[role="treeitem"] ul {
+  margin: 0;
+  padding: 0;
+}
+
+.treeview-navigation
+  a[role="treeitem"][aria-expanded="false"]
+  + [role="group"] {
+  display: none;
+}
+
+.treeview-navigation a[role="treeitem"][aria-expanded="true"] + [role="group"] {
+  display: block;
+}
+
+.treeview-navigation a[role="treeitem"] > span svg {
+  transform: rotate(90deg) translate(4px, 2px);
+}
+
+.treeview-navigation a[role="treeitem"][aria-expanded="false"] > span svg {
+  transform: translate(0px, 4px);
+}
+
+.treeview-navigation a[role="treeitem"] {
+  margin: 0;
+  padding: 4px;
+  padding-left: 9px;
+  text-decoration: none;
+  color: #005a9c;
+  border: none;
+  display: block;
+}
+
+.treeview-navigation a[role="treeitem"][aria-current] {
+  border-left: 5px solid #005a9c;
+  padding-left: 4px;
+  background-color: #ddd;
+}
+
+.treeview-navigation a[role="treeitem"] span.icon svg polygon {
+  stroke-width: 2px;
+  fill: currentcolor;
+  stroke: transparent;
+}
+
+/* disable default keyboard focus styling for treeitems
+   Keyboard focus is styled with the following CSS */
+
+.treeview-navigation a[role="treeitem"]:focus {
+  outline: 0;
+  padding: 2px;
+  padding-left: 7px;
+  border: 2px #005a9c solid;
+}
+
+.treeview-navigation a[role="treeitem"][aria-current]:focus {
+  padding-left: 4px;
+  border-left-width: 5px;
+}
+
+.treeview-navigation a[role="treeitem"]:hover {
+  background-color: #adddff;
+  text-decoration: underline;
+  padding-left: 4px;
+  border-left: 5px solid #333;
+}
+
+.treeview-navigation a[role="treeitem"] span.icon:hover {
+  color: #333;
+}
+
+.treeview-navigation a[role="treeitem"] span.icon svg polygon:hover {
+  stroke: currentcolor;
+}

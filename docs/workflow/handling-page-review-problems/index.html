@@ -5,23 +5,17 @@
 <meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1, user-scalable=no">
 <title>Handling Page Review Problems - Newspaper Curation App</title>
 <meta name="description" content="Dealing with problems created when issues are in the &#34;page review&#34; area of NCA">
-<meta name="generator" content="Hugo 0.85.0" />
+<meta name="generator" content="Hugo 0.117.0">
 <link href="https://uoregon-libraries.github.io/newspaper-curation-app//index.xml" rel="alternate" type="application/rss+xml">
 <link rel="canonical" href="https://uoregon-libraries.github.io/newspaper-curation-app/workflow/handling-page-review-problems/">
-<link rel="stylesheet" href="https://uoregon-libraries.github.io/newspaper-curation-app/css/theme.min.css">
-<script src="https://use.fontawesome.com/releases/v5.0.6/js/all.js"></script>
-<link rel="stylesheet" href="https://uoregon-libraries.github.io/newspaper-curation-app/css/chroma.min.css">
-<script src="https://cdn.jsdelivr.net/npm/jquery@3.4.1/dist/jquery.min.js"></script>
-<script src="https://cdn.jsdelivr.net/npm/jquery.easing@1.4.1/jquery.easing.min.js"></script>
-<script src="https://cdn.jsdelivr.net/npm/clipboard@2.0.6/dist/clipboard.min.js"></script>
-<script src="https://uoregon-libraries.github.io/newspaper-curation-app/js/bundle.js"></script><style>
-:root {}
-</style>
-<meta property="og:title" content="Handling Page Review Problems" />
+<link rel="stylesheet" href="https://uoregon-libraries.github.io/newspaper-curation-app/css/theme.css">
+<link rel="stylesheet" href="https://uoregon-libraries.github.io/newspaper-curation-app/css/chroma.css">
+<link rel="stylesheet" href="https://uoregon-libraries.github.io/newspaper-curation-app/css/treeview-navigation.css">
+<script src="https://uoregon-libraries.github.io/newspaper-curation-app/js/headerlink.js"></script>
+<script src="https://uoregon-libraries.github.io/newspaper-curation-app/js/treeview-navigation.js"></script><meta property="og:title" content="Handling Page Review Problems" />
 <meta property="og:description" content="Dealing with problems created when issues are in the &#34;page review&#34; area of NCA" />
 <meta property="og:type" content="article" />
 <meta property="og:url" content="https://uoregon-libraries.github.io/newspaper-curation-app/workflow/handling-page-review-problems/" /><meta property="article:section" content="workflow" />
-
 
 
 <meta name="twitter:card" content="summary"/>
@@ -32,13 +26,260 @@
 
 <meta itemprop="wordCount" content="506">
 <meta itemprop="keywords" content="" /></head>
-<body><div class="container"><header>
-<h1>Newspaper Curation App</h1><a href="https://github.com/uoregon-libraries/newspaper-curation-app/" class="github"><i class="fab fa-github"></i></a>
+<body>
+  <div class="container"><div class="skip"><a href="#maincontent">Skip to main content</a></div>
+<header>
+<h1>Newspaper Curation App</h1><a href="https://github.com/uoregon-libraries/newspaper-curation-app/" class="github"><img src="https://uoregon-libraries.github.io/newspaper-curation-app/images/github-mark-white.svg" alt="NCA on Github"></a>
 </header>
+<div class="content-container"><div class="sidebar">
+  
+  <nav class="slide-menu" aria-labelledby="table-of-contents">
+    <h2 id="table-of-contents" class="sr-only">Table Of Contents</h2>
+    <ul class="treeview-navigation" role="tree" aria-label="Contents">
+      <li role="none">
+        <a role="treeitem"  href="https://uoregon-libraries.github.io/newspaper-curation-app/">
+          <span class="label">Home</span>
+        </a>
+      </li><li role="none">
+      <a
+        role="treeitem"
+        href="https://uoregon-libraries.github.io/newspaper-curation-app/setup/"
+        aria-owns="subtree--newspaper-curation-app-setup-"
+          aria-expanded="false">
+        <span class="label"><span class="icon">
+            <svg xmlns="http://www.w3.org/2000/svg" width="18" viewBox="0 0 24 24">
+              <polygon points="2,3 22,11 2,20"></polygon>
+            </svg>
+          </span>Setup and Installation
+        </span>
+      </a><ul role="group" aria-label="Setup and Installation" id="subtree--newspaper-curation-app-setup-"><li role="none">
+      <a
+        role="treeitem"
+        href="https://uoregon-libraries.github.io/newspaper-curation-app/setup/services/"
+        >
+        <span class="label">Services and Apps
+        </span>
+      </a></li>
+  <li role="none">
+      <a
+        role="treeitem"
+        href="https://uoregon-libraries.github.io/newspaper-curation-app/setup/server-setup/"
+        >
+        <span class="label">Server Setup
+        </span>
+      </a></li>
+  <li role="none">
+      <a
+        role="treeitem"
+        href="https://uoregon-libraries.github.io/newspaper-curation-app/setup/installation/"
+        >
+        <span class="label">Installation
+        </span>
+      </a></li>
+  <li role="none">
+      <a
+        role="treeitem"
+        href="https://uoregon-libraries.github.io/newspaper-curation-app/setup/user-setup/"
+        >
+        <span class="label">Users
+        </span>
+      </a></li>
+  <li role="none">
+      <a
+        role="treeitem"
+        href="https://uoregon-libraries.github.io/newspaper-curation-app/setup/creating-publishers/"
+        >
+        <span class="label">Onboarding A Publisher
+        </span>
+      </a></li>
+  <li role="none">
+      <a
+        role="treeitem"
+        href="https://uoregon-libraries.github.io/newspaper-curation-app/setup/sftpgo-integration/"
+        >
+        <span class="label">SFTPGo Integration
+        </span>
+      </a></li>
+  </ul></li>
+  <li role="none">
+      <a
+        role="treeitem"
+        href="https://uoregon-libraries.github.io/newspaper-curation-app/specs/"
+        aria-owns="subtree--newspaper-curation-app-specs-"
+          aria-expanded="false">
+        <span class="label"><span class="icon">
+            <svg xmlns="http://www.w3.org/2000/svg" width="18" viewBox="0 0 24 24">
+              <polygon points="2,3 22,11 2,20"></polygon>
+            </svg>
+          </span>NCA Terms, Specs, and Information
+        </span>
+      </a><ul role="group" aria-label="NCA Terms, Specs, and Information" id="subtree--newspaper-curation-app-specs-"><li role="none">
+      <a
+        role="treeitem"
+        href="https://uoregon-libraries.github.io/newspaper-curation-app/specs/glossary/"
+        >
+        <span class="label">Glossary
+        </span>
+      </a></li>
+  <li role="none">
+      <a
+        role="treeitem"
+        href="https://uoregon-libraries.github.io/newspaper-curation-app/specs/upload-specs/"
+        >
+        <span class="label">Uploads: Folder and File Specs
+        </span>
+      </a></li>
+  </ul></li>
+  <li role="none">
+      <a
+        role="treeitem"
+        href="https://uoregon-libraries.github.io/newspaper-curation-app/workflow/"
+        aria-owns="subtree--newspaper-curation-app-workflow-"
+          aria-expanded="true">
+        <span class="label"><span class="icon">
+            <svg xmlns="http://www.w3.org/2000/svg" width="18" viewBox="0 0 24 24">
+              <polygon points="2,3 22,11 2,20"></polygon>
+            </svg>
+          </span>Workflow
+        </span>
+      </a><ul role="group" aria-label="Workflow" id="subtree--newspaper-curation-app-workflow-"><li role="none">
+      <a
+        role="treeitem"
+        href="https://uoregon-libraries.github.io/newspaper-curation-app/workflow/technical/"
+        >
+        <span class="label">Technical Details
+        </span>
+      </a></li>
+  <li role="none">
+      <a
+        role="treeitem"
+        href="https://uoregon-libraries.github.io/newspaper-curation-app/workflow/adding-titles/"
+        >
+        <span class="label">Adding Titles
+        </span>
+      </a></li>
+  <li role="none">
+      <a
+        role="treeitem"
+        href="https://uoregon-libraries.github.io/newspaper-curation-app/workflow/handling-page-review-problems/"
+        aria-current="page"
+        >
+        <span class="label">Handling Page Review Problems
+        </span>
+      </a></li>
+  <li role="none">
+      <a
+        role="treeitem"
+        href="https://uoregon-libraries.github.io/newspaper-curation-app/workflow/fixing-stuck-issues/"
+        >
+        <span class="label">Fixing &#34;Stuck&#34; Issues
+        </span>
+      </a></li>
+  <li role="none">
+      <a
+        role="treeitem"
+        href="https://uoregon-libraries.github.io/newspaper-curation-app/workflow/fixing-flagged-workflow-issues/"
+        >
+        <span class="label">Fixing Flagged Workflow Issues
+        </span>
+      </a></li>
+  <li role="none">
+      <a
+        role="treeitem"
+        href="https://uoregon-libraries.github.io/newspaper-curation-app/workflow/fixing-live-batches/"
+        >
+        <span class="label">Replacing Live Issues
+        </span>
+      </a></li>
+  <li role="none">
+      <a
+        role="treeitem"
+        href="https://uoregon-libraries.github.io/newspaper-curation-app/workflow/undo-batch-golive/"
+        >
+        <span class="label">&#34;Un-push&#34; Batch From Production
+        </span>
+      </a></li>
+  </ul></li>
+  <li role="none">
+      <a
+        role="treeitem"
+        href="https://uoregon-libraries.github.io/newspaper-curation-app/contributing/"
+        aria-owns="subtree--newspaper-curation-app-contributing-"
+          aria-expanded="false">
+        <span class="label"><span class="icon">
+            <svg xmlns="http://www.w3.org/2000/svg" width="18" viewBox="0 0 24 24">
+              <polygon points="2,3 22,11 2,20"></polygon>
+            </svg>
+          </span>Contributing
+        </span>
+      </a><ul role="group" aria-label="Contributing" id="subtree--newspaper-curation-app-contributing-"><li role="none">
+      <a
+        role="treeitem"
+        href="https://uoregon-libraries.github.io/newspaper-curation-app/contributing/dev-guide/"
+        >
+        <span class="label">Developer&#39;s Guide
+        </span>
+      </a></li>
+  <li role="none">
+      <a
+        role="treeitem"
+        href="https://uoregon-libraries.github.io/newspaper-curation-app/contributing/not-compiling-locally/"
+        >
+        <span class="label">Not Compiling Locally
+        </span>
+      </a></li>
+  <li role="none">
+      <a
+        role="treeitem"
+        href="https://uoregon-libraries.github.io/newspaper-curation-app/contributing/documentation/"
+        >
+        <span class="label">Contributing to Documentation
+        </span>
+      </a></li>
+  <li role="none">
+      <a
+        role="treeitem"
+        href="https://uoregon-libraries.github.io/newspaper-curation-app/contributing/testing/"
+        >
+        <span class="label">Testing
+        </span>
+      </a></li>
+  <li role="none">
+      <a
+        role="treeitem"
+        href="https://uoregon-libraries.github.io/newspaper-curation-app/contributing/dev-howto/"
+        aria-owns="subtree--newspaper-curation-app-contributing-dev-howto-"
+          aria-expanded="false">
+        <span class="label"><span class="icon">
+            <svg xmlns="http://www.w3.org/2000/svg" width="18" viewBox="0 0 24 24">
+              <polygon points="2,3 22,11 2,20"></polygon>
+            </svg>
+          </span>How do I...?
+        </span>
+      </a><ul role="group" aria-label="How do I...?" id="subtree--newspaper-curation-app-contributing-dev-howto-"><li role="none">
+      <a
+        role="treeitem"
+        href="https://uoregon-libraries.github.io/newspaper-curation-app/contributing/dev-howto/add-job-types/"
+        >
+        <span class="label">Add Job Types
+        </span>
+      </a></li>
+  <li role="none">
+      <a
+        role="treeitem"
+        href="https://uoregon-libraries.github.io/newspaper-curation-app/contributing/dev-howto/add-config-items/"
+        >
+        <span class="label">Add Configuration Settings
+        </span>
+      </a></li>
+  </ul></li>
+  </ul></li>
+  </ul>
+  </nav>
+</div>
 
-<div class="content-container">
-<main><h1>Handling Page Review Problems</h1>
-<p>The &ldquo;page review&rdquo; location is one of the most dangerous in the application due
+
+<main id="maincontent"><h1>Handling Page Review Problems</h1><p>The &ldquo;page review&rdquo; location is one of the most dangerous in the application due
 to the requirement that people manually edit and rename files.  There are
 potentially a <em>lot</em> of difficult problems to manage here.</p>
 <h2 id="manual-deletion">Manual Deletion</h2>
@@ -58,11 +299,11 @@ very ugly.</p>
 <h3 id="identify-the-deleted-issues">Identify the deleted issues</h3>
 <p>If you don&rsquo;t know offhand what&rsquo;s been deleted, but you&rsquo;ve seen log errors about
 the page review location, this might help.</p>
-<div class="highlight"><pre style="color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4"><code class="language-bash" data-lang="bash">cat /var/log/nca-* | grep <span style="color:#e6db74">&#34; - ERROR - &#34;</span> | <span style="color:#ae81ff">\
-</span><span style="color:#ae81ff"></span>    sed <span style="color:#e6db74">&#39;s|^.* - ERROR - ||&#39;</span> | <span style="color:#ae81ff">\
-</span><span style="color:#ae81ff"></span>    sed <span style="color:#e6db74">&#39;s|^.* \(/mnt/news/.*\): no such file or directory$|\1|&#39;</span> | <span style="color:#ae81ff">\
-</span><span style="color:#ae81ff"></span>    sort | uniq -c | sort -n
-</code></pre></div><p>This will find all error logs that are due to file or directory being missing.
+<div class="highlight"><pre tabindex="0" style="color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4;"><code class="language-bash" data-lang="bash"><span style="display:flex;"><span>cat /var/log/nca-* | grep <span style="color:#e6db74">&#34; - ERROR - &#34;</span> | <span style="color:#ae81ff">\
+</span></span></span><span style="display:flex;"><span><span style="color:#ae81ff"></span>    sed <span style="color:#e6db74">&#39;s|^.* - ERROR - ||&#39;</span> | <span style="color:#ae81ff">\
+</span></span></span><span style="display:flex;"><span><span style="color:#ae81ff"></span>    sed <span style="color:#e6db74">&#39;s|^.* \(/mnt/news/.*\): no such file or directory$|\1|&#39;</span> | <span style="color:#ae81ff">\
+</span></span></span><span style="display:flex;"><span><span style="color:#ae81ff"></span>    sort | uniq -c | sort -n
+</span></span></code></pre></div><p>This will find all error logs that are due to file or directory being missing.
 It will likely catch other problems than just page-review deletions, but those
 can be useful as well.  Just note that things like NFS drop can result in
 occasional one-offs.  You really want to look for systemic, repetitive errors.
@@ -76,109 +317,32 @@ the changing bits so the unique issues can be aggregated and counted)</p>
 <h3 id="fix-the-data">Fix the data</h3>
 <p>First, <strong>verify</strong> that the issues are in fact not on the filesystem.  If you
 see errors about database id 9971, you can query its location:</p>
-<div class="highlight"><pre style="color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4"><code class="language-sql" data-lang="sql"><span style="color:#66d9ef">SELECT</span> <span style="color:#66d9ef">location</span> <span style="color:#66d9ef">FROM</span> issues <span style="color:#66d9ef">WHERE</span> id<span style="color:#f92672">=</span><span style="color:#ae81ff">9971</span>;
-</code></pre></div><p>If that location exists, the problem you have is <em>not</em> what is described here.</p>
+<div class="highlight"><pre tabindex="0" style="color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4;"><code class="language-sql" data-lang="sql"><span style="display:flex;"><span><span style="color:#66d9ef">SELECT</span> <span style="color:#66d9ef">location</span> <span style="color:#66d9ef">FROM</span> issues <span style="color:#66d9ef">WHERE</span> id<span style="color:#f92672">=</span><span style="color:#ae81ff">9971</span>;
+</span></span></code></pre></div><p>If that location exists, the problem you have is <em>not</em> what is described here.</p>
 <p>Assuming the locations are indeed deleted, gather up all your database ids.  If
 you had errors with ids 9971, 9975, and 9990:</p>
-<div class="highlight"><pre style="color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4"><code class="language-sql" data-lang="sql"><span style="color:#66d9ef">UPDATE</span> issues <span style="color:#66d9ef">SET</span>
-    error <span style="color:#f92672">=</span> <span style="color:#e6db74">&#39;manually deleted from page-review step&#39;</span>,
-    workflow_step <span style="color:#f92672">=</span> <span style="color:#e6db74">&#39;UnfixableMetadataError&#39;</span>,
-    <span style="color:#66d9ef">location</span><span style="color:#f92672">=</span><span style="color:#e6db74">&#39;&#39;</span>,
-    ignored<span style="color:#f92672">=</span><span style="color:#ae81ff">1</span>
-<span style="color:#66d9ef">WHERE</span> id <span style="color:#66d9ef">in</span> (<span style="color:#ae81ff">9971</span>, <span style="color:#ae81ff">9975</span>, <span style="color:#ae81ff">9990</span>);
-</code></pre></div><p>The database is fixed!</p>
+<div class="highlight"><pre tabindex="0" style="color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4;"><code class="language-sql" data-lang="sql"><span style="display:flex;"><span><span style="color:#66d9ef">UPDATE</span> issues <span style="color:#66d9ef">SET</span>
+</span></span><span style="display:flex;"><span>    error <span style="color:#f92672">=</span> <span style="color:#e6db74">&#39;manually deleted from page-review step&#39;</span>,
+</span></span><span style="display:flex;"><span>    workflow_step <span style="color:#f92672">=</span> <span style="color:#e6db74">&#39;UnfixableMetadataError&#39;</span>,
+</span></span><span style="display:flex;"><span>    <span style="color:#66d9ef">location</span><span style="color:#f92672">=</span><span style="color:#e6db74">&#39;&#39;</span>,
+</span></span><span style="display:flex;"><span>    ignored<span style="color:#f92672">=</span><span style="color:#ae81ff">1</span>
+</span></span><span style="display:flex;"><span><span style="color:#66d9ef">WHERE</span> id <span style="color:#66d9ef">in</span> (<span style="color:#ae81ff">9971</span>, <span style="color:#ae81ff">9975</span>, <span style="color:#ae81ff">9990</span>);
+</span></span></code></pre></div><p>The database is fixed!</p>
 <h3 id="delete-backups">Delete backups?</h3>
 <p>If the issues are completely ruined and the backups are known to be bad, you
 should delete them.  Get their locations from the database:</p>
-<div class="highlight"><pre style="color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4"><code class="language-sql" data-lang="sql"><span style="color:#66d9ef">SELECT</span> backup_location <span style="color:#66d9ef">FROM</span> issues <span style="color:#66d9ef">WHERE</span> id <span style="color:#66d9ef">IN</span> (<span style="color:#ae81ff">9971</span>, <span style="color:#ae81ff">9975</span>, <span style="color:#ae81ff">9990</span>);
-</code></pre></div><p>Remove these locations from disk.</p>
-<div class="edit-meta">
+<div class="highlight"><pre tabindex="0" style="color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4;"><code class="language-sql" data-lang="sql"><span style="display:flex;"><span><span style="color:#66d9ef">SELECT</span> backup_location <span style="color:#66d9ef">FROM</span> issues <span style="color:#66d9ef">WHERE</span> id <span style="color:#66d9ef">IN</span> (<span style="color:#ae81ff">9971</span>, <span style="color:#ae81ff">9975</span>, <span style="color:#ae81ff">9990</span>);
+</span></span></code></pre></div><p>Remove these locations from disk.</p>
+<nav class="pagination" aria-label="Pagination">
 
-<br></div><nav class="pagination"><a class="nav nav-prev" href="https://uoregon-libraries.github.io/newspaper-curation-app/workflow/adding-titles/" title="Adding Titles"><i class="fas fa-arrow-left" aria-hidden="true"></i>&nbsp;Prev - Adding Titles</a>
-<a class="nav nav-next" href="https://uoregon-libraries.github.io/newspaper-curation-app/workflow/fixing-stuck-issues/" title="Fixing &#34;Stuck&#34; Issues">Next - Fixing &#34;Stuck&#34; Issues <i class="fas fa-arrow-right" aria-hidden="true"></i></a>
-</nav><footer><p class="powered">Powered by <a href="https://gohugo.io">Hugo</a>. Theme by <a href="https://themes.gohugo.io/hugo-theme-techdoc/">TechDoc</a>. Designed by <a href="https://github.com/thingsym/hugo-theme-techdoc">Thingsym</a>.</p>
+  <a class="nav nav-prev" href="https://uoregon-libraries.github.io/newspaper-curation-app/workflow/adding-titles/">← Prev - Adding Titles</a>
+
+  <a class="nav nav-next" href="https://uoregon-libraries.github.io/newspaper-curation-app/workflow/fixing-stuck-issues/">Next - Fixing &#34;Stuck&#34; Issues →</a></nav>
+<footer><p class="powered">Powered by <a href="https://gohugo.io">Hugo</a>.
 </footer>
-</main>
-<div class="sidebar">
+      </main>
+    </div>
 
-<nav class="open-menu">
-<ul>
-<li class=""><a href="https://uoregon-libraries.github.io/newspaper-curation-app/">Home</a></li>
-
-<li class=""><a href="https://uoregon-libraries.github.io/newspaper-curation-app/setup/">Setup and Installation</a>
-  
-<ul class="sub-menu">
-<li class=""><a href="https://uoregon-libraries.github.io/newspaper-curation-app/setup/services/">Services and Apps</a></li>
-<li class=""><a href="https://uoregon-libraries.github.io/newspaper-curation-app/setup/server-setup/">Server Setup</a></li>
-<li class=""><a href="https://uoregon-libraries.github.io/newspaper-curation-app/setup/installation/">Installation</a></li>
-<li class=""><a href="https://uoregon-libraries.github.io/newspaper-curation-app/setup/user-setup/">Users</a></li>
-<li class=""><a href="https://uoregon-libraries.github.io/newspaper-curation-app/setup/creating-publishers/">Onboarding A Publisher</a></li>
-<li class=""><a href="https://uoregon-libraries.github.io/newspaper-curation-app/setup/sftpgo-integration/">SFTPGo Integration</a></li>
-</ul>
-  
-</li>
-
-<li class=""><a href="https://uoregon-libraries.github.io/newspaper-curation-app/specs/">NCA Terms, Specs, and Information</a>
-  
-<ul class="sub-menu">
-<li class=""><a href="https://uoregon-libraries.github.io/newspaper-curation-app/specs/glossary/">Glossary</a></li>
-<li class=""><a href="https://uoregon-libraries.github.io/newspaper-curation-app/specs/upload-specs/">Uploads: Folder and File Specs</a></li>
-</ul>
-  
-</li>
-
-<li class="parent"><a href="https://uoregon-libraries.github.io/newspaper-curation-app/workflow/">Workflow</a>
-  
-<ul class="sub-menu">
-<li class=""><a href="https://uoregon-libraries.github.io/newspaper-curation-app/workflow/technical/">Technical Details</a></li>
-<li class=""><a href="https://uoregon-libraries.github.io/newspaper-curation-app/workflow/adding-titles/">Adding Titles</a></li>
-<li class="active"><a href="https://uoregon-libraries.github.io/newspaper-curation-app/workflow/handling-page-review-problems/">Handling Page Review Problems</a></li>
-<li class=""><a href="https://uoregon-libraries.github.io/newspaper-curation-app/workflow/fixing-stuck-issues/">Fixing &#34;Stuck&#34; Issues</a></li>
-<li class=""><a href="https://uoregon-libraries.github.io/newspaper-curation-app/workflow/fixing-flagged-workflow-issues/">Fixing Flagged Workflow Issues</a></li>
-<li class=""><a href="https://uoregon-libraries.github.io/newspaper-curation-app/workflow/fixing-live-batches/">Replacing Live Issues</a></li>
-<li class=""><a href="https://uoregon-libraries.github.io/newspaper-curation-app/workflow/undo-batch-golive/">&#34;Un-push&#34; Batch From Production</a></li>
-</ul>
-  
-</li>
-
-<li class=""><a href="https://uoregon-libraries.github.io/newspaper-curation-app/contributing/">Contributing</a>
-  
-<ul class="sub-menu">
-<li class=""><a href="https://uoregon-libraries.github.io/newspaper-curation-app/contributing/dev-guide/">Developer&#39;s Guide</a></li>
-<li class=""><a href="https://uoregon-libraries.github.io/newspaper-curation-app/contributing/not-compiling-locally/">Not Compiling Locally</a></li>
-<li class=""><a href="https://uoregon-libraries.github.io/newspaper-curation-app/contributing/documentation/">Contributing to Documentation</a></li>
-<li class=""><a href="https://uoregon-libraries.github.io/newspaper-curation-app/contributing/testing/">Testing</a></li>
-
-<li class=""><a href="https://uoregon-libraries.github.io/newspaper-curation-app/contributing/dev-howto/">How do I...?</a>
-  
-<ul class="sub-menu">
-<li class=""><a href="https://uoregon-libraries.github.io/newspaper-curation-app/contributing/dev-howto/add-job-types/">Add Job Types</a></li>
-<li class=""><a href="https://uoregon-libraries.github.io/newspaper-curation-app/contributing/dev-howto/add-config-items/">Add Configuration Settings</a></li>
-</ul>
-  
-</li>
-</ul>
-  
-</li>
-</ul>
-</nav>
-
-
-
-<div class="sidebar-footer"></div>
-</div>
-
-</div><a href="#" id="backtothetop-fixed" class="backtothetop"
- data-backtothetop-duration="600"
- data-backtothetop-easing="easeOutQuart"
- data-backtothetop-fixed-fadeIn="1000"
- data-backtothetop-fixed-fadeOut="1000"
- data-backtothetop-fixed-bottom="10"
- data-backtothetop-fixed-right="20">
-<span class="fa-layers fa-fw">
-<i class="fas fa-circle"></i>
-<i class="fas fa-arrow-circle-up"></i>
-</span></a>
-</div>
+  </div>
 </body>
 </html>

@@ -13,7 +13,7 @@
       
       <guid>https://uoregon-libraries.github.io/newspaper-curation-app/contributing/dev-howto/add-job-types/</guid>
       <description>When a new kind of job is required for backend processing, it has to be done properly in order to ensure it is used, set up, and processed by NCA.
- Make sure there aren&amp;rsquo;t already existing jobs that do what you want! There are a lot of jobs in NCA already, and some are meant to be very generic, such as JobTypeRenameDir.  Read and make sure you understand all structs in src/jobs that implement Process   Create a new JobType in src/models/job.</description>
+Make sure there aren&amp;rsquo;t already existing jobs that do what you want! There are a lot of jobs in NCA already, and some are meant to be very generic, such as JobTypeRenameDir. Read and make sure you understand all structs in src/jobs that implement Process Create a new JobType in src/models/job.</description>
     </item>
     
     <item>
@@ -23,7 +23,7 @@
       
       <guid>https://uoregon-libraries.github.io/newspaper-curation-app/contributing/dev-howto/add-config-items/</guid>
       <description>Occasionally we need a new setting to be created so that users have a bit more control over the inner workings of NCA. This details the process of adding settings:
- Open up src/config/config.go and add a value to the Config struct. Choose the data type. In most cases a primitive is fine: string, int, float64, etc. Decide if the value should be pulled directly from the settings file or if you need to massage data manually.</description>
+Open up src/config/config.go and add a value to the Config struct. Choose the data type. In most cases a primitive is fine: string, int, float64, etc. Decide if the value should be pulled directly from the settings file or if you need to massage data manually.</description>
     </item>
     
   </channel>

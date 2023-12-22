@@ -24,7 +24,7 @@ If you&amp;rsquo;re doing a manual installation rather than container-based, you
       
       <guid>https://uoregon-libraries.github.io/newspaper-curation-app/contributing/dev-howto/add-job-types/</guid>
       <description>When a new kind of job is required for backend processing, it has to be done properly in order to ensure it is used, set up, and processed by NCA.
- Make sure there aren&amp;rsquo;t already existing jobs that do what you want! There are a lot of jobs in NCA already, and some are meant to be very generic, such as JobTypeRenameDir.  Read and make sure you understand all structs in src/jobs that implement Process   Create a new JobType in src/models/job.</description>
+Make sure there aren&amp;rsquo;t already existing jobs that do what you want! There are a lot of jobs in NCA already, and some are meant to be very generic, such as JobTypeRenameDir. Read and make sure you understand all structs in src/jobs that implement Process Create a new JobType in src/models/job.</description>
     </item>
     
     <item>
@@ -34,7 +34,7 @@ If you&amp;rsquo;re doing a manual installation rather than container-based, you
       
       <guid>https://uoregon-libraries.github.io/newspaper-curation-app/contributing/dev-guide/</guid>
       <description>It is assumed developers will use Docker for the stack, other than the relatively simple process of compiling binaries.
-Requirements / Setup Local compilation (recommended)  A supported version of Go (e.g., if 1.16 is the latest, you want 1.15 or 1.16) revive: go install github.com/mgechev/revive@latest Set up your GOPATH: https://golang.org/doc/code.html#GOPATH  Add $GOPATH/bin to your path    If you choose not to compile on your host machine, you will have a slightly simpler install, but there are a few considerations.</description>
+Requirements / Setup Local compilation (recommended) A supported version of Go (e.g., if 1.16 is the latest, you want 1.15 or 1.16) revive: go install github.com/mgechev/revive@latest Set up your GOPATH: https://golang.org/doc/code.html#GOPATH Add $GOPATH/bin to your path If you choose not to compile on your host machine, you will have a slightly simpler install, but there are a few considerations.</description>
     </item>
     
     <item>
@@ -44,7 +44,7 @@ Requirements / Setup Local compilation (recommended)  A supported version of Go 
       
       <guid>https://uoregon-libraries.github.io/newspaper-curation-app/specs/glossary/</guid>
       <description>NDNP / Newspaper Catalogers These are terms I&amp;rsquo;m trying to use properly, but which I sometimes still mess up. Don&amp;rsquo;t let that happen to you!
- Title: A distinct newspaper title, such as The Daily Prophet. All titles will have a unique LCCN. LCCN: Library of Congress Control Number: https://en.wikipedia.org/wiki/Library_of_Congress_Control_Number. In terms of NCA (and ONI and chronam), this uniquely identifies a newspaper title. Issue: A single published issue of a newspaper title, such as the April 20th edition of The Daily Prophet.</description>
+Title: A distinct newspaper title, such as The Daily Prophet. All titles will have a unique LCCN. LCCN: Library of Congress Control Number: https://en.wikipedia.org/wiki/Library_of_Congress_Control_Number. In terms of NCA (and ONI and chronam), this uniquely identifies a newspaper title. Issue: A single published issue of a newspaper title, such as the April 20th edition of The Daily Prophet.</description>
     </item>
     
     <item>
@@ -74,7 +74,7 @@ Jobs and the Job Queue The job runner regularly scans the database looking for j
       
       <guid>https://uoregon-libraries.github.io/newspaper-curation-app/contributing/dev-howto/add-config-items/</guid>
       <description>Occasionally we need a new setting to be created so that users have a bit more control over the inner workings of NCA. This details the process of adding settings:
- Open up src/config/config.go and add a value to the Config struct. Choose the data type. In most cases a primitive is fine: string, int, float64, etc. Decide if the value should be pulled directly from the settings file or if you need to massage data manually.</description>
+Open up src/config/config.go and add a value to the Config struct. Choose the data type. In most cases a primitive is fine: string, int, float64, etc. Decide if the value should be pulled directly from the settings file or if you need to massage data manually.</description>
     </item>
     
     <item>
@@ -84,7 +84,7 @@ Jobs and the Job Queue The job runner regularly scans the database looking for j
       
       <guid>https://uoregon-libraries.github.io/newspaper-curation-app/workflow/adding-titles/</guid>
       <description>Adding a title to NCA is very simple in cases where the title already exists somewhere external (e.g., Library of Congress), but can take a lot more work for titles not indexed elsewhere. Here&amp;rsquo;s our process:
- Provision a real record, including things like an LCCN  This is a must for us, otherwise our Historic Oregon Newspapers site will misrepresent information that could be extremely confusing to end-users looking for more details.</description>
+Provision a real record, including things like an LCCN This is a must for us, otherwise our Historic Oregon Newspapers site will misrepresent information that could be extremely confusing to end-users looking for more details.</description>
     </item>
     
     <item>
@@ -95,7 +95,7 @@ Jobs and the Job Queue The job runner regularly scans the database looking for j
       <guid>https://uoregon-libraries.github.io/newspaper-curation-app/setup/installation/</guid>
       <description>Development If you&amp;rsquo;re developing on NCA, installation will differ from standing up a production server. Please see our Development Guide.
 Preliminary Setup Manual installation has several prerequisites:
- Go and some dependencies (see below) Poppler Utils for PDF processing OpenJPEG 2 + command-line tools for JP2 generation  The command-line tools will probably need to be manually compiled to support converting PNG files. Most distributions of Linux don&amp;rsquo;t have this by default, hence the need to manually compile.</description>
+Go and some dependencies (see below) Poppler Utils for PDF processing OpenJPEG 2 + command-line tools for JP2 generation The command-line tools will probably need to be manually compiled to support converting PNG files. Most distributions of Linux don&amp;rsquo;t have this by default, hence the need to manually compile.</description>
     </item>
     
     <item>
@@ -106,7 +106,7 @@ Preliminary Setup Manual installation has several prerequisites:
       <guid>https://uoregon-libraries.github.io/newspaper-curation-app/contributing/not-compiling-locally/</guid>
       <description>If you want to compile NCA inside a container, you are for the most part on your own. It&amp;rsquo;s doable and pretty easy, but it&amp;rsquo;s not part of the steps we&amp;rsquo;re going to outline, because it adds some annoyances.
 Why is it best to compile on your local machine instead of inside a container?
- Go is not Ruby / Python / PHP / node. You aren&amp;rsquo;t installing a systemwide runtime or futzing with things like rbenv, nvm, virtualenv, composer, &amp;hellip;.</description>
+Go is not Ruby / Python / PHP / node. You aren&amp;rsquo;t installing a systemwide runtime or futzing with things like rbenv, nvm, virtualenv, composer, &amp;hellip;.</description>
     </item>
     
     <item>
@@ -147,7 +147,7 @@ Manual Deletion If issues got to the page-review step when they shouldn&amp;rsqu
       
       <guid>https://uoregon-libraries.github.io/newspaper-curation-app/setup/user-setup/</guid>
       <description>Newspaper Curation App - User Setup First-time Setup Once the applications are installed and configured, start the NCA server in debug mode:
-./bin/server -c ./settings --debug  This lets you fake an admin login via http://your.site/users?debuguser=admin. You can then set up other users as necessary. Once you have Apache set up to do the authentication, you should never run in debug mode on production servers.
+./bin/server -c ./settings --debug This lets you fake an admin login via http://your.site/users?debuguser=admin. You can then set up other users as necessary. Once you have Apache set up to do the authentication, you should never run in debug mode on production servers.
 For development use, docker-compose.override.yml-example is already set up to run in debug mode.</description>
     </item>
     
@@ -169,7 +169,7 @@ When an issue gets stuck, NCA currently has no way to indicate this. This is one
       <guid>https://uoregon-libraries.github.io/newspaper-curation-app/workflow/fixing-flagged-workflow-issues/</guid>
       <description>This refers to issues which were already queued from their uploaded location, had derivatives generated, and were ready for metadata entry.
 The metadata entry person flags errors to say essentially, &amp;ldquo;NCA&amp;rsquo;s UI cannot fix the problems on this issue&amp;rdquo;. We have seen a variety of problems like this:
- The PDF or JP2 image derivatives are corrupt in some way, even though the tools which generated them seemed to run without errors The pages are out of order - somebody reordered pages incorrectly, and the issue now has to be manually pulled, fixed, and re-inserted into the workflow The issue is incorrect in some other way, and wasn&amp;rsquo;t caught when queueing from the uploads area (e.</description>
+The PDF or JP2 image derivatives are corrupt in some way, even though the tools which generated them seemed to run without errors The pages are out of order - somebody reordered pages incorrectly, and the issue now has to be manually pulled, fixed, and re-inserted into the workflow The issue is incorrect in some other way, and wasn&amp;rsquo;t caught when queueing from the uploads area (e.</description>
     </item>
     
     <item>
@@ -179,7 +179,7 @@ The metadata entry person flags errors to say essentially, &amp;ldquo;NCA&amp;rs
       
       <guid>https://uoregon-libraries.github.io/newspaper-curation-app/setup/creating-publishers/</guid>
       <description>Creating a publisher in NCA, at least for UO, requires several manual processes take place:
- Add a title to NCA with sftp credential information. If necessary, import the title&amp;rsquo;s MARC record to your ONI site (for example, oregonnews.uoregon.edu).  See Adding Titles for details   Set up a user for sftp access  We use NCA&amp;rsquo;s integrated SFTPGo setup for this. See SFTPGo Integration.    </description>
+Add a title to NCA with sftp credential information. If necessary, import the title&amp;rsquo;s MARC record to your ONI site (for example, oregonnews.uoregon.edu). See Adding Titles for details Set up a user for sftp access We use NCA&amp;rsquo;s integrated SFTPGo setup for this. See SFTPGo Integration. </description>
     </item>
     
     <item>
@@ -189,7 +189,7 @@ The metadata entry person flags errors to say essentially, &amp;ldquo;NCA&amp;rs
       
       <guid>https://uoregon-libraries.github.io/newspaper-curation-app/contributing/testing/</guid>
       <description>Unit Testing Running unit tests is easy:
-make test  This compiles all of the code and tests any *_test.go files. Test coverage is spotty at best right now, but the compile-time checks catch the most common problems, like typos in variable names.
+make test This compiles all of the code and tests any *_test.go files. Test coverage is spotty at best right now, but the compile-time checks catch the most common problems, like typos in variable names.
 Contributors: feel free to add more unit tests to improve overall coverage!
 Manual Testing Manually testing NCA can be time-consuming, as you have to find, copy, and then load issues into NCA, enter metadata, etc.</description>
     </item>
@@ -222,7 +222,7 @@ To run: go run scripts/help-remove-issues.go &amp;lt;lccn&amp;gt; &amp;lt;issue 
       <guid>https://uoregon-libraries.github.io/newspaper-curation-app/workflow/undo-batch-golive/</guid>
       <description>Sometimes a batch is messed up enough that it needs to be completely removed, rebuilt, and reingested, but it&amp;rsquo;s already in production. In the (rare) cases this happens and we haven&amp;rsquo;t already archived all the original files, we can un-push the batch and requeue the necessary issues.
 This procedure helps &amp;ldquo;un-push&amp;rdquo; batches, but only when all of the following are true:
- The batch was created by NCA, not a vendor.</description>
+The batch was created by NCA, not a vendor. There&amp;rsquo;s currently no procedure for reading a non-NCA batch and putting its issues in the database.</description>
     </item>
     
   </channel>
