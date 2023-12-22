@@ -18,6 +18,11 @@
 {{define "slide-menu"}}
   {{- $currentNode := .currentnode -}}
   {{ with .sect }}
+    {{- if eq ($currentNode.Scratch.Get "grabnext") true -}}
+      {{- $currentNode.Scratch.Set "grabnext" false -}}
+      {{- $currentNode.Scratch.Set "navNext" . -}}
+    {{- end -}}
+
     {{- safeHTML .Params.head -}}
     {{- $isCurrent := false -}}
     {{- $expand := .IsAncestor $currentNode -}}
@@ -28,8 +33,12 @@
       {{- if eq .File.UniqueID $currentNode.File.UniqueID -}}
         {{- $isCurrent = true }}
         {{- $expand = true }}
+        {{- $currentNode.Scratch.Set "navPrevious" ($currentNode.Scratch.Get "iter") -}}
+        {{- $currentNode.Scratch.Set "grabnext" true -}}
       {{- end -}}
     {{- end -}}
+
+    {{- $currentNode.Scratch.Set "iter" . -}}
 
     <li role="none">
       <a
@@ -57,11 +66,10 @@
 
       {{- if $hasPages -}}
         <ul role="group" aria-label="{{ .Title }}" id="subtree-{{ $sectionID }}">
-          {{- .Scratch.Set "pages" .Pages -}}
+          {{- $pages := .Pages -}}
           {{- if .Sections -}}
-            {{- .Scratch.Set "pages" (.Pages | union .Sections) -}}
+            {{- $pages = (.Pages | union .Sections) -}}
           {{- end -}}
-          {{- $pages := (.Scratch.Get "pages") -}}
           {{- range $pages.ByWeight -}}
             {{template "slide-menu" dict "sect" . "currentnode" $currentNode}}
           {{- end -}}
