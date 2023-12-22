@@ -56,7 +56,7 @@
       </a>
 
       {{- if $hasPages -}}
-        <ul role="group" aria-label="About" id="subtree-{{ $sectionID }}">
+        <ul role="group" aria-label="{{ .Title }}" id="subtree-{{ $sectionID }}">
           {{- .Scratch.Set "pages" .Pages -}}
           {{- if .Sections -}}
             {{- .Scratch.Set "pages" (.Pages | union .Sections) -}}
