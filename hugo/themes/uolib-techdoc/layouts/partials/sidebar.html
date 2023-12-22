@@ -1,6 +1,6 @@
 <div class="sidebar">
   {{$currentNode := .}}
-  <nav class="slide-menu" aria-labelledby="table-of-contents">
+  <nav aria-labelledby="table-of-contents">
     <h2 id="table-of-contents" class="sr-only">Table Of Contents</h2>
     <ul class="treeview-navigation" role="tree" aria-label="Contents">
       <li role="none">
@@ -9,13 +9,13 @@
         </a>
       </li>
       {{- range .Site.Home.Sections.ByWeight -}}
-        {{template "slide-menu" dict "sect" . "currentnode" $currentNode}}
+        {{template "submenu" dict "sect" . "currentnode" $currentNode}}
       {{- end -}}
     </ul>
   </nav>
 </div>
 
-{{define "slide-menu"}}
+{{define "submenu"}}
   {{- $currentNode := .currentnode -}}
   {{ with .sect }}
     {{- if eq ($currentNode.Scratch.Get "grabnext") true -}}
@@ -71,7 +71,7 @@
             {{- $pages = (.Pages | union .Sections) -}}
           {{- end -}}
           {{- range $pages.ByWeight -}}
-            {{template "slide-menu" dict "sect" . "currentnode" $currentNode}}
+            {{template "submenu" dict "sect" . "currentnode" $currentNode}}
           {{- end -}}
         </ul>
       {{- end -}}
