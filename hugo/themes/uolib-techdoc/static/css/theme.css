@@ -139,7 +139,7 @@ h6 {
 }
 
 a {
-  color: var(--custom-link-text-color, #2e7eb3);
+  color: #005a9c;
   text-decoration: none;
 }
 a:focus, a:active, a:hover {
@@ -502,7 +502,7 @@ main {
 .powered {
   font-size: 80%;
   text-align: right;
-  color: #999;
+  color: #333;
 }
 
 .sr-only {
