@@ -64,7 +64,7 @@ func (j *FinalizeBatchFlaggedIssue) Process(*config.Config) ProcessResponse {
 	var flagged *models.FlaggedIssue
 	flagged, err = models.FindFlaggedIssue(oldBatchID, i.ID)
 	if err != nil {
-		j.Logger.Errorf("Unable to create 'removed from batch' issue action: %s", err)
+		j.Logger.Errorf("Unable to find flagged issue by id %d: %s", i.ID, err)
 		op.Rollback()
 		return PRFailure
 	}
