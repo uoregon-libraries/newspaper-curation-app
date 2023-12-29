@@ -22,6 +22,7 @@ func _exec(cmd *exec.Cmd, binary string, jobLogger *logger.Logger, args ...strin
 		return false
 	}
 
+	jobLogger.Debugf(`Shell process for %q complete`, binary)
 	return true
 }
 
