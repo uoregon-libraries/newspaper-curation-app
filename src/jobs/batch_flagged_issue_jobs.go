@@ -24,7 +24,7 @@ type FinalizeBatchFlaggedIssue struct {
 // This function has copious error checking and logging. While technically
 // unnecessary (the DB operation uses transactions and defers errors), it
 // should help debugging if necessary.
-func (j *FinalizeBatchFlaggedIssue) Process(*config.Config) bool {
+func (j *FinalizeBatchFlaggedIssue) Process(*config.Config) ProcessResponse {
 	var i = j.DBIssue
 	j.Logger.Debugf("Finalizing issue (%d / %s) flagged when QCing its batch (batch id %d)", i.ID, i.Key(), i.BatchID)
 
@@ -42,7 +42,7 @@ func (j *FinalizeBatchFlaggedIssue) Process(*config.Config) bool {
 	if err != nil {
 		j.Logger.Errorf("Unable to create 'removed from batch' issue action: %s", err)
 		op.Rollback()
-		return false
+		return PRFailure
 	}
 	j.Logger.Debugf("Successfully created 'removed from batch' issue action")
 
@@ -56,7 +56,7 @@ func (j *FinalizeBatchFlaggedIssue) Process(*config.Config) bool {
 	if err != nil {
 		j.Logger.Errorf("Unable to clear batch and workflow data: %s", err)
 		op.Rollback()
-		return false
+		return PRFailure
 	}
 	j.Logger.Debugf("Successfully cleared batch and workflow data")
 
@@ -64,9 +64,9 @@ func (j *FinalizeBatchFlaggedIssue) Process(*config.Config) bool {
 	var flagged *models.FlaggedIssue
 	flagged, err = models.FindFlaggedIssue(oldBatchID, i.ID)
 	if err != nil {
-		j.Logger.Errorf("Unable to create 'removed from batch' issue action: %s", err)
+		j.Logger.Errorf("Unable to find flagged issue by id %d: %s", i.ID, err)
 		op.Rollback()
-		return false
+		return PRFailure
 	}
 
 	// Log user's flagged-for-removal error
@@ -77,7 +77,7 @@ func (j *FinalizeBatchFlaggedIssue) Process(*config.Config) bool {
 	if err != nil {
 		j.Logger.Errorf("Unable to create removal reason issue action: %s", err)
 		op.Rollback()
-		return false
+		return PRFailure
 	}
 	j.Logger.Debugf("Successfully added removal reason to issue actions")
 
@@ -86,11 +86,11 @@ func (j *FinalizeBatchFlaggedIssue) Process(*config.Config) bool {
 	if op.Err() != nil {
 		j.Logger.Errorf("Database error ending transaction: %s", op.Err())
 		op.Rollback()
-		return false
+		return PRFailure
 	}
 
 	j.Logger.Debugf("Successfully finalized issue")
-	return true
+	return PRSuccess
 }
 
 // EmptyBatchFlaggedIssuesList is a simple job to clear the
@@ -100,14 +100,14 @@ type EmptyBatchFlaggedIssuesList struct {
 }
 
 // Process just executes AbortIssueFlagging to clear the table
-func (j *EmptyBatchFlaggedIssuesList) Process(*config.Config) bool {
+func (j *EmptyBatchFlaggedIssuesList) Process(*config.Config) ProcessResponse {
 	j.Logger.Debugf("Removing issues flagged for removal from batch %d (%s)", j.DBBatch.ID, j.DBBatch.Name)
-	var err = j.DBBatch.AbortIssueFlagging()
+	var err = j.DBBatch.EmptyFlaggedIssuesList()
 	if err != nil {
 		j.Logger.Errorf("Database error clearing table: %s", err)
-		return false
+		return PRFailure
 	}
-	return true
+	return PRSuccess
 }
 
 // DeleteBatch removes all issues from a batch and flags it as deleted
@@ -116,12 +116,12 @@ type DeleteBatch struct {
 }
 
 // Process just runs batch.Delete. Easy!
-func (j *DeleteBatch) Process(*config.Config) bool {
+func (j *DeleteBatch) Process(*config.Config) ProcessResponse {
 	j.Logger.Debugf("Removing issues and deleting batch %d (%s)", j.DBBatch.ID, j.DBBatch.Name)
 	var err = j.DBBatch.Delete()
 	if err != nil {
 		j.Logger.Errorf("Database error deleting batch: %s", err)
-		return false
+		return PRFailure
 	}
-	return true
+	return PRSuccess
 }

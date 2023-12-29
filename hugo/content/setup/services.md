@@ -69,9 +69,21 @@ A simple approach to run everything needed is as follows:
 
     ./bin/run-jobs -c ./settings watchall
 
-You can also run the various watchers in their own processes if you need more
-granularity, but that's left as an exercise for the reader to avoid
-documentation that no longer matches reality....
+This starts the job runner, which will watch all queues and run jobs as they
+come in. When invoked this way, the job runner will simply run forever to
+ensure jobs are processed whenever there's work to be done.
+
+If you only want to drain all pending jobs and then quit, you can add
+`--exit-when-done` to the command.
+
+Finally, there's a subcommand to run a single job and then exit:
+
+    ./bin/run-jobs -c ./settings run-one
+
+This is primarily a development tool for debugging long pipelines where a
+single job seems to be breaking app state, but it can be used to also very
+closely monitor exactly which jobs are running in what order, if such a need
+should arise.
 
 ## Batch Queue
 

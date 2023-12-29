@@ -20,7 +20,7 @@ type BuildMETS struct {
 }
 
 // Process generates the METS XML file for the job's issue
-func (job *BuildMETS) Process(c *config.Config) bool {
+func (job *BuildMETS) Process(c *config.Config) ProcessResponse {
 	job.Logger.Debugf("Starting build-mets job for issue id %d", job.DBIssue.ID)
 
 	// Set up variables
@@ -31,17 +31,17 @@ func (job *BuildMETS) Process(c *config.Config) bool {
 	job.Title, err = models.FindTitle("lccn = ?", job.DBIssue.LCCN)
 	if err != nil {
 		job.Logger.Errorf("Unable to look up title for issue id %d (LCCN %q): %s", job.DBIssue.ID, job.DBIssue.LCCN, err)
-		return false
+		return PRFailure
 	}
 
 	return job.generateMETS()
 }
 
-func (job *BuildMETS) generateMETS() (ok bool) {
+func (job *BuildMETS) generateMETS() ProcessResponse {
 	var err = mets.New(job.templatePath, job.outputXMLPath, job.DBIssue, job.Title, time.Now()).Transform()
 	if err == nil {
-		return true
+		return PRSuccess
 	}
 	job.Logger.Errorf("Unable to generate METS XML for issues %d: %s", job.DBIssue.ID, err)
-	return false
+	return PRFailure
 }

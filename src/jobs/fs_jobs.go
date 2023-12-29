@@ -53,7 +53,7 @@ func (j *SyncRecursive) isExcluded(path string, exclusions []string) bool {
 // Process does a sync from j.Source to j.Dest, only writing files that don't
 // exist in j.Dest or which have a different size. Excluded files are of course
 // neither checked nor copied.
-func (j *SyncRecursive) Process(*config.Config) bool {
+func (j *SyncRecursive) Process(*config.Config) ProcessResponse {
 	var src = j.db.Args[JobArgSource]
 	var dst = j.db.Args[JobArgDestination]
 	var exclusions = strings.Split(j.db.Args[JobArgExclude], ",")
@@ -64,7 +64,7 @@ func (j *SyncRecursive) Process(*config.Config) bool {
 	srcInfo, err = os.Stat(src)
 	if err != nil {
 		j.Logger.Errorf("Unable to stat directory %q: %s", src, err)
-		return false
+		return PRFailure
 	}
 
 	// Create dest dir with same permissions as source dir
@@ -72,21 +72,21 @@ func (j *SyncRecursive) Process(*config.Config) bool {
 	err = os.MkdirAll(dst, srcMode)
 	if err != nil {
 		j.Logger.Errorf("Unable to create destination directory %q: %s", dst, err)
-		return false
+		return PRFailure
 	}
 
 	// Just in case dir was already there, we force the permissions
 	err = os.Chmod(dst, srcMode)
 	if err != nil {
 		j.Logger.Errorf("Unable to create destination directory %q: %s", dst, err)
-		return false
+		return PRFailure
 	}
 
 	var entries []fs.DirEntry
 	entries, err = os.ReadDir(src)
 	if err != nil {
 		j.Logger.Errorf("Unable to read directory %q: %s", src, err)
-		return false
+		return PRFailure
 	}
 
 	// We build, but don't save, all dir copy jobs so we can first copy all
@@ -100,7 +100,7 @@ func (j *SyncRecursive) Process(*config.Config) bool {
 		var info, err = entry.Info()
 		if err != nil {
 			j.Logger.Errorf("Unable to read file %q: %s", entry.Name(), err)
-			return false
+			return PRFailure
 		}
 
 		switch {
@@ -112,7 +112,7 @@ func (j *SyncRecursive) Process(*config.Config) bool {
 				err = syncFileFast(srcFull, dstFull)
 				if err != nil {
 					j.Logger.Errorf("Unable to copy %q to %q: %s", srcFull, dstFull, err)
-					return false
+					return PRFailure
 				}
 			}
 
@@ -124,18 +124,18 @@ func (j *SyncRecursive) Process(*config.Config) bool {
 
 		default:
 			j.Logger.Errorf("Invalid file type for %q, cannot continue copying", srcFull)
-			return false
+			return PRFatal
 		}
 	}
 
 	err = j.db.QueueSiblingJobs(dirJobs)
 	if err != nil {
 		j.Logger.Errorf("Unable to queue subdir copy jobs: %s", err)
-		return false
+		return PRFailure
 	}
 
 	j.Logger.Infof("Fast sync successful")
-	return true
+	return PRSuccess
 }
 
 // syncFileFast copies src file to dst if either dst doesn't exist or is a
@@ -184,7 +184,7 @@ func (j *VerifyRecursive) Valid() bool {
 // exist in j.Dest or which are different (different determined by our fileutil
 // package, which is using SHA256 to test file integrity). Excluded files are
 // of course neither checked nor copied.
-func (j *VerifyRecursive) Process(*config.Config) bool {
+func (j *VerifyRecursive) Process(*config.Config) ProcessResponse {
 	var src = j.db.Args[JobArgSource]
 	var dst = j.db.Args[JobArgDestination]
 	var exclusions = strings.Split(j.db.Args[JobArgExclude], ",")
@@ -194,7 +194,7 @@ func (j *VerifyRecursive) Process(*config.Config) bool {
 	var err = os.MkdirAll(parent, 0700)
 	if err != nil {
 		j.Logger.Errorf("Unable to create sync dir's parent %q: %s", parent, err)
-		return false
+		return PRFailure
 	}
 
 	// We re-join exclusions here so logs show what this job will actually do,
@@ -204,10 +204,11 @@ func (j *VerifyRecursive) Process(*config.Config) bool {
 	err = fileutil.SyncDirectoryExcluding(src, dst, exclusions)
 	if err != nil {
 		j.Logger.Errorf("Unable to sync %q to %q: %s", src, dst, err)
+		return PRFailure
 	}
 
 	j.Logger.Infof("Fast sync completed")
-	return err == nil
+	return PRSuccess
 }
 
 // KillDir is a job to clean up an old directory, typically after a sync job
@@ -225,19 +226,20 @@ func (j *KillDir) Valid() bool {
 }
 
 // Process removes files from j.Dir
-func (j *KillDir) Process(*config.Config) bool {
+func (j *KillDir) Process(*config.Config) ProcessResponse {
 	var loc = j.db.Args[JobArgLocation]
 	j.Logger.Debugf("KillDir: attempting to remove %q", loc)
 
 	if loc == "" {
 		j.Logger.Errorf("KillDir job created with no location arg")
-		return false
+		return PRFatal
 	}
 	var err = os.RemoveAll(loc)
 	if err != nil {
 		j.Logger.Errorf("KillDir: unable to remove %q: %s", loc, err)
+		return PRFailure
 	}
-	return err == nil
+	return PRSuccess
 }
 
 // RenameDir renames a directory - for the .wip-* dirs we still have to manage
@@ -255,16 +257,16 @@ func (j *RenameDir) Valid() bool {
 }
 
 // Process moves the source dir to the destination name
-func (j *RenameDir) Process(*config.Config) bool {
+func (j *RenameDir) Process(*config.Config) ProcessResponse {
 	var src = j.db.Args[JobArgSource]
 	var dest = j.db.Args[JobArgDestination]
 	var err = os.Rename(src, dest)
 	if err != nil {
 		j.Logger.Errorf("Unable to rename directory (%q -> %q): %s", src, dest, err)
-		return false
+		return PRFailure
 	}
 
-	return true
+	return PRSuccess
 }
 
 // CleanFiles attempts to remove any cruft left behind from Bridge, Mac Finder,
@@ -313,24 +315,24 @@ func isFraggable(i os.FileInfo) bool {
 }
 
 // Process runs the file cleaner against the job's location
-func (j *CleanFiles) Process(*config.Config) bool {
+func (j *CleanFiles) Process(*config.Config) ProcessResponse {
 	var loc = j.db.Args[JobArgLocation]
 
 	var fraggables, err = fileutil.FindIf(loc, isFraggable)
 	if err != nil {
 		j.Logger.Errorf("Unable to scan for files to delete: %s", err)
-		return false
+		return PRFailure
 	}
 
 	for _, f := range fraggables {
 		err = os.Remove(f)
 		if err != nil {
 			j.Logger.Errorf("Unable to remove file %q: %s", f, err)
-			return false
+			return PRFailure
 		}
 	}
 
-	return true
+	return PRSuccess
 }
 
 // RemoveFile is a simple job with one purpose: delete a file
@@ -351,7 +353,7 @@ func (j *RemoveFile) Valid() bool {
 
 // Process removes the file. If the file doesn't exist, this is considered a
 // success because the location identified was likely already deleted.
-func (j *RemoveFile) Process(*config.Config) bool {
+func (j *RemoveFile) Process(*config.Config) ProcessResponse {
 	var fname = j.db.Args[JobArgLocation]
 
 	j.Logger.Debugf("RemoveFile: attempting to remove %q", fname)
@@ -359,13 +361,13 @@ func (j *RemoveFile) Process(*config.Config) bool {
 	var err = os.Remove(fname)
 	if err == nil {
 		j.Logger.Debugf("RemoveFile: successfully deleted %q", fname)
-		return true
+		return PRSuccess
 	}
 	if os.IsNotExist(err) {
 		j.Logger.Debugf("RemoveFile: %q was not present (success is implied)", fname)
-		return true
+		return PRSuccess
 	}
 
 	j.Logger.Errorf("Unable to remove %q: %s", fname, err)
-	return false
+	return PRFailure
 }

@@ -19,13 +19,14 @@ type SetIssueWS struct {
 }
 
 // Process updates the issue's workflow step and attempts to save it
-func (j *SetIssueWS) Process(*config.Config) bool {
+func (j *SetIssueWS) Process(*config.Config) ProcessResponse {
 	j.DBIssue.WorkflowStep = schema.WorkflowStep(j.db.Args[JobArgWorkflowStep])
 	var err = j.DBIssue.SaveWithoutAction()
 	if err != nil {
 		j.Logger.Errorf("Unable to update workflow step for issue %d: %s", j.DBIssue.ID, err)
+		return PRFailure
 	}
-	return err == nil
+	return PRSuccess
 }
 
 // SetIssueBackupLoc is another metadata job that just sets a single field for
@@ -35,13 +36,14 @@ type SetIssueBackupLoc struct {
 }
 
 // Process updates the issue's backup location and attempts to save it
-func (j *SetIssueBackupLoc) Process(*config.Config) bool {
+func (j *SetIssueBackupLoc) Process(*config.Config) ProcessResponse {
 	j.DBIssue.BackupLocation = j.db.Args[JobArgLocation]
 	var err = j.DBIssue.SaveWithoutAction()
 	if err != nil {
 		j.Logger.Errorf("Unable to update backup location for issue %d: %s", j.DBIssue.ID, err)
+		return PRFailure
 	}
-	return err == nil
+	return PRSuccess
 }
 
 // SetIssueLocation just updates issues.location in the database
@@ -50,15 +52,15 @@ type SetIssueLocation struct {
 }
 
 // Process just updates the issue's location field
-func (j *SetIssueLocation) Process(*config.Config) bool {
+func (j *SetIssueLocation) Process(*config.Config) ProcessResponse {
 	j.DBIssue.Location = j.db.Args[JobArgLocation]
 	var err = j.DBIssue.SaveWithoutAction()
 	if err != nil {
 		j.Logger.Errorf("Error setting issue.location for id %d: %s", j.DBIssue.ID, err)
-		return false
+		return PRFailure
 	}
 
-	return true
+	return PRSuccess
 }
 
 // IgnoreIssue sets an issue's "ignored" field to true
@@ -67,15 +69,14 @@ type IgnoreIssue struct {
 }
 
 // Process sets the ignored field to true and saves the issue
-func (j *IgnoreIssue) Process(*config.Config) bool {
+func (j *IgnoreIssue) Process(*config.Config) ProcessResponse {
 	j.DBIssue.Ignored = true
 	var err = j.DBIssue.SaveWithoutAction()
 	if err != nil {
 		j.Logger.Errorf("Error setting issue.ignored for id %d: %s", j.DBIssue.ID, err)
-		return false
+		return PRFailure
 	}
-
-	return true
+	return PRSuccess
 }
 
 // SetBatchStatus is another simple job which... wait for it... sets the status
@@ -85,13 +86,14 @@ type SetBatchStatus struct {
 }
 
 // Process simply updates the batch status and saves to the database
-func (j *SetBatchStatus) Process(*config.Config) bool {
+func (j *SetBatchStatus) Process(*config.Config) ProcessResponse {
 	j.DBBatch.Status = j.db.Args[JobArgBatchStatus]
 	var err = j.DBBatch.SaveWithoutAction()
 	if err != nil {
 		j.Logger.Errorf("Unable to update status for batch %d: %s", j.DBBatch.ID, err)
+		return PRFailure
 	}
-	return err == nil
+	return PRSuccess
 }
 
 // SetBatchNeedsStagingPurge is a wonky one-off to flip the
@@ -101,13 +103,14 @@ type SetBatchNeedsStagingPurge struct {
 }
 
 // Process sets NeedsStagingPurge to true
-func (j *SetBatchNeedsStagingPurge) Process(*config.Config) bool {
+func (j *SetBatchNeedsStagingPurge) Process(*config.Config) ProcessResponse {
 	j.DBBatch.NeedStagingPurge = true
 	var err = j.DBBatch.SaveWithoutAction()
 	if err != nil {
 		j.Logger.Errorf("Unable to flag batch %d as needing a staging purge: %s", j.DBBatch.ID, err)
+		return PRFailure
 	}
-	return err == nil
+	return PRSuccess
 }
 
 // SetBatchLocation is a simple job to update a batch location after files are
@@ -117,15 +120,15 @@ type SetBatchLocation struct {
 }
 
 // Process just updates the batch's location field
-func (j *SetBatchLocation) Process(*config.Config) bool {
+func (j *SetBatchLocation) Process(*config.Config) ProcessResponse {
 	j.DBBatch.Location = j.db.Args[JobArgLocation]
 	var err = j.DBBatch.SaveWithoutAction()
 	if err != nil {
 		j.Logger.Errorf("Error setting batch.location for id %d: %s", j.DBBatch.ID, err)
-		return false
+		return PRFailure
 	}
 
-	return true
+	return PRSuccess
 }
 
 // RecordIssueAction adds an issue action to the Issue in question.  This one
@@ -137,7 +140,7 @@ type RecordIssueAction struct {
 }
 
 // Process adds the issue action to the database
-func (j *RecordIssueAction) Process(*config.Config) bool {
+func (j *RecordIssueAction) Process(*config.Config) ProcessResponse {
 	// This is a waste of cycles right here, but going through the Issue's save
 	// procedure ensures that the action is created and associated with the issue
 	// in a way that is consistent.  If we add things to how issues and actions
@@ -146,10 +149,10 @@ func (j *RecordIssueAction) Process(*config.Config) bool {
 	var err = j.DBIssue.Save(models.ActionTypeInternalProcess, models.SystemUser.ID, j.db.Args[JobArgMessage])
 	if err != nil {
 		j.Logger.Errorf("Error recording internal issue action for id %d: %s", j.DBIssue.ID, err)
-		return false
+		return PRFailure
 	}
 
-	return true
+	return PRSuccess
 }
 
 // RecordBatchAction adds an action to the Batch in question
@@ -158,15 +161,15 @@ type RecordBatchAction struct {
 }
 
 // Process adds the action to the database
-func (j *RecordBatchAction) Process(*config.Config) bool {
+func (j *RecordBatchAction) Process(*config.Config) ProcessResponse {
 	// Same as issue action: yes this is waste of cycles, but it ensures consistency
 	var err = j.DBBatch.Save(models.ActionTypeInternalProcess, models.SystemUser.ID, j.db.Args[JobArgMessage])
 	if err != nil {
 		j.Logger.Errorf("Error recording internal batch action for id %d: %s", j.DBBatch.ID, err)
-		return false
+		return PRFailure
 	}
 
-	return true
+	return PRSuccess
 }
 
 // MarkBatchLive sets a batch's go-live metadata and tells NCA to ignore all
@@ -176,12 +179,13 @@ type MarkBatchLive struct {
 }
 
 // Process updates the batch status and go-live date, and saves to the database
-func (j *MarkBatchLive) Process(*config.Config) bool {
+func (j *MarkBatchLive) Process(*config.Config) ProcessResponse {
 	var err = j.DBBatch.SetLive()
 	if err != nil {
 		j.Logger.Errorf("Unable to mark batch %d as being live: %s", j.DBBatch.ID, err)
+		return PRFailure
 	}
-	return err == nil
+	return PRSuccess
 }
 
 // CancelJob simply ends a job that was either on hold or had failed by putting
@@ -192,19 +196,19 @@ type CancelJob struct {
 
 // Process deals with changing the targeted job's status to failed_done while
 // guarding against canceling jobs which should still stay as-is.
-func (j *CancelJob) Process(*config.Config) bool {
+func (j *CancelJob) Process(*config.Config) ProcessResponse {
 	var js = models.JobStatus(j.TargetJob.Status)
 	if js != models.JobStatusOnHold && js != models.JobStatusFailed {
 		j.Logger.Errorf("Cannot cancel job id %d: invalid job status (%q)", j.TargetJob.ID, j.TargetJob.Status)
-		return false
+		return PRFatal
 	}
 
 	j.TargetJob.Status = string(models.JobStatusFailedDone)
 	var err = j.TargetJob.Save()
 	if err != nil {
 		j.Logger.Errorf("Cannot cancel job id %d: %s", j.TargetJob.ID, err)
-		return false
+		return PRFailure
 	}
 
-	return true
+	return PRSuccess
 }

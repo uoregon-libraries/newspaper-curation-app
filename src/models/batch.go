@@ -354,9 +354,10 @@ func (b *Batch) UnflagIssue(i *Issue) error {
 	return op.Err()
 }
 
-// AbortIssueFlagging returns the batch state to BatchStatusQCReady and removes
-// all flagged issues tied to it
-func (b *Batch) AbortIssueFlagging() error {
+// AbortIssueFlagging is a user-invoked action run from the UI which removes
+// flagged issues from the batch, updates the batch status, and logs an action
+// letting us know which user took this action.
+func (b *Batch) AbortIssueFlagging(user *User) error {
 	if b.Status != BatchStatusQCFlagIssues && b.Status != BatchStatusPending {
 		return fmt.Errorf("abort issue flagging: invalid batch status %s", b.Status)
 	}
@@ -367,20 +368,24 @@ func (b *Batch) AbortIssueFlagging() error {
 	defer op.EndTransaction()
 
 	b.Status = BatchStatusQCReady
-	var err = b.SaveOpWithoutAction(op)
-	if err != nil {
-		return err
-	}
-
-	op.Exec(`DELETE FROM batches_flagged_issues WHERE batch_id = ?`, b.ID)
+	_ = b.SaveOp(op, ActionTypeAbortBatchRejection, user.ID, "")
+	_ = b.deleteFlaggedIssues(op)
 	return op.Err()
 }
 
-// EmptyFlaggedIssuesList clears issues flagged for removal from this batch
+// EmptyFlaggedIssuesList removes all flagged issues tied to the batch without
+// modifying anything else such as batch status, and is suitable for use within
+// a Pipeline
 func (b *Batch) EmptyFlaggedIssuesList() error {
 	var op = dbi.DB.Operation()
 	op.Dbg = dbi.Debug
+	return b.deleteFlaggedIssues(op)
+}
 
+// deleteFlaggedIssues implements the actual SQL needed to remove flagged issues
+// from a batch, and requires an existing DB operation to allow transactions
+// when more than just flagged-issue-clearing is required.
+func (b *Batch) deleteFlaggedIssues(op *magicsql.Operation) error {
 	op.Exec(`DELETE FROM batches_flagged_issues WHERE batch_id = ?`, b.ID)
 	return op.Err()
 }

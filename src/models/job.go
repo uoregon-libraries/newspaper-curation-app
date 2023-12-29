@@ -394,6 +394,14 @@ func (j *Job) QueueSiblingJobs(list []*Job) error {
 	return op.Err()
 }
 
+// TryLater updates the job's status back to pending and sets its run-at to now
+// plus the given delay
+func (j *Job) TryLater(delay time.Duration) error {
+	j.Status = string(JobStatusPending)
+	j.RunAt = time.Now().Add(delay)
+	return j.Save()
+}
+
 // FailAndRetry closes out j and queues a new, duplicate job ready for
 // processing.  We do this instead of just rerunning a job so that the job logs
 // can be tied to a distinct instance of a job, making it easier to debug

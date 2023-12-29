@@ -107,7 +107,7 @@ func (r *Runner) loopAvailableJobs() {
 	}()
 
 	// Loop until there aren't any jobs left to process
-	for r.processNext() {
+	for r.ProcessNextPendingJob() {
 		// If r.done() became true, we need to stop looping and let nature take
 		// its course....
 		if r.done() {
@@ -122,10 +122,10 @@ func (r *Runner) Stop() {
 	atomic.StoreInt32(&r.isDone, 1)
 }
 
-// processNext gets the oldest job this runner can process, sets its status to
-// in-process, and processes it.  If no processor was found, the return is
-// false and nothing happens.
-func (r *Runner) processNext() bool {
+// ProcessNextPendingJob gets the oldest job this runner can process, sets its
+// status to in-process, and processes it.  If no processor was found, the
+// return is false and nothing happens.
+func (r *Runner) ProcessNextPendingJob() bool {
 	var dbJob, err = models.PopNextPendingJob(r.jobTypes)
 
 	if err != nil {
@@ -150,15 +150,23 @@ func (r *Runner) process(pr Processor) {
 	// Invalid jobs shouldn't realistically exist, but database errors have
 	// occasionally been known to happen and we don't want runners panicking
 	if !pr.Valid() {
-		r.attemptRetry(pr)
+		r.handleFailure(pr)
 		return
 	}
 
 	r.logger.Infof("Starting job id %d (%q)", dbj.ID, dbj.Type)
-	if pr.Process(r.config) {
+	var resp = pr.Process(r.config)
+	switch resp {
+	case PRSuccess:
 		r.handleSuccess(pr)
-	} else {
-		r.attemptRetry(pr)
+	case PRFailure:
+		r.handleFailure(pr)
+	case PRFatal:
+		r.handleCriticalFailure(pr)
+	case PRTryLater:
+		r.handleTryLater(pr)
+	default:
+		r.logger.Fatalf("Invalid return from job Process(): %#v (job: %d)", resp, dbj.ID)
 	}
 }
 
@@ -173,10 +181,10 @@ func (r *Runner) handleSuccess(pr Processor) {
 	r.logger.Infof("Finished job id %d - success", dbj.ID)
 }
 
-func (r *Runner) attemptRetry(pr Processor) {
+func (r *Runner) handleFailure(pr Processor) {
 	var dbj = pr.DBJob()
 	if dbj.RetryCount >= pr.MaxRetries() {
-		r.handleFailure(pr)
+		r.handleCriticalFailure(pr)
 		return
 	}
 
@@ -189,7 +197,16 @@ func (r *Runner) attemptRetry(pr Processor) {
 		dbj.ID, retryJob.ID, retryJob.RunAt, retryJob.RetryCount)
 }
 
-func (r *Runner) handleFailure(pr Processor) {
+func (r *Runner) handleTryLater(pr Processor) {
+	var dbj = pr.DBJob()
+	var err = dbj.TryLater(time.Minute)
+	if err != nil {
+		r.logger.Criticalf("Unable to set job to try later (job: %d): %s", dbj.ID, err)
+		return
+	}
+}
+
+func (r *Runner) handleCriticalFailure(pr Processor) {
 	var dbj = pr.DBJob()
 	dbj.Status = string(models.JobStatusFailed)
 

@@ -12,10 +12,22 @@ import (
 	"github.com/uoregon-libraries/newspaper-curation-app/src/models"
 )
 
+// ProcessResponse represents the results of a job's Process method - success,
+// failure, etc.
+type ProcessResponse int
+
+// Valid list of process responses
+const (
+	PRSuccess  ProcessResponse = iota // Everything worked, job is done
+	PRFailure                         // Job failed but should be retried
+	PRFatal                           // Job failed, and retrying won't fix whatever went wrong
+	PRTryLater                        // Job should be postponed - not successful but not a failure
+)
+
 // A Processor is a general interface for all database-driven jobs that process something
 type Processor interface {
 	// Process runs the job and returns whether it was successful
-	Process(*config.Config) bool
+	Process(*config.Config) ProcessResponse
 
 	// Valid returns if the job can be processed.  This is separated from the
 	// Process function because many jobs can just say "yes" in all cases while

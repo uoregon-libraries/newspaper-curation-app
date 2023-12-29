@@ -22,10 +22,10 @@ type ArchiveBackups struct {
 }
 
 // Process implements Processor, moving the issue's original files
-func (j *ArchiveBackups) Process(*config.Config) bool {
+func (j *ArchiveBackups) Process(*config.Config) ProcessResponse {
 	if j.DBIssue.BackupLocation == "" {
 		j.Logger.Debugf("Archive job for issue id %d skipped - no backup exists", j.DBIssue.ID)
-		return true
+		return PRSuccess
 	}
 
 	j.tarfile = filepath.Join(j.DBIssue.Location, "original.tar")
@@ -33,7 +33,7 @@ func (j *ArchiveBackups) Process(*config.Config) bool {
 	var err = j.buildArchive()
 	if err != nil {
 		j.Logger.Errorf("Unable to produce tarfile from PDF(s): %s", err)
-		return false
+		return PRFailure
 	}
 
 	// Verify the tar wrote successfully just to be uber-paranoid before we go
@@ -42,14 +42,14 @@ func (j *ArchiveBackups) Process(*config.Config) bool {
 	info, err = os.Stat(j.tarfile)
 	if err != nil {
 		j.Logger.Errorf("Unable to stat tarfile: %s", err)
-		return false
+		return PRFailure
 	}
 	if info.Size() == 0 {
 		j.Logger.Errorf("Generated tarfile is 0 bytes")
-		return false
+		return PRFailure
 	}
 
-	return true
+	return PRSuccess
 }
 
 func (j *ArchiveBackups) buildArchive() error {
