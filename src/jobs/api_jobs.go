@@ -55,6 +55,9 @@ func (j *ONILoadBatch) Process(c *config.Config) ProcessResponse {
 	//   - 2xx response, spawn new job ("wait for API process to complete") and return success
 	//   - General HTTP error, temporary failure, log
 	// api.LoadBatch(j.DBBatch.FullName())
+
+	// TODO: Queue up a new job to wait for ONI - make an "insert" function in
+	// pipelines to add it after this job, pushing everything else out one level
 }
 
 // ONIPurgeBatch handles API calls to request a batch purge from ONI
@@ -78,6 +81,9 @@ func (j *ONIPurgeBatch) Process(c *config.Config) ProcessResponse {
 
 	j.Logger.Errorf("Not implemented; skipping API call")
 	return PRSuccess
+
+	// TODO: Queue up a new job to wait for ONI - make an "insert" function in
+	// pipelines to add it after this job, pushing everything else out one level
 }
 
 // ONIWaitForJob is a generic job to poll ONI until it reports that a given job
