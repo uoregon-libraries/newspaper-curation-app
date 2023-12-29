@@ -26,7 +26,7 @@ func (j *CreateBatchStructure) Process(*config.Config) ProcessResponse {
 	var wipPath = j.db.Args[JobArgLocation]
 	if !fileutil.MustNotExist(wipPath) {
 		j.Logger.Errorf("Directory %q already exists", wipPath)
-		return PRFailure
+		return PRFatal
 	}
 	var dataPath = path.Join(wipPath, "data")
 

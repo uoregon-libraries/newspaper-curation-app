@@ -124,7 +124,7 @@ func (j *SyncRecursive) Process(*config.Config) ProcessResponse {
 
 		default:
 			j.Logger.Errorf("Invalid file type for %q, cannot continue copying", srcFull)
-			return PRFailure
+			return PRFatal
 		}
 	}
 
@@ -232,7 +232,7 @@ func (j *KillDir) Process(*config.Config) ProcessResponse {
 
 	if loc == "" {
 		j.Logger.Errorf("KillDir job created with no location arg")
-		return PRFailure
+		return PRFatal
 	}
 	var err = os.RemoveAll(loc)
 	if err != nil {

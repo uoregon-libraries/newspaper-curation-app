@@ -200,7 +200,7 @@ func (j *CancelJob) Process(*config.Config) ProcessResponse {
 	var js = models.JobStatus(j.TargetJob.Status)
 	if js != models.JobStatusOnHold && js != models.JobStatusFailed {
 		j.Logger.Errorf("Cannot cancel job id %d: invalid job status (%q)", j.TargetJob.ID, j.TargetJob.Status)
-		return PRFailure
+		return PRFatal
 	}
 
 	j.TargetJob.Status = string(models.JobStatusFailedDone)

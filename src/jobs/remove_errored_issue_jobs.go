@@ -89,7 +89,7 @@ func (j *MoveDerivatives) Process(*config.Config) ProcessResponse {
 	var dst = j.db.Args[JobArgLocation]
 	if !fileutil.MustNotExist(dst) {
 		j.Logger.Errorf("Destination %q already exists", dst)
-		return PRFailure
+		return PRFatal
 	}
 	var err = os.MkdirAll(dst, 0700)
 	if err != nil {

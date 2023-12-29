@@ -161,6 +161,8 @@ func (r *Runner) process(pr Processor) {
 		r.handleSuccess(pr)
 	case PRFailure:
 		r.handleFailure(pr)
+	case PRFatal:
+		r.handleCriticalFailure(pr)
 	case PRTryLater:
 		r.handleTryLater(pr)
 	default:

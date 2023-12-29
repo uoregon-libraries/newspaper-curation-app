@@ -38,7 +38,7 @@ func (ps *PageSplit) Process(conf *config.Config) ProcessResponse {
 	ps.OutputDir = ps.db.Args[JobArgLocation]
 	if !fileutil.MustNotExist(ps.OutputDir) {
 		ps.Logger.Errorf("Output dir %q already exists", ps.OutputDir)
-		return PRFailure
+		return PRFatal
 	}
 
 	ps.GhostScript = conf.GhostScript

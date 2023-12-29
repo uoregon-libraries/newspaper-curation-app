@@ -20,6 +20,7 @@ type ProcessResponse int
 const (
 	PRSuccess  ProcessResponse = iota // Everything worked, job is done
 	PRFailure                         // Job failed but should be retried
+	PRFatal                           // Job failed, and retrying won't fix whatever went wrong
 	PRTryLater                        // Job should be postponed - not successful but not a failure
 )
 
