@@ -16,7 +16,7 @@
 ### Changed
 
 - Dev: jobs now have a way to signal more than just success or temporary
-  failure. This is primarily needed for the API jobs where we need a "not
-  failed, but wait and retry" status while waiting on ONI to complete a task.
-  But it will also (someday) allow us to make some jobs fail immediately when
-  there's an obvious problem that can't be retried.
+  failure. This is primarily needed for the upcoming API jobs where we need a
+  "not failed, but wait and retry" status while waiting on ONI to complete a
+  task, but also allows the rare fatal failure to signal the processor not to
+  retry a job at all.
