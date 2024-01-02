@@ -250,7 +250,7 @@ func finalizeBatch(r *Responder) {
 
 	// There are enough moving pieces here that we have to queue this up in the
 	// background rather than just run a quick DB operation or something
-	err = jobs.QueueBatchFinalizeIssueFlagging(r.batch.Batch, r.flaggedIssues, conf.BatchOutputPath)
+	err = jobs.QueueBatchFinalizeIssueFlagging(r.batch.Batch, r.flaggedIssues, conf)
 	if err != nil {
 		logger.Criticalf("Unable to queue job to finalize issue flagging for batch %d (%s): %s", r.batch.ID, r.batch.Name, err)
 		r.Error(http.StatusInternalServerError, "Error trying to finalize the batch. Try again or contact support.")
