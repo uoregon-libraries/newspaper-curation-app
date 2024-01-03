@@ -115,12 +115,14 @@ ORIGINAL_PDF_BACKUP_PATH="/mnt/news/backup/originals"
 # using Adobe Bridge)
 PDF_PAGE_REVIEW_PATH="/mnt/news/page-review"
 
-# Once processing happens, batches are put here
+# Once processing happens, full batches are put here. They will be moved to the
+# archive path upon QC approval and successful push to production.
 BATCH_OUTPUT_PATH="/mnt/news/outgoing"
 
-# When a batch is ready to be pushed to production, this location is where the
-# ONI-required files live (basically everything but TIFFs and born-digital
-# original file backups). Basically the final home for the always-online files.
+# When a batch is built, this location is where the ONI-required files live
+# (basically everything but TIFFs and born-digital original file backups).
+# Basically the final home for the always-online files. Both your production
+# and staging Open ONI servers must be able to read files from this location.
 BATCH_PRODUCTION_PATH="/mnt/news/production-batches"
 
 # When a batch is live, its source files, including TIFF and backups, move to
