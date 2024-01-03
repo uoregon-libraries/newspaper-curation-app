@@ -25,7 +25,6 @@ const (
 	PNPurgeStuckIssue         PipelineName = "PurgeStuckIssue"
 	PNFinalizeIssueFlagging   PipelineName = "FinalizeIssueFlagging"
 	PNBatchDeletion           PipelineName = "BatchDeletion"
-	PNCopyBatchForProduction  PipelineName = "CopyBatchForProduction"
 	PNGoLiveProcess           PipelineName = "GoLiveProcess"
 )
 

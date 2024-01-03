@@ -393,21 +393,6 @@ func QueueBatchForDeletion(batch *models.Batch, flagged []*models.FlaggedIssue) 
 	return models.QueueBatchJobs(models.PNBatchDeletion, batch, jobs...)
 }
 
-// QueueCopyBatchForProduction sets the given batch to pending, then queues up
-// the necessary jobs to get it ready for a production load
-func QueueCopyBatchForProduction(batch *models.Batch, prodBatchRoot string) error {
-	var dst = filepath.Join(prodBatchRoot, batch.FullName())
-	var jobs []*models.Job
-
-	jobs = append(jobs, batch.BuildJob(models.JobTypeValidateTagManifest, nil))
-	jobs = append(jobs, getJobsForCopyDir(batch.Location, dst, "*.tif", "*.tiff", "*.TIF", "*.TIFF", "*.tar.bz", "*.tar")...)
-	jobs = append(jobs, batch.BuildJob(models.JobTypeBatchAction, makeActionArgs("copied core batch files to production")))
-	jobs = append(jobs, batch.BuildJob(models.JobTypeSetBatchNeedsStagingPurge, nil))
-	jobs = append(jobs, batch.BuildJob(models.JobTypeSetBatchStatus, makeBSArgs(models.BatchStatusPassedQC)))
-
-	return models.QueueBatchJobs(models.PNCopyBatchForProduction, batch, jobs...)
-}
-
 // QueueBatchGoLiveProcess fires off all jobs needed to call a batch live and
 // ready for archiving. These jobs should only be queued up after a batch has
 // been ingested into the production ONI instance.
