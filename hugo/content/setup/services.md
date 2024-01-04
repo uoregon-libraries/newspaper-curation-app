@@ -10,12 +10,16 @@ of tools, not a single application that does it all.
 
 ## Overview
 
-NCA has two key services which you'll have to run, in addition to the rest of
-the external services (such as a IIIF server, MySQL / MariaDB, and Apach)
+NCA has two key services which you'll have to have running in the background at
+all times, several binaries you'll need to use occasionally for regular tasks,
+and of course the various external services (such as a IIIF server, SFTP
+server, MySQL / MariaDB, Apache / nginx, etc.).
 
-If you're doing a manual installation rather than container-based, you are
-strongly advised to look at the docker files - they make it clear precisely how
-the stack should be set up.
+The docker setup is by far the easiest to get running, but hasn't been given a
+ton of attention in terms of production usability. If you need stability, a
+manual installation is recommended. Manual installations are easiest to
+reverse-engineer by reading the various docker files to see what you need to
+install, and potentially how to install it.
 
 **Note**: If you do go manual, the repository contains working examples for
 RHEL 7 systemd services to start the job runner as well as the workflow http
@@ -31,12 +35,7 @@ for authentication.
 
 Running this is fairly simple once settings are configured:
 
-    /usr/local/nca/server -c /usr/local/nca/settings --parent-webroot=/odnp-admin
-
-This currently relies on running the
-[legacy pdf-to-chronam-admin](https://github.com/uoregon-libraries/pdf-to-chronam-admin)
-tool, though we're planning to phase that out eventually.  Again, see the
-docker files for examples of how you might set this up.
+    /usr/local/nca/server -c /usr/local/nca/settings
 
 ### Gotcha
 
@@ -61,11 +60,9 @@ The relevant commit links follow:
 ## Job Runner
 
 Queued jobs (such as SFTP issues manually reviewed and queued) will not be
-processed until the job runner is executed.  You will want to ensure at least
-one process is watching each type of job, and one process is watching the page
-review folder for issues ready to be queued up for derivatives.
+processed until the job runner is executed.
 
-A simple approach to run everything needed is as follows:
+The best way to run jobs is via the "watchall" subcommand:
 
     ./bin/run-jobs -c ./settings watchall
 
@@ -97,18 +94,9 @@ Execution is simple:
     ./bin/queue-batches -c ./settings
 
 The job runner will do the rest of the work, eventually putting batches into
-your configured `BATCH_OUTPUT_PATH`.  You'll know they're ready once batch
-folders have been named `batch_*`, as the names are always `.wip*` until the
-batch is safe to load into a staging environment.
-
-**Note** that even when batches are ready for staging, there is still a
-potentially slow job to be done generating the bag manifest and other
-[BagIt](https://en.wikipedia.org/wiki/BagIt) tag files.  These files aren't
-necessary for ingest, and serve primarily to help detect data degradation, but
-the batch should not be considered production-ready until that job is done.  At
-the moment the only way to detect that job's completion is either looking at
-the jobs table directly or else checking for a complete and valid
-"tagmanifest-sha256.txt" in the batch root directory.
+your configured `BATCH_OUTPUT_PATH` and syncing to the `BATCH_PRODUCTION_PATH`.
+The batch status page in NCA will show which batches have finished processing
+and are ready for ingest into staging.
 
 ## Bulk Upload Queue
 
@@ -124,6 +112,30 @@ Sample usage:
     ./bin/bulk-issue-queue -c ./settings --type scan --key sn12345678
 
 Run without arguments for a more full description of options
+
+## Live File Cleanup
+
+`delete-live-done-issues` is a tool which removes all files NCA tracks after
+their corresponding batch has been marked "archived" for four weeks (to ensure
+it's safe to remove them). This should be run regularly to prevent disk space
+exhaustion - holding onto hundreds of gigs of TIFFs that are backed up outside
+NCA, for instance.
+
+## Database Migration
+
+To simplify database table creation / updating, the `migrate-database` binary
+is provided. We'll generally mention in the release notes / changelog that a
+version requires database migrations and give the example command to run this,
+so it isn't typically something you would run on your own, but it's also
+harmless if you do run it manually - it won't re-run any database update
+scripts that have already run.
+
+## Purge Dead Issues
+
+`purge-dead-issues` is useful to move all "stuck" issues out of NCA and into
+the configured problem folder. The original files will be moved, and the full
+activity log stored as a text file to help identify how to fix whatever problem
+prevented curators (or NCA job runners) from processing an issue.
 
 ## Other Tools
 

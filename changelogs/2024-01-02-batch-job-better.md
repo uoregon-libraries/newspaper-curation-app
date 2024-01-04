@@ -19,6 +19,11 @@
   API". This repo was built before Go had the "internal" concept to make
   private packages, and hasn't been refactored properly yet. NCA's APIs aren't
   really ever meant to be public.
+- Batches are no longer ready for a staging load until *after* their BagIt
+  files are generated. This is technically an unnecessary delay, but we cannot
+  sync to the production dir until BagIt files are done, and the whole point of
+  this unification of batch locations was to avoid having to load from two
+  different directories.
 
 ### Removed
 
