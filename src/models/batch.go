@@ -432,11 +432,11 @@ func (b *Batch) Delete() error {
 	return op.Err()
 }
 
-// Close finalizes a batch that's live and archived by setting its status to
-// BatchStatusLiveDone.  This has some of our "safety first" business logic you
-// don't get if you close the batch manually, e.g., it must be in the
-// "live_archived" status and it must have been archived four weeks ago.
-func (b *Batch) Close() error {
+// Finalize sets a live and archived batch's status to BatchStatusLiveDone.
+// This has some of our "safety first" business logic you don't get if you
+// close the batch manually, e.g., it must be in the "live_archived" status and
+// it must have been archived four weeks ago.
+func (b *Batch) Finalize() error {
 	var reqStatus = BatchStatusLiveArchived
 	if b.Status != reqStatus {
 		return fmt.Errorf("cannot close batch unless its status is %q", reqStatus)

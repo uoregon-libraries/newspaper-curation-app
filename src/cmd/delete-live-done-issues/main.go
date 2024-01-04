@@ -48,7 +48,7 @@ func main() {
 
 	for _, b := range batches {
 		logger.Infof("Closing batch %q", b.FullName())
-		b.Close()
+		b.Finalize()
 	}
 
 	err = purgeIssues()

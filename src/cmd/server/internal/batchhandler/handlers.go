@@ -103,14 +103,10 @@ func qcApproveHandler(w http.ResponseWriter, req *http.Request) {
 		return
 	}
 
+	r.batch.Status = models.BatchStatusPassedQC
 	var err = r.batch.Save(models.ActionTypeApproveBatch, r.Vars.User.ID, "")
 	if err != nil {
 		logger.Criticalf(`Unable to log "approve batch" action for batch %d (%s): %s`, r.batch.ID, r.batch.FullName(), err)
-	} else {
-		err = jobs.QueueCopyBatchForProduction(r.batch.Batch, conf.BatchProductionPath)
-		if err != nil {
-			logger.Criticalf(`Unable to queue batch-copy job for batch %d (%s): %s`, r.batch.ID, r.batch.FullName(), err)
-		}
 	}
 
 	// If either operation above gave an error, fully reset the batch so we can

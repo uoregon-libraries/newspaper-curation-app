@@ -183,26 +183,47 @@ func QueueFinalizeIssue(issue *models.Issue) error {
 // where it can be loaded onto staging, and generating the bagit manifest.
 // Nothing can happen automatically after all this until the batch is verified
 // on staging.
-func QueueMakeBatch(batch *models.Batch, batchOutputPath string) error {
-	return models.QueueBatchJobs(models.PNMakeBatch, batch, getJobsForMakeBatch(batch, batchOutputPath)...)
+func QueueMakeBatch(batch *models.Batch, c *config.Config) error {
+	return models.QueueBatchJobs(models.PNMakeBatch, batch, getJobsForMakeBatch(batch, c)...)
 }
 
 // getJobsForMakeBatch returns all jobs needed to generate a batch. This is needed
 // by two different higher-level tasks.
-func getJobsForMakeBatch(batch *models.Batch, pth string) []*models.Job {
-	var wipDir = filepath.Join(pth, ".wip-"+batch.FullName())
-	var finalDir = filepath.Join(pth, batch.FullName())
-	return []*models.Job{
+func getJobsForMakeBatch(batch *models.Batch, c *config.Config) []*models.Job {
+	// Prepare the various directory vars we'll need
+	var batchname = batch.FullName()
+	var wipDir = filepath.Join(c.BatchOutputPath, ".wip-"+batchname)
+	var outDir = filepath.Join(c.BatchOutputPath, batchname)
+	var liveDir = filepath.Join(c.BatchProductionPath, batchname)
+
+	var jobs []*models.Job
+
+	// The first set of jobs builds the batch files in the batch output location
+	jobs = append(jobs,
 		batch.BuildJob(models.JobTypeCreateBatchStructure, makeLocArgs(wipDir)),
 		batch.BuildJob(models.JobTypeSetBatchLocation, makeLocArgs(wipDir)),
 		batch.BuildJob(models.JobTypeMakeBatchXML, nil),
-		models.NewJob(models.JobTypeRenameDir, makeSrcDstArgs(wipDir, finalDir)),
-		batch.BuildJob(models.JobTypeSetBatchLocation, makeLocArgs(finalDir)),
-		batch.BuildJob(models.JobTypeSetBatchStatus, makeBSArgs(models.BatchStatusStagingReady)),
+		models.NewJob(models.JobTypeRenameDir, makeSrcDstArgs(wipDir, outDir)),
+		batch.BuildJob(models.JobTypeSetBatchLocation, makeLocArgs(outDir)),
 		batch.BuildJob(models.JobTypeBatchAction, makeActionArgs("created batch")),
+	)
+
+	// Next comes the bag manifest files and a brief tagmanifest validation
+	jobs = append(jobs,
 		batch.BuildJob(models.JobTypeWriteBagitManifest, nil),
 		batch.BuildJob(models.JobTypeBatchAction, makeActionArgs("wrote bagit manifest")),
-	}
+		batch.BuildJob(models.JobTypeValidateTagManifest, nil),
+	)
+
+	// Finally, the last jobs copy the essential files to the final path so we
+	// can ingest them into staging
+	jobs = append(jobs, getJobsForCopyDir(outDir, liveDir, "*.tif", "*.tiff", "*.TIF", "*.TIFF", "*.tar.bz", "*.tar")...)
+	jobs = append(jobs,
+		batch.BuildJob(models.JobTypeBatchAction, makeActionArgs("copied to live path")),
+		batch.BuildJob(models.JobTypeSetBatchStatus, makeBSArgs(models.BatchStatusStagingReady)),
+	)
+
+	return jobs
 }
 
 // QueueRemoveErroredIssue builds jobs necessary to take an issue permanently
@@ -296,33 +317,31 @@ func getJobsForRemoveErroredIssue(issue *models.Issue, erroredIssueRoot string) 
 	return jobs
 }
 
-// QueueBatchFinalizeIssueFlagging generates jobs for removing flagged issues
-// from a batch which failed QC, then rebuilding the batch
-func QueueBatchFinalizeIssueFlagging(batch *models.Batch, flagged []*models.FlaggedIssue, batchOutputPath string) error {
-	// This is yet another set of jobs that has steps we build out rather than
-	// just having a hard-coded list queued up
+// getJobsForFinalizingFlaggedIssues returns the common jobs needed when a batch has
+// issues that were flagged for removal, and the QCer is ready to finalize
+// the batch and handle the flagged issues.
+func getJobsForFinalizingFlaggedIssues(batch *models.Batch, flagged []*models.FlaggedIssue, c *config.Config) []*models.Job {
 	var jobs []*models.Job
 
-	// Destroy batch dir jobs - note that the batch dir contains hard links and
-	// easily rebuilt metadata (e.g., the bagit info), so this is not truly a
-	// destructive operation
+	// First: jobs to destroy the two batch dirs. The full-batch dir contains
+	// hard links and easily rebuilt metadata (e.g., the bagit info), and the
+	// live dir is just a copy of those files, so this is not really dangerous
+	var liveDir = filepath.Join(c.BatchProductionPath, batch.FullName())
 	jobs = append(jobs,
-		batch.BuildJob(models.JobTypeSetBatchStatus, makeBSArgs(models.BatchStatusPending)),
+		models.NewJob(models.JobTypeKillDir, makeLocArgs(liveDir)),
 		models.NewJob(models.JobTypeKillDir, makeLocArgs(batch.Location)),
 		batch.BuildJob(models.JobTypeSetBatchLocation, makeLocArgs("")),
 	)
 
-	// Remove issues one at a time so we can easily resume / restart. Removing an
-	// issue means we first remove the METS XML file, and only when that succeeds
-	// do we do that database side. Filesystem jobs can fail in totally stupid
-	// ways (NFS mount dropping) and we want those to retry separately from the
-	// rest of the job.
+	// Now we remove issues one at a time so we can easily resume / restart.
+	// Removing an issue means we first remove the METS XML file, and only when
+	// that succeeds do we do the database side. Filesystem jobs can fail in
+	// totally stupid ways (NFS mount dropping) and we want those to retry
+	// separately from the rest of the work.
 	//
-	// Note that in a perfect world each issue job could actually be running
-	// concurrently, but the job runner doesn't have the capability for one job
-	// to be dependent on a group of jobs. We'd prefer to keep the issues
-	// separate jobs and take that small performance hit rather than trying to
-	// add that level of complexity to job processing.
+	// TODO: in a perfect world each issue job could actually be running
+	// concurrently, but we don't yet have pipelines in a state to support adding
+	// a bunch of jobs at the same sequence.
 	for _, i := range flagged {
 		jobs = append(jobs,
 			i.Issue.BuildJob(models.JobTypeRemoveFile, makeLocArgs(i.Issue.METSFile())),
@@ -334,57 +353,28 @@ func QueueBatchFinalizeIssueFlagging(batch *models.Batch, flagged []*models.Flag
 	jobs = append(jobs, batch.BuildJob(models.JobTypeEmptyBatchFlaggedIssuesList, nil))
 	jobs = append(jobs, batch.BuildJob(models.JobTypeBatchAction, makeActionArgs("removed flagged issues from batch")))
 
-	// Regenerate batch
-	jobs = append(jobs, getJobsForMakeBatch(batch, batchOutputPath)...)
+	return jobs
+}
+
+// QueueBatchFinalizeIssueFlagging generates jobs for removing flagged issues
+// from a batch which failed QC, then rebuilding the batch
+func QueueBatchFinalizeIssueFlagging(batch *models.Batch, flagged []*models.FlaggedIssue, c *config.Config) error {
+	// Grab the common jobs for handling flagged issues, then regenerate the batch
+	var jobs = getJobsForFinalizingFlaggedIssues(batch, flagged, c)
+	jobs = append(jobs, getJobsForMakeBatch(batch, c)...)
 
 	return models.QueueBatchJobs(models.PNFinalizeIssueFlagging, batch, jobs...)
 }
 
 // QueueBatchForDeletion is used when all issues in a batch need to be
 // rejected, rendering the batch unnecessary (and useless).
-func QueueBatchForDeletion(batch *models.Batch, flagged []*models.FlaggedIssue) error {
-	// This is essentially a copy of the finalization job list, except there's no
-	// regenerate-batch step
-	var jobs []*models.Job
-
-	// Destroy batch dir
-	jobs = append(jobs,
-		batch.BuildJob(models.JobTypeSetBatchStatus, makeBSArgs(models.BatchStatusPending)),
-		models.NewJob(models.JobTypeKillDir, makeLocArgs(batch.Location)),
-		batch.BuildJob(models.JobTypeSetBatchLocation, makeLocArgs("")),
-	)
-
-	// Finalize flagged issues
-	for _, i := range flagged {
-		jobs = append(jobs,
-			i.Issue.BuildJob(models.JobTypeRemoveFile, makeLocArgs(i.Issue.METSFile())),
-			i.Issue.BuildJob(models.JobTypeFinalizeBatchFlaggedIssue, nil),
-		)
-	}
-
-	// Remove all the no-longer-useful flagged issue data
-	jobs = append(jobs, batch.BuildJob(models.JobTypeEmptyBatchFlaggedIssuesList, nil))
-
-	// Destroy the batch
+func QueueBatchForDeletion(batch *models.Batch, flagged []*models.FlaggedIssue, c *config.Config) error {
+	// Grab the common jobs for handling flagged issues, then destroy the batch
+	var jobs = getJobsForFinalizingFlaggedIssues(batch, flagged, c)
 	jobs = append(jobs, batch.BuildJob(models.JobTypeDeleteBatch, nil))
 	jobs = append(jobs, batch.BuildJob(models.JobTypeBatchAction, makeActionArgs("deleted batch")))
 
 	return models.QueueBatchJobs(models.PNBatchDeletion, batch, jobs...)
-}
-
-// QueueCopyBatchForProduction sets the given batch to pending, then queues up
-// the necessary jobs to get it ready for a production load
-func QueueCopyBatchForProduction(batch *models.Batch, prodBatchRoot string) error {
-	var dst = filepath.Join(prodBatchRoot, batch.FullName())
-	var jobs []*models.Job
-
-	jobs = append(jobs, batch.BuildJob(models.JobTypeValidateTagManifest, nil))
-	jobs = append(jobs, getJobsForCopyDir(batch.Location, dst, "*.tif", "*.tiff", "*.TIF", "*.TIFF", "*.tar.bz", "*.tar")...)
-	jobs = append(jobs, batch.BuildJob(models.JobTypeBatchAction, makeActionArgs("copied core batch files to production")))
-	jobs = append(jobs, batch.BuildJob(models.JobTypeSetBatchNeedsStagingPurge, nil))
-	jobs = append(jobs, batch.BuildJob(models.JobTypeSetBatchStatus, makeBSArgs(models.BatchStatusPassedQC)))
-
-	return models.QueueBatchJobs(models.PNCopyBatchForProduction, batch, jobs...)
 }
 
 // QueueBatchGoLiveProcess fires off all jobs needed to call a batch live and

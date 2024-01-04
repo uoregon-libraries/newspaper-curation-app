@@ -15,7 +15,7 @@
     <!-- Batch needs to be purged from staging: this overrides all other considerations -->
     {{else if and .Data.Batch.NeedStagingPurge (.Data.Can.Load .Data.Batch)}}
     <p><strong>{{.Data.Batch.Name}} needs to be purged from staging. This is a manual process.</strong></p>
-    <p>Purge the batch:</p>
+    <p>Purge the batch <em>from staging</em>:</p>
     {{template "batch-manual-purge" .Data.Batch}}
 
     <p>Then remove the "needs purging" flag:</p>
@@ -26,7 +26,7 @@
     <!-- Batch needs to be pushed to staging -->
     {{else if and .Data.Batch.ReadyForStaging (.Data.Can.Load .Data.Batch)}}
     <p><strong>{{.Data.Batch.Name}} is ready to be loaded onto staging. This is a manual process.</strong></p>
-    <p>Load the batch:</p>
+    <p>Load the batch <em>onto staging</em>:</p>
     {{template "batch-manual-load" .Data.Batch}}
 
     <p>Then mark it ready for QC:</p>
@@ -54,8 +54,7 @@
     {{else if and .Data.Batch.ReadyForProduction (.Data.Can.Load .Data.Batch)}}
     <p><strong>{{.Data.Batch.Name}} is ready to be loaded onto production. This is a manual process.</strong></p>
     <p>
-      Load the batch on production; load it on staging as well if your staging
-      environment mirrors production:
+      Load the batch <em>on production</em>:
     </p>
     {{template "batch-manual-load" .Data.Batch}}
 

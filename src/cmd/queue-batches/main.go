@@ -76,7 +76,7 @@ func main() {
 
 		// Queue the batch
 		logger.Infof("Sending %q to job runner for creation", batch.Name)
-		err = jobs.QueueMakeBatch(batch, conf.BatchOutputPath)
+		err = jobs.QueueMakeBatch(batch, conf)
 		if err != nil {
 			logger.Fatalf("Unable to queue batch %q: %s", batch.Name, err)
 		}
