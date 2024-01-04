@@ -328,7 +328,6 @@ func QueueBatchFinalizeIssueFlagging(batch *models.Batch, flagged []*models.Flag
 	// easily rebuilt metadata (e.g., the bagit info), so this is not truly a
 	// destructive operation
 	jobs = append(jobs,
-		batch.BuildJob(models.JobTypeSetBatchStatus, makeBSArgs(models.BatchStatusPending)),
 		models.NewJob(models.JobTypeKillDir, makeLocArgs(batch.Location)),
 		batch.BuildJob(models.JobTypeSetBatchLocation, makeLocArgs("")),
 	)
@@ -370,7 +369,6 @@ func QueueBatchForDeletion(batch *models.Batch, flagged []*models.FlaggedIssue) 
 
 	// Destroy batch dir
 	jobs = append(jobs,
-		batch.BuildJob(models.JobTypeSetBatchStatus, makeBSArgs(models.BatchStatusPending)),
 		models.NewJob(models.JobTypeKillDir, makeLocArgs(batch.Location)),
 		batch.BuildJob(models.JobTypeSetBatchLocation, makeLocArgs("")),
 	)
