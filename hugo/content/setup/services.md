@@ -11,7 +11,7 @@ of tools, not a single application that does it all.
 ## Overview
 
 NCA has two key services which you'll have to run, in addition to the rest of
-the external services (such as an IIIF server, MySQL / MariaDB, and Apach)
+the external services (such as a IIIF server, MySQL / MariaDB, and Apach)
 
 If you're doing a manual installation rather than container-based, you are
 strongly advised to look at the docker files - they make it clear precisely how
@@ -134,9 +134,9 @@ features, and shouldn't be necessary for regular use of this software.
 
 ## IIIF Image Server
 
-An IIIF server is not included (and it wouldn't make sense to couple into every
+A IIIF server is not included (and it wouldn't make sense to couple into every
 app that needs to show images).  However, in order to use NCA to see newspaper
-pages, you will need an IIIF server of some kind.
+pages, you will need a IIIF server of some kind.
 
 [RAIS](https://github.com/uoregon-libraries/rais-image-server) is the
 recommended image server: it's easy to install and run, and it handles JP2s

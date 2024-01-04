@@ -20,7 +20,7 @@ Manual installation has several prerequisites:
     support converting PNG files.  Most distributions of Linux don't have this
     by default, hence the need to manually compile.
 - MariaDB
-- An IIIF server capable of handling tiled JP2 files without a ton of overhead (e.g.,
+- A IIIF server capable of handling tiled JP2 files without a ton of overhead (e.g.,
   [RAIS](https://github.com/uoregon-libraries/rais-image-server))
 - Apache/nginx for authentication as well as proxying to NCA and the IIIF server
 
