@@ -1,6 +1,10 @@
 package batchhandler
 
-import "github.com/uoregon-libraries/newspaper-curation-app/src/models"
+import (
+	"path/filepath"
+
+	"github.com/uoregon-libraries/newspaper-curation-app/src/models"
+)
 
 // Batch wraps models.Batch to decorate for template use
 type Batch struct {
@@ -54,4 +58,10 @@ func (b *Batch) ReadyForArchive() bool {
 // flag which issues need to be removed
 func (b *Batch) ReadyForFlaggingIssues() bool {
 	return b.Status == models.BatchStatusQCFlagIssues
+}
+
+// LiveLocation returns the location the batch is stored on production, which
+// is necessary for instructions that involve loading a batch somewhere
+func (b *Batch) LiveLocation() string {
+	return filepath.Join(conf.BatchProductionPath, b.FullName())
 }
