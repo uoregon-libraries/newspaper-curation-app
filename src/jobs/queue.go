@@ -320,13 +320,15 @@ func getJobsForRemoveErroredIssue(issue *models.Issue, erroredIssueRoot string) 
 // getJobsForFinalizingFlaggedIssues returns the common jobs needed when a batch has
 // issues that were flagged for removal, and the QCer is ready to finalize
 // the batch and handle the flagged issues.
-func getJobsForFinalizingFlaggedIssues(batch *models.Batch, flagged []*models.FlaggedIssue) []*models.Job {
+func getJobsForFinalizingFlaggedIssues(batch *models.Batch, flagged []*models.FlaggedIssue, c *config.Config) []*models.Job {
 	var jobs []*models.Job
 
-	// First: jobs to destroy batch dir - note that the batch dir contains hard
-	// links and easily rebuilt metadata (e.g., the bagit info), so this is not
-	// truly a destructive operation
+	// First: jobs to destroy the two batch dirs. The full-batch dir contains
+	// hard links and easily rebuilt metadata (e.g., the bagit info), and the
+	// live dir is just a copy of those files, so this is not really dangerous
+	var liveDir = filepath.Join(c.BatchProductionPath, batch.FullName())
 	jobs = append(jobs,
+		models.NewJob(models.JobTypeKillDir, makeLocArgs(liveDir)),
 		models.NewJob(models.JobTypeKillDir, makeLocArgs(batch.Location)),
 		batch.BuildJob(models.JobTypeSetBatchLocation, makeLocArgs("")),
 	)
@@ -358,7 +360,7 @@ func getJobsForFinalizingFlaggedIssues(batch *models.Batch, flagged []*models.Fl
 // from a batch which failed QC, then rebuilding the batch
 func QueueBatchFinalizeIssueFlagging(batch *models.Batch, flagged []*models.FlaggedIssue, c *config.Config) error {
 	// Grab the common jobs for handling flagged issues, then regenerate the batch
-	var jobs = getJobsForFinalizingFlaggedIssues(batch, flagged)
+	var jobs = getJobsForFinalizingFlaggedIssues(batch, flagged, c)
 	jobs = append(jobs, getJobsForMakeBatch(batch, c)...)
 
 	return models.QueueBatchJobs(models.PNFinalizeIssueFlagging, batch, jobs...)
@@ -366,9 +368,9 @@ func QueueBatchFinalizeIssueFlagging(batch *models.Batch, flagged []*models.Flag
 
 // QueueBatchForDeletion is used when all issues in a batch need to be
 // rejected, rendering the batch unnecessary (and useless).
-func QueueBatchForDeletion(batch *models.Batch, flagged []*models.FlaggedIssue) error {
+func QueueBatchForDeletion(batch *models.Batch, flagged []*models.FlaggedIssue, c *config.Config) error {
 	// Grab the common jobs for handling flagged issues, then destroy the batch
-	var jobs = getJobsForFinalizingFlaggedIssues(batch, flagged)
+	var jobs = getJobsForFinalizingFlaggedIssues(batch, flagged, c)
 	jobs = append(jobs, batch.BuildJob(models.JobTypeDeleteBatch, nil))
 	jobs = append(jobs, batch.BuildJob(models.JobTypeBatchAction, makeActionArgs("deleted batch")))
 

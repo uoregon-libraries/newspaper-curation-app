@@ -262,7 +262,7 @@ func finalizeBatch(r *Responder) {
 }
 
 func deleteBatch(r *Responder) {
-	var err = jobs.QueueBatchForDeletion(r.batch.Batch, r.flaggedIssues)
+	var err = jobs.QueueBatchForDeletion(r.batch.Batch, r.flaggedIssues, conf)
 	if err != nil {
 		logger.Criticalf("Unable to queue job to delete batch %d (%s): %s", r.batch.ID, r.batch.Name, err)
 		r.Error(http.StatusInternalServerError, "Error trying to finalize the batch. Try again or contact support.")
