@@ -21,10 +21,14 @@ Before anything can be done, the following setup has to happen:
 
 1. Make sure you understand the [Services](/setup/services) documentation and
    can get the stack up and running
-1. Somebody symlinks or otherwise sets up the sftp folder root so that each
-   title has its own location directly off said root.  e.g.,
+1. Somebody mounts, symlinks, or otherwise sets up the sftp folder root so that
+   each title has its own location directly off said root.  e.g.,
    `/mnt/news/sftp/foo` should contain one title's issues, and
    `/mnt/news/sftp/bar` should contain a different title's issues.
+   - This is most easily handled using SFTPGo and setting
+     `SFTPGO_DATA_PROVIDER__USERS_BASE_DIR` in your `sftpgo.env` to a location
+     that NCA can reach. When NCA tells SFTPGo to provision titles, they get a
+     subdirectory within the specified base directory.
 1. Somebody sets up the full swath of folders, mounting to network storage
    as it makes sense.
    - `PDF_UPLOAD_PATH` (`/mnt/news/sftp`): One subfolder should exist per title
@@ -66,7 +70,9 @@ Before anything can be done, the following setup has to happen:
 1. Permissions have to be set up such that:
    - Humans can rename PDFs in the page review path
    - Humans can drop off scanned PDF/TIFF pairs in the scans path
-   - Humans can upload born-digital PDFs into the sftp path
+   - Humans can upload born-digital PDFs into the sftp path (SFTPGo will take
+     the uploads, but you'll have to ensure its "root" is either symlinked or
+     network-mounted to where NCA expects SFTPed files).
    - All binaries (`server`, `run-jobs`, anything else in `bin/` you wish to
      run) are run as a user who can read and write to all paths
    - Apache can read the scans path
