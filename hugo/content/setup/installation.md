@@ -60,11 +60,10 @@ than a second.
 Once you've compiled, the two key binaries are going to be `bin/server` for the
 HTTP listener, and `bin/run-jobs`, the job queue processor.
 
-Note that even if you do use Docker, you'll probably want to have your dev
-system set up to compile the binaries.  With a suitable
-`docker-compose.override.yml` file (like the provided
-`docker-compose.override.yml-example`), the binaries are mounted into the
-container, allowing for quicker code changes.
+Note that even if you do use Docker, for development you'll probably want to
+run all NCA's binaries locally and just have them communicate with the
+dockerized services (IIIF server, database, and SFTPGo). Again, see our
+[Development Guide](/contributing/dev-guide) for details.
 
 ## Database Setup
 
