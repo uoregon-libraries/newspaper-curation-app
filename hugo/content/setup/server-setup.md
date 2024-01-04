@@ -68,7 +68,7 @@ Before anything can be done, the following setup has to happen:
    when building large batches.  **NOTE**: the system currently *requires*
    this, and will fail if an attempt to hard-link files fails.
 1. Permissions have to be set up such that:
-   - Humans can rename PDFs in the page review path
+   - Humans can rename PDFs in the page review path.
    - Humans can drop off scanned PDF/TIFF pairs in the scans path
    - Humans can upload born-digital PDFs into the sftp path (SFTPGo will take
      the uploads, but you'll have to ensure its "root" is either symlinked or
@@ -76,15 +76,17 @@ Before anything can be done, the following setup has to happen:
    - All binaries (`server`, `run-jobs`, anything else in `bin/` you wish to
      run) are run as a user who can read and write to all paths
    - Apache can read the scans path
-   - The system which ingests batches into ONI can read from the batch
-     output path
+   - The systems which ingest batches into ONI (both staging and production)
+     mount the `BATCH_PRODUCTION_PATH` at the same location NCA uses so that
+     the ingest instructions are easy to follow.
 1. Run the servers and set up one or more users: [User Setup](/setup/user-setup)
 1. Somebody must set up the list of newspaper titles using the "Manage
    Newspaper Titles" functionality.  Nothing works if titles aren't set up!
-   Titles need all data except the username and password, which are primarily
-   there to help keep the information central.
+   - See [Adding Titles][1] for details.
 1. Somebody has to set up at least one MARC Org Code in the admin app's "MARC
    Org Codes" area.  This should match the code set up in the app's settings.
    If in-house scanning is done, and awardees will differ from your primary
    awardee's code, you would set up those awardees before putting their scanned
    images into the scan folder.
+
+[1]: <{{<ref "/workflow/adding-titles">}}>
