@@ -27,7 +27,7 @@ Before anything can be done, the following setup has to happen:
    `/mnt/news/sftp/bar` should contain a different title's issues.
 1. Somebody sets up the full swath of folders, mounting to network storage
    as it makes sense.
-   - `PDF_UPLOAD_PATH` (`/mnt/news/sftp`): One subfolder should be set up per title
+   - `PDF_UPLOAD_PATH` (`/mnt/news/sftp`): One subfolder should exist per title
    - `SCAN_UPLOAD_PATH` (`/mnt/news/scans`): This is where in-house scans would be uploaded.
    - `ORIGINAL_PDF_BACKUP_PATH` (`/mnt/news/backup/originals`): Short-term storage
      where uploaded PDFs will be moved after being split.  They may need to be
@@ -37,12 +37,25 @@ Before anything can be done, the following setup has to happen:
      born-digital SFTP uploads and are ready for manual page reordering - this
      should be exposed to whomever will manually review and reorder the
      born-digital uploads prior to them entering the rest of the workflow.
-   - `BATCH_OUTPUT_PATH` (`/mnt/news/outgoing`): Batches here are ready for
-     ingest into staging and eventually production
+   - `BATCH_OUTPUT_PATH` (`/mnt/news/outgoing`): Batches are put here when
+     they're built and held until they're live and moved to your archival
+     location.
+   - `BATCH_PRODUCTION_PATH` (`/mnt/news/production-batches`): Batches' live
+     files are synced here. This only includes the critical files needed for an
+     ONI instance to work: XMLs, JP2s, PDFs, etc. TIFFs are not synced in order
+     to dramatically reduce disk requirements for your "always on" filesystem.
+   - `BATCH_ARCHIVE_PATH` (`/mnt/news/batch-archive`): When batches are live,
+     all files are moved here for archival. This location can be a dark
+     archive, a "transfer" location for prepping bulk DA moves, or a location
+     you manually manage in some way.
    - `WORKFLOW_PATH` (`/mnt/news/workflow`): Issues are moved here for
      processing, and once here should never be accessible to anybody to
      manually modify them.  They will live here until all workflow tasks are
      complete and they're put into a batch for ingest.
+   - `ERRORED_ISSUES_PATH` (`/mnt/news/errors`): This location is where NCA
+     will put issues that a curator flags as being broken in a way that NCA
+     can't manage. e.g., a sideways-scanned TIFF or a blank page that wasn't
+     wanted.
    - `ISSUE_CACHE_PATH` (`/var/local/news/nca/cache`): This just needs to be
      created.  The app will use this to speed up issue lookups.
 1. Make sure that the workflow path and the batch output path are on the same
