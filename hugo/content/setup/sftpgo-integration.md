@@ -13,6 +13,9 @@ If you choose not to use this integration, publisher uploads will have to be
 managed entirely by you (as was the case prior to this integration), and NCA
 will not track SFTP data (which is a change from NCA 3.x and prior).
 
+It is *highly recommended* that you use SFTPGo, as future versions of NCA may
+require it, or at least make it very difficult to do without.
+
 ## Opt out
 
 To disable SFTPGo integration, assign "-" to the `SFTPGO_API_URL` setting:
@@ -23,9 +26,8 @@ This ensures that NCA will not try to connect to a nonexistent server.
 
 ## SFTPGo Setup
 
-If you do opt to use SFTPGo, you'll need to use the SFTPGo documentation to set
-it up however it makes sense for your system. Once that's done, you have to
-then make NCA aware of it.
+You'll need to use the SFTPGo documentation to set it up however it makes sense
+for your system. Once that's done, you have to then make NCA aware of it.
 
 Our configuration files can be found in the NCA project's root under the
 `sftpgo` directory. It's obviously somewhat specific to our bare-metal RHEL
@@ -35,7 +37,8 @@ We use nginx to proxy the SFTPGo web interface. This isn't necessary -- SFTPGo
 can be exposed directly. We prefer the granular control nginx gives us (e.g.,
 being able to lock down certain paths by IP).
 
-For the sftp daemon itself, we just expose that directly.
+For the sftp daemon itself, we just expose that directly on port 22, and set up
+sshd on port 2022, locked down to a handful of IP addresses.
 
 Install nginx, configure it (again, see our configuration if necessary), and
 then install SFTPGo as a service. See the ["Running SFTPGo as a service"][1]
@@ -92,15 +95,18 @@ preventing all other publishers from uploading anything.
 
 NCA connects to SFTPGo via an API key for a user with admin privileges. If you
 are using Docker with defaults for development, this API key is created and
-assigned in your NCA `settings` file automatically. For any non-docker use,
-one will have to use the Bash scripts in the `sftpgo/` directory. You will need
-to provide the environment variable `SETTINGS_PATH` with a value corresponding
-to the path to your NCA `settings` file to these Bash scripts.
-`SETTINGS_PATH=/path/to/settings sftpgo/get_admin_api_key.sh` is the only script
-that *must* be run. It will prompt for admin user credentials, use them to
-request an API key for that user, store the key in the NCA `settings` file
-automatically, and then call the accompanying script `test_api_key.sh` to test
-that API key.
+assigned in your NCA `settings` file automatically. For any non-docker use, one
+will have to use the Bash scripts in the `sftpgo/` directory. You will need to
+provide the environment variable `SETTINGS_PATH` with a value corresponding to
+the path to your NCA `settings` file to these Bash scripts. An example
+invocation of the key-fetcher might look like this:
+
+    SETTINGS_PATH=/path/to/settings sftpgo/get_admin_api_key.sh
+
+That is the only script that *must* be run. It will prompt for admin user
+credentials, use them to request an API key for that user, store the key in the
+NCA `settings` file automatically, and then call the accompanying script
+`test_api_key.sh` to verify the key was fetched and set up properly.
 
 Normally you only run `get_admin_api_key.sh` once, but if you need to reacquire
 a key, you must reset your `settings` file (set
