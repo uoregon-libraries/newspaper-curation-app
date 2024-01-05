@@ -12,10 +12,8 @@ structures for issue organization.
 ### Born-Digital
 
 The folder structure tells us the newspaper title and issue date.  e.g.,
-`/mnt/news/sftp/sn12345678/2018-01-02` would mean the January 2nd, 2018 edition
-of title `sn12345678`.  Note that the "sftp directory" can be used instead
-of the LCCN if they differ (for historical reasons - the legacy app's
-born-digital and scan processors were very separated).
+`/mnt/news/sftp/sftpuser/2018-01-02` would mean the January 2nd, 2018 edition
+of title whose SFTP login is "sftpuser".
 
 The issue should contain PDFs and nothing else.  Publishers should never upload
 tertiary files.  Ideally, publishers should upload one PDF for the entire
@@ -35,18 +33,33 @@ setting), and doesn't support having multiple editions of a single date.
 ### Scans
 
 The folder structure tells us the same information as with born-digital
-uploads, but also includes a MARC Org Code.  e.g.,
-`/mnt/news/scans/oru/sn12345678/2018-01-02` would be the January 2nd, 2018
-issue of title `sn12345678`, and would be assigned the `oru` awardee when
-batched.
+uploads with a few exceptions:
 
-Additionally, issues can have multiple editions by adding `_dd` to the issue
-folder name; e.g., `.../2018-01-02_03` would designate the third edition
-for January 2nd, 2018.
+- The LCCN is used instead of an SFTP username
+- The Awardee (MARC Org Code) is determined from the directory name right after
+  the scan base path
+- Issues can have multiple editions by adding `_dd` to the issue folder name
+
+e.g., `/mnt/news/scans/oru/sn12345678/2018-01-02` would be the January 2nd,
+2018 issue of title `sn12345678`, and would be assigned the `oru` awardee when
+batched. `/mnt/news/scans/oru/sn12345678/2018-01-02_03` would designate the
+third edition of the same issue.
 
 These issues should contain one TIFF per page and one PDF per page.  The PDF
 should contain the TIFF's image with OCR information as an application like
 Abbyy produces.
+
+Rules:
+
+- Files should be named numerically using four digits, e.g., `0001.tif` /
+  `0001.pdf`
+- Each TIFF must have a corresponding PDF with the same base name. If
+  `0001.tif` is present, but `0001.pdf` is not, or vice-versa, NCA will not be
+  able to process the issue.
+- Files must be ordered the way they are to appear on the production ONI site,
+  as there is no manual reorder step for scanned issues. NCA will attempt to
+  guess at the order of pages not named numerically, but four-digit names are
+  the best option.
 
 To conform closely to the NDNP spec, the TIFF files should be at least 300dpi
 and the PDFs should contain a 150dpi JPEG image encoded at about a quality of
