@@ -4,8 +4,11 @@ weight: 30
 description: How to help with NCA's docs
 ---
 
-The documentation for this site is produce using [Hugo](https://gohugo.io/) and
-the [TechDoc](https://themes.gohugo.io/hugo-theme-techdoc/) theme.
+The documentation for this site is produce using [Hugo][1] and a custom theme
+based on the look and feel of [TechDoc][2], a contributed Hugo theme.
+
+[1]: <https://gohugo.io/>
+[2]: <https://themes.gohugo.io/hugo-theme-techdoc/>
 
 We want our documentation to help you use NCA (okay, again, if I'm being
 honest, this is really just for UO to remember how to use our app), and as such
@@ -13,22 +16,18 @@ the documentation itself needs to be easy to edit and keep up-to-date.
 
 ## Starting out
 
-Get Hugo installed.  It's a trivial standalone application that can be
-installed with minimal fuss:
-[installing Hugo](https://gohugo.io/getting-started/installing).
+Get Hugo installed. It's a trivial standalone application that can be
+installed with minimal fuss: [installing Hugo][3].
+
+[3]: <https://gohugo.io/getting-started/installing>
 
 Once you have it, you can download the NCA codebase from Github and start
 editing.  Change to the `hugo` subdirectory in NCA, and you'll see all the
 content under `content/`.
 
-Normally you could use `hugo serve` to test out the documentation. But due to a
-bug in the theme we chose, documentation generation is inconsistent and doesn't
-actually do what it should every time.
-
-The solution: `make docserver`. This uses whatever is in `docs`, but copies it
-into a `localdocs` directory, replaces URLs to work locally, and fires up an
-Apache web server listening on localhost:8080. This ensures that what you're
-testing locally is in fact whatever you generated most recently in `docs`.
+Normally you can just use `hugo serve` to test out the documentation, as it
+will rebuild pages immediately as you edit them, and sets up a custom JS
+integration to auto-reload your browser as changes occur.
 
 ## Magic / Rules
 
@@ -47,7 +46,7 @@ won't show up in the navigation.
 want it in the navigation, and you almost always do, you need it under a
 subdirectory, such as this document which lives under `contributing`.
 
-**Rule 3**: The "home" page of a subdirectory is always called `index.md`.
+**Rule 3**: The "home" page of a subdirectory is always called `_index.md`.
 That file is magic and shows up it the hierarchy of pages at one level above
 the subdirectory.  e.g., `hugo/content/contributing/_index.md` is at the root
 level of the navigation menu, and everything else in
@@ -83,18 +82,48 @@ This is more straightforward.  YAY!
   (that messes up my markdown editor in some cases).  80 characters.  I use
   tmux with multiple panes, and 80 characters will never annoy me.  If you
   contribute something annoying, it may or may not ever get into the repo.
-  Call me old if you like, but I'm king where this repository is concerned.
 
 ## Linking to other pages
 
-If you want to link to another document, use a relative path, not a full URL,
-because a full URL will either work on the live site (e.g.,
-https://foo.github.io/blah) or locally (http://localhost:1313/blah), but not
-both.
+Try to use markdown references and the "ref" shortcode whenever you can. I'm
+working to slowly replace all the hard-coded links with "ref" because Hugo will
+give a clear error if you use an invalid ref, but won't detect invalid
+hard-coded links.
 
-An easy way to do this is just start with a slash and append everything that
-comes after `hugo/content/` minus the ".md".  e.g. you can do this:
+You only have to specify the full path in a "ref" shortcode if you're linking
+to a document in a different subdirectory. Since this page is part of the
+"contributing" section, let's link to the [Testing][1] guide.
 
-[docs](/contributing/documentation)
+[4]: <{{% ref "testing" %}}>
 
-with this code: `[docs](/contributing/documentation)`.
+That paragraph, and the link destination, were created as such:
+
+```
+You only have to specify the full path in a "ref" shortcode if you're linking
+to a document in a different subdirectory. Since this page is part of the
+"contributing" section, let's link to the [Testing][1] guide.
+
+[4]: <{{%/* ref "testing" */%}}>
+```
+
+This time we'll link to a page outside "contributing": [Services][5].
+
+[5]: <{{% ref "setup/services" %}}>
+
+```
+This time we'll link to a page outside "contributing": [Services][5].
+
+[5]: <{{% ref "setup/services" %}}>
+```
+
+To link to an external page that isn't part of the documentation, you would
+simply provide an absolute URL. For example, here's [a bunch of cat images][6].
+
+[6]: <https://www.bing.com/search?form=MOZLBR&pc=MOZI&q=cat+images>
+
+```
+To link to an external page that isn't part of the documentation, you would
+simply provide an absolute URL. For example, here's [a bunch of cat images][6].
+
+[6]: <https://www.bing.com/search?form=MOZLBR&pc=MOZI&q=cat+images>
+```
