@@ -17,9 +17,8 @@ Why is it best to compile on your local machine instead of inside a container?
   sudo, no /usr/bin polluting, no complex compiling from sources.
 - Same with go's dependencies - `go install ...` will install files in a space
   that's local to your user path.  All NCA's code dependencies are similarly
-  local.  Everything "just works".  The only reason we use Docker for
-  development is the various external dependencies like poppler utils, graphics
-  magick, etc.
+  local.  Everything "just works".  The only reason to use Docker for
+  development is the various external dependencies like RAIS, MySQL, etc.
 - Vim (and other editors / IDEs) usually require Go tools to be installed
   locally for code analysis, autocomplete, etc.
 - This repository doesn't have a deploy system for use inside containers; if
@@ -29,11 +28,6 @@ Why is it best to compile on your local machine instead of inside a container?
   - Copy binary files into `/usr/local/nca`
 
 For development, it's just a lot easier to install Go locally, compile locally,
-and mount the binaries inside the Docker containers.
-
-That said, PRs which make it easier to set up a "build box" type of container
-certainly would be appreciated.  Better yet, it would be lovely to get a tool
-like `gin` integrated - except not a dead project, and something more
-customizable.  We'd want to validate code (possibly just to report as opposed
-to refusing to start the services), recompile only when `*.go` or `*.html`
-files change, etc.
+and run the binaries locally. The only "tricky" part is getting poppler,
+graphics magick, and ghostscript installed. Which in most cases amounts to
+three "apt install" (or equivalent) commands.

@@ -21,17 +21,15 @@ Contributors: feel free to add more unit tests to improve overall coverage!
 Manually testing NCA can be time-consuming, as you have to find, copy, and then
 load issues into NCA, enter metadata, etc. If you repeat this often enough, you
 may find the project's "test" directory helpful. It contains documentation and
-scripts which are meant to make real-world-like testing a bit easier.
+scripts which are meant to make real-world-like testing a lot easier.
 
-The most difficult piece of this is that you will need to set up NCA as
-outlined in the "Advanced Users" section of the [Development
-Guide](/contributing/dev-guide). You can likely make things work in any
-environment, but the scripts and documentation assume you do it our way. This
-process is not beginner-friendly, and likely never will be; it's meant for
-power developers who are doing a *lot* of testing and need the extra
-automation.
+To use the manual test scripts/recipes, you will need to use the recommended
+development approach (["Hybrid Developer"][1]) or the scripts' behavior will
+not be defined.
 
-View the README.me file in the test directory for details.
+View the README.md file in the test directory for details.
+
+[1]: <{{% ref "dev-guide#hybrid-developer" %}}>
 
 ### Saving State
 
