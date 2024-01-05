@@ -13,31 +13,40 @@ production server.  Please see our [Development Guide](/contributing/dev-guide).
 
 Manual installation has several prerequisites:
 
-- Go and some dependencies (see below)
 - Poppler Utils for PDF processing
 - OpenJPEG 2 + command-line tools for JP2 generation
   - The command-line tools will probably need to be **manually compiled** to
     support converting PNG files.  Most distributions of Linux don't have this
     by default, hence the need to manually compile.
+- A recent version of GhostScript - 10+ is recommended
+- GraphicsMagick
 - MariaDB
 - A IIIF server capable of handling tiled JP2 files without a ton of overhead (e.g.,
   [RAIS](https://github.com/uoregon-libraries/rais-image-server))
 - Apache/nginx for authentication as well as proxying to NCA and the IIIF server
 
-**Please note**: The easiest way to get up and running with NCA is via
-our Docker configuration / setup.
+**Please note**: The easiest way to get a quick demo / test setup of NCA is via
+our Docker configuration / setup:
 
 - <https://github.com/uoregon-libraries/newspaper-curation-app/blob/main/docker-compose.yml>
 - <https://github.com/uoregon-libraries/newspaper-curation-app/tree/main/docker>
 
-It's not difficult to run NCA on a VM or bare metal, but if you go that
-route, you'll find the docker setup helpful just in terms of understanding the
-full stack and configuration.
+This is great to try things out, or for a quick one-off use of NCA, but **it is
+not recommended for production use**.
+
+We strongly recommend either crafting your own containerized setup with a mind
+to production reliability (which we haven't done) or just running NCA on bare
+metal - one the prerequisites above are installed, the rest of NCA is very easy
+to get running. If you go this route, you'll still find the docker setup
+helpful just in terms of understanding the full stack and configuration.
 
 ## Compile
 
 Compilation requires:
-- [Go](https://golang.org/dl/) 1.18 or later
+- [Go](https://golang.org/dl/) 1.18 or later. Go is only required for
+  compilation: its runtime does not need to be installed in production as long
+  as you compile on the same architecture your production system has (or change
+  the `Makefile` to cross-compile for the targeted architecture).
 - [revive](https://github.com/mgechev/revive): `go install github.com/mgechev/revive@latest`
 
 The easiest way to compile is simply running `make` in the source directory.
