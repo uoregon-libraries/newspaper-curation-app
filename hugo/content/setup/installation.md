@@ -74,6 +74,15 @@ run all NCA's binaries locally and just have them communicate with the
 dockerized services (IIIF server, database, and SFTPGo). Again, see our
 [Development Guide](/contributing/dev-guide) for details.
 
+### Security Updates
+
+Every now and then a security issue arises in the Go standard library. It's
+rare that something critical shows up, but it isn't a bad idea to regularly
+(say every month or so) just grab the latest Go compiler, recompile NCA via
+`make`, and push the new binaries to production. This ensures any fixes or
+security updates get into your instance of NCA without your having to check on
+the NCA project itself, or even watch for Go updates.
+
 ## Database Setup
 
 Creating / migrating the database is easily done using the "migrate-database"
