@@ -4,13 +4,8 @@ weight: 30
 description: Creating a new NCA administrative user
 ---
 
-Newspaper Curation App - User Setup
-===
-
-First-time Setup
----
-
-Once the applications are installed and configured, start the NCA server in debug mode:
+Once the applications are installed and configured, you'll need an admin user.
+Start the NCA server in debug mode:
 
     ./bin/server -c ./settings --debug
 
