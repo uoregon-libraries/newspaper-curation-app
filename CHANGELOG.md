@@ -34,6 +34,69 @@ Brief description, if necessary
 ### Migration
 -->
 
+## v4.2.0
+
+It's all about the batches. And jobs in general. Oh, and docs. Oh, right, and a
+few miscellaneous fixes.
+
+### Fixed
+
+- Issue keys are even more carefully validated when dupe-checking
+- Incorrect toggling of a batch state exposed a batch for processing (ready for
+  quality control) when it still had jobs in the queue. It was extremely
+  unlikely somebody would get to the batch and do anything with it in between
+  jobs, but it was still a possibility.
+- When a user rejects a batch, the process is now a bit more streamlined in the
+  codebase, making database errors less annoying if they do occur.
+- Manual batch loading instructions are now correct for all cases (staging or
+  production) due to the changes below.
+- Documentation mega-overhaul! The theme is now 100% keyboard-accessible, and
+  the documentation has been given a full audit, and rewritten to match what
+  NCA actually does.
+
+### Added
+
+- Dev: The job runner now has a special flag that runs a single job and then
+  exits. This can help identify which job is going rogue: run a job, check
+  database state, run the next job, check state, etc.
+
+### Changed
+
+- Dev: jobs now have a way to signal more than just success or temporary
+  failure. This is primarily needed for the upcoming API jobs where we need a
+  "not failed, but wait and retry" status while waiting on ONI to complete a
+  task, but also allows the rare fatal failure to signal the processor not to
+  retry a job at all.
+- Once batches are built, their "always-online" files are immediately synced to
+  the live location rather than waiting for QC approval. This improves the
+  typical case where a batch is approved and loaded to production, but it also
+  simplifies batch processing in general. Staging and production servers can
+  use a unified location for batch loading, and staging won't need a batch
+  purge simply to reload it from the final path.
+- In our settings example file, we have a clearer explanation of what the two
+  batch path values mean.
+- Minor changes to some "public" functions. But nobody should use NCA's "public
+  API". This repo was built before Go had the "internal" concept to make
+  private packages, and hasn't been refactored properly yet. NCA's APIs aren't
+  really ever meant to be public.
+- Batches are no longer ready for a staging load until *after* their BagIt
+  files are generated. This is technically an unnecessary delay, but we cannot
+  sync to the production dir until BagIt files are done, and the whole point of
+  this unification of batch locations was to avoid having to load from two
+  different directories.
+
+### Removed
+
+- The "copy batch for production" job is no longer needed, as we sync files
+  immediately on batch build as mentioned above.
+
+### Migration
+
+- Make sure your staging server can read the `BATCH_PRODUCTION_PATH` if it
+  couldn't previously. NCA always assumed staging could read both
+  `BATCH_PRODUCTION_PATH` and `BATCH_OUTPUT_PATH` anyway, but who knows how
+  it's being used in the wild.
+
 ## v4.1.2
 
 Page labels can be entered by real humans again!
