@@ -21,9 +21,9 @@ This procedure helps "un-push" batches, but only when all of the following are t
 
 This process is awful and you need to know what you're doing, but here's the rough outline:
 
-- If at all possible, turn off NCA's services (workers and http). If you can't
-  do this, things could get messy if you have a problem and have to rollback
-  database or filesystem changes.
+- Turn off NCA's services (workers and http). If you can't do this, things
+  *will get messy* if you have a problem and have to rollback database or
+  filesystem changes.
 - **Back up your database!** The filesystem may be too much to back up, so it
   can be a pain if you need to fix something, but it's still really helpful to
   at least have a "good DB state".
@@ -49,16 +49,13 @@ This process is awful and you need to know what you're doing, but here's the rou
     If you only process one problem batch at a time, though, this shouldn't do
     anything but rebuild whatever was busted (meaning you may not need to re-QC
     it, or if you do, it's at least an isolated set of issues).
-- Purge the original batch from staging **and** production.
-  - This seems scary, but at this point you still have the live batch, the
-    archival files, *and* a database backup.
+- Purge the original batch from staging **and** production, then delete the
+  live batch files. **Not** the archived batch, just the live files ("live" as
+  defined in `BATCH_PRODUCTION_PATH`).
+  - This seems scary, but at this point you still have the archival files
+    and a database backup.
 - Make the new batch(es) live on staging and production.
   - See [technical workflow][1] docs for information about batch management.
-- *Delete* the batch from your live location.
-  - This seems scary, but when you mark batches as being ready for production,
-    NCA is copying a subset of them to the "ready for ingest" location. The
-    originals are kept for a while even after a batch is flagged for archival
-    - Again, see our [technical workflow][1] docs for details.
 - **Delete your archived batch**. This is the original batch you moved from the
   archive location early in this process.
   - This is kind of scary, but you should now have a new batch (or multiple
@@ -66,4 +63,4 @@ This process is awful and you need to know what you're doing, but here's the rou
     files are all the same, the database still has metadata, and the old
     archive's only difference is whatever mistake you were rectifying.
 
-[1]: </workflow/technical>
+[1]: <{{% ref "technical" %}}>

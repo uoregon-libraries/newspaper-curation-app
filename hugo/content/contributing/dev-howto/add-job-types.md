@@ -32,7 +32,7 @@ properly in order to ensure it is used, set up, and processed by NCA.
     happens in a `Queue...` function (e.g., `QueueBatchForDeletion`).
 - Make something run jobs of the new type.
   - For almost any new job, you'll just add the type to an existing runner
-    function in [`src/cmd/run-jobs/main.go`][5] (`runAllQueues`).  This ensures
+    function in [`src/cmd/run-jobs/main.go`][5] (`runAllQueues`). This ensures
     a simple job runner invocation (with the `watchall` argument) will run your
     new job type.
 

@@ -10,7 +10,7 @@ Running unit tests is easy:
 
     make test
 
-This compiles all of the code and tests any `*_test.go` files.  Test coverage
+This compiles all of the code and tests any `*_test.go` files. Test coverage
 is spotty at best right now, but the compile-time checks catch the most common
 problems, like typos in variable names.
 
@@ -21,22 +21,20 @@ Contributors: feel free to add more unit tests to improve overall coverage!
 Manually testing NCA can be time-consuming, as you have to find, copy, and then
 load issues into NCA, enter metadata, etc. If you repeat this often enough, you
 may find the project's "test" directory helpful. It contains documentation and
-scripts which are meant to make real-world-like testing a bit easier.
+scripts which are meant to make real-world-like testing a lot easier.
 
-The most difficult piece of this is that you will need to set up NCA as
-outlined in the "Advanced Users" section of the [Development
-Guide](/contributing/dev-guide). You can likely make things work in any
-environment, but the scripts and documentation assume you do it our way. This
-process is not beginner-friendly, and likely never will be; it's meant for
-power developers who are doing a *lot* of testing and need the extra
-automation.
+To use the manual test scripts/recipes, you will need to use the recommended
+development approach (["Hybrid Developer"][1]) or the scripts' behavior will
+not be defined.
 
-View the README.me file in the test directory for details.
+View the README.md file in the test directory for details.
+
+[1]: <{{% ref "dev-guide#hybrid-developer" %}}>
 
 ### Saving State
 
 At any time you can save and restore the application's state via the top-level
-`manage` script.  This script has a variety of commands, but `./manage backup`
+`manage` script. This script has a variety of commands, but `./manage backup`
 and `./manage restore` will back up or restore **all files** in the fake mount
 as well as all data volumes for NCA, assuming your docker install puts data in
 `/var/lib/docker/volumes` and you don't change the project name from the

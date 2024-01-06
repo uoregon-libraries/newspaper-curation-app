@@ -34,7 +34,7 @@ requires.
    - Issues are split so there is exactly one PDF per page of the issue
    - Issues are then moved to the "page review" area for manual processing
 1. Somebody reviews issues in the page review area:
-   - Files must be renamed (see specs mentioned above)
+   - Files must be renamed to indicate the review is complete (e.g., "seq-0001.pdf" to "0001.pdf")
    - Files may be reordered if necessary
    - If there are invalid PDFs, they may be deleted
    - If the "issue" actually contains two issues, the secondary issue's files should be removed and reuploaded in the correct folder
@@ -67,9 +67,10 @@ generated, the workflow is the same regardless of the source:
 3. Once metadata is entered and approved, the issue has its final derivative
    generated (METS XML) and awaits batching
 4. When enough issues are ready, the `queue-batches` CLI will generate batches
-   in the configured `BATCH_OUTPUT_PATH`
+   in the configured `BATCH_OUTPUT_PATH`, and sync to the required files (e.g.,
+   not TIFFs) to production as configured via `BATCH_PRODUCTION_PATH`.
 5. A batch loader must manually load the batches into a staging server and then
-   flags them as ready for QC
+   flag them as ready for QC
 6. A batch reviewer does quality control on the staging server, verifying the
    batch's issues look good
    - If all is well, batch reviewer marks the issue as ready for production
@@ -77,8 +78,7 @@ generated, the workflow is the same regardless of the source:
      out to be re-curated or rejected from NCA entirely. The remaining issues
      are put into a new batch which is then set as being ready for staging
      (repeating step 5).
-7. Batches that are ready for production get removed from staging and loaded to
-   prod by a batch loader.
+7. Batches that are ready for production get loaded to prod by a batch loader.
 8. Batch loader flags the batch as "live", and NCA moves its files to the
    configured `BATCH_ARCHIVE_PATH`.
 9. Once the batch can be confirmed as fully archived, a batch loader flags it
