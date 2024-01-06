@@ -10,7 +10,7 @@ Running unit tests is easy:
 
     make test
 
-This compiles all of the code and tests any `*_test.go` files.  Test coverage
+This compiles all of the code and tests any `*_test.go` files. Test coverage
 is spotty at best right now, but the compile-time checks catch the most common
 problems, like typos in variable names.
 
@@ -34,7 +34,7 @@ View the README.md file in the test directory for details.
 ### Saving State
 
 At any time you can save and restore the application's state via the top-level
-`manage` script.  This script has a variety of commands, but `./manage backup`
+`manage` script. This script has a variety of commands, but `./manage backup`
 and `./manage restore` will back up or restore **all files** in the fake mount
 as well as all data volumes for NCA, assuming your docker install puts data in
 `/var/lib/docker/volumes` and you don't change the project name from the

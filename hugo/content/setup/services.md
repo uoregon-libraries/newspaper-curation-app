@@ -29,7 +29,7 @@ production installation.
 
 ## HTTP Server
 
-`server` is the web server which exposes all of NCA's workflow UI.  Please
+`server` is the web server which exposes all of NCA's workflow UI. Please
 note that, at the moment, this requires Apache sitting in front of the server
 for authentication.
 
@@ -41,14 +41,14 @@ Running this is fairly simple once settings are configured:
 
 **NOTE**: `server` builds a cache of issues and regularly rescans the
 filesystem and the live site to keep its cache nearly real-time for almost
-instant lookups of issue data.  However, building this cache requires the live
+instant lookups of issue data. However, building this cache requires the live
 site to use the same JSON endpoints chronam uses.
 
 ONI's JSON endpoints were rewritten to use IIIF, so out of the box, ONI isn't
-compatible with this cache-building system.  The IIIF endpoints supply very
+compatible with this cache-building system. The IIIF endpoints supply very
 generic information, which didn't give us issue-level information without
 performing thousands of additional HTTP requests, so we had to put the old JSON
-responses back into our app.  If you wish to use this application with an ONI
+responses back into our app. If you wish to use this application with an ONI
 install, you'll need to do something similar.
 
 The relevant commit links follow:
@@ -84,9 +84,9 @@ should arise.
 
 ## Batch Queue
 
-The queue-batches tool is currently run manually.  Until more of the batch
+The queue-batches tool is currently run manually. Until more of the batch
 ingest can be automated, it is safest to require somebody to manually watch the
-process which tries to gather up issues into a batch.  This can of course be
+process which tries to gather up issues into a batch. This can of course be
 set up to run on cron if so desired.
 
 Execution is simple:
@@ -101,7 +101,7 @@ and are ready for ingest into staging.
 ## Bulk Upload Queue
 
 The `bulk-issue-queue` tool allows you to push uploaded issues into the
-workflow in bulk.  This should *only* be used when you have some other
+workflow in bulk. This should *only* be used when you have some other
 validation step that happens to the issues of the given type (born digital or
 scanned), otherwise you may find a lot of errors that require manual
 intervention of issues in the workflow, which is always more costly than
@@ -139,15 +139,15 @@ prevented curators (or NCA job runners) from processing an issue.
 
 ## Other Tools
 
-You'll find a lot of other tools in `bin` after compiling NCA.  Most
+You'll find a lot of other tools in `bin` after compiling NCA. Most
 have some kind of useful help, so feel free to give them a try, but they won't
-be documented in depth.  Most are one-offs to help diagnose problems or test
+be documented in depth. Most are one-offs to help diagnose problems or test
 features, and shouldn't be necessary for regular use of this software.
 
 ## IIIF Image Server
 
 A IIIF server is not included (and it wouldn't make sense to couple into every
-app that needs to show images).  However, in order to use NCA to see newspaper
+app that needs to show images). However, in order to use NCA to see newspaper
 pages, you will need a IIIF server of some kind.
 
 [RAIS](https://github.com/uoregon-libraries/rais-image-server) is the

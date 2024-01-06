@@ -11,18 +11,18 @@ structures for issue organization.
 
 ### Born-Digital
 
-The folder structure tells us the newspaper title and issue date.  e.g.,
+The folder structure tells us the newspaper title and issue date. e.g.,
 `/mnt/news/sftp/sftpuser/2018-01-02` would mean the January 2nd, 2018 edition
 of title whose SFTP login is "sftpuser".
 
-The issue should contain PDFs and nothing else.  Publishers should never upload
-tertiary files.  Ideally, publishers should upload one PDF for the entire
+The issue should contain PDFs and nothing else. Publishers should never upload
+tertiary files. Ideally, publishers should upload one PDF for the entire
 issue, with pages in the order they wish to see on the ONI site, as that
 reduces (or eliminates) the need to have anybody reviewing these issues' pages.
 
 Some publishers may be unable (or unwilling) to comply with the aforementioned
-folder structure.  It may be necessary to build a custom pre-processor that
-takes uploaded files and restructures them for the application.  In some cases,
+folder structure. It may be necessary to build a custom pre-processor that
+takes uploaded files and restructures them for the application. In some cases,
 there may even need to be human intervention to determine the right issue
 folder name.
 
@@ -45,7 +45,7 @@ e.g., `/mnt/news/scans/oru/sn12345678/2018-01-02` would be the January 2nd,
 batched. `/mnt/news/scans/oru/sn12345678/2018-01-02_03` would designate the
 third edition of the same issue.
 
-These issues should contain one TIFF per page and one PDF per page.  The PDF
+These issues should contain one TIFF per page and one PDF per page. The PDF
 should contain the TIFF's image with OCR information as an application like
 Abbyy produces.
 

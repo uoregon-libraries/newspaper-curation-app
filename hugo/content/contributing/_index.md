@@ -4,7 +4,7 @@ weight: 100
 description: Contributing to NCA
 ---
 
-We welcome contributions to NCA in a variety of forms.  This section will help
+We welcome contributions to NCA in a variety of forms. This section will help
 you to understand how NCA is laid out on the code side as well as how to
 perform certain complex tasks.
 

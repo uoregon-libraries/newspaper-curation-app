@@ -9,5 +9,5 @@ on your system.
 
 Note that developer setup is likely to differ greatly from a production
 install, as you'll need tools (such as Go and/or Docker) that production setups
-can do without.  See [Contributing](/contributing) for a rundown of how to get
+can do without. See [Contributing](/contributing) for a rundown of how to get
 started doing development (and other contribution-related tasks).

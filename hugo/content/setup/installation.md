@@ -7,7 +7,7 @@ description: How to build and compile NCA
 ## Development
 
 If you're developing on NCA, installation will differ from standing up a
-production server.  Please see our [Development Guide](/contributing/dev-guide).
+production server. Please see our [Development Guide](/contributing/dev-guide).
 
 ## Preliminary Setup
 
@@ -16,7 +16,7 @@ Manual installation has several prerequisites:
 - Poppler Utils for PDF processing
 - OpenJPEG 2 + command-line tools for JP2 generation
   - The command-line tools will probably need to be **manually compiled** to
-    support converting PNG files.  Most distributions of Linux don't have this
+    support converting PNG files. Most distributions of Linux don't have this
     by default, hence the need to manually compile.
 - A recent version of GhostScript - 10+ is recommended
 - GraphicsMagick
@@ -56,7 +56,7 @@ build all the binaries.
 
 A full compilation from a clean repository should take about 15 seconds, though
 this can depend on network speed the first time dependencies are pulled from
-github.  Subsequent compiles generally take under 5 seconds.  If that's still
+github. Subsequent compiles generally take under 5 seconds. If that's still
 too long, and you don't mind skipping the code validations, `make fast` will
 skip the validator entirely, usually saving 1-2 seconds.
 
@@ -99,5 +99,5 @@ make
 ```
 
 If you use docker, the entrypoint script should migrate automatically whenever
-the container starts up.  If you're doing development and break the automatic
+the container starts up. If you're doing development and break the automatic
 migration, just run `migrate-database` inside the web container.

@@ -21,7 +21,7 @@ building them in an image when code changes.
 
 If you choose not to compile on your host machine, you will have a slightly
 simpler initial install, but there are a few considerations as you edit and
-test the code.  See [Not Compiling Locally](/contributing/not-compiling-locally).
+test the code. See [Not Compiling Locally](/contributing/not-compiling-locally).
 
 ## Environment Setup
 
@@ -31,7 +31,7 @@ In all cases you'll need the NCA code repository:
     cd nca
 
 You don't have to specify "nca" as the destination; I just find it easier to
-use than the full name.  When reading the documentation, if you don't call it
+use than the full name. When reading the documentation, if you don't call it
 "nca", make sure you mentally replace references to that directory / app name.
 
 ### Hybrid Developer
@@ -103,7 +103,7 @@ given port.
 
 A handy script, `scripts/localdev.sh`, has been provided for easier development
 and testing. Using it via `source` will expose several useful functions for
-easing a more local development environment.  Docker is still expected for the
+easing a more local development environment. Docker is still expected for the
 IIIF server, SFTPGo, and the database, but the NCA applications will be
 completely local.
 
@@ -181,7 +181,7 @@ debug mode.
     vim .env
 
 `.env` sets up default environment variables which `docker compose` commands
-will use.  A sample file might look like this:
+will use. A sample file might look like this:
 
 ```bash
 APP_URL="https://jechols.uoregon.edu"
@@ -191,7 +191,7 @@ NCA_NEWS_WEBROOT="https://oregonnews.uoregon.edu"
 This would say that all app URLs should begin with
 `https://jechols.uoregon.edu` (the default is `localhost`, which is usually
 fine for simple dev work), and that the live issues are found on
-`https://oregonnews.uoregon.edu`.  The live newspaper server is expected to
+`https://oregonnews.uoregon.edu`. The live newspaper server is expected to
 have the legacy chronam JSON handlers, as described in
 [Services](/setup/services).
 
@@ -207,7 +207,7 @@ into the container.
     docker compose build
     docker compose pull
 
-Building the NCA application image will take a long time.  Grab some coffee.
+Building the NCA application image will take a long time. Grab some coffee.
 And maybe a nap....
 
 Note that once it's been built, further builds will be quick as docker will
@@ -217,7 +217,7 @@ openjpeg) and only update what has changed (e.g., NCA source code).
 #### Start the stack
 
 Run `docker compose up`, and the application will be available at
-`$APP_URL/nca`.  Note that on the first run it will take a while to respond as
+`$APP_URL/nca`. Note that on the first run it will take a while to respond as
 the system is caching all known issues - including those on the defined live
 site.
 
@@ -251,7 +251,7 @@ for details on doing dev this way.
 
 ## Test Data
 
-You won't get far without setting up some test issues.  NCA has a rudimentary
+You won't get far without setting up some test issues. NCA has a rudimentary
 setup for grabbing issues from a live server and turning them into testable
 data for local use.
 
@@ -279,8 +279,8 @@ with `go doc`; e.g.:
 `make` will do basic linting and then compile the code if there were no
 compiliation / linter errors.
 
-There are a few unit tests which can be executed via `make test`.  Coverage is
-spotty at best, but some level of sanity-checking does exist.  More
+There are a few unit tests which can be executed via `make test`. Coverage is
+spotty at best, but some level of sanity-checking does exist. More
 comprehensive end-to-end testing is explained in the
 [Testing](/contributing/testing) page.
 
@@ -295,5 +295,5 @@ comprehensive end-to-end testing is explained in the
 - Run `make clean` if you don't trust what you're seeing; it'll remove all
   cached compiler output
 - Run `make distclean` if you want to delete all cached / downloaded
-  dependencies.  This should rarely be necessary, if ever.
+  dependencies. This should rarely be necessary, if ever.
 

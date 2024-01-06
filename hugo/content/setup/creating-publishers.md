@@ -12,5 +12,5 @@ take place:
   oregonnews.uoregon.edu).
   - See [Adding Titles](/workflow/adding-titles) for details
 - Set up a user for sftp access
-  - We use NCA's integrated SFTPGo setup for this.  See
+  - We use NCA's integrated SFTPGo setup for this. See
     [SFTPGo Integration](/setup/sftpgo-integration).

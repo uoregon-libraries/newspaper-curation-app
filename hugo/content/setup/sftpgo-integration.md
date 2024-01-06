@@ -5,7 +5,7 @@ description: Setting up NCA for SFTPGo integration
 ---
 
 [SFTPGo](https://github.com/drakkan/sftpgo) is an sftp server that exposes APIs
-and a web interface for administration tasks.  We've chosen to integrate NCA
+and a web interface for administration tasks. We've chosen to integrate NCA
 with SFTPGo in order to simplify the process of creating titles for a publisher
 that's uploading newspaper PDFs.
 

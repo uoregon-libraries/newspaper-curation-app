@@ -8,7 +8,7 @@ description: Main documentation page
 
 We're always trying to improve the documentation experience, and we're aware
 these docs are incomplete and in some cases probably too specific to UO's
-setup.  Pull requests are appreciated!
+setup. Pull requests are appreciated!
 
 For keyboard users: note that the sidebar is implemented as a tree widget (more
 or less following the W3C example of an accessible navigation tree). This means:
