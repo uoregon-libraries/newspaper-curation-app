@@ -15,10 +15,11 @@ default setup splits jobs up to ensure quick jobs, like moving an issue from
 one location to another on the filesystem, are run separately from slow jobs
 like generating JP2 files.  This ensures that slow jobs don't hold up the
 faster jobs, but could be confusing if you're expecting to see jobs run in the
-order they are queued.  It also tends to make raw job logs confusing.
+order they are queued.  It also tends to make raw job logs confusing. Grouping
+jobs by pipeline can help simplify database-level job diagnostics.
 
-The job runner also looks for issues in the page review area that have been
-renamed and are ready to enter the workflow.
+The job runner also looks for issues in the scan and page review areas that
+are ready to enter the workflow.
 
 All jobs store logs in the database, but these are currently not exposed to end
 users (not even admins).  To help mitigate this, the job runner also logs to
@@ -41,21 +42,22 @@ PDFs might already be ordered correctly, but we've found the need to manually
 reorder them many times, and have decided an out-of-band process for reviewing
 and reordering is necessary.  An easy approach is to have somebody use
 something like Adobe Bridge to review and rename in bulk.  Once complete, an
-issue's filenames need to be ordered by their filenames, e.g., `0001.pdf`,
+issue's pages need to be ordered by their filenames, e.g., `0001.pdf`,
 `0002.pdf`, etc.  Until issues are all given a fully numeric name, the job
 runner will not pick them up.
 
 **Note**: if issue folders are deleted from the page review location for any
-reason, they must be cleaned up manually:
-[Handling Page Review Problems](/workflow/handling-page-review-problems).  Once
-NCA is tracking uploads, deleting them outside the system will cause error logs
-to go a bit haywire, and the issues can't be re-uploaded since NCA will believe
-they quasi-exist.
+reason, they must be cleaned up manually: [Handling Page Review Problems][1].
+Once NCA is tracking uploads, deleting them outside the system will cause error
+logs to go a bit haywire, and the issues can't be re-uploaded since NCA will
+believe they quasi-exist.
+
+[1]: <{{% ref "handling-page-review-problems" %}}>
 
 For scanned issues, since they are in-house for us, it is assumed they're
 already going to be properly named (`<number>.tif` and `<number>.pdf`) and
-ordered, so after being queued, they get moved and processed for derivatives,
-then they're available in the workflow for metadata entry.
+ordered, so after being queued they immediately get moved and processed for
+derivatives.
 
 The bulk upload queue tool (compiled to `bin/bulk-issue-queue`) can be used to
 push all issues of a given type (scan vs. born digital) and issue key into the
@@ -95,8 +97,9 @@ worrying about data corruption.
 If an issue has some kind of problem which cannot be fixed with metadata entry,
 the metadata person will report an error.  Once an error is reported, the issue
 will be hidden from all but Issue Managers in the NCA UI and one of them will
-have to decide how to handle it.  See
-[Fixing Flagged Workflow Issues](/workflow/fixing-flagged-workflow-issues).
+have to decide how to handle it.  See [Fixing Flagged Workflow Issues][2].
+
+[2]: <{{% ref "fixing-flagged-workflow-issues" %}}>
 
 ## Post-Metadata / Batch Generation
 
@@ -121,8 +124,9 @@ indefinitely.
 ## Batch Management
 
 Once a batch is generated and all jobs related to it are complete, the files
-will be put into the configured `BATCH_OUTPUT_PATH` and the "Batches" page in NCA
-will show it to users with the "batch loader" role.
+will be put into the configured `BATCH_OUTPUT_PATH`, the live files (non-TIFF,
+non-tar originals, etc.) are synced to the `BATCH_PRODUCTION_PATH`, and the
+"Batches" page in NCA will show it to users with the "batch loader" role.
 
 At this point the batch can be loaded into staging. NCA's batch page,
 accessible by activating the relevant link in the batch list, will use your
@@ -134,11 +138,11 @@ server, the commands may have to be altered. e.g., NCA might use
 `/mnt/news/outgoing` while staging uses `/mnt/libnca`.*
 
 Once loaded onto staging, the batch loader flags a batch as being ready for QC
-(quality control). After some processing, the batch will be visible to batch
-reviewers in NCA. The batch page will have a link to the staging environment's
-batch page for easier review, as well as two possible actions to take: approve
-the batch for production or reject it from staging due to problems in one or
-more issues.
+(quality control). The batch will then be visible to batch reviewers, letting
+them know action is needed to approve the batch. The batch page will have a
+link to the staging environment's batch page for easier review, as well as two
+possible actions to take: approve the batch for production or reject it from
+staging due to problems in one or more issues.
 
 If rejected, batch reviewers will need to find and flag the problem issues so
 NCA can process the rest of the batch. Issues will be flagged as unfixable
@@ -149,13 +153,11 @@ rebuilding it with only the good issues, and moving it into the "ready for
 staging" state, where a batch loader is guided through purging and reloading
 the batch for another round of QC.
 
-Once a batch has been approved in staging, all essential files (e.g., no TIFFs)
-will be copied to the configured `BATCH_PRODUCTION_PATH` location and then NCA
-will mark the batch as ready to go live. Upon visiting the batch page in NCA,
-the batch loader will get instructions for purging the batch from staging and
-then loading the batch to production. *The same caveat applies here as when
-loading to staging: if file mounts differ from NCA's mount locations, the batch
-loader will need to adjust the commands NCA provides.*
+Once a batch has been approved in staging, NCA will mark the batch as ready to
+go live. Upon visiting the batch page in NCA, the batch loader will get
+instructions for loading the batch to production. *The same caveat applies here
+as when loading to staging: if file mounts differ from NCA's mount locations,
+the batch loader will need to adjust the commands NCA provides.*
 
 After batches are live, the batch loader flags it as such in NCA, and NCA will
 move the original batch and any backups (the source PDFs for born-digital
@@ -164,15 +166,16 @@ batches, for instance) to the archival location specificed by the configured
 
 ## Batch Archival
 
-At UO, our archive path is actually a holding tank as we move things to the
-final archive location in large batches rather than every time something is
-considered "done". Your process may not be quite the same, but hopefully this
-is of help even if only to understand why NCA handles batches the way it does.
+At UO, our archive path is actually a "staging area" for batches which are
+getting ready for a move to the dark archive. Your process may not be quite the
+same, but hopefully this is of help even if only to understand why NCA handles
+batches the way it does.
 
-Once we have enough content to justify a push to the dark archive, our archival
-team runs the process (they generate their own manifests, for instance, and
-sync all files to the archive). When batches have been confirmed as being in
-our final archive location, we flag them in NCA as being archived.
+Once we have enough content to justify a push to the dark archive, we move a
+pile of batches from the staging area into the transfer area. Our archival team
+runs the process (they generate their own manifests, for instance, and sync all
+files to the archive). When they confirm that batches are archived, we flag
+them in NCA as such.
 
 Whether or not you follow that process, you will still need to specify an
 archive path (`BATCH_ARCHIVE_PATH`) in your `settings` file and flag batches as
