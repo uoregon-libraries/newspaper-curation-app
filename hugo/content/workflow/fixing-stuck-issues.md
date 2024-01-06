@@ -21,18 +21,6 @@ destructive operation, and you will need to be prepared prior to running it so
 that you can decide how best to handle the broken issues.  Please read this
 document fully!
 
-When run, `purge-dead-issues` will do a lot of logging to STDERR, print out a
-"report" of which issues were purged, and write a `purge.json` file describing
-each purged issue in some detail.
-
-By default, `purge-dead-issues` will not actually make any changes.  It scans
-the database and reports the issues which would be purged, but it doesn't
-actually purge them.  Because the process is exactly the same as a live run,
-this allows you to carefully review what will happen without anything
-destructive occurring.
-
-When you're ready, run the command with the `--live` flag.
-
 ## Technical Details
 
 Under the hood, this command does the following:
@@ -44,15 +32,11 @@ Under the hood, this command does the following:
   - Is not tied to a batch
   - Has no jobs that are pending or in process
 - Ends all jobs that were stuck - this means failed jobs as well as any "on
-  hold" jobs that had been waiting for a failed jobs to finish
+  hold" jobs that had been waiting for a failed job to finish
 - Creates a new job to purge the issue.  This uses the same logic as issues
   that are flagged as having errors and removed from NCA.
 
-All operations are just database changes, and as such a transaction is able to
-wrap the entire command.  A single critical failure of any kind prevents any
-changes from being made, ensuring a pretty safe run.
-
-In fact, when `--live` is not specified, the transaction is rolled back right
-before the code would normally commit it.  This is why the command is able to
-give a complete report as if everything had been run without altering the
-application's state in any way.
+Once the tool has been run, you'll have stuck issues in the configured
+`ERRORED_ISSUES_PATH` ready for review. Note that depending on the problem, you
+may still find yourself needing a developer to dig into the job logs to find
+out exactly what went wrong.
