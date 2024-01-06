@@ -53,8 +53,8 @@ The output of the helper script has three components:
   reverse them if necessary: purge the new version of the batch and then load
   the old one.
 - Batch destruction commands. These are very permanent, and will dispose of the
-  old version of batches, which you no presumably no longer want living
-  alongside the new version.
+  old version of batches, which you presumably no longer want living alongside
+  the new version.
 
 At UO, we also have a separate component we try to manage, which is a "batch
 patch" for our dark archive. For each change to a batch that's been archived,

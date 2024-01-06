@@ -24,7 +24,7 @@ issues that are incorrect after they've gotten into the workflow.
 
 ## Identifying bad issues
 
-NCA now provides a place for privileged users to process "unfixable" errors.
+NCA provides a place for privileged users to process "unfixable" errors.
 Anybody with the "Issue Manager" role can see a tab in the Workflow section of
 the application labeled "Unfixable Errors".  In this tab, issue managers can
 claim and then process these issues, choosing to return them back to NCA if
@@ -32,8 +32,9 @@ they were flagged incorrectly, or move them to a configured error location
 (`ERRORED_ISSUES_PATH` in the settings file).
 
 When moved to the error location, the issues will be put into a directory based
-on the current month so that they're somewhat organized without having so many
-subdirectories as to make the process more painful than necessary.
+on the current month (e.g., `/mnt/news/errors/2024-01`) so that they're
+somewhat organized without having so many subdirectories as to make the process
+more painful than necessary.
 
 Within the month subdirectory, issues will be identifiable by their LCCN, date,
 edition, and database id in the same way they existed in the workflow location.

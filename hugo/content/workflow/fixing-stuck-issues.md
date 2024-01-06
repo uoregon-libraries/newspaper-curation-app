@@ -4,10 +4,10 @@ weight: 35
 description: Removing issues from NCA which can't get derivatives generated or have other issues leaving them stuck but invisible to the UI
 ---
 
-Sometimes a publisher will upload a broken PDF that NCA cannot process.  There
-is a safeguard against these kinds of issues: only queue uploaded issues after
-careful review.  But it's often infeasible to do this, especially if you have
-enough publishers that you get hundreds of pages uploaded each week.
+Sometimes a publisher will upload a broken PDF that NCA cannot process. For
+smaller organizations, these kinds of problems are easy to prevent just via
+careful review. But for larger orgs, it's often infeasible to do this, e.g., if
+you have enough publishers that you get hundreds of pages uploaded each week.
 
 When an issue gets stuck, NCA currently has no way to indicate this.  This is
 one area where a developer used to have to clean up the filesystem and database
@@ -16,12 +16,9 @@ significantly less painful way.
 
 ## Purging Dead Issues
 
-A normal invocation of `make` creates `bin/purge-dead-issues`.  This is a
-destructive operation, and you will need to be prepared prior to running it so
-that you can decide how best to handle the broken issues.  Please read this
-document fully!
-
-## Technical Details
+A normal invocation of `make` creates `bin/purge-dead-issues`. This tool's sole
+purpose is to find issues which have a failed job and can no longer move
+through NCA's workflow.
 
 Under the hood, this command does the following:
 

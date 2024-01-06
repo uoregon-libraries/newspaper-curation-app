@@ -20,8 +20,9 @@ full of issue keys.  Use `--help` for a complete explanation.
 
 Once this tool runs, if all goes well the issues will get queued up and moved
 to the configured error location.  From there you can do whatever you like with
-the issues, as described in
-[Fixing Flagged Workflow Issues](/workflow/fixing-flagged-workflow-issues).
+the issues, as described in [Fixing Flagged Workflow Issues][1].
+
+[1]: <{{% ref "fixing-flagged-workflow-issues" %}}>
 
 ## Accidental Deletion
 
