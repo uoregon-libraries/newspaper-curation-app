@@ -45,6 +45,7 @@ sudo cp $src/bin/run-jobs $ncadir/
 sudo cp $src/bin/queue-batches $ncadir/
 sudo cp $src/bin/bulk-issue-queue $ncadir/
 sudo cp $src/bin/delete-live-done-issues $ncadir/
+sudo cp $src/bin/purge-dead-issues $ncadir/
 sudo cp $src/rhel7/nca-httpd.service $ncadir/
 sudo cp $src/rhel7/nca-workers.service $ncadir/
 sudo cp $src/rhel7/nca-rsyslog.conf /etc/rsyslog.d/nca.conf
