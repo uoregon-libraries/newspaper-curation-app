@@ -279,21 +279,20 @@
 
 
 <main id="maincontent"><h1>Handling Page Review Problems</h1><p>The &ldquo;page review&rdquo; location is one of the most dangerous in the application due
-to the requirement that people manually edit and rename files.  There are
+to the requirement that people manually edit and rename files. There are
 potentially a <em>lot</em> of difficult problems to manage here.</p>
 <h2 id="manual-deletion">Manual Deletion</h2>
 <p>If issues got to the page-review step when they shouldn&rsquo;t have, the only option
-is to remove them.  <strong>Make sure you do this right</strong>.  There is a tool for this
+is to remove them.  <strong>Make sure you do this right</strong>. There is a tool for this
 process, and manually deleting issues will cause you <em>pain</em> (see below).</p>
-<p>To use the tool, build NCA with <code>make</code>, and run <code>./bin/page-review-issue-fixer -c ./settings --key ...</code>.  You can specify multiple issue keys or even a file
-full of issue keys.  Use <code>--help</code> for a complete explanation.</p>
+<p>To use the tool, build NCA with <code>make</code>, and run <code>./bin/page-review-issue-fixer -c ./settings --key ...</code>. You can specify multiple issue keys or even a file
+full of issue keys. Use <code>--help</code> for a complete explanation.</p>
 <p>Once this tool runs, if all goes well the issues will get queued up and moved
-to the configured error location.  From there you can do whatever you like with
-the issues, as described in
-<a href="../../workflow/fixing-flagged-workflow-issues">Fixing Flagged Workflow Issues</a>.</p>
+to the configured error location. From there you can do whatever you like with
+the issues, as described in <a href="https://uoregon-libraries.github.io/newspaper-curation-app/workflow/fixing-flagged-workflow-issues/">Fixing Flagged Workflow Issues</a>.</p>
 <h2 id="accidental-deletion">Accidental Deletion</h2>
 <p>Sometimes a helpful curator deletes the issues manually, not being aware this
-shouldn&rsquo;t happen.  On these occasions, manual cleanup is required, and it gets
+shouldn&rsquo;t happen. On these occasions, manual cleanup is required, and it gets
 very ugly.</p>
 <h3 id="identify-the-deleted-issues">Identify the deleted issues</h3>
 <p>If you don&rsquo;t know offhand what&rsquo;s been deleted, but you&rsquo;ve seen log errors about
@@ -304,21 +303,21 @@ the page review location, this might help.</p>
 </span></span></span><span style="display:flex;"><span><span style="color:#ae81ff"></span>    sort | uniq -c | sort -n
 </span></span></code></pre></div><p>This will find all error logs that are due to file or directory being missing.
 It will likely catch other problems than just page-review deletions, but those
-can be useful as well.  Just note that things like NFS drop can result in
-occasional one-offs.  You really want to look for systemic, repetitive errors.
+can be useful as well. Just note that things like NFS drop can result in
+occasional one-offs. You really want to look for systemic, repetitive errors.
 In our case, we saw almost 400 errors per issue because NCA scans the
 filesystem every few minutes.</p>
 <p>(If you&rsquo;re using a smart logging system like logstash, you can probably
 identify logs more easily, but you&rsquo;ll likely need to split logs up to strip off
 the changing bits so the unique issues can be aggregated and counted)</p>
-<p>The database ids are the last number in an issue&rsquo;s path.  e.g.,
+<p>The database ids are the last number in an issue&rsquo;s path. e.g.,
 <code>/mnt/news/page-review/sn99063854-1925122501-9971</code> has a database id of 9971.</p>
 <h3 id="fix-the-data">Fix the data</h3>
-<p>First, <strong>verify</strong> that the issues are in fact not on the filesystem.  If you
+<p>First, <strong>verify</strong> that the issues are in fact not on the filesystem. If you
 see errors about database id 9971, you can query its location:</p>
 <div class="highlight"><pre tabindex="0" style="color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4;"><code class="language-sql" data-lang="sql"><span style="display:flex;"><span><span style="color:#66d9ef">SELECT</span> <span style="color:#66d9ef">location</span> <span style="color:#66d9ef">FROM</span> issues <span style="color:#66d9ef">WHERE</span> id<span style="color:#f92672">=</span><span style="color:#ae81ff">9971</span>;
 </span></span></code></pre></div><p>If that location exists, the problem you have is <em>not</em> what is described here.</p>
-<p>Assuming the locations are indeed deleted, gather up all your database ids.  If
+<p>Assuming the locations are indeed deleted, gather up all your database ids. If
 you had errors with ids 9971, 9975, and 9990:</p>
 <div class="highlight"><pre tabindex="0" style="color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4;"><code class="language-sql" data-lang="sql"><span style="display:flex;"><span><span style="color:#66d9ef">UPDATE</span> issues <span style="color:#66d9ef">SET</span>
 </span></span><span style="display:flex;"><span>    error <span style="color:#f92672">=</span> <span style="color:#e6db74">&#39;manually deleted from page-review step&#39;</span>,
@@ -329,7 +328,7 @@ you had errors with ids 9971, 9975, and 9990:</p>
 </span></span></code></pre></div><p>The database is fixed!</p>
 <h3 id="delete-backups">Delete backups?</h3>
 <p>If the issues are completely ruined and the backups are known to be bad, you
-should delete them.  Get their locations from the database:</p>
+should delete them. Get their locations from the database:</p>
 <div class="highlight"><pre tabindex="0" style="color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4;"><code class="language-sql" data-lang="sql"><span style="display:flex;"><span><span style="color:#66d9ef">SELECT</span> backup_location <span style="color:#66d9ef">FROM</span> issues <span style="color:#66d9ef">WHERE</span> id <span style="color:#66d9ef">IN</span> (<span style="color:#ae81ff">9971</span>, <span style="color:#ae81ff">9975</span>, <span style="color:#ae81ff">9990</span>);
 </span></span></code></pre></div><p>Remove these locations from disk.</p>
 <nav class="pagination" aria-label="Pagination">

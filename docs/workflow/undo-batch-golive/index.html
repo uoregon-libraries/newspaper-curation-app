@@ -23,7 +23,7 @@
 <meta itemprop="name" content="&#34;Un-push&#34; Batch From Production">
 <meta itemprop="description" content="Safely removing generated batches from production">
 
-<meta itemprop="wordCount" content="597">
+<meta itemprop="wordCount" content="553">
 <meta itemprop="keywords" content="" /></head>
 <body>
   <div class="container"><div class="skip"><a href="#maincontent">Skip to main content</a></div>
@@ -297,9 +297,9 @@ more involved and isn&rsquo;t in scope here.</li>
 </ul>
 <p>This process is awful and you need to know what you&rsquo;re doing, but here&rsquo;s the rough outline:</p>
 <ul>
-<li>If at all possible, turn off NCA&rsquo;s services (workers and http). If you can&rsquo;t
-do this, things could get messy if you have a problem and have to rollback
-database or filesystem changes.</li>
+<li>Turn off NCA&rsquo;s services (workers and http). If you can&rsquo;t do this, things
+<em>will get messy</em> if you have a problem and have to rollback database or
+filesystem changes.</li>
 <li><strong>Back up your database!</strong> The filesystem may be too much to back up, so it
 can be a pain if you need to fix something, but it&rsquo;s still really helpful to
 at least have a &ldquo;good DB state&rdquo;.</li>
@@ -337,26 +337,17 @@ anything but rebuild whatever was busted (meaning you may not need to re-QC
 it, or if you do, it&rsquo;s at least an isolated set of issues).</li>
 </ul>
 </li>
-<li>Purge the original batch from staging <strong>and</strong> production.
+<li>Purge the original batch from staging <strong>and</strong> production, then delete the
+live batch files. <strong>Not</strong> the archived batch, just the live files (&ldquo;live&rdquo; as
+defined in <code>BATCH_PRODUCTION_PATH</code>).
 <ul>
-<li>This seems scary, but at this point you still have the live batch, the
-archival files, <em>and</em> a database backup.</li>
+<li>This seems scary, but at this point you still have the archival files
+and a database backup.</li>
 </ul>
 </li>
 <li>Make the new batch(es) live on staging and production.
 <ul>
-<li>See <a href="../../workflow/technical">technical workflow</a> docs for information about batch management.</li>
-</ul>
-</li>
-<li><em>Delete</em> the batch from your live location.
-<ul>
-<li>This seems scary, but when you mark batches as being ready for production,
-NCA is copying a subset of them to the &ldquo;ready for ingest&rdquo; location. The
-originals are kept for a while even after a batch is flagged for archival
-<ul>
-<li>Again, see our <a href="../../workflow/technical">technical workflow</a> docs for details.</li>
-</ul>
-</li>
+<li>See <a href="https://uoregon-libraries.github.io/newspaper-curation-app/workflow/technical/">technical workflow</a> docs for information about batch management.</li>
 </ul>
 </li>
 <li><strong>Delete your archived batch</strong>. This is the original batch you moved from the

@@ -23,7 +23,7 @@
 <meta itemprop="name" content="Not Compiling Locally">
 <meta itemprop="description" content="Why it&#39;s best to compile NCA locally">
 
-<meta itemprop="wordCount" content="323">
+<meta itemprop="wordCount" content="273">
 <meta itemprop="keywords" content="" /></head>
 <body>
   <div class="container"><div class="skip"><a href="#maincontent">Skip to main content</a></div>
@@ -279,20 +279,19 @@
 
 
 <main id="maincontent"><h1>Not Compiling Locally</h1><p>If you want to compile NCA inside a container, you are for the most part on
-your own.  It&rsquo;s doable and pretty easy, but it&rsquo;s not part of the steps we&rsquo;re
+your own. It&rsquo;s doable and pretty easy, but it&rsquo;s not part of the steps we&rsquo;re
 going to outline, because it adds some annoyances.</p>
 <p>Why is it best to compile on your local machine instead of inside a container?</p>
 <ul>
-<li>Go is not Ruby / Python / PHP / node.  You aren&rsquo;t installing a systemwide
+<li>Go is not Ruby / Python / PHP / node. You aren&rsquo;t installing a systemwide
 runtime or futzing with things like rbenv, nvm, virtualenv, composer, &hellip;.</li>
 <li>Go doesn&rsquo;t even really require an install per se; you can choose to download
-the binary distribution, set up some environment variables, and use it.  No
+the binary distribution, set up some environment variables, and use it. No
 sudo, no /usr/bin polluting, no complex compiling from sources.</li>
 <li>Same with go&rsquo;s dependencies - <code>go install ...</code> will install files in a space
-that&rsquo;s local to your user path.  All NCA&rsquo;s code dependencies are similarly
-local.  Everything &ldquo;just works&rdquo;.  The only reason we use Docker for
-development is the various external dependencies like poppler utils, graphics
-magick, etc.</li>
+that&rsquo;s local to your user path. All NCA&rsquo;s code dependencies are similarly
+local. Everything &ldquo;just works&rdquo;. The only reason to use Docker for
+development is the various external dependencies like RAIS, MySQL, etc.</li>
 <li>Vim (and other editors / IDEs) usually require Go tools to be installed
 locally for code analysis, autocomplete, etc.</li>
 <li>This repository doesn&rsquo;t have a deploy system for use inside containers; if
@@ -305,13 +304,9 @@ you want to compile inside the containers, it can be a little tricky:
 </li>
 </ul>
 <p>For development, it&rsquo;s just a lot easier to install Go locally, compile locally,
-and mount the binaries inside the Docker containers.</p>
-<p>That said, PRs which make it easier to set up a &ldquo;build box&rdquo; type of container
-certainly would be appreciated.  Better yet, it would be lovely to get a tool
-like <code>gin</code> integrated - except not a dead project, and something more
-customizable.  We&rsquo;d want to validate code (possibly just to report as opposed
-to refusing to start the services), recompile only when <code>*.go</code> or <code>*.html</code>
-files change, etc.</p>
+and run the binaries locally. The only &ldquo;tricky&rdquo; part is getting poppler,
+graphics magick, and ghostscript installed. Which in most cases amounts to
+three &ldquo;apt install&rdquo; (or equivalent) commands.</p>
 <nav class="pagination" aria-label="Pagination">
 
   <a class="nav nav-prev" href="https://uoregon-libraries.github.io/newspaper-curation-app/contributing/dev-guide/">← Prev - Developer&#39;s Guide</a>

@@ -12,8 +12,8 @@
       <pubDate>Mon, 01 Jan 0001 00:00:00 +0000</pubDate>
       
       <guid>https://uoregon-libraries.github.io/newspaper-curation-app/contributing/dev-guide/</guid>
-      <description>It is assumed developers will use Docker for the stack, other than the relatively simple process of compiling binaries.
-Requirements / Setup Local compilation (recommended) A supported version of Go (e.g., if 1.16 is the latest, you want 1.15 or 1.16) revive: go install github.com/mgechev/revive@latest Set up your GOPATH: https://golang.org/doc/code.html#GOPATH Add $GOPATH/bin to your path If you choose not to compile on your host machine, you will have a slightly simpler install, but there are a few considerations.</description>
+      <description>It is assumed developers will use Docker for the database, RAIS (IIIF server), and SFTPGo. The rest of the tools are most easily installed locally, and the NCA binaries themselves are in fact easier by far to install locally versus building them in an image when code changes.
+Requirements / Setup Local dependencies A supported version of Go (e.g., if 1.16 is the latest, you want 1.15 or 1.16) revive: go install github.</description>
     </item>
     
     <item>
@@ -33,9 +33,9 @@ Go is not Ruby / Python / PHP / node. You aren&amp;rsquo;t installing a systemwi
       <pubDate>Mon, 01 Jan 0001 00:00:00 +0000</pubDate>
       
       <guid>https://uoregon-libraries.github.io/newspaper-curation-app/contributing/documentation/</guid>
-      <description>The documentation for this site is produce using Hugo and the TechDoc theme.
+      <description>The documentation for this site is produce using Hugo and a custom theme based on the look and feel of TechDoc, a contributed Hugo theme.
 We want our documentation to help you use NCA (okay, again, if I&amp;rsquo;m being honest, this is really just for UO to remember how to use our app), and as such the documentation itself needs to be easy to edit and keep up-to-date.
-Starting out Get Hugo installed. It&amp;rsquo;s a trivial standalone application that can be installed with minimal fuss: installing Hugo.</description>
+Starting out Get Hugo installed.</description>
     </item>
     
     <item>

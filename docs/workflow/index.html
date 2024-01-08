@@ -310,7 +310,7 @@ requires.</p>
 </li>
 <li>Somebody reviews issues in the page review area:
 <ul>
-<li>Files must be renamed (see specs mentioned above)</li>
+<li>Files must be renamed to indicate the review is complete (e.g., &ldquo;seq-0001.pdf&rdquo; to &ldquo;0001.pdf&rdquo;)</li>
 <li>Files may be reordered if necessary</li>
 <li>If there are invalid PDFs, they may be deleted</li>
 <li>If the &ldquo;issue&rdquo; actually contains two issues, the secondary issue&rsquo;s files should be removed and reuploaded in the correct folder</li>
@@ -359,9 +359,10 @@ generated, the workflow is the same regardless of the source:</p>
 <li>Once metadata is entered and approved, the issue has its final derivative
 generated (METS XML) and awaits batching</li>
 <li>When enough issues are ready, the <code>queue-batches</code> CLI will generate batches
-in the configured <code>BATCH_OUTPUT_PATH</code></li>
+in the configured <code>BATCH_OUTPUT_PATH</code>, and sync to the required files (e.g.,
+not TIFFs) to production as configured via <code>BATCH_PRODUCTION_PATH</code>.</li>
 <li>A batch loader must manually load the batches into a staging server and then
-flags them as ready for QC</li>
+flag them as ready for QC</li>
 <li>A batch reviewer does quality control on the staging server, verifying the
 batch&rsquo;s issues look good
 <ul>
@@ -372,8 +373,7 @@ are put into a new batch which is then set as being ready for staging
 (repeating step 5).</li>
 </ul>
 </li>
-<li>Batches that are ready for production get removed from staging and loaded to
-prod by a batch loader.</li>
+<li>Batches that are ready for production get loaded to prod by a batch loader.</li>
 <li>Batch loader flags the batch as &ldquo;live&rdquo;, and NCA moves its files to the
 configured <code>BATCH_ARCHIVE_PATH</code>.</li>
 <li>Once the batch can be confirmed as fully archived, a batch loader flags it

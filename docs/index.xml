@@ -13,8 +13,7 @@
       
       <guid>https://uoregon-libraries.github.io/newspaper-curation-app/setup/services/</guid>
       <description>You should at least understand everything in this document at a high level before moving on to the setup/installation documents, as the NCA suite is a set of tools, not a single application that does it all.
-Overview NCA has two key services which you&amp;rsquo;ll have to run, in addition to the rest of the external services (such as an IIIF server, MySQL / MariaDB, and Apach)
-If you&amp;rsquo;re doing a manual installation rather than container-based, you are strongly advised to look at the docker files - they make it clear precisely how the stack should be set up.</description>
+Overview NCA has two key services which you&amp;rsquo;ll have to have running in the background at all times, several binaries you&amp;rsquo;ll need to use occasionally for regular tasks, and of course the various external services (such as a IIIF server, SFTP server, MySQL / MariaDB, Apache / nginx, etc.</description>
     </item>
     
     <item>
@@ -33,8 +32,8 @@ Make sure there aren&amp;rsquo;t already existing jobs that do what you want! Th
       <pubDate>Mon, 01 Jan 0001 00:00:00 +0000</pubDate>
       
       <guid>https://uoregon-libraries.github.io/newspaper-curation-app/contributing/dev-guide/</guid>
-      <description>It is assumed developers will use Docker for the stack, other than the relatively simple process of compiling binaries.
-Requirements / Setup Local compilation (recommended) A supported version of Go (e.g., if 1.16 is the latest, you want 1.15 or 1.16) revive: go install github.com/mgechev/revive@latest Set up your GOPATH: https://golang.org/doc/code.html#GOPATH Add $GOPATH/bin to your path If you choose not to compile on your host machine, you will have a slightly simpler install, but there are a few considerations.</description>
+      <description>It is assumed developers will use Docker for the database, RAIS (IIIF server), and SFTPGo. The rest of the tools are most easily installed locally, and the NCA binaries themselves are in fact easier by far to install locally versus building them in an image when code changes.
+Requirements / Setup Local dependencies A supported version of Go (e.g., if 1.16 is the latest, you want 1.15 or 1.16) revive: go install github.</description>
     </item>
     
     <item>
@@ -95,7 +94,7 @@ Provision a real record, including things like an LCCN This is a must for us, ot
       <guid>https://uoregon-libraries.github.io/newspaper-curation-app/setup/installation/</guid>
       <description>Development If you&amp;rsquo;re developing on NCA, installation will differ from standing up a production server. Please see our Development Guide.
 Preliminary Setup Manual installation has several prerequisites:
-Go and some dependencies (see below) Poppler Utils for PDF processing OpenJPEG 2 + command-line tools for JP2 generation The command-line tools will probably need to be manually compiled to support converting PNG files. Most distributions of Linux don&amp;rsquo;t have this by default, hence the need to manually compile.</description>
+Poppler Utils for PDF processing OpenJPEG 2 + command-line tools for JP2 generation The command-line tools will probably need to be manually compiled to support converting PNG files. Most distributions of Linux don&amp;rsquo;t have this by default, hence the need to manually compile. A recent version of GhostScript - 10+ is recommended GraphicsMagick MariaDB A IIIF server capable of handling tiled JP2 files without a ton of overhead (e.</description>
     </item>
     
     <item>
@@ -116,7 +115,8 @@ Go is not Ruby / Python / PHP / node. You aren&amp;rsquo;t installing a systemwi
       
       <guid>https://uoregon-libraries.github.io/newspaper-curation-app/specs/upload-specs/</guid>
       <description>Uploads: Folder and File Specs Publishers (or in-house scanners) who upload issues must adhere to very strict structures for issue organization.
-Born-Digital The folder structure tells us the newspaper title and issue date. e.g., /mnt/news/sftp/sn12345678/2018-01-02 would mean the January 2nd, 2018 edition of title sn12345678. Note that the &amp;ldquo;sftp directory&amp;rdquo; can be used instead of the LCCN if they differ (for historical reasons - the legacy app&amp;rsquo;s born-digital and scan processors were very separated).</description>
+Born-Digital The folder structure tells us the newspaper title and issue date. e.g., /mnt/news/sftp/sftpuser/2018-01-02 would mean the January 2nd, 2018 edition of title whose SFTP login is &amp;ldquo;sftpuser&amp;rdquo;.
+The issue should contain PDFs and nothing else. Publishers should never upload tertiary files. Ideally, publishers should upload one PDF for the entire issue, with pages in the order they wish to see on the ONI site, as that reduces (or eliminates) the need to have anybody reviewing these issues&amp;rsquo; pages.</description>
     </item>
     
     <item>
@@ -125,9 +125,9 @@ Born-Digital The folder structure tells us the newspaper title and issue date. e
       <pubDate>Mon, 01 Jan 0001 00:00:00 +0000</pubDate>
       
       <guid>https://uoregon-libraries.github.io/newspaper-curation-app/contributing/documentation/</guid>
-      <description>The documentation for this site is produce using Hugo and the TechDoc theme.
+      <description>The documentation for this site is produce using Hugo and a custom theme based on the look and feel of TechDoc, a contributed Hugo theme.
 We want our documentation to help you use NCA (okay, again, if I&amp;rsquo;m being honest, this is really just for UO to remember how to use our app), and as such the documentation itself needs to be easy to edit and keep up-to-date.
-Starting out Get Hugo installed. It&amp;rsquo;s a trivial standalone application that can be installed with minimal fuss: installing Hugo.</description>
+Starting out Get Hugo installed.</description>
     </item>
     
     <item>
@@ -146,7 +146,7 @@ Manual Deletion If issues got to the page-review step when they shouldn&amp;rsqu
       <pubDate>Mon, 01 Jan 0001 00:00:00 +0000</pubDate>
       
       <guid>https://uoregon-libraries.github.io/newspaper-curation-app/setup/user-setup/</guid>
-      <description>Newspaper Curation App - User Setup First-time Setup Once the applications are installed and configured, start the NCA server in debug mode:
+      <description>Once the applications are installed and configured, you&amp;rsquo;ll need an admin user. Start the NCA server in debug mode:
 ./bin/server -c ./settings --debug This lets you fake an admin login via http://your.site/users?debuguser=admin. You can then set up other users as necessary. Once you have Apache set up to do the authentication, you should never run in debug mode on production servers.
 For development use, docker-compose.override.yml-example is already set up to run in debug mode.</description>
     </item>
@@ -157,7 +157,7 @@ For development use, docker-compose.override.yml-example is already set up to ru
       <pubDate>Mon, 01 Jan 0001 00:00:00 +0000</pubDate>
       
       <guid>https://uoregon-libraries.github.io/newspaper-curation-app/workflow/fixing-stuck-issues/</guid>
-      <description>Sometimes a publisher will upload a broken PDF that NCA cannot process. There is a safeguard against these kinds of issues: only queue uploaded issues after careful review. But it&amp;rsquo;s often infeasible to do this, especially if you have enough publishers that you get hundreds of pages uploaded each week.
+      <description>Sometimes a publisher will upload a broken PDF that NCA cannot process. For smaller organizations, these kinds of problems are easy to prevent just via careful review. But for larger orgs, it&amp;rsquo;s often infeasible to do this, e.g., if you have enough publishers that you get hundreds of pages uploaded each week.
 When an issue gets stuck, NCA currently has no way to indicate this. This is one area where a developer used to have to clean up the filesystem and database manually.</description>
     </item>
     
