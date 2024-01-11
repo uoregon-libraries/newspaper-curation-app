@@ -88,6 +88,10 @@ func findPipeline(id int64) (*Pipeline, error) {
 // be on hold, and jobs will be given a sequence based on the order they're
 // passed in here.
 func QueueIssueJobs(name PipelineName, issue *Issue, jobs ...*Job) error {
+	if len(jobs) == 0 {
+		return fmt.Errorf("QueueIssueJobs called with an empty jobs list")
+	}
+
 	var op = dbi.DB.Operation()
 	op.Dbg = dbi.Debug
 	op.BeginTransaction()
@@ -114,6 +118,10 @@ func QueueIssueJobs(name PipelineName, issue *Issue, jobs ...*Job) error {
 // be on hold, and jobs will be given a sequence based on the order they're
 // passed in here.
 func QueueBatchJobs(name PipelineName, batch *Batch, jobs ...*Job) error {
+	if len(jobs) == 0 {
+		return fmt.Errorf("QueueBatchJobs called with an empty jobs list")
+	}
+
 	var op = dbi.DB.Operation()
 	op.Dbg = dbi.Debug
 	op.BeginTransaction()
@@ -142,9 +150,8 @@ func QueueBatchJobs(name PipelineName, batch *Batch, jobs ...*Job) error {
 // be on hold, and jobs will be given a sequence based on the order they're
 // passed in here.
 func QueueJobs(name PipelineName, description string, jobs ...*Job) error {
-	// Shouldn't be possible, but I'd rather not crash
 	if len(jobs) == 0 {
-		return nil
+		return fmt.Errorf("QueueJobs called with an empty jobs list")
 	}
 
 	// Don't allow the first job to be an object-focused one. This won't protect
