@@ -23,7 +23,7 @@
 <meta itemprop="name" content="Fixing &#34;Stuck&#34; Issues">
 <meta itemprop="description" content="Removing issues from NCA which can&#39;t get derivatives generated or have other issues leaving them stuck but invisible to the UI">
 
-<meta itemprop="wordCount" content="439">
+<meta itemprop="wordCount" content="296">
 <meta itemprop="keywords" content="" /></head>
 <body>
   <div class="container"><div class="skip"><a href="#maincontent">Skip to main content</a></div>
@@ -278,32 +278,21 @@
 </div>
 
 
-<main id="maincontent"><h1>Fixing &#34;Stuck&#34; Issues</h1><p>Sometimes a publisher will upload a broken PDF that NCA cannot process.  There
-is a safeguard against these kinds of issues: only queue uploaded issues after
-careful review.  But it&rsquo;s often infeasible to do this, especially if you have
-enough publishers that you get hundreds of pages uploaded each week.</p>
-<p>When an issue gets stuck, NCA currently has no way to indicate this.  This is
+<main id="maincontent"><h1>Fixing &#34;Stuck&#34; Issues</h1><p>Sometimes a publisher will upload a broken PDF that NCA cannot process. For
+smaller organizations, these kinds of problems are easy to prevent just via
+careful review. But for larger orgs, it&rsquo;s often infeasible to do this, e.g., if
+you have enough publishers that you get hundreds of pages uploaded each week.</p>
+<p>When an issue gets stuck, NCA currently has no way to indicate this. This is
 one area where a developer used to have to clean up the filesystem and database
-manually.  As of NCA v3.8.0, there is a tool which can handle this in a
+manually. As of NCA v3.8.0, there is a tool which can handle this in a
 significantly less painful way.</p>
 <h2 id="purging-dead-issues">Purging Dead Issues</h2>
-<p>A normal invocation of <code>make</code> creates <code>bin/purge-dead-issues</code>.  This is a
-destructive operation, and you will need to be prepared prior to running it so
-that you can decide how best to handle the broken issues.  Please read this
-document fully!</p>
-<p>When run, <code>purge-dead-issues</code> will do a lot of logging to STDERR, print out a
-&ldquo;report&rdquo; of which issues were purged, and write a <code>purge.json</code> file describing
-each purged issue in some detail.</p>
-<p>By default, <code>purge-dead-issues</code> will not actually make any changes.  It scans
-the database and reports the issues which would be purged, but it doesn&rsquo;t
-actually purge them.  Because the process is exactly the same as a live run,
-this allows you to carefully review what will happen without anything
-destructive occurring.</p>
-<p>When you&rsquo;re ready, run the command with the <code>--live</code> flag.</p>
-<h2 id="technical-details">Technical Details</h2>
+<p>A normal invocation of <code>make</code> creates <code>bin/purge-dead-issues</code>. This tool&rsquo;s sole
+purpose is to find issues which have a failed job and can no longer move
+through NCA&rsquo;s workflow.</p>
 <p>Under the hood, this command does the following:</p>
 <ul>
-<li>Finds all issues that are valid candidates for purging.  To be valid, an issue:
+<li>Finds all issues that are valid candidates for purging. To be valid, an issue:
 <ul>
 <li>Is in the &ldquo;awaiting processing&rdquo; state</li>
 <li>Has at least one failed job - as in &ldquo;failed&rdquo;, which means failed forever,
@@ -313,17 +302,14 @@ not <code>failed_done</code>, which indicates a temporary failure which was retr
 </ul>
 </li>
 <li>Ends all jobs that were stuck - this means failed jobs as well as any &ldquo;on
-hold&rdquo; jobs that had been waiting for a failed jobs to finish</li>
-<li>Creates a new job to purge the issue.  This uses the same logic as issues
+hold&rdquo; jobs that had been waiting for a failed job to finish</li>
+<li>Creates a new job to purge the issue. This uses the same logic as issues
 that are flagged as having errors and removed from NCA.</li>
 </ul>
-<p>All operations are just database changes, and as such a transaction is able to
-wrap the entire command.  A single critical failure of any kind prevents any
-changes from being made, ensuring a pretty safe run.</p>
-<p>In fact, when <code>--live</code> is not specified, the transaction is rolled back right
-before the code would normally commit it.  This is why the command is able to
-give a complete report as if everything had been run without altering the
-application&rsquo;s state in any way.</p>
+<p>Once the tool has been run, you&rsquo;ll have stuck issues in the configured
+<code>ERRORED_ISSUES_PATH</code> ready for review. Note that depending on the problem, you
+may still find yourself needing a developer to dig into the job logs to find
+out exactly what went wrong.</p>
 <nav class="pagination" aria-label="Pagination">
 
   <a class="nav nav-prev" href="https://uoregon-libraries.github.io/newspaper-curation-app/workflow/handling-page-review-problems/">← Prev - Handling Page Review Problems</a>

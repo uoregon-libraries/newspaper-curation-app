@@ -23,7 +23,7 @@
 <meta itemprop="name" content="Testing">
 <meta itemprop="description" content="Automated and manual testing of NCA">
 
-<meta itemprop="wordCount" content="292">
+<meta itemprop="wordCount" content="244">
 <meta itemprop="keywords" content="" /></head>
 <body>
   <div class="container"><div class="skip"><a href="#maincontent">Skip to main content</a></div>
@@ -282,7 +282,7 @@
 <p>Running unit tests is easy:</p>
 <pre><code>make test
 </code></pre>
-<p>This compiles all of the code and tests any <code>*_test.go</code> files.  Test coverage
+<p>This compiles all of the code and tests any <code>*_test.go</code> files. Test coverage
 is spotty at best right now, but the compile-time checks catch the most common
 problems, like typos in variable names.</p>
 <p>Contributors: feel free to add more unit tests to improve overall coverage!</p>
@@ -290,18 +290,14 @@ problems, like typos in variable names.</p>
 <p>Manually testing NCA can be time-consuming, as you have to find, copy, and then
 load issues into NCA, enter metadata, etc. If you repeat this often enough, you
 may find the project&rsquo;s &ldquo;test&rdquo; directory helpful. It contains documentation and
-scripts which are meant to make real-world-like testing a bit easier.</p>
-<p>The most difficult piece of this is that you will need to set up NCA as
-outlined in the &ldquo;Advanced Users&rdquo; section of the <a href="../../contributing/dev-guide">Development
-Guide</a>. You can likely make things work in any
-environment, but the scripts and documentation assume you do it our way. This
-process is not beginner-friendly, and likely never will be; it&rsquo;s meant for
-power developers who are doing a <em>lot</em> of testing and need the extra
-automation.</p>
-<p>View the README.me file in the test directory for details.</p>
+scripts which are meant to make real-world-like testing a lot easier.</p>
+<p>To use the manual test scripts/recipes, you will need to use the recommended
+development approach (<a href="https://uoregon-libraries.github.io/newspaper-curation-app/contributing/dev-guide/#hybrid-developer">&ldquo;Hybrid Developer&rdquo;</a>) or the scripts&rsquo; behavior will
+not be defined.</p>
+<p>View the README.md file in the test directory for details.</p>
 <h3 id="saving-state">Saving State</h3>
 <p>At any time you can save and restore the application&rsquo;s state via the top-level
-<code>manage</code> script.  This script has a variety of commands, but <code>./manage backup</code>
+<code>manage</code> script. This script has a variety of commands, but <code>./manage backup</code>
 and <code>./manage restore</code> will back up or restore <strong>all files</strong> in the fake mount
 as well as all data volumes for NCA, assuming your docker install puts data in
 <code>/var/lib/docker/volumes</code> and you don&rsquo;t change the project name from the

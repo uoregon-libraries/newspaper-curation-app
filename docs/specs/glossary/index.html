@@ -280,15 +280,15 @@
 
 <main id="maincontent"><h1>Glossary</h1><h2 id="ndnp--newspaper-catalogers">NDNP / Newspaper Catalogers</h2>
 <p>These are terms I&rsquo;m trying to use properly, but which I sometimes still mess
-up.  Don&rsquo;t let that happen to you!</p>
+up. Don&rsquo;t let that happen to you!</p>
 <ul>
-<li><strong>Title</strong>: A distinct newspaper title, such as <em>The Daily Prophet</em>.  All
+<li><strong>Title</strong>: A distinct newspaper title, such as <em>The Daily Prophet</em>. All
 titles will have a unique LCCN.</li>
 <li><strong>LCCN</strong>: Library of Congress Control Number:
-<a href="https://en.wikipedia.org/wiki/Library_of_Congress_Control_Number">https://en.wikipedia.org/wiki/Library_of_Congress_Control_Number</a>.  In terms
+<a href="https://en.wikipedia.org/wiki/Library_of_Congress_Control_Number">https://en.wikipedia.org/wiki/Library_of_Congress_Control_Number</a>. In terms
 of NCA (and ONI and chronam), this uniquely identifies a newspaper title.</li>
 <li><strong>Issue</strong>: A single published issue of a newspaper title, such as the April
-20th edition of <em>The Daily Prophet</em>.  Github users beware, it&rsquo;s easy to hear
+20th edition of <em>The Daily Prophet</em>. Github users beware, it&rsquo;s easy to hear
 &ldquo;I need you to fix an issue&rdquo; and stare blankly before realizing what was
 meant.</li>
 </ul>
@@ -296,8 +296,8 @@ meant.</li>
 <p>Terms I&rsquo;ve made up which may be important for developers and users:</p>
 <ul>
 <li><strong>Issue Key</strong>: This is a combination of an LCCN and optional date elements,
-used for finding / selecting a group of issues in bulk.  This concept is used
-by tools such as the issue finder and the bulk upload queue tool.  An issue
+used for finding / selecting a group of issues in bulk. This concept is used
+by tools such as the issue finder and the bulk upload queue tool. An issue
 key&rsquo;s format is <code>LCCN/YYYYMMDDEE</code>:
 <ul>
 <li><code>LCCN</code> is required</li>
@@ -310,13 +310,13 @@ can&rsquo;t specify <code>LCCN/MM</code></li>
 </ul>
 </li>
 <li><strong>MOC</strong> or <strong>MARC Org Code</strong>: Not made up by me, but the short form, &ldquo;MOC&rdquo;,
-may be seen a lot due to my laziness.  This is supposed to be the MARC
+may be seen a lot due to my laziness. This is supposed to be the MARC
 Organization Code designating the awardee of a batch of newspaper issues.
 However, in chronam and ONI, this determines the image attribution line,
-e.g., &ldquo;Image provided by: Dallas Public Library; Dallas, OR&rdquo;.  This has lead
+e.g., &ldquo;Image provided by: Dallas Public Library; Dallas, OR&rdquo;. This has lead
 to a necessary evil of misusing MOC in order to provide attribution.
 Currently ONI and chronam don&rsquo;t provide a way to separate image attribution
-from the awardee.  For anything that isn&rsquo;t awarded by the Library of
+from the awardee. For anything that isn&rsquo;t awarded by the Library of
 Congress, technically there is no awardee, but the software can&rsquo;t actually
 accommodate a batch that doesn&rsquo;t have this set to <em>something</em>.</li>
 </ul>

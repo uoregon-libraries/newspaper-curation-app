@@ -23,7 +23,7 @@
 <meta itemprop="name" content="Services and Apps">
 <meta itemprop="description" content="The services in the NCA suite">
 
-<meta itemprop="wordCount" content="893">
+<meta itemprop="wordCount" content="1049">
 <meta itemprop="keywords" content="" /></head>
 <body>
   <div class="container"><div class="skip"><a href="#maincontent">Skip to main content</a></div>
@@ -282,37 +282,37 @@
 before moving on to the setup/installation documents, as the NCA suite is a set
 of tools, not a single application that does it all.</p>
 <h2 id="overview">Overview</h2>
-<p>NCA has two key services which you&rsquo;ll have to run, in addition to the rest of
-the external services (such as an IIIF server, MySQL / MariaDB, and Apach)</p>
-<p>If you&rsquo;re doing a manual installation rather than container-based, you are
-strongly advised to look at the docker files - they make it clear precisely how
-the stack should be set up.</p>
+<p>NCA has two key services which you&rsquo;ll have to have running in the background at
+all times, several binaries you&rsquo;ll need to use occasionally for regular tasks,
+and of course the various external services (such as a IIIF server, SFTP
+server, MySQL / MariaDB, Apache / nginx, etc.).</p>
+<p>The docker setup is by far the easiest to get running, but hasn&rsquo;t been given a
+ton of attention in terms of production usability. If you need stability, a
+manual installation is recommended. Manual installations are easiest to
+reverse-engineer by reading the various docker files to see what you need to
+install, and potentially how to install it.</p>
 <p><strong>Note</strong>: If you do go manual, the repository contains working examples for
 RHEL 7 systemd services to start the job runner as well as the workflow http
 server: <a href="https://github.com/uoregon-libraries/newspaper-curation-app/tree/main/rhel7">https://github.com/uoregon-libraries/newspaper-curation-app/tree/main/rhel7</a>.
 Consider looking at these to better understand how you might manage a
 production installation.</p>
 <h2 id="http-server">HTTP Server</h2>
-<p><code>server</code> is the web server which exposes all of NCA&rsquo;s workflow UI.  Please
+<p><code>server</code> is the web server which exposes all of NCA&rsquo;s workflow UI. Please
 note that, at the moment, this requires Apache sitting in front of the server
 for authentication.</p>
 <p>Running this is fairly simple once settings are configured:</p>
-<pre><code>/usr/local/nca/server -c /usr/local/nca/settings --parent-webroot=/odnp-admin
+<pre><code>/usr/local/nca/server -c /usr/local/nca/settings
 </code></pre>
-<p>This currently relies on running the
-<a href="https://github.com/uoregon-libraries/pdf-to-chronam-admin">legacy pdf-to-chronam-admin</a>
-tool, though we&rsquo;re planning to phase that out eventually.  Again, see the
-docker files for examples of how you might set this up.</p>
 <h3 id="gotcha">Gotcha</h3>
 <p><strong>NOTE</strong>: <code>server</code> builds a cache of issues and regularly rescans the
 filesystem and the live site to keep its cache nearly real-time for almost
-instant lookups of issue data.  However, building this cache requires the live
+instant lookups of issue data. However, building this cache requires the live
 site to use the same JSON endpoints chronam uses.</p>
 <p>ONI&rsquo;s JSON endpoints were rewritten to use IIIF, so out of the box, ONI isn&rsquo;t
-compatible with this cache-building system.  The IIIF endpoints supply very
+compatible with this cache-building system. The IIIF endpoints supply very
 generic information, which didn&rsquo;t give us issue-level information without
 performing thousands of additional HTTP requests, so we had to put the old JSON
-responses back into our app.  If you wish to use this application with an ONI
+responses back into our app. If you wish to use this application with an ONI
 install, you&rsquo;ll need to do something similar.</p>
 <p>The relevant commit links follow:</p>
 <ul>
@@ -322,38 +322,37 @@ install, you&rsquo;ll need to do something similar.</p>
 </ul>
 <h2 id="job-runner">Job Runner</h2>
 <p>Queued jobs (such as SFTP issues manually reviewed and queued) will not be
-processed until the job runner is executed.  You will want to ensure at least
-one process is watching each type of job, and one process is watching the page
-review folder for issues ready to be queued up for derivatives.</p>
-<p>A simple approach to run everything needed is as follows:</p>
+processed until the job runner is executed.</p>
+<p>The best way to run jobs is via the &ldquo;watchall&rdquo; subcommand:</p>
 <pre><code>./bin/run-jobs -c ./settings watchall
 </code></pre>
-<p>You can also run the various watchers in their own processes if you need more
-granularity, but that&rsquo;s left as an exercise for the reader to avoid
-documentation that no longer matches reality&hellip;.</p>
+<p>This starts the job runner, which will watch all queues and run jobs as they
+come in. When invoked this way, the job runner will simply run forever to
+ensure jobs are processed whenever there&rsquo;s work to be done.</p>
+<p>If you only want to drain all pending jobs and then quit, you can add
+<code>--exit-when-done</code> to the command.</p>
+<p>Finally, there&rsquo;s a subcommand to run a single job and then exit:</p>
+<pre><code>./bin/run-jobs -c ./settings run-one
+</code></pre>
+<p>This is primarily a development tool for debugging long pipelines where a
+single job seems to be breaking app state, but it can be used to also very
+closely monitor exactly which jobs are running in what order, if such a need
+should arise.</p>
 <h2 id="batch-queue">Batch Queue</h2>
-<p>The queue-batches tool is currently run manually.  Until more of the batch
+<p>The queue-batches tool is currently run manually. Until more of the batch
 ingest can be automated, it is safest to require somebody to manually watch the
-process which tries to gather up issues into a batch.  This can of course be
+process which tries to gather up issues into a batch. This can of course be
 set up to run on cron if so desired.</p>
 <p>Execution is simple:</p>
 <pre><code>./bin/queue-batches -c ./settings
 </code></pre>
 <p>The job runner will do the rest of the work, eventually putting batches into
-your configured <code>BATCH_OUTPUT_PATH</code>.  You&rsquo;ll know they&rsquo;re ready once batch
-folders have been named <code>batch_*</code>, as the names are always <code>.wip*</code> until the
-batch is safe to load into a staging environment.</p>
-<p><strong>Note</strong> that even when batches are ready for staging, there is still a
-potentially slow job to be done generating the bag manifest and other
-<a href="https://en.wikipedia.org/wiki/BagIt">BagIt</a> tag files.  These files aren&rsquo;t
-necessary for ingest, and serve primarily to help detect data degradation, but
-the batch should not be considered production-ready until that job is done.  At
-the moment the only way to detect that job&rsquo;s completion is either looking at
-the jobs table directly or else checking for a complete and valid
-&ldquo;tagmanifest-sha256.txt&rdquo; in the batch root directory.</p>
+your configured <code>BATCH_OUTPUT_PATH</code> and syncing to the <code>BATCH_PRODUCTION_PATH</code>.
+The batch status page in NCA will show which batches have finished processing
+and are ready for ingest into staging.</p>
 <h2 id="bulk-upload-queue">Bulk Upload Queue</h2>
 <p>The <code>bulk-issue-queue</code> tool allows you to push uploaded issues into the
-workflow in bulk.  This should <em>only</em> be used when you have some other
+workflow in bulk. This should <em>only</em> be used when you have some other
 validation step that happens to the issues of the given type (born digital or
 scanned), otherwise you may find a lot of errors that require manual
 intervention of issues in the workflow, which is always more costly than
@@ -362,15 +361,33 @@ catching problems prior to queueing.</p>
 <pre><code>./bin/bulk-issue-queue -c ./settings --type scan --key sn12345678
 </code></pre>
 <p>Run without arguments for a more full description of options</p>
+<h2 id="live-file-cleanup">Live File Cleanup</h2>
+<p><code>delete-live-done-issues</code> is a tool which removes all files NCA tracks after
+their corresponding batch has been marked &ldquo;archived&rdquo; for four weeks (to ensure
+it&rsquo;s safe to remove them). This should be run regularly to prevent disk space
+exhaustion - holding onto hundreds of gigs of TIFFs that are backed up outside
+NCA, for instance.</p>
+<h2 id="database-migration">Database Migration</h2>
+<p>To simplify database table creation / updating, the <code>migrate-database</code> binary
+is provided. We&rsquo;ll generally mention in the release notes / changelog that a
+version requires database migrations and give the example command to run this,
+so it isn&rsquo;t typically something you would run on your own, but it&rsquo;s also
+harmless if you do run it manually - it won&rsquo;t re-run any database update
+scripts that have already run.</p>
+<h2 id="purge-dead-issues">Purge Dead Issues</h2>
+<p><code>purge-dead-issues</code> is useful to move all &ldquo;stuck&rdquo; issues out of NCA and into
+the configured problem folder. The original files will be moved, and the full
+activity log stored as a text file to help identify how to fix whatever problem
+prevented curators (or NCA job runners) from processing an issue.</p>
 <h2 id="other-tools">Other Tools</h2>
-<p>You&rsquo;ll find a lot of other tools in <code>bin</code> after compiling NCA.  Most
+<p>You&rsquo;ll find a lot of other tools in <code>bin</code> after compiling NCA. Most
 have some kind of useful help, so feel free to give them a try, but they won&rsquo;t
-be documented in depth.  Most are one-offs to help diagnose problems or test
+be documented in depth. Most are one-offs to help diagnose problems or test
 features, and shouldn&rsquo;t be necessary for regular use of this software.</p>
 <h2 id="iiif-image-server">IIIF Image Server</h2>
-<p>An IIIF server is not included (and it wouldn&rsquo;t make sense to couple into every
-app that needs to show images).  However, in order to use NCA to see newspaper
-pages, you will need an IIIF server of some kind.</p>
+<p>A IIIF server is not included (and it wouldn&rsquo;t make sense to couple into every
+app that needs to show images). However, in order to use NCA to see newspaper
+pages, you will need a IIIF server of some kind.</p>
 <p><a href="https://github.com/uoregon-libraries/rais-image-server">RAIS</a> is the
 recommended image server: it&rsquo;s easy to install and run, and it handles JP2s
 without any special configuration.</p>

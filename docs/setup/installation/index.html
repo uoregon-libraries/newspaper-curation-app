@@ -23,7 +23,7 @@
 <meta itemprop="name" content="Installation">
 <meta itemprop="description" content="How to build and compile NCA">
 
-<meta itemprop="wordCount" content="487">
+<meta itemprop="wordCount" content="665">
 <meta itemprop="keywords" content="" /></head>
 <body>
   <div class="container"><div class="skip"><a href="#maincontent">Skip to main content</a></div>
@@ -280,37 +280,45 @@
 
 <main id="maincontent"><h1>Installation</h1><h2 id="development">Development</h2>
 <p>If you&rsquo;re developing on NCA, installation will differ from standing up a
-production server.  Please see our <a href="../../contributing/dev-guide">Development Guide</a>.</p>
+production server. Please see our <a href="../../contributing/dev-guide">Development Guide</a>.</p>
 <h2 id="preliminary-setup">Preliminary Setup</h2>
 <p>Manual installation has several prerequisites:</p>
 <ul>
-<li>Go and some dependencies (see below)</li>
 <li>Poppler Utils for PDF processing</li>
 <li>OpenJPEG 2 + command-line tools for JP2 generation
 <ul>
 <li>The command-line tools will probably need to be <strong>manually compiled</strong> to
-support converting PNG files.  Most distributions of Linux don&rsquo;t have this
+support converting PNG files. Most distributions of Linux don&rsquo;t have this
 by default, hence the need to manually compile.</li>
 </ul>
 </li>
+<li>A recent version of GhostScript - 10+ is recommended</li>
+<li>GraphicsMagick</li>
 <li>MariaDB</li>
-<li>An IIIF server capable of handling tiled JP2 files without a ton of overhead (e.g.,
+<li>A IIIF server capable of handling tiled JP2 files without a ton of overhead (e.g.,
 <a href="https://github.com/uoregon-libraries/rais-image-server">RAIS</a>)</li>
 <li>Apache/nginx for authentication as well as proxying to NCA and the IIIF server</li>
 </ul>
-<p><strong>Please note</strong>: The easiest way to get up and running with NCA is via
-our Docker configuration / setup.</p>
+<p><strong>Please note</strong>: The easiest way to get a quick demo / test setup of NCA is via
+our Docker configuration / setup:</p>
 <ul>
 <li><a href="https://github.com/uoregon-libraries/newspaper-curation-app/blob/main/docker-compose.yml">https://github.com/uoregon-libraries/newspaper-curation-app/blob/main/docker-compose.yml</a></li>
 <li><a href="https://github.com/uoregon-libraries/newspaper-curation-app/tree/main/docker">https://github.com/uoregon-libraries/newspaper-curation-app/tree/main/docker</a></li>
 </ul>
-<p>It&rsquo;s not difficult to run NCA on a VM or bare metal, but if you go that
-route, you&rsquo;ll find the docker setup helpful just in terms of understanding the
-full stack and configuration.</p>
+<p>This is great to try things out, or for a quick one-off use of NCA, but <strong>it is
+not recommended for production use</strong>.</p>
+<p>We strongly recommend either crafting your own containerized setup with a mind
+to production reliability (which we haven&rsquo;t done) or just running NCA on bare
+metal - one the prerequisites above are installed, the rest of NCA is very easy
+to get running. If you go this route, you&rsquo;ll still find the docker setup
+helpful just in terms of understanding the full stack and configuration.</p>
 <h2 id="compile">Compile</h2>
 <p>Compilation requires:</p>
 <ul>
-<li><a href="https://golang.org/dl/">Go</a> 1.18 or later</li>
+<li><a href="https://golang.org/dl/">Go</a> 1.18 or later. Go is only required for
+compilation: its runtime does not need to be installed in production as long
+as you compile on the same architecture your production system has (or change
+the <code>Makefile</code> to cross-compile for the targeted architecture).</li>
 <li><a href="https://github.com/mgechev/revive">revive</a>: <code>go install github.com/mgechev/revive@latest</code></li>
 </ul>
 <p>The easiest way to compile is simply running <code>make</code> in the source directory.
@@ -319,7 +327,7 @@ current code (via revive, gofmt, and go vet, for development purposes), and
 build all the binaries.</p>
 <p>A full compilation from a clean repository should take about 15 seconds, though
 this can depend on network speed the first time dependencies are pulled from
-github.  Subsequent compiles generally take under 5 seconds.  If that&rsquo;s still
+github. Subsequent compiles generally take under 5 seconds. If that&rsquo;s still
 too long, and you don&rsquo;t mind skipping the code validations, <code>make fast</code> will
 skip the validator entirely, usually saving 1-2 seconds.</p>
 <p>If you&rsquo;re in a <em>serious</em> rush (say you want to auto-build every time code
@@ -329,11 +337,17 @@ validations and only builds the binary you request, and generally takes less
 than a second.</p>
 <p>Once you&rsquo;ve compiled, the two key binaries are going to be <code>bin/server</code> for the
 HTTP listener, and <code>bin/run-jobs</code>, the job queue processor.</p>
-<p>Note that even if you do use Docker, you&rsquo;ll probably want to have your dev
-system set up to compile the binaries.  With a suitable
-<code>docker-compose.override.yml</code> file (like the provided
-<code>docker-compose.override.yml-example</code>), the binaries are mounted into the
-container, allowing for quicker code changes.</p>
+<p>Note that even if you do use Docker, for development you&rsquo;ll probably want to
+run all NCA&rsquo;s binaries locally and just have them communicate with the
+dockerized services (IIIF server, database, and SFTPGo). Again, see our
+<a href="../../contributing/dev-guide">Development Guide</a> for details.</p>
+<h3 id="security-updates">Security Updates</h3>
+<p>Every now and then a security issue arises in the Go standard library. It&rsquo;s
+rare that something critical shows up, but it isn&rsquo;t a bad idea to regularly
+(say every month or so) just grab the latest Go compiler, recompile NCA via
+<code>make</code>, and push the new binaries to production. This ensures any fixes or
+security updates get into your instance of NCA without your having to check on
+the NCA project itself, or even watch for Go updates.</p>
 <h2 id="database-setup">Database Setup</h2>
 <p>Creating / migrating the database is easily done using the &ldquo;migrate-database&rdquo;
 binary compiled in a standard <code>make</code> run. This binary is a wrapper around Goose
@@ -343,7 +357,7 @@ it works and what other commands may be used.</p>
 <div class="highlight"><pre tabindex="0" style="color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4;"><code class="language-bash" data-lang="bash"><span style="display:flex;"><span>make
 </span></span><span style="display:flex;"><span>./bin/migrate-database -c ./settings up
 </span></span></code></pre></div><p>If you use docker, the entrypoint script should migrate automatically whenever
-the container starts up.  If you&rsquo;re doing development and break the automatic
+the container starts up. If you&rsquo;re doing development and break the automatic
 migration, just run <code>migrate-database</code> inside the web container.</p>
 <nav class="pagination" aria-label="Pagination">
 

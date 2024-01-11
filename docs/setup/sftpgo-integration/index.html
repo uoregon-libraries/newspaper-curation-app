@@ -23,7 +23,7 @@
 <meta itemprop="name" content="SFTPGo Integration">
 <meta itemprop="description" content="Setting up NCA for SFTPGo integration">
 
-<meta itemprop="wordCount" content="1043">
+<meta itemprop="wordCount" content="1096">
 <meta itemprop="keywords" content="" /></head>
 <body>
   <div class="container"><div class="skip"><a href="#maincontent">Skip to main content</a></div>
@@ -279,28 +279,30 @@
 
 
 <main id="maincontent"><h1>SFTPGo Integration</h1><p><a href="https://github.com/drakkan/sftpgo">SFTPGo</a> is an sftp server that exposes APIs
-and a web interface for administration tasks.  We&rsquo;ve chosen to integrate NCA
+and a web interface for administration tasks. We&rsquo;ve chosen to integrate NCA
 with SFTPGo in order to simplify the process of creating titles for a publisher
 that&rsquo;s uploading newspaper PDFs.</p>
 <p>If you choose not to use this integration, publisher uploads will have to be
 managed entirely by you (as was the case prior to this integration), and NCA
 will not track SFTP data (which is a change from NCA 3.x and prior).</p>
+<p>It is <em>highly recommended</em> that you use SFTPGo, as future versions of NCA may
+require it, or at least make it very difficult to do without.</p>
 <h2 id="opt-out">Opt out</h2>
 <p>To disable SFTPGo integration, assign &ldquo;-&rdquo; to the <code>SFTPGO_API_URL</code> setting:</p>
 <pre><code>SFTPGO_API_URL=&quot;-&quot;
 </code></pre>
 <p>This ensures that NCA will not try to connect to a nonexistent server.</p>
 <h2 id="sftpgo-setup">SFTPGo Setup</h2>
-<p>If you do opt to use SFTPGo, you&rsquo;ll need to use the SFTPGo documentation to set
-it up however it makes sense for your system. Once that&rsquo;s done, you have to
-then make NCA aware of it.</p>
+<p>You&rsquo;ll need to use the SFTPGo documentation to set it up however it makes sense
+for your system. Once that&rsquo;s done, you have to then make NCA aware of it.</p>
 <p>Our configuration files can be found in the NCA project&rsquo;s root under the
 <code>sftpgo</code> directory. It&rsquo;s obviously somewhat specific to our bare-metal RHEL
 system, but they should help get you up and running.</p>
 <p>We use nginx to proxy the SFTPGo web interface. This isn&rsquo;t necessary &ndash; SFTPGo
 can be exposed directly. We prefer the granular control nginx gives us (e.g.,
 being able to lock down certain paths by IP).</p>
-<p>For the sftp daemon itself, we just expose that directly.</p>
+<p>For the sftp daemon itself, we just expose that directly on port 22, and set up
+sshd on port 2022, locked down to a handful of IP addresses.</p>
 <p>Install nginx, configure it (again, see our configuration if necessary), and
 then install SFTPGo as a service. See the <a href="https://github.com/drakkan/sftpgo/blob/main/docs/service.md">&ldquo;Running SFTPGo as a service&rdquo;</a>
 page in the official SFTPGo documentation.</p>
@@ -342,15 +344,17 @@ preventing all other publishers from uploading anything.</p>
 <h3 id="sftpgo-api-key">SFTPGo API Key</h3>
 <p>NCA connects to SFTPGo via an API key for a user with admin privileges. If you
 are using Docker with defaults for development, this API key is created and
-assigned in your NCA <code>settings</code> file automatically. For any non-docker use,
-one will have to use the Bash scripts in the <code>sftpgo/</code> directory. You will need
-to provide the environment variable <code>SETTINGS_PATH</code> with a value corresponding
-to the path to your NCA <code>settings</code> file to these Bash scripts.
-<code>SETTINGS_PATH=/path/to/settings sftpgo/get_admin_api_key.sh</code> is the only script
-that <em>must</em> be run. It will prompt for admin user credentials, use them to
-request an API key for that user, store the key in the NCA <code>settings</code> file
-automatically, and then call the accompanying script <code>test_api_key.sh</code> to test
-that API key.</p>
+assigned in your NCA <code>settings</code> file automatically. For any non-docker use, one
+will have to use the Bash scripts in the <code>sftpgo/</code> directory. You will need to
+provide the environment variable <code>SETTINGS_PATH</code> with a value corresponding to
+the path to your NCA <code>settings</code> file to these Bash scripts. An example
+invocation of the key-fetcher might look like this:</p>
+<pre><code>SETTINGS_PATH=/path/to/settings sftpgo/get_admin_api_key.sh
+</code></pre>
+<p>That is the only script that <em>must</em> be run. It will prompt for admin user
+credentials, use them to request an API key for that user, store the key in the
+NCA <code>settings</code> file automatically, and then call the accompanying script
+<code>test_api_key.sh</code> to verify the key was fetched and set up properly.</p>
 <p>Normally you only run <code>get_admin_api_key.sh</code> once, but if you need to reacquire
 a key, you must reset your <code>settings</code> file (set
 <code>SFTPGO_ADMIN_API_KEY=!sftpgo_admin_api_key!</code>) and then re-run this script.</p>

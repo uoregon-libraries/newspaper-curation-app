@@ -42,7 +42,7 @@ Manual Deletion If issues got to the page-review step when they shouldn&amp;rsqu
       <pubDate>Mon, 01 Jan 0001 00:00:00 +0000</pubDate>
       
       <guid>https://uoregon-libraries.github.io/newspaper-curation-app/workflow/fixing-stuck-issues/</guid>
-      <description>Sometimes a publisher will upload a broken PDF that NCA cannot process. There is a safeguard against these kinds of issues: only queue uploaded issues after careful review. But it&amp;rsquo;s often infeasible to do this, especially if you have enough publishers that you get hundreds of pages uploaded each week.
+      <description>Sometimes a publisher will upload a broken PDF that NCA cannot process. For smaller organizations, these kinds of problems are easy to prevent just via careful review. But for larger orgs, it&amp;rsquo;s often infeasible to do this, e.g., if you have enough publishers that you get hundreds of pages uploaded each week.
 When an issue gets stuck, NCA currently has no way to indicate this. This is one area where a developer used to have to clean up the filesystem and database manually.</description>
     </item>
     

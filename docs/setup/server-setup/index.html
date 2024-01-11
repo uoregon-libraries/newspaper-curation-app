@@ -23,7 +23,7 @@
 <meta itemprop="name" content="Server Setup">
 <meta itemprop="description" content="Setting up a new NCA toolsuite">
 
-<meta itemprop="wordCount" content="587">
+<meta itemprop="wordCount" content="766">
 <meta itemprop="keywords" content="" /></head>
 <body>
   <div class="container"><div class="skip"><a href="#maincontent">Skip to main content</a></div>
@@ -280,7 +280,7 @@
 
 <main id="maincontent"><h1>Server Setup</h1><h2 id="human-requirements">Human Requirements</h2>
 <p>Unfortunately, this process is still technical enough that you will need a
-devops person to at least get the system set up for processing.  You&rsquo;ll also
+devops person to at least get the system set up for processing. You&rsquo;ll also
 need people who can reorder PDF pages (if necessary) as well as people who can
 enter and review newspaper issue metadata.</p>
 <p>Somebody will want to monitor the output from the various automated processes,
@@ -291,31 +291,51 @@ production, as there is still a great deal of room for human error.</p>
 <ol>
 <li>Make sure you understand the <a href="../../setup/services">Services</a> documentation and
 can get the stack up and running</li>
-<li>Somebody symlinks or otherwise sets up the sftp folder root so that each
-title has its own location directly off said root.  e.g.,
+<li>Somebody mounts, symlinks, or otherwise sets up the sftp folder root so that
+each title has its own location directly off said root. e.g.,
 <code>/mnt/news/sftp/foo</code> should contain one title&rsquo;s issues, and
-<code>/mnt/news/sftp/bar</code> should contain a different title&rsquo;s issues.</li>
+<code>/mnt/news/sftp/bar</code> should contain a different title&rsquo;s issues.
+<ul>
+<li>This is most easily handled using SFTPGo and setting
+<code>SFTPGO_DATA_PROVIDER__USERS_BASE_DIR</code> in your <code>sftpgo.env</code> to a location
+that NCA can reach. When NCA tells SFTPGo to provision titles, they get a
+subdirectory within the specified base directory.</li>
+</ul>
+</li>
 <li>Somebody sets up the full swath of folders, mounting to network storage
 as it makes sense.
 <ul>
-<li><code>PDF_UPLOAD_PATH</code> (<code>/mnt/news/sftp</code>): One subfolder should be set up per title</li>
+<li><code>PDF_UPLOAD_PATH</code> (<code>/mnt/news/sftp</code>): One subfolder should exist per title</li>
 <li><code>SCAN_UPLOAD_PATH</code> (<code>/mnt/news/scans</code>): This is where in-house scans would be uploaded.</li>
 <li><code>ORIGINAL_PDF_BACKUP_PATH</code> (<code>/mnt/news/backup/originals</code>): Short-term storage
-where uploaded PDFs will be moved after being split.  They may need to be
+where uploaded PDFs will be moved after being split. They may need to be
 held a few months for embargoed issues, but they&rsquo;re auto-purged once the
 issue has been put into a batch.</li>
 <li><code>PDF_PAGE_REVIEW_PATH</code> (<code>/mnt/news/page-review</code>): Issues which came from
 born-digital SFTP uploads and are ready for manual page reordering - this
 should be exposed to whomever will manually review and reorder the
 born-digital uploads prior to them entering the rest of the workflow.</li>
-<li><code>BATCH_OUTPUT_PATH</code> (<code>/mnt/news/outgoing</code>): Batches here are ready for
-ingest into staging and eventually production</li>
+<li><code>BATCH_OUTPUT_PATH</code> (<code>/mnt/news/outgoing</code>): Batches are put here when
+they&rsquo;re built and held until they&rsquo;re live and moved to your archival
+location.</li>
+<li><code>BATCH_PRODUCTION_PATH</code> (<code>/mnt/news/production-batches</code>): Batches&rsquo; live
+files are synced here. This only includes the critical files needed for an
+ONI instance to work: XMLs, JP2s, PDFs, etc. TIFFs are not synced in order
+to dramatically reduce disk requirements for your &ldquo;always on&rdquo; filesystem.</li>
+<li><code>BATCH_ARCHIVE_PATH</code> (<code>/mnt/news/batch-archive</code>): When batches are live,
+all files are moved here for archival. This location can be a dark
+archive, a &ldquo;transfer&rdquo; location for prepping bulk DA moves, or a location
+you manually manage in some way.</li>
 <li><code>WORKFLOW_PATH</code> (<code>/mnt/news/workflow</code>): Issues are moved here for
 processing, and once here should never be accessible to anybody to
-manually modify them.  They will live here until all workflow tasks are
+manually modify them. They will live here until all workflow tasks are
 complete and they&rsquo;re put into a batch for ingest.</li>
+<li><code>ERRORED_ISSUES_PATH</code> (<code>/mnt/news/errors</code>): This location is where NCA
+will put issues that a curator flags as being broken in a way that NCA
+can&rsquo;t manage. e.g., a sideways-scanned TIFF or a blank page that wasn&rsquo;t
+wanted.</li>
 <li><code>ISSUE_CACHE_PATH</code> (<code>/var/local/news/nca/cache</code>): This just needs to be
-created.  The app will use this to speed up issue lookups.</li>
+created. The app will use this to speed up issue lookups.</li>
 </ul>
 </li>
 <li>Make sure that the workflow path and the batch output path are on the same
@@ -325,23 +345,28 @@ when building large batches.  <strong>NOTE</strong>: the system currently <em>re
 this, and will fail if an attempt to hard-link files fails.</li>
 <li>Permissions have to be set up such that:
 <ul>
-<li>Humans can rename PDFs in the page review path</li>
+<li>Humans can rename PDFs in the page review path.</li>
 <li>Humans can drop off scanned PDF/TIFF pairs in the scans path</li>
-<li>Humans can upload born-digital PDFs into the sftp path</li>
+<li>Humans can upload born-digital PDFs into the sftp path (SFTPGo will take
+the uploads, but you&rsquo;ll have to ensure its &ldquo;root&rdquo; is either symlinked or
+network-mounted to where NCA expects SFTPed files).</li>
 <li>All binaries (<code>server</code>, <code>run-jobs</code>, anything else in <code>bin/</code> you wish to
 run) are run as a user who can read and write to all paths</li>
 <li>Apache can read the scans path</li>
-<li>The system which ingests batches into ONI can read from the batch
-output path</li>
+<li>The systems which ingest batches into ONI (both staging and production)
+mount the <code>BATCH_PRODUCTION_PATH</code> at the same location NCA uses so that
+the ingest instructions are easy to follow.</li>
 </ul>
 </li>
 <li>Run the servers and set up one or more users: <a href="../../setup/user-setup">User Setup</a></li>
 <li>Somebody must set up the list of newspaper titles using the &ldquo;Manage
-Newspaper Titles&rdquo; functionality.  Nothing works if titles aren&rsquo;t set up!
-Titles need all data except the username and password, which are primarily
-there to help keep the information central.</li>
+Newspaper Titles&rdquo; functionality. Nothing works if titles aren&rsquo;t set up!
+<ul>
+<li>See <a href="https://uoregon-libraries.github.io/newspaper-curation-app/workflow/adding-titles/">Adding Titles</a> for details.</li>
+</ul>
+</li>
 <li>Somebody has to set up at least one MARC Org Code in the admin app&rsquo;s &ldquo;MARC
-Org Codes&rdquo; area.  This should match the code set up in the app&rsquo;s settings.
+Org Codes&rdquo; area. This should match the code set up in the app&rsquo;s settings.
 If in-house scanning is done, and awardees will differ from your primary
 awardee&rsquo;s code, you would set up those awardees before putting their scanned
 images into the scan folder.</li>

@@ -13,8 +13,7 @@
       
       <guid>https://uoregon-libraries.github.io/newspaper-curation-app/setup/services/</guid>
       <description>You should at least understand everything in this document at a high level before moving on to the setup/installation documents, as the NCA suite is a set of tools, not a single application that does it all.
-Overview NCA has two key services which you&amp;rsquo;ll have to run, in addition to the rest of the external services (such as an IIIF server, MySQL / MariaDB, and Apach)
-If you&amp;rsquo;re doing a manual installation rather than container-based, you are strongly advised to look at the docker files - they make it clear precisely how the stack should be set up.</description>
+Overview NCA has two key services which you&amp;rsquo;ll have to have running in the background at all times, several binaries you&amp;rsquo;ll need to use occasionally for regular tasks, and of course the various external services (such as a IIIF server, SFTP server, MySQL / MariaDB, Apache / nginx, etc.</description>
     </item>
     
     <item>
@@ -35,7 +34,7 @@ Somebody will want to monitor the output from the various automated processes, s
       <guid>https://uoregon-libraries.github.io/newspaper-curation-app/setup/installation/</guid>
       <description>Development If you&amp;rsquo;re developing on NCA, installation will differ from standing up a production server. Please see our Development Guide.
 Preliminary Setup Manual installation has several prerequisites:
-Go and some dependencies (see below) Poppler Utils for PDF processing OpenJPEG 2 + command-line tools for JP2 generation The command-line tools will probably need to be manually compiled to support converting PNG files. Most distributions of Linux don&amp;rsquo;t have this by default, hence the need to manually compile.</description>
+Poppler Utils for PDF processing OpenJPEG 2 + command-line tools for JP2 generation The command-line tools will probably need to be manually compiled to support converting PNG files. Most distributions of Linux don&amp;rsquo;t have this by default, hence the need to manually compile. A recent version of GhostScript - 10+ is recommended GraphicsMagick MariaDB A IIIF server capable of handling tiled JP2 files without a ton of overhead (e.</description>
     </item>
     
     <item>
@@ -44,7 +43,7 @@ Go and some dependencies (see below) Poppler Utils for PDF processing OpenJPEG 2
       <pubDate>Mon, 01 Jan 0001 00:00:00 +0000</pubDate>
       
       <guid>https://uoregon-libraries.github.io/newspaper-curation-app/setup/user-setup/</guid>
-      <description>Newspaper Curation App - User Setup First-time Setup Once the applications are installed and configured, start the NCA server in debug mode:
+      <description>Once the applications are installed and configured, you&amp;rsquo;ll need an admin user. Start the NCA server in debug mode:
 ./bin/server -c ./settings --debug This lets you fake an admin login via http://your.site/users?debuguser=admin. You can then set up other users as necessary. Once you have Apache set up to do the authentication, you should never run in debug mode on production servers.
 For development use, docker-compose.override.yml-example is already set up to run in debug mode.</description>
     </item>

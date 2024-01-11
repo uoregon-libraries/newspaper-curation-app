@@ -23,7 +23,7 @@
 <meta itemprop="name" content="Contributing to Documentation">
 <meta itemprop="description" content="How to help with NCA&#39;s docs">
 
-<meta itemprop="wordCount" content="743">
+<meta itemprop="wordCount" content="836">
 <meta itemprop="keywords" content="" /></head>
 <body>
   <div class="container"><div class="skip"><a href="#maincontent">Skip to main content</a></div>
@@ -278,82 +278,91 @@
 </div>
 
 
-<main id="maincontent"><h1>Contributing to Documentation</h1><p>The documentation for this site is produce using <a href="https://gohugo.io/">Hugo</a> and
-the <a href="https://themes.gohugo.io/hugo-theme-techdoc/">TechDoc</a> theme.</p>
+<main id="maincontent"><h1>Contributing to Documentation</h1><p>The documentation for this site is produce using <a href="https://gohugo.io/">Hugo</a> and a custom theme
+based on the look and feel of <a href="https://themes.gohugo.io/hugo-theme-techdoc/">TechDoc</a>, a contributed Hugo theme.</p>
 <p>We want our documentation to help you use NCA (okay, again, if I&rsquo;m being
 honest, this is really just for UO to remember how to use our app), and as such
 the documentation itself needs to be easy to edit and keep up-to-date.</p>
 <h2 id="starting-out">Starting out</h2>
-<p>Get Hugo installed.  It&rsquo;s a trivial standalone application that can be
-installed with minimal fuss:
-<a href="https://gohugo.io/getting-started/installing">installing Hugo</a>.</p>
+<p>Get Hugo installed. It&rsquo;s a trivial standalone application that can be
+installed with minimal fuss: <a href="https://gohugo.io/getting-started/installing">installing Hugo</a>.</p>
 <p>Once you have it, you can download the NCA codebase from Github and start
-editing.  Change to the <code>hugo</code> subdirectory in NCA, and you&rsquo;ll see all the
+editing. Change to the <code>hugo</code> subdirectory in NCA, and you&rsquo;ll see all the
 content under <code>content/</code>.</p>
-<p>Normally you could use <code>hugo serve</code> to test out the documentation. But due to a
-bug in the theme we chose, documentation generation is inconsistent and doesn&rsquo;t
-actually do what it should every time.</p>
-<p>The solution: <code>make docserver</code>. This uses whatever is in <code>docs</code>, but copies it
-into a <code>localdocs</code> directory, replaces URLs to work locally, and fires up an
-Apache web server listening on localhost:8080. This ensures that what you&rsquo;re
-testing locally is in fact whatever you generated most recently in <code>docs</code>.</p>
+<p>Normally you can just use <code>hugo serve</code> to test out the documentation, as it
+will rebuild pages immediately as you edit them, and sets up a custom JS
+integration to auto-reload your browser as changes occur.</p>
 <h2 id="magic--rules">Magic / Rules</h2>
-<p>Everything under <code>hugo/content</code> abides by certain rules.  These rules are few,
-but can be very confusing at first.  If you know Hugo pretty well already, this
+<p>Everything under <code>hugo/content</code> abides by certain rules. These rules are few,
+but can be very confusing at first. If you know Hugo pretty well already, this
 probably makes sense to you, but I&rsquo;m just using it for the first time ever,
 so&hellip;.</p>
-<p><strong>Rule 1</strong>: <code>hugo/content/</code> seems to be a &ldquo;special&rdquo; location.  Nothing there shows
+<p><strong>Rule 1</strong>: <code>hugo/content/</code> seems to be a &ldquo;special&rdquo; location. Nothing there shows
 up in the site navigation area except <code>_index.md</code>, which is our main navigation
-landing page.  If you created a file called <code>hugo/content/foo.md</code>, you could
+landing page. If you created a file called <code>hugo/content/foo.md</code>, you could
 reach it by visiting <code>http://localhost:1313/newspaper-curation-app/foo</code>, but it
 won&rsquo;t show up in the navigation.</p>
-<p><strong>Rule 2</strong>: Everything else has to live under a subdirectory, period.  If you
+<p><strong>Rule 2</strong>: Everything else has to live under a subdirectory, period. If you
 want it in the navigation, and you almost always do, you need it under a
 subdirectory, such as this document which lives under <code>contributing</code>.</p>
-<p><strong>Rule 3</strong>: The &ldquo;home&rdquo; page of a subdirectory is always called <code>index.md</code>.
+<p><strong>Rule 3</strong>: The &ldquo;home&rdquo; page of a subdirectory is always called <code>_index.md</code>.
 That file is magic and shows up it the hierarchy of pages at one level above
-the subdirectory.  e.g., <code>hugo/content/contributing/_index.md</code> is at the root
+the subdirectory. e.g., <code>hugo/content/contributing/_index.md</code> is at the root
 level of the navigation menu, and everything else in
 <code>hugo/content/contributing/</code> is shown in the navigation menu as being nested
 under that.</p>
 <p><strong>Rule 4</strong>: All pages need to be in markdown format and need &ldquo;frontmatter&rdquo;.
 Example frontmatter can be seen on any of these pages at the top, between two
-lines which are simply &ldquo;&mdash;&rdquo;.  The title is critical, as it shows up in the
+lines which are simply &ldquo;&mdash;&rdquo;. The title is critical, as it shows up in the
 navbar, the site&rsquo;s <code>&lt;title&gt;</code>, and is the first heading (<code>&lt;h1&gt;</code>) on the page.
 The weight is where the page shows up in the navigation bar <em>relative to the
-structure in which the page lives</em>.  This can be confusing, so&hellip;</p>
+structure in which the page lives</em>. This can be confusing, so&hellip;</p>
 <p><strong>Rule 5</strong>: A page&rsquo;s &ldquo;weight&rdquo; is confusing because the hierarchy is confusing.
 All pages are siblings of one another if they&rsquo;re in the same directory <em>except</em>
-<code>_index.md</code>.  That magical, special page is actually a <em>parent</em> of the other
-pages in that directory.  This means the weight listed in <code>foo/one.md</code> is how
-&ldquo;one&rdquo; will be ordered compared to <code>foo/two.md</code>.  But <code>foo/bar/_index.md</code> will
+<code>_index.md</code>. That magical, special page is actually a <em>parent</em> of the other
+pages in that directory. This means the weight listed in <code>foo/one.md</code> is how
+&ldquo;one&rdquo; will be ordered compared to <code>foo/two.md</code>. But <code>foo/bar/_index.md</code> will
 also be ordered relative to those two pages, because it is the <em>parent</em> of
-<code>foo/bar/*</code>, which makes it the <strong>sibling</strong> of <code>foo/*</code>.  Confusing, right?</p>
+<code>foo/bar/*</code>, which makes it the <strong>sibling</strong> of <code>foo/*</code>. Confusing, right?</p>
 <h2 id="guidelines">Guidelines</h2>
-<p>This is more straightforward.  YAY!</p>
+<p>This is more straightforward. YAY!</p>
 <ul>
-<li>Never include a level one heading, e.g., <code># Title</code>.  Hugo generates a level
+<li>Never include a level one heading, e.g., <code># Title</code>. Hugo generates a level
 one heading based on the title, so this is unnecessary, and can be an
 accessibility problem.</li>
-<li>Use hashes, not underscores, for level two headings.  It&rsquo;s just easier to
+<li>Use hashes, not underscores, for level two headings. It&rsquo;s just easier to
 grep for structural elements this way.</li>
 <li>Be explicit about weights, even though it is confusing and sucky.</li>
 <li>Use 80-character width for documentation unless it splits up a link&rsquo;s text
-(that messes up my markdown editor in some cases).  80 characters.  I use
-tmux with multiple panes, and 80 characters will never annoy me.  If you
-contribute something annoying, it may or may not ever get into the repo.
-Call me old if you like, but I&rsquo;m king where this repository is concerned.</li>
+(that messes up my markdown editor in some cases). 80 characters. I use
+tmux with multiple panes, and 80 characters will never annoy me. If you
+contribute something annoying, it may or may not ever get into the repo.</li>
 </ul>
 <h2 id="linking-to-other-pages">Linking to other pages</h2>
-<p>If you want to link to another document, use a relative path, not a full URL,
-because a full URL will either work on the live site (e.g.,
-<a href="https://foo.github.io/blah">https://foo.github.io/blah</a>) or locally (http://localhost:1313/blah), but not
-both.</p>
-<p>An easy way to do this is just start with a slash and append everything that
-comes after <code>hugo/content/</code> minus the &ldquo;.md&rdquo;.  e.g. you can do this:</p>
-<p><a href="../../contributing/documentation">docs</a></p>
-<p>with this code: <code>[docs](/contributing/documentation)</code>.</p>
-<nav class="pagination" aria-label="Pagination">
+<p>Try to use markdown references and the &ldquo;ref&rdquo; shortcode whenever you can. I&rsquo;m
+working to slowly replace all the hard-coded links with &ldquo;ref&rdquo; because Hugo will
+give a clear error if you use an invalid ref, but won&rsquo;t detect invalid
+hard-coded links.</p>
+<p>You only have to specify the full path in a &ldquo;ref&rdquo; shortcode if you&rsquo;re linking
+to a document in a different subdirectory. Since this page is part of the
+&ldquo;contributing&rdquo; section, let&rsquo;s link to the <a href="https://gohugo.io/">Testing</a> guide.</p>
+<p>That paragraph, and the link destination, were created as such:</p>
+<pre tabindex="0"><code>You only have to specify the full path in a &#34;ref&#34; shortcode if you&#39;re linking
+to a document in a different subdirectory. Since this page is part of the
+&#34;contributing&#34; section, let&#39;s link to the [Testing][1] guide.
+
+[4]: &lt;{{% ref &#34;testing&#34; %}}&gt;
+</code></pre><p>This time we&rsquo;ll link to a page outside &ldquo;contributing&rdquo;: <a href="https://uoregon-libraries.github.io/newspaper-curation-app/setup/services/">Services</a>.</p>
+<pre tabindex="0"><code>This time we&#39;ll link to a page outside &#34;contributing&#34;: [Services][5].
+
+[5]: &lt;https://uoregon-libraries.github.io/newspaper-curation-app/setup/services/&gt;
+</code></pre><p>To link to an external page that isn&rsquo;t part of the documentation, you would
+simply provide an absolute URL. For example, here&rsquo;s <a href="https://www.bing.com/search?form=MOZLBR&amp;pc=MOZI&amp;q=cat+images">a bunch of cat images</a>.</p>
+<pre tabindex="0"><code>To link to an external page that isn&#39;t part of the documentation, you would
+simply provide an absolute URL. For example, here&#39;s [a bunch of cat images][6].
+
+[6]: &lt;https://www.bing.com/search?form=MOZLBR&amp;pc=MOZI&amp;q=cat+images&gt;
+</code></pre><nav class="pagination" aria-label="Pagination">
 
   <a class="nav nav-prev" href="https://uoregon-libraries.github.io/newspaper-curation-app/contributing/not-compiling-locally/">← Prev - Not Compiling Locally</a>
 
