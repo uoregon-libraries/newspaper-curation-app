@@ -223,7 +223,7 @@ func PopNextPendingJob(types []JobType) (*Job, error) {
 
 	// Make sure the pipeline's start date has been set, or else set it now
 	var p *Pipeline
-	p, err = findPipeline(j.PipelineID)
+	p, err = FindPipeline(j.PipelineID)
 	if err != nil {
 		return j, err
 	}
@@ -336,7 +336,7 @@ func countJobsOp(op *magicsql.Operation, where string, args ...any) uint64 {
 func CompleteJob(j *Job) error {
 	// We need the job's pipeline - if we can't get this, the rest of the
 	// function doesn't really matter
-	var p, err = findPipeline(j.PipelineID)
+	var p, err = FindPipeline(j.PipelineID)
 	if err != nil {
 		return err
 	}

@@ -70,8 +70,8 @@ func findPipelines(where string, args ...any) ([]*Pipeline, error) {
 	return list, op.Err()
 }
 
-// findPipeline pulls the pipeline object for the given id
-func findPipeline(id int64) (*Pipeline, error) {
+// FindPipeline pulls the pipeline object for the given id
+func FindPipeline(id int64) (*Pipeline, error) {
 	var list, err = findPipelines("id = ?", id)
 	if len(list) == 0 {
 		return nil, err
