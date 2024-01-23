@@ -41,6 +41,10 @@ func makeForcedArgs() map[string]string {
 	return map[string]string{JobArgForced: JobArgForced}
 }
 
+func makeSrcArgs(src string) map[string]string {
+	return map[string]string{JobArgSource: src}
+}
+
 func makeSrcDstArgs(src, dest string) map[string]string {
 	return map[string]string{
 		JobArgSource:      src,

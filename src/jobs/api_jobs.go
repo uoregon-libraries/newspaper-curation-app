@@ -3,6 +3,7 @@ package jobs
 import (
 	"github.com/uoregon-libraries/newspaper-curation-app/src/config"
 	"github.com/uoregon-libraries/newspaper-curation-app/src/internal/openoni"
+	"github.com/uoregon-libraries/newspaper-curation-app/src/models"
 )
 
 const (
@@ -39,14 +40,20 @@ func (j *ONILoadBatch) Process(c *config.Config) ProcessResponse {
 		return PRFailure
 	}
 
-	var _, err = openoni.New(serverURL)
+	// We want to get the pipeline *before* sending a request ONI. If there are
+	// temporary database errors, we're hoping to catch that here rather than
+	// after we've started a job externally.
+	var _, err = models.FindPipeline(j.DBJob().PipelineID)
+	if err != nil {
+		j.Logger.Errorf("Cannot read job's pipeline from the database: %s", err)
+		return PRFailure
+	}
+
+	_, err = openoni.New(serverURL)
 	if err != nil {
 		j.Logger.Errorf("Error constructing ONI RPC: %s", err)
 		return PRFailure
 	}
-
-	j.Logger.Errorf("Not implemented; skipping API call")
-	return PRSuccess
 
 	// TODO: handle response
 	//   - Response of 409, retry later
@@ -56,8 +63,22 @@ func (j *ONILoadBatch) Process(c *config.Config) ProcessResponse {
 	//   - General HTTP error, temporary failure, log
 	// api.LoadBatch(j.DBBatch.FullName())
 
-	// TODO: Queue up a new job to wait for ONI - make an "insert" function in
-	// pipelines to add it after this job, pushing everything else out one level
+	// TODO: Queue up a new job to wait for ONI - if this returns an error, what
+	// do we do?
+	// - Make it a critical failure with no retry to avoid rerunning this job?
+	//   Would hitting ONI a second time with the same batch cause any major
+	//   failures overall?
+	// - Normal failure and find a way to handle it if the batch is already
+	//   queueing / ingested into ONI?
+	var waitJob = models.NewJob(models.JobTypeONIWaitForJob, makeSrcArgs("foo"))
+	err = j.db.QueueSiblingJobs([]*models.Job{waitJob})
+	if err != nil {
+		j.Logger.Errorf(`Unable to queue "ONIWaitForJob" job: %s`, err)
+		return PRFailure
+	}
+
+	j.Logger.Errorf("Not implemented; skipping API call")
+	return PRSuccess
 }
 
 // ONIPurgeBatch handles API calls to request a batch purge from ONI
