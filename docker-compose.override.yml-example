@@ -16,10 +16,11 @@ services:
       # Entrypoint
       - ./docker/entrypoint.sh:/entrypoint.sh
       # Mount in the binaries, templates, and static files for easier debugging
-      - ./bin:/usr/local/nca/bin:z
       - ./static:/usr/local/nca/static:z
       - ./templates:/usr/local/nca/templates:z
       - ./settings-example:/usr/local/nca/settings:z
+      # For development you may not want this "hidden" in a docker volume
+      - ./tmp/cache:/var/local/news/nca/cache
 
   web:
     volumes:
@@ -28,7 +29,6 @@ services:
       # Entrypoint
       - ./docker/entrypoint.sh:/entrypoint.sh
       # Mount in the binaries, templates, and static files for easier debugging
-      - ./bin:/usr/local/nca/bin:z
       - ./static:/usr/local/nca/static:z
       - ./templates:/usr/local/nca/templates:z
       - ./settings-example:/usr/local/nca/settings:z

@@ -1,62 +1,7 @@
-# This image is used both for the workers and the web server containers; this
-# is not a great practice.  In a production environment you probably would want
-# a much slimmer web server that only had the "server" binary and the static
-# files and templates.  The worker system would need a bit more, like the
-# openjpeg tools, poppler, etc., but still wouldn't need the whole Go stack or
-# a Maria DB client.
-FROM fedora:38
-MAINTAINER Jeremy Echols <jechols@uoregon.edu>
+FROM golang:1 AS build
+LABEL maintainer="Jeremy Echols <jechols@uoregon.edu>"
 
-RUN dnf update -y
-
-# Get poppler compilation done early - this is the painful part
-RUN dnf install -y make automake gcc-c++
-RUN dnf install -y poppler-utils poppler-devel fontconfig-devel libjpeg-devel
-
-# Grab and patch poppler-utils: 0.22.5 (this is a known-good release for our patch)
-WORKDIR /usr/local/
-RUN curl -s "https://poppler.freedesktop.org/poppler-0.22.5.tar.gz" | tar -xz
-RUN curl -s "https://raw.githubusercontent.com/uoregon-libraries/pdftotext/main/pdftotext.cc" \
-         > /usr/local/poppler-0.22.5/utils/pdftotext.cc
-
-# Compile
-WORKDIR /usr/local/poppler-0.22.5
-RUN ./configure
-RUN make
-
-# Link the patched pdftotext binary
-RUN ln /usr/local/poppler-0.22.5/utils/pdftotext /usr/local/bin/
-
-# Oh, right, and openjpeg2 is painful as well because it has to be installed
-# *from source* in order to recognize libpng
-WORKDIR /usr/local/
-RUN curl -sL "https://github.com/uclouvain/openjpeg/archive/v2.3.1.tar.gz" | tar -xz
-RUN dnf install -y libtiff-devel libpng-devel cmake
-RUN mkdir /usr/local/openjpeg-2.3.1/build
-WORKDIR /usr/local/openjpeg-2.3.1/build
-RUN cmake ..
-RUN make
-RUN make install
-RUN make clean
-
-# Less expensive system dependencies
-RUN dnf install -y findutils
-RUN dnf install -y GraphicsMagick ghostscript
-RUN dnf install -y tar
-RUN dnf install -y git
-RUN dnf install -y mariadb
-RUN dnf install -y jq
-
-# Install Go
-RUN curl https://dl.google.com/go/go1.21.0.linux-amd64.tar.gz >/tmp/go.tgz
-RUN cd /opt && tar -xzf /tmp/go.tgz
-
-# Go ENV setup
-ENV GOROOT /opt/go
-ENV GOPATH /go
-ENV PATH $PATH:$GOROOT/bin:$GOPATH/bin
-
-# Golang dependencies
+# Dependencies for the build
 RUN go install github.com/mgechev/revive@latest
 RUN go install golang.org/x/tools/cmd/goimports@latest
 
@@ -64,9 +9,6 @@ WORKDIR /usr/local/src/nca
 
 # Grab and build the source before worrying about config files so when config
 # changes we aren't having to rebuild everything
-#
-# TODO: When we have a public repo, just pull that instead of this pain
-RUN mkdir -p /usr/local/nca
 COPY ./Makefile /usr/local/src/nca/Makefile
 COPY ./scripts /usr/local/src/nca/scripts
 COPY ./src /usr/local/src/nca/src
@@ -74,11 +16,35 @@ COPY ./go.mod /usr/local/src/nca/go.mod
 COPY ./go.sum /usr/local/src/nca/go.sum
 COPY ./revive.toml /usr/local/src/nca/revive.toml
 RUN make
-RUN cp -r ./bin /usr/local/nca/bin
 
-# We copy other files very granularly in order to avoid copying in binaries,
-# vendored sources, sensitive settings, etc.; we want to make sure this
-# dockerfile stands on its own
+WORKDIR /opt/sudo
+COPY ./docker/sudo.go /opt/sudo/sudo.go
+RUN go build ./sudo.go
+
+# This image is used both for the workers and the web server containers; this
+# is not a great practice.  In a production environment you probably would want
+# a much slimmer web server that only had the "server" binary and the static
+# files and templates.  The worker system would need a bit more, like the
+# openjpeg tools, poppler, etc., but still wouldn't need the whole Go stack or
+# a Maria DB client.
+FROM rockylinux:9 AS app
+LABEL maintainer="Jeremy Echols <jechols@uoregon.edu>"
+
+RUN dnf update -y && dnf upgrade --refresh -y
+RUN dnf install -y 'dnf-command(config-manager)'
+RUN dnf config-manager --set-enabled crb
+RUN dnf install -y epel-release
+RUN dnf install -y libpng-devel libtiff-devel
+RUN dnf install -y poppler-utils openjpeg2-tools GraphicsMagick ghostscript mariadb jq
+
+# NCA binaries are pulled from the build image
+WORKDIR /usr/local/nca
+RUN mkdir -p /usr/local/nca
+COPY --from=build /usr/local/src/nca/bin /usr/local/nca/bin
+COPY --from=build /opt/sudo/sudo /bin/sudo
+
+# NCA support files: SFTPGo helper scripts, web server dependencies, and the
+# settings file
 COPY ./sftpgo/*.sh /usr/local/nca/sftpgo/
 COPY ./static /usr/local/nca/static
 COPY ./templates /usr/local/nca/templates
@@ -91,5 +57,4 @@ COPY ./docker/entrypoint.sh /entrypoint.sh
 # Get the cache directory prepared
 RUN mkdir -p /var/local/news/nca/cache
 
-WORKDIR /usr/local/nca
 ENTRYPOINT ["/entrypoint.sh"]

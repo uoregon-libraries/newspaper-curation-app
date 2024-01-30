@@ -14,7 +14,7 @@ lockfile=/mnt/news/migrations-running
 flock $lockfile -c "./bin/migrate-database -c ./settings up"
 
 echo "Get SFTPgo admin API key and store in NCA settings file"
-flock /mnt/news/get-sftpgo-api-key-running -c "SETTINGS_PATH=settings SFTPGO_ADMIN_LOGIN=admin SFTPGO_ADMIN_PASSWORD=password sftpgo/get_admin_api_key.sh"
+flock /mnt/news/get-sftpgo-api-key-running -c "SETTINGS_PATH=settings SFTPGO_ADMIN_LOGIN=admin SFTPGO_ADMIN_PASSWORD=password sftpgo/get_admin_api_key.sh --force"
 
 echo "Ensuring directories are present"
 source settings && mkdir -p $PDF_UPLOAD_PATH
