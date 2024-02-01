@@ -15,10 +15,7 @@ Manual installation has several prerequisites:
 
 - Poppler Utils for PDF processing
 - OpenJPEG 2 + command-line tools for JP2 generation
-  - The command-line tools will probably need to be **manually compiled** to
-    support converting PNG files. Most distributions of Linux don't have this
-    by default, hence the need to manually compile.
-- A recent version of GhostScript - 10+ is recommended
+- GhostScript
 - GraphicsMagick
 - MariaDB
 - A IIIF server capable of handling tiled JP2 files without a ton of overhead (e.g.,
