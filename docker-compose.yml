@@ -39,7 +39,6 @@ services:
       context: .
       dockerfile: ./docker/Dockerfile-app
     volumes: &ncavols
-      - /mnt/news:/mnt/news:z
       - issue-cache:/var/local/news/nca/cache
     environment: &ncaenv
       - NCA_WEBROOT=$APP_URL
