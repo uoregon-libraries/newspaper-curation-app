@@ -15,10 +15,7 @@ Manual installation has several prerequisites:
 
 - Poppler Utils for PDF processing
 - OpenJPEG 2 + command-line tools for JP2 generation
-  - The command-line tools will probably need to be **manually compiled** to
-    support converting PNG files. Most distributions of Linux don't have this
-    by default, hence the need to manually compile.
-- A recent version of GhostScript - 10+ is recommended
+- GhostScript
 - GraphicsMagick
 - MariaDB
 - A IIIF server capable of handling tiled JP2 files without a ton of overhead (e.g.,
@@ -48,10 +45,11 @@ Compilation requires:
   as you compile on the same architecture your production system has (or change
   the `Makefile` to cross-compile for the targeted architecture).
 - [revive](https://github.com/mgechev/revive): `go install github.com/mgechev/revive@latest`
+- `goimports` (replaces `gofmt`): `go install golang.org/x/tools/cmd/goimports@latest`
 
 The easiest way to compile is simply running `make` in the source directory.
 This will grab various Go packages the application requires, validate the
-current code (via revive, gofmt, and go vet, for development purposes), and
+current code (via revive, goimports, and go vet, for development purposes), and
 build all the binaries.
 
 A full compilation from a clean repository should take about 15 seconds, though
