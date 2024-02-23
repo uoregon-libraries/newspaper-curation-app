@@ -9,20 +9,22 @@ import (
 )
 
 var (
-	now           = time.Now()
-	goodDate      = "2017-01-01"
-	tooRecent     = now.AddDate(0, 0, -10).Format("2006-01-02")
-	invalidDate   = "blargh"
-	lccnSimple    = "lccn1"
-	lccnEmbargoed = "lccn2"
-	badlccn       = "badlccn"
-	embargoPeriod = "30 days"
+	now              = time.Now()
+	goodDate         = "2017-01-01"
+	tooRecent        = now.AddDate(0, 0, -10).Format("2006-01-02")
+	invalidDate      = "blargh"
+	lccnSimple       = "lccn1"
+	lccnEmbargoed    = "lccn2"
+	lccnNotValidated = "lccn3"
+	badlccn          = "badlccn"
+	embargoPeriod    = "30 days"
 )
 
 func overrideLookup() {
 	titles = models.TitleList{
-		&models.Title{LCCN: lccnSimple},
-		&models.Title{LCCN: lccnEmbargoed, EmbargoPeriod: embargoPeriod},
+		&models.Title{LCCN: lccnSimple, ValidLCCN: true},
+		&models.Title{LCCN: lccnEmbargoed, EmbargoPeriod: embargoPeriod, ValidLCCN: true},
+		&models.Title{LCCN: lccnNotValidated, ValidLCCN: false},
 	}
 }
 
@@ -63,6 +65,8 @@ func TestWrapIssueTableDriven(t *testing.T) {
 			lccn: badlccn, date: goodDate, expectError: true},
 		{description: "Issue with bad date",
 			lccn: lccnSimple, date: invalidDate, expectError: true},
+		{description: "Issue with an LCCN that hasn't been validated",
+			lccn: lccnNotValidated, date: goodDate, expectError: true},
 		{description: "Good issue on simple LCCN",
 			lccn: lccnSimple, date: goodDate},
 		{description: "Good issue on embargoed LCCN with old date",
