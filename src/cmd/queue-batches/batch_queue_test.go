@@ -54,9 +54,9 @@ func setup(t *testing.T) *batchQueue {
 	return testQ
 }
 
-func assertEqualI(msg string, got, expected int, t *testing.T) {
+func assertEqual[T comparable](msg string, got, expected T, t *testing.T) {
 	if got != expected {
-		t.Errorf("%s: expected %d but got %d", msg, expected, got)
+		t.Errorf("%s: expected %v but got %v", msg, expected, got)
 	}
 }
 
@@ -70,7 +70,7 @@ func TestQueueing(t *testing.T) {
 	if !ok {
 		t.Error("testQ.currentQueue() returned not-ok")
 	}
-	assertEqualI("testQ.currentQueue() pages", iq.pages, queueSize, t)
+	assertEqual("testQ.currentQueue() pages", iq.pages, queueSize, t)
 
 	// Split off batchable queues until the current queue is empty
 	var splits int
@@ -86,8 +86,8 @@ func TestQueueing(t *testing.T) {
 		var splitQ = iq.splitQueue(testQ.maxPages)
 		pagesSplit += splitQ.pages
 		t.Logf("Split number %d", splits)
-		assertEqualI("total pages post-split", iq.pages+pagesSplit, queueSize, t)
-		assertEqualI("current queue pages post-split", iq.pages, queueSize-pagesSplit, t)
+		assertEqual("total pages post-split", iq.pages+pagesSplit, queueSize, t)
+		assertEqual("current queue pages post-split", iq.pages, queueSize-pagesSplit, t)
 		if iq.pages > 0 && (splitQ.pages < minPageSplit || splitQ.pages > testQ.maxPages) {
 			t.Errorf("split queue has %d pages (should have %d to %d)", splitQ.pages, minPageSplit, testQ.maxPages)
 		}
@@ -106,5 +106,5 @@ func TestQueueing(t *testing.T) {
 	if !ok {
 		t.Error("second testQ.currentQueue() returned not-ok")
 	}
-	assertEqualI("second testQ.currentQueue() pages", iq.pages, queueSize, t)
+	assertEqual("second testQ.currentQueue() pages", iq.pages, queueSize, t)
 }
