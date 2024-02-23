@@ -86,6 +86,9 @@ func (i *Issue) Queue() apperr.Error {
 			}
 		case models.JobStatusFailedDone:
 			continue
+		case models.JobStatusPending:
+			logger.Infof("Pending job detected for issue %q (db id %d): job id %d. Not attempting to queue issue a second time.", i.Key(), dbi.ID, job.ID)
+			return nil
 		default:
 			logger.Criticalf("Unexpected job detected for issue %q (db id %d): job id %d, status %q",
 				i.Key(), dbi.ID, job.ID, job.Status)
