@@ -9,20 +9,22 @@ import (
 )
 
 var (
-	now           = time.Now()
-	goodDate      = "2017-01-01"
-	tooRecent     = now.AddDate(0, 0, -10).Format("2006-01-02")
-	invalidDate   = "blargh"
-	lccnSimple    = "lccn1"
-	lccnEmbargoed = "lccn2"
-	badlccn       = "badlccn"
-	embargoPeriod = "30 days"
+	now              = time.Now()
+	goodDate         = "2017-01-01"
+	tooRecent        = now.AddDate(0, 0, -10).Format("2006-01-02")
+	invalidDate      = "blargh"
+	lccnSimple       = "lccn1"
+	lccnEmbargoed    = "lccn2"
+	lccnNotValidated = "lccn3"
+	badlccn          = "badlccn"
+	embargoPeriod    = "30 days"
 )
 
 func overrideLookup() {
 	titles = models.TitleList{
-		&models.Title{LCCN: lccnSimple},
-		&models.Title{LCCN: lccnEmbargoed, EmbargoPeriod: embargoPeriod},
+		&models.Title{LCCN: lccnSimple, ValidLCCN: true},
+		&models.Title{LCCN: lccnEmbargoed, EmbargoPeriod: embargoPeriod, ValidLCCN: true},
+		&models.Title{LCCN: lccnNotValidated, ValidLCCN: false},
 	}
 }
 
@@ -41,84 +43,74 @@ func mustWrap(dbi *models.Issue, t *testing.T) *issue {
 	return i
 }
 
-func TestWrapIssue(t *testing.T) {
+func TestWrapIssueTableDriven(t *testing.T) {
 	overrideLookup()
 
-	var dbi *models.Issue
-	var i *issue
-	var err error
-
-	dbi = makeIssue(badlccn, goodDate)
-	_, err = wrapIssue(dbi)
-	if err == nil {
-		t.Errorf("Issue with bad lccn shouldn't have worked")
-	}
-	t.Logf("Got error (this is expected): %s", err)
-
-	dbi = makeIssue(lccnSimple, invalidDate)
-	_, err = wrapIssue(dbi)
-	if err == nil {
-		t.Errorf("Issue with bad date shouldn't have worked")
-	}
-	t.Logf("Got error (this is expected): %s", err)
-
-	dbi = makeIssue(lccnSimple, goodDate)
-	i = mustWrap(dbi, t)
-	if i.embargoed {
-		t.Errorf("Good issue on simple LCCN is somehow embargoed")
+	type testCase struct {
+		description        string
+		lccn               string
+		date               string
+		expectError        bool
+		expectEmbargoed    bool
+		metadataApprovedAt time.Time
+		expectDaysStale    float64
 	}
 
-	dbi = makeIssue(lccnEmbargoed, goodDate)
-	i = mustWrap(dbi, t)
-	if i.embargoed {
-		t.Errorf("Good issue on embargoed LCCN (with an old date) is somehow embargoed")
+	var twentyDaysAgo = now.AddDate(0, 0, -20)
+	var tenYearsAgo = now.AddDate(-10, 0, 0)
+	var goodDT, _ = time.Parse("2006-01-02", goodDate)
+
+	var tests = []testCase{
+		{description: "Issue with bad lccn",
+			lccn: badlccn, date: goodDate, expectError: true},
+		{description: "Issue with bad date",
+			lccn: lccnSimple, date: invalidDate, expectError: true},
+		{description: "Issue with an LCCN that hasn't been validated",
+			lccn: lccnNotValidated, date: goodDate, expectError: true},
+		{description: "Good issue on simple LCCN",
+			lccn: lccnSimple, date: goodDate},
+		{description: "Good issue on embargoed LCCN with old date",
+			lccn: lccnEmbargoed, date: goodDate},
+		{description: "Good issue on embargoed LCCN with recent date",
+			lccn: lccnEmbargoed, date: tooRecent, expectEmbargoed: true},
+		{description: "Unembargoed issue approved 20 days ago should be stale",
+			lccn: lccnSimple, date: tooRecent, metadataApprovedAt: twentyDaysAgo, expectDaysStale: 20},
+		{description: "Embargoed issue approved 20 days ago shouldn't be stale",
+			lccn: lccnEmbargoed, date: tooRecent, expectEmbargoed: true, metadataApprovedAt: twentyDaysAgo},
+		{description: "Embargoed issue with old date and extremely old approval",
+			lccn: lccnEmbargoed, date: goodDate, metadataApprovedAt: tenYearsAgo, expectDaysStale: now.Sub(goodDT).Hours()/24 - 30},
+		{description: "Unembargoed issue with extremely old approval date",
+			lccn: lccnSimple, date: goodDate, metadataApprovedAt: tenYearsAgo, expectDaysStale: now.Sub(tenYearsAgo).Hours() / 24},
 	}
 
-	dbi = makeIssue(lccnEmbargoed, tooRecent)
-	i = mustWrap(dbi, t)
-	if !i.embargoed {
-		t.Errorf("Good issue on embargoed LCCN (with a recent date) is not embargoed")
-	}
+	for _, tc := range tests {
+		t.Run(tc.description, func(t *testing.T) {
+			var dbi = makeIssue(tc.lccn, tc.date)
+			if !tc.metadataApprovedAt.IsZero() {
+				dbi.MetadataApprovedAt = tc.metadataApprovedAt
+			}
 
-	dbi = makeIssue(lccnSimple, tooRecent)
-	var twentyDaysAgo = time.Now().AddDate(0, 0, -20)
-	dbi.MetadataApprovedAt = twentyDaysAgo
-	i = mustWrap(dbi, t)
-	if math.Round(i.daysStale) != 20 {
-		t.Errorf("Unembargoed issue's days stale is %g; should have been twenty", i.daysStale)
-	}
+			var i, err = wrapIssue(dbi)
+			if tc.expectError && err == nil {
+				t.Errorf("Expected an error but didn't get one")
+			} else if !tc.expectError && err != nil {
+				t.Errorf("Didn't expect an error but got one: %v", err)
+			}
 
-	dbi = makeIssue(lccnEmbargoed, tooRecent)
-	dbi.MetadataApprovedAt = twentyDaysAgo
-	i = mustWrap(dbi, t)
-	if i.daysStale > 0 {
-		t.Errorf("Embargoed issue's days stale is %g; should have been negative due to embargo", i.daysStale)
-	}
+			// Skip further checks if an error was expected
+			if tc.expectError {
+				return
+			}
 
-	dbi = makeIssue(lccnEmbargoed, goodDate)
-	i = mustWrap(dbi, t)
-	if math.Round(i.daysStale) != 0 {
-		t.Errorf("Embargoed issue (with old date) should have been stale for 0 days")
-	}
+			if i.embargoed != tc.expectEmbargoed {
+				t.Errorf("Expected embargoed to be %v, got %v", tc.expectEmbargoed, i.embargoed)
+			}
 
-	var gdt, _ = time.Parse("2006-01-02", goodDate)
-	var expectedStale = now.Sub(gdt).Hours()/24 - 30
-	dbi = makeIssue(lccnEmbargoed, goodDate)
-	dbi.MetadataApprovedAt = now.AddDate(-10, 0, 0)
-	i = mustWrap(dbi, t)
-	t.Logf("Expecting %g stale days", expectedStale)
-	if math.Round(i.daysStale) != math.Round(expectedStale) {
-		t.Errorf("Embargoed issue (with old date and extremely old approval date) was stale for %g days, "+
-			"but should have been stale for %g days", i.daysStale, expectedStale)
-	}
-
-	dbi = makeIssue(lccnSimple, goodDate)
-	dbi.MetadataApprovedAt = now.AddDate(-10, 0, 0)
-	expectedStale = now.Sub(dbi.MetadataApprovedAt).Hours() / 24
-	i = mustWrap(dbi, t)
-	t.Logf("Expecting %g stale days", expectedStale)
-	if math.Round(i.daysStale) != math.Round(expectedStale) {
-		t.Errorf("Unembargoed issue (with extremely old approval date) was stale for %g days, "+
-			"but should have been stale for %g days", i.daysStale, expectedStale)
+			if i.daysStale >= 0 {
+				if math.Round(i.daysStale) != math.Round(tc.expectDaysStale) {
+					t.Errorf("Expected days stale to be %v, got %v", tc.expectDaysStale, math.Round(i.daysStale))
+				}
+			}
+		})
 	}
 }

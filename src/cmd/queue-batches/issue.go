@@ -49,5 +49,10 @@ func wrapIssue(dbIssue *models.Issue) (*issue, error) {
 		i.daysStale = time.Since(i.MetadataApprovedAt).Hours() / 24.0
 	}
 
+	// If the title isn't validated yet, its issues can't be queued
+	if !i.title.ValidLCCN {
+		return nil, fmt.Errorf("LCCN %q hasn't been validated", i.LCCN)
+	}
+
 	return i, nil
 }
