@@ -6,34 +6,12 @@ set -eu
 # starting point for building other tests, and an okay test when doing a refactor
 # that may cause unexpected changes.
 
-wait_db() {
-  set +e && wait_for_database && set -e
-}
-
-name=${1:-}
-if [[ $name == "" ]]; then
-  name=$(git describe --tags)
-  echo "No name was provided; using commit information from git: name is '$name'"
-fi
-
-make clean
-make
-
-rm -f workers.log
+source test/recipes/testlib.sh
 source scripts/localdev.sh
 
-if [[ ! -d ./backup/00-$name ]]; then
-  prep_for_testing
-
-  # Save state using the "name" variable from above
-  ./manage backup 00-$name
-else
-  echo "Detected backup 00; skipping processing"
-  if [[ ! -d ./backup/01-$name ]]; then
-    echo "Restoring backup 00 to begin step 01"
-    ./manage restore 00-$name
-  fi
-fi
+name=$(get_testname)
+build_and_clean
+prep_and_backup_00
 
 if [[ ! -d ./backup/01-$name ]]; then
   wait_db
