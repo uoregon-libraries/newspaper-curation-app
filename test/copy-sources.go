@@ -1,3 +1,5 @@
+//go:build ignore
+
 // copy-sources.go hard-links source issues' files into the fakemount to test
 // various aspects of processing.  We hard-link PDFs in sources/sftp into
 // fakemount/sftp, sometimes combining the pages into a new PDF first (to test
