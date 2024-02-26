@@ -97,13 +97,13 @@ func (i *issue) sftpdir() string {
 }
 
 // getDirParts splits dirname on hyphens, and translates the data such that:
-// - an error is returned if dirname had neither 2 nor 3 hyphens
-// - moc is only set if dirname had 3 hyphens
-// - lccn is set to the first part after the moc
-// - date is converted from the first 8 characters of the last part, and
-//   hyphens are added so it's formatted like it would be when in an sftp/scan
-//   upload location
-// - edition is parsed from the final two characters
+//   - an error is returned if dirname had neither 2 nor 3 hyphens
+//   - moc is only set if dirname had 3 hyphens
+//   - lccn is set to the first part after the moc
+//   - date is converted from the first 8 characters of the last part, and
+//     hyphens are added so it's formatted like it would be when in an sftp/scan
+//     upload location
+//   - edition is parsed from the final two characters
 func getDirParts(dirName string) (*issue, error) {
 	var parts = strings.Split(dirName, "-")
 	if len(parts) != 2 && len(parts) != 3 {
