@@ -94,7 +94,7 @@ Provision a real record, including things like an LCCN This is a must for us, ot
       <guid>https://uoregon-libraries.github.io/newspaper-curation-app/setup/installation/</guid>
       <description>Development If you&amp;rsquo;re developing on NCA, installation will differ from standing up a production server. Please see our Development Guide.
 Preliminary Setup Manual installation has several prerequisites:
-Poppler Utils for PDF processing OpenJPEG 2 + command-line tools for JP2 generation The command-line tools will probably need to be manually compiled to support converting PNG files. Most distributions of Linux don&amp;rsquo;t have this by default, hence the need to manually compile. A recent version of GhostScript - 10+ is recommended GraphicsMagick MariaDB A IIIF server capable of handling tiled JP2 files without a ton of overhead (e.</description>
+Poppler Utils for PDF processing OpenJPEG 2 + command-line tools for JP2 generation GhostScript GraphicsMagick MariaDB A IIIF server capable of handling tiled JP2 files without a ton of overhead (e.g., RAIS) Apache/nginx for authentication as well as proxying to NCA and the IIIF server Please note: The easiest way to get a quick demo / test setup of NCA is via our Docker configuration / setup:</description>
     </item>
     
     <item>
