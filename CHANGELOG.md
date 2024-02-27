@@ -34,6 +34,66 @@ Brief description, if necessary
 ### Migration
 -->
 
+## v4.3.0
+
+This one goes out to the devs I love. This one goes out to the devs I've left
+behind.
+
+Oh also there are a handful of nice fixes for non-devs.
+
+This time I'm splitting up the changelog by dev vs. normal person since most NCA
+users won't care about dev changes.
+
+### Regular people
+
+#### Changed
+
+- The issue queue functionality that automatically moves scanned issues has
+  been improved to not log critical errors when an issue has a pending job
+  associated with it. Heavy workloads and/or slow filesystems can take hours to
+  get huge scanned issues into NCA, and it's not an error to simply have a job
+  that hasn't started yet.
+- The batch queue command-line app will no longer allow issues that are tied to
+  unvalidated titles into a batch. This means that a title *must* have a valid
+  LCCN that exists elsewhere (usually Chronicling America or your production
+  ONI site).
+  - Batching a title that has an invalid LCCN is almost always a mistake, as ONI
+    won't be able to ingest it, so this shouldn't affect many people in practice.
+
+#### Migration
+
+- If you use titles without MARC records somehow, you'll need to either start
+  generating valid MARC records or else manually edit the database in NCA to
+  flag titles as having been validated. *This is not recommended*, and therefore
+  there will be no instructions for doing so.
+
+### Devs
+
+#### Added
+
+- New test recipe created to specifically test that queue-batches properly
+  ignores titles with unvalidated LCCNs
+
+#### Changed
+
+- The docker build is now based on RockyLinux 9 to match UO's production setup
+  more closely. It's still recommened that you use a local development setup,
+  and of course for production docker-compose isn't a great idea, but it's
+  helpful to test things quickly and validate a new environment (in this case
+  RockyLinux).
+  - The build process is now *significantly* simpler. You can see the image
+    definition yourself in `docker/Dockerfile-app`, but the gist is that we no
+    longer compile a patched version of poppler, nor install openjpeg2 tools
+    from source.
+- The docker build forcibly overwrites the settings file's SFTPGo API key on
+  *every run*. This eases dev / testing in some situations, but again makes it
+  a bad idea to use docker in production.
+- The docker override example file is a little smarter: "bin" is not mounted
+  inside the container, as that is the cause of many a headache; and
+  "/mnt/news" is not assumed to exist on the host
+- Various minor fixes to things only VSCode seemed annoyed about. VSCode users
+  should have a much easier time working on NCA. Party time? 🥳
+
 ## v4.2.0
 
 It's all about the batches. And jobs in general. Oh, and docs. Oh, right, and a
