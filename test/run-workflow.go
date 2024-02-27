@@ -1,3 +1,5 @@
+//go:build ignore
+
 package main
 
 import (
@@ -96,7 +98,7 @@ func curate(u *models.User, i *models.Issue) {
 	if err != nil {
 		l.Fatalf("Cannot read pages: %s", err)
 	}
-	for _ = range pages {
+	for range pages {
 		i.PageLabels = append(i.PageLabels, "0")
 	}
 

@@ -1,10 +1,9 @@
 #!/usr/bin/env bash
 set -eu
 
-# This script's purpose is to just run through an end-to-end test starting from
-# nothing, faking curation, then generating and approving batches. It's a good
-# starting point for building other tests, and an okay test when doing a refactor
-# that may cause unexpected changes.
+# This script is nearly a mirror of the general test, but its purpose is to
+# verify that titles with an unvalidated LCCN are properly kept out of batches
+# when they're queued up
 
 source test/recipes/testlib.sh
 source scripts/localdev.sh
@@ -63,6 +62,18 @@ else
 fi
 
 wait_db
+
+# Hack up one of the titles to say it isn't validated
+echo "Setting a title to be invalid"
+mysql -unca -pnca -Dnca -h127.0.0.1 -e "
+  UPDATE titles
+    SET valid_lccn = 0
+    WHERE lccn IN (
+      SELECT lccn FROM issues WHERE workflow_step = 'ReadyForBatching'
+      ORDER BY lccn
+    )
+    LIMIT 1
+"
 
 # Generate batches
 ./bin/queue-batches -c ./settings

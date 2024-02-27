@@ -117,7 +117,7 @@ func (q *batchQueue) FindReadyIssues(redo bool) {
 	for _, dbIssue := range issues {
 		var i, err = wrapIssue(dbIssue)
 		if err != nil {
-			logger.Errorf("Issue %d (%s) is invalid: %s", i.ID, i.Key(), err)
+			logger.Errorf("Issue %d (%s) is invalid: %s", dbIssue.ID, dbIssue.Key(), err)
 			continue
 		}
 
