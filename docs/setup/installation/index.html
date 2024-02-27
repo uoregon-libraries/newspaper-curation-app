@@ -23,7 +23,7 @@
 <meta itemprop="name" content="Installation">
 <meta itemprop="description" content="How to build and compile NCA">
 
-<meta itemprop="wordCount" content="665">
+<meta itemprop="wordCount" content="633">
 <meta itemprop="keywords" content="" /></head>
 <body>
   <div class="container"><div class="skip"><a href="#maincontent">Skip to main content</a></div>
@@ -285,14 +285,8 @@ production server. Please see our <a href="../../contributing/dev-guide">Develop
 <p>Manual installation has several prerequisites:</p>
 <ul>
 <li>Poppler Utils for PDF processing</li>
-<li>OpenJPEG 2 + command-line tools for JP2 generation
-<ul>
-<li>The command-line tools will probably need to be <strong>manually compiled</strong> to
-support converting PNG files. Most distributions of Linux don&rsquo;t have this
-by default, hence the need to manually compile.</li>
-</ul>
-</li>
-<li>A recent version of GhostScript - 10+ is recommended</li>
+<li>OpenJPEG 2 + command-line tools for JP2 generation</li>
+<li>GhostScript</li>
 <li>GraphicsMagick</li>
 <li>MariaDB</li>
 <li>A IIIF server capable of handling tiled JP2 files without a ton of overhead (e.g.,
@@ -320,10 +314,11 @@ compilation: its runtime does not need to be installed in production as long
 as you compile on the same architecture your production system has (or change
 the <code>Makefile</code> to cross-compile for the targeted architecture).</li>
 <li><a href="https://github.com/mgechev/revive">revive</a>: <code>go install github.com/mgechev/revive@latest</code></li>
+<li><code>goimports</code> (replaces <code>gofmt</code>): <code>go install golang.org/x/tools/cmd/goimports@latest</code></li>
 </ul>
 <p>The easiest way to compile is simply running <code>make</code> in the source directory.
 This will grab various Go packages the application requires, validate the
-current code (via revive, gofmt, and go vet, for development purposes), and
+current code (via revive, goimports, and go vet, for development purposes), and
 build all the binaries.</p>
 <p>A full compilation from a clean repository should take about 15 seconds, though
 this can depend on network speed the first time dependencies are pulled from
