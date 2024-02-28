@@ -36,6 +36,8 @@ func flagIssuesHandler(w http.ResponseWriter, req *http.Request) {
 		unflagIssue(r)
 	case "finalize":
 		finalizeBatch(r)
+	case "purge":
+		purgeBatch(r)
 	case "abort":
 		abortBatch(r)
 	default:
@@ -259,6 +261,22 @@ func finalizeBatch(r *Responder) {
 
 	http.SetCookie(r.Writer, &http.Cookie{Name: "Info", Value: fmt.Sprintf("A background job has been queued to finalize batch %q", r.batch.Name), Path: "/"})
 	http.Redirect(r.Writer, r.Request, basePath, http.StatusFound)
+}
+
+func purgeBatch(r *Responder) {
+	if !r.can.Purge(r.batch) {
+		r.Error(http.StatusForbidden, "You are not permitted to purge this batch")
+		return
+	}
+
+	var err = r.batch.Save(models.ActionTypePurgeBatch, r.Vars.User.ID, "")
+	if err != nil {
+		logger.Criticalf(`Unable to log "purge batch" action for batch %d (%s): %s`, r.batch.ID, r.batch.Name, err)
+		r.Error(http.StatusInternalServerError, "Error trying to purge the batch. Try again or contact support.")
+		return
+	}
+
+	deleteBatch(r)
 }
 
 func deleteBatch(r *Responder) {

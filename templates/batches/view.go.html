@@ -45,10 +45,11 @@
     {{else if and .Data.Batch.ReadyForFlaggingIssues (.Data.Can.FlagIssues .Data.Batch)}}
     <p>
       {{.Data.Batch.Name}} has failed QC. You can mark issues that need to be
-      removed and then send the batch back to staging.
+      removed and then send the batch back to staging, or eliminate the batch
+      entirely.
     </p>
 
-    <a href="{{FlagIssuesURL .Data.Batch}}" class="btn btn-primary">Flag Issues...</a>
+    <a href="{{FlagIssuesURL .Data.Batch}}" class="btn btn-primary">Flag Issues / Purge Batch...</a>
 
     <!-- Needs production load -->
     {{else if and .Data.Batch.ReadyForProduction (.Data.Can.Load .Data.Batch)}}

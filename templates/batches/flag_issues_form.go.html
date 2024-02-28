@@ -54,13 +54,18 @@
       <button class="btn btn-primary" type="submit">Add Issue To Removal Queue</button>
     </form>
 
-    <h2>Finalize / Cancel</h2>
+    <h2>Finalize / Undo / Abort</h2>
     <p>
       When you're certain you've identified all problem issues, select
       "Finalize" below. <em>This will effectively lock the batch from further
       updates, so be certain you're done!</em>
       {{if not .Data.FlaggedIssues}}<strong>Note: you haven't selected any
       issues yet, so finalizing is not an option.</strong>{{end}}
+    </p>
+    <p>
+      If you just want to remove the batch but leave the issues in NCA for a
+      new batch generation, select "Purge" below. This will finalize flagged
+      issues, but push all the good issues back into NCA and destroy the batch.
     </p>
     <p>
       If this batch doesn't need any issues removed (i.e., it was failed by
@@ -95,6 +100,43 @@
           <button class="btn btn-secondary cta-modal-toggle">Cancel</button>
         </div>
       </cta-modal>
+
+      {{if .Data.Can.Purge .Data.Batch}}
+      <cta-modal>
+        <div slot="button" class="inline">
+          {{if ne 0 .Data.RemainingIssues}}
+          <button class="btn btn-primary cta-modal-toggle">Purge</button>
+          {{else}}
+          <button class="btn btn-disabled" disabled="disabled">Purge</button>
+          {{end}}
+        </div>
+
+        <div slot="modal">
+          <h2>Purge Batch?</h2>
+          <p>
+            You are about to purge {{.Data.Batch.Name}}. The following actions will occur:
+            <ul>
+              <li>
+                The {{.Data.FlaggedIssues|len}} flagged issue(s) will be
+                removed from the batch and put into the "Unfixable Errors" tab
+                in the NCA workflow.
+              </li>
+              <li>
+                All other issues will be moved back to NCA's normal workflow,
+                ready to immediately be included in a new batch.
+              </li>
+              <li>
+                The batch will be purged from disk and from NCA.
+              </li>
+            </ul>
+
+            <i>This is generally not necessary unless the batch was built by mistake</i>.
+          </p>
+          <button class="btn btn-primary" type="submit" name="action" value="purge">Confirm</button>
+          <button class="btn btn-secondary cta-modal-toggle">Cancel</button>
+        </div>
+      </cta-modal>
+      {{end}}
 
       <cta-modal>
         <div slot="button" class="inline">
