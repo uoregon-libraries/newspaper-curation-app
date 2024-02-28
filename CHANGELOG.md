@@ -34,6 +34,16 @@ Brief description, if necessary
 ### Migration
 -->
 
+## v4.3.1
+
+Batch purging. That's all.
+
+### Added
+
+- Batches which fail QC can now be purged entirely, pushing all issues back to
+  NCA so they can be rebatched. Sounds crazy? I thought so, too, until
+  discovering that we had built a batch by mistake.
+
 ## v4.3.0
 
 This one goes out to the devs I love. This one goes out to the devs I've left
