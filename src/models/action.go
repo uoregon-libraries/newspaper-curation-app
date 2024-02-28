@@ -33,6 +33,7 @@ const (
 	ActionTypeApproveBatch         ActionType = "approve-batch"
 	ActionTypeRejectBatch          ActionType = "reject-batch"
 	ActionTypeFinalizeBatch        ActionType = "finalize-batch"
+	ActionTypePurgeBatch           ActionType = "purge-batch"
 	ActionTypeAbortBatchRejection  ActionType = "abort-reject-batch"
 	ActionTypeFlagBatchQCReady     ActionType = "flag-batch-qc-ready"
 )
@@ -71,6 +72,8 @@ func (at ActionType) Describe() string {
 		return "returned the batch to QC with no changes"
 	case ActionTypeFinalizeBatch:
 		return "finalized the batch for rebuild after rejecting one or more issues"
+	case ActionTypePurgeBatch:
+		return "purged the batch, moving all issues back to NCA"
 	case ActionTypeFlagBatchQCReady:
 		return "flagged the batch as being ready for QC"
 	default:
