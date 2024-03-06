@@ -58,7 +58,7 @@ services:
     command: ./bin/server -c ./settings
 
   sftpgo:
-    image: drakkan/sftpgo:v2.3-alpine
+    image: drakkan/sftpgo:v2.5-alpine
     volumes:
       - /mnt/news/sftp:/srv/sftpgo/data:z
       - sftpgo-backups:/srv/sftpgo/backups

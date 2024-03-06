@@ -38,7 +38,7 @@ services:
   # Set up sftpgo to use the fake mountpoint and be web-accessible via port
   # 8080 for administrative use.  Port 2022 is the sftp port - in a production
   # environment you might want to map this to 22 and set your server's ssh port
-  # set to a nonstandard option so that end users can sftp using their client's
+  # to a nonstandard option so that end users can sftp using their client's
   # default settings.
   sftpgo:
     volumes:
