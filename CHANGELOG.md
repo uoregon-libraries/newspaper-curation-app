@@ -34,15 +34,6 @@ Brief description, if necessary
 ### Migration
 -->
 
-## v4.3.2
-
-Hotfix: NCA can now update users in SFTPGo again.
-
-### Fixed
-
-- SFTPGo's 2.5.0 release changed how user updates work. This hotfix makes NCA
-  capable of updating them again.
-
 ## v4.3.1
 
 Batch purging. That's all.
