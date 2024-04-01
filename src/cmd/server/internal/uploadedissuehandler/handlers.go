@@ -5,6 +5,7 @@ import (
 	"fmt"
 	"net/http"
 	"path"
+	"sync"
 
 	"github.com/gorilla/mux"
 	"github.com/uoregon-libraries/newspaper-curation-app/src/apperr"
@@ -16,9 +17,10 @@ import (
 )
 
 var (
-	searcher *Searcher
-	watcher  *issuewatcher.Watcher
-	conf     *config.Config
+	searcher   *Searcher
+	watcher    *issuewatcher.Watcher
+	conf       *config.Config
+	queueMutex sync.Mutex
 
 	// basePath is the path to the main uploaded issues page.  Subpages all start with this path.
 	basePath string
@@ -105,6 +107,7 @@ func IssueWorkflowHandler(w http.ResponseWriter, req *http.Request) {
 
 	switch r.vars["action"] {
 	case "queue":
+		queueMutex.Lock()
 		var err = r.issue.Queue()
 		var cname, msg string
 		if err == nil {
@@ -115,6 +118,7 @@ func IssueWorkflowHandler(w http.ResponseWriter, req *http.Request) {
 			cname = "Alert"
 			msg = encodedError(err)
 		}
+		queueMutex.Unlock()
 
 		r.Audit(models.AuditActionQueue, fmt.Sprintf("Issue from %q, success: %#v", r.issue.Location, err == nil))
 		http.SetCookie(w, &http.Cookie{Name: cname, Value: msg, Path: "/"})
