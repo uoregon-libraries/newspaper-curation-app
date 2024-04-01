@@ -11,6 +11,7 @@ import (
 
 type request struct {
 	function string
+	method   string
 	headers  http.Header
 	url      string
 }
@@ -36,7 +37,12 @@ func makeSpy() *spy {
 
 func (s *spy) do(_ *http.Client, req *http.Request) ([]byte, error) {
 	var function = strings.Replace(req.URL.Path, "/api/v2/", "", 1)
-	s.requests = append(s.requests, request{function: function, headers: req.Header, url: req.URL.String()})
+	s.requests = append(s.requests, request{
+		function: function,
+		method:   req.Method,
+		headers:  req.Header,
+		url:      req.URL.String(),
+	})
 	if s.responses[function] == nil {
 		return nil, fmt.Errorf("No response for function %q", function)
 	}
@@ -138,10 +144,19 @@ func TestUpdateUser(t *testing.T) {
 	if err != nil {
 		t.Errorf("UpdateUser should have had no errors, but it returned %s", err)
 	}
-	if len(s.requests) != 1 {
+	if len(s.requests) != 2 {
 		t.Errorf("Expected one requests, but got %d", len(s.requests))
 	}
+	if s.requests[0].method != "GET" {
+		t.Errorf("First request should have been to GET the current user")
+	}
 	if s.requests[0].function != "users/fakename" {
-		t.Errorf("Request should have been for the user, but it was %#v", s.requests[1])
+		t.Errorf("GET request should have been for the user, but it was %#v", s.requests[1])
+	}
+	if s.requests[1].method != "PUT" {
+		t.Errorf("Second request should have been to PUT the updated user, but method was %q", s.requests[1].method)
+	}
+	if s.requests[1].function != "users/fakename" {
+		t.Errorf("POST request should have been for the user, but it was %#v", s.requests[1])
 	}
 }

@@ -12,6 +12,8 @@ import (
 	"net/url"
 	"path"
 	"time"
+
+	"github.com/tidwall/sjson"
 )
 
 func rndPass() string {
@@ -106,16 +108,25 @@ func (a *API) GetUser(user string) (u *User, err error) {
 // UpdateUser tells SFTPGo to change the password and/or quota for a
 // publisher's SFTP user
 func (a *API) UpdateUser(user, pass string, quota int64) error {
-	var u = User{
-		Username:  user,
-		Password:  pass,
-		QuotaSize: quota,
+	// Get the raw user JSON and modify it - SFTPGo will reset *all fields* we
+	// omit in a PUT request. The simple "User" type works great for creation
+	// (since we want the default values) and retrieval (we only display a few
+	// fields in NCA). But for updates, we have to get the full user record and
+	// carefully modify it.
+	var data, err = a.rpc("GET", path.Join("users", user), "")
+	if err != nil {
+		return fmt.Errorf("unable to request user from SFTPGo: %w", err)
 	}
 
-	// JSON errors only occur with complex types that can't be marshaled, so this
-	// error can be safely ignored
-	var userData, _ = json.Marshal(u)
-	var _, err = a.rpc("PUT", path.Join("users", user), string(userData))
+	data, err = sjson.SetBytes(data, "quota_size", quota)
+	if err == nil {
+		data, err = sjson.SetBytes(data, "password", pass)
+	}
+	if err != nil {
+		return fmt.Errorf("error setting user data: %w", err)
+	}
+
+	_, err = a.rpc("PUT", path.Join("users", user), string(data))
 	return err
 }
 
