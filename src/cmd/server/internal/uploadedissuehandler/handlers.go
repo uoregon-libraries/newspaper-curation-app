@@ -95,6 +95,12 @@ func IssueHandler(w http.ResponseWriter, req *http.Request) {
 	r.Render(IssueTmpl)
 }
 
+func queueIssueIngest(issue *Issue) apperr.Error {
+	queueMutex.Lock()
+	defer queueMutex.Unlock()
+	return issue.Queue()
+}
+
 // IssueWorkflowHandler handles setting up the issue move job
 func IssueWorkflowHandler(w http.ResponseWriter, req *http.Request) {
 	// Since we have real logic in this handler, we want to bail if we already
@@ -107,8 +113,7 @@ func IssueWorkflowHandler(w http.ResponseWriter, req *http.Request) {
 
 	switch r.vars["action"] {
 	case "queue":
-		queueMutex.Lock()
-		var err = r.issue.Queue()
+		var err = queueIssueIngest(r.issue)
 		var cname, msg string
 		if err == nil {
 			cname = "Info"
@@ -118,7 +123,6 @@ func IssueWorkflowHandler(w http.ResponseWriter, req *http.Request) {
 			cname = "Alert"
 			msg = encodedError(err)
 		}
-		queueMutex.Unlock()
 
 		r.Audit(models.AuditActionQueue, fmt.Sprintf("Issue from %q, success: %#v", r.issue.Location, err == nil))
 		http.SetCookie(w, &http.Cookie{Name: cname, Value: msg, Path: "/"})
