@@ -5,6 +5,7 @@ import (
 	"fmt"
 	"net/http"
 	"path"
+	"sync"
 
 	"github.com/gorilla/mux"
 	"github.com/uoregon-libraries/newspaper-curation-app/src/apperr"
@@ -16,9 +17,10 @@ import (
 )
 
 var (
-	searcher *Searcher
-	watcher  *issuewatcher.Watcher
-	conf     *config.Config
+	searcher   *Searcher
+	watcher    *issuewatcher.Watcher
+	conf       *config.Config
+	queueMutex sync.Mutex
 
 	// basePath is the path to the main uploaded issues page.  Subpages all start with this path.
 	basePath string
@@ -93,6 +95,12 @@ func IssueHandler(w http.ResponseWriter, req *http.Request) {
 	r.Render(IssueTmpl)
 }
 
+func queueIssueIngest(issue *Issue) apperr.Error {
+	queueMutex.Lock()
+	defer queueMutex.Unlock()
+	return issue.Queue()
+}
+
 // IssueWorkflowHandler handles setting up the issue move job
 func IssueWorkflowHandler(w http.ResponseWriter, req *http.Request) {
 	// Since we have real logic in this handler, we want to bail if we already
@@ -105,7 +113,7 @@ func IssueWorkflowHandler(w http.ResponseWriter, req *http.Request) {
 
 	switch r.vars["action"] {
 	case "queue":
-		var err = r.issue.Queue()
+		var err = queueIssueIngest(r.issue)
 		var cname, msg string
 		if err == nil {
 			cname = "Info"
