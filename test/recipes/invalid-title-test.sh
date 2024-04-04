@@ -75,21 +75,7 @@ mysql -unca -pnca -Dnca -h127.0.0.1 -e "
     LIMIT 1
 "
 
-# Generate batches
-./bin/queue-batches -c ./settings
-
-# Start workers, wait for jobs to complete (~30sec)
-workonce 2>&1 | tee -a workers.log
-
-echo "Approve batches manually in NCA, then press [ENTER] continue"
-read
-workonce 2>&1 | tee -a workers.log
-
-# Batches' statuses in NCA should read "passed_qc", no jobs should be anything
-# other than "success"
-
-echo "Verify all batches' statuses are 'passed_qc', then press [ENTER] to continue"
-read
+finish_batches
 
 cd test
 ./report.sh $name
