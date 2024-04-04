@@ -43,6 +43,10 @@ Minor improvements.
 - Uploaded issues can no longer be doubly queued for ingest into NCA. This was
   extremely rare with the "prevent double submit" JS, but it did manage to
   happen a couple times for us.
+- Test recipes no longer run workers needlessly after batch approval. Instead
+  they instruct you to mark the batches live so the full process can be
+  completed and tested (marking the batch live and setting it ready for
+  archive).
 
 ### Changed
 

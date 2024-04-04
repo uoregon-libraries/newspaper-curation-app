@@ -34,3 +34,21 @@ prep_and_backup_00() {
     fi
   fi
 }
+
+finish_batches() {
+  wait_db
+
+  # Generate batches
+  ./bin/queue-batches -c ./settings
+
+  # Start workers, wait for jobs to complete (~30sec)
+  workonce 2>&1 | tee -a workers.log
+
+  echo "Approve batches manually in NCA, mark them live, then press [ENTER] continue"
+  read
+  workonce 2>&1 | tee -a workers.log
+
+  echo "Verify all batches' statuses are 'live', then press [ENTER] to continue"
+  read
+
+}
