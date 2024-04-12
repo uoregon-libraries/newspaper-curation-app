@@ -73,8 +73,10 @@ func (q *issueQueue) splitQueue(maxPages int) *issueQueue {
 		var l = len(issue.PageLabels)
 		if popped.pages+l <= maxPages {
 			popped.append(issue)
+			logger.Debugf("splitQueue: preparing issue %q: %d pages prepared", issue.Key(), popped.pages)
 		} else {
 			q.append(issue)
+			logger.Debugf("splitQueue: skipping issue %q: too many pages; current pages (%d) + issue (%d) > max (%d)", issue.Key(), popped.pages, l, maxPages)
 		}
 	}
 
