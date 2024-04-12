@@ -181,6 +181,15 @@ func (q *batchQueue) NextBatch() (*models.Batch, bool) {
 
 	var smallQ = currentQ.splitQueue(q.maxPages)
 	if smallQ.pages < q.minPages {
+		// This happens when the maximum batch size is too small for *any* of the
+		// remaining issues in the queue
+		if smallQ.pages == 0 {
+			for _, i := range currentQ.list {
+				logger.Debugf("Issue %q has %d pages", i.Key(), i.pages)
+			}
+			logger.Warnf("Cannot create a batch for %q: too many pages in all remaining issues.", q.currentMOC)
+			return nil, false
+		}
 		if !smallQ.longWait {
 			logger.Infof("Not creating a batch for %q: too few pages (%d)", q.currentMOC, smallQ.pages)
 			return nil, true
