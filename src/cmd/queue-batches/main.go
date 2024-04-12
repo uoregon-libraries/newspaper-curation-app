@@ -12,7 +12,9 @@ import (
 // Command-line options
 type _opts struct {
 	cli.BaseOptions
-	Redo bool `long:"redo" description:"only queue issues needing a re-batch"`
+	Redo         bool `long:"redo" description:"only queue issues needing a re-batch"`
+	MinBatchSize int  `long:"min-batch-size" description:"Don't create a batch with fewer than this many pages (overrides the configuration setting 'MIN_BATCH_SIZE')"`
+	MaxBatchSize int  `long:"max-batch-size" description:"Don't create a batch with more than this many pages (overrides the configuration setting 'MAX_BATCH_SIZE')"`
 }
 
 var opts _opts
@@ -22,7 +24,8 @@ func getOpts() *config.Config {
 	var c = cli.New(&opts)
 	c.AppendUsage("Queues one or more batches depending on the number of " +
 		"issues in the database which are flagged as ready for batching.  See " +
-		"the MAX_BATCH_SIZE and MIN_BATCH_SIZE settings to control how many " +
+		"the MAX_BATCH_SIZE and MIN_BATCH_SIZE settings, or use the " +
+		"--min-batch-size / --max-batch-size flags to control how many " +
 		"pages a batch may contain.")
 	c.AppendUsage(`If --redo is specified, issues must be in a special "ready for ` +
 		`rebatching" state in order to be queued. This is not a state NCA sets ` +
@@ -38,6 +41,18 @@ func getOpts() *config.Config {
 	titles, err = models.Titles()
 	if err != nil {
 		logger.Fatalf("Unable to find titles in the database: %s", err)
+	}
+
+	if opts.MinBatchSize > 0 {
+		conf.MinBatchSize = opts.MinBatchSize
+		logger.Infof("Setting MIN_BATCH_SIZE to %d", conf.MinBatchSize)
+	}
+	if opts.MaxBatchSize > 0 {
+		conf.MaxBatchSize = opts.MaxBatchSize
+		logger.Infof("Setting MAX_BATCH_SIZE to %d", conf.MaxBatchSize)
+	}
+	if opts.MinBatchSize > opts.MaxBatchSize {
+		logger.Fatalf("Terminating: minimum batch size (%d) is greater than maximum batch size (%d)", conf.MinBatchSize, conf.MaxBatchSize)
 	}
 
 	return conf

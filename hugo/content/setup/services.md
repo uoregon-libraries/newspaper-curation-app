@@ -98,6 +98,10 @@ your configured `BATCH_OUTPUT_PATH` and syncing to the `BATCH_PRODUCTION_PATH`.
 The batch status page in NCA will show which batches have finished processing
 and are ready for ingest into staging.
 
+The tool can be given flags for `--min-batch-size` and `--max-batch-size` in
+order to override the standard settings, e.g., if you need cronned batch
+generation to behave differently than manual runs.
+
 ## Bulk Upload Queue
 
 The `bulk-issue-queue` tool allows you to push uploaded issues into the

@@ -73,8 +73,10 @@ func (q *issueQueue) splitQueue(maxPages int) *issueQueue {
 		var l = len(issue.PageLabels)
 		if popped.pages+l <= maxPages {
 			popped.append(issue)
+			logger.Debugf("splitQueue: preparing issue %q: %d pages prepared", issue.Key(), popped.pages)
 		} else {
 			q.append(issue)
+			logger.Debugf("splitQueue: skipping issue %q: too many pages; current pages (%d) + issue (%d) > max (%d)", issue.Key(), popped.pages, l, maxPages)
 		}
 	}
 
@@ -179,6 +181,15 @@ func (q *batchQueue) NextBatch() (*models.Batch, bool) {
 
 	var smallQ = currentQ.splitQueue(q.maxPages)
 	if smallQ.pages < q.minPages {
+		// This happens when the maximum batch size is too small for *any* of the
+		// remaining issues in the queue
+		if smallQ.pages == 0 {
+			for _, i := range currentQ.list {
+				logger.Debugf("Issue %q has %d pages", i.Key(), i.pages)
+			}
+			logger.Warnf("Cannot create a batch for %q: too many pages in all remaining issues.", q.currentMOC)
+			return nil, false
+		}
 		if !smallQ.longWait {
 			logger.Infof("Not creating a batch for %q: too few pages (%d)", q.currentMOC, smallQ.pages)
 			return nil, true
