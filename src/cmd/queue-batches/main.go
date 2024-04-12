@@ -51,6 +51,9 @@ func getOpts() *config.Config {
 		conf.MaxBatchSize = opts.MaxBatchSize
 		logger.Infof("Setting MAX_BATCH_SIZE to %d", conf.MaxBatchSize)
 	}
+	if opts.MinBatchSize > opts.MaxBatchSize {
+		logger.Fatalf("Terminating: minimum batch size (%d) is greater than maximum batch size (%d)", conf.MinBatchSize, conf.MaxBatchSize)
+	}
 
 	return conf
 }
