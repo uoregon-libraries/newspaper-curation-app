@@ -22,8 +22,8 @@ reverse-engineer by reading the various docker files to see what you need to
 install, and potentially how to install it.
 
 **Note**: If you do go manual, the repository contains working examples for
-RHEL 7 systemd services to start the job runner as well as the workflow http
-server: <https://github.com/uoregon-libraries/newspaper-curation-app/tree/main/rhel7>.
+systemd services to start the job runner as well as the workflow http
+server: <https://github.com/uoregon-libraries/newspaper-curation-app/tree/main/deploy>.
 Consider looking at these to better understand how you might manage a
 production installation.
 
