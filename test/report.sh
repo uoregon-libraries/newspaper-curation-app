@@ -34,14 +34,15 @@ rm -rf $repdir
 mkdir ./$repdir
 find ./fakemount | sort | strip_dbids > $repdir/raw-files.txt
 
-# Store all XML to be sure our ALTO conversion isn't busted
+# Store all XML (with dates and IDs faked for ease of compare) to be sure our
+# ALTO conversion isn't busted
 for xml in $(find ./fakemount -name "*.xml" | sort); do
   fname=$(echo ${xml#./fakemount/} | sed 's|/|__|g' | strip_dbids)
   cat $xml | \
     sed 's|<softwareVersion>.*</softwareVersion>|<softwareVersion>XYZZY</softwareVersion>|' | \
     sed 's|<fileName>.*</fileName>|<fileName>XYZZY</fileName>|' | \
     sed 's|\bID="TB\.[^"]*"|ID="XYZZY"|g' | \
-    sed 's|<metsHdr CREATEDATE="\(....-..-..T\)..:..:..">|<metsHdr CREATEDATE="\100:00:00">|' \
+    sed 's|<metsHdr CREATEDATE="....-..-..T..:..:..">|<metsHdr CREATEDATE="2006-01-02T15:04:05">|' \
     > $repdir/$fname
 done
 
@@ -88,3 +89,9 @@ sql "
   JOIN pipelines p ON (j.pipeline_id = p.id)
   ORDER BY p.name, p.description, p.object_type, j.job_type, j.status, j.object_type, j.extra_data
 " | strip_dbids > $repdir/dump-jobs.sql
+
+# Rename batches to strip out the date they were created
+for file in $(find $repdir -name "*__batch_*_20*.xml"); do
+  newname=$(echo $file | sed 's|\(batch_[^_]\+_\)[0-9]\+\([A-Z]\)|\120060102\2|')
+  mv $file $newname
+done
