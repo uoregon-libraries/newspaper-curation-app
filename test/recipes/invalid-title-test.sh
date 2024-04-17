@@ -8,7 +8,7 @@ set -eu
 source test/recipes/testlib.sh
 source scripts/localdev.sh
 
-name=$(get_testname)
+name=$(get_testname ${1:-})
 build_and_clean
 prep_and_backup_00
 
