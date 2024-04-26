@@ -1,7 +1,10 @@
 package jobs
 
 import (
+	"path/filepath"
+
 	"github.com/uoregon-libraries/gopkg/bagit"
+	"github.com/uoregon-libraries/gopkg/hasher"
 	"github.com/uoregon-libraries/newspaper-curation-app/src/config"
 )
 
@@ -13,7 +16,7 @@ type WriteBagitManifest struct {
 // Process implements Processor, writing out the data manifest, bagit.txt, and
 // the tag manifest
 func (j *WriteBagitManifest) Process(*config.Config) ProcessResponse {
-	var b = bagit.New(j.DBBatch.Location)
+	var b = bagit.New(j.DBBatch.Location, hasher.NewSHA256())
 	var err = b.WriteTagFiles()
 	if err != nil {
 		j.Logger.Errorf("Unable to write bagit tag files for %q: %s", j.DBBatch.Location, err)
@@ -32,7 +35,7 @@ type ValidateTagManifest struct {
 
 // Process implements Processor, verifying the tag manifest
 func (j *ValidateTagManifest) Process(*config.Config) ProcessResponse {
-	var b = bagit.New(j.DBBatch.Location)
+	var b = bagit.New(j.DBBatch.Location, hasher.NewSHA256())
 	var err = b.ReadManifests()
 	if err != nil {
 		j.Logger.Errorf("Unable to read bagit manifests for %q: %s", j.DBBatch.Location, err)
