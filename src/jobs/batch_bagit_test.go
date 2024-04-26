@@ -7,6 +7,7 @@ import (
 	"testing"
 
 	"github.com/uoregon-libraries/gopkg/fileutil"
+	"github.com/uoregon-libraries/gopkg/fileutil/manifest"
 	"github.com/uoregon-libraries/gopkg/logger"
 	"github.com/uoregon-libraries/newspaper-curation-app/src/config"
 	"github.com/uoregon-libraries/newspaper-curation-app/src/models"
@@ -77,6 +78,16 @@ func TestWriteBagitManifest(t *testing.T) {
 	var batchJob = getBatchJob(tmpdir)
 	var j = &WriteBagitManifest{BatchJob: batchJob}
 
+	// Write a manifest file with a fake precomputed SHA
+	var m = manifest.New(filepath.Join(tmpdir, "data", "subdir"))
+	m.Files = []manifest.FileInfo{
+		{Name: "other.txt", Sum: "invalid-sum"},
+	}
+	var err = m.Write()
+	if err != nil {
+		t.Fatalf("Unable to write manifest file: %s", err)
+	}
+
 	var resp = j.Process(&config.Config{})
 	if resp != PRSuccess {
 		t.Errorf("Expected PRSuccess, got %v", resp)
@@ -91,9 +102,11 @@ func TestWriteBagitManifest(t *testing.T) {
 		}
 	}
 
-	// Make sure manifest is correct for our dummy files
+	// Make sure manifest used the precomputed SHA sums when available, and real
+	// sums when the manifest didn't provide any
 	var fullpath = filepath.Join(tmpdir, "manifest-sha256.txt")
-	var raw, err = os.ReadFile(fullpath)
+	var raw []byte
+	raw, err = os.ReadFile(fullpath)
 	if err != nil {
 		t.Fatalf("Unable to read %q: %s", fullpath, err)
 	}
@@ -101,7 +114,8 @@ func TestWriteBagitManifest(t *testing.T) {
 	var expectedLines = []string{
 		"07c9b7c5005442cd3b1ef28028417ffb068a2d9426a3d37fa2b8c12b4e79c7dd  data/bar.txt",
 		"ec6e72eb877ee399c6bfd08620bd98432eba09f3d941faf51dbcc283a8a695ad  data/foo.txt",
-		"712c0490983ef62ce7fe733a90305e46d42da100df600d5179c2c142acfb7108  data/subdir/other.txt",
+		"<ignore>  data/subdir/.manifest",
+		"invalid-sum  data/subdir/other.txt",
 		"",
 	}
 	var expected = len(expectedLines)
@@ -112,6 +126,12 @@ func TestWriteBagitManifest(t *testing.T) {
 	for i, got := range lines {
 		var expected = expectedLines[i]
 		if got != expected {
+			// We have to ignore the .manifest line because it's not part of the test,
+			// and by its very nature it changes when it's written out in order to
+			// record the current time
+			if strings.HasSuffix(expected, "data/subdir/.manifest") {
+				continue
+			}
 			t.Errorf("manifest line %d should have been %q, got %q", i, expected, got)
 		}
 	}

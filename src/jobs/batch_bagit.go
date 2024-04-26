@@ -1,7 +1,10 @@
 package jobs
 
 import (
+	"path/filepath"
+
 	"github.com/uoregon-libraries/gopkg/bagit"
+	"github.com/uoregon-libraries/gopkg/fileutil/manifest"
 	"github.com/uoregon-libraries/gopkg/hasher"
 	"github.com/uoregon-libraries/newspaper-curation-app/src/config"
 )
@@ -11,10 +14,39 @@ type WriteBagitManifest struct {
 	*BatchJob
 }
 
+// shaLookup is a bagit "cache" which we use to look for pre-computed SHA
+// information to avoid re-SHA-ing files that don't need it
+type shaLookup struct {
+	baseDir string
+}
+
+// GetSum checks if there's a manifest in the given path, and uses it to look
+// for a sum if present
+func (l *shaLookup) GetSum(path string) (string, bool) {
+	var fullpath = filepath.Join(l.baseDir, path)
+	var dir, _ = filepath.Split(fullpath)
+	var m, err = manifest.Open(dir)
+	if err != nil || m.Hasher == nil {
+		return "", false
+	}
+
+	for _, f := range m.Files {
+		return f.Sum, true
+	}
+
+	return "", false
+}
+
+// SetSum does nothing - this isn't a proper cache, just a way to shortcut
+// files that already had sums calculated
+func (l *shaLookup) SetSum(_, _ string) {
+}
+
 // Process implements Processor, writing out the data manifest, bagit.txt, and
 // the tag manifest
 func (j *WriteBagitManifest) Process(*config.Config) ProcessResponse {
 	var b = bagit.New(j.DBBatch.Location, hasher.NewSHA256())
+	b.Cache = &shaLookup{baseDir: j.DBBatch.Location}
 	var err = b.WriteTagFiles()
 	if err != nil {
 		j.Logger.Errorf("Unable to write bagit tag files for %q: %s", j.DBBatch.Location, err)
