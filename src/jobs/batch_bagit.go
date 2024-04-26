@@ -1,8 +1,6 @@
 package jobs
 
 import (
-	"path/filepath"
-
 	"github.com/uoregon-libraries/gopkg/bagit"
 	"github.com/uoregon-libraries/gopkg/hasher"
 	"github.com/uoregon-libraries/newspaper-curation-app/src/config"
