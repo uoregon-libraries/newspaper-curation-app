@@ -24,14 +24,16 @@ type shaLookup struct {
 // for a sum if present
 func (l *shaLookup) GetSum(path string) (string, bool) {
 	var fullpath = filepath.Join(l.baseDir, path)
-	var dir, _ = filepath.Split(fullpath)
+	var dir, fname = filepath.Split(fullpath)
 	var m, err = manifest.Open(dir)
 	if err != nil || m.Hasher == nil {
 		return "", false
 	}
 
 	for _, f := range m.Files {
-		return f.Sum, true
+		if fname == f.Name {
+			return f.Sum, true
+		}
 	}
 
 	return "", false
