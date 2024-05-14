@@ -28,6 +28,7 @@ const (
 	JobTypeFinalizeBatchFlaggedIssue   JobType = "finalize_batch_flagged_issue"
 	JobTypeEmptyBatchFlaggedIssuesList JobType = "empty_batch_flagged_issues_list"
 	JobTypeIgnoreIssue                 JobType = "ignore_issue"
+	JobTypeSetIssueCurated             JobType = "set_issue_curated"
 	JobTypeSetBatchStatus              JobType = "set_batch_status"
 	JobTypeSetBatchNeedsStagingPurge   JobType = "set_batch_needs_staging_purge"
 	JobTypePageSplit                   JobType = "page_split"
@@ -64,6 +65,7 @@ var ValidJobTypes = []JobType{
 	JobTypeFinalizeBatchFlaggedIssue,
 	JobTypeEmptyBatchFlaggedIssuesList,
 	JobTypeIgnoreIssue,
+	JobTypeSetIssueCurated,
 	JobTypeSetBatchStatus,
 	JobTypeSetBatchNeedsStagingPurge,
 	JobTypePageSplit,

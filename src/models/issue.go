@@ -484,12 +484,11 @@ func (i *Issue) unclaim() {
 	i.WorkflowOwnerExpiresAt = time.Time{}
 }
 
-// QueueForMetadataReview sets the issue as being ready for review, which
-// involves changing workflow metadata as well as moving any in-draft comments
-// to the real comments list
-func (i *Issue) QueueForMetadataReview(curatorID int64) error {
+// SetCurated records the curator, changes the owner of the issue if it was
+// previously rejected in metadata review, and stores the draft comment, if
+// any was present.
+func (i *Issue) SetCurated(curatorID int64) error {
 	// Update workflow step and record the curator id
-	i.WorkflowStep = schema.WSAwaitingMetadataReview
 	i.MetadataEntryUserID = curatorID
 	i.MetadataEnteredAt = time.Now()
 	i.unclaim()

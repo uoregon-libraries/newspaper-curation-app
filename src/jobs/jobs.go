@@ -21,6 +21,8 @@ func DBJobToProcessor(dbJob *models.Job) Processor {
 		return &EmptyBatchFlaggedIssuesList{BatchJob: NewBatchJob(dbJob)}
 	case models.JobTypeIgnoreIssue:
 		return &IgnoreIssue{IssueJob: NewIssueJob(dbJob)}
+	case models.JobTypeSetIssueCurated:
+		return &SetIssueCurated{IssueJob: NewIssueJob(dbJob)}
 	case models.JobTypePageSplit:
 		return &PageSplit{IssueJob: NewIssueJob(dbJob)}
 

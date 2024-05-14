@@ -8,6 +8,7 @@ import (
 
 	"github.com/uoregon-libraries/newspaper-curation-app/src/cmd/server/internal/responder"
 	"github.com/uoregon-libraries/newspaper-curation-app/src/internal/logger"
+	"github.com/uoregon-libraries/newspaper-curation-app/src/jobs"
 	"github.com/uoregon-libraries/newspaper-curation-app/src/models"
 )
 
@@ -122,7 +123,7 @@ func saveQueue(resp *responder.Responder, i *Issue, changes map[string]string) {
 	}
 
 	// Metadata is good: queue for review
-	var err = i.QueueForMetadataReview(resp.Vars.User.ID)
+	var err = jobs.QueueIssueForMetadataReview(i.Issue, resp.Vars.User)
 	if err != nil {
 		resp.Vars.Alert = "Unable to save issue; try again or contact support"
 		enterMetadataHandler(resp, i)
