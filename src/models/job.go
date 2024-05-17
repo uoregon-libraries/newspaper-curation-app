@@ -235,11 +235,6 @@ func FindUnfinishedJobs() ([]*Job, error) {
 	return findJobs("status NOT IN (?, ?, ?)", JobStatusSuccessful, JobStatusFailed, JobStatusFailedDone)
 }
 
-// FindJobsByStatus returns all jobs that have the given status
-func FindJobsByStatus(st JobStatus) ([]*Job, error) {
-	return findJobs("status = ?", string(st))
-}
-
 // Logs lazy-loads all logs for this job from the database
 func (j *Job) Logs() []*JobLog {
 	if j.logs == nil {
