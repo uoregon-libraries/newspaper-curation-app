@@ -18,7 +18,6 @@ type PipelineName string
 const (
 	PNSFTPIssueMove           PipelineName = "SFTPIssueMove"
 	PNMoveIssueForDerivatives PipelineName = "MoveIssueForDerivatives"
-	PNForceDerivatives        PipelineName = "ForceDerivatives"
 	PNFinalizeIssue           PipelineName = "FinalizeIssue"
 	PNMakeBatch               PipelineName = "MakeBatch"
 	PNRemoveErroredIssue      PipelineName = "RemoveErroredIssue"
