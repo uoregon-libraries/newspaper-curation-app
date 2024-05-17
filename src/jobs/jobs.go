@@ -39,8 +39,6 @@ func DBJobToProcessor(dbJob *models.Job) Processor {
 		return &ArchiveBackups{IssueJob: NewIssueJob(dbJob)}
 	case models.JobTypeSetBatchStatus:
 		return &SetBatchStatus{BatchJob: NewBatchJob(dbJob)}
-	case models.JobTypeSetBatchNeedsStagingPurge:
-		return &SetBatchNeedsStagingPurge{BatchJob: NewBatchJob(dbJob)}
 	case models.JobTypeSetBatchLocation:
 		return &SetBatchLocation{BatchJob: NewBatchJob(dbJob)}
 	case models.JobTypeCreateBatchStructure:
@@ -84,20 +82,4 @@ func DBJobToProcessor(dbJob *models.Job) Processor {
 	dbJob.Status = string(models.JobStatusFailed)
 	dbJob.Save()
 	return nil
-}
-
-// FindAllFailedJobs returns a list of all jobs which failed; these are not
-// wrapped into IssueJobs or Processors, as failed jobs aren't meant to be
-// reprocessed (though they can be requeued by creating new jobs)
-func FindAllFailedJobs() (jobs []*Job) {
-	var dbJobs, err = models.FindJobsByStatus(models.JobStatusFailed)
-	if err != nil {
-		logger.Criticalf("Unable to look up failed jobs: %s", err)
-		return jobs
-	}
-
-	for _, dbj := range dbJobs {
-		jobs = append(jobs, NewJob(dbj))
-	}
-	return jobs
 }

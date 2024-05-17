@@ -20,7 +20,6 @@ const (
 	JobArgLocation     = "Location"
 	JobArgSource       = "Source"
 	JobArgDestination  = "Destination"
-	JobArgForced       = "Forced"
 	JobArgMessage      = "Message"
 	JobArgExclude      = "Exclude"
 )
@@ -35,10 +34,6 @@ func makeBSArgs(bs string) map[string]string {
 
 func makeLocArgs(loc string) map[string]string {
 	return map[string]string{JobArgLocation: loc}
-}
-
-func makeForcedArgs() map[string]string {
-	return map[string]string{JobArgForced: JobArgForced}
 }
 
 func makeSrcDstArgs(src, dest string) map[string]string {
@@ -141,20 +136,6 @@ func QueueMoveIssueForDerivatives(issue *models.Issue, workflowPath string) erro
 	jobs = append(jobs, issue.BuildJob(models.JobTypeIssueAction, makeActionArgs("Created issue derivatives")))
 
 	return models.QueueIssueJobs(models.PNMoveIssueForDerivatives, issue, jobs...)
-}
-
-// QueueForceDerivatives will forcibly regenerate all derivatives for an issue.
-// During the processing, the issue's workflow step is set to "awaiting
-// processing", and only gets set back to its previous value on successful
-// completion of the other jobs.
-func QueueForceDerivatives(issue *models.Issue) error {
-	var currentStep = issue.WorkflowStep
-	return models.QueueIssueJobs(models.PNForceDerivatives, issue,
-		issue.BuildJob(models.JobTypeMakeDerivatives, makeForcedArgs()),
-		issue.BuildJob(models.JobTypeBuildMETS, makeForcedArgs()),
-		issue.BuildJob(models.JobTypeSetIssueWS, makeWSArgs(currentStep)),
-		issue.BuildJob(models.JobTypeIssueAction, makeActionArgs("Force-regenerated issue derivatives")),
-	)
 }
 
 // QueueFinalizeIssue creates and queues jobs that get an issue ready for

@@ -120,24 +120,6 @@ func (w *Watcher) process() {
 	}
 }
 
-// Stop signals the watch loop to stop running, allowing for cleanup to happen safely
-func (w *Watcher) Stop() {
-	w.Lock()
-	if w.status&running == 0 {
-		w.Unlock()
-		return
-	}
-	w.status &= ^running
-	w.Unlock()
-
-	// Wait for the signal that it's done, then clean up
-	w.Lock()
-	<-w.done
-	w.status = finished
-	w.cleanupTempDir()
-	w.Unlock()
-}
-
 // refresh runs the searchers and replaces the underlying issuefinder.Finder.
 // Every week, it forces a full refresh of web data as well.
 func (w *Watcher) refresh() {
