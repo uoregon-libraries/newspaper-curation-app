@@ -5,17 +5,14 @@
 package main
 
 import (
-	"fmt"
 	"os"
 	"strconv"
-	"strings"
 	"sync"
 	"sync/atomic"
 	"time"
 
 	"github.com/uoregon-libraries/gopkg/interrupts"
 	ltype "github.com/uoregon-libraries/gopkg/logger"
-	"github.com/uoregon-libraries/gopkg/wordutils"
 	"github.com/uoregon-libraries/newspaper-curation-app/src/cli"
 	"github.com/uoregon-libraries/newspaper-curation-app/src/config"
 	"github.com/uoregon-libraries/newspaper-curation-app/src/dbi"
@@ -64,23 +61,6 @@ var titles = make(map[string]*schema.Title)
 var validQueues = make(map[string]bool)
 var validQueueList []string
 var logLevel ltype.LogLevel
-
-// wrap is a helper to wrap a usage message at 80 characters and print a
-// newline afterward
-func wrap(msg string) {
-	fmt.Fprint(os.Stderr, wordutils.Wrap(msg, 80))
-	fmt.Fprintln(os.Stderr)
-}
-
-func wrapBullet(msg string) {
-	var lines = strings.Split(wordutils.Wrap(msg, 80), "\n")
-	for i, line := range lines {
-		if i > 0 {
-			line = "  " + line
-		}
-		fmt.Fprint(os.Stderr, line+"\n")
-	}
-}
 
 func getOpts() (*config.Config, []string) {
 	c = cli.New(&opts)
@@ -404,7 +384,6 @@ func runAllQueues(conf *config.Config) {
 				models.JobTypeIgnoreIssue,
 				models.JobTypeSetIssueCurated,
 				models.JobTypeSetBatchStatus,
-				models.JobTypeSetBatchNeedsStagingPurge,
 				models.JobTypeSetBatchLocation,
 				models.JobTypeIssueAction,
 				models.JobTypeBatchAction,

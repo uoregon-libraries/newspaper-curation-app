@@ -123,23 +123,6 @@ func (j *SetBatchStatus) Process(*config.Config) ProcessResponse {
 	return PRSuccess
 }
 
-// SetBatchNeedsStagingPurge is a wonky one-off to flip the
-// `needs_staging_purge` flag to true for a batch
-type SetBatchNeedsStagingPurge struct {
-	*BatchJob
-}
-
-// Process sets NeedsStagingPurge to true
-func (j *SetBatchNeedsStagingPurge) Process(*config.Config) ProcessResponse {
-	j.DBBatch.NeedStagingPurge = true
-	var err = j.DBBatch.SaveWithoutAction()
-	if err != nil {
-		j.Logger.Errorf("Unable to flag batch %d as needing a staging purge: %s", j.DBBatch.ID, err)
-		return PRFailure
-	}
-	return PRSuccess
-}
-
 // SetBatchLocation is a simple job to update a batch location after files are
 // copied or movied somewhere
 type SetBatchLocation struct {

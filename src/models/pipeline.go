@@ -19,7 +19,6 @@ const (
 	PNSFTPIssueMove           PipelineName = "SFTPIssueMove"
 	PNMoveIssueForDerivatives PipelineName = "MoveIssueForDerivatives"
 	PNQueueIssueForReview     PipelineName = "QueueIssueForReview"
-	PNForceDerivatives        PipelineName = "ForceDerivatives"
 	PNFinalizeIssue           PipelineName = "FinalizeIssue"
 	PNMakeBatch               PipelineName = "MakeBatch"
 	PNRemoveErroredIssue      PipelineName = "RemoveErroredIssue"

@@ -184,10 +184,6 @@ func (f *IssueFinder) edition(ed int) *IssueFinder {
 	f.conditions["edition = ?"] = ed
 	return f
 }
-func (f *IssueFinder) location(loc string) *IssueFinder {
-	f.conditions["location = ?"] = loc
-	return f
-}
 
 // InWorkflowStep filters issues by a given workflow step. Most common use:
 //
@@ -340,16 +336,6 @@ func FindIssueByKey(key string) (*Issue, error) {
 		return nil, nil
 	}
 	return list[0], nil
-}
-
-// FindIssueByLocation returns the first issue with the given location
-func FindIssueByLocation(location string) (*Issue, error) {
-	var i *Issue
-	var list, err = Issues().location(location).Fetch()
-	if len(list) != 0 {
-		i = list[0]
-	}
-	return i, err
 }
 
 // FindInProcessIssues returns all issues which have been entered in the

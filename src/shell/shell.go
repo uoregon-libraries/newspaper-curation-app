@@ -26,13 +26,6 @@ func _exec(cmd *exec.Cmd, binary string, jobLogger *logger.Logger, args ...strin
 	return true
 }
 
-// Exec attempts to run the given command, using logger to give consistent
-// formatting to whatever the command spits out if an error occurs
-func Exec(binary string, jobLogger *logger.Logger, args ...string) (ok bool) {
-	var cmd = exec.Command(binary, args...)
-	return _exec(cmd, binary, jobLogger, args...)
-}
-
 // ExecSubgroup is just like Exec, but sets the process to run in its own group
 // so it doesn't get killed on CTRL+C
 func ExecSubgroup(binary string, jobLogger *logger.Logger, args ...string) (ok bool) {

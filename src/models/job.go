@@ -74,7 +74,6 @@ var ValidJobTypes = []JobType{
 	JobTypeIgnoreIssue,
 	JobTypeSetIssueCurated,
 	JobTypeSetBatchStatus,
-	JobTypeSetBatchNeedsStagingPurge,
 	JobTypePageSplit,
 	JobTypeMakeDerivatives,
 	JobTypeMoveDerivatives,
@@ -244,11 +243,6 @@ func PopNextPendingJob(types []JobType) (*Job, error) {
 // weren't successful and haven't failed.
 func FindUnfinishedJobs() ([]*Job, error) {
 	return findJobs("status NOT IN (?, ?, ?)", JobStatusSuccessful, JobStatusFailed, JobStatusFailedDone)
-}
-
-// FindJobsByStatus returns all jobs that have the given status
-func FindJobsByStatus(st JobStatus) ([]*Job, error) {
-	return findJobs("status = ?", string(st))
 }
 
 // Logs lazy-loads all logs for this job from the database

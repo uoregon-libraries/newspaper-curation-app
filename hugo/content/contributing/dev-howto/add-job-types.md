@@ -26,7 +26,7 @@ properly in order to ensure it is used, set up, and processed by NCA.
   - This is done in [`src/jobs/jobs.go`][3], in the `DBJobToProcessor` function
 - Queue a job of the new type.
   - See [`src/jobs/queue.go`][4]
-  - You might need to create a new arg value in `src/models/pipeline.go`, like
+  - You might need to create a new arg value in `src/jobs/queue.go`, like
     `JobArgSource`, `JobArgWorkflowStep`, etc.
   - You will certainly need to create the job and push it into a queue. This
     happens in a `Queue...` function (e.g., `QueueBatchForDeletion`).
