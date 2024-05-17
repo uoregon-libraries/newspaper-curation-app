@@ -83,19 +83,3 @@ func DBJobToProcessor(dbJob *models.Job) Processor {
 	dbJob.Save()
 	return nil
 }
-
-// FindAllFailedJobs returns a list of all jobs which failed; these are not
-// wrapped into IssueJobs or Processors, as failed jobs aren't meant to be
-// reprocessed (though they can be requeued by creating new jobs)
-func FindAllFailedJobs() (jobs []*Job) {
-	var dbJobs, err = models.FindJobsByStatus(models.JobStatusFailed)
-	if err != nil {
-		logger.Criticalf("Unable to look up failed jobs: %s", err)
-		return jobs
-	}
-
-	for _, dbj := range dbJobs {
-		jobs = append(jobs, NewJob(dbj))
-	}
-	return jobs
-}
