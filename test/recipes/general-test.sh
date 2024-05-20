@@ -43,16 +43,7 @@ else
 fi
 
 if [[ ! -d ./backup/02-$name ]]; then
-  wait_db
-
-  # Fake-curate, fake-review
-  cd test
-  go run run-workflow.go -c ../settings --operation curate
-  go run run-workflow.go -c ../settings --operation review
-  cd ..
-
-  # Start workers, wait for jobs to complete (~30sec)
-  workonce 2>&1 | tee -a workers.log
+  curate_and_review
 
   # Stop workers, save state again
   ./manage backup 02-$name
