@@ -77,6 +77,8 @@ func DBJobToProcessor(dbJob *models.Job) Processor {
 		return &RecordBatchAction{BatchJob: NewBatchJob(dbJob)}
 	case models.JobTypeCancelJob:
 		return &CancelJob{JobJob: NewJobJob(dbJob)}
+	case models.JobTypeMakeManifest:
+		return &MakeManifest{Job: NewJob(dbJob)}
 	default:
 		logger.Errorf("Unknown job type %q for job id %d", dbJob.Type, dbJob.ID)
 	}
