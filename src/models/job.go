@@ -60,6 +60,7 @@ const (
 	JobTypeRenameDir       JobType = "rename_directory"
 	JobTypeSyncRecursive   JobType = "sync_recursive"
 	JobTypeVerifyRecursive JobType = "verify_recursive"
+	JobTypeMakeManifest    JobType = "make_manifest"
 )
 
 // ValidJobTypes is the full list of job types which can exist in the jobs
@@ -96,6 +97,7 @@ var ValidJobTypes = []JobType{
 	JobTypeIssueAction,
 	JobTypeBatchAction,
 	JobTypeCancelJob,
+	JobTypeMakeManifest,
 }
 
 // JobStatus represents the different states in which a job can exist

@@ -10,6 +10,8 @@ import (
 	"strings"
 
 	"github.com/uoregon-libraries/gopkg/fileutil"
+	"github.com/uoregon-libraries/gopkg/fileutil/manifest"
+	"github.com/uoregon-libraries/gopkg/hasher"
 	"github.com/uoregon-libraries/newspaper-curation-app/src/config"
 	"github.com/uoregon-libraries/newspaper-curation-app/src/models"
 )
@@ -370,4 +372,41 @@ func (j *RemoveFile) Process(*config.Config) ProcessResponse {
 
 	j.Logger.Errorf("Unable to remove %q: %s", fname, err)
 	return PRFailure
+}
+
+// MakeManifest is a job for creating a manifest for a directory (generally
+// just for issues' files) with SHA sums
+type MakeManifest struct {
+	*Job
+}
+
+// Valid is true as long as we have any location arg set
+func (j *MakeManifest) Valid() bool {
+	if j.db.Args[JobArgLocation] == "" {
+		j.Logger.Errorf("MakeManifest job created with no location arg")
+		return false
+	}
+	return true
+}
+
+// Process creates the manifest file with a SHA256 hash
+func (j *MakeManifest) Process(*config.Config) ProcessResponse {
+	var dirname = j.db.Args[JobArgLocation]
+
+	j.Logger.Debugf("MakeManifest: attempting to build manifest for %q", dirname)
+
+	var m, err = manifest.BuildHashed(dirname, hasher.NewSHA256())
+	if err != nil {
+		j.Logger.Errorf("Unable to build manifest for %q", dirname)
+		return PRFailure
+	}
+
+	err = m.Write()
+	if err != nil {
+		j.Logger.Errorf("Unable to write manifest for %q", dirname)
+		return PRFailure
+	}
+
+	j.Logger.Debugf("Success")
+	return PRSuccess
 }

@@ -132,6 +132,7 @@ func QueueSFTPIssueMove(issue *models.Issue, c *config.Config) error {
 func QueueIssueForMetadataReview(issue *models.Issue, user *models.User) error {
 	return models.QueueIssueJobs(models.PNQueueIssueForReview, issue,
 		issue.BuildJob(models.JobTypeSetIssueCurated, makeIDArgs(user.ID)),
+		models.NewJob(models.JobTypeMakeManifest, makeLocArgs(issue.Location)),
 		issue.BuildJob(models.JobTypeIssueAction, makeActionArgs("Created manifest and moved to review queue")),
 		issue.BuildJob(models.JobTypeSetIssueWS, makeWSArgs(schema.WSAwaitingMetadataReview)),
 	)
