@@ -7,6 +7,8 @@
 package jobs
 
 import (
+	"strconv"
+
 	"github.com/uoregon-libraries/newspaper-curation-app/src/config"
 	"github.com/uoregon-libraries/newspaper-curation-app/src/models"
 	"github.com/uoregon-libraries/newspaper-curation-app/src/schema"
@@ -57,6 +59,31 @@ func (j *SetIssueLocation) Process(*config.Config) ProcessResponse {
 	var err = j.DBIssue.SaveWithoutAction()
 	if err != nil {
 		j.Logger.Errorf("Error setting issue.location for id %d: %s", j.DBIssue.ID, err)
+		return PRFailure
+	}
+
+	return PRSuccess
+}
+
+// SetIssueCurated sets the issue as having been curated by the given user. The
+// issue logic is in its model; this  just allows us to execute that logic from
+// our job runner.
+type SetIssueCurated struct {
+	*IssueJob
+}
+
+// Process validates the job id arg and sets the issue as having been curated
+func (j *SetIssueCurated) Process(*config.Config) ProcessResponse {
+	var arg = j.db.Args[JobArgID]
+	var id, err = strconv.ParseInt(arg, 10, 64)
+	if err != nil {
+		j.Logger.Errorf("Error reading job arg (%q) as int64: %s; killing job", arg, err)
+		return PRFatal
+	}
+
+	err = j.DBIssue.SetCurated(id)
+	if err != nil {
+		j.Logger.Errorf("Error setting issue %q (%d) as curated: %s", j.DBIssue.Key(), j.DBIssue.ID, err)
 		return PRFailure
 	}
 

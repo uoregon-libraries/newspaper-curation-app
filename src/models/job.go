@@ -12,9 +12,9 @@ import (
 
 // Object types for consistently inserting into the database
 const (
-	JobObjectTypeBatch = "batch"
-	JobObjectTypeIssue = "issue"
 	JobObjectTypeJob   = "job"
+	JobObjectTypeIssue = "issue"
+	JobObjectTypeBatch = "batch"
 )
 
 // JobType represents all possible jobs the system queues and processes
@@ -22,36 +22,45 @@ type JobType string
 
 // The full list of job types
 const (
-	JobTypeSetIssueWS                  JobType = "set_issue_workflow_step"
-	JobTypeSetIssueBackupLoc           JobType = "set_issue_original_backup_location"
-	JobTypeSetIssueLocation            JobType = "set_issue_location"
-	JobTypeFinalizeBatchFlaggedIssue   JobType = "finalize_batch_flagged_issue"
-	JobTypeEmptyBatchFlaggedIssuesList JobType = "empty_batch_flagged_issues_list"
-	JobTypeIgnoreIssue                 JobType = "ignore_issue"
-	JobTypeSetBatchStatus              JobType = "set_batch_status"
-	JobTypePageSplit                   JobType = "page_split"
-	JobTypeMakeDerivatives             JobType = "make_derivatives"
-	JobTypeMoveDerivatives             JobType = "move_derivatives"
-	JobTypeBuildMETS                   JobType = "build_mets"
-	JobTypeArchiveBackups              JobType = "archive_backups"
-	JobTypeSetBatchLocation            JobType = "set_batch_location"
-	JobTypeCreateBatchStructure        JobType = "create_batch_structure"
-	JobTypeMakeBatchXML                JobType = "make_batch_xml"
-	JobTypeWriteActionLog              JobType = "write_action_log"
-	JobTypeWriteBagitManifest          JobType = "write_bagit_manifest"
-	JobTypeValidateTagManifest         JobType = "validate_tagmanifest"
-	JobTypeMarkBatchLive               JobType = "mark_batch_live"
-	JobTypeDeleteBatch                 JobType = "delete_batch"
-	JobTypeSyncRecursive               JobType = "sync_recursive"
-	JobTypeVerifyRecursive             JobType = "verify_recursive"
-	JobTypeKillDir                     JobType = "delete_directory"
-	JobTypeRenameDir                   JobType = "rename_directory"
-	JobTypeCleanFiles                  JobType = "clean_files"
-	JobTypeRemoveFile                  JobType = "remove_file"
-	JobTypeRenumberPages               JobType = "renumber_pages"
-	JobTypeIssueAction                 JobType = "record_issue_action"
+	// Job jobs (there is only one for now...)
+	JobTypeCancelJob JobType = "cancel_job"
+
+	// Jobs that are directly tied to an issue
+	JobTypeArchiveBackups            JobType = "archive_backups"
+	JobTypeBuildMETS                 JobType = "build_mets"
+	JobTypeIgnoreIssue               JobType = "ignore_issue"
+	JobTypeIssueAction               JobType = "record_issue_action"
+	JobTypeMakeDerivatives           JobType = "make_derivatives"
+	JobTypeMoveDerivatives           JobType = "move_derivatives"
+	JobTypePageSplit                 JobType = "page_split"
+	JobTypeRenumberPages             JobType = "renumber_pages"
+	JobTypeSetIssueBackupLoc         JobType = "set_issue_original_backup_location"
+	JobTypeSetIssueCurated           JobType = "set_issue_curated"
+	JobTypeSetIssueLocation          JobType = "set_issue_location"
+	JobTypeSetIssueWS                JobType = "set_issue_workflow_step"
+	JobTypeWriteActionLog            JobType = "write_action_log"
+	JobTypeFinalizeBatchFlaggedIssue JobType = "finalize_batch_flagged_issue"
+
+	// Jobs that are directly tied to a batch
 	JobTypeBatchAction                 JobType = "record_batch_action"
-	JobTypeCancelJob                   JobType = "cancel_job"
+	JobTypeCreateBatchStructure        JobType = "create_batch_structure"
+	JobTypeDeleteBatch                 JobType = "delete_batch"
+	JobTypeEmptyBatchFlaggedIssuesList JobType = "empty_batch_flagged_issues_list"
+	JobTypeMakeBatchXML                JobType = "make_batch_xml"
+	JobTypeMarkBatchLive               JobType = "mark_batch_live"
+	JobTypeSetBatchLocation            JobType = "set_batch_location"
+	JobTypeSetBatchStatus              JobType = "set_batch_status"
+	JobTypeValidateTagManifest         JobType = "validate_tagmanifest"
+	JobTypeWriteBagitManifest          JobType = "write_bagit_manifest"
+
+	// Fairly general-purpose jobs, which use only the job args, not an object id
+	JobTypeCleanFiles      JobType = "clean_files"
+	JobTypeKillDir         JobType = "delete_directory"
+	JobTypeRemoveFile      JobType = "remove_file"
+	JobTypeRenameDir       JobType = "rename_directory"
+	JobTypeSyncRecursive   JobType = "sync_recursive"
+	JobTypeVerifyRecursive JobType = "verify_recursive"
+	JobTypeMakeManifest    JobType = "make_manifest"
 )
 
 // ValidJobTypes is the full list of job types which can exist in the jobs
@@ -63,6 +72,7 @@ var ValidJobTypes = []JobType{
 	JobTypeFinalizeBatchFlaggedIssue,
 	JobTypeEmptyBatchFlaggedIssuesList,
 	JobTypeIgnoreIssue,
+	JobTypeSetIssueCurated,
 	JobTypeSetBatchStatus,
 	JobTypePageSplit,
 	JobTypeMakeDerivatives,
@@ -87,6 +97,7 @@ var ValidJobTypes = []JobType{
 	JobTypeIssueAction,
 	JobTypeBatchAction,
 	JobTypeCancelJob,
+	JobTypeMakeManifest,
 }
 
 // JobStatus represents the different states in which a job can exist

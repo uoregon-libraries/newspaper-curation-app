@@ -74,7 +74,10 @@ func linkFiles(src string, dest string) error {
 			return fmt.Errorf("couldn't get file detail for %q: %w", entry.Name(), err)
 		}
 
-		if !info.Mode().IsRegular() || strings.HasPrefix(entry.Name(), ".") {
+		if !info.Mode().IsRegular() {
+			continue
+		}
+		if entry.Name() != ".manifest" && strings.HasPrefix(entry.Name(), ".") {
 			continue
 		}
 		var name = entry.Name()

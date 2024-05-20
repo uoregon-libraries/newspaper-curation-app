@@ -3,6 +3,7 @@ package jobs
 import (
 	"fmt"
 	"path/filepath"
+	"strconv"
 	"strings"
 	"time"
 
@@ -22,6 +23,7 @@ const (
 	JobArgDestination  = "Destination"
 	JobArgMessage      = "Message"
 	JobArgExclude      = "Exclude"
+	JobArgID           = "ID"
 )
 
 func makeWSArgs(ws schema.WorkflowStep) map[string]string {
@@ -34,6 +36,10 @@ func makeBSArgs(bs string) map[string]string {
 
 func makeLocArgs(loc string) map[string]string {
 	return map[string]string{JobArgLocation: loc}
+}
+
+func makeIDArgs(id int64) map[string]string {
+	return map[string]string{JobArgID: strconv.FormatInt(id, 10)}
 }
 
 func makeSrcDstArgs(src, dest string) map[string]string {
@@ -119,6 +125,17 @@ func QueueSFTPIssueMove(issue *models.Issue, c *config.Config) error {
 	jobs = append(jobs, issue.BuildJob(models.JobTypeIssueAction, makeActionArgs("Moved issue from SFTP into NCA")))
 
 	return models.QueueIssueJobs(models.PNSFTPIssueMove, issue, jobs...)
+}
+
+// QueueIssueForMetadataReview records who entered metadata, creates a
+// SHA256-hashed manifest, and sets the issue as being ready for review.
+func QueueIssueForMetadataReview(issue *models.Issue, user *models.User) error {
+	return models.QueueIssueJobs(models.PNQueueIssueForReview, issue,
+		issue.BuildJob(models.JobTypeSetIssueCurated, makeIDArgs(user.ID)),
+		models.NewJob(models.JobTypeMakeManifest, makeLocArgs(issue.Location)),
+		issue.BuildJob(models.JobTypeIssueAction, makeActionArgs("Created manifest and moved to review queue")),
+		issue.BuildJob(models.JobTypeSetIssueWS, makeWSArgs(schema.WSAwaitingMetadataReview)),
+	)
 }
 
 // QueueMoveIssueForDerivatives creates jobs to move issues into the workflow,

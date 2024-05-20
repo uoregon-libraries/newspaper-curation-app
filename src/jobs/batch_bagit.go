@@ -1,7 +1,13 @@
 package jobs
 
 import (
+	"os"
+	"path/filepath"
+
 	"github.com/uoregon-libraries/gopkg/bagit"
+	"github.com/uoregon-libraries/gopkg/fileutil/manifest"
+	"github.com/uoregon-libraries/gopkg/hasher"
+	"github.com/uoregon-libraries/gopkg/logger"
 	"github.com/uoregon-libraries/newspaper-curation-app/src/config"
 )
 
@@ -10,16 +16,68 @@ type WriteBagitManifest struct {
 	*BatchJob
 }
 
+// shaLookup is a bagit "cache" which we use to look for pre-computed SHA
+// information to avoid re-SHA-ing files that don't need it
+type shaLookup struct {
+	baseDir string
+	Hits    int64
+	Misses  int64
+	logger  *logger.Logger
+}
+
+// GetSum checks if there's a manifest in the given path, and uses it to look
+// for a sum if present
+func (l *shaLookup) GetSum(path string) (string, bool) {
+	var fullpath = filepath.Join(l.baseDir, path)
+	var dir, fname = filepath.Split(fullpath)
+	var m, err = manifest.Open(dir)
+	if err != nil {
+		if !os.IsNotExist(err) {
+			l.logger.Errorf("Unable to open manifest in %q: %s", fullpath, m.Hasher.Name)
+		}
+		return "", false
+	}
+	if m.Hasher == nil {
+		l.logger.Errorf("Manifest in %q has no hasher", fullpath)
+		return "", false
+	}
+
+	// Out of paranoia we make sure the hasher is definitely SHA256
+	if m.Hasher.Name != hasher.SHA256 {
+		l.logger.Warnf("Invalid hasher in bag cache: %q", m.Hasher.Name)
+		return "", false
+	}
+
+	for _, f := range m.Files {
+		if fname == f.Name {
+			l.Hits++
+			return f.Sum, true
+		}
+	}
+
+	l.Misses++
+	return "", false
+}
+
+// SetSum does nothing - this isn't a proper cache, just a way to shortcut
+// files that already had sums calculated
+func (l *shaLookup) SetSum(_, _ string) {
+}
+
 // Process implements Processor, writing out the data manifest, bagit.txt, and
 // the tag manifest
 func (j *WriteBagitManifest) Process(*config.Config) ProcessResponse {
-	var b = bagit.New(j.DBBatch.Location)
+	j.Logger.Debugf("Writing bag manifest")
+	var b = bagit.New(j.DBBatch.Location, hasher.NewSHA256())
+	var cache = &shaLookup{baseDir: j.DBBatch.Location, logger: j.Logger}
+	b.Cache = cache
 	var err = b.WriteTagFiles()
 	if err != nil {
 		j.Logger.Errorf("Unable to write bagit tag files for %q: %s", j.DBBatch.Location, err)
 		return PRFailure
 	}
 
+	j.Logger.Debugf("Done writing bag manifest: %d cache hits, %d cache misses", cache.Hits, cache.Misses)
 	return PRSuccess
 }
 
@@ -32,7 +90,7 @@ type ValidateTagManifest struct {
 
 // Process implements Processor, verifying the tag manifest
 func (j *ValidateTagManifest) Process(*config.Config) ProcessResponse {
-	var b = bagit.New(j.DBBatch.Location)
+	var b = bagit.New(j.DBBatch.Location, hasher.NewSHA256())
 	var err = b.ReadManifests()
 	if err != nil {
 		j.Logger.Errorf("Unable to read bagit manifests for %q: %s", j.DBBatch.Location, err)

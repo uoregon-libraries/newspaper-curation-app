@@ -7,6 +7,8 @@ import (
 	"testing"
 
 	"github.com/uoregon-libraries/gopkg/fileutil"
+	"github.com/uoregon-libraries/gopkg/fileutil/manifest"
+	"github.com/uoregon-libraries/gopkg/hasher"
 	"github.com/uoregon-libraries/gopkg/logger"
 	"github.com/uoregon-libraries/newspaper-curation-app/src/config"
 	"github.com/uoregon-libraries/newspaper-curation-app/src/models"
@@ -23,6 +25,8 @@ type fdata struct {
 var files = []fdata{
 	{path: "foo.txt", contents: "I am a lonely little text file, friends.", sum: ""},
 	{path: "bar.txt", contents: "Me, too!", sum: ""},
+	{path: "baz.txt", contents: "Why lonely? There are a lot of us now.", sum: ""},
+	{path: "quux.txt", contents: "hhhhhhhhhhhhhhhhhhhhhhhhhh...", sum: ""},
 	{path: "subdir/other.txt", contents: "I live underneath the other files. It's nice down here.", sum: ""},
 }
 
@@ -77,6 +81,29 @@ func TestWriteBagitManifest(t *testing.T) {
 	var batchJob = getBatchJob(tmpdir)
 	var j = &WriteBagitManifest{BatchJob: batchJob}
 
+	// Write manifest files with fake precomputed SHAs
+	var m = manifest.New(filepath.Join(tmpdir, "data"))
+	m.Hasher = hasher.NewSHA256()
+	m.Files = []manifest.FileInfo{
+		{Name: "nonexistent.txt", Sum: "this entry won't show up anywhere"},
+		{Name: "foo.txt", Sum: "not gonna calculate me!"},
+		{Name: "quux.txt", Sum: "123abc"},
+	}
+	var err = m.Write()
+	if err != nil {
+		t.Fatalf("Unable to write manifest file 1: %s", err)
+	}
+
+	m = manifest.New(filepath.Join(tmpdir, "data", "subdir"))
+	m.Hasher = hasher.NewSHA256()
+	m.Files = []manifest.FileInfo{
+		{Name: "other.txt", Sum: "invalid-sum"},
+	}
+	err = m.Write()
+	if err != nil {
+		t.Fatalf("Unable to write manifest file 2: %s", err)
+	}
+
 	var resp = j.Process(&config.Config{})
 	if resp != PRSuccess {
 		t.Errorf("Expected PRSuccess, got %v", resp)
@@ -91,17 +118,23 @@ func TestWriteBagitManifest(t *testing.T) {
 		}
 	}
 
-	// Make sure manifest is correct for our dummy files
+	// Make sure manifest used the precomputed SHA sums when available, and real
+	// sums when the manifest didn't provide any
 	var fullpath = filepath.Join(tmpdir, "manifest-sha256.txt")
-	var raw, err = os.ReadFile(fullpath)
+	var raw []byte
+	raw, err = os.ReadFile(fullpath)
 	if err != nil {
 		t.Fatalf("Unable to read %q: %s", fullpath, err)
 	}
 	var lines = strings.Split(string(raw), "\n")
 	var expectedLines = []string{
+		"<ignore>  data/.manifest",
 		"07c9b7c5005442cd3b1ef28028417ffb068a2d9426a3d37fa2b8c12b4e79c7dd  data/bar.txt",
-		"ec6e72eb877ee399c6bfd08620bd98432eba09f3d941faf51dbcc283a8a695ad  data/foo.txt",
-		"712c0490983ef62ce7fe733a90305e46d42da100df600d5179c2c142acfb7108  data/subdir/other.txt",
+		"6e4afe213d8cb12b9cb188e34ab0be5da9cafc6b3498b61aefa1e1fa51d84af7  data/baz.txt",
+		"not gonna calculate me!  data/foo.txt",
+		"123abc  data/quux.txt",
+		"<ignore>  data/subdir/.manifest",
+		"invalid-sum  data/subdir/other.txt",
 		"",
 	}
 	var expected = len(expectedLines)
@@ -112,6 +145,12 @@ func TestWriteBagitManifest(t *testing.T) {
 	for i, got := range lines {
 		var expected = expectedLines[i]
 		if got != expected {
+			// We have to ignore the .manifest lines because that's not part of the
+			// test, and manifest files change when created in order to record the
+			// current time
+			if strings.HasSuffix(expected, "/.manifest") {
+				continue
+			}
 			t.Errorf("manifest line %d should have been %q, got %q", i, expected, got)
 		}
 	}

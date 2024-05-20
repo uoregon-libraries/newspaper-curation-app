@@ -102,7 +102,7 @@ func curate(u *models.User, i *models.Issue) {
 		i.PageLabels = append(i.PageLabels, "0")
 	}
 
-	err = i.QueueForMetadataReview(u.ID)
+	err = jobs.QueueIssueForMetadataReview(i, u)
 	if err != nil {
 		l.Fatalf("Unable to queue issue %s for review: %s", i.Key(), err)
 	}

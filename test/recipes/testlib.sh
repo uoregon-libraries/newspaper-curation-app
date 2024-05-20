@@ -50,5 +50,23 @@ finish_batches() {
 
   echo "Verify all batches' statuses are 'live', then press [ENTER] to continue"
   read
+}
 
+curate_and_review() {
+  wait_db
+
+  # Fake-curate, fake-review
+  cd test
+  go run run-workflow.go -c ../settings --operation curate
+  cd ..
+
+  # Start workers, wait for jobs to complete (~30sec)
+  workonce 2>&1 | tee -a workers.log
+
+  cd test
+  go run run-workflow.go -c ../settings --operation review
+  cd ..
+
+  # Start workers, wait for jobs to complete (~30sec)
+  workonce 2>&1 | tee -a workers.log
 }

@@ -334,8 +334,8 @@ func runAllQueues(conf *config.Config) {
 		func() { watchPageReview(conf) },
 		func() { watchDigitizedScans(conf) },
 		func() {
-			// Jobs which are exclusively disk IO are in the first runner to avoid
-			// too much FS stuff hapenning concurrently
+			// Jobs which are exclusively (or primarily) disk IO are in the first
+			// runner to avoid too much FS stuff hapenning concurrently
 			watchJobTypes(conf,
 				models.JobTypeArchiveBackups,
 				models.JobTypeMoveDerivatives,
@@ -343,6 +343,7 @@ func runAllQueues(conf *config.Config) {
 				models.JobTypeVerifyRecursive,
 				models.JobTypeKillDir,
 				models.JobTypeWriteBagitManifest,
+				models.JobTypeMakeManifest,
 			)
 		},
 		func() {
@@ -382,6 +383,7 @@ func runAllQueues(conf *config.Config) {
 				models.JobTypeFinalizeBatchFlaggedIssue,
 				models.JobTypeEmptyBatchFlaggedIssuesList,
 				models.JobTypeIgnoreIssue,
+				models.JobTypeSetIssueCurated,
 				models.JobTypeSetBatchStatus,
 				models.JobTypeSetBatchLocation,
 				models.JobTypeIssueAction,
