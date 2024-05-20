@@ -52,7 +52,6 @@ const (
 	JobTypeSetBatchStatus              JobType = "set_batch_status"
 	JobTypeValidateTagManifest         JobType = "validate_tagmanifest"
 	JobTypeWriteBagitManifest          JobType = "write_bagit_manifest"
-	JobTypeSetBatchNeedsStagingPurge   JobType = "set_batch_needs_staging_purge"
 
 	// Fairly general-purpose jobs, which use only the job args, not an object id
 	JobTypeCleanFiles      JobType = "clean_files"
