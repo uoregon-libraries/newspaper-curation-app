@@ -2,11 +2,19 @@
 
 <h2 id="search">Search</h2>
 
-<p id="search-help">
-  Title is required, but other fields are optional to an extent.  You must fill
-  out fields from left to right, so you cannot, for example, put in a month
-  while leaving year at zero.
-</p>
+<div id="search-help">
+  <p>
+    Title is required, but other fields are optional to an extent.  You must fill
+    out fields from left to right, so you cannot, for example, put in a month
+    while leaving year at zero.
+  </p>
+  <p>
+    <em>Please note: it can take up to seven days for a new batch's issues to
+    show up.</em> A batch might show up in full moments after loading, it might
+    be partially listed and have some issues appear to be missing, or it might
+    not show up at all.
+  </p>
+</div>
 
 <form action="{{.Data.SearchAction}}" class="form-horizontal" method="GET" role="search" aria-describedby="search-help">
   <div class="form-group">
