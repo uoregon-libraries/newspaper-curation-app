@@ -1,11 +1,13 @@
 package jobs
 
 import (
+	"os"
 	"path/filepath"
 
 	"github.com/uoregon-libraries/gopkg/bagit"
 	"github.com/uoregon-libraries/gopkg/fileutil/manifest"
 	"github.com/uoregon-libraries/gopkg/hasher"
+	"github.com/uoregon-libraries/gopkg/logger"
 	"github.com/uoregon-libraries/newspaper-curation-app/src/config"
 )
 
@@ -20,6 +22,7 @@ type shaLookup struct {
 	baseDir string
 	Hits    int64
 	Misses  int64
+	logger  *logger.Logger
 }
 
 // GetSum checks if there's a manifest in the given path, and uses it to look
@@ -28,12 +31,20 @@ func (l *shaLookup) GetSum(path string) (string, bool) {
 	var fullpath = filepath.Join(l.baseDir, path)
 	var dir, fname = filepath.Split(fullpath)
 	var m, err = manifest.Open(dir)
-	if err != nil || m.Hasher == nil {
+	if err != nil {
+		if !os.IsNotExist(err) {
+			l.logger.Errorf("Unable to open manifest in %q: %s", fullpath, m.Hasher.Name)
+		}
+		return "", false
+	}
+	if m.Hasher == nil {
+		l.logger.Errorf("Manifest in %q has no hasher", fullpath)
 		return "", false
 	}
 
 	// Out of paranoia we make sure the hasher is definitely SHA256
 	if m.Hasher.Name != hasher.SHA256 {
+		l.logger.Warnf("Invalid hasher in bag cache: %q", m.Hasher.Name)
 		return "", false
 	}
 
@@ -58,7 +69,7 @@ func (l *shaLookup) SetSum(_, _ string) {
 func (j *WriteBagitManifest) Process(*config.Config) ProcessResponse {
 	j.Logger.Debugf("Writing bag manifest")
 	var b = bagit.New(j.DBBatch.Location, hasher.NewSHA256())
-	var cache = &shaLookup{baseDir: j.DBBatch.Location}
+	var cache = &shaLookup{baseDir: j.DBBatch.Location, logger: j.Logger}
 	b.Cache = cache
 	var err = b.WriteTagFiles()
 	if err != nil {
