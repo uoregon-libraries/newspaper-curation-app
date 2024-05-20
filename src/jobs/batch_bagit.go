@@ -18,6 +18,8 @@ type WriteBagitManifest struct {
 // information to avoid re-SHA-ing files that don't need it
 type shaLookup struct {
 	baseDir string
+	Hits    int64
+	Misses  int64
 }
 
 // GetSum checks if there's a manifest in the given path, and uses it to look
@@ -30,12 +32,19 @@ func (l *shaLookup) GetSum(path string) (string, bool) {
 		return "", false
 	}
 
+	// Out of paranoia we make sure the hasher is definitely SHA256
+	if m.Hasher.Name != hasher.SHA256 {
+		return "", false
+	}
+
 	for _, f := range m.Files {
 		if fname == f.Name {
+			l.Hits++
 			return f.Sum, true
 		}
 	}
 
+	l.Misses++
 	return "", false
 }
 
@@ -47,14 +56,17 @@ func (l *shaLookup) SetSum(_, _ string) {
 // Process implements Processor, writing out the data manifest, bagit.txt, and
 // the tag manifest
 func (j *WriteBagitManifest) Process(*config.Config) ProcessResponse {
+	j.Logger.Debugf("Writing bag manifest")
 	var b = bagit.New(j.DBBatch.Location, hasher.NewSHA256())
-	b.Cache = &shaLookup{baseDir: j.DBBatch.Location}
+	var cache = &shaLookup{baseDir: j.DBBatch.Location}
+	b.Cache = cache
 	var err = b.WriteTagFiles()
 	if err != nil {
 		j.Logger.Errorf("Unable to write bagit tag files for %q: %s", j.DBBatch.Location, err)
 		return PRFailure
 	}
 
+	j.Logger.Debugf("Done writing bag manifest: %d cache hits, %d cache misses", cache.Hits, cache.Misses)
 	return PRSuccess
 }
 
