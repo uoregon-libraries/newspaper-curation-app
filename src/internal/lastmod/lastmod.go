@@ -41,7 +41,7 @@ func Time(pth string) (time.Time, error) {
 
 	// Different existing manifest (including not having an existing manifest)?
 	// Write new data and return the current time.
-	if !existing.Equiv(refreshed) {
+	if err != nil || !existing.Equiv(refreshed) {
 		err = refreshed.Write()
 		if err != nil {
 			return time.Now(), err
