@@ -34,6 +34,40 @@ Brief description, if necessary
 ### Migration
 -->
 
+## v4.4.0
+
+Better batching, and a tiny bit of cleanup.
+
+Batch generation is now much faster, as the SHA sums are generated after each
+issue is curated instead of all at once on batch generation. Additionally,
+batches minimum/maximum page count can be overridden on the command line to
+allow one-off batching runs without modifying settings.
+
+### Fixed
+
+- tests: reports run on separate days should be a lot easier to compare
+- tests: passed-in test names work again
+
+### Added
+
+- `queue-batches` now optionally takes command-line flags to override the
+  min/max batch size settings. This was done to allow cron jobs that behave
+  differently than a manual run.
+- jobs: added simple unit tests for bagit jobs
+- The "Find Issues" view explains why a new batch's issues might not show up
+  for a while
+
+### Changed
+
+- After curation, a `.manifest` file is generated in the issue's directory
+  which contains the SHA256 sums of all files in the issue. This data is then
+  used when batches are generated to significantly reduce the time it takes to
+  finish generating a batch.
+
+### Removed
+
+- Removed a variety of dead functions and structs
+
 ## v4.3.2
 
 Minor improvements.
