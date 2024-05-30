@@ -23,7 +23,7 @@
 <meta itemprop="name" content="Services and Apps">
 <meta itemprop="description" content="The services in the NCA suite">
 
-<meta itemprop="wordCount" content="1049">
+<meta itemprop="wordCount" content="1077">
 <meta itemprop="keywords" content="" /></head>
 <body>
   <div class="container"><div class="skip"><a href="#maincontent">Skip to main content</a></div>
@@ -292,8 +292,8 @@ manual installation is recommended. Manual installations are easiest to
 reverse-engineer by reading the various docker files to see what you need to
 install, and potentially how to install it.</p>
 <p><strong>Note</strong>: If you do go manual, the repository contains working examples for
-RHEL 7 systemd services to start the job runner as well as the workflow http
-server: <a href="https://github.com/uoregon-libraries/newspaper-curation-app/tree/main/rhel7">https://github.com/uoregon-libraries/newspaper-curation-app/tree/main/rhel7</a>.
+systemd services to start the job runner as well as the workflow http
+server: <a href="https://github.com/uoregon-libraries/newspaper-curation-app/tree/main/deploy">https://github.com/uoregon-libraries/newspaper-curation-app/tree/main/deploy</a>.
 Consider looking at these to better understand how you might manage a
 production installation.</p>
 <h2 id="http-server">HTTP Server</h2>
@@ -350,6 +350,9 @@ set up to run on cron if so desired.</p>
 your configured <code>BATCH_OUTPUT_PATH</code> and syncing to the <code>BATCH_PRODUCTION_PATH</code>.
 The batch status page in NCA will show which batches have finished processing
 and are ready for ingest into staging.</p>
+<p>The tool can be given flags for <code>--min-batch-size</code> and <code>--max-batch-size</code> in
+order to override the standard settings, e.g., if you need cronned batch
+generation to behave differently than manual runs.</p>
 <h2 id="bulk-upload-queue">Bulk Upload Queue</h2>
 <p>The <code>bulk-issue-queue</code> tool allows you to push uploaded issues into the
 workflow in bulk. This should <em>only</em> be used when you have some other
