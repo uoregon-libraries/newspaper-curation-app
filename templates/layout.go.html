@@ -1,15 +1,16 @@
 {{define "layout"}}
 <!DOCTYPE html>
-<html lang="en">
+<html lang="en" data-bs-theme="auto">
   <head>
     <title>{{.Title}}</title>
 
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <meta http-equiv="Content-Type" content="text/html;charset=utf-8">
 
+    {{IncludeCSS "style"}}
+
     {{IncludeCSS "prevent-double-submit"}}
     {{IncludeJS "prevent-double-submit"}}
-    {{IncludeCSS "style"}}
     {{IncludeCSS "sortabletable"}}
     {{IncludeCSS "tabs"}}
     {{IncludeCSS "actions"}}
@@ -25,93 +26,98 @@
       Skip to main content
     </a>
 
-    <div id="wrap">
-      <nav class="navbar navbar-default navbar-inverse">
-        <div class="container">
-          <div class="navbar-header">
-            <button type="button" class="navbar-toggle collapsed" data-toggle="collapse" data-target="#navbar-collapse" aria-expanded="false">
-              <span class="sr-only">Toggle navigation</span>
-              <span class="icon-bar"></span>
-              <span class="icon-bar"></span>
-              <span class="icon-bar"></span>
-            </button>
-            <a class="navbar-brand" href="{{HomePath}}">NCA</a>
-          </div>
+    <nav class="navbar navbar-expand-lg bg-body-tertiary">
+      <div class="container-fluid">
+        <a class="navbar-brand" href="{{HomePath}}">NCA</a>
+        <button class="navbar-toggler" type="button" aria-controls="navbar-collapse" aria-expanded="false" aria-label="Toggle navigation">
+          <span class="navbar-toggler-icon"></span>
+        </button>
 
-          <div class="collapse navbar-collapse" id="navbar-collapse">
-            <ul class="nav navbar-nav">
-              {{if .User.PermittedTo ListTitles}}
-                <li><a href="{{FullPath "titles"}}">Titles</a></li>
-              {{end}}
+        <div class="collapse navbar-collapse" id="navbar-collapse">
+          <ul class="navbar-nav me-auto mb-2 mb-lg-0">
+            {{if .User.PermittedTo ListTitles}}
+              <li class="nav-item"><a class="nav-link" href="{{FullPath "titles"}}">Titles</a></li>
+            {{end}}
 
-              {{if .User.PermittedTo ViewUploadedIssues}}
-              <li><a href="{{FullPath "uploadedissues"}}">Uploaded Issues</a></li>
-              {{end}}
+            {{if .User.PermittedTo ViewUploadedIssues}}
+            <li class="nav-item"><a class="nav-link" href="{{FullPath "uploadedissues"}}">Uploaded Issues</a></li>
+            {{end}}
 
-              {{if .User.PermittedTo ViewBatchStatus}}
-              <li><a href="{{FullPath "batches"}}">Batches</a></li>
-              {{end}}
+            {{if .User.PermittedTo ViewBatchStatus}}
+            <li class="nav-item"><a class="nav-link" href="{{FullPath "batches"}}">Batches</a></li>
+            {{end}}
 
-              {{if .User.PermittedTo ViewMetadataWorkflow}}
-                <li><a href="{{FullPath "workflow"}}">Workflow</a></li>
-              {{end}}
+            {{if .User.PermittedTo ViewMetadataWorkflow}}
+              <li class="nav-item"><a class="nav-link" href="{{FullPath "workflow"}}">Workflow</a></li>
+            {{end}}
 
-              {{if .User.PermittedTo SearchIssues}}
-                <li><a href="{{FullPath "find"}}">Find Issues</a></li>
-              {{end}}
+            {{if .User.PermittedTo SearchIssues}}
+              <li class="nav-item"><a class="nav-link" href="{{FullPath "find"}}">Find Issues</a></li>
+            {{end}}
 
-              {{if .User.PermittedTo ListAuditLogs}}
-                <li><a href="{{FullPath "logs"}}">Logs</a></li>
-              {{end}}
+            {{if .User.PermittedTo ListAuditLogs}}
+              <li class="nav-item"><a class="nav-link" href="{{FullPath "logs"}}">Logs</a></li>
+            {{end}}
 
-              {{if .User.PermittedTo ManageMOCs}}
-                <li><a href="{{FullPath "mocs"}}">MARC Org Codes</a></li>
-              {{end}}
+            {{if .User.PermittedTo ManageMOCs}}
+              <li class="nav-item"><a class="nav-link" href="{{FullPath "mocs"}}">MARC Org Codes</a></li>
+            {{end}}
 
-              {{if .User.PermittedTo ListUsers}}
-                <li><a href="{{FullPath "users"}}">Users</a></li>
-              {{end}}
-            </ul>
-            <p class="navbar-text navbar-right">
-              {{- if .User.Guest}}
-                Not Logged In
-              {{- else}}
-                Logged in as {{.User.Login}}
-              {{- end}}
-            </p>
-          </div>
+            {{if .User.PermittedTo ListUsers}}
+              <li class="nav-item"><a class="nav-link" href="{{FullPath "users"}}">Users</a></li>
+            {{end}}
+          </ul>
+          <span class="navbar-text">
+            {{- if .User.Guest}}
+              Not Logged In
+            {{- else}}
+              Logged in as {{.User.Login}}
+            {{- end}}
+          </span>
         </div>
-      </nav>
 
-      <main class="container" id="maincontent">
-        {{if debug }}
-          <div class="alert alert-warning">
-            Warning: This site is in DEBUG mode and is <strong>NOT SAFE</strong> for production
-          </div>
-        {{end}}
-        <h1>{{.Title}}</h1>
+      </div>
+    </nav>
 
-        {{- if .Alert}}
-          <div class="alert alert-danger">
-            <p>{{.Alert}}</p>
-          </div>
-        {{- end}}
-        {{- if .Info}}
-          <div class="alert alert-info">
-            <p>{{.Info}}</p>
-          </div>
-        {{- end}}
+    <main class="container" id="maincontent">
+      <h1>{{.Title}}</h1>
 
-        {{block "content" .}}{{end}}
-      </main>
+      {{if debug }}
+        <div class="alert alert-warning">
+          Warning: This site is in DEBUG mode and is <strong>NOT SAFE</strong> for production
+        </div>
+      {{end}}
 
-    </div>
+      {{- if .Alert}}
+        <div class="alert alert-danger" role="alert">
+          <p>{{.Alert}}</p>
+        </div>
+      {{- end}}
+      {{- if .Info}}
+        <div class="alert alert-info">
+          <p>{{.Info}}</p>
+        </div>
+      {{- end}}
+
+      {{block "content" .}}{{end}}
+    </main>
 
     {{IncludeJS "tabs"}}
     {{IncludeJS "actions"}}
     {{block "extrajs" .}}{{end}}
 
     <script>SortableTable.initAll()</script>
+
+    <!-- Automatic color mode switcher, adapted from https://www.cssscript.com/automatic-dark-mode-bootstrap/ -->
+    <script>
+      (function () {
+        function updateTheme() {
+          document.querySelector("html").setAttribute("data-bs-theme", window.matchMedia("(prefers-color-scheme: dark)").matches ? "dark" : "light")
+        }
+        window.matchMedia('(prefers-color-scheme: dark)').addEventListener('change', updateTheme)
+        updateTheme()
+      })()
+    </script>
   </body>
 </html>
 {{Comment .Version}}

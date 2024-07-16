@@ -1,3 +1,5 @@
+@import url("../bootstrap/bootstrap.min.css") layer(bootstrap);
+
 body {
   padding-bottom: 70px;
 }
