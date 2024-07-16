@@ -24,7 +24,7 @@ function buildOSD(staticRoot) {
   });
 
   osd.addHandler("page", function(data) {
-    $("#osd-image-number").text(data.page + 1)
+    document.getElementById('osd-image-number').textContent = data.page + 1;
   });
 
   // Jump to the top of the page by default
@@ -62,12 +62,14 @@ function osdOpenOnce() {
   osd.removeHandler("open", osdOpenOnce);
 }
 
-$(document).ready(function(){
-  $("#osd-jump-top").click(function() {
+document.addEventListener('DOMContentLoaded', function() {
+  const jumpTop = document.getElementById('osd-jump-top');
+  jumpTop.addEventListener('click', function() {
     jumpToTop();
   });
 
-  $("#osd-jump-bottom").click(function() {
+  const jumpBottom = document.getElementById('osd-jump-bottom');
+  jumpBottom.addEventListener('click', function() {
     jumpToBottom();
   });
 });
