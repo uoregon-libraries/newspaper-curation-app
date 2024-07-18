@@ -4,6 +4,12 @@ body {
   padding-bottom: 70px;
 }
 
+a:focus, button:focus {
+  outline: 1px solid var(--bs-primary-text-emphasis);
+  box-shadow: 0px 0px 0px 2px var(--bs-body-color);
+  transition: none;
+}
+
 .issue-with-errors, .title-with-errors {
   background: #FEE;
 }
