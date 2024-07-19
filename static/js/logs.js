@@ -9,14 +9,17 @@ window.addEventListener('load', function (event) {
 }, false);
 
 function checkCustomDateEnabled(event) {
-  var div = document.querySelectorAll('.custom-date').item(0);
-   div.querySelectorAll('input').forEach((el) => {
+  document.querySelectorAll('.custom-date-disclosure').forEach((el) => {
     if (event.target.value == 'custom') {
-      div.classList.remove('hidden');
-      el.removeAttribute('disabled');
+      el.classList.remove('d-none');
+      el.querySelectorAll('input').forEach((input) => {
+        input.removeAttribute('disabled');
+      });
     } else {
-      div.classList.add('hidden');
-      el.setAttribute('disabled', '');
+      el.classList.add('d-none');
+      el.querySelectorAll('input').forEach((input) => {
+        input.setAttribute('disabled', '');
+      });
     }
   });
 }

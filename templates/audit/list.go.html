@@ -1,68 +1,64 @@
 {{block "content" .}}
 
-<div class="panel panel-default">
-  <div class="panel-heading">
-    <h2 class="panel-title"><button class="link disclosure" aria-expanded="false" aria-controls="table-filters">Filters</button></h2>
+<div class="card">
+  <div class="card-header">
+    <h2><button class="link disclosure" aria-expanded="false" aria-controls="table-filters">Filters</button></h2>
   </div>
-  <div class="disclosure panel-body" id="table-filters">
-    <form class="form-horizontal" role="search" method="get" action="{{AuditHomeURL}}">
-      <div class="form-group">
-        <label class="col-sm-4 control-label" for="preset-date">Preset Dates:</label>
-        <div class="col-sm-8"><select id="preset-date" name="preset-date">
-          {{option "Custom (Use Fields Below)" "custom" .Data.Form.PresetDate}}
-          {{option "All" "all" .Data.Form.PresetDate}}
-          {{option "Past 12 months" "past12m" .Data.Form.PresetDate}}
-          {{option "This year" "ytd" .Data.Form.PresetDate}}
-          {{option "Past 30 days" "past30d" .Data.Form.PresetDate}}
-          {{option "Today" "today" .Data.Form.PresetDate}}
-        </select></div>
-      </div>
+  <div class="disclosure card-body" id="table-filters">
+    <form class="row" role="search" method="get" action="{{AuditHomeURL}}">
+      <div class="col-md-8 offset-md-2">
+      <div class="row g-3 align-items-center">
+      <label class="col-md-4 form-label" for="preset-date">Preset Dates:</label>
+      <div class="col-md-8"><select id="preset-date" name="preset-date" class="form-select">
+        {{option "Custom (Use Fields Below)" "custom" .Data.Form.PresetDate}}
+        {{option "All" "all" .Data.Form.PresetDate}}
+        {{option "Past 12 months" "past12m" .Data.Form.PresetDate}}
+        {{option "This year" "ytd" .Data.Form.PresetDate}}
+        {{option "Past 30 days" "past30d" .Data.Form.PresetDate}}
+        {{option "Today" "today" .Data.Form.PresetDate}}
+      </select></div>
 
-      <div class="custom-date form-group">
-        <label class="col-sm-4 control-label" id="custom-date">Custom Date Range:</label>
-        <div class="col-sm-8">
-          <label class="control-label" id="custom-date-start">Start</label>
-          <input type="date" value="{{.Data.Form.StartString}}" aria-labelledby="custom-date custom-date-start" name="custom-date-start" />
-          <label class="control-label" id="custom-date-end">End</label>
-          <input type="date" value="{{.Data.Form.EndString}}" aria-labelledby="custom-date custom-date-end" name="custom-date-end" />
+      <div class="col-md-4 custom-date-disclosure"><label class="form-label" id="custom-date">Custom Date Range:</label></div>
+      <div class="col-md-8 custom-date-disclosure">
+        <div class="row row-cols-lg-auto align-items-center">
+          <label class="form-label col" id="custom-date-start">Start</label>
+          <div class="col"><input class="form-control" type="date" value="{{.Data.Form.StartString}}" aria-labelledby="custom-date custom-date-start" name="custom-date-start" /></div>
+          <label class="form-label col" id="custom-date-end">End</label>
+          <div class="col"><input class="form-control" type="date" value="{{.Data.Form.EndString}}" aria-labelledby="custom-date custom-date-end" name="custom-date-end" /></div>
         </div>
       </div>
 
-      <div class="form-group">
-        <label for="user" class="col-sm-4 control-label">Show logs for:</label>
-        <div class="col-sm-8">
-          <select name="user" id="user">
-            {{option "All Users" "" .Data.Form.Username}}
-            <optgroup label="Active">
-            {{range .Data.ActiveUsers}}
-            {{option .Login .Login $.Data.Form.Username}}
-            {{end}}
-            <optgroup label="Inactive">
-            {{range .Data.InactiveUsers}}
-            {{option .Login .Login $.Data.Form.Username}}
-            {{end}}
-          </select>
-        </div>
+      <label for="user" class="col-md-4 form-label">Show logs for:</label>
+      <div class="col-md-8">
+        <select name="user" id="user" class="form-select">
+          {{option "All Users" "" .Data.Form.Username}}
+          <optgroup label="Active">
+          {{range .Data.ActiveUsers}}
+          {{option .Login .Login $.Data.Form.Username}}
+          {{end}}
+          <optgroup label="Inactive">
+          {{range .Data.InactiveUsers}}
+          {{option .Login .Login $.Data.Form.Username}}
+          {{end}}
+        </select>
       </div>
 
-      <div class="form-group">
-        <label for="action-types" class="col-sm-4 control-label">Action Types:</label>
-        <div class="col-sm-8">
-          <select name="action-types" id="action-types">
-            {{option "All Actions" "" .Data.Form.ActionTypes}}
-            {{option "Uploads" "Uploads" $.Data.Form.ActionTypes}}
-            {{option "Titles" "Titles" $.Data.Form.ActionTypes}}
-            {{option "MARC Org Codes" "MARC Org Codes" $.Data.Form.ActionTypes}}
-            {{option "Users" "Users" $.Data.Form.ActionTypes}}
-            {{option "Issue Workflow" "Issue Workflow" $.Data.Form.ActionTypes}}
-          </select>
-        </div>
+      <label for="action-types" class="col-md-4 form-label">Action Types:</label>
+      <div class="col-md-8">
+        <select name="action-types" id="action-types" class="form-select">
+          {{option "All Actions" "" .Data.Form.ActionTypes}}
+          {{option "Uploads" "Uploads" $.Data.Form.ActionTypes}}
+          {{option "Titles" "Titles" $.Data.Form.ActionTypes}}
+          {{option "MARC Org Codes" "MARC Org Codes" $.Data.Form.ActionTypes}}
+          {{option "Users" "Users" $.Data.Form.ActionTypes}}
+          {{option "Issue Workflow" "Issue Workflow" $.Data.Form.ActionTypes}}
+        </select>
       </div>
 
-      <div class="form-group">
-        <div class="col-sm-8 col-sm-offset-4">
-          <button id="apply-filters-button" class="btn btn-default" type="Submit">Apply filters</button>
-        </div>
+      <div class="col-md-8 offset-md-4">
+        <button id="apply-filters-button" class="btn btn-primary" type="Submit">Apply filters</button>
+      </div>
+      </div>
       </div>
     </form>
   </div>

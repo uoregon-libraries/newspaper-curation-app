@@ -119,6 +119,14 @@ button[role=tab] h4, button[role=tab] h5, button[role=tab] h6 {
   margin: inherit;
 }
 
+/* Card headers' headings don't need to be so big */
+.card-header {
+  h1, h2, h3, h4, h5, h6 {
+    font-size: inherit;
+    margin: inherit;
+  }
+}
+
 /* Make status presentation better */
 #json-status {
   margin-top: 20px;
