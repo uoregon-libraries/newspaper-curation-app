@@ -101,8 +101,6 @@ a.skiplink {
   border-bottom: 1px solid white;
   border-bottom-right-radius: 8px;
   background: transparent;
-  -webkit-transition: top 1s ease-out, background 1s linear;
-  transition: top 1s ease-out, background 1s linear;
   z-index: 100;
 }
 a.skiplink:focus {
@@ -110,10 +108,8 @@ a.skiplink:focus {
   font-weight: normal;
   left:0px;
   top:0px;
-  background: oklch(25% 0 0);
+  background: oklch(20% 0.05 267);
   outline:0;
-  -webkit-transition: top .1s ease-in, background .5s linear;
-  transition: top .1s ease-in, background .5s linear;
 }
 
 /* Tabs that are headings already stand out; they don't need to be absurdly huge */
