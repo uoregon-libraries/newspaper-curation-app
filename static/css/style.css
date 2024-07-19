@@ -11,7 +11,7 @@ a:focus, button:focus {
 }
 
 .issue-with-errors, .title-with-errors {
-  background: #FEE;
+  background: var(--bs-danger-bg-subtle);
 }
 .title-with-errors .title-link {
   float: left;
@@ -19,11 +19,11 @@ a:focus, button:focus {
 }
 
 .issue-with-warnings {
-  background: #FFE;
+  background: var(--bs-warning-bg-subtle);
 }
 
 .issue-error-list {
-  background: #FEE;
+  background: var(--bs-danger-bg-subtle);
   font-weight: bold;
 }
 
@@ -32,7 +32,7 @@ a:focus, button:focus {
 }
 
 .issue-warning-list {
-  background: #FFE;
+  background: var(--bs-warning-bg-subtle);
   font-weight: bold;
 }
 
@@ -96,7 +96,7 @@ a.skiplink {
   position: absolute;
   top: -40px;
   left: 0px;
-  color: white;
+  color: oklch(95% 0 0);
   border-right: 1px solid white;
   border-bottom: 1px solid white;
   border-bottom-right-radius: 8px;
@@ -110,7 +110,7 @@ a.skiplink:focus {
   font-weight: normal;
   left:0px;
   top:0px;
-  background:#333333;
+  background: oklch(25% 0 0);
   outline:0;
   -webkit-transition: top .1s ease-in, background .5s linear;
   transition: top .1s ease-in, background .5s linear;
@@ -130,7 +130,7 @@ button[role=tab] h4, button[role=tab] h5, button[role=tab] h6 {
   transition: color .5s linear, background .5s linear;
 }
 #json-status[data-faded=true] {
-  color: white;
+  color: var(--bs-body-bg);
 }
 
 /* Improve alignment of "undo" button on the batch "flag issues" page */
