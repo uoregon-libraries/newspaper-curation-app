@@ -3,6 +3,7 @@
 package tmpl
 
 import (
+	"fmt"
 	"html/template"
 	"path/filepath"
 )
@@ -14,14 +15,25 @@ type FuncMap template.FuncMap
 // template can be self-contained
 type Template struct {
 	*template.Template
+	root *TRoot
 	Name string
 	Path string
+}
+
+// Rebuild uses the template's root to force a rebuild. This should only be
+// used in debug / dev situations.
+func (t *Template) Rebuild() (*Template, error) {
+	var clone, err = t.root.Build(t.Name)
+	if err != nil {
+		return nil, fmt.Errorf("rebuilding template %q: %w", t.Name, err)
+	}
+	return clone, nil
 }
 
 // Clone wraps html/template.Clone to also clone the name
 func (t *Template) Clone() (*Template, error) {
 	var tmpl, err = t.Template.Clone()
-	return &Template{tmpl, t.Name, t.Path}, err
+	return &Template{Template: tmpl, root: t.root, Name: t.Name, Path: t.Path}, err
 }
 
 // TRoot wraps template.Template for use to spawn "real" templates.  The TRoot
@@ -38,7 +50,7 @@ type TRoot struct {
 // execution of templates doesn't require a template.Lookup call, which can be
 // somewhat error prone.
 func Root(name, path string) *TRoot {
-	var tmpl = &Template{template.New(name), name, path}
+	var tmpl = &Template{Template: template.New(name), root: nil, Name: name, Path: path}
 	var t = &TRoot{tmpl, path}
 
 	return t
@@ -102,6 +114,7 @@ func (t *TRoot) Build(path string) (*Template, error) {
 		return nil, err
 	}
 
+	tNew.root = t
 	tNew.Name = path
 	tNew.Path = filepath.Join(t.Path, path)
 	return tNew, nil
