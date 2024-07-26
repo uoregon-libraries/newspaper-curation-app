@@ -9,48 +9,44 @@
 
     <form action="{{FlagIssuesURL .Data.Batch}}" method="POST">
       <input type="hidden" name="action" value="flag-issue" />
-      <div class="form-group">
-        {{if .Data.ShowKeyHelp}}
-        <div class="alert alert-info">
-          You must enter a ten-character LCCN followed by a slash and then a
-          ten-digit date + edition string; e.g.,
-          <code>sn12345678/2021010201</code> would represent the title
-          <code>sn12345678</code>'s January 2nd, 2021 first edition issue.
-        </div>
-        {{end}}
-        {{if .Data.ShowURLHelp}}
-        <div class="alert alert-info">
-          URLs must be a standard ONI permalink to the issue on the staging
-          server, e.g.,
-          <code>{{StagingRootURL}}/lccn/sn12345678/2021-01-02/ed-1/</code>.
-          A page link (same as the issue link, but with "/seq-1" on the end,
-          for instance) is permissable as well.
-        </div>
-        {{end}}
-
-        <label for="issue-key">Issue</label>
-        <input class="form-control" list="issue-keys" id="issue-key" name="issue-key" autocomplete="off" aria-describedby="issue-key-help" value="{{.Data.IssueKey}}" />
-        <p class="form-text text-muted" id="issue-key-help">
-          Start typing an LCCN and/or date to search for an issue, or manually
-          enter an issue "key" (in the form <code>LCCN/YYYYMMDDEE</code>) or
-          paste in a URL (e.g., from the staging server).
-        </p>
-        <datalist id="issue-keys">
-        {{range .Data.UnflaggedIssues}}
-        <option value="{{.Key}}">{{.Title.MARCTitle}}, {{.Date}}, ed. {{.Edition}} ({{.Key}})</option>
-        {{end}}
-        </datalist>
+      {{if .Data.ShowKeyHelp}}
+      <div class="alert alert-info">
+        You must enter a ten-character LCCN followed by a slash and then a
+        ten-digit date + edition string; e.g.,
+        <code>sn12345678/2021010201</code> would represent the title
+        <code>sn12345678</code>'s January 2nd, 2021 first edition issue.
       </div>
-
-      <div class="form-group">
-        <label for="issue-desc">Description of problem</label>
-        <textarea class="form-control" name="issue-desc" id="issue-desc" aria-describedby="issue-desc-help" rows="2" >{{.Data.IssueDescription}}</textarea>
-        <p class="form-text text-muted" id="issue-desc-help">
-          Briefly describe the problem, e.g., "Page 4 is rotated". The person
-          doing remediation will use this information to decide on what
-          kind of remediation is required.
-        </p>
+      {{end}}
+      {{if .Data.ShowURLHelp}}
+      <div class="alert alert-info">
+        URLs must be a standard ONI permalink to the issue on the staging
+        server, e.g.,
+        <code>{{StagingRootURL}}/lccn/sn12345678/2021-01-02/ed-1/</code>.
+        A page link (same as the issue link, but with "/seq-1" on the end,
+        for instance) is permissable as well.
       </div>
+      {{end}}
+
+      <label class="form-label" for="issue-key">Issue</label>
+      <input class="form-control" list="issue-keys" id="issue-key" name="issue-key" autocomplete="off" aria-describedby="issue-key-help" value="{{.Data.IssueKey}}" />
+      <p class="form-text text-muted" id="issue-key-help">
+        Start typing an LCCN and/or date to search for an issue, or manually
+        enter an issue "key" (in the form <code>LCCN/YYYYMMDDEE</code>) or
+        paste in a URL (e.g., from the staging server).
+      </p>
+      <datalist id="issue-keys">
+      {{range .Data.UnflaggedIssues}}
+      <option value="{{.Key}}">{{.Title.MARCTitle}}, {{.Date}}, ed. {{.Edition}} ({{.Key}})</option>
+      {{end}}
+      </datalist>
+
+      <label class="form-label" for="issue-desc">Description of problem</label>
+      <textarea class="form-control" name="issue-desc" id="issue-desc" aria-describedby="issue-desc-help" rows="2" >{{.Data.IssueDescription}}</textarea>
+      <p class="form-text text-muted" id="issue-desc-help">
+        Briefly describe the problem, e.g., "Page 4 is rotated". The person
+        doing remediation will use this information to decide on what
+        kind of remediation is required.
+      </p>
       <button class="btn btn-primary" type="submit">Add Issue To Removal Queue</button>
     </form>
 
@@ -83,7 +79,7 @@
           {{end}}
         </div>
 
-        <div slot="modal">
+        <div slot="modal" style="color: black;">
           <h2>Finalize Batch?</h2>
           <p>
             You are about to finalize {{.Data.Batch.Name}}. The
@@ -111,7 +107,7 @@
           {{end}}
         </div>
 
-        <div slot="modal">
+        <div slot="modal" style="color: black;">
           <h2>Purge Batch?</h2>
           <p>
             You are about to purge {{.Data.Batch.Name}}. The following actions will occur:
@@ -143,7 +139,7 @@
           <button class="btn btn-danger cta-modal-toggle">Abort</button>
         </div>
 
-        <div slot="modal">
+        <div slot="modal" style="color: black;">
           <h2>Cancel Issue Flagging?</h2>
           <p>
             You are about to "reset" {{.Data.Batch.Name}} to be back in the
@@ -166,8 +162,8 @@
       remove an incorrectly flagged issue.
     </p>
     {{if .Data.FlaggedIssues}}
-    <div class="panel panel-default">
-      <div class="panel-body">
+    <div class="card">
+      <div class="card-body">
         {{range .Data.FlaggedIssues}}
         <div class="row">
           <div class="col-md-10">

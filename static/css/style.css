@@ -127,6 +127,11 @@ button[role=tab] h4, button[role=tab] h5, button[role=tab] h6 {
   }
 }
 
+/* Subheadings usually need a top margin, and only need this zero in special cases */
+h2, h3, h4, h5, h6 {
+  margin-top: 1rem;
+}
+
 /* Make status presentation better */
 #json-status {
   margin-top: 20px;
@@ -140,4 +145,10 @@ button[role=tab] h4, button[role=tab] h5, button[role=tab] h6 {
 /* Improve alignment of "undo" button on the batch "flag issues" page */
 .unflag-form {
   margin-top: 8px;
+}
+
+/* Make "copy" buttons a bit more muted */
+button.copy {
+  --bs-btn-padding-y: 0.1rem;
+  --bs-btn-font-size: 0.75rem;
 }
