@@ -152,3 +152,9 @@ button.copy {
   --bs-btn-padding-y: 0.1rem;
   --bs-btn-font-size: 0.75rem;
 }
+
+/* Our default (primary) buttons in dark mode need to be less bright */
+[data-bs-theme=dark] .btn-primary {
+  --bs-btn-bg: oklch(38% 0.15 265);
+  --bs-btn-hover-bg: oklch(28% 0.15 265);
+}
