@@ -28,7 +28,7 @@
           {{.Name}}
           {{if and .ValidLCCN .TitlesDiffer}}
             <div class="small">
-              <span class="label label-danger">MARC Title</span> {{.MARCTitle}} ({{.MARCLocation}})
+              <span class="badge rounded-pill bg-danger">MARC Title doesn't match</span> [MARC Title: {{.MARCTitle}} ({{.MARCLocation}})]
             </div>
           {{end}}
         </th>
