@@ -24,7 +24,6 @@
   <td>{{len .Issues}}</td>
   <td>
     {{if or .HasIssueErrors .HasErrors}}
-      <span class="glyphicon glyphicon-exclamation-sign" aria-hidden="true"></span>
       {{if .HasErrors}}
       <span class="count">One or more errors detected on this title</span>
       {{else}}
@@ -41,18 +40,17 @@
 
 {{if gt .Data.OtherErrors.Len 0}}
   <h2>Errors</h2>
-  <div class="title-with-errors">
-    <span class="glyphicon glyphicon-exclamation-sign" aria-hidden="true"></span>
+  <div class="alert alert-danger">
     <span>
       One or more errors may be preventing all titles from being displayed.  If
       you aren't sure how to fix them, contact the administrator for assistance.
     </span>
+    <ul>
+      {{range .Data.OtherErrors.All}}
+      <li>{{ErrorHTML .}}</li>
+      {{end}}
+    </ul>
   </div>
-  <ul>
-    {{range .Data.OtherErrors.All}}
-    <li>{{ErrorHTML .}}</li>
-    {{end}}
-  </ul>
 {{end}}
 
 <h2>Born-Digital Titles</h2>

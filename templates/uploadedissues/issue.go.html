@@ -2,7 +2,7 @@
 
 {{if .Data.Issue.HasErrors}}
   <h2>Errors</h2>
-  <div class="issue-with-errors">
+  <div class="alert alert-danger">
     This issue has errors, and cannot be queued:
     <ul>
     {{range .Data.Issue.Errors.Major.All}}
@@ -30,7 +30,7 @@
     {{end}}
 
     {{if .User.PermittedTo ModifyUploadedIssues}}
-      <div><button type="submit">Queue Issue</button> for derivative generation</div>
+      <div><button class="btn btn-primary" type="submit">Queue Issue for derivative generation</button></div>
     {{end}}
   </form>
 {{end}}

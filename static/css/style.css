@@ -62,12 +62,21 @@ form.actions {
   height: 35px;
 }
 
-.dl-horizontal dt {
-  width: 200px;
-}
+@media(min-width: 992px) {
+  .dl-horizontal {
+    max-width: 760px;
+    display: flex;
+    flex-wrap: wrap;
+  }
 
-.dl-horizontal dd {
-  margin-left: 220px;
+  .dl-horizontal dt {
+    display: inline-block;
+    width: 25%;
+  }
+
+  .dl-horizontal dd {
+    width: 75%;
+  }
 }
 
 /* inline lets us force side-by-side elements such as form buttons that are
@@ -82,6 +91,11 @@ form.actions {
 
 .radio-group input {
   margin-left: 1em;
+}
+
+/* Captions go at the TOP of the table, Boostrap. */
+table {
+  caption-side: top;
 }
 
 /* We don't want rights URL table cells wrapping */
