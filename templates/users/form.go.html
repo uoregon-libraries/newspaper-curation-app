@@ -1,12 +1,14 @@
 {{block "content" .}}
 
-<form class="form-horizontal" role="form" method="post" action="{{UsersHomeURL}}/save">
+<form role="form" method="post" action="{{UsersHomeURL}}/save">
   {{if .Data.User.ID}}
   <input type="hidden" name="id" value="{{.Data.User.ID}}" />
   {{else}}
-  <div class="form-group">
-    <label for="login">Login Name</label>
-    <input name="login" id="login" />
+  <div class="row mb-3">
+    <label class="col-sm-2 col-form-label" for="login">Login Name</label>
+    <div class="col-sm-4">
+      <input class="form-control" name="login" id="login" />
+    </div>
   </div>
   {{end}}
 
@@ -40,7 +42,7 @@
   </table>
 
   <div class="form-group">
-    <button type="submit">Save</button>
+    <button class="btn btn-primary" type="submit">Save</button>
   </div>
 </form>
 
