@@ -10,36 +10,6 @@ a:focus, button:focus {
   transition: none;
 }
 
-.issue-with-errors, .title-with-errors {
-  background: var(--bs-danger-bg-subtle);
-}
-.title-with-errors .title-link {
-  float: left;
-  width: 200px;
-}
-
-.issue-with-warnings {
-  background: var(--bs-warning-bg-subtle);
-}
-
-.issue-error-list {
-  background: var(--bs-danger-bg-subtle);
-  font-weight: bold;
-}
-
-.issue-error-list ul li {
-  font-weight: normal;
-}
-
-.issue-warning-list {
-  background: var(--bs-warning-bg-subtle);
-  font-weight: bold;
-}
-
-.issue-warning-list ul li {
-  font-weight: normal;
-}
-
 .issue-new {
   font-style: italic;
 }
