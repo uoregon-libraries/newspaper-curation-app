@@ -1,47 +1,18 @@
+@import url("../bootstrap/bootstrap.min.css") layer(bootstrap);
+
 body {
   padding-bottom: 70px;
 }
 
-.issue-with-errors, .title-with-errors {
-  background: #FEE;
-}
-.title-with-errors .title-link {
-  float: left;
-  width: 200px;
-}
-
-.issue-with-warnings {
-  background: #FFE;
-}
-
-.issue-error-list {
-  background: #FEE;
-  font-weight: bold;
-}
-
-.issue-error-list ul li {
-  font-weight: normal;
-}
-
-.issue-warning-list {
-  background: #FFE;
-  font-weight: bold;
-}
-
-.issue-warning-list ul li {
-  font-weight: normal;
+a:focus, button:focus {
+  outline: 1px solid var(--bs-primary-text-emphasis);
+  box-shadow: 0px 0px 0px 2px var(--bs-body-color);
+  transition: none;
 }
 
 .issue-new {
   font-style: italic;
 }
-
-/* Make bootstrap's contrast problems slightly better */
-.alert-warning  { color: #3E2100; }
-.alert-danger   { color: #4d0200; }
-.alert-success  { color: #103210; }
-.alert-info     { color: #002443; }
-caption         { color: #333; }
 
 /* Make all non-nav <a> tags underlined */
 a     { text-decoration: underline; }
@@ -61,12 +32,21 @@ form.actions {
   height: 35px;
 }
 
-.dl-horizontal dt {
-  width: 200px;
-}
+@media(min-width: 992px) {
+  .dl-horizontal {
+    max-width: 760px;
+    display: flex;
+    flex-wrap: wrap;
+  }
 
-.dl-horizontal dd {
-  margin-left: 220px;
+  .dl-horizontal dt {
+    display: inline-block;
+    width: 25%;
+  }
+
+  .dl-horizontal dd {
+    width: 75%;
+  }
 }
 
 /* inline lets us force side-by-side elements such as form buttons that are
@@ -83,6 +63,11 @@ form.actions {
   margin-left: 1em;
 }
 
+/* Captions go at the TOP of the table, Boostrap. */
+table {
+  caption-side: top;
+}
+
 /* We don't want rights URL table cells wrapping */
 td.rights-url {
   white-space: nowrap;
@@ -95,13 +80,11 @@ a.skiplink {
   position: absolute;
   top: -40px;
   left: 0px;
-  color: white;
+  color: oklch(95% 0 0);
   border-right: 1px solid white;
   border-bottom: 1px solid white;
   border-bottom-right-radius: 8px;
   background: transparent;
-  -webkit-transition: top 1s ease-out, background 1s linear;
-  transition: top 1s ease-out, background 1s linear;
   z-index: 100;
 }
 a.skiplink:focus {
@@ -109,10 +92,8 @@ a.skiplink:focus {
   font-weight: normal;
   left:0px;
   top:0px;
-  background:#333333;
+  background: oklch(20% 0.05 267);
   outline:0;
-  -webkit-transition: top .1s ease-in, background .5s linear;
-  transition: top .1s ease-in, background .5s linear;
 }
 
 /* Tabs that are headings already stand out; they don't need to be absurdly huge */
@@ -122,6 +103,19 @@ button[role=tab] h4, button[role=tab] h5, button[role=tab] h6 {
   margin: inherit;
 }
 
+/* Card headers' headings don't need to be so big */
+.card-header {
+  h1, h2, h3, h4, h5, h6 {
+    font-size: inherit;
+    margin: inherit;
+  }
+}
+
+/* Subheadings usually need a top margin, and only need this zero in special cases */
+h2, h3, h4, h5, h6 {
+  margin-top: 1rem;
+}
+
 /* Make status presentation better */
 #json-status {
   margin-top: 20px;
@@ -129,10 +123,30 @@ button[role=tab] h4, button[role=tab] h5, button[role=tab] h6 {
   transition: color .5s linear, background .5s linear;
 }
 #json-status[data-faded=true] {
-  color: white;
+  color: var(--bs-body-bg);
 }
 
 /* Improve alignment of "undo" button on the batch "flag issues" page */
 .unflag-form {
   margin-top: 8px;
+}
+
+/* Make "copy" buttons a bit more muted */
+button.copy {
+  --bs-btn-padding-y: 0.1rem;
+  --bs-btn-font-size: 0.75rem;
+}
+
+/* Our default (primary) buttons in dark mode need to be less bright */
+[data-bs-theme=dark] .btn-primary {
+  --bs-btn-bg: oklch(38% 0.15 265);
+  --bs-btn-hover-bg: oklch(28% 0.15 265);
+}
+
+/* Simple outline button style to replicate the old "default" button */
+.btn-outline {
+  --bs-btn-border-color: oklch(15% 0 0);
+}
+[data-bs-theme=dark] .btn-outline {
+  --bs-btn-border-color: oklch(85% 0 0);
 }

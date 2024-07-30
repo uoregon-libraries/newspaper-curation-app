@@ -1,5 +1,19 @@
+/* Colors for the actions lists - we don't try to reuse bootstrap colors here */
+:root, [data-bs-theme=light] {
+  --actions-list-border: oklch(75% 0 0);
+  --actions-list-bg: oklch(95% 0 0);
+  --actions-list-metadata-rejection-bg: oklch(85% 0.03 20);
+  --actions-list-error-bg: repeating-linear-gradient(-45deg, oklch(95% 0 0) 0 20px, oklch(90% 0 0) 20px 40px);
+}
+[data-bs-theme=dark] {
+  --actions-list-border: oklch(95% 0 0);
+  --actions-list-bg: oklch(20% 0 0);
+  --actions-list-metadata-rejection-bg: oklch(15% 0.03 20);
+  --actions-list-error-bg: repeating-linear-gradient(-45deg, oklch(25% 0 0) 0 20px, oklch(20% 0 0) 20px 40px);
+}
+
 .action-list {
-  border: 1px solid #ddd;
+  border: 1px solid var(--actions-list-border);
   padding: 8px;
   display: grid;
   grid-template-columns: repeat(4, 1fr);
@@ -31,18 +45,18 @@
 }
 
 .action .wrapper {
-  background: #F7F7F7;
+  background: var(--actions-list-bg);
   display: inline-block;
   margin-bottom: 8px;
 }
 
 .action.metadata-rejection .wrapper {
-  background: #FEE;
+  background: var(--actions-list-metadata-rejection-bg);
 }
 
 .action.report-unfixable-error .metadata {
   font-weight: bold;
 }
 .action.report-unfixable-error .wrapper {
-  background-image: repeating-linear-gradient(-45deg, #ffffff 0 20px, #eee 20px 40px);
+  background-image: var(--actions-list-error-bg);
 }

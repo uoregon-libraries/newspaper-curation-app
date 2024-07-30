@@ -2,17 +2,14 @@
 
 {{if .Data.Title.HasErrors}}
   <h2>Errors</h2>
-  <div class="title-with-errors">
-    <span class="glyphicon glyphicon-exclamation-sign" aria-hidden="true"></span>
-    <span>
-      Note: this title has one or more errors, and its issues cannot be queued:
-    </span>
+  <div class="alert alert-danger">
+    Note: this title has one or more errors, and its issues cannot be queued:
+    <ul>
+      {{range .Data.Title.Errors.Major.All}}
+      <li>{{ErrorHTML .}}</li>
+      {{end}}
+    </ul>
   </div>
-  <ul>
-    {{range .Data.Title.Errors.Major.All}}
-    <li>{{ErrorHTML .}}</li>
-    {{end}}
-  </ul>
 {{end}}
 
 <table class="table table-striped table-bordered table-condensed sortable">
@@ -37,8 +34,8 @@
         <td>{{TimeString .LastModified}}</td>
         <td>
           {{- if .HasErrors}}
-            <div class="issue-error-list">
-            Errors:
+            <div class="alert alert-danger">
+            <strong>Errors:</strong>
             <ul>
               {{range .Errors.Major.All}}
               <li>{{ErrorHTML .}}</li>
@@ -47,8 +44,8 @@
             </div>
           {{- end}}
           {{- if .HasWarnings}}
-            <div class="issue-warning-list">
-            Warnings:
+            <div class="alert alert-warning">
+            <strong>Warnings:</strong>
             <ul>
               {{range .Errors.Minor.All}}
               <li>{{ErrorHTML .}}</li>

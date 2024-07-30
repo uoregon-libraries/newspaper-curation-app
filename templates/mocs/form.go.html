@@ -1,34 +1,34 @@
 {{block "content" .}}
 
-<form class="form-horizontal" role="form" method="post" action="{{MOCHomeURL}}/save">
+<form role="form" method="post" action="{{MOCHomeURL}}/save">
   {{if .Data.MOC}}
     <input id="id" name="id" type="hidden" value="{{.Data.MOC.ID}}" />
   {{end}}
 
-  <div class="form-group">
-    <label class="col-sm-4 control-label" for="code">Code</label>
-    <div class="col-sm-8">
+  <div class="row mb-3 align-items-top">
+    <label class="col-sm-2 offset-sm-2 col-form-label" for="code">Code</label>
+    <div class="col-sm-6">
       <input id="code" name="code" required="required" class="form-control" pattern="[a-z]+" value="{{.Data.MOC.Code}}" aria-describedby="code-help" />
-      <p id="code-help" class="help-block">
+      <div id="code-help" class="form-text">
         Enter the <em>normalized</em> MARC Org Code; e.g., "orul", <strong>not</strong> "OrU-L".
-      </p>
+      </div>
     </div>
   </div>
 
-  <div class="form-group">
-    <label class="col-sm-4 control-label" for="name">Name</label>
-    <div class="col-sm-8">
+  <div class="row mb-3 align-items-top">
+    <label class="col-sm-2 offset-sm-2 col-form-label" for="name">Name</label>
+    <div class="col-sm-6">
       <input id="name" name="name" required="required" class="form-control" value="{{.Data.MOC.Name}}" aria-describedby="name-help" />
-      <p id="name-help" class="help-block">
+      <div id="name-help" class="form-text">
         Enter the organization name, usually in the form "Name of entity; City,
         State".  e.g., <i>Library of Virginia; Richmond, VA</i>
-      </p>
+      </div>
     </div>
   </div>
 
-  <div class="form-group">
-    <div class="col-sm-8 col-sm-offset-4">
-      <button class="btn btn-default" type="Submit">Submit</button>
+  <div class="row">
+    <div class="col-sm-8 offset-sm-4">
+      <button class="btn btn-primary" type="Submit">Submit</button>
     </div>
   </div>
 </form>

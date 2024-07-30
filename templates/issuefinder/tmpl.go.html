@@ -1,46 +1,65 @@
 {{block "content" .}}
 
-<h2 id="search">Search</h2>
+<form action="{{.Data.SearchAction}}" class="row align-items-top" method="GET" role="search" aria-describedby="search-help">
+  <div class="col-md-6">
+    <h2 id="search">Search</h2>
+    <div class="row g-3 mb-3 align-items-center">
+      <div class="col-auto">
+        <label class="col-form-label" for="lccn">Title</label>
+      </div>
 
-<div id="search-help">
-  <p>
-    Title is required, but other fields are optional to an extent.  You must fill
-    out fields from left to right, so you cannot, for example, put in a month
-    while leaving year at zero.
-  </p>
-  <p>
-    <em>Please note: it can take up to seven days for a new batch's issues to
-    show up.</em> A batch might show up in full moments after loading, it might
-    be partially listed and have some issues appear to be missing, or it might
-    not show up at all.
-  </p>
-</div>
+      <div class="col-auto">
+        <select class="form-select" id="lccn" name="lccn">
+          {{range .Data.Titles}}
+            <option value="{{.LCCN}}" {{if eq .LCCN $.Data.LCCN}}selected="selected"{{end}}>
+              {{.Name}} - {{.LCCN}}
+            </option>
+          {{end}}
+        </select>
+      </div>
+    </div>
 
-<form action="{{.Data.SearchAction}}" class="form-horizontal" method="GET" role="search" aria-describedby="search-help">
-  <div class="form-group">
-    <label for="lccn">Title</label>
-    <select id="lccn" name="lccn">
-      {{range .Data.Titles}}
-        <option value="{{.LCCN}}" {{if eq .LCCN $.Data.LCCN}}selected="selected"{{end}}>
-          {{.Name}} - {{.LCCN}}
-        </option>
-      {{end}}
-    </select>
+    <div class="row g-3 mb-3 align-items-center">
+      <div class="col-auto">
+        <label class="col-form-label" for="year">Year</label>
+      </div>
+      <div class="col-auto">
+        <input class="form-control" type="number" min="0" max="2100" id="year" name="year" value="{{.Data.Year}}" />
+      </div>
+
+      <div class="col-auto">
+        <label class="col-form-label" for="month">Month</label>
+      </div>
+      <div class="col-auto">
+        <input class="form-control" type="number" min="0" max="12" id="month" name="month" value="{{.Data.Month}}" />
+      </div>
+
+      <div class="col-auto">
+        <label class="col-form-label" for="day">Day</label>
+      </div>
+      <div class="col-auto">
+        <input class="form-control" type="number" min="0" max="31" id="day" name="day" value="{{.Data.Day}}" />
+      </div>
+    </div>
+
+    <div class="mb-3">
+      <button class="btn btn-primary" type="submit">Search</button>
+    </div>
   </div>
 
-  <div class="form-group">
-    <label for="year">Year</label>
-    <input type="number" min="0" max="2100" id="year" name="year" value="{{.Data.Year}}" />
-
-    <label for="month">Month</label>
-    <input type="number" min="0" max="12" id="month" name="month" value="{{.Data.Month}}" />
-
-    <label for="day">Day</label>
-    <input type="number" min="0" max="31" id="day" name="day" value="{{.Data.Day}}" />
-  </div>
-
-  <div class="form-group">
-    <button type="submit">Search</button>
+  <div id="search-help" class="col-md-6">
+    <h2>Help / Info</h2>
+    <p>
+      Title is required, but other fields are optional to an extent.  You must fill
+      out fields from left to right, so you cannot, for example, put in a month
+      while leaving year at zero.
+    </p>
+    <p>
+      <em>Please note: it can take up to seven days for a new batch's issues to
+      show up.</em> A batch might show up in full moments after loading, it might
+      be partially listed and have some issues appear to be missing, or it might
+      not show up at all.
+    </p>
   </div>
 </form>
 
@@ -65,8 +84,8 @@
     <td>{{.Link}}</td>
     <td>
       {{if .Batch}}
-        <p>{{.Location}}</p>
-        <p>Batch: {{.Batch.Fullname}}</p>
+        <div>{{.Location}}</div>
+        <div>Batch: {{.Batch.Fullname}}</div>
       {{else}}
         {{.Location}}
       {{end}}

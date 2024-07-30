@@ -3,14 +3,14 @@
 <div class="filter">
   <h2>Filter / Search</h2>
   <form id="filter-form" role="form">
-    <div class="form-group">
-      <label class="col-md-2 control-label" for="lccn">LCCN</label>
+    <div class="row mb-3">
+      <label class="col-md-2 col-form-label" for="lccn">LCCN</label>
       <div class="col-md-4">
         <input class="form-control" list="titles" id="lccn" name="lccn" autocomplete="off" aria-describedby="lccn-help" />
-        <p id="lccn-help" class="help-block">
+        <div id="lccn-help" class="form-text">
           Enter an LCCN. You may start typing a title's LCCN or its name, and
           on selection the appropriate LCCN will be set.
-        </p>
+        </div>
       </div>
 
       <datalist id="titles">
@@ -19,13 +19,13 @@
         {{end}}
       </datalist>
 
-      <label class="col-md-2 control-label" for="moc">MARC Org Code</label>
+      <label class="col-md-2 col-form-label" for="moc">MARC Org Code</label>
       <div class="col-md-4">
         <input class="form-control" list="mocs" id="moc" name="moc" autocomplete="off" aria-describedby="moc-help" />
-        <p id="moc-help" class="help-block">
+        <div id="moc-help" class="form-text">
           Enter a MARC Org Code. You may start typing a code or its name, and
           on selection the appropriate code will be set.
-        </p>
+        </div>
       </div>
 
       <datalist id="mocs">
@@ -39,10 +39,10 @@
       </datalist>
     </div>
 
-    <div class="form-group">
-      <div class="col-md-10 col-md-offset-2">
-        <button type="Submit">Apply</button>
-        <button type="Reset" id="clear-filters">Clear Filters</button>
+    <div class="row mb-3">
+      <div class="col-md-10 offset-md-2">
+        <button class="btn btn-primary" type="Submit">Apply</button>
+        <button class="btn btn-outline" type="Reset" id="clear-filters">Clear Filters</button>
       </div>
     </div>
   </form>
@@ -59,7 +59,7 @@
     <button role="tab" aria-selected="false" aria-controls="desk-tab" id="desk">
       <h3>
         Desk
-        <span class="badge">loading...</span>
+        <span class="badge text-bg-info">loading...</span>
       </h3>
     </button>
 
@@ -67,7 +67,7 @@
     <button role="tab" aria-selected="false" aria-controls="needs-metadata-tab" id="needs-metadata" tabindex="-1">
       <h3>
         Metadata Entry
-        <span class="badge">loading...</span>
+        <span class="badge text-bg-info">loading...</span>
       </h3>
     </button>
     {{end}}
@@ -76,7 +76,7 @@
     <button role="tab" aria-selected="false" aria-controls="needs-review-tab" id="needs-review" tabindex="-1">
       <h3>
         Metadata Review
-        <span class="badge">loading...</span>
+        <span class="badge text-bg-info">loading...</span>
       </h3>
     </button>
     {{end}}
@@ -85,7 +85,7 @@
     <button role="tab" aria-selected="false" aria-controls="unfixable-errors-tab" id="unfixable-errors" tabindex="-1">
       <h3>
         Unfixable Errors
-        <span class="badge">loading...</span>
+        <span class="badge text-bg-info">loading...</span>
       </h3>
     </button>
     {{end}}

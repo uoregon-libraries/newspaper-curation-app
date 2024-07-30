@@ -9,8 +9,10 @@ import (
 	"html/template"
 	"io"
 	"net/http"
+	"os"
 	"time"
 
+	"github.com/uoregon-libraries/newspaper-curation-app/src/cmd/server/internal/settings"
 	"github.com/uoregon-libraries/newspaper-curation-app/src/internal/logger"
 	"github.com/uoregon-libraries/newspaper-curation-app/src/models"
 	"github.com/uoregon-libraries/newspaper-curation-app/src/version"
@@ -56,6 +58,15 @@ func (r *Responder) injectDefaultTemplateVars() {
 
 // Render uses the responder's data to render the given template
 func (r *Responder) Render(t *tmpl.Template) {
+	if settings.DEBUG {
+		var clone, err = t.Rebuild()
+		if err != nil {
+			logger.Criticalf("Unable to rebuild template %q: %s", t.Path, err)
+			os.Exit(1)
+		}
+		t = clone
+	}
+
 	r.injectDefaultTemplateVars()
 	var flash = r.flash("Alert")
 	if flash != "" {

@@ -130,6 +130,8 @@ SortableTable.prototype = {
       // Create sort button
       var sortButton = document.createElement("button");
       sortButton.classList.add("sort-button");
+      sortButton.classList.add("btn");
+      sortButton.classList.add("btn-outline");
       sortButton.onclick = createDelegate(this, this.sort, [i]);
 
       // Move contents of header into sort button

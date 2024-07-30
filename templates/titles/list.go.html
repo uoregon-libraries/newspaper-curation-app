@@ -28,7 +28,7 @@
           {{.Name}}
           {{if and .ValidLCCN .TitlesDiffer}}
             <div class="small">
-              <span class="label label-danger">MARC Title</span> {{.MARCTitle}} ({{.MARCLocation}})
+              <span class="badge rounded-pill bg-danger">MARC Title doesn't match</span> [MARC Title: {{.MARCTitle}} ({{.MARCLocation}})]
             </div>
           {{end}}
         </th>
@@ -44,12 +44,12 @@
 
         {{if $.User.PermittedTo ModifyTitles}}
         <td>
-          <a href="{{TitlesHomeURL}}/edit?id={{.ID}}" class="btn btn-default">Edit</a>
+          <a href="{{TitlesHomeURL}}/edit?id={{.ID}}" class="btn btn-outline">Edit</a>
 
           {{if not .ValidLCCN}}
           <form action="{{TitlesHomeURL}}/validate" method="post">
             <input type="hidden" name="id" value="{{.ID}}" />
-            <button type="submit" class="btn btn-default">Validate LCCN</button>
+            <button type="submit" class="btn btn-outline">Validate LCCN</button>
           </form>
           {{end}}
 

@@ -11,30 +11,30 @@
 </div>
 {{end}}
 
-<form class="form-horizontal" role="form" method="post" action="{{TitlesHomeURL}}/save">
+<form role="form" method="post" action="{{TitlesHomeURL}}/save">
   {{if .Data.Title.ID}}
   <input type="hidden" name="id" value="{{.Data.Title.ID}}" />
   {{end}}
 
-  <div class="form-group">
-    <label class="col-sm-4 control-label" for="name">Name</label>
-    <div class="col-sm-8">
+  <div class="row mb-3">
+    <label class="col-sm-2 offset-sm-2 col-form-label" for="name">Name</label>
+    <div class="col-sm-6">
       <input id="name" name="name" value="{{.Data.Title.Name}}" required="required" class="form-control" aria-describedby="name-help" />
-      <p id="name-help" class="help-block">Enter the name as required by chronam: "title. (city, Or.)"</p>
+      <div id="name-help" class="form-text">Enter the name as required by chronam: "title. (city, Or.)"</div>
     </div>
   </div>
   </table>
 
-  <div class="form-group">
-    <label class="col-sm-4 control-label" for="lccn">LCCN</label>
-    <div class="col-sm-8">
+  <div class="row mb-3">
+    <label class="col-sm-2 offset-sm-2 col-form-label" for="lccn">LCCN</label>
+    <div class="col-sm-6">
       {{if .Data.Title.ValidLCCN}}
         {{if .User.PermittedTo ModifyValidatedLCCNs}}
           <input id="lccn" name="lccn" value="{{.Data.Title.LCCN}}" class="form-control" required="required" aria-describedby="lccn-help" />
-          <p id="lccn-help" class="help-block">This LCCN has been validated - only change it if you're certain this is necessary!</p>
+          <div id="lccn-help" class="form-text">This LCCN has been validated - only change it if you're certain this is necessary!</div>
         {{else}}
           <input id="lccn" value="{{.Data.Title.LCCN}}" class="form-control" disabled="disabled" aria-describedby="lccn-help" />
-          <p id="lccn-help" class="help-block">This LCCN has been validated and cannot be changed</p>
+          <div id="lccn-help" class="form-text">This LCCN has been validated and cannot be changed</div>
         {{end}}
       {{else}}
         <input id="lccn" name="lccn" value="{{.Data.Title.LCCN}}" class="form-control" required="required" />
@@ -42,10 +42,10 @@
     </div>
   </div>
 
-  <div class="form-group">
-    <label class="col-sm-4 control-label" for="embargo_period">Embargo Period</label>
-    <div class="col-sm-8">
-      <select id="embargo_period" name="embargo_period">
+  <div class="row mb-3">
+    <label class="col-sm-2 offset-sm-2 col-form-label" for="embargo_period">Embargo Period</label>
+    <div class="col-sm-6">
+      <select class="form-select" id="embargo_period" name="embargo_period">
         <option value="">Not embargoed</option>
         <option value="3M"
           {{if eq .Data.Title.EmbargoRFC3339 "P3M"}} selected="selected"{{end}}
@@ -63,10 +63,10 @@
     </div>
   </div>
 
-  <div class="form-group">
-    <label class="col-sm-4 control-label" for="rights">Rights</label>
-    <div class="col-sm-8">
-      <select id="rights" name="rights">
+  <div class="row mb-3">
+    <label class="col-sm-2 offset-sm-2 col-form-label" for="rights">Rights</label>
+    <div class="col-sm-6">
+      <select class="form-select" id="rights" name="rights">
         <option value="">** NO Rights statement **</option>
 
         <option value="http://www.europeana.eu/rights/rr-f/"
@@ -90,64 +90,70 @@
 
   <!-- No sftp data is shown/editable if we aren't connected to SFTPGo.  Too much pain. -->
   {{if SFTPGoEnabled}}
-  <div class="form-group">
-    <label class="col-sm-4 control-label" for="sftpuser">SFTP username</label>
-    <div class="col-sm-8">
+  <div class="row mb-3">
+    <label class="col-sm-2 offset-sm-2 col-form-label" for="sftpuser">SFTP username</label>
+    <div class="col-sm-6">
       <!-- SFTPGo has an account for this title: username cannot be changed -->
       {{if .Data.Title.SFTPConnected}}
-      <p id="sftpuser" class="form-control-static">{{.Data.Title.SFTPUser}}</p>
-      <p id="sftpuser-help" class="help-block">
+      <input class="form-control" disabled id="sftpuser" value="{{.Data.Title.SFTPUser}}" />
+      <div id="sftpuser-help" class="form-text">
         This title's SFTP credentials have already been generated in our
         external SFTPGo system, so the SFTP Username can no longer be modified.
-      </p>
+      </div>
 
       <!-- No account, so username can be set -->
       {{else}}
       <input id="sftpuser" name="sftpuser" class="form-control" value="{{.Data.Title.SFTPUser}}" aria-describedby="sftpuser-help" />
-      <p id="sftpuser-help" class="help-block">
+      <div id="sftpuser-help" class="form-text">
         Enter a login name for this title if the publisher will send issues via SFTP.
         <strong>Note</strong>: NCA will use this to provision an external
         account, and it <strong>cannot be changed</strong> once set.
         <br /><br />
         Leave this blank to indicate the title isn't being uploaded externally
         (e.g., if it's for in-house scanning).
-      </p>
+      </div>
       {{end}}
     </div>
   </div>
 
-  <div class="form-group">
-    <label class="col-sm-4 control-label" for="sftppass">SFTP password</label>
-    <div class="col-sm-8">
+  <div class="row mb-3">
+    <label class="col-sm-2 offset-sm-2 col-form-label" for="sftppass">SFTP password</label>
+    <div class="col-sm-6">
       <input id="sftppass" name="sftppass" class="form-control" value="{{.Data.Title.SFTPPass}}" aria-describedby="sftppass-help" />
-      <p id="sftppass-help" class="help-block">
+      <div id="sftppass-help" class="form-text">
         {{if .Data.Title.SFTPConnected}}
         Optional: if filled in, the SFTP user's password will be changed
         {{else}}
         Optional: leave blank to let NCA generate a random password for this user's SFTP login
         {{end}}
-      </p>
+      </div>
     </div>
   </div>
 
-  <div class="form-group">
-    <label class="col-sm-4 control-label" for="sftpquota">SFTP Quota</label>
-    <div class="col-sm-8">
+  <div class="row mb-3">
+    <label class="col-sm-2 offset-sm-2 col-form-label" for="sftpquota">SFTP Quota</label>
+    <div class="col-sm-6">
       <input id="sftpquota" name="sftpquota" class="form-control" value="{{.Data.Title.SFTPQuota.String}}" aria-describedby="sftpquota-help" />
-      <p id="sftpquota-help" class="help-block">
-        Maximum amount of space allowed to be used by this title's SFTP
-        uploads.  You can enter a shorthand value, e.g., "5gb" means 5
-        gigabytes.  Anything which results in a zero value (blank, "0", "0 B",
-        etc.) means the SFTP account has unlimited storage.  This is
-        <strong>not recommended</strong>.
+      <div id="sftpquota-help" class="form-text">
+        <p>
+          Maximum amount of space allowed to be used by this title's SFTP
+          uploads.  You can enter a shorthand value, e.g., "5gb" means 5
+          gigabytes.
+        </p>
+
+        <p>
+          Anything which results in a zero value (blank, "0", "0 B", etc.)
+          means the SFTP account has unlimited storage.  This is <strong>not
+          recommended</strong>.
+        </p>
       </p>
     </div>
   </div>
   {{end}}
 
-  <div class="form-group">
-    <div class="col-sm-8 col-sm-offset-4">
-      <button class="btn btn-default" type="Submit">Submit</button>
+  <div class="row mb-3">
+    <div class="col-sm-6 offset-sm-4">
+      <button class="btn btn-primary" type="Submit">Submit</button>
     </div>
   </div>
 </form>

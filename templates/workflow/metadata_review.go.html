@@ -1,15 +1,17 @@
 {{block "content" .}}
 
-<h2>Report problems</h2>
-<p>
-  <a href="{{"review/reject-form"|.Data.Issue.Path}}">Reject this issue</a> if any of the following are not true:
-  <ul>
-    <li>All pages which are labeled have a page label entered <strong>exactly as it's printed</strong></li>
-    <li>All pages which are not labeled have a zero ("0") entered for their label</li>
-    <li>The date and "date as labeled" are correct for the issue - <em>this doesn't always mean they're the same</em>!</li>
-    <li>All warnings below (if any) can be safely ignored</li>
-  </ul>
-</p>
+<div class="card">
+  <div class="card-body">
+    <h2 class="card-title">Report problems</h2>
+    <a href="{{"review/reject-form"|.Data.Issue.Path}}">Reject this issue</a> if any of the following are not true:
+    <ul>
+      <li>All pages which are labeled have a page label entered <strong>exactly as it's printed</strong></li>
+      <li>All pages which are not labeled have a zero ("0") entered for their label</li>
+      <li>The date and "date as labeled" are correct for the issue - <em>this doesn't always mean they're the same</em>!</li>
+      <li>All warnings below (if any) can be safely ignored</li>
+    </ul>
+  </div>
+</div>
 
 {{template "issue_errors" (dict "Errors" .Data.Issue.Errors "Heading" "h2")}}
 
@@ -25,20 +27,16 @@
 <h2>Metadata</h2>
 {{template "issue_metadata_view" .Data.Issue}}
 
-<div class="row">
-  <div class="col-md-12">
-    <form class="form-horizontal" role="form" method="POST" action="{{"review/approve"|.Data.Issue.Path}}">
-      <div class="form-group">
-        <div class="col-md-2">
-          <button type="Submit">Approve Issue</button>
-        </div>
-        <div class="col-md-2">
-          <a href="{{"review/reject-form"|.Data.Issue.Path}}">Reject issue</a>
-        </div>
-      </div>
-    </form>
+<form role="form" method="POST" action="{{"review/approve"|.Data.Issue.Path}}">
+  <div class="row mb-3">
+    <div class="col-md-2">
+      <button class="btn btn-primary" type="Submit">Approve Issue</button>
+    </div>
+    <div class="col-md-2">
+      <a class="btn btn-outline" href="{{"review/reject-form"|.Data.Issue.Path}}">Reject issue</a>
+    </div>
   </div>
-</div>
+</form>
 
 {{end}}
 

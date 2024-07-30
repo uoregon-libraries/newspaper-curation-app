@@ -1,0 +1,3 @@
+button[type=submit][data-processing=true] {
+  filter: brightness(60%);
+}
