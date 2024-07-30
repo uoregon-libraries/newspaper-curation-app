@@ -79,15 +79,16 @@ func findPipeline(id int64) (*Pipeline, error) {
 	return list[0], err
 }
 
-// QueueIssueJobs sets the issue to awaiting processing, then queues the jobs,
-// all in a single DB transaction to ensure the state doesn't change if the
-// jobs can't queue up
+// QueueIssueJobs sets the issue to awaiting processing, removes it from any
+// "desk" it's currently on, then queues the jobs, all in a single DB
+// transaction to ensure the state doesn't change if the jobs can't queue up
 func QueueIssueJobs(name PipelineName, issue *Issue, jobs ...*Job) error {
 	var op = dbi.DB.Operation()
 	op.Dbg = dbi.Debug
 	op.BeginTransaction()
 	defer op.EndTransaction()
 
+	issue.WorkflowOwnerID = 0
 	issue.WorkflowStep = schema.WSAwaitingProcessing
 	var err = issue.SaveOpWithoutAction(op)
 	if err != nil {
