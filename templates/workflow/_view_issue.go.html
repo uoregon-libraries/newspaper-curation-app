@@ -32,7 +32,7 @@
 {{define "issue_errors"}}
   {{if .Errors.Major.Len}}
     {{Open .Heading}}Errors{{Close .Heading}}
-    <div class="issue-with-errors">
+    <div class="alert alert-danger">
       This issue has errors:
       <ul>
       {{range .Errors.Major.All}}
@@ -44,7 +44,7 @@
 
   {{if .Errors.Minor.Len}}
     {{Open .Heading}}Warnings{{Close .Heading}}
-    <div class="issue-with-warnings">
+    <div class="alert alert-warning">
       {{if .Errors.Major.Len}}
         In addition, there are warnings:
       {{else}}
@@ -71,8 +71,8 @@
 <div class="osd-container">
   <div>
     Image <span id="osd-image-number">1</span> of {{.|len}}
-    <button id="osd-jump-top" class="btn btn-default">Jump to top</button>
-    <button id="osd-jump-bottom" class="btn btn-default">Jump to bottom</button>
+    <button id="osd-jump-top" class="btn btn-outline">Jump to top</button>
+    <button id="osd-jump-bottom" class="btn btn-outline">Jump to bottom</button>
   </div>
   <div id="osd-toolbar" class="osd-toolbar">
   </div>

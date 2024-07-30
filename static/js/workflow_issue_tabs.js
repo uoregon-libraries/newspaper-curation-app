@@ -83,7 +83,7 @@ async function loadTabIssues(tab) {
 
   // Refresh all tabs' counts
   document.querySelectorAll('[role="tab"]').forEach((el) => {
-    el.querySelector('span[class=badge]').innerText = data.Counts[el.getAttribute('id')];
+    el.querySelector('span.badge').innerText = data.Counts[el.getAttribute('id')];
   });
 
   clearTimeout(loading);
@@ -150,7 +150,7 @@ function populateTable(table, issues) {
 
 function buildActionHTML(action) {
   if (action.Type == 'link') {
-    return `<a href="${action.Path}" class="btn btn-default">${action.Text}</a>`;
+    return `<a href="${action.Path}" class="btn btn-outline">${action.Text}</a>`;
   }
 
   let classname = (action.Type == 'button-danger') ? 'btn-danger' : 'btn-primary';

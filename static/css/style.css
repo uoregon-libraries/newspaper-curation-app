@@ -172,3 +172,11 @@ button.copy {
   --bs-btn-bg: oklch(38% 0.15 265);
   --bs-btn-hover-bg: oklch(28% 0.15 265);
 }
+
+/* Simple outline button style to replicate the old "default" button */
+.btn-outline {
+  --bs-btn-border-color: oklch(15% 0 0);
+}
+[data-bs-theme=dark] .btn-outline {
+  --bs-btn-border-color: oklch(85% 0 0);
+}

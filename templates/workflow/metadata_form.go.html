@@ -1,16 +1,18 @@
 {{block "content" .}}
 
-<h2>Report problems</h2>
-<p>
-  <a href="{{"report-error"|.Data.Issue.Path}}">Report an error</a> if any of the following are not true:
-  <ul>
-    <li>The issue below is part of the title <strong>{{.Data.Issue.Title}} ({{.Data.Issue.LCCN}})</strong></li>
-    <li>All pages are in order, there are no dupes, and there are no pages for a different issue or date</li>
-    <li>The title's MARC organization code is "{{.Data.Issue.MARCOrgCode}}"</li>
-    <li>All errors below (if any) can be fixed in NCA</li>
-    <li>All warnings below (if any) can be fixed in NCA or ignored</li>
-  </ul>
-</p>
+<div class="card">
+  <div class="card-body">
+    <h2 class="card-title">Report problems</h2>
+    <a href="{{"report-error"|.Data.Issue.Path}}">Report an error</a> if any of the following are not true:
+    <ul>
+      <li>The issue below is part of the title <strong>{{.Data.Issue.Title}} ({{.Data.Issue.LCCN}})</strong></li>
+      <li>All pages are in order, there are no dupes, and there are no pages for a different issue or date</li>
+      <li>The title's MARC organization code is "{{.Data.Issue.MARCOrgCode}}"</li>
+      <li>All errors below (if any) can be fixed in NCA</li>
+      <li>All warnings below (if any) can be fixed in NCA or ignored</li>
+    </ul>
+  </div>
+</div>
 
 {{if .Data.Issue.WorkflowActions}}
   <h2>Actions / Comments</h2>
@@ -24,25 +26,23 @@
   move to the next unlabeled page.
 </p>
 
-<div class="row">
-  <div class="col-md-12">
-    <form id="page-label-form">
-      <label class="col-md-4 control-label" for="page-label">Page Label</label>
-      <div class="col-md-4">
-        <input type="text" id="page-label" name="label" class="form-control" />
-      </div>
-      <div class="col-md-4">
-        <button type="submit" id="page-label-button">Next</button>
-      </div>
-    </form>
+<form id="page-label-form">
+  <div class="row mb-3">
+    <label class="col-md-2 col-form-label" for="page-label">Page Label</label>
+    <div class="col-md-4">
+      <input type="text" id="page-label" name="label" class="form-control" />
+    </div>
+    <div class="col-md-4">
+      <button class="btn btn-outline" type="submit" id="page-label-button">Next</button>
+    </div>
   </div>
-</div>
+</form>
 
 <div class="osd-container">
   <div>
     Image <span id="osd-image-number">1</span> of {{.Data.Issue.JP2Files|len}}
-    <button id="osd-jump-top" class="btn btn-default">Jump to top</button>
-    <button id="osd-jump-bottom" class="btn btn-default">Jump to bottom</button>
+    <button id="osd-jump-top" class="btn btn-outline">Jump to top</button>
+    <button id="osd-jump-bottom" class="btn btn-outline">Jump to bottom</button>
   </div>
   <div id="osd-toolbar" class="osd-toolbar">
   </div>
@@ -51,137 +51,134 @@
 </div>
 
 <hr />
+
 <h2>Metadata</h2>
-<div class="row">
-  <div class="col-md-12">
-    <form id="metadata-form" class="form-horizontal" role="form" method="POST" action="{{"metadata/save"|.Data.Issue.Path}}">
-      <input type="hidden" id="page-labels-csv" name="page_labels_csv" value="{{.Data.Issue.PageLabelsCSV}}" />
-      <div class="form-group">
-        <label class="col-md-2 control-label">Title</label>
-        <div class="col-md-4">
-          <p class="form-control-static">{{.Data.Issue.Title}}</p>
-        </div>
+<form id="metadata-form" role="form" method="POST" action="{{"metadata/save"|.Data.Issue.Path}}">
+  <input type="hidden" id="page-labels-csv" name="page_labels_csv" value="{{.Data.Issue.PageLabelsCSV}}" />
+  <div class="row mb-3">
+    <span class="col-md-2 col-form-label">Title</span>
+    <div class="col-md-4">
+      <input class="form-control" disabled value="{{.Data.Issue.Title}}" />
+    </div>
 
-        <label class="col-md-2 control-label">MARC Org Code</label>
-        <div class="col-md-4">
-          <p class="form-control-static">{{.Data.Issue.MARCOrgCode}}</p>
-        </div>
-      </div>
-
-      <div class="form-group">
-        <label class="col-md-2 control-label" for="date_as_labeled">Issue Date as labeled</label>
-        <div class="col-md-4">
-          <input type="text" id="date_as_labeled" name="date_as_labeled" value="{{.Data.Issue.DateAsLabeled}}"
-            class="form-control" pattern="\d\d\d\d-\d\d-\d\d" required="required"
-            aria-describedby="date-labeled-help" />
-          <p id="date-labeled-help" class="help-block">
-            Enter the issue's date as it appears in the publication in YYYY-MM-DD format.
-          </p>
-        </div>
-        <label class="col-md-2 control-label" for="date">Issue Date</label>
-        <div class="col-md-4">
-          <input type="text" id="date" name="date" value="{{.Data.Issue.Date}}"
-            class="form-control" pattern="\d\d\d\d-\d\d-\d\d" required="required"
-            aria-describedby="date-help" />
-          <p id="date-help" class="help-block">
-            Enter the issue's date in YYYY-MM-DD format.
-            <strong>Carefully</strong> check that this is valid, not just
-            what's printed on the paper!
-          </p>
-        </div>
-      </div>
-
-      <div class="form-group">
-        <label class="col-md-2 control-label" for="volume_number">Volume number</label>
-        <div class="col-md-4">
-          <input type="text" id="volume_number" name="volume_number" value="{{.Data.Issue.Volume}}"
-            class="form-control" required="required" aria-describedby="volnum-help" />
-          <p id="volnum-help" class="help-block">
-            Enter the volume number, or "0" if no volume number is present.
-            All numeric information must be converted to Arabic numerals.
-            Alphabetic data used as enumeration designations shall be
-            transcribed as they appear on the piece, and converted to
-            uppercase.  e.g., "Volume XLIV" would be "VOLUME 44".
-          </p>
-        </div>
-        <label class="col-md-2 control-label" for="issue_number">Issue number</label>
-        <div class="col-md-4">
-          <input type="text" id="issue_number" name="issue_number" value="{{.Data.Issue.Issue.Issue}}"
-            class="form-control" required="required" aria-describedby="issnum-help" />
-          <p id="issnum-help" class="help-block">
-            Enter the issue number, or "0" if no issue number is present.
-            All numeric information must be converted to Arabic numerals.
-            Alphabetic data used as enumeration designations shall be
-            transcribed as they appear on the piece, and converted to
-            uppercase.  e.g., "Number 10" would be "NUMBER 10".
-          </p>
-        </div>
-      </div>
-
-      <div class="form-group">
-        <label class="col-md-2 control-label" for="edition_number">Edition number</label>
-        <div class="col-md-4">
-          <input type="text" id="edition_number" name="edition_number" value="{{.Data.Issue.Edition}}"
-            size="2" class="form-control" pattern="[1-9][0-9]{0,1}" required="required"
-            aria-describedby="ednum-help" />
-          <p id="ednum-help" class="help-block">
-            Enter the edition number.  This is usually 1 unless another edition
-            of the same title was published on the same date.  This must be
-            numeric and cannot have leading zeroes (e.g., "1", not "01").
-          </p>
-        </div>
-        <label class="col-md-2 control-label" for="edition_label">Edition label</label>
-        <div class="col-md-4">
-          <input type="text" id="edition_label" name="edition_label" value="{{.Data.Issue.EditionLabel}}"
-            class="form-control" />
-        </div>
-      </div>
-
-      <div class="form-group">
-        <label class="col-md-2 control-label" for="draft_comment">Comments (optional)</label>
-        <div class="col-md-10">
-          <textarea id="draft_comment" name="draft_comment" class="form-control" rows="8" aria-describedby="comment-help">{{.Data.Issue.DraftComment}}</textarea>
-          <p id="comment-help" class="help-block">
-            Enter comments about this data, if necessary.  For instance, if
-            there is anything special or unusual about this issue the metadata
-            reviewer needs to know, it would go here.  <strong>Note</strong>:
-            draft comments aren't visible to others.  <em>i.e., This comment
-            will not be visible until you choose "Save and Queue"</em>.
-          </p>
-        </div>
-      </div>
-
-      {{if .Data.Issue.Errors.Minor.Len}}
-      <div class="form-group">
-        <div class="col-md-9 col-md-offset-2">
-          <div class="issue-with-warnings">
-            This issue's metadata may be incorrect.  <strong>Review all warnings
-            below</strong> before queueing this issue:
-            <ul id="issue-warnings">
-            {{range .Data.Issue.Errors.Minor.All}}
-              <li>{{ErrorHTML .}}</li>
-            {{end}}
-            </ul>
-          </div>
-          <div class="checkbox">
-            <label>
-              <input type="checkbox" name="ignore_warnings" value="{{.Data.Issue.ID}}" aria-describedby="issue-warnings" />
-              I accept the risk of queueing this issue despite these warnings.
-            </label>
-          </div>
-        </div>
-      </div>
-      {{end}}
-
-      <div class="form-group">
-        <div class="col-md-9 col-md-offset-2">
-          <button id="savedraft" type="Submit" name="action" value="savedraft">Save Draft</button>
-          <button id="savequeue" type="Submit" name="action" value="savequeue">Save and Queue</button>
-        </div>
-      </div>
-    </form>
+    <span class="col-md-2 col-form-label">MARC Org Code</span>
+    <div class="col-md-4">
+      <input class="form-control" disabled value="{{.Data.Issue.MARCOrgCode}}" />
+    </div>
   </div>
-</div>
+
+  <div class="row mb-3">
+    <label class="col-md-2 col-form-label" for="date_as_labeled">Issue Date as labeled</label>
+    <div class="col-md-4">
+      <input type="text" id="date_as_labeled" name="date_as_labeled" value="{{.Data.Issue.DateAsLabeled}}"
+        class="form-control" pattern="\d\d\d\d-\d\d-\d\d" required="required"
+        aria-describedby="date-labeled-help" />
+      <div id="date-labeled-help" class="form-text">
+        Enter the issue's date as it appears in the publication in YYYY-MM-DD format.
+      </div>
+    </div>
+    <label class="col-md-2 col-form-label" for="date">Issue Date</label>
+    <div class="col-md-4">
+      <input type="text" id="date" name="date" value="{{.Data.Issue.Date}}"
+        class="form-control" pattern="\d\d\d\d-\d\d-\d\d" required="required"
+        aria-describedby="date-help" />
+      <div id="date-help" class="form-text">
+        Enter the issue's date in YYYY-MM-DD format.
+        <strong>Carefully</strong> check that this is valid, not just
+        what's printed on the paper!
+      </div>
+    </div>
+  </div>
+
+  <div class="row mb-3">
+    <label class="col-md-2 col-form-label" for="volume_number">Volume number</label>
+    <div class="col-md-4">
+      <input type="text" id="volume_number" name="volume_number" value="{{.Data.Issue.Volume}}"
+        class="form-control" required="required" aria-describedby="volnum-help" />
+      <div id="volnum-help" class="form-text">
+        Enter the volume number, or "0" if no volume number is present.
+        All numeric information must be converted to Arabic numerals.
+        Alphabetic data used as enumeration designations shall be
+        transcribed as they appear on the piece, and converted to
+        uppercase.  e.g., "Volume XLIV" would be "VOLUME 44".
+      </div>
+    </div>
+    <label class="col-md-2 col-form-label" for="issue_number">Issue number</label>
+    <div class="col-md-4">
+      <input type="text" id="issue_number" name="issue_number" value="{{.Data.Issue.Issue.Issue}}"
+        class="form-control" required="required" aria-describedby="issnum-help" />
+      <div id="issnum-help" class="form-text">
+        Enter the issue number, or "0" if no issue number is present.
+        All numeric information must be converted to Arabic numerals.
+        Alphabetic data used as enumeration designations shall be
+        transcribed as they appear on the piece, and converted to
+        uppercase.  e.g., "Number 10" would be "NUMBER 10".
+      </div>
+    </div>
+  </div>
+
+  <div class="row mb-3">
+    <label class="col-md-2 col-form-label" for="edition_number">Edition number</label>
+    <div class="col-md-4">
+      <input type="text" id="edition_number" name="edition_number" value="{{.Data.Issue.Edition}}"
+        size="2" class="form-control" pattern="[1-9][0-9]{0,1}" required="required"
+        aria-describedby="ednum-help" />
+      <div id="ednum-help" class="form-text">
+        Enter the edition number.  This is usually 1 unless another edition
+        of the same title was published on the same date.  This must be
+        numeric and cannot have leading zeroes (e.g., "1", not "01").
+      </div>
+    </div>
+    <label class="col-md-2 col-form-label" for="edition_label">Edition label</label>
+    <div class="col-md-4">
+      <input type="text" id="edition_label" name="edition_label" value="{{.Data.Issue.EditionLabel}}"
+        class="form-control" />
+    </div>
+  </div>
+
+  <div class="row mb-3">
+    <label class="col-md-2 col-form-label" for="draft_comment">Comments (optional)</label>
+    <div class="col-md-10">
+      <textarea id="draft_comment" name="draft_comment" class="form-control" rows="8" aria-describedby="comment-help">{{.Data.Issue.DraftComment}}</textarea>
+      <div id="comment-help" class="form-text">
+        Enter comments about this data, if necessary.  For instance, if
+        there is anything special or unusual about this issue the metadata
+        reviewer needs to know, it would go here.  <strong>Note</strong>:
+        draft comments aren't visible to others.  <em>i.e., This comment
+        will not be visible until you choose "Save and Queue"</em>.
+      </div>
+    </div>
+  </div>
+
+  {{if .Data.Issue.Errors.Minor.Len}}
+  <div class="row mb-3">
+    <div class="col-md-9 col-md-offset-2">
+      <div class="issue-with-warnings">
+        This issue's metadata may be incorrect.  <strong>Review all warnings
+        below</strong> before queueing this issue:
+        <ul id="issue-warnings">
+        {{range .Data.Issue.Errors.Minor.All}}
+          <li>{{ErrorHTML .}}</li>
+        {{end}}
+        </ul>
+      </div>
+      <div class="checkbox">
+        <label>
+          <input type="checkbox" name="ignore_warnings" value="{{.Data.Issue.ID}}" aria-describedby="issue-warnings" />
+          I accept the risk of queueing this issue despite these warnings.
+        </label>
+      </div>
+    </div>
+  </div>
+  {{end}}
+
+  <div class="row mb-3">
+    <div class="col-md-10 offset-md-2">
+      <button class="btn btn-outline" id="savedraft" type="Submit" name="action" value="savedraft">Save Draft</button>
+      <button class="btn btn-primary" id="savequeue" type="Submit" name="action" value="savequeue">Save and Queue</button>
+    </div>
+  </div>
+</form>
 
 {{end}}
 

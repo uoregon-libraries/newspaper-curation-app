@@ -1,31 +1,30 @@
 {{block "content" .}}
 
 <h2>Remove Issue</h2>
-
-<div>
+<div class="mb-3">
   You are about to remove this issue from NCA.  <strong><em>This action is
   irreversible.</em></strong>  Choose "Cancel" to go back to the issue view
   page if you got here by mistake.
 </div>
 
-<form id="metadata-form" class="form-horizontal" role="form" method="POST" action="{{"errors/remove/confirm"|.Data.Issue.Path}}">
-  <div class="form-group">
-    <label class="col-md-2 control-label" for="comment">Comments (optional)</label>
+<form id="metadata-form" role="form" method="POST" action="{{"errors/remove/confirm"|.Data.Issue.Path}}">
+  <div class="row mb-3">
+    <label class="col-md-2 col-form-label" for="comment">Comments (optional)</label>
     <div class="col-md-10">
       <textarea id="comment" name="comment" class="form-control" rows="8" aria-describedby="comment-help">{{.Data.Comment}}</textarea>
-      <p id="comment-help" class="help-block">
+      <p id="comment-help" class="form-text">
         Enter comments to explain the removal, if necessary.  These will be
         preserved even if the issue is deleted permanently.
       </p>
     </div>
   </div>
 
-  <div class="form-group">
-    <div class="col-md-9 col-md-offset-2">
+  <div class="row mb-3">
+    <div class="col-md-10 offset-md-2">
       <button id="remove" type="Submit" name="action" value="remove" class="btn btn-danger">
         Remove
       </button>
-      <a href="{{.Data.Issue.Path "/errors/view"}}" class="btn btn-default">Cancel</a>
+      <a href="{{.Data.Issue.Path "/errors/view"}}" class="btn btn-outline">Cancel</a>
     </div>
   </div>
 </form>
