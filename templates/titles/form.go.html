@@ -20,7 +20,7 @@
     <label class="col-sm-2 offset-sm-2 col-form-label" for="name">Name</label>
     <div class="col-sm-6">
       <input id="name" name="name" value="{{.Data.Title.Name}}" required="required" class="form-control" aria-describedby="name-help" />
-      <p id="name-help" class="form-text">Enter the name as required by chronam: "title. (city, Or.)"</p>
+      <div id="name-help" class="form-text">Enter the name as required by chronam: "title. (city, Or.)"</div>
     </div>
   </div>
   </table>
@@ -31,10 +31,10 @@
       {{if .Data.Title.ValidLCCN}}
         {{if .User.PermittedTo ModifyValidatedLCCNs}}
           <input id="lccn" name="lccn" value="{{.Data.Title.LCCN}}" class="form-control" required="required" aria-describedby="lccn-help" />
-          <p id="lccn-help" class="form-text">This LCCN has been validated - only change it if you're certain this is necessary!</p>
+          <div id="lccn-help" class="form-text">This LCCN has been validated - only change it if you're certain this is necessary!</div>
         {{else}}
           <input id="lccn" value="{{.Data.Title.LCCN}}" class="form-control" disabled="disabled" aria-describedby="lccn-help" />
-          <p id="lccn-help" class="form-text">This LCCN has been validated and cannot be changed</p>
+          <div id="lccn-help" class="form-text">This LCCN has been validated and cannot be changed</div>
         {{end}}
       {{else}}
         <input id="lccn" name="lccn" value="{{.Data.Title.LCCN}}" class="form-control" required="required" />
@@ -95,23 +95,23 @@
     <div class="col-sm-6">
       <!-- SFTPGo has an account for this title: username cannot be changed -->
       {{if .Data.Title.SFTPConnected}}
-      <p id="sftpuser" class="form-control-static">{{.Data.Title.SFTPUser}}</p>
-      <p id="sftpuser-help" class="form-text">
+      <input class="form-control" disabled id="sftpuser" value="{{.Data.Title.SFTPUser}}" />
+      <div id="sftpuser-help" class="form-text">
         This title's SFTP credentials have already been generated in our
         external SFTPGo system, so the SFTP Username can no longer be modified.
-      </p>
+      </div>
 
       <!-- No account, so username can be set -->
       {{else}}
       <input id="sftpuser" name="sftpuser" class="form-control" value="{{.Data.Title.SFTPUser}}" aria-describedby="sftpuser-help" />
-      <p id="sftpuser-help" class="form-text">
+      <div id="sftpuser-help" class="form-text">
         Enter a login name for this title if the publisher will send issues via SFTP.
         <strong>Note</strong>: NCA will use this to provision an external
         account, and it <strong>cannot be changed</strong> once set.
         <br /><br />
         Leave this blank to indicate the title isn't being uploaded externally
         (e.g., if it's for in-house scanning).
-      </p>
+      </div>
       {{end}}
     </div>
   </div>
@@ -120,13 +120,13 @@
     <label class="col-sm-2 offset-sm-2 col-form-label" for="sftppass">SFTP password</label>
     <div class="col-sm-6">
       <input id="sftppass" name="sftppass" class="form-control" value="{{.Data.Title.SFTPPass}}" aria-describedby="sftppass-help" />
-      <p id="sftppass-help" class="form-text">
+      <div id="sftppass-help" class="form-text">
         {{if .Data.Title.SFTPConnected}}
         Optional: if filled in, the SFTP user's password will be changed
         {{else}}
         Optional: leave blank to let NCA generate a random password for this user's SFTP login
         {{end}}
-      </p>
+      </div>
     </div>
   </div>
 

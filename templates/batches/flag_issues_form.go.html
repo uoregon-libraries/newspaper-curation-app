@@ -29,11 +29,11 @@
 
       <label class="form-label" for="issue-key">Issue</label>
       <input class="form-control" list="issue-keys" id="issue-key" name="issue-key" autocomplete="off" aria-describedby="issue-key-help" value="{{.Data.IssueKey}}" />
-      <p class="form-text text-muted" id="issue-key-help">
+      <div class="form-text" id="issue-key-help">
         Start typing an LCCN and/or date to search for an issue, or manually
         enter an issue "key" (in the form <code>LCCN/YYYYMMDDEE</code>) or
         paste in a URL (e.g., from the staging server).
-      </p>
+      </div>
       <datalist id="issue-keys">
       {{range .Data.UnflaggedIssues}}
       <option value="{{.Key}}">{{.Title.MARCTitle}}, {{.Date}}, ed. {{.Edition}} ({{.Key}})</option>
@@ -42,11 +42,11 @@
 
       <label class="form-label" for="issue-desc">Description of problem</label>
       <textarea class="form-control" name="issue-desc" id="issue-desc" aria-describedby="issue-desc-help" rows="2" >{{.Data.IssueDescription}}</textarea>
-      <p class="form-text text-muted" id="issue-desc-help">
+      <div class="form-text" id="issue-desc-help">
         Briefly describe the problem, e.g., "Page 4 is rotated". The person
         doing remediation will use this information to decide on what
         kind of remediation is required.
-      </p>
+      </div>
       <button class="btn btn-primary" type="submit">Add Issue To Removal Queue</button>
     </form>
 
