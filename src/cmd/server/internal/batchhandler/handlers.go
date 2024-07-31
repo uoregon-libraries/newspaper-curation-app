@@ -44,7 +44,12 @@ func listHandler(w http.ResponseWriter, req *http.Request) {
 		return
 	}
 
-	r.Vars.Data["Batches"] = wrapBatches(list)
+	r.Vars.Data["Batches"], err = wrapBatches(list)
+	if err != nil {
+		logger.Criticalf("Unable to wrap batches: %s", err)
+		r.Error(http.StatusInternalServerError, "Error trying to pull batch list - try again or contact support")
+		return
+	}
 	r.Vars.Data["Can"] = Can(r.Vars.User)
 	r.Render(listTmpl)
 }
