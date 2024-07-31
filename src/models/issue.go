@@ -50,6 +50,11 @@ type Issue struct {
 	PageLabelsCSV string
 	PageLabels    []string `sql:"-"`
 
+	// PageCount is a cached value in the database for quickly getting the length
+	// of page labels. As such, it will be meaningless until curation, and could
+	// still be incorrect prior to metadata review.
+	PageCount int
+
 	/* Workflow information to keep track of the issue and what it needs */
 
 	BatchID                int64               // Which batch (if any) is this issue a part of?
@@ -610,6 +615,7 @@ func (i *Issue) SaveOpWithoutAction(op *magicsql.Operation) error {
 func (i *Issue) serialize() {
 	i.PageLabelsCSV = strings.Join(i.PageLabels, "␟")
 	i.WorkflowStepString = string(i.WorkflowStep)
+	i.PageCount = len(i.PageLabels)
 }
 
 // deserialize performs operations necessary to get the database data into a more
