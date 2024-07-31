@@ -1,5 +1,3 @@
-// This is custom goose binary with sqlite3 support only.
-
 package main
 
 import (
