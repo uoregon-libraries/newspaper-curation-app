@@ -3,9 +3,7 @@ package workflowhandler
 import (
 	"encoding/base64"
 	"path"
-	"path/filepath"
 	"strconv"
-	"strings"
 	"time"
 
 	"github.com/uoregon-libraries/newspaper-curation-app/src/apperr"
@@ -62,19 +60,7 @@ func (i *Issue) Date() string {
 
 // JP2Files aggregates all the JP2s that exist in this issue's directory
 func (i *Issue) JP2Files() []string {
-	var list []string
-
-	if len(i.si.Files) == 0 {
-		i.si.FindFiles()
-	}
-
-	for _, f := range i.si.Files {
-		if strings.ToUpper(filepath.Ext(f.Location)) == ".JP2" {
-			list = append(list, f.Location)
-		}
-	}
-
-	return list
+	return i.si.JP2Files()
 }
 
 // TaskDescription returns a human-friendly explanation of the current place

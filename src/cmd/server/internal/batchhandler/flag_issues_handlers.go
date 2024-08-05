@@ -59,7 +59,7 @@ func prepFlagging(w http.ResponseWriter, req *http.Request) (r *Responder, ok bo
 		return r, false
 	}
 
-	r.Vars.Data["RemainingIssues"] = len(r.issues) - len(r.flaggedIssues)
+	r.Vars.Data["RemainingIssues"] = len(r.batch.Issues) - len(r.batch.FlaggedIssues)
 	r.Vars.Title = "Rejecting batch " + r.batch.Name
 	return r, true
 }
@@ -245,14 +245,14 @@ func finalizeBatch(r *Responder) {
 	}
 
 	// If all issues were flagged for removal, we delete the batch entirely
-	if len(r.issues) == len(r.flaggedIssues) {
+	if len(r.batch.Issues) == len(r.batch.FlaggedIssues) {
 		deleteBatch(r)
 		return
 	}
 
 	// There are enough moving pieces here that we have to queue this up in the
 	// background rather than just run a quick DB operation or something
-	err = jobs.QueueBatchFinalizeIssueFlagging(r.batch.Batch, r.flaggedIssues, conf)
+	err = jobs.QueueBatchFinalizeIssueFlagging(r.batch.Batch, r.batch.FlaggedIssues, conf)
 	if err != nil {
 		logger.Criticalf("Unable to queue job to finalize issue flagging for batch %d (%s): %s", r.batch.ID, r.batch.Name, err)
 		r.Error(http.StatusInternalServerError, "Error trying to finalize the batch. Try again or contact support.")
@@ -280,7 +280,7 @@ func purgeBatch(r *Responder) {
 }
 
 func deleteBatch(r *Responder) {
-	var err = jobs.QueueBatchForDeletion(r.batch.Batch, r.flaggedIssues, conf)
+	var err = jobs.QueueBatchForDeletion(r.batch.Batch, r.batch.FlaggedIssues, conf)
 	if err != nil {
 		logger.Criticalf("Unable to queue job to delete batch %d (%s): %s", r.batch.ID, r.batch.Name, err)
 		r.Error(http.StatusInternalServerError, "Error trying to finalize the batch. Try again or contact support.")

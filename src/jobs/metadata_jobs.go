@@ -106,6 +106,24 @@ func (j *IgnoreIssue) Process(*config.Config) ProcessResponse {
 	return PRSuccess
 }
 
+// PrepIssuePageLabels counts the JP2 files belonging to an issue and sets its
+// page labels all to be blank
+type PrepIssuePageLabels struct {
+	*IssueJob
+}
+
+// Process reads and counts the JP2 files belonging to this issue, then fills
+// in empty values for each page label
+func (j *PrepIssuePageLabels) Process(*config.Config) ProcessResponse {
+	j.DBIssue.PageLabels = make([]string, len(j.Issue.JP2Files()))
+	var err = j.DBIssue.SaveWithoutAction()
+	if err != nil {
+		j.Logger.Errorf("Error storing empty pages for issue id %d: %s", j.DBIssue.ID, err)
+		return PRFailure
+	}
+	return PRSuccess
+}
+
 // SetBatchStatus is another simple job which... wait for it... sets the status
 // of the job's batch!
 type SetBatchStatus struct {

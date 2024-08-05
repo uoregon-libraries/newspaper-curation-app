@@ -31,6 +31,7 @@ const (
 	JobTypeIgnoreIssue               JobType = "ignore_issue"
 	JobTypeIssueAction               JobType = "record_issue_action"
 	JobTypeMakeDerivatives           JobType = "make_derivatives"
+	JobTypePrepIssuePageLabels       JobType = "prep_issue_page_labels"
 	JobTypeMoveDerivatives           JobType = "move_derivatives"
 	JobTypePageSplit                 JobType = "page_split"
 	JobTypeRenumberPages             JobType = "renumber_pages"
@@ -76,6 +77,7 @@ var ValidJobTypes = []JobType{
 	JobTypeSetBatchStatus,
 	JobTypePageSplit,
 	JobTypeMakeDerivatives,
+	JobTypePrepIssuePageLabels,
 	JobTypeMoveDerivatives,
 	JobTypeBuildMETS,
 	JobTypeArchiveBackups,

@@ -296,6 +296,23 @@ func (i *Issue) FindFiles() {
 	}
 }
 
+// JP2Files aggregates all the JP2s that exist in this issue's directory
+func (i *Issue) JP2Files() []string {
+	var list []string
+
+	if len(i.Files) == 0 {
+		i.FindFiles()
+	}
+
+	for _, f := range i.Files {
+		if strings.ToUpper(filepath.Ext(f.Location)) == ".JP2" {
+			list = append(list, f.Location)
+		}
+	}
+
+	return list
+}
+
 // IsLive returns true if the issue both has a batch *and* the batch appears to
 // be on the live site
 func (i *Issue) IsLive() bool {

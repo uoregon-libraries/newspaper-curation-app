@@ -1,6 +1,7 @@
 package batchhandler
 
 import (
+	"fmt"
 	"path/filepath"
 
 	"github.com/uoregon-libraries/newspaper-curation-app/src/models"
@@ -9,19 +10,58 @@ import (
 // Batch wraps models.Batch to decorate for template use
 type Batch struct {
 	*models.Batch
+	FlaggedIssues   []*models.FlaggedIssue
+	UnflaggedIssues []*models.Issue
+	Issues          []*models.Issue
+	Actions         []*models.Action
+	PageCount       int
 }
 
-func wrapBatch(b *models.Batch) *Batch {
-	return &Batch{b}
-}
-
-func wrapBatches(list []*models.Batch) []*Batch {
-	var batches = make([]*Batch, len(list))
-	for i, b := range list {
-		batches[i] = wrapBatch(b)
+func wrapBatch(batch *models.Batch) (*Batch, error) {
+	var err error
+	var b = &Batch{Batch: batch}
+	b.Issues, err = b.Batch.Issues()
+	if err != nil {
+		return nil, fmt.Errorf("fetching batch %d (%q) issues: %w", b.Batch.ID, b.Batch.Name, err)
 	}
 
-	return batches
+	b.FlaggedIssues, err = b.Batch.FlaggedIssues()
+	if err != nil {
+		return nil, fmt.Errorf("fetching batch %d (%q) flagged issues: %w", b.Batch.ID, b.Batch.Name, err)
+	}
+
+	var isFlagged = make(map[string]bool)
+	for _, i := range b.FlaggedIssues {
+		isFlagged[i.Issue.Key()] = true
+	}
+
+	// Compute page count as well as creating the unflagged issues list
+	for _, i := range b.Issues {
+		b.PageCount += i.PageCount
+		if !isFlagged[i.Key()] {
+			b.UnflaggedIssues = append(b.UnflaggedIssues, i)
+		}
+	}
+
+	b.Actions, err = b.Batch.Actions()
+	if err != nil {
+		return nil, fmt.Errorf("fetching batch %d (%q) actions: %w", b.Batch.ID, b.Batch.Name, err)
+	}
+
+	return b, nil
+}
+
+func wrapBatches(list []*models.Batch) ([]*Batch, error) {
+	var err error
+	var batches = make([]*Batch, len(list))
+	for i, b := range list {
+		batches[i], err = wrapBatch(b)
+		if err != nil {
+			return nil, fmt.Errorf("wrapping batches: %w", err)
+		}
+	}
+
+	return batches, nil
 }
 
 // Unavailable returns true if the batch status indicates it's not currently

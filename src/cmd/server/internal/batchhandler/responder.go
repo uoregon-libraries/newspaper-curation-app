@@ -17,12 +17,6 @@ type Responder struct {
 	*responder.Responder
 	batch *Batch
 	can   *CanValidation
-
-	// These are only set up for some handlers, but when we need this data we
-	// don't want to have to re-pull from the database, check errors, etc.
-	flaggedIssues   []*models.FlaggedIssue
-	unflaggedIssues []*models.Issue
-	issues          []*models.Issue
 }
 
 // getBatchResponder centralizes the most common handler logic where we require
@@ -48,42 +42,16 @@ func getBatchResponder(w http.ResponseWriter, req *http.Request) (r *Responder, 
 		return r, false
 	}
 
-	r.batch = wrapBatch(b)
-	r.flaggedIssues, err = r.batch.FlaggedIssues()
+	r.batch, err = wrapBatch(b)
 	if err != nil {
 		logger.Criticalf("Error reading flagged issues for batch %d (%s): %s", r.batch.ID, r.batch.Name, err)
 		r.Error(http.StatusInternalServerError, "Error trying to read batch's issues - try again or contact support")
 		return r, false
 	}
-	r.issues, err = r.batch.Issues()
-	if err != nil {
-		logger.Criticalf("Error reading issues for batch %d (%s): %s", r.batch.ID, r.batch.Name, err)
-		r.Error(http.StatusInternalServerError, "Error trying to read batch's issues - try again or contact support")
-		return r, false
-	}
 
-	var isFlagged = make(map[string]bool)
-	for _, i := range r.flaggedIssues {
-		isFlagged[i.Issue.Key()] = true
-	}
-
-	for _, i := range r.issues {
-		if !isFlagged[i.Key()] {
-			r.unflaggedIssues = append(r.unflaggedIssues, i)
-		}
-	}
-
-	var actions []*models.Action
-	actions, err = r.batch.Actions()
-	if err != nil {
-		logger.Criticalf("Error reading actions for batch %d (%s): %s", r.batch.ID, r.batch.Name, err)
-		r.Error(http.StatusInternalServerError, "Error trying to read batch's activity log - try again or contact support")
-		return r, false
-	}
-
-	r.Vars.Data["Actions"] = actions
-	r.Vars.Data["FlaggedIssues"] = r.flaggedIssues
-	r.Vars.Data["UnflaggedIssues"] = r.unflaggedIssues
+	r.Vars.Data["Actions"] = r.batch.Actions
+	r.Vars.Data["FlaggedIssues"] = r.batch.FlaggedIssues
+	r.Vars.Data["UnflaggedIssues"] = r.batch.UnflaggedIssues
 	r.can = Can(r.Vars.User)
 	r.Vars.Data["Batch"] = r.batch
 	r.Vars.Data["Can"] = r.can

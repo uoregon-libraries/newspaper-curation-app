@@ -33,6 +33,8 @@ func DBJobToProcessor(dbJob *models.Job) Processor {
 		j.maxRetries = 4
 		return j
 
+	case models.JobTypePrepIssuePageLabels:
+		return &PrepIssuePageLabels{IssueJob: NewIssueJob(dbJob)}
 	case models.JobTypeMoveDerivatives:
 		return &MoveDerivatives{IssueJob: NewIssueJob(dbJob)}
 	case models.JobTypeBuildMETS:

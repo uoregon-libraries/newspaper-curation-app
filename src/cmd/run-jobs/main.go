@@ -370,6 +370,7 @@ func runAllQueues(conf *config.Config) {
 				models.JobTypeRenumberPages,
 				models.JobTypeValidateTagManifest,
 				models.JobTypeMarkBatchLive,
+				models.JobTypePrepIssuePageLabels,
 			)
 		},
 		func() {

@@ -149,6 +149,7 @@ func QueueMoveIssueForDerivatives(issue *models.Issue, workflowPath string) erro
 	jobs = append(jobs, models.NewJob(models.JobTypeCleanFiles, makeLocArgs(workflowDir)))
 	jobs = append(jobs, issue.BuildJob(models.JobTypeRenumberPages, nil))
 	jobs = append(jobs, issue.BuildJob(models.JobTypeMakeDerivatives, nil))
+	jobs = append(jobs, issue.BuildJob(models.JobTypePrepIssuePageLabels, nil))
 	jobs = append(jobs, issue.BuildJob(models.JobTypeSetIssueWS, makeWSArgs(schema.WSReadyForMetadataEntry)))
 	jobs = append(jobs, issue.BuildJob(models.JobTypeIssueAction, makeActionArgs("Created issue derivatives")))
 

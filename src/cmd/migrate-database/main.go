@@ -1,8 +1,7 @@
-// This is custom goose binary with sqlite3 support only.
-
 package main
 
 import (
+	"database/sql"
 	"embed"
 
 	// We need to pull in mysql for the side-effect it offers us (allowing
@@ -12,6 +11,7 @@ import (
 	"github.com/pressly/goose/v3"
 	"github.com/uoregon-libraries/newspaper-curation-app/src/cli"
 	"github.com/uoregon-libraries/newspaper-curation-app/src/config"
+	"github.com/uoregon-libraries/newspaper-curation-app/src/dbi"
 	"github.com/uoregon-libraries/newspaper-curation-app/src/internal/logger"
 
 	// Finally, we have to include the migrations dir/package for its side-effect
@@ -39,15 +39,20 @@ func getOpts() (*config.Config, []string) {
 
 func main() {
 	var conf, args = getOpts()
-
-	var db, err = goose.OpenDBWithDriver("mysql", conf.DatabaseConnect)
+	var err = dbi.DBConnect(conf.DatabaseConnect)
 	if err != nil {
-		logger.Fatalf("goose: failed to open DB: %v\n", err)
+		logger.Fatalf("Unable to open DB for main application: %s", err)
+	}
+
+	var db *sql.DB
+	db, err = goose.OpenDBWithDriver("mysql", conf.DatabaseConnect)
+	if err != nil {
+		logger.Fatalf("Unable to open DB for goose driver: %s", err)
 	}
 
 	defer func() {
 		if err := db.Close(); err != nil {
-			logger.Fatalf("goose: failed to close DB: %v\n", err)
+			logger.Fatalf("Unable to close DB for goose driver: %s", err)
 		}
 	}()
 
