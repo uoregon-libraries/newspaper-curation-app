@@ -14,6 +14,7 @@ type Batch struct {
 	UnflaggedIssues []*models.Issue
 	Issues          []*models.Issue
 	Actions         []*models.Action
+	PageCount       int
 }
 
 func wrapBatch(batch *models.Batch) (*Batch, error) {
@@ -34,7 +35,9 @@ func wrapBatch(batch *models.Batch) (*Batch, error) {
 		isFlagged[i.Issue.Key()] = true
 	}
 
+	// Compute page count as well as creating the unflagged issues list
 	for _, i := range b.Issues {
+		b.PageCount += i.PageCount
 		if !isFlagged[i.Key()] {
 			b.UnflaggedIssues = append(b.UnflaggedIssues, i)
 		}

@@ -79,6 +79,13 @@ func actionVerb(at string) string {
 	return models.ActionType(at).Describe()
 }
 
+func pluralize(singular, plural string, count int) string {
+	if count == 1 {
+		return fmt.Sprintf("%d %s", count, singular)
+	}
+	return fmt.Sprintf("%d %s", count, plural)
+}
+
 // InitRootTemplate sets up pre-parsed template data in Root
 func InitRootTemplate(templatePath string) {
 	var templateFunctions = tmpl.FuncMap{
@@ -94,6 +101,7 @@ func InitRootTemplate(templatePath string) {
 		"TimeString": func(t time.Time) string { return t.Format("2006-01-02 15:04") },
 		"dtstr":      func(t time.Time) string { return t.Format("on Jan 2, 2006 at 3:04pm") },
 		"actionVerb": actionVerb,
+		"pluralize":  pluralize,
 		"nl2br": func(s string) template.HTML {
 			var escaped = template.HTMLEscaper(s)
 			var replaced = strings.Replace(escaped, "\n", "<br />", -1)

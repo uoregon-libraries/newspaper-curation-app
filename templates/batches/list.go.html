@@ -17,6 +17,7 @@ There are no batches currently in need of any action!
       <th scope="col" data-sorttype="alpha">Name</th>
       <th scope="col" data-sorttype="alpha">Status</th>
       <th scope="col" data-sorttype="alpha">MOC</th>
+      <th scope="col" data-sorttype="number">Pages</th>
       <th scope="col" data-sorttype="date">Created</th>
     </tr>
   </thead>
@@ -31,6 +32,7 @@ There are no batches currently in need of any action!
       {{.StatusMeta.Description}}
     </td>
     <td>{{.MARCOrgCode}}</td>
+    <td>{{pluralize "page" "pages" .PageCount}} ({{pluralize "issue" "issues" (len .Issues)}})</td>
     <td>{{.CreatedAt.Format "2006-01-02"}}</td>
   </tr>
   {{end}}

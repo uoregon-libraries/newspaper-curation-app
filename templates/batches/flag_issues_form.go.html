@@ -36,7 +36,7 @@
       </div>
       <datalist id="issue-keys">
       {{range .Data.UnflaggedIssues}}
-      <option value="{{.Key}}">{{.Title.MARCTitle}}, {{.Date}}, ed. {{.Edition}} ({{.Key}})</option>
+      <option value="{{.Key}}">{{.Title.MARCTitle}}, {{.Date}}, ed. {{.Edition}} ({{.Key}}, {{.PageCount}} pages)</option>
       {{end}}
       </datalist>
 
