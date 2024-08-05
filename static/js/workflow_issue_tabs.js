@@ -117,24 +117,31 @@ function populateTable(table, issues) {
   for (i = 0; i < issues.length; i++) {
     let issue = issues[i];
     row = tBody.insertRow();
-    // In all cases, cell 1 is the publication's title and cell 2 is the issue date
+    // Cell 1 is always the publication's title
     cell = document.createElement('th');
     cell.setAttribute('scope', 'row');
     cell.innerText = `${issue.Title} (${issue.LCCN})`;
     row.appendChild(cell);
+
+    // Cell 2 is always the issue date
     cell = document.createElement('th');
     cell.setAttribute('scope', 'row');
     cell.innerText = issue.Date;
     row.appendChild(cell);
 
+    // Cell 3 is always the page count
+    cell = document.createElement('th');
+    cell.innerText = issue.PageCount;
+    row.appendChild(cell);
+
     switch(table.parentNode.getAttribute('id')) {
       case 'desk-tab':
-        // On the desk, we have a third cell before actions for the workflow status and expiration
+        // On the desk, we have a fourth cell before actions for the workflow status and expiration
         cell = row.insertCell();
         cell.innerHTML = issue.Task + '<br />' + 'Expires on ' + issue.Expiration;
         break;
       case 'needs-review-tab':
-        // On the "needs review" tab, our third cell is the waiting time
+        // On the "needs review" tab, our fourth cell is the waiting time
         cell = row.insertCell();
         cell.innerHTML = issue.Waiting;
         break;

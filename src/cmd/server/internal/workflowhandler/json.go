@@ -22,6 +22,7 @@ type JSONIssue struct {
 	Title      string
 	LCCN       string
 	Date       string
+	PageCount  int
 	Task       string
 	Expiration string
 	Waiting    string // How long since this issue's metadata was entered
@@ -46,6 +47,7 @@ func wrapJSON(i *Issue, u *models.User) *JSONIssue {
 		Title:      i.Title(),
 		LCCN:       i.LCCN(),
 		Date:       i.Date(),
+		PageCount:  i.PageCount,
 		Task:       i.TaskDescription(),
 		Expiration: i.WorkflowExpiration(),
 		Waiting:    humanize.Duration(time.Since(i.MetadataEnteredAt)),
