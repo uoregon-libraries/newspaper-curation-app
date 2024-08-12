@@ -43,19 +43,31 @@ func TestAppend(t *testing.T) {
 			expectedPages: 21,
 			hasError:      false,
 		},
+		"One valid issue, two bad issue dates": {
+			issues:        []string{"2020-11-31/01/10", "2020-13-31/02/11", "2020-12-31/01/12"},
+			expectedCount: 1,
+			expectedPages: 12,
+			hasError:      true,
+		},
 	}
 
 	for name, tc := range tests {
 		t.Run(name, func(t *testing.T) {
 			var q = New(testTitleList)
+			var hadError error
 			for _, i := range tc.issues {
 				var err = q.Append(mkissue(i))
-				if tc.hasError && err == nil {
-					t.Fatalf("Expected %q to have an error", i)
+				if err != nil {
+					t.Logf("%q error: %s", i, err)
+					hadError = err
 				}
-				if !tc.hasError && err != nil {
-					t.Fatalf("Expected %q to have no error, got: %s", i, err)
-				}
+			}
+
+			if tc.hasError && hadError == nil {
+				t.Fatalf("Expected an error")
+			}
+			if !tc.hasError && hadError != nil {
+				t.Fatalf("Expected no errors, got: %s", hadError)
 			}
 
 			var got = len(q.list)
