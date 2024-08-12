@@ -98,13 +98,13 @@ func TestWrapIssueTableDriven(t *testing.T) {
 				return
 			}
 
-			if i.embargoed != tc.expectEmbargoed {
-				t.Errorf("Expected embargoed to be %v, got %v", tc.expectEmbargoed, i.embargoed)
+			if i.Embargoed != tc.expectEmbargoed {
+				t.Errorf("Expected embargoed to be %v, got %v", tc.expectEmbargoed, i.Embargoed)
 			}
 
-			if i.daysStale >= 0 {
-				if math.Round(i.daysStale) != math.Round(tc.expectDaysStale) {
-					t.Errorf("Expected days stale to be %v, got %v", tc.expectDaysStale, math.Round(i.daysStale))
+			if i.DaysStale >= 0 {
+				if math.Round(i.DaysStale) != math.Round(tc.expectDaysStale) {
+					t.Errorf("Expected days stale to be %v, got %v", tc.expectDaysStale, math.Round(i.DaysStale))
 				}
 			}
 		})

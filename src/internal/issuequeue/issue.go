@@ -10,8 +10,8 @@ import (
 // Issue wraps a db Issue to compute staleness and embargo data
 type Issue struct {
 	*models.Issue
-	daysStale float64
-	embargoed bool
+	DaysStale float64
+	Embargoed bool
 }
 
 func wrapIssue(titles models.TitleList, dbIssue *models.Issue) (*Issue, error) {
@@ -34,16 +34,16 @@ func wrapIssue(titles models.TitleList, dbIssue *models.Issue) (*Issue, error) {
 	}
 
 	if embargoLiftDate.After(time.Now()) {
-		i.embargoed = true
+		i.Embargoed = true
 	}
 
 	// Embargoed issues can be waiting for a while before their embargo is
 	// lifted, so we have to consider them stale based on the newer date:
 	// metadata approval or embargo lifting.
 	if i.MetadataApprovedAt.Before(embargoLiftDate) {
-		i.daysStale = time.Since(embargoLiftDate).Hours() / 24.0
+		i.DaysStale = time.Since(embargoLiftDate).Hours() / 24.0
 	} else {
-		i.daysStale = time.Since(i.MetadataApprovedAt).Hours() / 24.0
+		i.DaysStale = time.Since(i.MetadataApprovedAt).Hours() / 24.0
 	}
 
 	// If the title isn't validated yet, its issues can't be queued

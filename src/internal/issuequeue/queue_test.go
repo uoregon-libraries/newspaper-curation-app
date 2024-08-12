@@ -74,7 +74,7 @@ func TestAppend(t *testing.T) {
 			if got != tc.expectedCount {
 				t.Fatalf("Expected %d issue(s), got %d", tc.expectedCount, got)
 			}
-			got = q.pages
+			got = q.Pages
 			if got != tc.expectedPages {
 				t.Fatalf("Expected %d page(s), got %d", tc.expectedPages, got)
 			}
@@ -123,7 +123,7 @@ func TestSplit(t *testing.T) {
 
 			var gotSizes []int
 			for _, q := range qlist {
-				gotSizes = append(gotSizes, q.pages)
+				gotSizes = append(gotSizes, q.Pages)
 			}
 
 			var diff = cmp.Diff(gotSizes, tc.expectedQueueSizes)

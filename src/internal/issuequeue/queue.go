@@ -11,10 +11,11 @@ import (
 // Queue is a list of issues, generally associated with a MOC, and made to
 // be split into new semi-balanced queues based on a max page size
 type Queue struct {
-	list   []*Issue
-	seen   map[string]bool
-	titles models.TitleList
-	pages  int
+	list      []*Issue
+	seen      map[string]bool
+	titles    models.TitleList
+	Pages     int
+	DaysStale float64
 }
 
 // New returns an issue Queue which will use the given title list to look up
@@ -43,7 +44,10 @@ func (q *Queue) appendWrapped(i *Issue) {
 	}
 
 	q.list = append(q.list, i)
-	q.pages += i.PageCount
+	q.Pages += i.PageCount
+	if i.DaysStale > q.DaysStale {
+		q.DaysStale = i.DaysStale
+	}
 	q.seen[i.Key()] = true
 }
 
@@ -59,7 +63,7 @@ func (q *Queue) Split(maxPages int) []*Queue {
 	})
 
 	// Initialize queues
-	var numQueues = int(math.Ceil(float64(q.pages) / float64(maxPages)))
+	var numQueues = int(math.Ceil(float64(q.Pages) / float64(maxPages)))
 	var queues = make([]*Queue, numQueues)
 	for i := range queues {
 		queues[i] = New(q.titles)
@@ -69,7 +73,7 @@ func (q *Queue) Split(maxPages int) []*Queue {
 	for _, issue := range q.list {
 		var idx = 0
 		for i := 1; i < len(queues); i++ {
-			if queues[i].pages < queues[idx].pages {
+			if queues[i].Pages < queues[idx].Pages {
 				idx = i
 			}
 		}
