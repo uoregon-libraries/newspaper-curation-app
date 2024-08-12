@@ -73,6 +73,11 @@ func (q *batchQueue) CreateBatches(seed string) []*models.Batch {
 			return false
 		})
 
+		// This can happen if all issues are embargoed
+		if newQ.Pages == 0 {
+			continue
+		}
+
 		if newQ.Pages < q.minPages {
 			if newQ.DaysStale < 30 {
 				logger.Debugf("Small queue %q (%d pages): skipping", moc, newQ.Pages)
