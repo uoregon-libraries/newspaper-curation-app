@@ -37,6 +37,19 @@ func (q *Queue) Append(issue *models.Issue) error {
 	return nil
 }
 
+// RemoveIf returns a copy of q without any issues which return true in the
+// remove function
+func (q *Queue) RemoveIf(remove func(*Issue) bool) *Queue {
+	var newQ = New(q.titles)
+	for _, i := range q.list {
+		if !remove(i) {
+			newQ.appendWrapped(i)
+		}
+	}
+
+	return newQ
+}
+
 // appendWrapped adds the already-wrapped issue to a queue
 func (q *Queue) appendWrapped(i *Issue) {
 	if q.seen[i.Key()] {
@@ -83,10 +96,19 @@ func (q *Queue) Split(maxPages int) []*Queue {
 	// Remove empty queues
 	nonEmptyQueues := make([]*Queue, 0, len(queues))
 	for _, q := range queues {
-		if q.pages > 0 {
+		if q.Pages > 0 {
 			nonEmptyQueues = append(nonEmptyQueues, q)
 		}
 	}
 
 	return nonEmptyQueues
+}
+
+// DBIssues returns the "unwrapped" list of issues associated with this Queue
+func (q *Queue) DBIssues() []*models.Issue {
+	var dbIssues = make([]*models.Issue, len(q.list))
+	for i, issue := range q.list {
+		dbIssues[i] = issue.Issue
+	}
+	return dbIssues
 }
