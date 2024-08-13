@@ -66,17 +66,8 @@ func main() {
 
 	var q = newBatchQueue(conf.MinBatchSize, conf.MaxBatchSize)
 	q.FindReadyIssues(opts.Redo)
-	for {
-		var batch, ok = q.NextBatch()
-		if !ok {
-			logger.Debugf("No more batches")
-			break
-		}
-
-		if batch == nil {
-			continue
-		}
-
+	var batches = q.CreateBatches(conf.Webroot)
+	for _, batch := range batches {
 		var issues, err = batch.Issues()
 		if err != nil {
 			// No idea what this could mean other than maybe an SQL typo

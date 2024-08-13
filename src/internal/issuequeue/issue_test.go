@@ -1,4 +1,4 @@
-package main
+package issuequeue
 
 import (
 	"math"
@@ -20,12 +20,10 @@ var (
 	embargoPeriod    = "30 days"
 )
 
-func overrideLookup() {
-	titles = models.TitleList{
-		&models.Title{LCCN: lccnSimple, ValidLCCN: true},
-		&models.Title{LCCN: lccnEmbargoed, EmbargoPeriod: embargoPeriod, ValidLCCN: true},
-		&models.Title{LCCN: lccnNotValidated, ValidLCCN: false},
-	}
+var testTitleList = models.TitleList{
+	&models.Title{LCCN: lccnSimple, ValidLCCN: true},
+	&models.Title{LCCN: lccnEmbargoed, EmbargoPeriod: embargoPeriod, ValidLCCN: true},
+	&models.Title{LCCN: lccnNotValidated, ValidLCCN: false},
 }
 
 func makeIssue(lccn, date string) *models.Issue {
@@ -34,8 +32,8 @@ func makeIssue(lccn, date string) *models.Issue {
 	return dbi
 }
 
-func mustWrap(dbi *models.Issue, t *testing.T) *issue {
-	var i, err = wrapIssue(dbi)
+func mustWrap(dbi *models.Issue, t *testing.T) *Issue {
+	var i, err = wrapIssue(testTitleList, dbi)
 	if err != nil {
 		t.Errorf("Error wrapping issue: %s", err)
 	}
@@ -44,8 +42,6 @@ func mustWrap(dbi *models.Issue, t *testing.T) *issue {
 }
 
 func TestWrapIssueTableDriven(t *testing.T) {
-	overrideLookup()
-
 	type testCase struct {
 		description        string
 		lccn               string
@@ -90,7 +86,7 @@ func TestWrapIssueTableDriven(t *testing.T) {
 				dbi.MetadataApprovedAt = tc.metadataApprovedAt
 			}
 
-			var i, err = wrapIssue(dbi)
+			var i, err = wrapIssue(testTitleList, dbi)
 			if tc.expectError && err == nil {
 				t.Errorf("Expected an error but didn't get one")
 			} else if !tc.expectError && err != nil {
@@ -102,13 +98,13 @@ func TestWrapIssueTableDriven(t *testing.T) {
 				return
 			}
 
-			if i.embargoed != tc.expectEmbargoed {
-				t.Errorf("Expected embargoed to be %v, got %v", tc.expectEmbargoed, i.embargoed)
+			if i.Embargoed != tc.expectEmbargoed {
+				t.Errorf("Expected embargoed to be %v, got %v", tc.expectEmbargoed, i.Embargoed)
 			}
 
-			if i.daysStale >= 0 {
-				if math.Round(i.daysStale) != math.Round(tc.expectDaysStale) {
-					t.Errorf("Expected days stale to be %v, got %v", tc.expectDaysStale, math.Round(i.daysStale))
+			if i.DaysStale >= 0 {
+				if math.Round(i.DaysStale) != math.Round(tc.expectDaysStale) {
+					t.Errorf("Expected days stale to be %v, got %v", tc.expectDaysStale, math.Round(i.DaysStale))
 				}
 			}
 		})

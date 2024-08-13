@@ -1,98 +1,22 @@
 package main
 
 import (
-	"sort"
-
+	"github.com/uoregon-libraries/newspaper-curation-app/src/internal/issuequeue"
 	"github.com/uoregon-libraries/newspaper-curation-app/src/internal/logger"
 	"github.com/uoregon-libraries/newspaper-curation-app/src/models"
 	"github.com/uoregon-libraries/newspaper-curation-app/src/schema"
 )
 
-// issueQueue is a list of issues for a given MOC to ease batching.  It acts as
-// a CS set in that you can append the same issue multiple times without having
-// duplicates.
-type issueQueue struct {
-	list     []*issue
-	seen     map[*issue]bool
-	pages    int
-	sorted   bool
-	longWait bool
-}
-
-func newMOCIssueQueue() *issueQueue {
-	var q = new(issueQueue)
-	q.emptyList()
-	return q
-}
-
-func (q *issueQueue) append(i *issue) {
-	if q.seen[i] {
-		return
-	}
-
-	q.list = append(q.list, i)
-	q.pages += i.pages
-	q.sorted = false
-	q.seen[i] = true
-
-	// Mark this queue as stale (e.g., needs batching even if we're under the
-	// usual limit) if any single issue has been sitting for 30 days longer than
-	// desired
-	if !q.longWait {
-		q.longWait = i.daysStale > 30
-	}
-}
-
-func (q *issueQueue) emptyList() {
-	q.seen = make(map[*issue]bool)
-	q.pages = 0
-	q.list = nil
-	q.sorted = true
-	q.longWait = false
-}
-
-// splitQueue picks the issues which will be included in the next batch, up to
-// the given page limit, and puts them into a new issueQueue.  Issues are
-// prioritized by those which have been waiting the longest, and then issues
-// are added to the new queue.  Issues put in the returned queue are *removed*
-// from this queue's issues list.
-func (q *issueQueue) splitQueue(maxPages int) *issueQueue {
-	if !q.sorted {
-		sort.Slice(q.list, func(i, j int) bool {
-			return q.list[i].MetadataApprovedAt.Before(q.list[j].MetadataApprovedAt)
-		})
-		q.sorted = true
-	}
-
-	var list = make([]*issue, len(q.list))
-	copy(list, q.list)
-	q.emptyList()
-
-	var popped = newMOCIssueQueue()
-	for _, issue := range list {
-		var l = len(issue.PageLabels)
-		if popped.pages+l <= maxPages {
-			popped.append(issue)
-			logger.Debugf("splitQueue: preparing issue %q: %d pages prepared", issue.Key(), popped.pages)
-		} else {
-			q.append(issue)
-			logger.Debugf("splitQueue: skipping issue %q: too many pages; current pages (%d) + issue (%d) > max (%d)", issue.Key(), popped.pages, l, maxPages)
-		}
-	}
-
-	return popped
-}
-
 type batchQueue struct {
 	currentMOC string
 	mocList    []string
-	mocQueue   map[string]*issueQueue
+	mocQueue   map[string]*issuequeue.Queue
 	minPages   int
 	maxPages   int
 }
 
 func newBatchQueue(minPages, maxPages int) *batchQueue {
-	return &batchQueue{minPages: minPages, maxPages: maxPages, mocQueue: make(map[string]*issueQueue)}
+	return &batchQueue{minPages: minPages, maxPages: maxPages, mocQueue: make(map[string]*issuequeue.Queue)}
 }
 
 // FindReadyIssues looks at all issues in the database which are able to be
@@ -116,96 +40,68 @@ func (q *batchQueue) FindReadyIssues(redo bool) {
 		logger.Fatalf("Error trying to find issues: %s", err)
 	}
 
-	for _, dbIssue := range issues {
-		var i, err = wrapIssue(dbIssue)
-		if err != nil {
-			logger.Errorf("Issue %d (%s) is invalid: %s", dbIssue.ID, dbIssue.Key(), err)
-			continue
-		}
-
-		if i.embargoed {
-			logger.Infof("Skipping %s (embargoed)", i.Key())
-			continue
-		}
-
-		logger.Infof("Adding %s to batch queue", i.Key())
+	for _, i := range issues {
 		var moc = i.MARCOrgCode
 		var mocQ, ok = q.mocQueue[moc]
 		if !ok {
-			mocQ = newMOCIssueQueue()
+			mocQ = issuequeue.New(titles)
 			q.mocQueue[moc] = mocQ
 			q.mocList = append(q.mocList, moc)
 		}
-		mocQ.append(i)
-	}
-}
 
-// nextMOC calculates which MARC Org Code should be used for the next batch and
-// returns its issue queue.  Iterates through known MOCs when queues are empty
-// until a queue is found or no queues are left, in which case nil is returned.
-func (q *batchQueue) nextMOCQueue() *issueQueue {
-	var mq = q.mocQueue[q.currentMOC]
-	if mq != nil && len(mq.list) > 0 {
-		return mq
-	}
-
-	if len(q.mocList) == 0 {
-		return nil
-	}
-
-	q.currentMOC, q.mocList = q.mocList[0], q.mocList[1:]
-	return q.nextMOCQueue()
-}
-
-func (q *batchQueue) currentQueue() (*issueQueue, bool) {
-	var mq = q.nextMOCQueue()
-	return mq, mq != nil
-}
-
-// NextBatch returns a new Batch instance prepped with all the information
-// necessary for generating a batch on disk.  Every issue put into the batch is
-// removed from its queue so that each call to NextBatch returns a new batch.
-// ok is false when there was nothing left to batch.
-func (q *batchQueue) NextBatch() (*models.Batch, bool) {
-	for moc, mq := range q.mocQueue {
-		if mq.pages > 0 {
-			logger.Debugf("%q queue has %d pages left", moc, mq.pages)
+		var err = mocQ.Append(i)
+		if err != nil {
+			logger.Errorf("Cannot queue issue %d (%s): %s", i.ID, i.Key(), err)
 		}
 	}
+}
 
-	var currentQ, ok = q.currentQueue()
-	if !ok {
-		logger.Debugf("Operation complete: no issues were found in the remaining queue(s)")
-		return nil, false
-	}
-
-	var smallQ = currentQ.splitQueue(q.maxPages)
-	if smallQ.pages < q.minPages {
-		// This happens when the maximum batch size is too small for *any* of the
-		// remaining issues in the queue
-		if smallQ.pages == 0 {
-			for _, i := range currentQ.list {
-				logger.Debugf("Issue %q has %d pages", i.Key(), i.pages)
+// CreateBatches iterates over the issue queues, splits them where necessary,
+// and returns batches stored in the DB and ready for processing.
+//
+// The queues are pre-processed before splitting and batch building in order to
+// remove Issues which are embargoed
+func (q *batchQueue) CreateBatches(seed string) []*models.Batch {
+	// Step 1: clean up queues
+	var queues []*issuequeue.Queue
+	for moc, mocQueue := range q.mocQueue {
+		var newQ = mocQueue.RemoveIf(func(i *issuequeue.Issue) bool {
+			if i.Embargoed {
+				logger.Debugf("Removing issue %q from %s queue: embargoed", i.Key(), moc)
+				return true
 			}
-			logger.Warnf("Cannot create a batch for %q: too many pages in all remaining issues.", q.currentMOC)
-			return nil, false
+			return false
+		})
+
+		// This can happen if all issues are embargoed
+		if newQ.Pages == 0 {
+			continue
 		}
-		if !smallQ.longWait {
-			logger.Infof("Not creating a batch for %q: too few pages (%d)", q.currentMOC, smallQ.pages)
-			return nil, true
+
+		if newQ.Pages < q.minPages {
+			if newQ.DaysStale < 30 {
+				logger.Debugf("Small queue %q (%d pages): skipping", moc, newQ.Pages)
+				continue
+			}
+
+			logger.Debugf("Small queue %q (%d pages): pushed due to age", moc, newQ.Pages)
 		}
-		logger.Infof("Small batch being pushed due to age of longest-waiting issue")
+
+		queues = append(queues, newQ)
 	}
 
-	var dbIssues = make([]*models.Issue, len(smallQ.list))
-	for i, issue := range smallQ.list {
-		dbIssues[i] = issue.Issue
+	// Step 2: split queues by max page count, and turn them into batches
+	var batches []*models.Batch
+	for _, q2 := range queues {
+		for _, next := range q2.Split(q.maxPages) {
+			var dbIssues = next.DBIssues()
+			var batch, err = models.CreateBatch(seed, dbIssues[0].MARCOrgCode, dbIssues)
+			if err != nil {
+				logger.Fatalf("Unable to create a new batch: %s", err)
+			}
+			batches = append(batches, batch)
+		}
 	}
 
-	var batch, err = models.CreateBatch(conf.Webroot, q.currentMOC, dbIssues)
-	if err != nil {
-		logger.Fatalf("Unable to create a new batch: %s", err)
-	}
-
-	return batch, true
+	return batches
 }
