@@ -1,0 +1,72 @@
+{{block "content" .}}
+
+<h2>Batch Parameters</h2>
+
+<form action="{{BatchMakerFilterURL}}" class="row align-items-top" method="GET" role="search" aria-describedby="batch-form-help">
+  <div class="col-md-8">
+    <h2>Select Issues</h2>
+    <table class="table table-striped table-bordered table-condensed sortable">
+      <thead>
+        <tr>
+          <th scope="col" data-sorttype="">Select</th>
+          <th scope="col" data-sorttype="alpha">Institution</th>
+          <th scope="col">Issue / Page Status</th>
+          <th scope="col" data-sorttype="date">Oldest Issue</th>
+        </tr>
+      </thead>
+
+      <tbody>
+        <tr>
+          <td>
+            <div class="form-check">
+              <input class="form-check-input" name="select-moc-1" id="select-moc-1" type="checkbox" />
+              <label class="form-check-label" for="select-moc-1">Select "oru"</label>
+            </div>
+          </td>
+
+          <td>University of Oregon Libraries; Eugene, OR</td>
+
+          <td>
+            <dl>
+              <dt>Ready for batching</dt><dd>102 issues, 2305 pages</dd>
+              <dt>Processing</dt><dd>23 issues, 903 pages</dd>
+              <dt>Awaiting Metadata Review</dt><dd>2 issues, 20 pages</dd>
+            </dl>
+          </td>
+
+          <td>
+            2021-09-23 (2y 1m)
+          </td>
+        </tr>
+      </tbody>
+    </table>
+
+    <div class="mb-3">
+      <button class="btn btn-primary" type="submit">Build Queues...</button>
+    </div>
+  </div>
+
+  <div id="batch-form-help" class="col-md-4">
+    <h2>Help / Info</h2>
+    <p>
+      Choose one or more MARC org codes to build batches, and choose "Build
+      Queues..." to see the list of issues you'll end up batching. Nothing is
+      created until you confirm the batch generation process.
+    </p>
+
+    <p>
+      Note that batches are grouped by "awardees" per the NDNP spec (MARC Org
+      Codes are used to designate awardees). If multiple are selected, they
+      will be batched individually even if your maximum batch size is large
+      enough to accommodate all pages of all issues chosen.
+    </p>
+
+    <p>
+      Note also that NCA and Open ONI allow custom / fake MARC org codes for
+      grouping batches and giving attribution to external entities that are not
+      necessarily NDNP awardees.
+    </p>
+  </div>
+</form>
+
+{{end}}
