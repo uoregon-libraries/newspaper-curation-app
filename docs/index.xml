@@ -120,6 +120,16 @@ The issue should contain PDFs and nothing else. Publishers should never upload t
     </item>
     
     <item>
+      <title>Add Privileges / Roles</title>
+      <link>https://uoregon-libraries.github.io/newspaper-curation-app/contributing/dev-howto/add-privileges/</link>
+      <pubDate>Mon, 01 Jan 0001 00:00:00 +0000</pubDate>
+      
+      <guid>https://uoregon-libraries.github.io/newspaper-curation-app/contributing/dev-howto/add-privileges/</guid>
+      <description>New privileges require a lot of different changes in order to create them, tie them to a role, and then have NCA use them.
+Edit src/privilege/role.go if the new privilege(s) are going to be tied to an entirely new role. Edit src/privilege/privilege.go and add the item in the big list of vars. You have to define what role(s) can have said privilege. Super-admins always have all privileges and aren&amp;rsquo;t specified explicitly, but the privilege does require a definition, even if it&amp;rsquo;s just an empty role list.</description>
+    </item>
+    
+    <item>
       <title>Contributing to Documentation</title>
       <link>https://uoregon-libraries.github.io/newspaper-curation-app/contributing/documentation/</link>
       <pubDate>Mon, 01 Jan 0001 00:00:00 +0000</pubDate>

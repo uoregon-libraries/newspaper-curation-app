@@ -26,5 +26,15 @@ Make sure there aren&amp;rsquo;t already existing jobs that do what you want! Th
 Open up src/config/config.go and add a value to the Config struct. Choose the data type. In most cases a primitive is fine: string, int, float64, etc. Decide if the value should be pulled directly from the settings file or if you need to massage data manually.</description>
     </item>
     
+    <item>
+      <title>Add Privileges / Roles</title>
+      <link>https://uoregon-libraries.github.io/newspaper-curation-app/contributing/dev-howto/add-privileges/</link>
+      <pubDate>Mon, 01 Jan 0001 00:00:00 +0000</pubDate>
+      
+      <guid>https://uoregon-libraries.github.io/newspaper-curation-app/contributing/dev-howto/add-privileges/</guid>
+      <description>New privileges require a lot of different changes in order to create them, tie them to a role, and then have NCA use them.
+Edit src/privilege/role.go if the new privilege(s) are going to be tied to an entirely new role. Edit src/privilege/privilege.go and add the item in the big list of vars. You have to define what role(s) can have said privilege. Super-admins always have all privileges and aren&amp;rsquo;t specified explicitly, but the privilege does require a definition, even if it&amp;rsquo;s just an empty role list.</description>
+    </item>
+    
   </channel>
 </rss>

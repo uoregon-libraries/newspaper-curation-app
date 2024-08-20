@@ -3,27 +3,27 @@
 <head><meta charset="utf-8">
 <meta http-equiv="X-UA-Compatible" content="IE=edge">
 <meta name="viewport" content="width=device-width, initial-scale=1" />
-<title>Server Setup - Newspaper Curation App</title>
-<meta name="description" content="Setting up a new NCA toolsuite">
+<title>Add Privileges / Roles - Newspaper Curation App</title>
+<meta name="description" content="Adding a new privilege and making it do something">
 <meta name="generator" content="Hugo 0.117.0">
-<link rel="canonical" href="https://uoregon-libraries.github.io/newspaper-curation-app/setup/server-setup/">
+<link rel="canonical" href="https://uoregon-libraries.github.io/newspaper-curation-app/contributing/dev-howto/add-privileges/">
 <link rel="stylesheet" href="https://uoregon-libraries.github.io/newspaper-curation-app/css/theme.css">
 <link rel="stylesheet" href="https://uoregon-libraries.github.io/newspaper-curation-app/css/chroma.css">
 <link rel="stylesheet" href="https://uoregon-libraries.github.io/newspaper-curation-app/css/treeview-navigation.css">
 <script src="https://uoregon-libraries.github.io/newspaper-curation-app/js/headerlink.js"></script>
-<script src="https://uoregon-libraries.github.io/newspaper-curation-app/js/treeview-navigation.js"></script><meta property="og:title" content="Server Setup" />
-<meta property="og:description" content="Setting up a new NCA toolsuite" />
+<script src="https://uoregon-libraries.github.io/newspaper-curation-app/js/treeview-navigation.js"></script><meta property="og:title" content="Add Privileges / Roles" />
+<meta property="og:description" content="Adding a new privilege and making it do something" />
 <meta property="og:type" content="article" />
-<meta property="og:url" content="https://uoregon-libraries.github.io/newspaper-curation-app/setup/server-setup/" /><meta property="article:section" content="setup" />
+<meta property="og:url" content="https://uoregon-libraries.github.io/newspaper-curation-app/contributing/dev-howto/add-privileges/" /><meta property="article:section" content="contributing" />
 
 
 <meta name="twitter:card" content="summary"/>
-<meta name="twitter:title" content="Server Setup"/>
-<meta name="twitter:description" content="Setting up a new NCA toolsuite"/>
-<meta itemprop="name" content="Server Setup">
-<meta itemprop="description" content="Setting up a new NCA toolsuite">
+<meta name="twitter:title" content="Add Privileges / Roles"/>
+<meta name="twitter:description" content="Adding a new privilege and making it do something"/>
+<meta itemprop="name" content="Add Privileges / Roles">
+<meta itemprop="description" content="Adding a new privilege and making it do something">
 
-<meta itemprop="wordCount" content="766">
+<meta itemprop="wordCount" content="295">
 <meta itemprop="keywords" content="" /></head>
 <body>
   <div class="container"><div class="skip"><a href="#maincontent">Skip to main content</a></div>
@@ -44,7 +44,7 @@
         role="treeitem"
         href="https://uoregon-libraries.github.io/newspaper-curation-app/setup/"
         aria-owns="subtree--newspaper-curation-app-setup-"
-          aria-expanded="true">
+          aria-expanded="false">
         <span class="label"><span class="icon">
             <svg xmlns="http://www.w3.org/2000/svg" width="18" viewBox="0 0 24 24">
               <polygon points="2,3 22,11 2,20"></polygon>
@@ -63,7 +63,6 @@
       <a
         role="treeitem"
         href="https://uoregon-libraries.github.io/newspaper-curation-app/setup/server-setup/"
-        aria-current="page"
         >
         <span class="label">Server Setup
         </span>
@@ -204,7 +203,7 @@
         role="treeitem"
         href="https://uoregon-libraries.github.io/newspaper-curation-app/contributing/"
         aria-owns="subtree--newspaper-curation-app-contributing-"
-          aria-expanded="false">
+          aria-expanded="true">
         <span class="label"><span class="icon">
             <svg xmlns="http://www.w3.org/2000/svg" width="18" viewBox="0 0 24 24">
               <polygon points="2,3 22,11 2,20"></polygon>
@@ -248,7 +247,7 @@
         role="treeitem"
         href="https://uoregon-libraries.github.io/newspaper-curation-app/contributing/dev-howto/"
         aria-owns="subtree--newspaper-curation-app-contributing-dev-howto-"
-          aria-expanded="false">
+          aria-expanded="true">
         <span class="label"><span class="icon">
             <svg xmlns="http://www.w3.org/2000/svg" width="18" viewBox="0 0 24 24">
               <polygon points="2,3 22,11 2,20"></polygon>
@@ -275,6 +274,7 @@
       <a
         role="treeitem"
         href="https://uoregon-libraries.github.io/newspaper-curation-app/contributing/dev-howto/add-privileges/"
+        aria-current="page"
         >
         <span class="label">Add Privileges / Roles
         </span>
@@ -286,104 +286,51 @@
 </div>
 
 
-<main id="maincontent"><h1>Server Setup</h1><h2 id="human-requirements">Human Requirements</h2>
-<p>Unfortunately, this process is still technical enough that you will need a
-devops person to at least get the system set up for processing. You&rsquo;ll also
-need people who can reorder PDF pages (if necessary) as well as people who can
-enter and review newspaper issue metadata.</p>
-<p>Somebody will want to monitor the output from the various automated processes,
-such as QCing generated batches on a staging server prior to loading in
-production, as there is still a great deal of room for human error.</p>
-<h2 id="preliminary-setup">Preliminary setup</h2>
-<p>Before anything can be done, the following setup has to happen:</p>
-<ol>
-<li>Make sure you understand the <a href="../../setup/services">Services</a> documentation and
-can get the stack up and running</li>
-<li>Somebody mounts, symlinks, or otherwise sets up the sftp folder root so that
-each title has its own location directly off said root. e.g.,
-<code>/mnt/news/sftp/foo</code> should contain one title&rsquo;s issues, and
-<code>/mnt/news/sftp/bar</code> should contain a different title&rsquo;s issues.
+<main id="maincontent"><h1>Add Privileges / Roles</h1><p>New privileges require a lot of different changes in order to create them, tie
+them to a role, and then have NCA use them.</p>
 <ul>
-<li>This is most easily handled using SFTPGo and setting
-<code>SFTPGO_DATA_PROVIDER__USERS_BASE_DIR</code> in your <code>sftpgo.env</code> to a location
-that NCA can reach. When NCA tells SFTPGo to provision titles, they get a
-subdirectory within the specified base directory.</li>
+<li>Edit <code>src/privilege/role.go</code> if the new privilege(s) are going to be tied to
+an entirely new role.</li>
+<li>Edit <code>src/privilege/privilege.go</code> and add the item in the big list of vars.
+You have to define what role(s) can have said privilege. Super-admins always
+have all privileges and aren&rsquo;t specified explicitly, but the privilege does
+require a definition, even if it&rsquo;s just an empty role list.
+<ul>
+<li>e.g., <code>ModifyValidatedLCCNs = newPrivilege()</code></li>
 </ul>
 </li>
-<li>Somebody sets up the full swath of folders, mounting to network storage
-as it makes sense.
+<li>If the privilege needs to be used in handlers, use a middleware function.
 <ul>
-<li><code>PDF_UPLOAD_PATH</code> (<code>/mnt/news/sftp</code>): One subfolder should exist per title</li>
-<li><code>SCAN_UPLOAD_PATH</code> (<code>/mnt/news/scans</code>): This is where in-house scans would be uploaded.</li>
-<li><code>ORIGINAL_PDF_BACKUP_PATH</code> (<code>/mnt/news/backup/originals</code>): Short-term storage
-where uploaded PDFs will be moved after being split. They may need to be
-held a few months for embargoed issues, but they&rsquo;re auto-purged once the
-issue has been put into a batch.</li>
-<li><code>PDF_PAGE_REVIEW_PATH</code> (<code>/mnt/news/page-review</code>): Issues which came from
-born-digital SFTP uploads and are ready for manual page reordering - this
-should be exposed to whomever will manually review and reorder the
-born-digital uploads prior to them entering the rest of the workflow.</li>
-<li><code>BATCH_OUTPUT_PATH</code> (<code>/mnt/news/outgoing</code>): Batches are put here when
-they&rsquo;re built and held until they&rsquo;re live and moved to your archival
-location.</li>
-<li><code>BATCH_PRODUCTION_PATH</code> (<code>/mnt/news/production-batches</code>): Batches&rsquo; live
-files are synced here. This only includes the critical files needed for an
-ONI instance to work: XMLs, JP2s, PDFs, etc. TIFFs are not synced in order
-to dramatically reduce disk requirements for your &ldquo;always on&rdquo; filesystem.</li>
-<li><code>BATCH_ARCHIVE_PATH</code> (<code>/mnt/news/batch-archive</code>): When batches are live,
-all files are moved here for archival. This location can be a dark
-archive, a &ldquo;transfer&rdquo; location for prepping bulk DA moves, or a location
-you manually manage in some way.</li>
-<li><code>WORKFLOW_PATH</code> (<code>/mnt/news/workflow</code>): Issues are moved here for
-processing, and once here should never be accessible to anybody to
-manually modify them. They will live here until all workflow tasks are
-complete and they&rsquo;re put into a batch for ingest.</li>
-<li><code>ERRORED_ISSUES_PATH</code> (<code>/mnt/news/errors</code>): This location is where NCA
-will put issues that a curator flags as being broken in a way that NCA
-can&rsquo;t manage. e.g., a sideways-scanned TIFF or a blank page that wasn&rsquo;t
-wanted.</li>
-<li><code>ISSUE_CACHE_PATH</code> (<code>/var/local/news/nca/cache</code>): This just needs to be
-created. The app will use this to speed up issue lookups.</li>
+<li>The <code>audithandler</code> has a simple example of this, where a <code>canView</code> function
+wraps access to all routes.</li>
+<li>Fairly complex authorization middleware functions can be seen in the
+<code>workflowhandler</code> code, where the authorization functions verify not just
+privileges, but also issue state, issue ownership, etc.</li>
+<li>In almost all situations where a new route or handler is created, an access
+check of <em>some</em> should be created.</li>
 </ul>
 </li>
-<li>Make sure that the workflow path and the batch output path are on the same
-filesystem!  This ensures the batch generator will be able to hard-link
-files, rather than copying them, which saves a significant amount of time
-when building large batches.  <strong>NOTE</strong>: the system currently <em>requires</em>
-this, and will fail if an attempt to hard-link files fails.</li>
-<li>Permissions have to be set up such that:
+<li>If the privilege needs a check in the HTML templates:
 <ul>
-<li>Humans can rename PDFs in the page review path.</li>
-<li>Humans can drop off scanned PDF/TIFF pairs in the scans path</li>
-<li>Humans can upload born-digital PDFs into the sftp path (SFTPGo will take
-the uploads, but you&rsquo;ll have to ensure its &ldquo;root&rdquo; is either symlinked or
-network-mounted to where NCA expects SFTPed files).</li>
-<li>All binaries (<code>server</code>, <code>run-jobs</code>, anything else in <code>bin/</code> you wish to
-run) are run as a user who can read and write to all paths</li>
-<li>Apache can read the scans path</li>
-<li>The systems which ingest batches into ONI (both staging and production)
-mount the <code>BATCH_PRODUCTION_PATH</code> at the same location NCA uses so that
-the ingest instructions are easy to follow.</li>
+<li>First, you have to expose the privilege by name in
+<code>src/cmd/server/internal/responder/templates.go</code>. There&rsquo;s a long list of
+privileges there, exposed as functions, to help ensure compile-time
+correctness of privilege checks.</li>
+<li>Second, you have to use the privilege. <code>templates/layout.go.html</code> has
+examples of using <code>.User.PermittedTo</code> for deciding which navigation items
+to expose.</li>
 </ul>
 </li>
-<li>Run the servers and set up one or more users: <a href="../../setup/user-setup">User Setup</a></li>
-<li>Somebody must set up the list of newspaper titles using the &ldquo;Manage
-Newspaper Titles&rdquo; functionality. Nothing works if titles aren&rsquo;t set up!
-<ul>
-<li>See <a href="https://uoregon-libraries.github.io/newspaper-curation-app/workflow/adding-titles/">Adding Titles</a> for details.</li>
+<li>Occasionally you may think it necessary to add a manual permissions check
+somewhere in a handler. Usually this is a bad idea, but if you&rsquo;re certain
+such a check is necessary, you can find a few examples of this in various
+handlers. If you don&rsquo;t want to spend the time to figure out where they are
+and how to emulate them, you probably don&rsquo;t need them that badly :P</li>
 </ul>
-</li>
-<li>Somebody has to set up at least one MARC Org Code in the admin app&rsquo;s &ldquo;MARC
-Org Codes&rdquo; area. This should match the code set up in the app&rsquo;s settings.
-If in-house scanning is done, and awardees will differ from your primary
-awardee&rsquo;s code, you would set up those awardees before putting their scanned
-images into the scan folder.</li>
-</ol>
 <nav class="pagination" aria-label="Pagination">
 
-  <a class="nav nav-prev" href="https://uoregon-libraries.github.io/newspaper-curation-app/setup/services/">← Prev - Services and Apps</a>
-
-  <a class="nav nav-next" href="https://uoregon-libraries.github.io/newspaper-curation-app/setup/installation/">Next - Installation →</a></nav>
+  <a class="nav nav-prev" href="https://uoregon-libraries.github.io/newspaper-curation-app/contributing/dev-howto/add-config-items/">← Prev - Add Configuration Settings</a>
+</nav>
 <footer><p class="powered">Powered by <a href="https://gohugo.io">Hugo</a>.
 </footer>
       </main>
