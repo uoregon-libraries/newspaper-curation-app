@@ -44,7 +44,11 @@
             {{end}}
 
             {{if .User.PermittedTo ViewBatchStatus}}
-            <li class="nav-item"><a class="nav-link" href="{{FullPath "batches"}}">Batches</a></li>
+            <li class="nav-item"><a class="nav-link" href="{{FullPath "batches"}}">Manage Batches</a></li>
+            {{end}}
+
+            {{if .User.PermittedTo GenerateBatches}}
+            <li class="nav-item"><a class="nav-link" href="{{FullPath "batchmaker"}}">Create Batches</a></li>
             {{end}}
 
             {{if .User.PermittedTo ViewMetadataWorkflow}}

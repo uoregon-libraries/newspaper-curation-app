@@ -29,6 +29,9 @@ var (
 	// the moment
 	SearchIssues = newPrivilege(RoleWorkflowManager)
 
+	// Generate new batches from the UI
+	GenerateBatches = newPrivilege(RoleBatchBuilder)
+
 	// View batch status: anybody who can see the batch status page, regardless
 	// of what they can/can't do there
 	ViewBatchStatus = newPrivilege(RoleBatchReviewer, RoleBatchLoader)
