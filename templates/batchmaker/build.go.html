@@ -3,13 +3,13 @@
 <h2>Batch Parameters</h2>
 
 <form action="{{BatchMakerFilterURL}}" class="row align-items-top" method="GET" role="search" aria-describedby="batch-form-help">
-  <div class="col-md-8">
+  <div class="col-md-12">
     <h2>Select Issues</h2>
-    <table class="table table-striped table-bordered table-condensed sortable">
+    <table class="table table-striped table-bordered table-condensed">
       <thead>
         <tr>
-          <th scope="col" data-sorttype="">Select</th>
-          <th scope="col" data-sorttype="alpha">Institution</th>
+          <th scope="col">Select</th>
+          <th scope="col">Organization</th>
           <th scope="col">Issue / Page Status</th>
         </tr>
       </thead>
@@ -28,10 +28,10 @@
 
           <td>
             <dl>
-              {{range $ws, $counts := .Counts}}
-              <dt>{{$ws}}</dt>
+              {{range .Counts}}
+              <dt>{{.Title}}</dt>
               <dd>
-                {{pluralize "issue" "issues" $counts.IssueCount}}, {{pluralize "page" "pages" $counts.TotalPages}}
+                {{pluralize "issue" "issues" .Issues}}, {{pluralize "page" "pages" .Pages}}
               </dd>
               {{end}}
             </dl>
@@ -46,7 +46,7 @@
     </div>
   </div>
 
-  <div id="batch-form-help" class="col-md-4">
+  <div id="batch-form-help" class="col-md-12">
     <h2>Help / Info</h2>
     <p>
       Choose one or more MARC org codes to build batches, and choose "Build
