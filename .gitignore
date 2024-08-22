@@ -8,3 +8,4 @@
 /docker-compose.override.yml
 /.env
 /test/*-report/
+/mysql-export/
