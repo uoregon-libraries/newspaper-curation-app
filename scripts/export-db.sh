@@ -14,7 +14,8 @@ mkdir -p "$EXPORT_DIR"
 function dump_table() {
   local table="$1"
   local where="${2:-}"
-  mysqldump --host="$DB_HOST" --user="$DB_USER" --password="$DB_PASSWORD" --databases "$DB_DATABASE" -n -t \
+  mysqldump --host="$DB_HOST" --user="$DB_USER" --password="$DB_PASSWORD" --databases "$DB_DATABASE" \
+    --no-create-db --no-create-info --skip-triggers \
     --tables "$table" \
     ${where:+"--where=$where"} \
     > "$EXPORT_DIR/99-data-$table.sql"
