@@ -6,6 +6,9 @@ import (
 
 	"github.com/gorilla/mux"
 	"github.com/uoregon-libraries/newspaper-curation-app/src/cmd/server/internal/responder"
+	"github.com/uoregon-libraries/newspaper-curation-app/src/internal/logger"
+	"github.com/uoregon-libraries/newspaper-curation-app/src/models"
+	"github.com/uoregon-libraries/newspaper-curation-app/src/schema"
 	"github.com/uoregon-libraries/newspaper-curation-app/src/web/tmpl"
 )
 
@@ -40,5 +43,20 @@ func Setup(r *mux.Router, baseWebPath string) {
 func buildBatchForm(w http.ResponseWriter, req *http.Request) {
 	var r = responder.Response(w, req)
 	r.Vars.Title = "Filter Issues For Batching"
+
+	var aggs, err = models.MOCIssueAggregations()
+	if err != nil {
+		logger.Errorf("Unable to load MOC issue aggregation: %s", err)
+		r.Error(http.StatusInternalServerError, "Error trying to pull MOC list - try again or contact support")
+		return
+	}
+
+	// Remove information that won't help anybody make decisions (e.g., InProduction)
+	for _, agg := range aggs {
+		delete(agg.Counts, schema.WSNil)
+		delete(agg.Counts, schema.WSInProduction)
+	}
+
+	r.Vars.Data["MOCIssueAggregations"] = aggs
 	r.Render(buildBatchFormTmpl)
 }

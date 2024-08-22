@@ -11,33 +11,33 @@
           <th scope="col" data-sorttype="">Select</th>
           <th scope="col" data-sorttype="alpha">Institution</th>
           <th scope="col">Issue / Page Status</th>
-          <th scope="col" data-sorttype="date">Oldest Issue</th>
         </tr>
       </thead>
 
       <tbody>
+        {{range .Data.MOCIssueAggregations}}
         <tr>
           <td>
             <div class="form-check">
-              <input class="form-check-input" name="select-moc-1" id="select-moc-1" type="checkbox" />
-              <label class="form-check-label" for="select-moc-1">Select "oru"</label>
+              <input class="form-check-input" name="select-moc-{{.MOC.ID}}" id="select-moc-{{.MOC.ID}}" type="checkbox" />
+              <label class="form-check-label" for="select-moc-{{.MOC.ID}}">Select "{{.MOC.Code}}"</label>
             </div>
           </td>
 
-          <td>University of Oregon Libraries; Eugene, OR</td>
+          <td>{{.MOC.Name}}</td>
 
           <td>
             <dl>
-              <dt>Ready for batching</dt><dd>102 issues, 2305 pages</dd>
-              <dt>Processing</dt><dd>23 issues, 903 pages</dd>
-              <dt>Awaiting Metadata Review</dt><dd>2 issues, 20 pages</dd>
+              {{range $ws, $counts := .Counts}}
+              <dt>{{$ws}}</dt>
+              <dd>
+                {{pluralize "issue" "issues" $counts.IssueCount}}, {{pluralize "page" "pages" $counts.TotalPages}}
+              </dd>
+              {{end}}
             </dl>
           </td>
-
-          <td>
-            2021-09-23 (2y 1m)
-          </td>
         </tr>
+        {{end}}
       </tbody>
     </table>
 
