@@ -1,6 +1,30 @@
 {{block "content" .}}
 
-<h2>Batch Parameters</h2>
+<div id="batch-form-help" class="row align-items-top">
+  <div class="col-md-6">
+    <h2>Help / Info</h2>
+    Choose one or more MARC org codes to build batches, and choose "Build
+    Queues..." to see the list of issues you'll end up batching. Nothing is
+    created until you confirm the batch generation process.
+  </div>
+
+  <div class="col-md-6">
+    <h2>Notes</h2>
+    <ul>
+      <li>
+        Embargoed issues are <strong>not</strong> included in the aggregate
+        counts, and will only be visible in the next step.
+      </li>
+      <li>
+        Open ONI's batches are grouped by "awardees" per the NDNP spec (MARC
+        Org Codes are used to designate awardees). If multiple are selected,
+        they will be batched individually even if your maximum batch size is
+        large enough to accommodate all pages of all issues chosen.
+      </li>
+    </ul>
+  </div>
+
+</div>
 
 <form action="{{BatchMakerFilterURL}}" class="row align-items-top" method="GET" aria-describedby="batch-form-help">
   <div class="col-md-12">
@@ -44,28 +68,6 @@
     <div class="mb-3">
       <button class="btn btn-primary" type="submit">Build Queues...</button>
     </div>
-  </div>
-
-  <div id="batch-form-help" class="col-md-12">
-    <h2>Help / Info</h2>
-    <p>
-      Choose one or more MARC org codes to build batches, and choose "Build
-      Queues..." to see the list of issues you'll end up batching. Nothing is
-      created until you confirm the batch generation process.
-    </p>
-
-    <p>
-      Note that batches are grouped by "awardees" per the NDNP spec (MARC Org
-      Codes are used to designate awardees). If multiple are selected, they
-      will be batched individually even if your maximum batch size is large
-      enough to accommodate all pages of all issues chosen.
-    </p>
-
-    <p>
-      Note also that NCA and Open ONI allow custom / fake MARC org codes for
-      grouping batches and giving attribution to external entities that are not
-      necessarily NDNP awardees.
-    </p>
   </div>
 </form>
 
