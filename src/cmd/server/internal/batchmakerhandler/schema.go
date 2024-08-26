@@ -66,14 +66,23 @@ func getAggregations(aggs []*models.IssueAggregation) ([]*aggregation, error) {
 		var embargoedQ = tempQ.RemoveIf(notEmbargoed)
 		a.ReadyForBatching = tempQ.RemoveIf(embargoed)
 
+		// This is theoretically possible if all "ready" issues are in fact still
+		// under embargo. The information may still be worth displaying, but it
+		// can't be acted upon, so we probably want to make a separate view if
+		// people are just looking for high-level stats.
+		if a.ReadyForBatching.Len() == 0 {
+			continue
+		}
 		a.Counts = append(
 			a.Counts,
 			count{Title: "Ready for batching", Issues: a.ReadyForBatching.Len(), Pages: a.ReadyForBatching.Pages},
 		)
-		a.Counts = append(
-			a.Counts,
-			count{Title: "Ready, but under embargo", Issues: embargoedQ.Len(), Pages: embargoedQ.Pages},
-		)
+		if embargoedQ.Len() > 0 {
+			a.Counts = append(
+				a.Counts,
+				count{Title: "Ready, but under embargo", Issues: embargoedQ.Len(), Pages: embargoedQ.Pages},
+			)
+		}
 
 		// Add counts for other useful data points, merging similar ones to reduce noise
 		a.appendCount(agg, "Uploaded, not in NCA", schema.WSSFTP, schema.WSScan)
