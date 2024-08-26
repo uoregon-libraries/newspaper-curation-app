@@ -63,8 +63,9 @@ func getAggregations(aggs []*models.IssueAggregation) ([]*aggregation, error) {
 		}
 		var embargoed = func(issue *issuequeue.Issue) bool { return issue.Embargoed }
 		var notEmbargoed = func(issue *issuequeue.Issue) bool { return !issue.Embargoed }
-		var embargoedQ = tempQ.RemoveIf(embargoed)
-		a.ReadyForBatching = tempQ.RemoveIf(notEmbargoed)
+		var embargoedQ = tempQ.RemoveIf(notEmbargoed)
+		a.ReadyForBatching = tempQ.RemoveIf(embargoed)
+
 		a.Counts = append(
 			a.Counts,
 			count{Title: "Ready for batching", Issues: a.ReadyForBatching.Len(), Pages: a.ReadyForBatching.Pages},
