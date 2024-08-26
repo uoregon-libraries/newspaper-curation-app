@@ -111,3 +111,8 @@ func (q *Queue) DBIssues() []*models.Issue {
 	}
 	return dbIssues
 }
+
+// Len returns the number of elements in the queue
+func (q *Queue) Len() int {
+	return len(q.list)
+}

@@ -79,7 +79,7 @@ func actionVerb(at string) string {
 	return models.ActionType(at).Describe()
 }
 
-func pluralize(singular, plural string, count int64) string {
+func pluralize(singular, plural string, count int) string {
 	if count == 1 {
 		return fmt.Sprintf("%d %s", count, singular)
 	}

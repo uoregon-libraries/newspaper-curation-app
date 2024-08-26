@@ -76,9 +76,9 @@ func TestAppend(t *testing.T) {
 				t.Fatalf("Expected no errors, got: %s", hadError)
 			}
 
-			var got = len(q.list)
+			var got = q.Len()
 			if got != tc.expectedCount {
-				t.Fatalf("Expected %d issue(s), got %d", tc.expectedCount, got)
+				t.Fatalf("Expected IssueCount to be %d, got %d", tc.expectedCount, got)
 			}
 			got = q.Pages
 			if got != tc.expectedPages {

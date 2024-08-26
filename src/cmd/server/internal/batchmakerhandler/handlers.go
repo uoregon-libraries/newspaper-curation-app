@@ -46,10 +46,16 @@ func buildBatchForm(w http.ResponseWriter, req *http.Request) {
 	var aggs, err = models.MOCIssueAggregations()
 	if err != nil {
 		logger.Errorf("Unable to load MOC issue aggregation: %s", err)
-		r.Error(http.StatusInternalServerError, "Error trying to pull MOC list - try again or contact support")
+		r.Error(http.StatusInternalServerError, "Error trying to prepare lists - try again or contact support")
 		return
 	}
 
-	r.Vars.Data["MOCIssueAggregations"] = getAggregations(aggs)
+	r.Vars.Data["MOCIssueAggregations"], err = getAggregations(aggs)
+	if err != nil {
+		logger.Errorf("Unable to transform MOC aggregation data: %s", err)
+		r.Error(http.StatusInternalServerError, "Error trying to prepare lists - try again or contact support")
+		return
+	}
+
 	r.Render(buildBatchFormTmpl)
 }
