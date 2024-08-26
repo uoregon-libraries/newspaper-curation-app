@@ -44,7 +44,7 @@ func (q *batchQueue) FindReadyIssues(redo bool) {
 		var moc = i.MARCOrgCode
 		var mocQ, ok = q.mocQueue[moc]
 		if !ok {
-			mocQ = issuequeue.New(titles)
+			mocQ = issuequeue.New()
 			q.mocQueue[moc] = mocQ
 			q.mocList = append(q.mocList, moc)
 		}

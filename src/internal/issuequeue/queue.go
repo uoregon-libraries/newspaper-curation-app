@@ -13,22 +13,21 @@ import (
 type Queue struct {
 	list      []*Issue
 	seen      map[string]bool
-	titles    models.TitleList
 	Pages     int
 	DaysStale float64
 }
 
 // New returns an issue Queue which will use the given title list to look up
 // data for embargo/staleness data
-func New(titles models.TitleList) *Queue {
-	return &Queue{seen: make(map[string]bool), titles: titles}
+func New() *Queue {
+	return &Queue{seen: make(map[string]bool)}
 }
 
 // Append adds the given issue to the queue, first computing its embarge and
 // stale date. If dates are bad, a title isn't found, or other metadata errors
 // prevent these computations, an error is returned.
 func (q *Queue) Append(issue *models.Issue) error {
-	var i, err = wrapIssue(q.titles, issue)
+	var i, err = wrapIssue(issue)
 	if err != nil {
 		return fmt.Errorf("wrapping issue: %w", err)
 	}
@@ -40,7 +39,7 @@ func (q *Queue) Append(issue *models.Issue) error {
 // RemoveIf returns a copy of q without any issues which return true in the
 // remove function
 func (q *Queue) RemoveIf(remove func(*Issue) bool) *Queue {
-	var newQ = New(q.titles)
+	var newQ = New()
 	for _, i := range q.list {
 		if !remove(i) {
 			newQ.appendWrapped(i)
@@ -79,7 +78,7 @@ func (q *Queue) Split(maxPages int) []*Queue {
 	var numQueues = int(math.Ceil(float64(q.Pages) / float64(maxPages)))
 	var queues = make([]*Queue, numQueues)
 	for i := range queues {
-		queues[i] = New(q.titles)
+		queues[i] = New()
 	}
 
 	// Find the smallest queue to add the next issue
