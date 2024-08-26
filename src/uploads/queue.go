@@ -114,19 +114,21 @@ func (i *Issue) Queue() apperr.Error {
 	return nil
 }
 
+// createDatabaseIssue converts the local issue's information into a
+// DB-friendly version and saves it.
 func (i *Issue) createDatabaseIssue() (*models.Issue, error) {
-	var dbi = models.NewIssue(i.MARCOrgCode, i.Title.LCCN, i.RawDate, i.Edition)
+	var moc = i.MARCOrgCode
+	var scanned = false
 
-	// SFTP issues (for now) don't get their MOC set, so we have to do that here
-	if dbi.MARCOrgCode == "" && i.WorkflowStep == schema.WSSFTP {
-		dbi.MARCOrgCode = i.conf.PDFBatchMARCOrgCode
+	// Set up special data that depends on the upload source
+	switch i.WorkflowStep {
+	case schema.WSSFTP:
+		if moc == "" {
+			moc = i.conf.PDFBatchMARCOrgCode
+		}
+	case schema.WSScan:
+		scanned = true
 	}
 
-	// Scanned issues need to be marked as such
-	if i.WorkflowStep == schema.WSScan {
-		dbi.IsFromScanner = true
-	}
-
-	dbi.Location = i.Location
-	return dbi, dbi.Save(models.ActionTypeInternalProcess, models.SystemUser.ID, "Issue data initialized in NCA")
+	return models.CreateIssueFromUpload(moc, i.Title.LCCN, i.RawDate, i.Edition, i.Location, scanned)
 }
