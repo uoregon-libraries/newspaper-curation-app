@@ -27,13 +27,18 @@ var testTitleList = models.TitleList{
 }
 
 func makeIssue(lccn, date string) *models.Issue {
-	var dbi = models.NewIssue("oru", lccn, date, 1)
-	dbi.MetadataApprovedAt = now
-	return dbi
+	return &models.Issue{
+		MARCOrgCode:        "oru",
+		LCCN:               lccn,
+		Date:               date,
+		Edition:            1,
+		Title:              testTitleList.FindByLCCN(lccn),
+		MetadataApprovedAt: now,
+	}
 }
 
 func mustWrap(dbi *models.Issue, t *testing.T) *Issue {
-	var i, err = wrapIssue(testTitleList, dbi)
+	var i, err = wrapIssue(dbi)
 	if err != nil {
 		t.Errorf("Error wrapping issue: %s", err)
 	}
@@ -86,7 +91,7 @@ func TestWrapIssueTableDriven(t *testing.T) {
 				dbi.MetadataApprovedAt = tc.metadataApprovedAt
 			}
 
-			var i, err = wrapIssue(testTitleList, dbi)
+			var i, err = wrapIssue(dbi)
 			if tc.expectError && err == nil {
 				t.Errorf("Expected an error but didn't get one")
 			} else if !tc.expectError && err != nil {
