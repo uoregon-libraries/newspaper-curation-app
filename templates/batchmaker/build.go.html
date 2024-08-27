@@ -33,8 +33,8 @@
       <thead>
         <tr>
           <th scope="col">Select</th>
-          <th scope="col">Organization</th>
-          <th scope="col">Issue / Page Status</th>
+          <th scope="col">Ready for batching</th>
+          <th scope="col">Other issues</th>
         </tr>
       </thead>
 
@@ -43,22 +43,31 @@
         <tr>
           <td>
             <div class="form-check">
-              <input class="form-check-input" name="select-moc-{{.MOC.ID}}" id="select-moc-{{.MOC.ID}}" type="checkbox" />
+              <input class="form-check-input" name="moc" value="{{.MOC.ID}}" id="select-moc-{{.MOC.ID}}" type="checkbox" />
               <label class="form-check-label" for="select-moc-{{.MOC.ID}}">Select "{{.MOC.Code}}"</label>
             </div>
+            <em>{{.MOC.Name}}</em>
           </td>
 
-          <td>{{.MOC.Name}}</td>
+          <td>
+            {{pluralize "page" "pages" .ReadyForBatching.Pages}},
+            {{pluralize "issue" "issues" .ReadyForBatching.Len}}
+          </td>
 
           <td>
+            {{if .Counts}}
             <dl>
               {{range .Counts}}
               <dt>{{.Title}}</dt>
               <dd>
-                {{pluralize "issue" "issues" .Issues}}, {{pluralize "page" "pages" .Pages}}
+                {{pluralize "page" "pages" .Pages}},
+                {{pluralize "issue" "issues" .Issues}}
               </dd>
               {{end}}
             </dl>
+            {{else}}
+              No other issues are currently in NCA for this organization
+            {{end}}
           </td>
         </tr>
         {{end}}

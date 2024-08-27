@@ -73,10 +73,6 @@ func getAggregations(aggs []*models.IssueAggregation) ([]*aggregation, error) {
 		if a.ReadyForBatching.Len() == 0 {
 			continue
 		}
-		a.Counts = append(
-			a.Counts,
-			count{Title: "Ready for batching", Issues: a.ReadyForBatching.Len(), Pages: a.ReadyForBatching.Pages},
-		)
 		if embargoedQ.Len() > 0 {
 			a.Counts = append(
 				a.Counts,
