@@ -63,8 +63,8 @@ func getAggregations(aggs []*models.IssueAggregation) ([]*aggregation, error) {
 		}
 		var embargoed = func(issue *issuequeue.Issue) bool { return issue.Embargoed }
 		var notEmbargoed = func(issue *issuequeue.Issue) bool { return !issue.Embargoed }
-		var embargoedQ = tempQ.RemoveIf(notEmbargoed)
-		a.ReadyForBatching = tempQ.RemoveIf(embargoed)
+		var embargoedQ = tempQ.Filter(embargoed)
+		a.ReadyForBatching = tempQ.Filter(notEmbargoed)
 
 		// This is theoretically possible if all "ready" issues are in fact still
 		// under embargo. The information may still be worth displaying, but it

@@ -65,12 +65,12 @@ func (q *batchQueue) CreateBatches(seed string) []*models.Batch {
 	// Step 1: clean up queues
 	var queues []*issuequeue.Queue
 	for moc, mocQueue := range q.mocQueue {
-		var newQ = mocQueue.RemoveIf(func(i *issuequeue.Issue) bool {
+		var newQ = mocQueue.Filter(func(i *issuequeue.Issue) bool {
 			if i.Embargoed {
 				logger.Debugf("Removing issue %q from %s queue: embargoed", i.Key(), moc)
-				return true
+				return false
 			}
-			return false
+			return true
 		})
 
 		// This can happen if all issues are embargoed

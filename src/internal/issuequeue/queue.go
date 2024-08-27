@@ -36,12 +36,12 @@ func (q *Queue) Append(issue *models.Issue) error {
 	return nil
 }
 
-// RemoveIf returns a copy of q without any issues which return true in the
-// remove function
-func (q *Queue) RemoveIf(remove func(*Issue) bool) *Queue {
+// Filter returns a new Queue that includes only the elements for which filter
+// returns true
+func (q *Queue) Filter(filter func(*Issue) bool) *Queue {
 	var newQ = New()
 	for _, i := range q.list {
-		if !remove(i) {
+		if filter(i) {
 			newQ.appendWrapped(i)
 		}
 	}
