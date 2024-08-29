@@ -9,13 +9,17 @@ import (
 
 	"github.com/gorilla/mux"
 	"github.com/uoregon-libraries/newspaper-curation-app/src/cmd/server/internal/responder"
+	"github.com/uoregon-libraries/newspaper-curation-app/src/config"
 	"github.com/uoregon-libraries/newspaper-curation-app/src/internal/logger"
+	"github.com/uoregon-libraries/newspaper-curation-app/src/jobs"
 	"github.com/uoregon-libraries/newspaper-curation-app/src/models"
 	"github.com/uoregon-libraries/newspaper-curation-app/src/web/tmpl"
 )
 
 var (
 	basePath string
+
+	conf *config.Config
 
 	// layout is the base template, cloned from the responder's layout, from
 	// which all subpages are built
@@ -35,12 +39,14 @@ var (
 )
 
 // Setup sets up all the routing rules and other configuration
-func Setup(r *mux.Router, baseWebPath string) {
+func Setup(r *mux.Router, baseWebPath string, c *config.Config) {
 	basePath = baseWebPath
+	conf = c
 	var s = r.PathPrefix(basePath).Subrouter()
 	s.Path("").Handler(canBuild(buildBatchForm))
 	s.Path("/filter").Handler(canBuild(showBatchIssuesForm))
-	s.Path("/generate").Handler(canBuild(showGenerateForm))
+	s.Path("/generate").Methods("GET").Handler(canBuild(showGenerateForm))
+	s.Path("/generate").Methods("POST").Handler(canBuild(generateBatches))
 
 	layout = responder.Layout.Clone()
 	layout.Funcs(tmpl.FuncMap{
@@ -152,22 +158,21 @@ func showBatchIssuesForm(w http.ResponseWriter, req *http.Request) {
 	renderBatchIssuesForm(r, aggs)
 }
 
-func showGenerateForm(w http.ResponseWriter, req *http.Request) {
-	var r, aggs, exit = readAggs(w, req)
+func getGenerateFormQueues(w http.ResponseWriter, req *http.Request) (r *responder.Responder, queues []*Q, exit bool) {
+	var aggs []*aggregation
+	r, aggs, exit = readAggs(w, req)
 	if exit {
-		return
+		return r, queues, true
 	}
 
 	var max, _ = strconv.Atoi(req.FormValue("maxpages"))
 	if max < 1 {
 		r.Vars.Alert = template.HTML("Maximum size is invalid. Please enter a positive number.")
 		renderBatchIssuesForm(r, aggs)
-		return
+		return r, queues, true
 	}
 
-	// Build the (potentially final) batch queues, wrapping them to give the user
-	// more context
-	var queues []*Q
+	// Build the batch queues, wrapping them to give the user more context
 	for _, agg := range aggs {
 		var readyQ = agg.ReadyForBatching
 		var splitQs = readyQ.Split(max)
@@ -181,14 +186,59 @@ func showGenerateForm(w http.ResponseWriter, req *http.Request) {
 			})
 		}
 	}
+
+	r.Vars.Data["Queues"] = queues
+	r.Vars.Data["MaxPages"] = max
+	r.Vars.Data["MOCIssueAggregations"] = aggs
+
+	return r, queues, false
+}
+
+func showGenerateForm(w http.ResponseWriter, req *http.Request) {
+	var r, queues, exit = getGenerateFormQueues(w, req)
+	if exit {
+		return
+	}
+
 	if len(queues) > 1 {
 		r.Vars.Title = "Generate Batches?"
 	} else {
 		r.Vars.Title = "Generate Batch?"
 	}
-	r.Vars.Data["Queues"] = queues
-	r.Vars.Data["MaxPages"] = max
-	r.Vars.Data["MOCIssueAggregations"] = aggs
 
 	r.Render(showGenerateFormTmpl)
+}
+
+func generateBatches(w http.ResponseWriter, req *http.Request) {
+	var r, queues, exit = getGenerateFormQueues(w, req)
+	if exit {
+		return
+	}
+
+	var batches []*models.Batch
+	for _, next := range queues {
+		var dbIssues = next.Queue.DBIssues()
+		var batch, err = models.CreateBatch(conf.Webroot, dbIssues[0].MARCOrgCode, dbIssues)
+		if err != nil {
+			logger.Errorf("Unable to create a new batch: %s", err)
+			r.Error(http.StatusInternalServerError, "Error processing request - try again or contact support")
+			return
+		}
+		err = jobs.QueueMakeBatch(batch, conf)
+		if err != nil {
+			logger.Criticalf("Unable to queue batch %d (%q): %s", batch.ID, batch.FullName(), err)
+			logger.Criticalf("Batch %d (%q) will likely need to be manually fixed in the database!", batch.ID, batch.FullName())
+			r.Error(http.StatusInternalServerError, "Error processing request - try again or contact support")
+			return
+		}
+		batches = append(batches, batch)
+	}
+
+	var n = len(queues)
+	var prefix = "batches"
+	if n == 1 {
+		prefix = "batch"
+	}
+	http.SetCookie(w, &http.Cookie{Name: "Info", Value: fmt.Sprintf("%d %s queued for generation", n, prefix), Path: "/"})
+	http.Redirect(w, req, basePath, http.StatusFound)
 }

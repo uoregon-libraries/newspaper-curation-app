@@ -129,7 +129,7 @@ func startServer() {
 	userhandler.Setup(r, path.Join(hp, "users"))
 	titlehandler.Setup(r, path.Join(hp, "titles"), conf)
 	audithandler.Setup(r, path.Join(hp, "logs"))
-	batchmakerhandler.Setup(r, path.Join(hp, "batchmaker"))
+	batchmakerhandler.Setup(r, path.Join(hp, "batchmaker"), conf)
 
 	r.NewRoute().Path(hp).HandlerFunc(home)
 
