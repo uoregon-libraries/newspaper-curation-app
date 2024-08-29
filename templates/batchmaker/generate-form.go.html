@@ -1,0 +1,95 @@
+{{block "content" .}}
+
+<h2>
+  {{if eq 4 (len .Data.Queues)}}
+  There... are... <em>four</em> <del>lights</del> batches ready for creation
+  {{else}}
+  There are {{pluralize "batch" "batches" (len .Data.Queues)}} ready for creation
+  {{end}}
+</h2>
+
+<div class="row">
+  <div class="col-md-6">
+    <ul>
+      {{range .Data.Queues}}
+      <li>
+        {{.MOC.Code}} queue number {{.Sequence}}:
+        {{pluralize "page" "pages" .Queue.Pages}} across {{pluralize "issue" "issues" .Queue.Len}}
+      </li>
+      {{end}}
+    </ul>
+  </div>
+
+  <div class="col-md-6">
+    <p class="alert alert-info">
+      Note that, while unlikely, it's possible that this may change if issues get
+      moved into a "ready for batching" state before you choose to generate
+      batches. This data is a snapshot of the current state of the issues, not a
+      final list!
+    </p>
+  </div>
+</div>
+
+<div class="row">
+  <form action="{{BatchMakerGenerateURL}}" class="col-auto" method="POST">
+    {{range .Data.MOCIssueAggregations}}
+    <input type="hidden" name="moc" value="{{.MOC.ID}}" />
+    {{end}}
+    <input type="hidden" name="maxpages" id="maxpages" value="{{.Data.MaxPages}}" />
+    <input type="hidden" name="verified" value="1" />
+
+    <button class="btn btn-primary" type="submit">Make It So!</button>
+  </form>
+
+  <form action="{{BatchMakerFilterURL}}" class="col-auto" method="GET">
+    {{range .Data.MOCIssueAggregations}}
+    <input type="hidden" name="moc" value="{{.MOC.ID}}" />
+    {{end}}
+    <input type="hidden" name="maxpages" id="maxpages" value="{{.Data.MaxPages}}" />
+    <button class="btn btn-danger" type="submit">Belay That Order!</button>
+  </form>
+</div>
+
+<h2>Issue Breakdown</h2>
+
+<p>
+  Before submitting, you can review the aggregate data again to be sure you are
+  batching what you want.
+</p>
+
+<div class="row">
+{{range .Data.MOCIssueAggregations}}
+<div class="col-md-6">
+<div class="card">
+  <div class="card-header">
+    <h3>{{.MOC.Code}} ({{.MOC.Name}})</h3>
+  </div>
+  <div class="card-body">
+    <div class="card-title">
+      <strong>{{pluralize "page" "pages" .ReadyForBatching.Pages}} across {{pluralize "issue"
+      "issues" .ReadyForBatching.Len}} will be queued for batching.</strong>
+    </div>
+
+    <div class="card-body">
+      <p>Other issues:</p>
+      {{if .Counts}}
+      <dl>
+        {{range .Counts}}
+        <dt>{{.Title}}</dt>
+        <dd>
+          {{pluralize "page" "pages" .Pages}},
+          {{pluralize "issue" "issues" .Issues}}
+        </dd>
+        {{end}}
+      </dl>
+      {{else}}
+        No other issues are currently in NCA for this organization
+      {{end}}
+    </div>
+  </div>
+</div>
+</div>
+{{end}}
+</div>
+
+{{end}}

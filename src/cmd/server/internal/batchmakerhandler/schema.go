@@ -91,3 +91,12 @@ func getAggregations(aggs []*models.IssueAggregation) ([]*aggregation, error) {
 
 	return list, nil
 }
+
+// Q wraps issuequeue.Queue to add some context for the template to display. Q
+// is not, however, likely to be found anywhere near farpoint. At least not in
+// the NCA continuum.
+type Q struct {
+	Sequence int
+	MOC      *models.MOC
+	Queue    *issuequeue.Queue
+}

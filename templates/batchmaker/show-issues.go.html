@@ -1,0 +1,63 @@
+{{block "content" .}}
+
+<h2>Issue Breakdown</h2>
+
+<div class="row">
+{{range .Data.MOCIssueAggregations}}
+<div class="col-md-6">
+<div class="card">
+  <div class="card-header">
+    <h3>{{.MOC.Code}} ({{.MOC.Name}})</h3>
+  </div>
+  <div class="card-body">
+    <div class="card-title">
+      <strong>{{pluralize "page" "pages" .ReadyForBatching.Pages}} across {{pluralize "issue"
+      "issues" .ReadyForBatching.Len}} will be queued for batching.</strong>
+    </div>
+
+    <div class="card-body">
+      <p>Other issues:</p>
+      {{if .Counts}}
+      <dl>
+        {{range .Counts}}
+        <dt>{{.Title}}</dt>
+        <dd>
+          {{pluralize "page" "pages" .Pages}},
+          {{pluralize "issue" "issues" .Issues}}
+        </dd>
+        {{end}}
+      </dl>
+      {{else}}
+        No other issues are currently in NCA for this organization
+      {{end}}
+    </div>
+  </div>
+</div>
+</div>
+{{end}}
+</div>
+
+<h2>Finalize Batch(es)</h2>
+
+<div id="generate-batch-help">
+  <p>
+    Choose a maximum batch size, and "Generate" to continue. Queues will be split
+    up as evenly as possible to match the requested maximum batch size while
+    ensuring no issues are split across two batches.
+  </p>
+</div>
+
+<form action="{{BatchMakerGenerateURL}}" class="row align-items-top" method="GET" aria-describedby="generate-batch-help">
+  {{range .Data.MOCIssueAggregations}}
+  <input type="hidden" name="moc" value="{{.MOC.ID}}" />
+  {{end}}
+  <label class="col-auto col-form-label" for="maxpages">Maximum Batch Size (pages)</label>
+  <div class="col-auto">
+    <input class="form-control" type="number" name="maxpages" id="maxpages" 
+      {{if .Data.MaxPages}}value="{{.Data.MaxPages}}"{{end}} />
+  </div>
+
+  <button class="col-auto btn btn-primary" type="submit">Preview...</button>
+</form>
+
+{{end}}
