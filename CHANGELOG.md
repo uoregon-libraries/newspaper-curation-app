@@ -34,6 +34,64 @@ Brief description, if necessary
 ### Migration
 -->
 
+## v5.0.0
+
+Batching and Boostrap 5.
+
+This release includes a major UI overhaul, getting us up to Bootstrap 5, as
+well as a lot of improvements to how batching is done! You can now generate
+batches from the UI!
+
+And of course quite a few fixes.
+
+### Fixed
+
+- Curated issues no longer show up briefly on the curator's desk with an
+  "awaiting processing" message
+- Double-submitting of forms is now properly prevented
+
+### Added
+
+- New area in NCA's web UI for generating batches! The command-line tool will
+  continue to exist, but this UI makes it so that people without shell access
+  can easily generate batches on demand.
+- Various views now include issue and batch page counts
+- New script in `scripts/export-db.sh` for doing a partial database export,
+  suitable for exporting live data for dev use. The export only grabs the last
+  month's worth of data for the largest tables, so your exports will be usable
+  for testing real-world data, and still very large, but not infeasibly so.
+
+### Changed
+
+- Updated to Bootstrap 5 CSS
+- Dark mode is now respected if the OS has it set
+- Sortable table headers now look consistent with other buttons
+- The nav item "Batches" has been renamed to "Manage Batches" so it's purpose
+  is clearer now that we have a second batch-related nav item.
+- Batch generation had a minor refactor as part of the preliminary work for
+  batch generation from the website. The end results are still the same, and
+  changes should go mostly unnoticed, but there are a few differences to how
+  issue queues get split into batches, the command-line tool's logging is
+  different, etc.
+- devs: in debug mode, some HTML templates will automatically reload
+- devs: Bootstrap CSS is loaded in a layer so that custom rules always take
+  priority. No more `!important` nonsense!
+
+### Removed
+
+- Bootstrap JS is no longer used
+- jQuery (and a very old version at that) is no longer used
+
+### Migration
+
+- Shut down NCA workers and HTTP daemon. You will have potentially several
+  minutes of downtime.
+- Run database migrations. This will add the new page count field, and then
+  count pages for every issue in the database, which can take a while if you
+  have a lot of pages:
+  - `make && ./bin/migrate-database -c ./settings up`
+- Restart services.
+
 ## v4.4.0
 
 Better batching, and a tiny bit of cleanup.
