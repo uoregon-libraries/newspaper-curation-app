@@ -16,6 +16,12 @@
         batching.
       </li>
       <li>
+        A batch's "age" refers to how long its oldest issue has been ready for
+        batching. It's sometimes worth pushing a batch when one or more issues
+        have been waiting a long time, even if the batch is otherwise very
+        small.
+      </li>
+      <li>
         Open ONI's batches are grouped by "awardees" per the NDNP spec (MARC
         Org Codes are used to designate awardees). If multiple are selected,
         they will be batched individually even if your maximum batch size is
@@ -33,6 +39,7 @@
       <thead>
         <tr>
           <th scope="col">Select</th>
+          <th scope="col">Age</th>
           <th scope="col">Ready for batching</th>
           <th scope="col">Other issues</th>
         </tr>
@@ -47,6 +54,10 @@
               <label class="form-check-label" for="select-moc-{{.MOC.ID}}">Select "{{.MOC.Code}}"</label>
             </div>
             <em>{{.MOC.Name}}</em>
+          </td>
+
+          <td>
+            {{.Age}}
           </td>
 
           <td>

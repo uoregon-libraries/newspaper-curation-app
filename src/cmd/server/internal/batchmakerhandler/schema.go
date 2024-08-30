@@ -3,6 +3,7 @@ package batchmakerhandler
 import (
 	"fmt"
 
+	"github.com/uoregon-libraries/newspaper-curation-app/src/duration"
 	"github.com/uoregon-libraries/newspaper-curation-app/src/internal/issuequeue"
 	"github.com/uoregon-libraries/newspaper-curation-app/src/models"
 	"github.com/uoregon-libraries/newspaper-curation-app/src/schema"
@@ -22,6 +23,7 @@ type aggregation struct {
 	MOC              *models.MOC
 	Counts           []count
 	ReadyForBatching *issuequeue.Queue
+	Age              string
 }
 
 func (a *aggregation) appendCount(agg *models.IssueAggregation, title string, steps ...schema.WorkflowStep) {
@@ -73,6 +75,14 @@ func getAggregations(aggs []*models.IssueAggregation) ([]*aggregation, error) {
 		if a.ReadyForBatching.Len() == 0 {
 			continue
 		}
+
+		var d = duration.FromDays(int(a.ReadyForBatching.DaysStale))
+		if d.Zero() {
+			a.Age = "Less than a day"
+		} else {
+			a.Age = d.String()
+		}
+
 		if embargoedQ.Len() > 0 {
 			a.Counts = append(
 				a.Counts,
