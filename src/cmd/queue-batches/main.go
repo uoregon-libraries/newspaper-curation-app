@@ -6,7 +6,6 @@ import (
 	"github.com/uoregon-libraries/newspaper-curation-app/src/dbi"
 	"github.com/uoregon-libraries/newspaper-curation-app/src/internal/logger"
 	"github.com/uoregon-libraries/newspaper-curation-app/src/jobs"
-	"github.com/uoregon-libraries/newspaper-curation-app/src/models"
 )
 
 // Command-line options
@@ -18,7 +17,6 @@ type _opts struct {
 }
 
 var opts _opts
-var titles models.TitleList
 
 func getOpts() *config.Config {
 	var c = cli.New(&opts)
@@ -36,11 +34,6 @@ func getOpts() *config.Config {
 	var err = dbi.DBConnect(conf.DatabaseConnect)
 	if err != nil {
 		logger.Fatalf("Error trying to connect to database: %s", err)
-	}
-
-	titles, err = models.Titles()
-	if err != nil {
-		logger.Fatalf("Unable to find titles in the database: %s", err)
 	}
 
 	if opts.MinBatchSize > 0 {

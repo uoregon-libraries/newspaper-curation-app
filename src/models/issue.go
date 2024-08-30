@@ -145,9 +145,19 @@ func FindFlaggedIssue(batchID, issueID int64) (*FlaggedIssue, error) {
 	return list[0], err
 }
 
-// NewIssue creates an issue ready for saving to the issues table
-func NewIssue(moc, lccn, dt string, ed int) *Issue {
-	return &Issue{MARCOrgCode: moc, LCCN: lccn, Date: dt, Edition: ed, WorkflowStep: schema.WSAwaitingProcessing}
+// CreateIssueFromUpload is a single-purpose issue-builder just for storing an
+// issue which was queued via our uploads controller
+func CreateIssueFromUpload(moc, lccn, rawDate string, edition int, loc string, scanned bool) (*Issue, error) {
+	var issue = &Issue{
+		MARCOrgCode:   moc,
+		LCCN:          lccn,
+		Date:          rawDate,
+		Edition:       edition,
+		Location:      loc,
+		IsFromScanner: scanned,
+		WorkflowStep:  schema.WSAwaitingProcessing,
+	}
+	return issue, issue.Save(ActionTypeInternalProcess, SystemUser.ID, "Issue data initialized in NCA")
 }
 
 // IssueFinder is a pseudo-DSL for easily creating queries without needing to

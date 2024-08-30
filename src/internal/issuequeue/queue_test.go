@@ -15,13 +15,19 @@ func atoi(s string) int {
 	return i
 }
 
-// mkissue converts a string to issue data for easier testing. The string is a
-// slash-delimited set of values: parseable date, edition number, and page
+// strToIssue converts a string to issue data for easier testing. The string is
+// a slash-delimited set of values: parseable date, edition number, and page
 // count. All issues use the "good" LCCN, so tests using this shouldn't be
 // testing anything related to wrapping potentially bad issues.
-func mkissue(s string) *models.Issue {
+func strToIssue(s string) *models.Issue {
 	var parts = strings.Split(s, "/")
-	return &models.Issue{LCCN: lccnSimple, Date: parts[0], Edition: atoi(parts[1]), PageCount: atoi(parts[2])}
+	return &models.Issue{
+		LCCN:      lccnSimple,
+		Date:      parts[0],
+		Edition:   atoi(parts[1]),
+		PageCount: atoi(parts[2]),
+		Title:     testTitleList.FindByLCCN(lccnSimple),
+	}
 }
 
 func TestAppend(t *testing.T) {
@@ -53,10 +59,10 @@ func TestAppend(t *testing.T) {
 
 	for name, tc := range tests {
 		t.Run(name, func(t *testing.T) {
-			var q = New(testTitleList)
+			var q = New()
 			var hadError error
 			for _, i := range tc.issues {
-				var err = q.Append(mkissue(i))
+				var err = q.Append(strToIssue(i))
 				if err != nil {
 					t.Logf("%q error: %s", i, err)
 					hadError = err
@@ -70,9 +76,9 @@ func TestAppend(t *testing.T) {
 				t.Fatalf("Expected no errors, got: %s", hadError)
 			}
 
-			var got = len(q.list)
+			var got = q.Len()
 			if got != tc.expectedCount {
-				t.Fatalf("Expected %d issue(s), got %d", tc.expectedCount, got)
+				t.Fatalf("Expected IssueCount to be %d, got %d", tc.expectedCount, got)
 			}
 			got = q.Pages
 			if got != tc.expectedPages {
@@ -110,9 +116,9 @@ func TestSplit(t *testing.T) {
 
 	for name, tc := range tests {
 		t.Run(name, func(t *testing.T) {
-			var q = New(testTitleList)
+			var q = New()
 			for i, pages := range tc.issuePages {
-				q.Append(mkissue(fmt.Sprintf("2024-01-02/%02d/%d", i, pages)))
+				q.Append(strToIssue(fmt.Sprintf("2024-01-02/%02d/%d", i, pages)))
 			}
 
 			var qlist = q.Split(tc.queuePages)

@@ -1,0 +1,94 @@
+{{block "content" .}}
+
+<div id="batch-form-help" class="row align-items-top">
+  <div class="col-md-6">
+    <h2>Help / Info</h2>
+    Choose one or more MARC org codes to build batches, and choose "Build
+    Queues..." to see the list of issues you'll end up batching. Nothing is
+    created until you confirm the batch generation process.
+  </div>
+
+  <div class="col-md-6">
+    <h2>Notes</h2>
+    <ul>
+      <li>
+        MARC Org Codes aren't displayed if they have no issues ready for
+        batching.
+      </li>
+      <li>
+        A batch's "age" refers to how long its oldest issue has been ready for
+        batching. It's sometimes worth pushing a batch when one or more issues
+        have been waiting a long time, even if the batch is otherwise very
+        small.
+      </li>
+      <li>
+        Open ONI's batches are grouped by "awardees" per the NDNP spec (MARC
+        Org Codes are used to designate awardees). If multiple are selected,
+        they will be batched individually even if your maximum batch size is
+        large enough to accommodate all pages of all issues chosen.
+      </li>
+    </ul>
+  </div>
+
+</div>
+
+<form action="{{BatchMakerFilterURL}}" class="row align-items-top" method="GET" aria-describedby="batch-form-help">
+  <div class="col-md-12">
+    <h2>Select Issues</h2>
+    <table class="table table-striped table-bordered table-condensed">
+      <thead>
+        <tr>
+          <th scope="col">Select</th>
+          <th scope="col">Age</th>
+          <th scope="col">Ready for batching</th>
+          <th scope="col">Other issues</th>
+        </tr>
+      </thead>
+
+      <tbody>
+        {{range .Data.MOCIssueAggregations}}
+        <tr>
+          <td>
+            <div class="form-check">
+              <input class="form-check-input" name="moc" value="{{.MOC.ID}}" id="select-moc-{{.MOC.ID}}" type="checkbox" />
+              <label class="form-check-label" for="select-moc-{{.MOC.ID}}">Select "{{.MOC.Code}}"</label>
+            </div>
+            <em>{{.MOC.Name}}</em>
+          </td>
+
+          <td>
+            {{.Age}}
+          </td>
+
+          <td>
+            {{pluralize "page" "pages" .ReadyForBatching.Pages}},
+            {{pluralize "issue" "issues" .ReadyForBatching.Len}}
+          </td>
+
+          <td>
+            {{if .Counts}}
+            <dl>
+              {{range .Counts}}
+              <dt>{{.Title}}</dt>
+              <dd>
+                {{pluralize "page" "pages" .Pages}},
+                {{pluralize "issue" "issues" .Issues}}
+              </dd>
+              {{end}}
+            </dl>
+            {{else}}
+              No other issues are currently in NCA for this organization
+            {{end}}
+          </td>
+        </tr>
+        {{end}}
+      </tbody>
+    </table>
+
+    <div class="mb-3">
+      <button class="btn btn-primary" type="submit">Build Queues...</button>
+    </div>
+  </div>
+</form>
+
+{{end}}

@@ -120,6 +120,51 @@ func appendDuration(out []string, num int, unit string) []string {
 	return append(out, strconv.Itoa(num)+" "+unit+"s")
 }
 
+const daysPerYear = 365.2425
+const daysPerMonth = daysPerYear / 12
+
+// FromDays lets us pass in a number of days, and "reduces" the value to a
+// meaningful duration by extracting a rough estimate of years and months. The
+// corresponding duration *will not* be 100% accurate! There are not a set
+// number of days in a month, or even in a year. The Duration will be close,
+// but cannot be used if precision is necessary.
+func FromDays(days int) Duration {
+	var d Duration
+
+	// If we have several years' worth of days, we sort of fake leap years.
+	if days >= 1460 {
+		d.Years += int(float64(days) / daysPerYear)
+		days -= int(float64(d.Years) * daysPerYear)
+	}
+
+	// Otherwise, just a simple 365 division
+	if days >= 365 {
+		d.Years += days / 365
+		days %= 365
+	}
+
+	// If we have a lot of days left, we calculate months sort of accurately
+	if days >= 183 {
+		d.Months += int(float64(days) / daysPerMonth)
+		days -= int(float64(d.Months) * daysPerMonth)
+	}
+
+	// Otherwise, just 30
+	if days >= 30 {
+		d.Months += days / 30
+		days %= 30
+	}
+
+	if days >= 7 {
+		d.Weeks += days / 7
+		days %= 7
+	}
+
+	d.Days = days
+
+	return d
+}
+
 func (d Duration) String() string {
 	var out []string
 	out = appendDuration(out, d.Years, "year")

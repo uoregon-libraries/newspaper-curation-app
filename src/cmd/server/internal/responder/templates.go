@@ -137,6 +137,7 @@ func InitRootTemplate(templatePath string) {
 		"ViewUploadedIssues":    func() *privilege.Privilege { return privilege.ViewUploadedIssues },
 		"ModifyUploadedIssues":  func() *privilege.Privilege { return privilege.ModifyUploadedIssues },
 		"SearchIssues":          func() *privilege.Privilege { return privilege.SearchIssues },
+		"GenerateBatches":       func() *privilege.Privilege { return privilege.GenerateBatches },
 		"ViewBatchStatus":       func() *privilege.Privilege { return privilege.ViewBatchStatus },
 		"ViewQCReadyBatches":    func() *privilege.Privilege { return privilege.ViewQCReadyBatches },
 		"ApproveQCReadyBatches": func() *privilege.Privilege { return privilege.ApproveQCReadyBatches },

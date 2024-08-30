@@ -13,6 +13,7 @@ import (
 	flags "github.com/jessevdk/go-flags"
 	"github.com/uoregon-libraries/newspaper-curation-app/src/cmd/server/internal/audithandler"
 	"github.com/uoregon-libraries/newspaper-curation-app/src/cmd/server/internal/batchhandler"
+	"github.com/uoregon-libraries/newspaper-curation-app/src/cmd/server/internal/batchmakerhandler"
 	"github.com/uoregon-libraries/newspaper-curation-app/src/cmd/server/internal/issuefinderhandler"
 	"github.com/uoregon-libraries/newspaper-curation-app/src/cmd/server/internal/mochandler"
 	"github.com/uoregon-libraries/newspaper-curation-app/src/cmd/server/internal/responder"
@@ -128,6 +129,7 @@ func startServer() {
 	userhandler.Setup(r, path.Join(hp, "users"))
 	titlehandler.Setup(r, path.Join(hp, "titles"), conf)
 	audithandler.Setup(r, path.Join(hp, "logs"))
+	batchmakerhandler.Setup(r, path.Join(hp, "batchmaker"), conf)
 
 	r.NewRoute().Path(hp).HandlerFunc(home)
 

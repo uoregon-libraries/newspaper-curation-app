@@ -43,6 +43,7 @@ var (
 		others which have been assigned to them.`)
 	RoleMOCManager      = newRole("marc org code manager", "Has access to add new MARC Org Codes")
 	RoleWorkflowManager = newRole("workflow manager", "Can queue SFTP and scanned issues for processing")
+	RoleBatchBuilder    = newRole("batch builder", "Can generate new batches on demand")
 	RoleBatchReviewer   = newRole("batch reviewer",
 		"Can view, reject, and approve batches which NCA has built but which are not yet in production.")
 	RoleBatchLoader = newRole("batch loader", "Can load and purge batches on staging and production. This role states the user has these abilities, but in NCA this really just means they can view and flag batches as being loaded / ready for QC.")

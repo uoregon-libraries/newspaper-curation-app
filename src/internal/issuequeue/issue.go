@@ -14,18 +14,17 @@ type Issue struct {
 	Embargoed bool
 }
 
-func wrapIssue(titles models.TitleList, dbIssue *models.Issue) (*Issue, error) {
+func wrapIssue(dbIssue *models.Issue) (*Issue, error) {
+	if dbIssue.Title == nil {
+		return nil, fmt.Errorf("wrapping issue: invalid: no associated title")
+	}
+
 	var issueDate, err = time.Parse("2006-01-02", dbIssue.Date)
 	if err != nil {
 		return nil, fmt.Errorf("invalid date %q: %w", dbIssue.Date, err)
 	}
 
 	var i = &Issue{Issue: dbIssue}
-
-	i.Title = titles.Find(i.LCCN)
-	if i.Title == nil {
-		return nil, fmt.Errorf("unknown LCCN %q", i.LCCN)
-	}
 
 	var embargoLiftDate time.Time
 	embargoLiftDate, err = i.Title.CalculateEmbargoLiftDate(issueDate)
