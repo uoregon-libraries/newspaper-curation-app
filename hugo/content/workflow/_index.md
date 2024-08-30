@@ -66,24 +66,29 @@ generated, the workflow is the same regardless of the source:
 2. An issue reviewer validates the metadata and rejects it or approves it
 3. Once metadata is entered and approved, the issue has its final derivative
    generated (METS XML) and awaits batching
-4. When enough issues are ready, the `queue-batches` CLI will generate batches
-   in the configured `BATCH_OUTPUT_PATH`, and sync to the required files (e.g.,
-   not TIFFs) to production as configured via `BATCH_PRODUCTION_PATH`.
-5. A batch loader must manually load the batches into a staging server and then
+4. When enough issues are ready, there are two ways to generate batches:
+   - A dev can use the `queue-batches` command, generating batches for all
+     issues which are ready.
+   - Somebody with the "batch builder" role can visit NCA's "Create Batches"
+     page and choose which MOCs should have issues batched.
+5. Batches will be put into the configured `BATCH_OUTPUT_PATH`, and required
+   files (e.g., not TIFFs) will be synced to production (as configured via
+   `BATCH_PRODUCTION_PATH`).
+6. A batch loader must manually load the batches into a staging server and then
    flag them as ready for QC
-6. A batch reviewer does quality control on the staging server, verifying the
+7. A batch reviewer does quality control on the staging server, verifying the
    batch's issues look good
    - If all is well, batch reviewer marks the issue as ready for production
    - If not, they reject the batch and can then get individual issues pulled
      out to be re-curated or rejected from NCA entirely. The remaining issues
      are put into a new batch which is then set as being ready for staging
      (repeating step 5).
-7. Batches that are ready for production get loaded to prod by a batch loader.
-8. Batch loader flags the batch as "live", and NCA moves its files to the
+8. Batches that are ready for production get loaded to prod by a batch loader.
+9. Batch loader flags the batch as "live", and NCA moves its files to the
    configured `BATCH_ARCHIVE_PATH`.
-9. Once the batch can be confirmed as fully archived, a batch loader flags it
-   as archived.
-10. Somebody with command-line access to NCA will run `delete-live-done-issues`
+10. Once the batch can be confirmed as fully archived, a batch loader flags it
+    as archived.
+11. Somebody with command-line access to NCA will run `delete-live-done-issues`
     (or set up a cron job) to purge unneeded files from NCA that are part of
     archived batches. It only deletes files when a batch is at least four weeks
     past its archive date to ensure any final problems can be handled.

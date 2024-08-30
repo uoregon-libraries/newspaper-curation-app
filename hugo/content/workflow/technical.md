@@ -109,11 +109,16 @@ An issue XML will be generated (using the METS template defined by the setting
 into the issue location for safe-keeping. Assuming these are done without
 error, the issue is marked "ready for batching".
 
-The batch queue command-line script (compiled to `bin/queue-batches`) grabs all
-issues which are ready to be batched, organizes them by MARC Org Code (a.k.a.,
-awardee) for batching (*each awardee must have its issues in a separate
-batch*), and generates batches if there are enough pages (see the
-`MINIMUM_ISSUE_PAGES` setting).
+A "batch builder" can then select organizations (e.g., the MARC org codes) they
+want batches built for by visiting the "Create Batches" page in NCA. General
+high-level aggregate data should give the batch builder enough information to
+choose what to batch, after which they decide  how big the batches should be.
+
+Alternatively, the batch queue command-line script (compiled to
+`bin/queue-batches`) grabs all issues which are ready to be batched, organizes
+them by organization (a.k.a., MARC Org Code / awardee) for batching (*each
+awardee must have its issues in a separate batch*), and generates batches if
+there are enough pages (see the `MINIMUM_ISSUE_PAGES` setting).
 
 **Note**: the `MINIMUM_ISSUE_PAGES` setting will be ignored if any issues
 waiting to be batched have been ready for batching for more than 30 days. This
