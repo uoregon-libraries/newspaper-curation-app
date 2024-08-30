@@ -42,6 +42,32 @@ func TestParseWeird(t *testing.T) {
 	}
 }
 
+func TestFromDays(t *testing.T) {
+	var tests = map[string]struct {
+		days     int
+		expected string
+	}{
+		"Zero":        {days: 0, expected: "0 days"},
+		"Simple":      {days: 5, expected: "5 days"},
+		"Weeks":       {days: 12, expected: "1 week 5 days"},
+		"WeeksNoDays": {days: 21, expected: "3 weeks"},
+		"Months":      {days: 75, expected: "2 months 2 weeks 1 day"},
+		"ManyMonths":  {days: 361, expected: "11 months 3 weeks 6 days"},
+		"Years":       {days: 365*2 + 15, expected: "2 years 2 weeks 1 day"},
+		"ManyYears":   {days: 365 * 10, expected: "9 years 11 months 4 weeks 1 day"},
+	}
+
+	for name, tc := range tests {
+		t.Run(name, func(t *testing.T) {
+			var dur = FromDays(tc.days)
+			var got = dur.String()
+			if got != tc.expected {
+				t.Errorf("%d days should have returned %q, but we got %q", tc.days, tc.expected, got)
+			}
+		})
+	}
+}
+
 func TestString(t *testing.T) {
 	var d, err = Parse("1 month 3 years 2 weeks 4 days")
 	if err != nil {
