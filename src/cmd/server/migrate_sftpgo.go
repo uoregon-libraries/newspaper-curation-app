@@ -39,7 +39,7 @@ func _migrationCreateSFTPGoTitle(t *models.Title) error {
 	t.SFTPConnected = true
 	var err = t.SaveOp(op)
 	if err == nil {
-		_, err = dbi.SFTP.CreateUser(t.SFTPUser, t.LegacyPass, int64(conf.SFTPGoNewUserQuota), t.Name+" / "+t.LCCN)
+		_, err = dbi.SFTP().CreateUser(t.SFTPUser, t.LegacyPass, int64(conf.SFTPGoNewUserQuota), t.Name+" / "+t.LCCN)
 	}
 	if err != nil {
 		op.Rollback()

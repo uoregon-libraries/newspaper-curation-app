@@ -21,8 +21,10 @@ import (
 // DB is meant as a global accessor to a long-living database connection
 var DB *magicsql.DB
 
-// SFTP is our global sftpgo connection
-var SFTP *sftpgo.API
+// sftp is our global sftpgo connection
+var sftp *sftpgo.API
+var sftpURL *url.URL
+var sftpKey string
 
 // Debug should be set to true if operations should be logged to stderr
 var Debug bool
@@ -43,10 +45,30 @@ func DBConnect(connect string) error {
 
 // SFTPConnect sets up the global SFTPGo API instance and checks server status
 func SFTPConnect(u *url.URL, apikey string) error {
-	var err error
-	SFTP, err = sftpgo.New(u, apikey)
-	if err == nil {
-		err = SFTP.GetStatus()
+	sftpURL = u
+	sftpKey = apikey
+	var s = SFTP()
+	if s.LastErr != nil {
+		return s.LastErr
 	}
-	return err
+	return nil
+}
+
+// SFTP returns the sftpgo connection
+func SFTP() *sftpgo.API {
+	if sftp != nil {
+		return sftp
+	}
+
+	var s, err = sftpgo.New(sftpURL, sftpKey)
+	if err == nil {
+		err = s.GetStatus()
+	}
+
+	if err == nil {
+		sftp = s
+		return sftp
+	}
+
+	return &sftpgo.API{LastErr: err}
 }
