@@ -49,8 +49,8 @@ And of course quite a few fixes.
 - Curated issues no longer show up briefly on the curator's desk with an
   "awaiting processing" message
 - Double-submitting of forms is now properly prevented
-- When SFTPGo is unavailable, certain pages will give errors still, but the app
-  as a whole will still generally function
+- When SFTPGo is unavailable, certain pages will give errors still, but NCA
+  will at least no longer fail to start
 
 ### Added
 
