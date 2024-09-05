@@ -156,12 +156,14 @@ func FindBatch(id int64) (*Batch, error) {
 	return list[0], err
 }
 
-// InProcessBatches returns the full list of in-process batches (not live, not pending)
-func InProcessBatches() ([]*Batch, error) {
+// ActionableBatches returns the full list of batches that can have some kind
+// of action on them, including "live_done" batches that can only be pulled
+// from prod.
+func ActionableBatches() ([]*Batch, error) {
 	var statusList []any
 	var placeholders []string
 	for status, data := range statusMap {
-		if data.NeedsAction {
+		if data.Live || data.Staging || data.NeedsAction {
 			statusList = append(statusList, status)
 			placeholders = append(placeholders, "?")
 		}

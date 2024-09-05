@@ -37,7 +37,7 @@ func setStatus(r *Responder, status string, action models.ActionType, t *tmpl.Te
 func listHandler(w http.ResponseWriter, req *http.Request) {
 	var r = responder.Response(w, req)
 	r.Vars.Title = "Batches"
-	var list, err = models.InProcessBatches()
+	var list, err = models.ActionableBatches()
 	if err != nil {
 		logger.Criticalf("Unable to load batches: %s", err)
 		r.Error(http.StatusInternalServerError, "Error trying to pull batch list - try again or contact support")
