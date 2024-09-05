@@ -3,7 +3,7 @@
 <h2>Batches needing attention</h2>
 
 {{if .Data.Batches}}
-{{template "batch-table" .}}
+{{template "batch-table" .Data.Batches}}
 {{else}}
 There are no batches currently in need of any action!
 {{end}}
@@ -23,8 +23,8 @@ There are no batches currently in need of any action!
   </thead>
 
   <tbody>
-  {{range .Data.Batches}}
-  {{if $.Data.Can.View .}}
+  {{range .}}
+  {{if .Can.View}}
   <tr>
     <th scope="row"><a href="{{ViewURL .}}">{{.Name}}</a></th>
     <td>

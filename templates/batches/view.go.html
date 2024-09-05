@@ -13,7 +13,7 @@
     <strong>This batch is not in a state that allows user actions</strong>
 
     <!-- Batch needs to be purged from staging: this overrides all other considerations -->
-    {{else if and .Data.Batch.NeedStagingPurge (.Data.Can.Load .Data.Batch)}}
+    {{else if and .Data.Batch.NeedStagingPurge .Data.Batch.Can.Load}}
     <p><strong>{{.Data.Batch.Name}} needs to be purged from staging. This is a manual process.</strong></p>
     <p>Purge the batch <em>from staging</em>:</p>
     {{template "batch-manual-purge" .Data.Batch}}
@@ -24,7 +24,7 @@
     </form>
 
     <!-- Batch needs to be pushed to staging -->
-    {{else if and .Data.Batch.ReadyForStaging (.Data.Can.Load .Data.Batch)}}
+    {{else if and .Data.Batch.ReadyForStaging .Data.Batch.Can.Load}}
     <p><strong>{{.Data.Batch.Name}} is ready to be loaded onto staging. This is a manual process.</strong></p>
     <p>Load the batch <em>onto staging</em>:</p>
     {{template "batch-manual-load" .Data.Batch}}
@@ -35,14 +35,14 @@
     </form>
 
     <!-- Needs QC pass -->
-    {{else if and .Data.Batch.ReadyForQC (.Data.Can.Approve .Data.Batch)}}
+    {{else if and .Data.Batch.ReadyForQC .Data.Batch.Can.Approve}}
     <p>{{.Data.Batch.Name}} needs approval to move to production (or a rejection if it needs to be fixed).</p>
 
     <a href="{{ApproveURL .Data.Batch}}" class="btn btn-primary">Approve...</a>
     <a href="{{RejectURL .Data.Batch}}" class="btn btn-danger">Reject...</a>
 
     <!-- Needs batch reviewer to flag issues -->
-    {{else if and .Data.Batch.ReadyForFlaggingIssues (.Data.Can.FlagIssues .Data.Batch)}}
+    {{else if and .Data.Batch.ReadyForFlaggingIssues .Data.Batch.Can.FlagIssues}}
     <p>
       {{.Data.Batch.Name}} has failed QC. You can mark issues that need to be
       removed and then send the batch back to staging, or eliminate the batch
@@ -52,7 +52,7 @@
     <a href="{{FlagIssuesURL .Data.Batch}}" class="btn btn-primary">Flag Issues / Purge Batch...</a>
 
     <!-- Needs production load -->
-    {{else if and .Data.Batch.ReadyForProduction (.Data.Can.Load .Data.Batch)}}
+    {{else if and .Data.Batch.ReadyForProduction .Data.Batch.Can.Load}}
     <p><strong>{{.Data.Batch.Name}} is ready to be loaded onto production. This is a manual process.</strong></p>
     <p>
       Load the batch <em>on production</em>:
@@ -66,7 +66,7 @@
 
     <!-- On production, copied to archive location, needs to be flagged for the
          issue-cleanup countdown to start -->
-    {{else if and .Data.Batch.ReadyForArchive (.Data.Can.Archive .Data.Batch)}}
+    {{else if and .Data.Batch.ReadyForArchive .Data.Batch.Can.Archive}}
     <p><strong>{{.Data.Batch.Name}} is live and has been copied to the archival location.</strong></p>
     <p>
       When the archive has been finalized, flag it as complete below. This starts
