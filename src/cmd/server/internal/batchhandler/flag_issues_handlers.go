@@ -54,7 +54,7 @@ func prepFlagging(w http.ResponseWriter, req *http.Request) (r *Responder, ok bo
 	if !ok {
 		return r, false
 	}
-	if !r.can.FlagIssues(r.batch) {
+	if !r.batch.Can().FlagIssues() {
 		r.Error(http.StatusForbidden, "You are not permitted to flag issues for removal from this batch")
 		return r, false
 	}
@@ -264,7 +264,7 @@ func finalizeBatch(r *Responder) {
 }
 
 func purgeBatch(r *Responder) {
-	if !r.can.Purge(r.batch) {
+	if !r.batch.Can().Purge() {
 		r.Error(http.StatusForbidden, "You are not permitted to purge this batch")
 		return
 	}

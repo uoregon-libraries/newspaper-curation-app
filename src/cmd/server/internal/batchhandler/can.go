@@ -9,17 +9,18 @@ import (
 // CanValidation holds specific data (user and batch) related to a single HTTP
 // request, allowing simpler validations and action generation.
 type CanValidation struct {
-	user *models.User
+	user  *models.User
+	batch *Batch
 }
 
 // Can sets up the DSL-like validation for the given user and batch
-func Can(u *models.User) *CanValidation {
-	return &CanValidation{u}
+func Can(u *models.User, b *Batch) *CanValidation {
+	return &CanValidation{user: u, batch: b}
 }
 
-// View returns true if the user's privileges allow seeing details for b, based
-// primarily on its status
-func (c *CanValidation) View(b *Batch) bool {
+// View returns true if the user's privileges allow seeing details for our
+// batch, based primarily on its status
+func (c *CanValidation) View() bool {
 	// Allow admins to view any batch. We have some statuses we don't normally
 	// show, but there's no harm in allowing them to be displayed to admins if
 	// they for some odd reason choose to hack up the URL.
@@ -28,7 +29,7 @@ func (c *CanValidation) View(b *Batch) bool {
 	}
 
 	var has = c.user.PermittedTo
-	switch b.Status {
+	switch c.batch.Status {
 	case models.BatchStatusStagingReady:
 		return has(privilege.LoadBatches)
 	case models.BatchStatusQCReady:
@@ -43,60 +44,60 @@ func (c *CanValidation) View(b *Batch) bool {
 		return false
 	}
 
-	logger.Errorf("Can view batch: Unhandled status %q", b.Status)
+	logger.Errorf("Can view batch: Unhandled status %q", c.batch.Status)
 	return false
 }
 
-// Load is true if the user can load batches *and* b is in a loadable state
-func (c *CanValidation) Load(b *Batch) bool {
+// Load is true if the user can load batches *and* batch is in a loadable state
+func (c *CanValidation) Load() bool {
 	if !c.user.PermittedTo(privilege.LoadBatches) {
 		return false
 	}
-	return b.Status == models.BatchStatusStagingReady || b.Status == models.BatchStatusPassedQC
+	return c.batch.Status == models.BatchStatusStagingReady || c.batch.Status == models.BatchStatusPassedQC
 }
 
-// Archive is true if the user can archive batches and b is ready for archiving
-func (c *CanValidation) Archive(b *Batch) bool {
+// Archive is true if the user can archive batches and batch is ready for archiving
+func (c *CanValidation) Archive() bool {
 	if !c.user.PermittedTo(privilege.ArchiveBatches) {
 		return false
 	}
-	return b.ReadyForArchive()
+	return c.batch.ReadyForArchive()
 }
 
-// Approve is true if the user can approve batches and b is in need of approval
-func (c *CanValidation) Approve(b *Batch) bool {
+// Approve is true if the user can approve batches and batch is in need of approval
+func (c *CanValidation) Approve() bool {
 	if !c.user.PermittedTo(privilege.ApproveQCReadyBatches) {
 		return false
 	}
 
-	return b.Status == models.BatchStatusQCReady
+	return c.batch.Status == models.BatchStatusQCReady
 }
 
-// Reject is true if the user can reject in-QC batches and b is ready for QC
-func (c *CanValidation) Reject(b *Batch) bool {
+// Reject is true if the user can reject in-QC batches and batch is ready for QC
+func (c *CanValidation) Reject() bool {
 	if !c.user.PermittedTo(privilege.RejectQCReadyBatches) {
 		return false
 	}
 
-	return b.Status == models.BatchStatusQCReady
+	return c.batch.Status == models.BatchStatusQCReady
 }
 
 // Purge is true if the user is allowed to purge batches, and the batch is
 // ready for issue flagging
-func (c *CanValidation) Purge(b *Batch) bool {
+func (c *CanValidation) Purge() bool {
 	if !c.user.PermittedTo(privilege.PurgeBatches) {
 		return false
 	}
 
-	return b.Status == models.BatchStatusQCFlagIssues
+	return c.batch.Status == models.BatchStatusQCFlagIssues
 }
 
-// FlagIssues is true if the user can reject in-QC batches and b is ready for
-// issue flagging
-func (c *CanValidation) FlagIssues(b *Batch) bool {
+// FlagIssues is true if the user can reject in-QC batches and batch is ready
+// for issue flagging
+func (c *CanValidation) FlagIssues() bool {
 	if !c.user.PermittedTo(privilege.RejectQCReadyBatches) {
 		return false
 	}
 
-	return b.Status == models.BatchStatusQCFlagIssues
+	return c.batch.Status == models.BatchStatusQCFlagIssues
 }

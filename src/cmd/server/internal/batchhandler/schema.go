@@ -15,11 +15,13 @@ type Batch struct {
 	Issues          []*models.Issue
 	Actions         []*models.Action
 	PageCount       int
+	cv              *CanValidation
 }
 
-func wrapBatch(batch *models.Batch) (*Batch, error) {
+func wrapBatch(batch *models.Batch, currentUser *models.User) (*Batch, error) {
 	var err error
 	var b = &Batch{Batch: batch}
+	b.cv = Can(currentUser, b)
 	b.Issues, err = b.Batch.Issues()
 	if err != nil {
 		return nil, fmt.Errorf("fetching batch %d (%q) issues: %w", b.Batch.ID, b.Batch.Name, err)
@@ -51,11 +53,11 @@ func wrapBatch(batch *models.Batch) (*Batch, error) {
 	return b, nil
 }
 
-func wrapBatches(list []*models.Batch) ([]*Batch, error) {
+func wrapBatches(list []*models.Batch, currentUser *models.User) ([]*Batch, error) {
 	var err error
 	var batches = make([]*Batch, len(list))
 	for i, b := range list {
-		batches[i], err = wrapBatch(b)
+		batches[i], err = wrapBatch(b, currentUser)
 		if err != nil {
 			return nil, fmt.Errorf("wrapping batches: %w", err)
 		}
@@ -104,4 +106,11 @@ func (b *Batch) ReadyForFlaggingIssues() bool {
 // is necessary for instructions that involve loading a batch somewhere
 func (b *Batch) LiveLocation() string {
 	return filepath.Join(conf.BatchProductionPath, b.FullName())
+}
+
+// Can returns our CanValidation data for the currently logged in user and this
+// batch so we aren't asking for globals in the HTML template just to check
+// permissions
+func (b *Batch) Can() *CanValidation {
+	return b.cv
 }

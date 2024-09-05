@@ -44,13 +44,12 @@ func listHandler(w http.ResponseWriter, req *http.Request) {
 		return
 	}
 
-	r.Vars.Data["Batches"], err = wrapBatches(list)
+	r.Vars.Data["Batches"], err = wrapBatches(list, r.Vars.User)
 	if err != nil {
 		logger.Criticalf("Unable to wrap batches: %s", err)
 		r.Error(http.StatusInternalServerError, "Error trying to pull batch list - try again or contact support")
 		return
 	}
-	r.Vars.Data["Can"] = Can(r.Vars.User)
 	r.Render(listTmpl)
 }
 
@@ -59,7 +58,7 @@ func viewHandler(w http.ResponseWriter, req *http.Request) {
 	if !ok {
 		return
 	}
-	if !r.can.View(r.batch) {
+	if !r.batch.Can().View() {
 		r.Error(http.StatusForbidden, "You are not permitted to view this batch")
 		return
 	}
@@ -72,7 +71,7 @@ func qcReadyHandler(w http.ResponseWriter, req *http.Request) {
 	if !ok {
 		return
 	}
-	if !r.can.Load(r.batch) {
+	if !r.batch.Can().Load() {
 		r.Error(http.StatusForbidden, "You are not permitted to load batches or flag them for having been loaded")
 		return
 	}
@@ -89,7 +88,7 @@ func qcApproveFormHandler(w http.ResponseWriter, req *http.Request) {
 	if !ok {
 		return
 	}
-	if !r.can.Approve(r.batch) {
+	if !r.batch.Can().Approve() {
 		r.Error(http.StatusForbidden, "You are not permitted to approve this batch for a production load")
 		return
 	}
@@ -103,7 +102,7 @@ func qcApproveHandler(w http.ResponseWriter, req *http.Request) {
 	if !ok {
 		return
 	}
-	if !r.can.Approve(r.batch) {
+	if !r.batch.Can().Approve() {
 		r.Error(http.StatusForbidden, "You are not permitted to approve this batch for a production load")
 		return
 	}
@@ -137,7 +136,7 @@ func clearBatchStagingPurgeFlagHandler(w http.ResponseWriter, req *http.Request)
 	if !ok {
 		return
 	}
-	if !r.can.Load(r.batch) {
+	if !r.batch.Can().Load() {
 		r.Error(http.StatusForbidden, "You are not permitted to reject this batch")
 		return
 	}
@@ -166,7 +165,7 @@ func setLiveHandler(w http.ResponseWriter, req *http.Request) {
 	if !ok {
 		return
 	}
-	if !r.can.Load(r.batch) {
+	if !r.batch.Can().Load() {
 		r.Error(http.StatusForbidden, "You are not permitted to load batches or flag them for having been loaded")
 		return
 	}
@@ -196,7 +195,7 @@ func setArchivedHandler(w http.ResponseWriter, req *http.Request) {
 	if !ok {
 		return
 	}
-	if !r.can.Archive(r.batch) {
+	if !r.batch.Can().Archive() {
 		r.Error(http.StatusForbidden, "You are not permitted to flag batches as having been archived")
 		return
 	}
@@ -228,7 +227,7 @@ func qcRejectFormHandler(w http.ResponseWriter, req *http.Request) {
 	if !ok {
 		return
 	}
-	if !r.can.Reject(r.batch) {
+	if !r.batch.Can().Reject() {
 		r.Error(http.StatusForbidden, "You are not permitted to reject this batch")
 		return
 	}
@@ -242,7 +241,7 @@ func qcRejectHandler(w http.ResponseWriter, req *http.Request) {
 	if !ok {
 		return
 	}
-	if !r.can.Reject(r.batch) {
+	if !r.batch.Can().Reject() {
 		r.Error(http.StatusForbidden, "You are not permitted to reject this batch")
 		return
 	}

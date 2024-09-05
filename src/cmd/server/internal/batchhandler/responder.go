@@ -16,7 +16,6 @@ import (
 type Responder struct {
 	*responder.Responder
 	batch *Batch
-	can   *CanValidation
 }
 
 // getBatchResponder centralizes the most common handler logic where we require
@@ -42,7 +41,7 @@ func getBatchResponder(w http.ResponseWriter, req *http.Request) (r *Responder, 
 		return r, false
 	}
 
-	r.batch, err = wrapBatch(b)
+	r.batch, err = wrapBatch(b, r.Vars.User)
 	if err != nil {
 		logger.Criticalf("Error reading flagged issues for batch %d (%s): %s", r.batch.ID, r.batch.Name, err)
 		r.Error(http.StatusInternalServerError, "Error trying to read batch's issues - try again or contact support")
@@ -52,8 +51,6 @@ func getBatchResponder(w http.ResponseWriter, req *http.Request) (r *Responder, 
 	r.Vars.Data["Actions"] = r.batch.Actions
 	r.Vars.Data["FlaggedIssues"] = r.batch.FlaggedIssues
 	r.Vars.Data["UnflaggedIssues"] = r.batch.UnflaggedIssues
-	r.can = Can(r.Vars.User)
 	r.Vars.Data["Batch"] = r.batch
-	r.Vars.Data["Can"] = r.can
 	return r, true
 }
