@@ -1,7 +1,6 @@
 package batchhandler
 
 import (
-	"github.com/uoregon-libraries/newspaper-curation-app/src/internal/logger"
 	"github.com/uoregon-libraries/newspaper-curation-app/src/models"
 	"github.com/uoregon-libraries/newspaper-curation-app/src/privilege"
 )
@@ -28,24 +27,7 @@ func (c *CanValidation) View() bool {
 		return true
 	}
 
-	var has = c.user.PermittedTo
-	switch c.batch.Status {
-	case models.BatchStatusStagingReady:
-		return has(privilege.LoadBatches)
-	case models.BatchStatusQCReady:
-		return has(privilege.ViewQCReadyBatches)
-	case models.BatchStatusQCFlagIssues:
-		return has(privilege.RejectQCReadyBatches)
-	case models.BatchStatusPassedQC:
-		return has(privilege.LoadBatches)
-	case models.BatchStatusLive:
-		return has(privilege.ArchiveBatches)
-	case models.BatchStatusDeleted, models.BatchStatusPending, models.BatchStatusLiveDone, models.BatchStatusLiveArchived:
-		return false
-	}
-
-	logger.Errorf("Can view batch: Unhandled status %q", c.batch.Status)
-	return false
+	return c.batch.Status != models.BatchStatusDeleted && c.batch.Status != models.BatchStatusPending
 }
 
 // Load is true if the user can load batches *and* batch is in a loadable state
