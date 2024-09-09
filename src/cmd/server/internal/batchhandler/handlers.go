@@ -44,12 +44,42 @@ func listHandler(w http.ResponseWriter, req *http.Request) {
 		return
 	}
 
-	r.Vars.Data["Batches"], err = wrapBatches(list, r.Vars.User)
+	var wrapped []*Batch
+	wrapped, err = wrapBatches(list, r.Vars.User)
 	if err != nil {
 		logger.Criticalf("Unable to wrap batches: %s", err)
 		r.Error(http.StatusInternalServerError, "Error trying to pull batch list - try again or contact support")
 		return
 	}
+
+	// Break batches into groups: not live, live but not done (live /
+	// live_archived), and done (live_done). The latter is its own group because
+	// it's a huge list that, most of the time, we don't need to browse.
+	var inproc, live, archived, complete []*Batch
+	for _, b := range wrapped {
+		// Immediately skip anything the current user can't even view
+		if !b.Can().View() {
+			continue
+		}
+
+		if !b.StatusMeta.Live {
+			inproc = append(inproc, b)
+		} else {
+			switch b.Status {
+			case models.BatchStatusLive:
+				live = append(live, b)
+			case models.BatchStatusLiveArchived:
+				archived = append(archived, b)
+			case models.BatchStatusLiveDone:
+				complete = append(complete, b)
+			}
+		}
+	}
+
+	r.Vars.Data["InProcess"] = inproc
+	r.Vars.Data["Live"] = live
+	r.Vars.Data["Archived"] = archived
+	r.Vars.Data["Complete"] = complete
 	r.Render(listTmpl)
 }
 
