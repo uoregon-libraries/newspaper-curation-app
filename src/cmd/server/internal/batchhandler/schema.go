@@ -12,7 +12,7 @@ type Batch struct {
 	FlaggedIssues   []*models.FlaggedIssue
 	UnflaggedIssues []*models.Issue
 	Issues          []*models.Issue
-	Actions         []*models.Action
+	ActivityLog     []*models.Action
 	PageCount       int
 	cv              *CanValidation
 }
@@ -44,7 +44,7 @@ func wrapBatch(batch *models.Batch, currentUser *models.User) (*Batch, error) {
 		}
 	}
 
-	b.Actions, err = b.Batch.Actions()
+	b.ActivityLog, err = b.Batch.ActivityLog()
 	if err != nil {
 		return nil, fmt.Errorf("fetching batch %d (%q) actions: %w", b.Batch.ID, b.Batch.Name, err)
 	}
