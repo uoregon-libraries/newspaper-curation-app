@@ -52,12 +52,12 @@
   </div>
 </div>
 
-{{if .Data.Actions}}
+{{if .Data.ActivityLog}}
   <div class="row">
     <h2>Activity Logs</h2>
     <div class="action-list">
-      {{range .Data.Actions}}
-        {{template "action_log" (dict "Action" . "User" $.User)}}
+      {{range .Data.ActivityLog}}
+        {{template "activity-log" (dict "Action" . "User" $.User)}}
       {{end}}
     </div>
   </div>
@@ -65,7 +65,7 @@
 
 {{end}}
 
-{{define "action_log"}}
+{{define "activity-log"}}
 <div class="action {{.Action.ActionType}} {{if eq .Action.Author.ID .User.ID}}self{{end}}">
   <div class="wrapper">
     <div class="metadata">
