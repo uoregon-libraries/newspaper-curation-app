@@ -7,48 +7,23 @@
 
   <div class="col-md-6">
     <h2>Actions</h2>
-
-    <!-- Needs QC pass -->
-    {{if and .Data.Batch.ReadyForQC .Data.Batch.Can.Approve}}
-    <p>{{.Data.Batch.Name}} needs approval to move to production (or a rejection if it needs to be fixed).</p>
-
-    <a href="{{ApproveURL .Data.Batch}}" class="btn btn-primary">Approve...</a>
-    <a href="{{RejectURL .Data.Batch}}" class="btn btn-danger">Reject...</a>
-
-    <!-- Needs batch reviewer to flag issues -->
-    {{else if and .Data.Batch.ReadyForFlaggingIssues .Data.Batch.Can.FlagIssues}}
-    <p>
-      {{.Data.Batch.Name}} has failed QC. You can mark issues that need to be
-      removed and then send the batch back to staging, or eliminate the batch
-      entirely.
-    </p>
-
-    <a href="{{FlagIssuesURL .Data.Batch}}" class="btn btn-primary">Flag Issues / Undo Batch...</a>
-
-    <!-- On production, copied to archive location, needs to be flagged for the
-         issue-cleanup countdown to start -->
-    {{else if and .Data.Batch.ReadyForArchive .Data.Batch.Can.Archive}}
-    <p><strong>{{.Data.Batch.Name}} is live and has been copied to the archival location.</strong></p>
-    <p>
-      When the archive has been finalized, flag it as complete below. This starts
-      a <strong>28-day</strong> countdown, after which NCA deletes <em>all local
-      issues' files</em> from disk.
-    </p>
-    <p>
-      If your archival location is the final destination for archives, you can
-      activate this at any time. If you move files to a location where they are
-      batch-archived at a later date, activate this after the batch archive
-      occurs to ensure the countdown doesn't start until the files have actually
-      started moving to the final archive.
-    </p>
-
-    <form action="{{SetArchivedURL .Data.Batch}}" method="POST">
-      <button class="btn btn-primary" type="submit">Mark Batch "Archived"</button>
-    </form>
-
-    {{else}}
-    <p>There are currently no actions you can take on this batch.</p>
+    {{range .Data.Batch.Actions}}
+      <div class="d-flex flex-column mb-3">
+        {{if eq . "qc"}}
+          {{template "action-qc" $.Data.Batch}}
+        {{end}}
+        {{if eq . "flag"}}
+          {{template "action-flag" $.Data.Batch}}
+        {{end}}
+        {{if eq . "archive"}}
+          {{template "action-archive" $.Data.Batch}}
+        {{end}}
+        {{if eq . "none"}}
+          {{template "action-none" $.Data.Batch}}
+        {{end}}
+      </div>
     {{end}}
+    <!-- If the batch is live, and this user can edit batches, we add an action -->
   </div>
 </div>
 
@@ -81,4 +56,45 @@
     </div>
   </div>
 </div>
+{{end}}
+
+{{define "action-qc"}}
+<p>{{.Name}} needs approval to move to production (or a rejection if it needs to be fixed).</p>
+
+<a href="{{ApproveURL .}}" class="btn btn-primary">Approve...</a>
+<a href="{{RejectURL .}}" class="btn btn-danger">Reject...</a>
+{{end}}
+
+{{define "action-flag"}}
+<p>
+  {{.Name}} has failed QC. You can mark issues that need to be
+  removed and then send the batch back to staging, or eliminate the batch
+  entirely.
+</p>
+
+<a href="{{FlagIssuesURL .}}" class="btn btn-primary">Flag Issues / Undo Batch...</a>
+{{end}}
+
+{{define "action-archive"}}
+<p><strong>{{.Name}} is live and has been copied to the archival location.</strong></p>
+<p>
+  When the archive has been finalized, flag it as complete below. This starts
+  a <strong>28-day</strong> countdown, after which NCA deletes <em>all local
+  issues' files</em> from disk.
+</p>
+<p>
+  If your archival location is the final destination for archives, you can
+  activate this at any time. If you move files to a location where they are
+  batch-archived at a later date, activate this after the batch archive
+  occurs to ensure the countdown doesn't start until the files have actually
+  started moving to the final archive.
+</p>
+
+<form action="{{SetArchivedURL .}}" method="POST">
+  <button class="btn btn-primary" type="submit">Mark Batch "Archived"</button>
+</form>
+{{end}}
+
+{{define "action-none"}}
+<p>There are currently no actions you can take on this batch.</p>
 {{end}}
