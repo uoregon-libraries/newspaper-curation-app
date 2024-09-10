@@ -34,6 +34,15 @@ Brief description, if necessary
 ### Migration
 -->
 
+## v5.0.1
+
+Batching is now *allowed*! WOW!
+
+### Fixed
+
+- Users can now be properly assigned the "Batch Builder" role. Previously, only
+  admins could generate batches.
+
 ## v5.0.0
 
 Batching and Boostrap 5.

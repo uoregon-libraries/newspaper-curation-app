@@ -62,6 +62,7 @@ var AssignableRoles = []*Role{
 	RoleUserManager,
 	RoleMOCManager,
 	RoleWorkflowManager,
+	RoleBatchBuilder,
 	RoleBatchReviewer,
 	RoleBatchLoader,
 }
