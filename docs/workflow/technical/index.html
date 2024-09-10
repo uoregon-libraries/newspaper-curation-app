@@ -23,7 +23,7 @@
 <meta itemprop="name" content="Technical Details">
 <meta itemprop="description" content="Deeper explanation of NCA&#39;s various workflows">
 
-<meta itemprop="wordCount" content="1772">
+<meta itemprop="wordCount" content="1826">
 <meta itemprop="keywords" content="" /></head>
 <body>
   <div class="container"><div class="skip"><a href="#maincontent">Skip to main content</a></div>
@@ -368,11 +368,15 @@ An issue XML will be generated (using the METS template defined by the setting
 <code>METS_XML_TEMPLATE_PATH</code>) and born-digital issues&rsquo; original PDF(s) is/are moved
 into the issue location for safe-keeping. Assuming these are done without
 error, the issue is marked &ldquo;ready for batching&rdquo;.</p>
-<p>The batch queue command-line script (compiled to <code>bin/queue-batches</code>) grabs all
-issues which are ready to be batched, organizes them by MARC Org Code (a.k.a.,
-awardee) for batching (<em>each awardee must have its issues in a separate
-batch</em>), and generates batches if there are enough pages (see the
-<code>MINIMUM_ISSUE_PAGES</code> setting).</p>
+<p>A &ldquo;batch builder&rdquo; can then select organizations (e.g., the MARC org codes) they
+want batches built for by visiting the &ldquo;Create Batches&rdquo; page in NCA. General
+high-level aggregate data should give the batch builder enough information to
+choose what to batch, after which they decide  how big the batches should be.</p>
+<p>Alternatively, the batch queue command-line script (compiled to
+<code>bin/queue-batches</code>) grabs all issues which are ready to be batched, organizes
+them by organization (a.k.a., MARC Org Code / awardee) for batching (<em>each
+awardee must have its issues in a separate batch</em>), and generates batches if
+there are enough pages (see the <code>MINIMUM_ISSUE_PAGES</code> setting).</p>
 <p><strong>Note</strong>: the <code>MINIMUM_ISSUE_PAGES</code> setting will be ignored if any issues
 waiting to be batched have been ready for batching for more than 30 days. This
 is necessary to handle cases where an issue had to have special treatment after

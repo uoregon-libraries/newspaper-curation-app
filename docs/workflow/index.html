@@ -366,9 +366,17 @@ generated, the workflow is the same regardless of the source:</p>
 <li>An issue reviewer validates the metadata and rejects it or approves it</li>
 <li>Once metadata is entered and approved, the issue has its final derivative
 generated (METS XML) and awaits batching</li>
-<li>When enough issues are ready, the <code>queue-batches</code> CLI will generate batches
-in the configured <code>BATCH_OUTPUT_PATH</code>, and sync to the required files (e.g.,
-not TIFFs) to production as configured via <code>BATCH_PRODUCTION_PATH</code>.</li>
+<li>When enough issues are ready, there are two ways to generate batches:
+<ul>
+<li>A dev can use the <code>queue-batches</code> command, generating batches for all
+issues which are ready.</li>
+<li>Somebody with the &ldquo;batch builder&rdquo; role can visit NCA&rsquo;s &ldquo;Create Batches&rdquo;
+page and choose which MOCs should have issues batched.</li>
+</ul>
+</li>
+<li>Batches will be put into the configured <code>BATCH_OUTPUT_PATH</code>, and required
+files (e.g., not TIFFs) will be synced to production (as configured via
+<code>BATCH_PRODUCTION_PATH</code>).</li>
 <li>A batch loader must manually load the batches into a staging server and then
 flag them as ready for QC</li>
 <li>A batch reviewer does quality control on the staging server, verifying the
