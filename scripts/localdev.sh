@@ -23,7 +23,7 @@ wait_for_database() {
 resetdb() {
   docker compose down -v
   docker compose up -d db iiif sftpgo
-  wait_for_database && migrate && load_seed_data
+  wait_for_database && migrate && load_seed_data && create_test_users
 }
 
 _get_bulk_lccns() {
@@ -75,6 +75,13 @@ migrate() {
 
 load_seed_data() {
   mysql -unca -pnca -Dnca -h127.0.0.1 < ./docker/mysql/nca-seed-data.sql
+}
+
+create_test_users() {
+  pushd .
+  cd ./test
+  go run create-test-users.go -c ../settings
+  popd
 }
 
 upload_server() {
