@@ -7,83 +7,31 @@
 
   <div class="col-md-6">
     <h2>Actions</h2>
-
-    <!-- Batch needs to be purged from staging: this overrides all other considerations -->
-    {{if and .Data.Batch.NeedStagingPurge .Data.Batch.Can.Load}}
-    <p><strong>{{.Data.Batch.Name}} needs to be purged from staging. This is a manual process.</strong></p>
-    <p>Purge the batch <em>from staging</em>:</p>
-    {{template "batch-manual-purge" .Data.Batch}}
-
-    <p>Then remove the "needs purging" flag:</p>
-    <form action="{{ClearPurgeFlagURL .Data.Batch}}" method="POST">
-      <button class="btn btn-primary" type="submit">Batch Purge Complete</button>
-    </form>
-
-    <!-- Batch needs to be pushed to staging -->
-    {{else if and .Data.Batch.ReadyForStaging .Data.Batch.Can.Load}}
-    <p><strong>{{.Data.Batch.Name}} is ready to be loaded onto staging. This is a manual process.</strong></p>
-    <p>Load the batch <em>onto staging</em>:</p>
-    {{template "batch-manual-load" .Data.Batch}}
-
-    <p>Then mark it ready for QC:</p>
-    <form action="{{SetQCReadyURL .Data.Batch}}" method="POST">
-      <button class="btn btn-primary" type="submit">Set QC Ready</button>
-    </form>
-
-    <!-- Needs QC pass -->
-    {{else if and .Data.Batch.ReadyForQC .Data.Batch.Can.Approve}}
-    <p>{{.Data.Batch.Name}} needs approval to move to production (or a rejection if it needs to be fixed).</p>
-
-    <a href="{{ApproveURL .Data.Batch}}" class="btn btn-primary">Approve...</a>
-    <a href="{{RejectURL .Data.Batch}}" class="btn btn-danger">Reject...</a>
-
-    <!-- Needs batch reviewer to flag issues -->
-    {{else if and .Data.Batch.ReadyForFlaggingIssues .Data.Batch.Can.FlagIssues}}
-    <p>
-      {{.Data.Batch.Name}} has failed QC. You can mark issues that need to be
-      removed and then send the batch back to staging, or eliminate the batch
-      entirely.
-    </p>
-
-    <a href="{{FlagIssuesURL .Data.Batch}}" class="btn btn-primary">Flag Issues / Purge Batch...</a>
-
-    <!-- Needs production load -->
-    {{else if and .Data.Batch.ReadyForProduction .Data.Batch.Can.Load}}
-    <p><strong>{{.Data.Batch.Name}} is ready to be loaded onto production. This is a manual process.</strong></p>
-    <p>
-      Load the batch <em>on production</em>:
-    </p>
-    {{template "batch-manual-load" .Data.Batch}}
-
-    <p>Then mark it as "live":</p>
-    <form action="{{SetLiveURL .Data.Batch}}" method="POST">
-      <button class="btn btn-primary" type="submit">Mark Batch "Live"</button>
-    </form>
-
-    <!-- On production, copied to archive location, needs to be flagged for the
-         issue-cleanup countdown to start -->
-    {{else if and .Data.Batch.ReadyForArchive .Data.Batch.Can.Archive}}
-    <p><strong>{{.Data.Batch.Name}} is live and has been copied to the archival location.</strong></p>
-    <p>
-      When the archive has been finalized, flag it as complete below. This starts
-      a <strong>28-day</strong> countdown, after which NCA deletes <em>all local
-      issues' files</em> from disk.
-    </p>
-    <p>
-      If your archival location is the final destination for archives, you can
-      activate this at any time. If you move files to a location where they are
-      batch-archived at a later date, activate this after the batch archive
-      occurs to ensure the countdown doesn't start until the files have actually
-      started moving to the final archive.
-    </p>
-
-    <form action="{{SetArchivedURL .Data.Batch}}" method="POST">
-      <button class="btn btn-primary" type="submit">Mark Batch "Archived"</button>
-    </form>
-
-    {{else}}
-    <p>There are currently no actions you can take on this batch.</p>
+    {{with .Data.Batch}}
+    {{if eq .Action "purge-staging"}}
+      {{template "action-purge-staging" .}}
     {{end}}
+    {{if eq .Action "load-staging"}}
+      {{template "action-load-staging" .}}
+    {{end}}
+    {{if eq .Action "load-production"}}
+      {{template "action-load-production" .}}
+    {{end}}
+    {{if eq .Action "qc"}}
+      {{template "action-qc" .}}
+    {{end}}
+    {{if eq .Action "flag"}}
+      {{template "action-flag" .}}
+    {{end}}
+    {{if eq .Action "archive"}}
+      {{template "action-archive" .}}
+    {{end}}
+    {{if eq .Action "none"}}
+      {{template "action-none" .}}
+    {{end}}
+    {{end}}
+
+    <!-- If the batch is live, and this user can edit batches, we add an action -->
   </div>
 </div>
 
@@ -116,4 +64,80 @@
     </div>
   </div>
 </div>
+{{end}}
+
+{{define "action-purge-staging"}}
+<p><strong>{{.Name}} needs to be purged from staging. This is a manual process.</strong></p>
+<p>Purge the batch <em>from staging</em>:</p>
+{{template "batch-manual-purge" .}}
+
+<p>Then remove the "needs purging" flag:</p>
+<form action="{{ClearPurgeFlagURL .}}" method="POST">
+  <button class="btn btn-primary" type="submit">Batch Purge Complete</button>
+</form>
+{{end}}
+
+{{define "action-load-staging"}}
+<p><strong>{{.Name}} is ready to be loaded onto staging. This is a manual process.</strong></p>
+<p>Load the batch <em>onto staging</em>:</p>
+{{template "batch-manual-load" .}}
+
+<p>Then mark it ready for QC:</p>
+<form action="{{SetQCReadyURL .}}" method="POST">
+  <button class="btn btn-primary" type="submit">Set QC Ready</button>
+</form>
+{{end}}
+
+{{define "action-qc"}}
+<p>{{.Name}} needs approval to move to production (or a rejection if it needs to be fixed).</p>
+
+<a href="{{ApproveURL .}}" class="btn btn-primary">Approve...</a>
+<a href="{{RejectURL .}}" class="btn btn-danger">Reject...</a>
+{{end}}
+
+{{define "action-flag"}}
+<p>
+  {{.Name}} has failed QC. You can mark issues that need to be
+  removed and then send the batch back to staging, or eliminate the batch
+  entirely.
+</p>
+
+<a href="{{FlagIssuesURL .}}" class="btn btn-primary">Flag Issues / Purge Batch...</a>
+{{end}}
+
+{{define "action-load-production"}}
+<p><strong>{{.Name}} is ready to be loaded onto production. This is a manual process.</strong></p>
+<p>
+  Load the batch <em>on production</em>:
+</p>
+{{template "batch-manual-load" .}}
+
+<p>Then mark it as "live":</p>
+<form action="{{SetLiveURL .}}" method="POST">
+  <button class="btn btn-primary" type="submit">Mark Batch "Live"</button>
+</form>
+{{end}}
+
+{{define "action-archive"}}
+<p><strong>{{.Name}} is live and has been copied to the archival location.</strong></p>
+<p>
+  When the archive has been finalized, flag it as complete below. This starts
+  a <strong>28-day</strong> countdown, after which NCA deletes <em>all local
+  issues' files</em> from disk.
+</p>
+<p>
+  If your archival location is the final destination for archives, you can
+  activate this at any time. If you move files to a location where they are
+  batch-archived at a later date, activate this after the batch archive
+  occurs to ensure the countdown doesn't start until the files have actually
+  started moving to the final archive.
+</p>
+
+<form action="{{SetArchivedURL .}}" method="POST">
+  <button class="btn btn-primary" type="submit">Mark Batch "Archived"</button>
+</form>
+{{end}}
+
+{{define "action-none"}}
+<p>There are currently no actions you can take on this batch.</p>
 {{end}}

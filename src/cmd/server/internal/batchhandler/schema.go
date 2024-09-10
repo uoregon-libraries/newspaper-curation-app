@@ -108,3 +108,41 @@ func (b *Batch) LiveLocation() string {
 func (b *Batch) Can() *CanValidation {
 	return b.cv
 }
+
+// Action determines what the current user can do with the given batch, if
+// anything, returning a "subtemplate" name that the batch view checks to
+// determine what to do. The return values here must be kept in sync with the
+// list in the template.
+func (b *Batch) Action() string {
+	// NOTE: order of various tests matters some here: staging purges override
+	// *all* other considerations, for instance.
+
+	if b.NeedStagingPurge {
+		if b.Can().Load() {
+			return "purge-staging"
+		}
+		return "none"
+	}
+
+	if b.ReadyForStaging() && b.Can().Load() {
+		return "load-staging"
+	}
+
+	if b.ReadyForProduction() && b.Can().Load() {
+		return "load-production"
+	}
+
+	if b.ReadyForQC() && b.Can().Approve() {
+		return "qc"
+	}
+
+	if b.ReadyForFlaggingIssues() && b.Can().FlagIssues() {
+		return "flag"
+	}
+
+	if b.ReadyForArchive() && b.Can().Archive() {
+		return "archive"
+	}
+
+	return "none"
+}
