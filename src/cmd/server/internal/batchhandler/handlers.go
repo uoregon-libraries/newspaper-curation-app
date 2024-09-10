@@ -52,9 +52,9 @@ func listHandler(w http.ResponseWriter, req *http.Request) {
 		return
 	}
 
-	// Break batches into groups: not live, live but not done (live /
-	// live_archived), and done (live_done). The latter is its own group because
-	// it's a huge list that, most of the time, we don't need to browse.
+	// Break batches into groups: not live, live, archived but not complete, and
+	// completed. The latter is its own group because it's a huge list that, most
+	// of the time, we don't need to browse.
 	var inproc, live, archived, complete []*Batch
 	for _, b := range wrapped {
 		// Immediately skip anything the current user can't even view
