@@ -29,7 +29,6 @@ type BatchStatus struct {
 	Status      string
 	Live        bool
 	Staging     bool
-	Dead        bool
 	NeedsAction bool
 	Description string
 }
@@ -41,7 +40,6 @@ var statusMap = map[string]BatchStatus{
 		Status:      BatchStatusPending,
 		Live:        false,
 		Staging:     false,
-		Dead:        false,
 		NeedsAction: false,
 		Description: "Pending: build job is scheduled but hasn't yet run",
 	},
@@ -49,7 +47,6 @@ var statusMap = map[string]BatchStatus{
 		Status:      BatchStatusStagingReady,
 		Live:        false,
 		Staging:     false,
-		Dead:        false,
 		NeedsAction: true,
 		Description: "Ready for ingest onto staging server",
 	},
@@ -57,7 +54,6 @@ var statusMap = map[string]BatchStatus{
 		Status:      BatchStatusQCReady,
 		Live:        false,
 		Staging:     true,
-		Dead:        false,
 		NeedsAction: true,
 		Description: "On staging, awaiting quality control check",
 	},
@@ -65,7 +61,6 @@ var statusMap = map[string]BatchStatus{
 		Status:      BatchStatusQCFlagIssues,
 		Live:        false,
 		Staging:     true,
-		Dead:        false,
 		NeedsAction: true,
 		Description: "Failed quality control, awaiting QC issue flagging",
 	},
@@ -73,7 +68,6 @@ var statusMap = map[string]BatchStatus{
 		Status:      BatchStatusDeleted,
 		Live:        false,
 		Staging:     false,
-		Dead:        true,
 		NeedsAction: false,
 		Description: "Removed from the system.  Likely rebuilt under a new name.",
 	},
@@ -81,7 +75,6 @@ var statusMap = map[string]BatchStatus{
 		Status:      BatchStatusPassedQC,
 		Live:        false,
 		Staging:     true,
-		Dead:        false,
 		NeedsAction: true,
 		Description: "Passed quality control, awaiting batch maintainer to load on production",
 	},
@@ -89,7 +82,6 @@ var statusMap = map[string]BatchStatus{
 		Status:      BatchStatusLive,
 		Live:        true,
 		Staging:     false,
-		Dead:        false,
 		NeedsAction: true,
 		Description: "Live in production, awaiting archiving",
 	},
@@ -97,7 +89,6 @@ var statusMap = map[string]BatchStatus{
 		Status:      BatchStatusLiveArchived,
 		Live:        true,
 		Staging:     false,
-		Dead:        false,
 		NeedsAction: false,
 		Description: "Live in production and archived: awaiting local file cleanup",
 	},
@@ -105,7 +96,6 @@ var statusMap = map[string]BatchStatus{
 		Status:      BatchStatusLiveDone,
 		Live:        true,
 		Staging:     false,
-		Dead:        false,
 		NeedsAction: false,
 		Description: "Live in production and archived: no longer available in NCA workflow",
 	},
@@ -166,12 +156,14 @@ func FindBatch(id int64) (*Batch, error) {
 	return list[0], err
 }
 
-// InProcessBatches returns the full list of in-process batches (not live, not pending)
-func InProcessBatches() ([]*Batch, error) {
+// ActionableBatches returns the full list of batches that can have some kind
+// of action on them, including "live_done" batches that can only be pulled
+// from prod.
+func ActionableBatches() ([]*Batch, error) {
 	var statusList []any
 	var placeholders []string
 	for status, data := range statusMap {
-		if data.NeedsAction {
+		if data.Live || data.Staging || data.NeedsAction {
 			statusList = append(statusList, status)
 			placeholders = append(placeholders, "?")
 		}

@@ -97,7 +97,7 @@
         </div>
       </cta-modal>
 
-      {{if .Data.Can.Purge .Data.Batch}}
+      {{if .Data.Batch.Can.Purge}}
       <cta-modal>
         <div slot="button" class="inline">
           {{if ne 0 .Data.RemainingIssues}}

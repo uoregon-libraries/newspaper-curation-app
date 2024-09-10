@@ -37,20 +37,49 @@ func setStatus(r *Responder, status string, action models.ActionType, t *tmpl.Te
 func listHandler(w http.ResponseWriter, req *http.Request) {
 	var r = responder.Response(w, req)
 	r.Vars.Title = "Batches"
-	var list, err = models.InProcessBatches()
+	var list, err = models.ActionableBatches()
 	if err != nil {
 		logger.Criticalf("Unable to load batches: %s", err)
 		r.Error(http.StatusInternalServerError, "Error trying to pull batch list - try again or contact support")
 		return
 	}
 
-	r.Vars.Data["Batches"], err = wrapBatches(list)
+	var wrapped []*Batch
+	wrapped, err = wrapBatches(list, r.Vars.User)
 	if err != nil {
 		logger.Criticalf("Unable to wrap batches: %s", err)
 		r.Error(http.StatusInternalServerError, "Error trying to pull batch list - try again or contact support")
 		return
 	}
-	r.Vars.Data["Can"] = Can(r.Vars.User)
+
+	// Break batches into groups: not live, live, archived but not complete, and
+	// completed. The latter is its own group because it's a huge list that, most
+	// of the time, we don't need to browse.
+	var inproc, live, archived, complete []*Batch
+	for _, b := range wrapped {
+		// Immediately skip anything the current user can't even view
+		if !b.Can().View() {
+			continue
+		}
+
+		if !b.StatusMeta.Live {
+			inproc = append(inproc, b)
+		} else {
+			switch b.Status {
+			case models.BatchStatusLive:
+				live = append(live, b)
+			case models.BatchStatusLiveArchived:
+				archived = append(archived, b)
+			case models.BatchStatusLiveDone:
+				complete = append(complete, b)
+			}
+		}
+	}
+
+	r.Vars.Data["InProcess"] = inproc
+	r.Vars.Data["Live"] = live
+	r.Vars.Data["Archived"] = archived
+	r.Vars.Data["Complete"] = complete
 	r.Render(listTmpl)
 }
 
@@ -59,7 +88,7 @@ func viewHandler(w http.ResponseWriter, req *http.Request) {
 	if !ok {
 		return
 	}
-	if !r.can.View(r.batch) {
+	if !r.batch.Can().View() {
 		r.Error(http.StatusForbidden, "You are not permitted to view this batch")
 		return
 	}
@@ -72,7 +101,7 @@ func qcReadyHandler(w http.ResponseWriter, req *http.Request) {
 	if !ok {
 		return
 	}
-	if !r.can.Load(r.batch) {
+	if !r.batch.Can().Load() {
 		r.Error(http.StatusForbidden, "You are not permitted to load batches or flag them for having been loaded")
 		return
 	}
@@ -89,7 +118,7 @@ func qcApproveFormHandler(w http.ResponseWriter, req *http.Request) {
 	if !ok {
 		return
 	}
-	if !r.can.Approve(r.batch) {
+	if !r.batch.Can().Approve() {
 		r.Error(http.StatusForbidden, "You are not permitted to approve this batch for a production load")
 		return
 	}
@@ -103,7 +132,7 @@ func qcApproveHandler(w http.ResponseWriter, req *http.Request) {
 	if !ok {
 		return
 	}
-	if !r.can.Approve(r.batch) {
+	if !r.batch.Can().Approve() {
 		r.Error(http.StatusForbidden, "You are not permitted to approve this batch for a production load")
 		return
 	}
@@ -137,7 +166,7 @@ func clearBatchStagingPurgeFlagHandler(w http.ResponseWriter, req *http.Request)
 	if !ok {
 		return
 	}
-	if !r.can.Load(r.batch) {
+	if !r.batch.Can().Load() {
 		r.Error(http.StatusForbidden, "You are not permitted to reject this batch")
 		return
 	}
@@ -166,7 +195,7 @@ func setLiveHandler(w http.ResponseWriter, req *http.Request) {
 	if !ok {
 		return
 	}
-	if !r.can.Load(r.batch) {
+	if !r.batch.Can().Load() {
 		r.Error(http.StatusForbidden, "You are not permitted to load batches or flag them for having been loaded")
 		return
 	}
@@ -196,7 +225,7 @@ func setArchivedHandler(w http.ResponseWriter, req *http.Request) {
 	if !ok {
 		return
 	}
-	if !r.can.Archive(r.batch) {
+	if !r.batch.Can().Archive() {
 		r.Error(http.StatusForbidden, "You are not permitted to flag batches as having been archived")
 		return
 	}
@@ -228,7 +257,7 @@ func qcRejectFormHandler(w http.ResponseWriter, req *http.Request) {
 	if !ok {
 		return
 	}
-	if !r.can.Reject(r.batch) {
+	if !r.batch.Can().Reject() {
 		r.Error(http.StatusForbidden, "You are not permitted to reject this batch")
 		return
 	}
@@ -242,7 +271,7 @@ func qcRejectHandler(w http.ResponseWriter, req *http.Request) {
 	if !ok {
 		return
 	}
-	if !r.can.Reject(r.batch) {
+	if !r.batch.Can().Reject() {
 		r.Error(http.StatusForbidden, "You are not permitted to reject this batch")
 		return
 	}

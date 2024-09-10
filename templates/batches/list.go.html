@@ -2,11 +2,95 @@
 
 <h2>Batches needing attention</h2>
 
-{{if .Data.Batches}}
-{{template "batch-table" .}}
-{{else}}
-There are no batches currently in need of any action!
-{{end}}
+<p>
+  In-process batches are listed in a single group for simplicity: most of the
+  time, these are the batches people will work with. Other tabs, when
+  available, include batches of only the relevant status, and are primarily
+  here for batch archiving work or post-live batch corrections, not general
+  workflows.
+<p>
+  Note: while most batch-related roles allow viewing all batches, many are
+  read-only. If a batch is awaiting an ingest onto staging, and your role is
+  quality control, for instance, you can view it, but there won't be anything
+  listed in its "Actions" pane.
+</p>
+
+<div class="tabs">
+  <div role="tablist" aria-label="Batch Workflow">
+    <!-- We always show this tab, even when nothing is here, so the app doesn't look broken -->
+    <button role="tab" aria-selected="false" aria-controls="in-process-panel" id="in-process-tab">
+      <h3>
+        In Process
+      </h3>
+    </button>
+
+    {{if .Data.Live}}
+    <button role="tab" aria-selected="false" aria-controls="live-panel" id="live-tab">
+      <h3>
+        Live
+      </h3>
+    </button>
+    {{end}}
+
+    {{if .Data.Archived}}
+    <button role="tab" aria-selected="false" aria-controls="archived-panel" id="archived-tab">
+      <h3>
+        Archived
+      </h3>
+    </button>
+    {{end}}
+
+    {{if .Data.Complete}}
+    <button role="tab" aria-selected="false" aria-controls="complete-panel" id="complete-tab">
+      <h3>
+        Complete
+      </h3>
+    </button>
+    {{end}}
+  </div>
+
+  <!-- We always show this panel, even when nothing is here, so the app doesn't look broken -->
+  <div tabindex="0" role="tabpanel" id="in-process-panel" aria-labelledby="in-process-tab" hidden="">
+    <p>
+      In-process batches include any batch within NCA that currently need attention
+      of some kind: QC, loading the batch into ONI, etc.
+    </p>
+    {{if .Data.InProcess}}
+    {{template "batch-table" dict "Batches" .Data.InProcess "ShowStatus" true}}
+    {{else}}
+    <p><em>There are currently no batches requiring your attention.</em></p>
+    {{end}}
+  </div>
+
+  {{if .Data.Live}}
+  <div tabindex="0" role="tabpanel" id="live-panel" aria-labelledby="live-tab" hidden="">
+    <p>
+      These batches are on production, but not archived. Their files are still in NCA.
+    </p>
+    {{template "batch-table" dict "Batches" .Data.Live "ShowStatus" false}}
+  </div>
+  {{end}}
+
+  {{if .Data.Archived}}
+  <div tabindex="0" role="tabpanel" id="archived-panel" aria-labelledby="archived-tab" hidden="">
+    <p>
+      Archived batches are on production and have been archived, but files
+      haven't yet been cleaned up from NCA.
+    </p>
+    {{template "batch-table" dict "Batches" .Data.Archived "ShowStatus" false}}
+  </div>
+  {{end}}
+
+  {{if .Data.Complete}}
+  <div tabindex="0" role="tabpanel" id="complete-panel" aria-labelledby="complete-tab" hidden="">
+    <p>
+      These batches are on production and their files are fully archived and backed
+      up, no longer visible to NCA directly.
+    </p>
+    {{template "batch-table" dict "Batches" .Data.Complete "ShowStatus" false}}
+  </div>
+  {{end}}
+</div>
 
 {{end}}
 
@@ -15,7 +99,9 @@ There are no batches currently in need of any action!
   <thead>
     <tr>
       <th scope="col" data-sorttype="alpha">Name</th>
+      {{if $.ShowStatus}}
       <th scope="col" data-sorttype="alpha">Status</th>
+      {{end}}
       <th scope="col" data-sorttype="alpha">MOC</th>
       <th scope="col" data-sorttype="number">Pages</th>
       <th scope="col" data-sorttype="date">Created</th>
@@ -23,19 +109,19 @@ There are no batches currently in need of any action!
   </thead>
 
   <tbody>
-  {{range .Data.Batches}}
-  {{if $.Data.Can.View .}}
+  {{range .Batches}}
   <tr>
     <th scope="row"><a href="{{ViewURL .}}">{{.Name}}</a></th>
+    {{if $.ShowStatus}}
     <td>
       <code>{{.Status}}</code>:
       {{.StatusMeta.Description}}
     </td>
+    {{end}}
     <td>{{.MARCOrgCode}}</td>
     <td>{{pluralize "page" "pages" .PageCount}} ({{pluralize "issue" "issues" (len .Issues)}})</td>
     <td>{{.CreatedAt.Format "2006-01-02"}}</td>
   </tr>
-  {{end}}
   {{end}}
   </tbody>
 </table>
