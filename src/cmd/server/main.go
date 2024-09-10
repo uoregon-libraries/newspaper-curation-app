@@ -59,7 +59,7 @@ func getConf() {
 	if conf.SFTPGoEnabled {
 		err = dbi.SFTPConnect(conf.SFTPGoAPIURL, conf.SFTPGoAdminAPIKey)
 		if err != nil {
-			logger.Fatalf("Error trying to connect to SFTPGo: %s", err)
+			logger.Warnf("Error trying to connect to SFTPGo, some functionality will FAIL: %s", err)
 		}
 	}
 

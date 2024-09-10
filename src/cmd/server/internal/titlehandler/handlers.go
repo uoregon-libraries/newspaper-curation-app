@@ -82,7 +82,7 @@ func getTitle(r *responder.Responder) (t *Title, handled bool) {
 	// If we've got a connection to SFTPGo, we have to read from there, too, not
 	// just the database
 	if conf.SFTPGoEnabled && dbt.SFTPConnected {
-		var u, err = dbi.SFTP.GetUser(dbt.SFTPUser)
+		var u, err = dbi.SFTP().GetUser(dbt.SFTPUser)
 		if err != nil {
 			logger.Errorf("Unable to look up title %q in SFTPGo: %s", dbt.SFTPUser, err)
 			r.Error(http.StatusInternalServerError, "Unable to find title - try again or contact support")
@@ -329,7 +329,7 @@ func integrateSFTP(t *Title, connected bool) (msg string, err error) {
 
 	// If the title already has an SFTP connection, we perform an update
 	if connected {
-		err = dbi.SFTP.UpdateUser(t.SFTPUser, t.SFTPPass, int64(t.SFTPQuota))
+		err = dbi.SFTP().UpdateUser(t.SFTPUser, t.SFTPPass, int64(t.SFTPQuota))
 		if err != nil {
 			return fmt.Sprintf("Error updating SFTP password for user %q: try again or contact support", t.SFTPUser), err
 		}
@@ -337,7 +337,7 @@ func integrateSFTP(t *Title, connected bool) (msg string, err error) {
 	}
 
 	var pass string
-	pass, err = dbi.SFTP.CreateUser(t.SFTPUser, t.SFTPPass, int64(t.SFTPQuota), t.Name+" / "+t.LCCN)
+	pass, err = dbi.SFTP().CreateUser(t.SFTPUser, t.SFTPPass, int64(t.SFTPQuota), t.Name+" / "+t.LCCN)
 	if err != nil {
 		return fmt.Sprintf("Error provisioning the SFTP user %q: try again or contact support", t.SFTPUser), err
 	}

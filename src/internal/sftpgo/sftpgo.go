@@ -40,6 +40,7 @@ type API struct {
 	now     func() time.Time
 	do      func(c *http.Client, req *http.Request) ([]byte, error)
 	rndPass func() string
+	LastErr error
 }
 
 // New returns a new API instance for sending requests to SFTPGo
@@ -63,6 +64,10 @@ func New(apiURL *url.URL, apikey string) (*API, error) {
 // description.  If pass is empty, a random password is generated.  The
 // password and any errors are returned.
 func (a *API) CreateUser(user, pass string, quota int64, desc string) (password string, err error) {
+	if a.LastErr != nil {
+		return "", fmt.Errorf("creating user: uninitialized sftpgo.API instance: %w", a.LastErr)
+	}
+
 	password = pass
 	if password == "" {
 		password = a.rndPass()
@@ -90,6 +95,10 @@ func (a *API) CreateUser(user, pass string, quota int64, desc string) (password 
 // Note that SFTPGo does not return raw password data.  Passwords can be reset
 // but never viewed.
 func (a *API) GetUser(user string) (u *User, err error) {
+	if a.LastErr != nil {
+		return nil, fmt.Errorf("retrieving user: uninitialized sftpgo.API instance: %w", a.LastErr)
+	}
+
 	u = &User{}
 	var data []byte
 	data, err = a.rpc("GET", path.Join("users", user), "")
@@ -108,6 +117,10 @@ func (a *API) GetUser(user string) (u *User, err error) {
 // UpdateUser tells SFTPGo to change the password and/or quota for a
 // publisher's SFTP user
 func (a *API) UpdateUser(user, pass string, quota int64) error {
+	if a.LastErr != nil {
+		return fmt.Errorf("updating user: uninitialized sftpgo.API instance: %w", a.LastErr)
+	}
+
 	// Get the raw user JSON and modify it - SFTPGo will reset *all fields* we
 	// omit in a PUT request. The simple "User" type works great for creation
 	// (since we want the default values) and retrieval (we only display a few
@@ -165,6 +178,10 @@ func (a *API) _do(c *http.Client, req *http.Request) ([]byte, error) {
 
 // GetStatus requests SFTPgo server status to verify API key use is successful
 func (a *API) GetStatus() error {
+	if a.LastErr != nil {
+		return fmt.Errorf("getting status: uninitialized sftpgo.API instance: %w", a.LastErr)
+	}
+
 	var _, err = a.rpc("GET", "status", "")
 	if err != nil {
 		return fmt.Errorf("Unable to retrieve server status: %w", err)
