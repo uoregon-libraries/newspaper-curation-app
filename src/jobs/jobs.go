@@ -81,6 +81,8 @@ func DBJobToProcessor(dbJob *models.Job) Processor {
 		return &CancelJob{JobJob: NewJobJob(dbJob)}
 	case models.JobTypeMakeManifest:
 		return &MakeManifest{Job: NewJob(dbJob)}
+	case models.JobTypeONILoadBatch:
+		return &ONILoadBatch{BatchJob: NewBatchJob(dbJob)}
 	default:
 		logger.Errorf("Unknown job type %q for job id %d", dbJob.Type, dbJob.ID)
 	}

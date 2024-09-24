@@ -53,6 +53,7 @@ const (
 	JobTypeSetBatchStatus              JobType = "set_batch_status"
 	JobTypeValidateTagManifest         JobType = "validate_tagmanifest"
 	JobTypeWriteBagitManifest          JobType = "write_bagit_manifest"
+	JobTypeONILoadBatch                JobType = "oni_load_batch"
 
 	// Fairly general-purpose jobs, which use only the job args, not an object id
 	JobTypeCleanFiles      JobType = "clean_files"
@@ -100,6 +101,7 @@ var ValidJobTypes = []JobType{
 	JobTypeBatchAction,
 	JobTypeCancelJob,
 	JobTypeMakeManifest,
+	JobTypeONILoadBatch,
 }
 
 // JobStatus represents the different states in which a job can exist

@@ -356,9 +356,9 @@ func runAllQueues(conf *config.Config) {
 		},
 		func() {
 			// Fast - but not instant - jobs are here: file renaming, hard-linking,
-			// running templates for very simple XML output, etc. These typically
-			// take very little CPU or disk IO, but they aren't "critical" jobs that
-			// need to be real-time.
+			// running templates for very simple XML output, API calls, etc. These
+			// typically take very little CPU or disk IO, but they aren't "critical"
+			// jobs that need to be real-time.
 			watchJobTypes(conf,
 				models.JobTypeBuildMETS,
 				models.JobTypeCreateBatchStructure,
@@ -371,6 +371,7 @@ func runAllQueues(conf *config.Config) {
 				models.JobTypeValidateTagManifest,
 				models.JobTypeMarkBatchLive,
 				models.JobTypePrepIssuePageLabels,
+				models.JobTypeONILoadBatch,
 			)
 		},
 		func() {
