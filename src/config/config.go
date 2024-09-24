@@ -28,6 +28,10 @@ type Config struct {
 	SFTPGoAdminAPIKey  string `setting:"SFTPGO_ADMIN_API_KEY"`
 	SFTPGoNewUserQuota datasize.Datasize
 
+	// ONI Agent connection strings
+	StagingAgentConnection    string `setting:"STAGING_AGENT"`
+	ProductionAgentConnection string `setting:"PRODUCTION_AGENT"`
+
 	// Binary paths
 	GhostScript   string `setting:"GHOSTSCRIPT"`
 	OPJCompress   string `setting:"OPJ_COMPRESS"`
