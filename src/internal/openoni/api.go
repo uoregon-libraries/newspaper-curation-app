@@ -82,6 +82,19 @@ func (r *RPC) LoadBatch(name string) (id int64, err error) {
 	return result.Get("job").Get("id").Int(), nil
 }
 
+// PurgeBatch sends a request to the agent to purge the batch from the ONI
+// instance. If successful, returns a job id which can be used to query the
+// job's status for completion.
+func (r *RPC) PurgeBatch(name string) (id int64, err error) {
+	var result gjson.Result
+	result, err = r.do("purge-batch", name)
+	if err != nil {
+		return 0, fmt.Errorf("requesting batch purge: %w", err)
+	}
+
+	return result.Get("job").Get("id").Int(), nil
+}
+
 // GetVersion returns the version string of the ONI Agent
 func (r *RPC) GetVersion() (version string, err error) {
 	var result gjson.Result
