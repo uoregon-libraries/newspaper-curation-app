@@ -69,12 +69,12 @@ binaries configurable.
 
 ##### Docker Services
 
-`docker-compose.override.yml` must expose RAIS ("iiif"), mysql, and SFTPGo to
+`compose.override.yml` must expose RAIS ("iiif"), mysql, and SFTPGo to
 the local server via "ports" declarations, and settings need to reflect these
 values. For example, this is how the RAIS server might be configured:
 
 ```
-# docker-compose.override.yml:
+# compose.override.yml:
 version: '2'
 services:
   iiif:
@@ -170,7 +170,7 @@ expose the services NCA needs (database, sftpgo, IIIF).
 
 #### Copy docker configuration
 
-    cp docker-compose.override.yml-example docker-compose.override.yml
+    cp compose.override.yml-example compose.override.yml
 
 The override file specifies useful things like automatically mounting your
 local binaries to speed up the edit+compile+test loop, mounting in your local
@@ -287,7 +287,7 @@ comprehensive end-to-end testing is explained in the
 ### General Development Notes
 
 - If you make a database schema change (e.g., a new migration), or other major
-  changes (e.g., changing your `docker-compose.override.yml` file), you should
+  changes (e.g., changing your `compose.override.yml` file), you should
   bring the whole stack down and back up
 - If things seem "weird", bring the whole stack down and back up
 - Only run `make fast` for quick test loops, as it skips static analysis

@@ -8,4 +8,4 @@
 /.build.txt
 .git
 /db/dbconf.yml
-/docker-compose.override.yml
+/compose.override.yml

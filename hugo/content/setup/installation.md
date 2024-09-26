@@ -25,7 +25,7 @@ Manual installation has several prerequisites:
 **Please note**: The easiest way to get a quick demo / test setup of NCA is via
 our Docker configuration / setup:
 
-- <https://github.com/uoregon-libraries/newspaper-curation-app/blob/main/docker-compose.yml>
+- <https://github.com/uoregon-libraries/newspaper-curation-app/blob/main/compose.yml>
 - <https://github.com/uoregon-libraries/newspaper-curation-app/tree/main/docker>
 
 This is great to try things out, or for a quick one-off use of NCA, but **it is

@@ -1,5 +1,5 @@
 # This is an example of overriding the core docker setup.  Copy this to
-# `docker-compose.override.yml` and tweak it however you need for your dev
+# `compose.override.yml` and tweak it however you need for your dev
 # environment.
 services:
   iiif:
