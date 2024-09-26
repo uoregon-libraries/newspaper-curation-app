@@ -6,6 +6,7 @@ import (
 
 	"github.com/uoregon-libraries/newspaper-curation-app/src/config"
 	"github.com/uoregon-libraries/newspaper-curation-app/src/internal/openoni"
+	"github.com/uoregon-libraries/newspaper-curation-app/src/models"
 )
 
 const (
@@ -29,6 +30,42 @@ func getONIAgent(j *Job, c *config.Config) (*openoni.RPC, error) {
 	return openoni.New(connection)
 }
 
+type batchJobFunc func(batchname string) (jobid int64, err error)
+
+func (j *BatchJob) queueAgentJob(name string, fn batchJobFunc) ProcessResponse {
+	var jobid, err = fn(j.DBBatch.FullName())
+	if err != nil {
+		j.Logger.Errorf("Error calling ONI Agent: %s", err)
+		return PRFailure
+	}
+
+	j.Logger.Infof("Queued %s job in %s ONI Agent: job id %d", name, j.db.Args[JobArgLocation], jobid)
+
+	// Store the job id on the batch since loading is slow and logs sometimes
+	// need to be scrutinized
+	j.DBBatch.ONIAgentJobID = jobid
+
+	// It's pretty critical that we save the batch job id since we've already
+	// queued a job externally
+	err = j.runCritical(func() error {
+		var msg = fmt.Sprintf("sent ONI Agent the %s command", name)
+		var err = j.DBBatch.Save(models.ActionTypeInternalProcess, models.SystemUser.ID, msg)
+		if err != nil {
+			j.Logger.Warnf("Unable to update batch data; retrying: %s", err)
+			return err
+		}
+		return nil
+	})
+
+	if err != nil {
+		j.Logger.Criticalf("Unable to update batch: %s", err)
+		return PRFatal
+	}
+
+	j.Logger.Infof("Job queued, batch updated successfully")
+	return PRSuccess
+}
+
 // ONILoadBatch calls an RPC to load a batch into ONI
 type ONILoadBatch struct {
 	*BatchJob
@@ -42,18 +79,7 @@ func (j *ONILoadBatch) Process(c *config.Config) ProcessResponse {
 		return PRFailure
 	}
 
-	var jobid int64
-	jobid, err = agent.LoadBatch(j.DBBatch.FullName())
-	if err != nil {
-		j.Logger.Errorf("Error calling ONI Agent: %s", err)
-		return PRFailure
-	}
-
-	j.Logger.Infof("Queued load-batch job in ONI Agent: job id %d", jobid)
-
-	// TODO: store the job id somewhere so we can monitor the job!
-
-	return PRFailure
+	return j.queueAgentJob("load batch", agent.LoadBatch)
 }
 
 // ONIPurgeBatch handles API calls to request a batch purge from ONI
@@ -69,18 +95,7 @@ func (j *ONIPurgeBatch) Process(c *config.Config) ProcessResponse {
 		return PRFailure
 	}
 
-	var jobid int64
-	jobid, err = agent.PurgeBatch(j.DBBatch.FullName())
-	if err != nil {
-		j.Logger.Errorf("Error calling ONI Agent: %s", err)
-		return PRFailure
-	}
-
-	j.Logger.Infof("Queued load-batch job in ONI Agent: job id %d", jobid)
-
-	// TODO: store the job id somewhere so we can monitor the job!
-
-	return PRFailure
+	return j.queueAgentJob("purge batch", agent.PurgeBatch)
 }
 
 // ONIWaitForJob is a generic job to poll ONI until it reports that a given job
