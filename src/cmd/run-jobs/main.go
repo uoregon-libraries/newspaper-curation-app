@@ -372,6 +372,8 @@ func runAllQueues(conf *config.Config) {
 				models.JobTypeMarkBatchLive,
 				models.JobTypePrepIssuePageLabels,
 				models.JobTypeONILoadBatch,
+				models.JobTypeONIPurgeBatch,
+				models.JobTypeONIWaitForJob,
 			)
 		},
 		func() {

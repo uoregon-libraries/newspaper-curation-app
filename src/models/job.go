@@ -54,6 +54,7 @@ const (
 	JobTypeValidateTagManifest         JobType = "validate_tagmanifest"
 	JobTypeWriteBagitManifest          JobType = "write_bagit_manifest"
 	JobTypeONILoadBatch                JobType = "oni_load_batch"
+	JobTypeONIPurgeBatch               JobType = "oni_purge_batch"
 
 	// Fairly general-purpose jobs, which use only the job args, not an object id
 	JobTypeCleanFiles      JobType = "clean_files"
@@ -63,6 +64,7 @@ const (
 	JobTypeSyncRecursive   JobType = "sync_recursive"
 	JobTypeVerifyRecursive JobType = "verify_recursive"
 	JobTypeMakeManifest    JobType = "make_manifest"
+	JobTypeONIWaitForJob   JobType = "oni_wait_for_job"
 )
 
 // ValidJobTypes is the full list of job types which can exist in the jobs
@@ -102,6 +104,8 @@ var ValidJobTypes = []JobType{
 	JobTypeCancelJob,
 	JobTypeMakeManifest,
 	JobTypeONILoadBatch,
+	JobTypeONIPurgeBatch,
+	JobTypeONIWaitForJob,
 }
 
 // JobStatus represents the different states in which a job can exist
