@@ -4,6 +4,7 @@ package openoni
 import (
 	"errors"
 	"fmt"
+	"sort"
 	"strconv"
 	"strings"
 	"time"
@@ -149,4 +150,32 @@ func (r *RPC) GetJobStatus(id int64) (js JobStatus, err error) {
 		return js, fmt.Errorf("requesting status for job %d: unknown status %q", id, js)
 	}
 	return js, nil
+}
+
+// GetJobLogs returns the list of log entries by combining and sorting the
+// job's output streams
+func (r *RPC) GetJobLogs(id int64) (logs []string, err error) {
+	var result gjson.Result
+	result, err = r.do("job-logs", strconv.FormatInt(id, 10))
+	if err == nil {
+		result = result.Get("job")
+		if !result.Exists() {
+			err = errors.New(`bad response from service: missing "job" object`)
+		}
+	}
+	if err != nil {
+		return logs, fmt.Errorf("requesting logs for job %d: %w", id, err)
+	}
+
+	var lines = result.Get("stdout").Array()
+	for _, line := range lines {
+		logs = append(logs, line.String())
+	}
+	lines = result.Get("stderr").Array()
+	for _, line := range lines {
+		logs = append(logs, line.String())
+	}
+
+	sort.Strings(logs)
+	return logs, nil
 }
