@@ -105,15 +105,16 @@ var statusMap = map[string]BatchStatus{
 // associated with a single batch, and a batch will typically have many issues
 // assigned to it.
 type Batch struct {
-	ID          int64 `sql:",primary"`
-	MARCOrgCode string
-	Name        string
-	CreatedAt   time.Time
-	ArchivedAt  time.Time
-	WentLiveAt  time.Time
-	Status      string
-	StatusMeta  BatchStatus `sql:"-"`
-	Location    string
+	ID            int64 `sql:",primary"`
+	MARCOrgCode   string
+	Name          string
+	CreatedAt     time.Time
+	ArchivedAt    time.Time
+	WentLiveAt    time.Time
+	Status        string
+	StatusMeta    BatchStatus `sql:"-"`
+	Location      string
+	ONIAgentJobID int64
 
 	// NeedStagingPurge is true if the batch needs to be removed from staging;
 	// this is just a stop-gap measure until more automation exists, at which
