@@ -33,14 +33,15 @@ not recommended for production use**.
 
 We strongly recommend either crafting your own containerized setup with a mind
 to production reliability (which we haven't done) or just running NCA on bare
-metal - one the prerequisites above are installed, the rest of NCA is very easy
+metal - once the prerequisites above are installed, the rest of NCA is very easy
 to get running. If you go this route, you'll still find the docker setup
 helpful just in terms of understanding the full stack and configuration.
 
 ## Compile
 
 Compilation requires:
-- [Go](https://golang.org/dl/) 1.18 or later. Go is only required for
+
+- [Go](https://golang.org/dl/) 1.21 or later. Go is only required for
   compilation: its runtime does not need to be installed in production as long
   as you compile on the same architecture your production system has (or change
   the `Makefile` to cross-compile for the targeted architecture).
