@@ -2,8 +2,6 @@
 # setup, as opposed to a good production setup.  Care has been taken to make it
 # a solid default, but this isn't how we use the stack in production, so
 # consider this a guideline more than anything else.
-version: '2'
-
 volumes:
   db:
   issue-cache:
