@@ -5,7 +5,7 @@
 !/settings-example
 /.build.txt
 /db/dbconf.yml
-/docker-compose.override.yml
+/compose.override.yml
 /.env
 /test/*-report/
 /mysql-export/
