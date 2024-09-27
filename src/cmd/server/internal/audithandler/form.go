@@ -54,13 +54,13 @@ func getForm(r *responder.Responder) *form {
 		ActionTypes: vfn("action-types"),
 	}
 	var now = time.Now()
-	var min = time.Date(2010, 1, 1, 0, 0, 0, 0, time.Local)
+	var minTime = time.Date(2010, 1, 1, 0, 0, 0, 0, time.Local)
 
 	switch f.PresetDate {
 	case "custom":
 		var err = f.parseCustomDate()
 		if err != nil {
-			f.Start = min
+			f.Start = minTime
 			f.End = now
 			r.Vars.Alert = template.HTML("Invalid date range: " + err.Error())
 		}
@@ -79,7 +79,7 @@ func getForm(r *responder.Responder) *form {
 		f.Start = time.Date(y, m, d, 0, 0, 0, 0, now.Location())
 		f.End = now
 	default:
-		f.Start = min
+		f.Start = minTime
 		f.End = now
 		f.PresetDate = "all"
 	}

@@ -165,8 +165,8 @@ func getGenerateFormQueues(w http.ResponseWriter, req *http.Request) (r *respond
 		return r, queues, true
 	}
 
-	var max, _ = strconv.Atoi(req.FormValue("maxpages"))
-	if max < 1 {
+	var maxpages, _ = strconv.Atoi(req.FormValue("maxpages"))
+	if maxpages < 1 {
 		r.Vars.Alert = template.HTML("Maximum size is invalid. Please enter a positive number.")
 		renderBatchIssuesForm(r, aggs)
 		return r, queues, true
@@ -175,7 +175,7 @@ func getGenerateFormQueues(w http.ResponseWriter, req *http.Request) (r *respond
 	// Build the batch queues, wrapping them to give the user more context
 	for _, agg := range aggs {
 		var readyQ = agg.ReadyForBatching
-		var splitQs = readyQ.Split(max)
+		var splitQs = readyQ.Split(maxpages)
 		var i int
 		for _, sq := range splitQs {
 			i++
@@ -188,7 +188,7 @@ func getGenerateFormQueues(w http.ResponseWriter, req *http.Request) (r *respond
 	}
 
 	r.Vars.Data["Queues"] = queues
-	r.Vars.Data["MaxPages"] = max
+	r.Vars.Data["MaxPages"] = maxpages
 	r.Vars.Data["MOCIssueAggregations"] = aggs
 
 	return r, queues, false
