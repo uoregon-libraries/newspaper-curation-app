@@ -50,3 +50,8 @@ services:
   proxy:
     ports:
       - 80:80
+
+  # Export port 2222 to the ssh agent for local testing
+  dev-agent:
+    ports:
+      - 2222:22

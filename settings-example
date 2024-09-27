@@ -89,8 +89,8 @@ SFTPGO_NEW_USER_QUOTA=5gb
 # monitor batch loading and purging tasks on staging and production servers.
 ###
 
-STAGING_AGENT="staging.oni:2222"
-PRODUCTION_AGENT="production.oni:2222"
+STAGING_AGENT="dev-agent:22"
+PRODUCTION_AGENT="dev-agent:22"
 
 ###
 # Paths for PDFs, derivatives, etc.

@@ -7,6 +7,7 @@ volumes:
   issue-cache:
   sftpgo-backups:
   sftpgo-home:
+  agent-rsa:
 
 services:
   db:
@@ -87,3 +88,15 @@ services:
       - web
       - iiif
       - sftpgo
+
+  dev-agent:
+    build:
+      context: .
+      dockerfile: ./docker/Dockerfile-dev-agent
+    volumes:
+      - agent-rsa:/etc/rsa
+    environment:
+      - BA_BIND=:22
+      - HOST_KEY_FILE=/etc/rsa/oni-agent
+      - ONI_LOCATION=/fakeoni
+      - BATCH_SOURCE=/fakeoni/data/batches
