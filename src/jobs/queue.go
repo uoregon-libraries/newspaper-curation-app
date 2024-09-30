@@ -237,20 +237,20 @@ func QueueRemoveErroredIssue(issue *models.Issue, erroredIssueRoot string) error
 	return models.QueueIssueJobs(models.PNRemoveErroredIssue, issue, jobs...)
 }
 
-// QueuePurgeStuckIssue builds jobs for removing an issue that had critical
+// QueueDeleteStuckIssue builds jobs for removing an issue that had critical
 // failures on one or more jobs. Any waiting (on-hold) jobs still tied to the
-// issue are removed, as are failed jobs, and then the issue is purged with
+// issue are removed, as are failed jobs, and then the issue is deleted with
 // data a dev can use to look into the problem more closely.
-func QueuePurgeStuckIssue(issue *models.Issue, erroredIssueRoot string) error {
+func QueueDeleteStuckIssue(issue *models.Issue, erroredIssueRoot string) error {
 	var pipelines, err = issue.Pipelines()
 	if err != nil {
 		return fmt.Errorf("query pipelines for issue %d (%s): %s", issue.ID, issue.Key(), err)
 	}
 
 	var jobs []*models.Job
-	var purgeReason = "Issue failed getting through workflow:\n"
+	var deleteReason = "Issue failed getting through workflow:\n"
 	for _, p := range pipelines {
-		purgeReason += fmt.Sprintf("- Pipeline %d (%s / %s):\n", p.ID, p.Name, p.Description)
+		deleteReason += fmt.Sprintf("- Pipeline %d (%s / %s):\n", p.ID, p.Name, p.Description)
 		var list []*models.Job
 		list, err = p.Jobs()
 		if err != nil {
@@ -260,17 +260,17 @@ func QueuePurgeStuckIssue(issue *models.Issue, erroredIssueRoot string) error {
 			switch models.JobStatus(j.Status) {
 			case models.JobStatusFailed, models.JobStatusOnHold:
 				if j.Status == string(models.JobStatusFailed) {
-					purgeReason += fmt.Sprintf("  - Job %d (%s) failed too many times\n", j.ID, j.Type)
+					deleteReason += fmt.Sprintf("  - Job %d (%s) failed too many times\n", j.ID, j.Type)
 				}
 				var jj = j.BuildJob(models.JobTypeCancelJob, nil)
 				jobs = append(jobs, jj)
 			}
 		}
 	}
-	jobs = append(jobs, issue.BuildJob(models.JobTypeIssueAction, makeActionArgs(purgeReason)))
+	jobs = append(jobs, issue.BuildJob(models.JobTypeIssueAction, makeActionArgs(deleteReason)))
 	jobs = append(jobs, getJobsForRemoveErroredIssue(issue, erroredIssueRoot)...)
 
-	return models.QueueJobs(models.PNPurgeStuckIssue, fmt.Sprintf("Purging issue %s and its unfinished jobs", issue.Key()), jobs...)
+	return models.QueueJobs(models.PNDeleteStuckIssue, fmt.Sprintf("Purging issue %s and its unfinished jobs", issue.Key()), jobs...)
 }
 
 // getJobsForRemoveErroredIssue returns the list of jobs for removing the given

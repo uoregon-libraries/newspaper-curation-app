@@ -134,9 +134,9 @@ so it isn't typically something you would run on your own, but it's also
 harmless if you do run it manually - it won't re-run any database update
 scripts that have already run.
 
-## Purge Dead Issues
+## Clean Dead Issues
 
-`purge-dead-issues` is useful to move all "stuck" issues out of NCA and into
+`remove-dead-issues` is useful to move all "stuck" issues out of NCA and into
 the configured problem folder. The original files will be moved, and the full
 activity log stored as a text file to help identify how to fix whatever problem
 prevented curators (or NCA job runners) from processing an issue.

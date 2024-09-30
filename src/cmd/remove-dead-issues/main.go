@@ -17,7 +17,7 @@ var erroredIssuesPath string
 
 func getConfig() {
 	var c = cli.New(&opts)
-	c.AppendUsage(`Deletes all "stuck" issues couldn't make it into NCA.  Issues must have the "AwaitingProcessing" workflow step and at least one dead job ("failed", not "failed_done") to be considered for purging.  They will not be purged if they are tied to a batch or have any pending jobs associated with them.  All issues' jobs will be finalized (set to "failed_done") or removed (those that are on hold waiting for the failed job / jobs).`)
+	c.AppendUsage(`Deletes all "stuck" issues couldn't make it into NCA. Issues must have the "AwaitingProcessing" workflow step and at least one dead job ("failed", not "failed_done") to be considered for deletion. They will not be removed if they are tied to a batch or have any pending jobs associated with them. All issues' jobs will be finalized (set to "failed_done") or removed (those that are on hold waiting for the failed job / jobs).`)
 
 	var conf = c.GetConf()
 	var err = dbi.DBConnect(conf.DatabaseConnect)
@@ -30,22 +30,22 @@ func getConfig() {
 func main() {
 	getConfig()
 
-	logger.Debugf("Scanning for issues to purge")
+	logger.Debugf("Scanning for issues to remove")
 
 	var issues, err = models.Issues().InWorkflowStep(schema.WSAwaitingProcessing).Fetch()
 	if err != nil {
 		logger.Fatalf("Unable to scan database for issues awaiting processing: %s", err)
 	}
 
-	purge(issues)
+	remove(issues)
 
 	logger.Debugf("Process complete")
 }
 
-func purge(list []*models.Issue) {
+func remove(list []*models.Issue) {
 	for _, i := range list {
 		logger.Debugf("Examining issue id %d (%s)", i.ID, i.HumanName)
-		var ok, err = canPurge(i)
+		var ok, err = canDelete(i)
 		if err != nil {
 			logger.Errorf("Error reading data for issue id %d (%s): %s", i.ID, i.HumanName, err)
 			return
@@ -55,23 +55,23 @@ func purge(list []*models.Issue) {
 			continue
 		}
 
-		err = jobs.QueuePurgeStuckIssue(i, erroredIssuesPath)
+		err = jobs.QueueDeleteStuckIssue(i, erroredIssuesPath)
 		if err != nil {
-			logger.Errorf("Error queueing issue id %d (%s) for purge: %s", i.ID, i.HumanName, err)
+			logger.Errorf("Error queueing issue id %d (%s) for deletion: %s", i.ID, i.HumanName, err)
 		}
 
-		logger.Infof("Queued issue id %d (%s) for purge", i.ID, i.HumanName)
+		logger.Infof("Queued issue id %d (%s) for deletion", i.ID, i.HumanName)
 	}
 }
 
-// canPurge tells us if an issue is in need of purging. This is true only if
+// canDelete tells us if an issue is in need of deletion. This is true only if
 // all the following are true of the issue:
 //
 // - It has at least one dead job ("failed", not "failed_done")
 // - It is awaiting processing
 // - It is not tied to a batch
 // - It has no pending jobs still tied to it
-func canPurge(i *models.Issue) (bool, error) {
+func canDelete(i *models.Issue) (bool, error) {
 	// We validate there are failed jobs first - everything else should be
 	// impossible if there were failed jobs
 	var joblist, err = i.Jobs()
