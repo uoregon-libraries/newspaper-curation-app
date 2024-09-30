@@ -45,7 +45,7 @@
       entirely.
     </p>
 
-    <a href="{{FlagIssuesURL .Data.Batch}}" class="btn btn-primary">Flag Issues / Purge Batch...</a>
+    <a href="{{FlagIssuesURL .Data.Batch}}" class="btn btn-primary">Flag Issues / Undo Batch...</a>
 
     <!-- Needs production load -->
     {{else if and .Data.Batch.ReadyForProduction .Data.Batch.Can.Load}}

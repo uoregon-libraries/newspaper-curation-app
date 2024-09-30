@@ -60,8 +60,9 @@
     </p>
     <p>
       If you just want to remove the batch but leave the issues in NCA for a
-      new batch generation, select "Purge" below. This will finalize flagged
-      issues, but push all the good issues back into NCA and destroy the batch.
+      new batch generation, select "Undo" below. This will finalize flagged
+      issues, but the batch will be removed, and all good issues will simply go
+      back to NCA, ready for inclusion in a new batch.
     </p>
     <p>
       If this batch doesn't need any issues removed (i.e., it was failed by
@@ -97,20 +98,20 @@
         </div>
       </cta-modal>
 
-      {{if .Data.Batch.Can.Purge}}
       <cta-modal>
         <div slot="button" class="inline">
           {{if ne 0 .Data.RemainingIssues}}
-          <button class="btn btn-primary cta-modal-toggle">Purge</button>
+          <button class="btn btn-primary cta-modal-toggle">Undo</button>
           {{else}}
-          <button class="btn btn-disabled" disabled="disabled">Purge</button>
+          <button class="btn btn-disabled" disabled="disabled">Undo</button>
           {{end}}
         </div>
 
         <div slot="modal" style="color: black;">
-          <h2>Purge Batch?</h2>
+          <h2>Undo Batch?</h2>
           <p>
-            You are about to purge {{.Data.Batch.Name}}. The following actions will occur:
+            You are about to "undo" the creation of {{.Data.Batch.Name}}. The
+            following actions will occur:
             <ul>
               <li>
                 The {{.Data.FlaggedIssues|len}} flagged issue(s) will be
@@ -122,17 +123,16 @@
                 ready to immediately be included in a new batch.
               </li>
               <li>
-                The batch will be purged from disk and from NCA.
+                The batch will be deleted from disk and from NCA.
               </li>
             </ul>
 
             <i>This is generally not necessary unless the batch was built by mistake</i>.
           </p>
-          <button class="btn btn-primary" type="submit" name="action" value="purge">Confirm</button>
+          <button class="btn btn-primary" type="submit" name="action" value="undo">Confirm</button>
           <button class="btn btn-secondary cta-modal-toggle">Cancel</button>
         </div>
       </cta-modal>
-      {{end}}
 
       <cta-modal>
         <div slot="button" class="inline">
