@@ -147,7 +147,7 @@ func (w *Watcher) refresh() {
 	// Every week, we force a full web refresh
 	var tempdir string
 	if time.Since(w.lastFullRefresh) > time.Hour*24*7 {
-		logger.Debugf("Purging cache and reindexing all data from scratch")
+		logger.Debugf("Deleting cache and reindexing all data from scratch")
 
 		// We don't want to delete tempdir when it's a routine cleaning!  TODO: make this way less hacky
 		tempdir = w.Scanner.Tempdir

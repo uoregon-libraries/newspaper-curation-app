@@ -89,6 +89,6 @@ generated, the workflow is the same regardless of the source:
 10. Once the batch can be confirmed as fully archived, a batch loader flags it
     as archived.
 11. Somebody with command-line access to NCA will run `delete-live-done-issues`
-    (or set up a cron job) to purge unneeded files from NCA that are part of
+    (or set up a cron job) to clean unneeded files from NCA that are part of
     archived batches. It only deletes files when a batch is at least four weeks
     past its archive date to ensure any final problems can be handled.

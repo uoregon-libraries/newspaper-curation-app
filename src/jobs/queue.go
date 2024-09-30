@@ -270,7 +270,7 @@ func QueueDeleteStuckIssue(issue *models.Issue, erroredIssueRoot string) error {
 	jobs = append(jobs, issue.BuildJob(models.JobTypeIssueAction, makeActionArgs(deleteReason)))
 	jobs = append(jobs, getJobsForRemoveErroredIssue(issue, erroredIssueRoot)...)
 
-	return models.QueueJobs(models.PNDeleteStuckIssue, fmt.Sprintf("Purging issue %s and its unfinished jobs", issue.Key()), jobs...)
+	return models.QueueJobs(models.PNDeleteStuckIssue, fmt.Sprintf("Removing issue %s and its unfinished jobs", issue.Key()), jobs...)
 }
 
 // getJobsForRemoveErroredIssue returns the list of jobs for removing the given

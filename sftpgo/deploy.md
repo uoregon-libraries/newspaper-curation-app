@@ -24,7 +24,7 @@ SFTP Server:
   - Figure out what's necessary to use the existing sftp dirs so we aren't
     having to move files during the downtime. If it's too much trouble, though,
     moving files is still acceptable.
-- Create a test user and validate various operations. Purge said user.
+- Create a test user and validate various operations. Delete said user.
 - Firewall: allow http traffic from the NCA server at a minimum; maybe library
   IP ranges for easier SFTPGo administration if necessary?
 
