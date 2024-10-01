@@ -42,10 +42,10 @@ workers >work.log 2>&1
 # Stop workers, make another backup using the "name" variable from above
 ./manage backup 02-$name
 
-# Run the command to purge dead issues (omit "--live" in new fixed branch)
-make clean && make bin/purge-dead-issues && ./bin/purge-dead-issues -c ./settings --live
+# Run the command to remove dead issues
+make clean && make bin/remove-dead-issues && ./bin/remove-dead-issues -c ./settings
 
-# Purged issues should include:
+# Deleted issues should include:
 #
 # sn88086023/2022080401
 # 2021242619/2020090201

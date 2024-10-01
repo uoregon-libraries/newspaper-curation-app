@@ -40,12 +40,7 @@ else
 fi
 
 echo Copying in the new stuff
-sudo cp $src/bin/server $ncadir/
-sudo cp $src/bin/run-jobs $ncadir/
-sudo cp $src/bin/queue-batches $ncadir/
-sudo cp $src/bin/bulk-issue-queue $ncadir/
-sudo cp $src/bin/delete-live-done-issues $ncadir/
-sudo cp $src/bin/purge-dead-issues $ncadir/
+sudo cp $src/bin/* $ncadir/
 sudo cp $src/deploy/nca-httpd.service $ncadir/
 sudo cp $src/deploy/nca-workers.service $ncadir/
 sudo cp $src/deploy/nca-rsyslog.conf /etc/rsyslog.d/nca.conf

@@ -14,15 +14,16 @@ one area where a developer used to have to clean up the filesystem and database
 manually. As of NCA v3.8.0, there is a tool which can handle this in a
 significantly less painful way.
 
-## Purging Dead Issues
+## Cleaning Dead Issues
 
-A normal invocation of `make` creates `bin/purge-dead-issues`. This tool's sole
-purpose is to find issues which have a failed job and can no longer move
-through NCA's workflow.
+A normal invocation of `make` creates `bin/remove-dead-issues`. This tool's
+sole purpose is to find issues which have a failed job and can no longer move
+through NCA's workflow, and remove them from NCA's database and on-disk
+workflow location.
 
 Under the hood, this command does the following:
 
-- Finds all issues that are valid candidates for purging. To be valid, an issue:
+- Finds all issues that are candidates for removal. To be removed, an issue:
   - Is in the "awaiting processing" state
   - Has at least one failed job - as in "failed", which means failed forever,
     not `failed_done`, which indicates a temporary failure which was retried.
@@ -30,7 +31,7 @@ Under the hood, this command does the following:
   - Has no jobs that are pending or in process
 - Ends all jobs that were stuck - this means failed jobs as well as any "on
   hold" jobs that had been waiting for a failed job to finish
-- Creates a new job to purge the issue. This uses the same logic as issues
+- Creates a new job to delete the issue. This uses the same logic as issues
   that are flagged as having errors and removed from NCA.
 
 Once the tool has been run, you'll have stuck issues in the configured

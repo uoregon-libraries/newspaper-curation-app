@@ -22,7 +22,7 @@ const (
 	PNFinalizeIssue           PipelineName = "FinalizeIssue"
 	PNMakeBatch               PipelineName = "MakeBatch"
 	PNRemoveErroredIssue      PipelineName = "RemoveErroredIssue"
-	PNPurgeStuckIssue         PipelineName = "PurgeStuckIssue"
+	PNDeleteStuckIssue        PipelineName = "DeleteStuckIssue"
 	PNFinalizeIssueFlagging   PipelineName = "FinalizeIssueFlagging"
 	PNBatchDeletion           PipelineName = "BatchDeletion"
 	PNGoLiveProcess           PipelineName = "GoLiveProcess"

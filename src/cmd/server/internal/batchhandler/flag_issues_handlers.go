@@ -36,8 +36,8 @@ func flagIssuesHandler(w http.ResponseWriter, req *http.Request) {
 		unflagIssue(r)
 	case "finalize":
 		finalizeBatch(r)
-	case "purge":
-		purgeBatch(r)
+	case "undo":
+		undoBatch(r)
 	case "abort":
 		abortBatch(r)
 	default:
@@ -246,7 +246,7 @@ func finalizeBatch(r *Responder) {
 
 	// If all issues were flagged for removal, we delete the batch entirely
 	if len(r.batch.Issues) == len(r.batch.FlaggedIssues) {
-		deleteBatch(r)
+		queueDeleteBatchJob(r)
 		return
 	}
 
@@ -263,23 +263,18 @@ func finalizeBatch(r *Responder) {
 	http.Redirect(r.Writer, r.Request, basePath, http.StatusFound)
 }
 
-func purgeBatch(r *Responder) {
-	if !r.batch.Can().Purge() {
-		r.Error(http.StatusForbidden, "You are not permitted to purge this batch")
-		return
-	}
-
-	var err = r.batch.Save(models.ActionTypePurgeBatch, r.Vars.User.ID, "")
+func undoBatch(r *Responder) {
+	var err = r.batch.Save(models.ActionTypeUndoBatch, r.Vars.User.ID, "")
 	if err != nil {
-		logger.Criticalf(`Unable to log "purge batch" action for batch %d (%s): %s`, r.batch.ID, r.batch.Name, err)
-		r.Error(http.StatusInternalServerError, "Error trying to purge the batch. Try again or contact support.")
+		logger.Criticalf(`Unable to log "undo batch" action for batch %d (%s): %s`, r.batch.ID, r.batch.Name, err)
+		r.Error(http.StatusInternalServerError, "Error trying to undo the batch. Try again or contact support.")
 		return
 	}
 
-	deleteBatch(r)
+	queueDeleteBatchJob(r)
 }
 
-func deleteBatch(r *Responder) {
+func queueDeleteBatchJob(r *Responder) {
 	var err = jobs.QueueBatchForDeletion(r.batch.Batch, r.batch.FlaggedIssues, conf)
 	if err != nil {
 		logger.Criticalf("Unable to queue job to delete batch %d (%s): %s", r.batch.ID, r.batch.Name, err)

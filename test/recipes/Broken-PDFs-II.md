@@ -2,7 +2,7 @@
 
 This recipe tests what happens when an issue job fails but leaves behind jobs
 that aren't directly tied to an issue (generic jobs like syncdir). This is
-useful when testing out whether the issue purge is catching everything left
+useful when testing out whether the issue removal is catching everything left
 behind (hint: it wasn't).
 
 ## Script
@@ -35,10 +35,10 @@ workers
 # Stop workers, make another backup using the "name" variable from above
 ./manage backup 02-$name
 
-# Run the command to purge dead issues
-./bin/purge-dead-issues -c ./settings
+# Run the command to remove dead issues
+./bin/remove-dead-issues -c ./settings
 
-# Purged issue should be sn96088087/2010041901
+# Removed issue should be sn96088087/2010041901
 
 # Run workers one last time (~1 min)
 workers

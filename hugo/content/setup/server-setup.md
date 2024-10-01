@@ -35,7 +35,7 @@ Before anything can be done, the following setup has to happen:
    - `SCAN_UPLOAD_PATH` (`/mnt/news/scans`): This is where in-house scans would be uploaded.
    - `ORIGINAL_PDF_BACKUP_PATH` (`/mnt/news/backup/originals`): Short-term storage
      where uploaded PDFs will be moved after being split. They may need to be
-     held a few months for embargoed issues, but they're auto-purged once the
+     held a few months for embargoed issues, but they're auto-removed once the
      issue has been put into a batch.
    - `PDF_PAGE_REVIEW_PATH` (`/mnt/news/page-review`): Issues which came from
      born-digital SFTP uploads and are ready for manual page reordering - this

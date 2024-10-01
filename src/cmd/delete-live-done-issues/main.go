@@ -51,9 +51,9 @@ func main() {
 		b.Finalize()
 	}
 
-	err = purgeIssues()
+	err = removeIssues()
 	if err != nil {
-		logger.Fatalf("Unable to purge issue directories: %s", err)
+		logger.Fatalf("Unable to remove issue directories: %s", err)
 	}
 }
 
@@ -90,7 +90,7 @@ func warning(issues []*models.Issue) {
 	}
 }
 
-func purgeIssues() error {
+func removeIssues() error {
 	var issues, err = models.FindCompletedIssuesReadyForRemoval()
 	if err != nil {
 		return fmt.Errorf("error looking for issues in live_done batches: %w", err)
