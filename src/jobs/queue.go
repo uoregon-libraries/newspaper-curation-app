@@ -183,15 +183,11 @@ func QueueFinalizeIssue(issue *models.Issue) error {
 // configured), and generating the bagit manifest. Nothing can happen
 // automatically after all this until the batch is verified on staging.
 func QueueMakeBatch(batch *models.Batch, c *config.Config) error {
-	// Grab generic "make batch" jobs then add the "load to staging" job
-	var jobs = getJobsForMakeBatch(batch, c)
-	jobs = append(jobs, batch.BuildJob(models.JobTypeONILoadBatch, makeLocArgs(serverTypeStaging)))
-
-	return models.QueueBatchJobs(models.PNMakeBatch, batch, jobs...)
+	return models.QueueBatchJobs(models.PNMakeBatch, batch, getJobsForMakeBatch(batch, c)...)
 }
 
-// getJobsForMakeBatch returns all jobs needed to generate a batch. This is needed
-// by two different higher-level tasks.
+// getJobsForMakeBatch returns all jobs needed to generate a batch, copy its
+// essential files to the live location, and load it onto staging.
 func getJobsForMakeBatch(batch *models.Batch, c *config.Config) []*models.Job {
 	// Prepare the various directory vars we'll need
 	var batchname = batch.FullName()
@@ -223,7 +219,9 @@ func getJobsForMakeBatch(batch *models.Batch, c *config.Config) []*models.Job {
 	jobs = append(jobs, getJobsForCopyDir(outDir, liveDir, "*.tif", "*.tiff", "*.TIF", "*.TIFF", "*.tar.bz", "*.tar")...)
 	jobs = append(jobs,
 		batch.BuildJob(models.JobTypeBatchAction, makeActionArgs("copied to live path")),
-		// TODO: load to staging
+		batch.BuildJob(models.JobTypeONILoadBatch, makeLocArgs(serverTypeStaging)),
+		batch.BuildJob(models.JobTypeBatchAction, makeActionArgs("ingested on staging")),
+		batch.BuildJob(models.JobTypeSetBatchStatus, makeBSArgs(models.BatchStatusQCReady)),
 	)
 
 	return jobs
@@ -336,6 +334,12 @@ func getJobsForFinalizingFlaggedIssues(batch *models.Batch, flagged []*models.Fl
 		batch.BuildJob(models.JobTypeSetBatchLocation, makeLocArgs("")),
 	)
 
+	// Next purge the batch from staging
+	jobs = append(jobs,
+		batch.BuildJob(models.JobTypeONIPurgeBatch, makeLocArgs(serverTypeStaging)),
+		batch.BuildJob(models.JobTypeBatchAction, makeActionArgs("purged batch from staging")),
+	)
+
 	// Now we remove issues one at a time so we can easily resume / restart.
 	// Removing an issue means we first remove the METS XML file, and only when
 	// that succeeds do we do the database side. Filesystem jobs can fail in
@@ -380,13 +384,17 @@ func QueueBatchForDeletion(batch *models.Batch, flagged []*models.FlaggedIssue, 
 	return models.QueueBatchJobs(models.PNBatchDeletion, batch, jobs...)
 }
 
-// QueueBatchGoLiveProcess fires off all jobs needed to call a batch live and
-// ready for archiving. These jobs should only be queued up after a batch has
-// been ingested into the production ONI instance.
-func QueueBatchGoLiveProcess(batch *models.Batch, batchArchivePath string) error {
-	var finalPath = filepath.Join(batchArchivePath, batch.FullName())
+// QueueBatchGoLive fires off all jobs needed to ingest a batch live and get it
+// ready for archiving.
+func QueueBatchGoLive(batch *models.Batch, c *config.Config) error {
+	var finalPath = filepath.Join(c.BatchArchivePath, batch.FullName())
 	var jobs []*models.Job
 
+	// First we need jobs to push the batch to production ONI
+	jobs = append(jobs, batch.BuildJob(models.JobTypeONILoadBatch, makeLocArgs(serverTypeProd)))
+	jobs = append(jobs, batch.BuildJob(models.JobTypeBatchAction, makeActionArgs("ingested on production")))
+
+	// Then archive-move jobs
 	jobs = append(jobs, getJobsForMoveDir(batch.Location, finalPath)...)
 	jobs = append(jobs, batch.BuildJob(models.JobTypeBatchAction, makeActionArgs("moved batch to archive location")))
 	jobs = append(jobs, batch.BuildJob(models.JobTypeSetBatchLocation, makeLocArgs("")))
