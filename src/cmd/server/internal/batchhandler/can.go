@@ -30,14 +30,6 @@ func (c *CanValidation) View() bool {
 	return c.batch.Status != models.BatchStatusDeleted && c.batch.Status != models.BatchStatusPending
 }
 
-// Load is true if the user can load batches *and* batch is in a loadable state
-func (c *CanValidation) Load() bool {
-	if !c.user.PermittedTo(privilege.LoadBatches) {
-		return false
-	}
-	return c.batch.Status == models.BatchStatusStagingReady || c.batch.Status == models.BatchStatusPassedQC
-}
-
 // Archive is true if the user can archive batches and batch is ready for archiving
 func (c *CanValidation) Archive() bool {
 	if !c.user.PermittedTo(privilege.ArchiveBatches) {
@@ -62,16 +54,6 @@ func (c *CanValidation) Reject() bool {
 	}
 
 	return c.batch.Status == models.BatchStatusQCReady
-}
-
-// Purge is true if the user is allowed to purge batches, and the batch is
-// ready for issue flagging
-func (c *CanValidation) Purge() bool {
-	if !c.user.PermittedTo(privilege.PurgeBatches) {
-		return false
-	}
-
-	return c.batch.Status == models.BatchStatusQCFlagIssues
 }
 
 // FlagIssues is true if the user can reject in-QC batches and batch is ready

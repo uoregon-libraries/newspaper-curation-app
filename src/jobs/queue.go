@@ -223,7 +223,7 @@ func getJobsForMakeBatch(batch *models.Batch, c *config.Config) []*models.Job {
 	jobs = append(jobs, getJobsForCopyDir(outDir, liveDir, "*.tif", "*.tiff", "*.TIF", "*.TIFF", "*.tar.bz", "*.tar")...)
 	jobs = append(jobs,
 		batch.BuildJob(models.JobTypeBatchAction, makeActionArgs("copied to live path")),
-		batch.BuildJob(models.JobTypeSetBatchStatus, makeBSArgs(models.BatchStatusStagingReady)),
+		// TODO: load to staging
 	)
 
 	return jobs

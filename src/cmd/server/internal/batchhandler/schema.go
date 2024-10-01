@@ -2,7 +2,6 @@ package batchhandler
 
 import (
 	"fmt"
-	"path/filepath"
 
 	"github.com/uoregon-libraries/newspaper-curation-app/src/models"
 )
@@ -66,16 +65,6 @@ func wrapBatches(list []*models.Batch, currentUser *models.User) ([]*Batch, erro
 	return batches, nil
 }
 
-// ReadyForStaging is true if the batch is ready to be loaded onto staging
-func (b *Batch) ReadyForStaging() bool {
-	return b.Status == models.BatchStatusStagingReady
-}
-
-// ReadyForProduction is true if the batch has passed QC
-func (b *Batch) ReadyForProduction() bool {
-	return b.Status == models.BatchStatusPassedQC
-}
-
 // ReadyForQC is true if the batch is awaiting a quality control check
 func (b *Batch) ReadyForQC() bool {
 	return b.Status == models.BatchStatusQCReady
@@ -94,12 +83,6 @@ func (b *Batch) ReadyForArchive() bool {
 // flag which issues need to be removed
 func (b *Batch) ReadyForFlaggingIssues() bool {
 	return b.Status == models.BatchStatusQCFlagIssues
-}
-
-// LiveLocation returns the location the batch is stored on production, which
-// is necessary for instructions that involve loading a batch somewhere
-func (b *Batch) LiveLocation() string {
-	return filepath.Join(conf.BatchProductionPath, b.FullName())
 }
 
 // Can returns our CanValidation data for the currently logged in user and this

@@ -15,10 +15,8 @@ import (
 const (
 	BatchStatusDeleted      = "deleted"       // Batch wasn't fixable and had to be removed
 	BatchStatusPending      = "pending"       // Not yet built or in the process of being built
-	BatchStatusStagingReady = "staging_ready" // Batch is built but not deployed to staging yet
 	BatchStatusQCReady      = "qc_ready"      // Batch is on staging and ready for QC pass
 	BatchStatusQCFlagIssues = "qc_flagging"   // Batch failed QC; problem issues need to be identified and removed
-	BatchStatusPassedQC     = "passed_qc"     // On staging, passed QC; it needs to be pulled from staging and pushed live
 	BatchStatusLive         = "live"          // Batch has gone live; batch and its issues need to be archived
 	BatchStatusLiveArchived = "live_archived" // Batch is archived; its issues can be cleaned up in a few weeks
 	BatchStatusLiveDone     = "live_done"     // Batch has gone live; batch and its issues have been archived and are no longer on the filesystem
@@ -43,13 +41,6 @@ var statusMap = map[string]BatchStatus{
 		NeedsAction: false,
 		Description: "Pending: build job is scheduled but hasn't yet run",
 	},
-	BatchStatusStagingReady: {
-		Status:      BatchStatusStagingReady,
-		Live:        false,
-		Staging:     false,
-		NeedsAction: true,
-		Description: "Ready for ingest onto staging server",
-	},
 	BatchStatusQCReady: {
 		Status:      BatchStatusQCReady,
 		Live:        false,
@@ -70,13 +61,6 @@ var statusMap = map[string]BatchStatus{
 		Staging:     false,
 		NeedsAction: false,
 		Description: "Removed from the system.  Likely rebuilt under a new name.",
-	},
-	BatchStatusPassedQC: {
-		Status:      BatchStatusPassedQC,
-		Live:        false,
-		Staging:     true,
-		NeedsAction: true,
-		Description: "Passed quality control, awaiting batch maintainer to load on production",
 	},
 	BatchStatusLive: {
 		Status:      BatchStatusLive,
@@ -115,11 +99,6 @@ type Batch struct {
 	StatusMeta    BatchStatus `sql:"-"`
 	Location      string
 	ONIAgentJobID int64
-
-	// NeedStagingPurge is true if the batch needs to be removed from staging;
-	// this is just a stop-gap measure until more automation exists, at which
-	// point this should be replaced
-	NeedStagingPurge bool
 
 	issues  []*Issue
 	actions []*Action
