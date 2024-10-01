@@ -1,0 +1,15 @@
+FROM golang:1-alpine AS build
+WORKDIR /app
+RUN apk add git make
+RUN git clone https://github.com/open-oni/oni-agent.git /app
+RUN go mod download
+RUN make
+
+FROM alpine AS service
+WORKDIR /fakeoni
+RUN mkdir -p /fakeoni/data/batches
+RUN echo -e "#!/bin/sh\nexit 0" > /fakeoni/manage.py
+RUN chmod +x /fakeoni/manage.py
+COPY --from=build /app/bin/agent /usr/local/bin/agent
+ENTRYPOINT ["/usr/local/bin/agent"]
+EXPOSE 22
