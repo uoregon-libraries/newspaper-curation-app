@@ -79,9 +79,14 @@ func findPipeline(id int64) (*Pipeline, error) {
 	return list[0], err
 }
 
-// QueueIssueJobs sets the issue to awaiting processing, removes it from any
-// "desk" it's currently on, then queues the jobs, all in a single DB
-// transaction to ensure the state doesn't change if the jobs can't queue up
+// QueueIssueJobs is a shortcut to update an issue's status, save it, create a
+// pipeline, save it, queue up a bunch of jobs on that pipeline, and save each
+// of them. All this is done in a transaction to ensure the state doesn't
+// change if any of these DB operations fail.
+//
+// The first job in the list is set to pending while the others will be set to
+// be on hold, and jobs will be given a sequence based on the order they're
+// passed in here.
 func QueueIssueJobs(name PipelineName, issue *Issue, jobs ...*Job) error {
 	var op = dbi.DB.Operation()
 	op.Dbg = dbi.Debug
@@ -101,9 +106,14 @@ func QueueIssueJobs(name PipelineName, issue *Issue, jobs ...*Job) error {
 	return p.queueSerialOp(op, jobs...)
 }
 
-// QueueBatchJobs sets the batch status to pending, then queues the jobs, all
-// in a single DB transaction to ensure the state doesn't change if the jobs
-// can't queue up
+// QueueBatchJobs is a shortcut to update a batch's status, save it, create a
+// pipeline, save it, queue up a bunch of jobs on that pipeline, and save each
+// of them. All this is done in a transaction to ensure the state doesn't
+// change if any of these DB operations fail.
+//
+// The first job in the list is set to pending while the others will be set to
+// be on hold, and jobs will be given a sequence based on the order they're
+// passed in here.
 func QueueBatchJobs(name PipelineName, batch *Batch, jobs ...*Job) error {
 	var op = dbi.DB.Operation()
 	op.Dbg = dbi.Debug
@@ -122,9 +132,16 @@ func QueueBatchJobs(name PipelineName, batch *Batch, jobs ...*Job) error {
 	return p.queueSerialOp(op, jobs...)
 }
 
-// QueueJobs queues up the given set of jobs. This must *never* be used on an
-// issue- or batch-focused set of jobs, as those need to have their state set
-// up by Queue(Issue|Batch)Jobs.
+// QueueJobs is a shortcut to create a pipeline, save it, queue up a bunch of
+// jobs on that pipeline, and save each of them. All this is done in a
+// transaction to ensure the state doesn't change if any of these DB operations
+// fail. Additionally, this function fails if the first job is tied to any
+// object (batch or issue), as those should use the auto-status-setting
+// methods.
+//
+// The first job in the list is set to pending while the others will be set to
+// be on hold, and jobs will be given a sequence based on the order they're
+// passed in here.
 func QueueJobs(name PipelineName, description string, jobs ...*Job) error {
 	// Shouldn't be possible, but I'd rather not crash
 	if len(jobs) == 0 {
