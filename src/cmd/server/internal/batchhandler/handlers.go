@@ -8,6 +8,7 @@ import (
 
 	"github.com/uoregon-libraries/newspaper-curation-app/src/cmd/server/internal/responder"
 	"github.com/uoregon-libraries/newspaper-curation-app/src/internal/logger"
+	"github.com/uoregon-libraries/newspaper-curation-app/src/jobs"
 	"github.com/uoregon-libraries/newspaper-curation-app/src/models"
 )
 
@@ -102,6 +103,11 @@ func qcApproveHandler(w http.ResponseWriter, req *http.Request) {
 	var err = r.batch.Save(models.ActionTypeApproveBatch, r.Vars.User.ID, "")
 	if err != nil {
 		logger.Criticalf(`Unable to log "approve batch" action for batch %d (%s): %s`, r.batch.ID, r.batch.FullName(), err)
+	} else {
+		err = jobs.QueueBatchGoLive(r.batch.Batch, conf)
+		if err != nil {
+			logger.Criticalf(`Unable to queue go-live job for batch %d (%s): %s`, r.batch.ID, r.batch.FullName(), err)
+		}
 	}
 
 	// If either operation above gave an error, fully reset the batch so we can
