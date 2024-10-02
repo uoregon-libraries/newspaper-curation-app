@@ -373,7 +373,13 @@ func CompleteJob(j *Job) error {
 		return p.saveOp(op)
 	}
 
-	// There are jobs left, but they're on hold, so let's fix that
+	// There are jobs left, but they're on hold, so let's fix that.
+	//
+	// TODO: DON'T hard-code the Sequence + 1 here! If we ever want jobs that
+	// have space between them, or we allow an individual job to be queued but
+	// then removed for some reason, this breaks and debugging would be a pain.
+	// Probably not likely, but it's very little work to find the next sequence
+	// instead of just assuming.
 	op.Exec("UPDATE jobs SET status = ? WHERE pipeline_id = ? AND sequence = ?", JobStatusPending, j.PipelineID, j.Sequence+1)
 	return op.Err()
 }
