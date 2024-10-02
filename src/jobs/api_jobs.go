@@ -52,7 +52,7 @@ func (j *BatchJob) queueAgentJob(name string, fn batchJobFunc) ProcessResponse {
 		var msg = fmt.Sprintf("Sent ONI Agent the %s command", name)
 		var err = j.DBBatch.Save(models.ActionTypeInternalProcess, models.SystemUser.ID, msg)
 		if err != nil {
-			j.Logger.Warnf("Unable to update batch data; retrying: %s", err)
+			j.Logger.Warnf("Unable to update batch data. Retrying: %s", err)
 			return err
 		}
 
@@ -102,8 +102,8 @@ func (j *ONIPurgeBatch) Process(c *config.Config) ProcessResponse {
 }
 
 // ONIWaitForJob is a generic job to poll ONI until it reports that a given
-// batch's job on its end has completed. This is currently specific to batches;
-// if we need it to work with other things, we'll have to add something to the
+// batch's job on its end has completed. This is currently specific to batches.
+// If we need it to work with other things, we'll have to add something to the
 // pipeline allowing a job to tell the future job which ONI id to wait for.
 type ONIWaitForJob struct {
 	*BatchJob
@@ -140,10 +140,10 @@ func (j *ONIWaitForJob) Process(c *config.Config) ProcessResponse {
 
 	switch js {
 	case openoni.JobStatusPending:
-		j.Logger.Infof("ONI Agent reports job not started; will check later")
+		j.Logger.Infof("ONI Agent reports job not started. Will check later")
 		return PRTryLater
 	case openoni.JobStatusStarted:
-		j.Logger.Infof("ONI Agent reports job not complete; will check later")
+		j.Logger.Infof("ONI Agent reports job not complete. Will check later")
 		return PRTryLater
 	case openoni.JobStatusFailStart:
 		j.Logger.Errorf("ONI Agent job %d failed to start", jobID)

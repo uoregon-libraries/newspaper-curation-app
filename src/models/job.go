@@ -145,14 +145,14 @@ type Job struct {
 	RetryCount  int
 	logs        []*JobLog
 
-	// The job won't be run until sometime after RunAt; usually it's very close,
+	// The job won't be run until sometime after RunAt. Usually it's very close,
 	// but the daemon doesn't pound the database every 5 milliseconds, so it can
 	// take a little bit
 	RunAt time.Time
 
 	// XDat holds extra information, encoded as JSON, any job might need - e.g.,
 	// the issue's next workflow step if the job is successful.  This shouldn't
-	// be modified directly; use Args instead (which is why we've chosen such an
+	// be modified directly: use Args instead (which is why we've chosen such an
 	// odd name for this field).
 	XDat string `sql:"extra_data"`
 
