@@ -9,7 +9,7 @@
     <h2>Actions</h2>
 
     <!-- Needs QC pass -->
-    {{else if and .Data.Batch.ReadyForQC .Data.Batch.Can.Approve}}
+    {{if and .Data.Batch.ReadyForQC .Data.Batch.Can.Approve}}
     <p>{{.Data.Batch.Name}} needs approval to move to production (or a rejection if it needs to be fixed).</p>
 
     <a href="{{ApproveURL .Data.Batch}}" class="btn btn-primary">Approve...</a>
