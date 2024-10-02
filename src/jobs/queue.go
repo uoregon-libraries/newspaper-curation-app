@@ -220,7 +220,7 @@ func getJobsForMakeBatch(batch *models.Batch, c *config.Config) []*models.Job {
 	jobs = append(jobs,
 		batch.BuildJob(models.JobTypeBatchAction, makeActionArgs("copied to live path")),
 		batch.BuildJob(models.JobTypeONILoadBatch, makeLocArgs(serverTypeStaging)),
-		batch.BuildJob(models.JobTypeONIWaitForJob, nil),
+		batch.BuildJob(models.JobTypeONIWaitForJob, makeLocArgs(serverTypeStaging)),
 		batch.BuildJob(models.JobTypeBatchAction, makeActionArgs("ingested on staging")),
 		batch.BuildJob(models.JobTypeSetBatchStatus, makeBSArgs(models.BatchStatusQCReady)),
 	)
@@ -338,7 +338,7 @@ func getJobsForFinalizingFlaggedIssues(batch *models.Batch, flagged []*models.Fl
 	// Next purge the batch from staging
 	jobs = append(jobs,
 		batch.BuildJob(models.JobTypeONIPurgeBatch, makeLocArgs(serverTypeStaging)),
-		batch.BuildJob(models.JobTypeONIWaitForJob, nil),
+		batch.BuildJob(models.JobTypeONIWaitForJob, makeLocArgs(serverTypeStaging)),
 		batch.BuildJob(models.JobTypeBatchAction, makeActionArgs("purged batch from staging")),
 	)
 
@@ -394,7 +394,7 @@ func QueueBatchGoLive(batch *models.Batch, c *config.Config) error {
 
 	// First we need jobs to push the batch to production ONI
 	jobs = append(jobs, batch.BuildJob(models.JobTypeONILoadBatch, makeLocArgs(serverTypeProd)))
-	jobs = append(jobs, batch.BuildJob(models.JobTypeONIWaitForJob, nil))
+	jobs = append(jobs, batch.BuildJob(models.JobTypeONIWaitForJob, makeLocArgs(serverTypeProd)))
 	jobs = append(jobs, batch.BuildJob(models.JobTypeBatchAction, makeActionArgs("ingested on production")))
 
 	// Then archive-move jobs
