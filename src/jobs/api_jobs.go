@@ -2,7 +2,6 @@ package jobs
 
 import (
 	"fmt"
-	"strconv"
 
 	"github.com/uoregon-libraries/newspaper-curation-app/src/config"
 	"github.com/uoregon-libraries/newspaper-curation-app/src/internal/openoni"
@@ -45,15 +44,19 @@ func (j *BatchJob) queueAgentJob(name string, fn batchJobFunc) ProcessResponse {
 	// need to be scrutinized
 	j.DBBatch.ONIAgentJobID = jobid
 
-	// It's pretty critical that we save the batch job id since we've already
-	// queued a job externally
+	// TODO: Insert job into the pipeline to wait for the ONI side to finish
+
+	// It's pretty critical that we save the batch data and queue a "wait for
+	// ONI" job since the ONI job was successfully created
 	err = j.runCritical(func() error {
-		var msg = fmt.Sprintf("sent ONI Agent the %s command", name)
+		var msg = fmt.Sprintf("Sent ONI Agent the %s command", name)
 		var err = j.DBBatch.Save(models.ActionTypeInternalProcess, models.SystemUser.ID, msg)
 		if err != nil {
 			j.Logger.Warnf("Unable to update batch data; retrying: %s", err)
 			return err
 		}
+
+		j.Logger.Infof(msg)
 		return nil
 	})
 
@@ -98,19 +101,20 @@ func (j *ONIPurgeBatch) Process(c *config.Config) ProcessResponse {
 	return j.queueAgentJob("purge batch", agent.PurgeBatch)
 }
 
-// ONIWaitForJob is a generic job to poll ONI until it reports that a given job
-// on its end has completed
+// ONIWaitForJob is a generic job to poll ONI until it reports that a given
+// batch's job on its end has completed. This is currently specific to batches;
+// if we need it to work with other things, we'll have to add something to the
+// pipeline allowing a job to tell the future job which ONI id to wait for.
 type ONIWaitForJob struct {
-	*Job
+	*BatchJob
 }
 
 // Valid is true as long as a valid (numeric, greater than zero) job id has
 // been set in the ID arg
 func (j *ONIWaitForJob) Valid() bool {
-	var idstr = j.db.Args[JobArgID]
-	var _, err = strconv.ParseUint(idstr, 10, 64)
-	if err != nil {
-		j.Logger.Errorf("ONIWaitForJob created with an invalid id (%q): %s", idstr, err)
+	var id = j.DBBatch.ONIAgentJobID
+	if id < 1 {
+		j.Logger.Errorf("ONIWaitForJob created with an invalid id (%d)", id)
 		return false
 	}
 	return true
@@ -125,8 +129,7 @@ func (j *ONIWaitForJob) Process(c *config.Config) ProcessResponse {
 		return PRFailure
 	}
 
-	// We know the id must already be valid due to our Valid() implementation
-	var jobID, _ = strconv.ParseUint(j.db.Args[JobArgID], 10, 64)
+	var jobID = j.DBBatch.ONIAgentJobID
 
 	var js openoni.JobStatus
 	js, err = agent.GetJobStatus(int64(jobID))
