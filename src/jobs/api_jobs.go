@@ -20,11 +20,15 @@ func getONIAgent(j *Job, c *config.Config) (*openoni.RPC, error) {
 		serverTypeProd:    c.ProductionAgentConnection,
 		serverTypeStaging: c.StagingAgentConnection,
 	}
+	var server = j.db.Args[JobArgLocation]
+	if server == "" {
+		return nil, fmt.Errorf("getONIAgent: server type (location arg) is required")
+	}
 
 	var st = j.db.Args[JobArgLocation]
 	var connection = lookup[st]
 	if connection == "" {
-		return nil, fmt.Errorf("getONIAgent: invalid server type, or misconfiguration: location %q, connection %q", st, connection)
+		return nil, fmt.Errorf("getONIAgent: config error: server type (location arg) %q has empty connection string", st)
 	}
 	return openoni.New(connection)
 }
