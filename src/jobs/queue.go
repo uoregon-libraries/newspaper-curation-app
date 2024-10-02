@@ -179,9 +179,9 @@ func QueueFinalizeIssue(issue *models.Issue) error {
 
 // QueueMakeBatch sets up the jobs for generating a batch on disk: generating
 // the directories and hard-links, making the batch XML, putting the batch
-// where it can be loaded onto staging, loading it (if an ONI Agent is
-// configured), and generating the bagit manifest. Nothing can happen
-// automatically after all this until the batch is verified on staging.
+// where it can be loaded onto staging, loading it, and generating the bagit
+// manifest. Nothing can happen automatically after all this until the batch is
+// verified on staging.
 func QueueMakeBatch(batch *models.Batch, c *config.Config) error {
 	return models.QueueBatchJobs(models.PNMakeBatch, batch, getJobsForMakeBatch(batch, c)...)
 }
