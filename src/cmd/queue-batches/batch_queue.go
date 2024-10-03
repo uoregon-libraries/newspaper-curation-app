@@ -35,7 +35,7 @@ func (q *batchQueue) FindReadyIssues(redo bool) {
 	} else {
 		ws = schema.WSReadyForBatching
 	}
-	var issues, err = models.Issues().InWorkflowStep(ws).BatchID(0).Fetch()
+	var issues, err = models.Issues().InWorkflowStep(ws).BatchID(0).OrderBy("marc_org_code, lccn, date").Fetch()
 	if err != nil {
 		logger.Fatalf("Error trying to find issues: %s", err)
 	}
