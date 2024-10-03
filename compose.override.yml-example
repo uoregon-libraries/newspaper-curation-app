@@ -51,7 +51,8 @@ services:
     ports:
       - 80:80
 
-  # Export port 2222 to the ssh agent for local testing
+  # Export port 2222 to the ssh agent for local testing. You MUST do this for
+  # the general test recipe!
   dev-agent:
     ports:
       - 2222:22
