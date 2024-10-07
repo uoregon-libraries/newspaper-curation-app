@@ -21,7 +21,7 @@ them to a role, and then have NCA use them.
     `workflowhandler` code, where the authorization functions verify not just
     privileges, but also issue state, issue ownership, etc.
   - In almost all situations where a new route or handler is created, an access
-    check of *some* should be created.
+    check of *some* kind should be created.
 - If the privilege needs a check in the HTML templates:
   - First, you have to expose the privilege by name in
     `src/cmd/server/internal/responder/templates.go`. There's a long list of

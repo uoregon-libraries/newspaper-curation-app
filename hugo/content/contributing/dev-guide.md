@@ -4,10 +4,11 @@ weight: 10
 description: Developing on NCA
 ---
 
-It is assumed developers will use Docker for the database, RAIS (IIIF server), and
-SFTPGo. The rest of the tools are most easily installed locally, and the NCA
-binaries themselves are in fact easier by far to install locally versus
-building them in an image when code changes.
+It is assumed developers will use Docker for dependencies outside this
+repository: database, RAIS (IIIF server), the ONI Agent (there's a dev version
+available for testing), and SFTPGo. The rest of the tools are most easily
+installed locally, and the NCA binaries themselves are in fact easier by far to
+install locally versus building them in an image when code changes.
 
 ## Requirements / Setup
 
@@ -27,8 +28,10 @@ test the code. See [Not Compiling Locally](/contributing/not-compiling-locally).
 
 In all cases you'll need the NCA code repository:
 
-    git clone git@github.com:uoregon-libraries/newspaper-curation-app.git nca
-    cd nca
+```bash
+git clone git@github.com:uoregon-libraries/newspaper-curation-app.git nca
+cd nca
+```
 
 You don't have to specify "nca" as the destination; I just find it easier to
 use than the full name. When reading the documentation, if you don't call it
@@ -42,7 +45,7 @@ locally.
 
 If you want to go fully local on baremetal, it should be a pretty easy
 transition. Whether you use docker for a database or not, for instance, you
-have to specify how NCA connects to it. This makes the Hybrid approach ideal
+have to specify how NCA connects to it. This makes the hybrid approach ideal
 for staying mostly in sync with a production setup.
 
 #### Configuration
@@ -55,7 +58,7 @@ Here are some examples:
 
 - `APP_ROOT="/home/jechols/nca"`
 - `WORKFLOW_PATH="/home/jechols/nca/test/fakemount/workflow"`
-- `METS_XML_TEMPLATE_PATH="/home/jechols/projects/work/nca/templates/xml/mets.go.html"`
+- `METS_XML_TEMPLATE_PATH="/home/jechols/nca/templates/xml/mets.go.html"`
 
 Make sure you edit your settings file and adjust *all paths*, not just those
 shown above!
@@ -69,9 +72,9 @@ binaries configurable.
 
 ##### Docker Services
 
-`compose.override.yml` must expose RAIS ("iiif"), mysql, and SFTPGo to
-the local server via "ports" declarations, and settings need to reflect these
-values. For example, this is how the RAIS server might be configured:
+`compose.override.yml` must expose RAIS ("iiif"), mysql, dev-agent, and SFTPGo
+to the local server via "ports" declarations, and settings need to reflect
+these values. For example, this is how the RAIS server might be configured:
 
 ```
 # compose.override.yml:
@@ -104,12 +107,11 @@ given port.
 A handy script, `scripts/localdev.sh`, has been provided for easier development
 and testing. Using it via `source` will expose several useful functions for
 easing a more local development environment. Docker is still expected for the
-IIIF server, SFTPGo, and the database, but the NCA applications will be
-completely local.
+various external services, but the NCA applications will be completely local.
 
 For this to work, however:
 
-- You should read and understand the Docker image definition
+- You should read and understand the Docker image definitions
 - You must install the command-line tools locally:
   - poppler utils
   - openjpeg
@@ -127,18 +129,18 @@ the script:
 - `resetdb` initializes the database to prepare for NCA development from a
   "clean slate":
   - Deletes the stack, including database volumes
-  - Starts up key services (db, iiif, sftpgo)
+  - Starts up key services (db, iiif, dev-agent, sftpgo)
   - Once the database is ready, runs the DB migrations and ingests seed data if
     you have any (`docker/mysql/nca-seed-data.sql`)
 - `migrate` can be run standalone if you don't have seed data and just need to
   get the database migrations run
 - `server` prepares, compiles, and runs the HTTP server:
-  - Starts up the necessary pieces of the docker stack (db, iiif, sftpgo)
+  - Starts up the necessary pieces of the docker stack (db, iiif, dev-agent, sftpgo)
   - Provisions a valid SFTPGo key in your `settings` file
   - Compiles the HTTP server in case any changes have been made to the source
   - Runs the server in debug mode
 - `workers` prepares and starts the job runner:
-  - Starts up key docker services (db, iiif, sftpgo)
+  - Starts up key docker services (db, iiif, dev-agent, sftpgo)
   - Compiles `run-jobs` in case the source code changed
   - Runs the standard "watchall" subcommand for the job runner
 
@@ -166,7 +168,7 @@ isn't used for any of the stack.
 However, this approach can be easier than the "hybrid" approach above if you
 don't want to deal with all the command-line tool installs (openjpeg, poppler,
 graphicsmagick, ghostscript) and figuring out the various docker settings to
-expose the services NCA needs (database, sftpgo, IIIF).
+expose the services NCA needs (database, sftpgo, dev-agent, IIIF).
 
 #### Copy docker configuration
 
@@ -197,39 +199,45 @@ have the legacy chronam JSON handlers, as described in
 
 #### Compile
 
-    make
+```bash
+make
+```
 
 Binaries have to be built before starting up docker if you are mounting them
 into the container.
 
 #### Get all images
 
-    docker compose build
-    docker compose pull
+```bash
+docker compose build
+docker compose pull
+```
 
-Building the NCA application image will take a long time. Grab some coffee.
-And maybe a nap....
+Building the "app" image will take a little while. Grab some coffee.
 
 Note that once it's been built, further builds will be quick as docker will
-cache the expensive operations (compiling custom versions of poppler and
-openjpeg) and only update what has changed (e.g., NCA source code).
+cache the expensive operations (updating the `dnf` cache, downloading and
+installing dependencies, etc) and only update what has changed (e.g., NCA
+source code).
 
 #### Start the stack
 
-Run `docker compose up`, and the application will be available at
-`$APP_URL/nca`. Note that on the first run it will take a while to respond as
-the system is caching all known issues - including those on the defined live
-site.
+Run `docker compose up`, and the application will be available at the
+configured `$APP_URL`. Note that on the first run it will take a while to
+respond as the system is caching all known issues - including those on the
+defined live site.
 
 #### Edit + Compile + Test Loop
 
 Here's a nice shortcut one can use to speed up the process since, unlike PHP,
 this project requires compilation before it starts up:
 
-    alias dc='docker compose'
-    make fast
-    dc restart web proxy workers
-    dc logs -f web proxy workers
+```bash
+alias dc='docker compose'
+make fast
+dc restart web proxy workers
+dc logs -f web proxy workers
+```
 
 The alias just makes it easier to work with docker in general, and can be put
 into a `.bash_aliases` file or similar.
@@ -255,7 +263,7 @@ You won't get far without setting up some test issues. NCA has a rudimentary
 setup for grabbing issues from a live server and turning them into testable
 data for local use.
 
-Note that the test scripts/recipes assume devs are using the "Hybrid" approach
+Note that the test scripts/recipes assume devs are using the "hybrid" approach
 to development.
 
 The processes are detailed in the `test` subdirectory of the NCA project and
@@ -268,11 +276,13 @@ Everything which compiles into a standalone binary lives in `src/cmd/`.
 Comprehensive documentation exists only in the source code, but can be viewed
 with `go doc`; e.g.:
 
-    # Read the entire "issuefinder" package's documentation
-    go doc ./src/issuefinder
+```bash
+# Read the entire "issuefinder" package's documentation
+go doc ./src/issuefinder
 
-    # Read the Finder type's documentation
-    go doc ./src/issuefinder Finder
+# Read the Finder type's documentation
+go doc ./src/issuefinder Finder
+```
 
 ### Validation
 
@@ -296,4 +306,3 @@ comprehensive end-to-end testing is explained in the
   cached compiler output
 - Run `make distclean` if you want to delete all cached / downloaded
   dependencies. This should rarely be necessary, if ever.
-

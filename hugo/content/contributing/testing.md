@@ -8,11 +8,14 @@ description: Automated and manual testing of NCA
 
 Running unit tests is easy:
 
-    make test
+```bash
+make test
+```
 
-This compiles all of the code and tests any `*_test.go` files. Test coverage
-is spotty at best right now, but the compile-time checks catch the most common
-problems, like typos in variable names.
+This compiles all of the code and tests any `*_test.go` files. Test coverage is
+spotty at best right now, but the compile-time checks, and static analysis run
+by `make`, catch most of the kinds of problems you'd test for in
+PHP/Ruby/Python/etc (variable typos, misuse of a function, etc.)
 
 Contributors: feel free to add more unit tests to improve overall coverage!
 

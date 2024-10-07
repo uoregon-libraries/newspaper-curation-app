@@ -70,7 +70,7 @@ two options:
 
 - Pretend it's a new upload and start right at the beginning. Derivative files
   must be removed, and the uploads must conform to the file and folder specs as
-  defined in our [file/folder upload specs](/specs/upload-specs).
+  defined in our [file/folder upload specs][upload-specs]
 - Just delete the issue folder and get it re-scanned or re-uploaded from the
   publisher. In this case, the normal procedures are followed and the issue
   will be completely new for all intents and purposes.
@@ -83,3 +83,5 @@ every field in every table*.
 
 Generally speaking, if database manipulation *is* the correct approach, it
 should have been done *instead of* reporting an error and removing the issue.
+
+[upload-specs]: <{{% ref "/specs/upload-specs" %}}>

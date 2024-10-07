@@ -10,9 +10,11 @@ inner workings.
 
 ## Setup
 
-See [Server Setup](/setup/server-setup) for getting the software installed, and
-[Services](/setup/services) for information about running the services NCA
-requires.
+See [Server Setup][server-setup] for getting the software installed, and
+[Services][services] for information about running the services NCA requires.
+
+[server-setup]: <{{% ref "/setup/server-setup" %}}>
+[services]: <{{%ref "/setup/services" %}}>
 
 1. Server is set up, directories mounted
 1. Settings file (`/usr/local/nca/settings`, for example) is customized as needed
@@ -22,11 +24,11 @@ requires.
 
 ## Uploads
 
-### SFTP (Born Digital)
+### PDF SFTP (Born Digital)
 
 1. Publishers upload PDF issues routinely to your servers
    - Uploads either go directly into NCA's SFTP folder, or a script can be built to move them
-   - [See our detailed folder and filename specs](/specs/upload-specs)
+   - [See our detailed folder and filename specs][upload-specs]
 1. Uploaded issues are individually verified and queued by a workflow manager using the "Uploaded Issues" section of the NCA web app
    - (Or the bulk queue CLI script is run if issues are verified out-of-band or trusted implicitly)
 1. The job runner picks up queued issues:
@@ -44,11 +46,11 @@ requires.
    - The job runner moves the files out of the page review folder and into the internal folder structure
    - Derivatives are created so the issue has the expected ALTO XML and JP2 files
 
-### Scanned in-house
+### TIFF/PDF Scans
 
 1. Digital imaging personnel scan papers and run them through OCR to produce a TIFF and PDF file
    - We use Abbyy for scanning, and the output PDF works with NCA
-   - [See our detailed folder and filename specs](/specs/upload-specs)
+   - [See our detailed folder and filename specs][upload-specs]
 1. Issues' PDFs and TIFFs are uploaded
    - Uploads either go directly into NCA's scans folder, or a script can be built to move them
 1. The job runner automatically searches the scans folder for issues ready to move into the workflow:
@@ -56,6 +58,8 @@ requires.
    - The job runner moves the files out of the scans folder and into the internal folder structure
    - Derivatives are created so the issue has the expected ALTO XML and JP2 files
      - In the case of scans, the JP2 is built from the TIFF, not the PDF
+
+[upload-specs]: <{{% ref "/specs/upload-specs" %}}>
 
 ## Preparing Issues for Batching
 
@@ -74,18 +78,18 @@ generated, the workflow is the same regardless of the source:
 5. Batches will be put into the configured `BATCH_OUTPUT_PATH`, and required
    files (e.g., not TIFFs) will be synced to production (as configured via
    `BATCH_PRODUCTION_PATH`).
-6. A batch loader must manually load the batches into a staging server and then
-   flag them as ready for QC
+6. NCA will call out to the configured ONI Agent on staging to load the batch.
+   Once the ONI job is done, the batch will be marked ready for QC.
 7. A batch reviewer does quality control on the staging server, verifying the
    batch's issues look good
    - If all is well, batch reviewer marks the issue as ready for production
    - If not, they reject the batch and can then get individual issues pulled
      out to be re-curated or rejected from NCA entirely. The remaining issues
-     are put into a new batch which is then set as being ready for staging
-     (repeating step 5).
-8. Batches that are ready for production get loaded to prod by a batch loader.
-9. Batch loader flags the batch as "live", and NCA moves its files to the
-   configured `BATCH_ARCHIVE_PATH`.
+     are put into a new batch which is then rebuilt and sent to staging
+     (repeating steps 5 and 6).
+8. Batches that are ready for production get loaded to prod by the production
+   ONI Agent, and get flagged "live" when the agent reports the job as complete.
+9. NCA moves the batch files to the configured `BATCH_ARCHIVE_PATH`.
 10. Once the batch can be confirmed as fully archived, a batch loader flags it
     as archived.
 11. Somebody with command-line access to NCA will run `delete-live-done-issues`

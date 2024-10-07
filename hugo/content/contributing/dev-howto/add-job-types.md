@@ -7,7 +7,7 @@ description: Adding a new type of job into the code
 When a new kind of job is required for backend processing, it has to be done
 properly in order to ensure it is used, set up, and processed by NCA.
 
-- Make sure there aren't already existing jobs that do what you want!  There
+- Make sure there aren't already existing jobs that do what you want! There
   are a lot of jobs in NCA already, and some are meant to be very generic, such
   as `JobTypeRenameDir`.
   - Read and make sure you understand *all structs* in `src/jobs` that
@@ -19,8 +19,8 @@ properly in order to ensure it is used, set up, and processed by NCA.
 - Create a new struct that implements the `Process` method.
   - Use an existing Go file if it makes sense (e.g., another metadata or
     filesystem job) or create a new one in `src/jobs/`.
-  - Make sure you document the type!  What is its purpose?
-  - Need an example?  The metadata jobs are very simple and can be found in
+  - Make sure you document the type! What is its purpose?
+  - Need an example? The metadata jobs are very simple and can be found in
     [`src/jobs/metadata_jobs.go`][2].
 - Wire up the `JobType` to the concrete `Process` implementor
   - This is done in [`src/jobs/jobs.go`][3], in the `DBJobToProcessor` function
