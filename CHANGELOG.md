@@ -34,6 +34,175 @@ Brief description, if necessary
 ### Migration
 -->
 
+## v6.0.0
+
+Batch automation! Awardee automation!! MARC XML uploading and automation!!!
+
+This release will *require* a new service that you run on your ONI servers
+(both staging and production): [ONI Agent][oni-agent]. We're taking away the
+instructions and workflow "pauses" for manually loading and purging batches, as
+they will no longer be necessary. It also ensures ONI systems get any awardees
+you've put into NCA, and allows you to upload a title's MARC XML into NCA to
+both pre-populate a title there, and send the MARC XML to your ONI instances so
+you don't have to manually load those.
+
+In most cases, installing and configuring ONI Agents should be an easy
+trade-off for the batch/title/awardee automation, but it's certainly a big
+change, and will require some work to get it all up and running.
+
+There are also a handful of dev- and test-centric improvements primarily aimed
+at making it easier to build a full end-to-end test (NCA, ONI, and ONI Agent)
+using docker compose.
+
+### Fixed
+
+- The `delete-live-done-issues` command will now report errors if a batch
+  cannot be finalized for some reason
+- Devs: The `localdev.sh` command for migrating the database now ensures the
+  migrate command is built first
+- Devs: internal refactors which affect the "public" APIs. But don't use these.
+  I just haven't gotten around to moving everything to a proper "internal"
+  subdirectory.
+
+### Added
+
+- Batch-related automation via the above-mentioned ONI Agent:
+  - When a batch is ready for staging, it is automatically loaded there.
+  - When a batch is ready for production, same deal.
+  - When a batch needs to be purged, ONI Agent takes care of it.
+  - Before a batch is sent to ONI, its awardee is checked for existence, and
+    the ONI Agent attempts to create it if needed.
+- NCA's "Titles" view now has a link to upload MARC XML. If you do an upload,
+  two things happen:
+  - NCA will create or update any record with a matching LCCN with the basic
+    MARC data it cares about: LCCN, name, location, and some internal fields
+    like the fact that it considers the title's LCCN to be validated.
+  - The ONI agents (staging and production) will be given a command to load the
+    MARC record into ONI. This will mean *no more batch failures* due to a
+    missing title.
+- Users with some kind of batch-related role can now see most batches, even if
+  they can't take any actions.
+- NCA auto-creates various workflow directories if they don't exist. This
+  simplifies our docker setup as well as reducing out-of-sync situations when
+  the docker entrypoint didn't properly reflect all necessary directories.
+- Devs: New script for testing, `test/create-test-users.go`, which deletes
+  existing users and then creates a new user for each role in NCA
+- Devs: `make` now builds an ONI Agent test binary which can be used for
+  various actions against an ONI instance.
+
+### Changed
+
+- NCA now *requires* a Open ONI running on a server alongside an [ONI
+  Agent][oni-agent] daemon, reachable by NCA. ONI Agent helps to simplify the
+  process of loading and purging batches on the ONI side, drastically
+  simplifying the NCA process of managing batches, and eliminating some
+  inconsistencies / problems associated with managing batches manually.
+  - There are currently *no plans* for manual support of batch loading, due to
+    the unnecessary complexity in running automation side-by-side with the
+    manual process. For dev use, the docker setup now includes a service to
+    fake the automated operations, which could potentially be used in
+    production if users didn't mind NCA not actually specifying which
+    operations need to be run.
+- Major documentation overhaul, including information on the above-mentioned
+  ONI Agent and automations, but also typos were fixed, obsolete data removed,
+  incorred information fixed, etc.
+- The "Batch Management" view groups batches in tabs so the ones that need the
+  most immediate attention are easier to find.
+- Most areas of NCA that used the term "purge", when referring to something
+  other than the purging of a batch from ONI, have changed to some other term.
+  This requires a migration (see notes below) to keep the database meaningful.
+- Minimum wait times for uploaded issues to be queued are now configurable
+  instead of hard-coded! Yay!
+- Devs: major changes to the "automated manual" test setup to improve
+  consistency (finding and renaming all batch names to something predictable)
+  and ease future updates
+  - You no longer need to supply your own `nca-seed-data.sql`.
+  - You can put MARC XML in a `test/sources/marc-xml` directory to get them
+    autoloaded when running various integration tests.
+  - When running `prep_for_testing`, migration-installed users will be destroyed
+    and replaced with role-based users. If you tend to test as "admin", nothing
+    will appear to change, but the "sysadmin" user will no longer be available.
+  - Everything related to docker compose should now reflect the best practices /
+    conventions: `compose.yml` instead of `docker-compose.yml`, no "version"
+    definition, etc.
+
+[oni-agent]: <https://github.com/open-oni/oni-agent>
+
+### Removed
+
+- All manual flagging of batch loading and purging has been removed, as have
+  the instructions for these pieces.
+
+### Migration
+
+#### Normal Users
+
+- Get all batches out of NCA's "manual" workflow states prior to upgrading.
+  Behavior will be undefined, but almost certainly unpleasant, if there are
+  batches in some of the states that no longer exist, such as batches waiting
+  for a staging purge.
+  - Safe states: `live`, `live_done`, `live_archived`, `qc_ready`,
+    `qc_flagging`, or `deleted`
+  - Unsafe: `pending`, `staging_ready`, or `passed_qc`
+- Configure NCA's new settings:
+  - `STAGING_AGENT`: The *ssh endpoint* (not necessarily your public URL if you
+    have something like HAProxy in front of your servers!) to your staging
+    server's ONI Agent, e.g., "staging.oregonnews.uoregon.edu:2222"
+  - `PRODUCTION_AGENT`: The ssh endpoint to your production server's ONI Agent
+  - `DURATION_ISSUE_CONSIDERED_DANGEROUS`: How long after upload an issue must
+    wait before it's allowed to be queued for curation
+  - `DURATION_ISSUE_CONSIDERED_NEW`: How long after upload an issue gives a
+    warning about being new
+- Install the ONI Agent onto your production and staging systems
+  - Consider compiling NCA via `make` somewhere off production prior to
+    deploying, and trying out `bin/agent-test`. Running this command will give
+    you an explanation of how to use it to test your NCA and ONI Agent setup.
+    This will help catch firewall issues, configuration mishaps, etc.
+- Shut down NCA workers and HTTP daemon
+- Delete the NCA issue cache (e.g., `rm /var/local/news/nca/cache -rf`)
+- Run database migrations:
+  - `make && ./bin/migrate-database -c ./settings up`
+- Restart services
+
+#### Developers
+
+- The docker stack has been rewritten pretty much from scratch so that it's
+  more like a production setup and includes *all* dependencies now, including
+  ONI and ONI Agent for NCA to send its various commands.
+- You *will* need significant changes to your docker setup! There is *no*
+  direct migration path.
+  - If you use docker compose, you probably need to rename your override to
+    `compose.override.yml`
+  - There are now two example compose overrides, and they are are a lot more
+    "out of the box" than previously. Copy the one that makes the most sense
+    and you should only need a few tweaks.
+  - Review your settings file if you're doing hybrid dev. With all the ONI
+    services now in containers, various setting will need to change and some
+    might need to change depending on how you're set up. It's best to do a full
+    review, but below are some of the key settings:
+    - `STAGING_AGENT` and `PRODUCTION_AGENT` will definitely need to change to
+      point to the correct agent. One of those settings may be fine, but the
+      two can't be the same anymore, so one has to change.
+    - `STAGING_NEWS_WEBROOT` should change so you can easily verify NCA is
+      loading batches into the right environment when they're QC-ready.
+    - `BIND_ADDRESS` may need to change if it conflicts with any of the new
+      services (or else you'll need to change those services in the compose
+      override file)
+    - `SFTP_API_URL` will probably have to change, or you'll need to change the
+      compose override file, as its port is 8081 in the example overrides.
+  - You should probably remove all existing docker images, volumes, containers,
+    etc. You should delete your local issue cache if you mounted one.
+  - A lot of environment variables are gone now, such as `APP_URL`. If you used
+    `.env` you probably need to translate it based on the new setup, using the
+    override of your choice as a starting point. There's a good chance you
+    won't need to do anything, though, as most docker setup is a lot easier now
+    that there are two examples to choose from.
+  - If you had a custom nca-seed-data.sql, you should rename it, and you'll
+    have to abandon it or manually load it when needed. This part of the
+    integration suite is no longer done for you to make it easier for a typical
+    developer to just dive into the tests.
+  - Re-read basically everything related to testing! A lot has changed.
+
 ## v5.0.1
 
 Batching is now *allowed*! WOW!
