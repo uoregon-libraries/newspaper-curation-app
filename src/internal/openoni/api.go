@@ -16,6 +16,7 @@ import (
 // RPC manages the ssh connections to a single ONI Agent
 type RPC struct {
 	connection string
+	call       func([]string) ([]byte, error)
 }
 
 // New parses the connection string into a server and port. Its format must be
@@ -34,28 +35,42 @@ func New(connection string) (*RPC, error) {
 	return &RPC{connection: connection}, nil
 }
 
-func (r *RPC) do(params ...string) (result gjson.Result, err error) {
-	var client *ssh.Client
+func (r *RPC) defaultCall(params []string) (data []byte, err error) {
 	var cfg = &ssh.ClientConfig{
 		HostKeyCallback: ssh.InsecureIgnoreHostKey(),
 		Timeout:         time.Second * 10,
 	}
+
+	var client *ssh.Client
 	client, err = ssh.Dial("tcp", r.connection, cfg)
 	if err != nil {
-		return result, fmt.Errorf("dialing %q: %w", r.connection, err)
+		return data, fmt.Errorf("dialing %q: %w", r.connection, err)
 	}
 
 	var s *ssh.Session
 	s, err = client.NewSession()
 	if err != nil {
-		return result, fmt.Errorf("starting ssh session %q: %w", r.connection, err)
+		return data, fmt.Errorf("starting ssh session %q: %w", r.connection, err)
 	}
 
-	var data []byte
 	var cmd = strings.Join(params, " ")
 	data, err = s.Output(cmd)
 	if err != nil {
-		return result, fmt.Errorf("sending command %q to server: %w", cmd, err)
+		return data, fmt.Errorf("sending command %q to server: %w", cmd, err)
+	}
+
+	return data, nil
+}
+
+func (r *RPC) do(params ...string) (result gjson.Result, err error) {
+	if r.call == nil {
+		r.call = r.defaultCall
+	}
+
+	var data []byte
+	data, err = r.call(params)
+	if err != nil {
+		return result, err
 	}
 
 	result = gjson.Parse(string(data))
