@@ -93,9 +93,9 @@ func main() {
 	}
 	switch command {
 	case cmdLoad:
-		doBatch(rpc, rpc.LoadBatch, args[0])
+		doBatch(rpc, rpc.LoadBatch, args[0], false)
 	case cmdPurge:
-		doBatch(rpc, rpc.PurgeBatch, args[0])
+		doBatch(rpc, rpc.PurgeBatch, args[0], true)
 
 	case cmdStatus:
 		var id = getJobID(args[0])
@@ -131,12 +131,17 @@ func getJobID(s string) int64 {
 
 type batchFunc func(name string) (jobID int64, err error)
 
-func doBatch(rpc *openoni.RPC, fn batchFunc, batchname string) {
+func doBatch(rpc *openoni.RPC, fn batchFunc, batchname string, wait bool) {
 	var id, err = fn(batchname)
 	if err != nil {
 		log.Fatalf("Couldn't request batch operation: %s", err)
 	}
 	log.Printf("Queued job for batch operation: job id %d", id)
+
+	if !wait {
+		log.Printf("Not waiting for long job; check status manually via the `job-status` command (job id %d)", id)
+		return
+	}
 
 	for {
 		var jobStatus, err = rpc.GetJobStatus(id)
