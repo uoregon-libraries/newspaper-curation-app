@@ -34,6 +34,73 @@ Brief description, if necessary
 ### Migration
 -->
 
+## v6.0.0
+
+Batch automation!
+
+This is just after our v5 release, but it's a big enough set of changes that it
+again warrants a major version increase. This release will *require* a new
+service that you run on both staging and production, and it takes away the
+ability to manually load and purge batches. In most cases this should be an
+easy trade-off, but it's certainly a big change.
+
+### Added
+
+- Users with some kind of batch-related role can now see most batches, even if
+  they can't take any actions.
+- New script for testing, `test/create-test-users.go`, which deletes existing
+  users and then creates a new user for each role in NCA
+
+### Changed
+
+- NCA now *requires* a Open ONI running on a server alongside an [ONI
+  Agent][oni-agent] daemon, reachable by NCA. ONI Agent helps to simplify the
+  process of loading and purging batches on the ONI side, drastically
+  simplifying the NCA process of managing batches, and eliminating some
+  inconsistencies / problems associated with managing batches manually.
+  - There are currently *no plans* for manual support of batch loading, due to
+    the unnecessary complexity in running automation side-by-side with the
+    manual process. For dev use, the docker setup now includes a service to
+    fake the automated operations, which could potentially be used in
+    production if users didn't mind NCA not actually specifying which
+    operations need to be run.
+- Major documentation overhaul, including information on the above-mentioned
+  ONI Agent, but also typos were fixed, obsolete data removed, incorred
+  information fixed, etc.
+- The "Batch Management" view groups batches in tabs so the ones that need the
+  most immediate attention are easier to find.
+- When running `prep_for_testing`, migration-installed users will be destroyed
+  and replaced with role-based users. If you tend to test as "admin", nothing
+  will appear to change, but the "sysadmin" user will no longer be available.
+- Everything related to docker compose should now reflect the best practices /
+  conventions: `compose.yml` instead of `docker-compose.yml`, no "version"
+  definition, etc.
+- Most areas of NCA that used the term "purge", when referring to something
+  other than the purging of a batch from ONI, have changed to some other term.
+  This requires a migration (see notes below) to keep the database meaningful.
+
+[oni-agent]: <https://github.com/open-oni/oni-agent>
+
+### Removed
+
+- All manual flagging of batch loading and purging has been removed, as have
+  the instructions for these pieces.
+
+### Migration
+
+- Get all batches out of NCA's "manual" workflow states prior to upgrading.
+  Behavior will be undefined, but almost certainly unpleasant, if there are
+  batches in some of the states that no longer exist, such as batches waiting
+  for a staging purge.
+  - Safe states: `live`, `live_done`, `live_archived`, `qc_ready`,
+    `qc_flagging`, or `deleted`
+  - Unsafe: `pending`, `staging_ready`, or `passed_qc`
+- If you use docker compose, you probably need to rename your override to `compose.override.yml`
+- Shut down NCA workers and HTTP daemon
+- Run database migrations:
+  - `make && ./bin/migrate-database -c ./settings up`
+- Restart services
+
 ## v5.0.1
 
 Batching is now *allowed*! WOW!
