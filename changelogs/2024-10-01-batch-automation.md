@@ -25,6 +25,10 @@
 
 ### Migration
 
-- Get all batches out of NCA's workflows prior to upgrading. Behavior will be
-  undefined, but almost certainly unpleasant, if there are batches in some of
-  the states that no longer exist, such as batches waiting for a staging purge.
+- Get all batches out of NCA's "manual" workflow states prior to upgrading.
+  Behavior will be undefined, but almost certainly unpleasant, if there are
+  batches in some of the states that no longer exist, such as batches waiting
+  for a staging purge.
+  - Safe states: `live`, `live_done`, `live_archived`, `qc_ready`,
+    `qc_flagging`, or `deleted`
+  - Unsafe: `pending`, `staging_ready`, or `passed_qc`
