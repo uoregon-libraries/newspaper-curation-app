@@ -35,11 +35,22 @@ func TestNew(t *testing.T) {
 
 // getRPC returns an RPC, crashing if an error occurs since this is using a
 // hard-coded connection string that should always work
-func getRPC(t *testing.T) *RPC {
+func getRPC(t *testing.T, name string, expectedParams []string, jsonOut []byte) *RPC {
 	var r, err = New("foo:2222")
 	if err != nil {
 		t.Fatalf("Unable to provision new RPC: %s", err)
 	}
+	r.call = func(params []string) (data []byte, err error) {
+		if len(expectedParams) > 0 {
+			var diff = cmp.Diff(expectedParams, params)
+			if diff != "" {
+				t.Fatalf("%s called with invalid params: %s", name, diff)
+			}
+		}
+
+		return jsonOut, nil
+	}
+
 	return r
 }
 
@@ -56,7 +67,7 @@ func TestDo(t *testing.T) {
 
 	for name, tc := range tests {
 		t.Run(name, func(t *testing.T) {
-			var r = getRPC(t)
+			var r, _ = New("foo:2222")
 
 			r.call = func(_ []string) (data []byte, err error) {
 				if tc.hasError {
@@ -91,20 +102,7 @@ func TestLoadBatch(t *testing.T) {
 	var cmd = "load-batch"
 	for name, tc := range tests {
 		t.Run(name, func(t *testing.T) {
-			var r = getRPC(t)
-			r.call = func(params []string) (data []byte, err error) {
-				if params[0] != cmd {
-					t.Fatalf("Batch load called, but param 1 was %q, not %q", params[0], cmd)
-				}
-				if params[1] != tc.batch {
-					t.Fatalf("Batch load called, but param 2 was %q, not %q", params[1], tc.batch)
-				}
-				if len(params) != 2 {
-					t.Fatalf("Batch load called, but got %d params instead of 2", len(params))
-				}
-
-				return []byte(tc.json), nil
-			}
+			var r = getRPC(t, "LoadBatch", []string{cmd, tc.batch}, []byte(tc.json))
 
 			var id, err = r.LoadBatch(tc.batch)
 			if tc.hasError {
@@ -139,20 +137,7 @@ func TestPurgeBatch(t *testing.T) {
 	var cmd = "purge-batch"
 	for name, tc := range tests {
 		t.Run(name, func(t *testing.T) {
-			var r = getRPC(t)
-			r.call = func(params []string) (data []byte, err error) {
-				if params[0] != cmd {
-					t.Fatalf("Batch purge called, but param 1 was %q, not %q", params[0], cmd)
-				}
-				if params[1] != tc.batch {
-					t.Fatalf("Batch purge called, but param 2 was %q, not %q", params[1], tc.batch)
-				}
-				if len(params) != 2 {
-					t.Fatalf("Batch purge called, but got %d params instead of 2", len(params))
-				}
-
-				return []byte(tc.json), nil
-			}
+			var r = getRPC(t, "PurgeBatch", []string{cmd, tc.batch}, []byte(tc.json))
 
 			var id, err = r.PurgeBatch(tc.batch)
 			if tc.hasError {
@@ -206,20 +191,7 @@ func TestGetJobLogs(t *testing.T) {
 	var idstr = "27"
 	for name, tc := range tests {
 		t.Run(name, func(t *testing.T) {
-			var r = getRPC(t)
-			r.call = func(params []string) (data []byte, err error) {
-				if params[0] != cmd {
-					t.Fatalf("Get job logs called, but param 1 was %q, not %q", params[0], cmd)
-				}
-				if params[1] != idstr {
-					t.Fatalf("Get job logs called, but param 2 was %q, not %q", params[1], idstr)
-				}
-				if len(params) != 2 {
-					t.Fatalf("Get job logs called, but got %d params instead of 2", len(params))
-				}
-
-				return []byte(tc.json), nil
-			}
+			var r = getRPC(t, "GetJobLogs", []string{cmd, idstr}, []byte(tc.json))
 
 			var logs, err = r.GetJobLogs(27)
 			if tc.hasError {
