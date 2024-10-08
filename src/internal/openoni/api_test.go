@@ -211,3 +211,65 @@ func TestGetJobLogs(t *testing.T) {
 		})
 	}
 }
+
+func TestGetJobStatus(t *testing.T) {
+	var tests = map[string]struct {
+		json        string
+		status      JobStatus
+		hasError    bool
+		errContains string
+	}{
+		"pending": {
+			json:     `{"status": "success", "job": {"id": 27, "status": "pending"}}`,
+			status:   JobStatusPending,
+			hasError: false,
+		},
+
+		"success": {
+			json:     `{"status": "success", "job": {"id": 27, "status": "successful"}}`,
+			status:   JobStatusSuccessful,
+			hasError: false,
+		},
+
+		"failed": {
+			json:     `{"status": "success", "job": {"id": 27, "status": "failed"}}`,
+			status:   JobStatusFailed,
+			hasError: false,
+		},
+
+		"missing job obj": {
+			json:        `{"status": "success"}`,
+			hasError:    true,
+			errContains: `missing "job" object`,
+		},
+
+		"invalid status": {
+			json:        `{"status": "success", "job": {"id": 27, "status": "foo"}}`,
+			hasError:    true,
+			errContains: `unknown status`,
+		},
+	}
+
+	var cmd = "job-status"
+	var idstr = "27"
+	for name, tc := range tests {
+		t.Run(name, func(t *testing.T) {
+			var r = getRPC(t, "GetJobStatus", []string{cmd, idstr}, []byte(tc.json))
+
+			var st, err = r.GetJobStatus(27)
+			if tc.hasError {
+				if err == nil {
+					t.Fatalf("GetJobStatus(%q) (json %q): expected error, got none", idstr, tc.json)
+				}
+				if !strings.Contains(err.Error(), tc.errContains) {
+					t.Fatalf("GetJobStatus(%q) (json %q): expected error to contain %q, got %s", idstr, tc.json, tc.errContains, err)
+				}
+				return
+			}
+
+			if st != tc.status {
+				t.Fatalf("GetJobStatus(%q) (json %q): job status should be %s, got %s", idstr, tc.json, tc.status, st)
+			}
+		})
+	}
+}
