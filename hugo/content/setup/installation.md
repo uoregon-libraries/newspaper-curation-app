@@ -7,7 +7,9 @@ description: How to build and compile NCA
 ## Development
 
 If you're developing on NCA, installation will differ from standing up a
-production server. Please see our [Development Guide](/contributing/dev-guide).
+production server. Please see our [Development Guide][dev-guide].
+
+[dev-guide]: <{{% ref "/contributing/dev-guide" %}}>
 
 ## Preliminary Setup
 
@@ -21,15 +23,38 @@ Manual installation has several prerequisites:
 - A IIIF server capable of handling tiled JP2 files without a ton of overhead (e.g.,
   [RAIS](https://github.com/uoregon-libraries/rais-image-server))
 - Apache/nginx for authentication as well as proxying to NCA and the IIIF server
+- Two running [Open ONI][oni] applications: staging and production.
+- An [ONI Agent][agent] must be set up for each ONI instance in order to
+  automate some of the functionality from NCA to ONI. The NCA server needs to
+  be able to connect to the ONI Agent, but the agent's ports should not be open
+  to any other traffic.
+  - In our setup, we have an internal-network-only port for the agents, and
+    they run using systemd so that they start on reboot and we can specify
+    their settings directly in the systemd unit's environment. The ONI Agent
+    README should be sufficient to get this working.
+
+[oni]: <https://github.com/open-oni/open-oni>
+[agent]: <https://github.com/open-oni/oni-agent>
 
 **Please note**: The easiest way to get a quick demo / test setup of NCA is via
-our Docker configuration / setup:
+our Docker configuration / setup, and using the dummy ONI Agent set up in
+docker compose builds:
 
-- <https://github.com/uoregon-libraries/newspaper-curation-app/blob/main/compose.yml>
-- <https://github.com/uoregon-libraries/newspaper-curation-app/tree/main/docker>
+- [compose.yml][compose.yml]
+- [Docker][docker-dir]
 
-This is great to try things out, or for a quick one-off use of NCA, but **it is
-not recommended for production use**.
+[compose.yml]: <https://github.com/uoregon-libraries/newspaper-curation-app/blob/main/compose.yml>
+[docker-dir]: <https://github.com/uoregon-libraries/newspaper-curation-app/tree/main/docker>
+
+This is great to try things out, or for a quick one-off use of NCA. It is not
+recommended for production use: our docker compose setup is very dev-centric,
+and we currently don't have a setup that includes all the ONI pieces. You would
+have to manually do everything NCA currently automates with the ONI Agent, and
+you won't necessarily know what these are since NCA just sends off commands
+instead of telling somebody what to do. If you're building a few batches for a
+short-term project, this is probably manageable, but if you're running this for
+long-term curation and batch generation, you'll find this quickly becomes very
+difficult.
 
 We strongly recommend either crafting your own containerized setup with a mind
 to production reliability (which we haven't done) or just running NCA on bare
@@ -41,7 +66,7 @@ helpful just in terms of understanding the full stack and configuration.
 
 Compilation requires:
 
-- [Go](https://golang.org/dl/) 1.21 or later. Go is only required for
+- A supported version of [Go](https://golang.org/dl/). Go is only required for
   compilation: its runtime does not need to be installed in production as long
   as you compile on the same architecture your production system has (or change
   the `Makefile` to cross-compile for the targeted architecture).
@@ -71,7 +96,7 @@ HTTP listener, and `bin/run-jobs`, the job queue processor.
 Note that even if you do use Docker, for development you'll probably want to
 run all NCA's binaries locally and just have them communicate with the
 dockerized services (IIIF server, database, and SFTPGo). Again, see our
-[Development Guide](/contributing/dev-guide) for details.
+[Development Guide][dev-guide] for details.
 
 ### Security Updates
 

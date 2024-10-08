@@ -85,6 +85,14 @@ SFTPGO_ADMIN_API_KEY=!sftpgo_admin_api_key!
 SFTPGO_NEW_USER_QUOTA=5gb
 
 ###
+# ONI Agent settings. These tell NCA what to connect to in order to start and
+# monitor batch loading and purging tasks on staging and production servers.
+###
+
+STAGING_AGENT="dev-agent:22"
+PRODUCTION_AGENT="dev-agent:22"
+
+###
 # Paths for PDFs, derivatives, etc.
 ###
 

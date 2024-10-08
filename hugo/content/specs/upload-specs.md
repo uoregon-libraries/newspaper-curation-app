@@ -9,7 +9,7 @@ description: Detailed specifications for uploaded issues' files
 Publishers (or in-house scanners) who upload issues must adhere to very strict
 structures for issue organization.
 
-### Born-Digital
+### Born-Digital (PDFs uploaded via SFTP)
 
 The folder structure tells us the newspaper title and issue date. e.g.,
 `/mnt/news/sftp/sftpuser/2018-01-02` would mean the January 2nd, 2018 edition
@@ -30,7 +30,11 @@ folder name.
 Code when generating batches (determined by the `PDF_BATCH_MARC_ORG_CODE`
 setting), and doesn't support having multiple editions of a single date.
 
-### Scans
+### Scans (TIFFs with OCRed PDFs)
+
+Scanned issues must be copied directly to the location NCA sees in the
+configured `SCAN_UPLOAD_PATH`. This is currently *not* done with the same SFTP
+process used for publisher uploads.
 
 The folder structure tells us the same information as with born-digital
 uploads with a few exceptions:

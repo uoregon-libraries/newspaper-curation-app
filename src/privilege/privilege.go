@@ -41,13 +41,8 @@ var (
 	ApproveQCReadyBatches = newPrivilege(RoleBatchReviewer)
 	RejectQCReadyBatches  = newPrivilege(RoleBatchReviewer)
 
-	// View and (eventually) manage batches that need to be loaded or fixed.
-	// Staging/prod perms could be divided more granularly if it ever makes sense
-	// to do so.
-	ViewQCPassedBatches = newPrivilege(RoleBatchLoader)
-	LoadBatches         = newPrivilege(RoleBatchLoader)
-	PurgeBatches        = newPrivilege(RoleBatchLoader)
-	ArchiveBatches      = newPrivilege(RoleBatchLoader)
+	// Flag batches as archived and ready to begin the deletion countdown
+	ArchiveBatches = newPrivilege(RoleBatchLoader)
 
 	// Admins only
 	ModifyValidatedLCCNs = newPrivilege()

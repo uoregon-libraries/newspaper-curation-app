@@ -53,6 +53,8 @@ const (
 	JobTypeSetBatchStatus              JobType = "set_batch_status"
 	JobTypeValidateTagManifest         JobType = "validate_tagmanifest"
 	JobTypeWriteBagitManifest          JobType = "write_bagit_manifest"
+	JobTypeONILoadBatch                JobType = "oni_load_batch"
+	JobTypeONIPurgeBatch               JobType = "oni_purge_batch"
 
 	// Fairly general-purpose jobs, which use only the job args, not an object id
 	JobTypeCleanFiles      JobType = "clean_files"
@@ -62,6 +64,7 @@ const (
 	JobTypeSyncRecursive   JobType = "sync_recursive"
 	JobTypeVerifyRecursive JobType = "verify_recursive"
 	JobTypeMakeManifest    JobType = "make_manifest"
+	JobTypeONIWaitForJob   JobType = "oni_wait_for_job"
 )
 
 // ValidJobTypes is the full list of job types which can exist in the jobs
@@ -100,6 +103,9 @@ var ValidJobTypes = []JobType{
 	JobTypeBatchAction,
 	JobTypeCancelJob,
 	JobTypeMakeManifest,
+	JobTypeONILoadBatch,
+	JobTypeONIPurgeBatch,
+	JobTypeONIWaitForJob,
 }
 
 // JobStatus represents the different states in which a job can exist
@@ -139,14 +145,14 @@ type Job struct {
 	RetryCount  int
 	logs        []*JobLog
 
-	// The job won't be run until sometime after RunAt; usually it's very close,
+	// The job won't be run until sometime after RunAt. Usually it's very close,
 	// but the daemon doesn't pound the database every 5 milliseconds, so it can
 	// take a little bit
 	RunAt time.Time
 
 	// XDat holds extra information, encoded as JSON, any job might need - e.g.,
 	// the issue's next workflow step if the job is successful.  This shouldn't
-	// be modified directly; use Args instead (which is why we've chosen such an
+	// be modified directly: use Args instead (which is why we've chosen such an
 	// odd name for this field).
 	XDat string `sql:"extra_data"`
 
@@ -367,7 +373,13 @@ func CompleteJob(j *Job) error {
 		return p.saveOp(op)
 	}
 
-	// There are jobs left, but they're on hold, so let's fix that
+	// There are jobs left, but they're on hold, so let's fix that.
+	//
+	// TODO: DON'T hard-code the Sequence + 1 here! If we ever want jobs that
+	// have space between them, or we allow an individual job to be queued but
+	// then removed for some reason, this breaks and debugging would be a pain.
+	// Probably not likely, but it's very little work to find the next sequence
+	// instead of just assuming.
 	op.Exec("UPDATE jobs SET status = ? WHERE pipeline_id = ? AND sequence = ?", JobStatusPending, j.PipelineID, j.Sequence+1)
 	return op.Err()
 }

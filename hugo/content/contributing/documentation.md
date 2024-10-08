@@ -4,7 +4,7 @@ weight: 30
 description: How to help with NCA's docs
 ---
 
-The documentation for this site is produce using [Hugo][1] and a custom theme
+The documentation for this site is produced using [Hugo][1] and a custom theme
 based on the look and feel of [TechDoc][2], a contributed Hugo theme.
 
 [1]: <https://gohugo.io/>
@@ -47,7 +47,7 @@ want it in the navigation, and you almost always do, you need it under a
 subdirectory, such as this document which lives under `contributing`.
 
 **Rule 3**: The "home" page of a subdirectory is always called `_index.md`.
-That file is magic and shows up it the hierarchy of pages at one level above
+That file is magic and shows up in the hierarchy of pages at one level above
 the subdirectory. e.g., `hugo/content/contributing/_index.md` is at the root
 level of the navigation menu, and everything else in
 `hugo/content/contributing/` is shown in the navigation menu as being nested

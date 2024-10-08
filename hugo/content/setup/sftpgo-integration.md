@@ -84,7 +84,9 @@ The API endpoint is simply the SFTPGo host combined with the path `/api/v2`.
 For our docker setup, the internal service is `http://sftpgo:8080`, so our API
 configuration looks like this:
 
-    SFTPGO_API_URL="http://sftpgo:8080/api/v2"
+```
+SFTPGO_API_URL="http://sftpgo:8080/api/v2"
+```
 
 The default quota is five gigabytes, but you can adjust this as needed. You
 will likely want *something*, however: this ensures one publisher can't blast
@@ -101,7 +103,9 @@ provide the environment variable `SETTINGS_PATH` with a value corresponding to
 the path to your NCA `settings` file to these Bash scripts. An example
 invocation of the key-fetcher might look like this:
 
-    SETTINGS_PATH=/path/to/settings sftpgo/get_admin_api_key.sh
+```bash
+SETTINGS_PATH=/path/to/settings sftpgo/get_admin_api_key.sh
+```
 
 That is the only script that *must* be run. It will prompt for admin user
 credentials, use them to request an API key for that user, store the key in the

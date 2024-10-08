@@ -44,7 +44,7 @@ finish_batches() {
   # Start workers, wait for jobs to complete (~30sec)
   workonce 2>&1 | tee -a workers.log
 
-  echo "Approve batches manually in NCA, mark them live, then press [ENTER] continue"
+  echo "Approve batches manually in NCA, then press [ENTER] continue"
   read
   workonce 2>&1 | tee -a workers.log
 

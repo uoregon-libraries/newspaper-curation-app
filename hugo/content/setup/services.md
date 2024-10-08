@@ -13,19 +13,24 @@ of tools, not a single application that does it all.
 NCA has two key services which you'll have to have running in the background at
 all times, several binaries you'll need to use occasionally for regular tasks,
 and of course the various external services (such as a IIIF server, SFTP
-server, MySQL / MariaDB, Apache / nginx, etc.).
+server, MySQL / MariaDB, Apache / nginx, Open ONI and the ONI Agent, etc.).
 
-The docker setup is by far the easiest to get running, but hasn't been given a
-ton of attention in terms of production usability. If you need stability, a
-manual installation is recommended. Manual installations are easiest to
-reverse-engineer by reading the various docker files to see what you need to
-install, and potentially how to install it.
+The docker setup is easy to get running, but *is not for production*. It shims
+in a fake ONI Agent for dev purposes. Only go the container route if you have
+the devops chops to build a real, production-ready setup.
 
-**Note**: If you do go manual, the repository contains working examples for
-systemd services to start the job runner as well as the workflow http
-server: <https://github.com/uoregon-libraries/newspaper-curation-app/tree/main/deploy>.
-Consider looking at these to better understand how you might manage a
-production installation.
+A bare-metal, manual installation is recommended. Manual installations are
+described in the [installation][installation] documentation, and can be
+reverse-engineered by reading the various docker files, especially if you're on
+a Redhat / CentOS / RockyLinux setup.
+
+[installation]: <{{% ref "installation" %}}>
+
+**Note**: the repository contains working examples for systemd services and
+rsyslog configuration: see the ["deploy" directory on github][deploy-github] to
+better understand how you might manage a production installation.
+
+[deploy-github]: <https://github.com/uoregon-libraries/newspaper-curation-app/tree/main/deploy>
 
 ## HTTP Server
 
@@ -35,7 +40,9 @@ for authentication.
 
 Running this is fairly simple once settings are configured:
 
-    /usr/local/nca/server -c /usr/local/nca/settings
+```bash
+/usr/local/nca/server -c /usr/local/nca/settings
+```
 
 ### Gotcha
 
@@ -64,7 +71,9 @@ processed until the job runner is executed.
 
 The best way to run jobs is via the "watchall" subcommand:
 
-    ./bin/run-jobs -c ./settings watchall
+```bash
+./bin/run-jobs -c ./settings watchall
+```
 
 This starts the job runner, which will watch all queues and run jobs as they
 come in. When invoked this way, the job runner will simply run forever to
@@ -75,7 +84,9 @@ If you only want to drain all pending jobs and then quit, you can add
 
 Finally, there's a subcommand to run a single job and then exit:
 
-    ./bin/run-jobs -c ./settings run-one
+```bash
+./bin/run-jobs -c ./settings run-one
+```
 
 This is primarily a development tool for debugging long pipelines where a
 single job seems to be breaking app state, but it can be used to also very
@@ -84,23 +95,46 @@ should arise.
 
 ## Batch Queue
 
-The queue-batches tool is currently run manually. Until more of the batch
-ingest can be automated, it is safest to require somebody to manually watch the
-process which tries to gather up issues into a batch. This can of course be
-set up to run on cron if so desired.
+Batch managers can generate batches on demand using the UI, but we also have
+the `queue-batches` tool for manually generating every available batch at once.
+This can of course be set up to run on cron if so desired.
 
 Execution is simple:
 
-    ./bin/queue-batches -c ./settings
+```bash
+./bin/queue-batches -c ./settings
+```
 
 The job runner will do the rest of the work, eventually putting batches into
-your configured `BATCH_OUTPUT_PATH` and syncing to the `BATCH_PRODUCTION_PATH`.
-The batch status page in NCA will show which batches have finished processing
-and are ready for ingest into staging.
+your configured `BATCH_OUTPUT_PATH`, syncing to the `BATCH_PRODUCTION_PATH`,
+and calling out to the ONI Agent to ingest the batch onto staging.
 
 The tool can be given flags for `--min-batch-size` and `--max-batch-size` in
-order to override the standard settings, e.g., if you need cronned batch
-generation to behave differently than manual runs.
+order to override the standard settings. For instance, our cron job is set to
+only create batches when there are several thousand pages ready. It ensures
+that if batch managers are out or don't have time to get into the UI, we're
+still avoiding a massive backlog of issues waiting to be batched.
+
+## ONI Agent tester
+
+A normal "make" run creates `bin/agent-test`. This is very handy to validate
+connectivity to ONI Agents running on your staging and production servers.
+
+In the event of odd batch problems, you can also use this test as a normal
+tool: it sends real commands to a running agent so you can do batch loading,
+for instance, without dealing with the normal flow of sshing into your ONI
+service, activating your Python virtual environments, etc.
+
+A simple use for just checking a job might look like this:
+
+```bash
+./bin/agent-test -c ./settings -e staging job-logs 1
+```
+
+As this is primarily a testing/debugging tool, it's not going to be
+well-documented here, but the source code is very simple, and if you just give
+it an invalid command it will tell you what commands *are* valid. e.g., instead
+of the command `job-logs`, give it `foo`.
 
 ## Bulk Upload Queue
 
@@ -113,9 +147,11 @@ catching problems prior to queueing.
 
 Sample usage:
 
-    ./bin/bulk-issue-queue -c ./settings --type scan --key sn12345678
+```bash
+./bin/bulk-issue-queue -c ./settings --type scan --key sn12345678
+```
 
-Run without arguments for a more full description of options
+Run without arguments for a more full description of options.
 
 ## Live File Cleanup
 

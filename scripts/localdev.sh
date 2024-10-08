@@ -19,10 +19,15 @@ wait_for_database() {
   done
 }
 
+# Starts the dependent services needed by NCA
+start_docker_services() {
+  docker compose up -d db iiif sftpgo dev-agent
+}
+
 # Resets the database, deleting and rebuilding all the seed data
 resetdb() {
   docker compose down -v
-  docker compose up -d db iiif sftpgo
+  start_docker_services
   wait_for_database && migrate && load_seed_data && create_test_users
 }
 
@@ -92,7 +97,7 @@ upload_server() {
 }
 
 server() {
-  docker compose up -d db iiif sftpgo
+  start_docker_services
   wait_for_database
   SETTINGS_PATH=$(pwd)/settings ./sftpgo/get_admin_api_key.sh --force >/dev/null
   make bin/server || return 1
@@ -107,14 +112,14 @@ server() {
 }
 
 workers() {
-  docker compose up -d db iiif sftpgo
+  start_docker_services
   wait_for_database
   make bin/run-jobs || return 1
   ./bin/run-jobs -c ./settings -v watchall
 }
 
 workonce() {
-  docker compose up -d db iiif sftpgo
+  start_docker_services
   wait_for_database
   make bin/run-jobs || return 1
   ./bin/run-jobs -c ./settings -v --exit-when-done watchall

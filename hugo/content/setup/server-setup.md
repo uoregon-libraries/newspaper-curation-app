@@ -19,8 +19,8 @@ production, as there is still a great deal of room for human error.
 
 Before anything can be done, the following setup has to happen:
 
-1. Make sure you understand the [Services](/setup/services) documentation and
-   can get the stack up and running
+1. Make sure you understand the [Services][services] documentation and
+   can get the stack up and running.
 1. Somebody mounts, symlinks, or otherwise sets up the sftp folder root so that
    each title has its own location directly off said root. e.g.,
    `/mnt/news/sftp/foo` should contain one title's issues, and
@@ -35,8 +35,8 @@ Before anything can be done, the following setup has to happen:
    - `SCAN_UPLOAD_PATH` (`/mnt/news/scans`): This is where in-house scans would be uploaded.
    - `ORIGINAL_PDF_BACKUP_PATH` (`/mnt/news/backup/originals`): Short-term storage
      where uploaded PDFs will be moved after being split. They may need to be
-     held a few months for embargoed issues, but they're auto-removed once the
-     issue has been put into a batch.
+     held a few months, or even years, for embargoed issues, but they're
+     auto-removed once the issue has been put into a batch.
    - `PDF_PAGE_REVIEW_PATH` (`/mnt/news/page-review`): Issues which came from
      born-digital SFTP uploads and are ready for manual page reordering - this
      should be exposed to whomever will manually review and reorder the
@@ -63,7 +63,7 @@ Before anything can be done, the following setup has to happen:
    - `ISSUE_CACHE_PATH` (`/var/local/news/nca/cache`): This just needs to be
      created. The app will use this to speed up issue lookups.
 1. Make sure that the workflow path and the batch output path are on the same
-   filesystem!  This ensures the batch generator will be able to hard-link
+   filesystem! This ensures the batch generator will be able to hard-link
    files, rather than copying them, which saves a significant amount of time
    when building large batches.  **NOTE**: the system currently *requires*
    this, and will fail if an attempt to hard-link files fails.
@@ -75,11 +75,9 @@ Before anything can be done, the following setup has to happen:
      network-mounted to where NCA expects SFTPed files).
    - All binaries (`server`, `run-jobs`, anything else in `bin/` you wish to
      run) are run as a user who can read and write to all paths
-   - Apache can read the scans path
-   - The systems which ingest batches into ONI (both staging and production)
-     mount the `BATCH_PRODUCTION_PATH` at the same location NCA uses so that
-     the ingest instructions are easy to follow.
-1. Run the servers and set up one or more users: [User Setup](/setup/user-setup)
+   - The systems which ingest batches into ONI are running an ONI Agent (see
+     [Installation][installation]) that can read the batch files!
+1. Run the servers and set up one or more users: [User Setup][user-setup].
 1. Somebody must set up the list of newspaper titles using the "Manage
    Newspaper Titles" functionality. Nothing works if titles aren't set up!
    - See [Adding Titles][1] for details.
@@ -89,4 +87,7 @@ Before anything can be done, the following setup has to happen:
    awardee's code, you would set up those awardees before putting their scanned
    images into the scan folder.
 
-[1]: <{{<ref "/workflow/adding-titles">}}>
+[services]: <{{% ref "/setup/services" %}}>
+[installation]: <{{% ref "installation" %}}>
+[user-setup]: <{{% ref "/setup/user-setup" %}}>
+[1]: <{{% ref "/workflow/adding-titles" %}}>
