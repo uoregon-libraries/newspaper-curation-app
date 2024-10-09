@@ -23,7 +23,7 @@
 <meta itemprop="name" content="Services and Apps">
 <meta itemprop="description" content="The services in the NCA suite">
 
-<meta itemprop="wordCount" content="1077">
+<meta itemprop="wordCount" content="1245">
 <meta itemprop="keywords" content="" /></head>
 <body>
   <div class="container"><div class="skip"><a href="#maincontent">Skip to main content</a></div>
@@ -293,25 +293,24 @@ of tools, not a single application that does it all.</p>
 <p>NCA has two key services which you&rsquo;ll have to have running in the background at
 all times, several binaries you&rsquo;ll need to use occasionally for regular tasks,
 and of course the various external services (such as a IIIF server, SFTP
-server, MySQL / MariaDB, Apache / nginx, etc.).</p>
-<p>The docker setup is by far the easiest to get running, but hasn&rsquo;t been given a
-ton of attention in terms of production usability. If you need stability, a
-manual installation is recommended. Manual installations are easiest to
-reverse-engineer by reading the various docker files to see what you need to
-install, and potentially how to install it.</p>
-<p><strong>Note</strong>: If you do go manual, the repository contains working examples for
-systemd services to start the job runner as well as the workflow http
-server: <a href="https://github.com/uoregon-libraries/newspaper-curation-app/tree/main/deploy">https://github.com/uoregon-libraries/newspaper-curation-app/tree/main/deploy</a>.
-Consider looking at these to better understand how you might manage a
-production installation.</p>
+server, MySQL / MariaDB, Apache / nginx, Open ONI and the ONI Agent, etc.).</p>
+<p>The docker setup is easy to get running, but <em>is not for production</em>. It shims
+in a fake ONI Agent for dev purposes. Only go the container route if you have
+the devops chops to build a real, production-ready setup.</p>
+<p>A bare-metal, manual installation is recommended. Manual installations are
+described in the <a href="https://uoregon-libraries.github.io/newspaper-curation-app/setup/installation/">installation</a> documentation, and can be
+reverse-engineered by reading the various docker files, especially if you&rsquo;re on
+a Redhat / CentOS / RockyLinux setup.</p>
+<p><strong>Note</strong>: the repository contains working examples for systemd services and
+rsyslog configuration: see the <a href="https://github.com/uoregon-libraries/newspaper-curation-app/tree/main/deploy">&ldquo;deploy&rdquo; directory on github</a> to
+better understand how you might manage a production installation.</p>
 <h2 id="http-server">HTTP Server</h2>
 <p><code>server</code> is the web server which exposes all of NCA&rsquo;s workflow UI. Please
 note that, at the moment, this requires Apache sitting in front of the server
 for authentication.</p>
 <p>Running this is fairly simple once settings are configured:</p>
-<pre><code>/usr/local/nca/server -c /usr/local/nca/settings
-</code></pre>
-<h3 id="gotcha">Gotcha</h3>
+<div class="highlight"><pre tabindex="0" style="color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4;"><code class="language-bash" data-lang="bash"><span style="display:flex;"><span>/usr/local/nca/server -c /usr/local/nca/settings
+</span></span></code></pre></div><h3 id="gotcha">Gotcha</h3>
 <p><strong>NOTE</strong>: <code>server</code> builds a cache of issues and regularly rescans the
 filesystem and the live site to keep its cache nearly real-time for almost
 instant lookups of issue data. However, building this cache requires the live
@@ -332,35 +331,45 @@ install, you&rsquo;ll need to do something similar.</p>
 <p>Queued jobs (such as SFTP issues manually reviewed and queued) will not be
 processed until the job runner is executed.</p>
 <p>The best way to run jobs is via the &ldquo;watchall&rdquo; subcommand:</p>
-<pre><code>./bin/run-jobs -c ./settings watchall
-</code></pre>
-<p>This starts the job runner, which will watch all queues and run jobs as they
+<div class="highlight"><pre tabindex="0" style="color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4;"><code class="language-bash" data-lang="bash"><span style="display:flex;"><span>./bin/run-jobs -c ./settings watchall
+</span></span></code></pre></div><p>This starts the job runner, which will watch all queues and run jobs as they
 come in. When invoked this way, the job runner will simply run forever to
 ensure jobs are processed whenever there&rsquo;s work to be done.</p>
 <p>If you only want to drain all pending jobs and then quit, you can add
 <code>--exit-when-done</code> to the command.</p>
 <p>Finally, there&rsquo;s a subcommand to run a single job and then exit:</p>
-<pre><code>./bin/run-jobs -c ./settings run-one
-</code></pre>
-<p>This is primarily a development tool for debugging long pipelines where a
+<div class="highlight"><pre tabindex="0" style="color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4;"><code class="language-bash" data-lang="bash"><span style="display:flex;"><span>./bin/run-jobs -c ./settings run-one
+</span></span></code></pre></div><p>This is primarily a development tool for debugging long pipelines where a
 single job seems to be breaking app state, but it can be used to also very
 closely monitor exactly which jobs are running in what order, if such a need
 should arise.</p>
 <h2 id="batch-queue">Batch Queue</h2>
-<p>The queue-batches tool is currently run manually. Until more of the batch
-ingest can be automated, it is safest to require somebody to manually watch the
-process which tries to gather up issues into a batch. This can of course be
-set up to run on cron if so desired.</p>
+<p>Batch managers can generate batches on demand using the UI, but we also have
+the <code>queue-batches</code> tool for manually generating every available batch at once.
+This can of course be set up to run on cron if so desired.</p>
 <p>Execution is simple:</p>
-<pre><code>./bin/queue-batches -c ./settings
-</code></pre>
-<p>The job runner will do the rest of the work, eventually putting batches into
-your configured <code>BATCH_OUTPUT_PATH</code> and syncing to the <code>BATCH_PRODUCTION_PATH</code>.
-The batch status page in NCA will show which batches have finished processing
-and are ready for ingest into staging.</p>
+<div class="highlight"><pre tabindex="0" style="color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4;"><code class="language-bash" data-lang="bash"><span style="display:flex;"><span>./bin/queue-batches -c ./settings
+</span></span></code></pre></div><p>The job runner will do the rest of the work, eventually putting batches into
+your configured <code>BATCH_OUTPUT_PATH</code>, syncing to the <code>BATCH_PRODUCTION_PATH</code>,
+and calling out to the ONI Agent to ingest the batch onto staging.</p>
 <p>The tool can be given flags for <code>--min-batch-size</code> and <code>--max-batch-size</code> in
-order to override the standard settings, e.g., if you need cronned batch
-generation to behave differently than manual runs.</p>
+order to override the standard settings. For instance, our cron job is set to
+only create batches when there are several thousand pages ready. It ensures
+that if batch managers are out or don&rsquo;t have time to get into the UI, we&rsquo;re
+still avoiding a massive backlog of issues waiting to be batched.</p>
+<h2 id="oni-agent-tester">ONI Agent tester</h2>
+<p>A normal &ldquo;make&rdquo; run creates <code>bin/agent-test</code>. This is very handy to validate
+connectivity to ONI Agents running on your staging and production servers.</p>
+<p>In the event of odd batch problems, you can also use this test as a normal
+tool: it sends real commands to a running agent so you can do batch loading,
+for instance, without dealing with the normal flow of sshing into your ONI
+service, activating your Python virtual environments, etc.</p>
+<p>A simple use for just checking a job might look like this:</p>
+<div class="highlight"><pre tabindex="0" style="color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4;"><code class="language-bash" data-lang="bash"><span style="display:flex;"><span>./bin/agent-test -c ./settings -e staging job-logs <span style="color:#ae81ff">1</span>
+</span></span></code></pre></div><p>As this is primarily a testing/debugging tool, it&rsquo;s not going to be
+well-documented here, but the source code is very simple, and if you just give
+it an invalid command it will tell you what commands <em>are</em> valid. e.g., instead
+of the command <code>job-logs</code>, give it <code>foo</code>.</p>
 <h2 id="bulk-upload-queue">Bulk Upload Queue</h2>
 <p>The <code>bulk-issue-queue</code> tool allows you to push uploaded issues into the
 workflow in bulk. This should <em>only</em> be used when you have some other
@@ -369,9 +378,8 @@ scanned), otherwise you may find a lot of errors that require manual
 intervention of issues in the workflow, which is always more costly than
 catching problems prior to queueing.</p>
 <p>Sample usage:</p>
-<pre><code>./bin/bulk-issue-queue -c ./settings --type scan --key sn12345678
-</code></pre>
-<p>Run without arguments for a more full description of options</p>
+<div class="highlight"><pre tabindex="0" style="color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4;"><code class="language-bash" data-lang="bash"><span style="display:flex;"><span>./bin/bulk-issue-queue -c ./settings --type scan --key sn12345678
+</span></span></code></pre></div><p>Run without arguments for a more full description of options.</p>
 <h2 id="live-file-cleanup">Live File Cleanup</h2>
 <p><code>delete-live-done-issues</code> is a tool which removes all files NCA tracks after
 their corresponding batch has been marked &ldquo;archived&rdquo; for four weeks (to ensure
@@ -385,8 +393,8 @@ version requires database migrations and give the example command to run this,
 so it isn&rsquo;t typically something you would run on your own, but it&rsquo;s also
 harmless if you do run it manually - it won&rsquo;t re-run any database update
 scripts that have already run.</p>
-<h2 id="purge-dead-issues">Purge Dead Issues</h2>
-<p><code>purge-dead-issues</code> is useful to move all &ldquo;stuck&rdquo; issues out of NCA and into
+<h2 id="clean-dead-issues">Clean Dead Issues</h2>
+<p><code>remove-dead-issues</code> is useful to move all &ldquo;stuck&rdquo; issues out of NCA and into
 the configured problem folder. The original files will be moved, and the full
 activity log stored as a text file to help identify how to fix whatever problem
 prevented curators (or NCA job runners) from processing an issue.</p>

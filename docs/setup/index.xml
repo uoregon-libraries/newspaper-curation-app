@@ -13,7 +13,7 @@
       
       <guid>https://uoregon-libraries.github.io/newspaper-curation-app/setup/services/</guid>
       <description>You should at least understand everything in this document at a high level before moving on to the setup/installation documents, as the NCA suite is a set of tools, not a single application that does it all.
-Overview NCA has two key services which you&amp;rsquo;ll have to have running in the background at all times, several binaries you&amp;rsquo;ll need to use occasionally for regular tasks, and of course the various external services (such as a IIIF server, SFTP server, MySQL / MariaDB, Apache / nginx, etc.</description>
+Overview NCA has two key services which you&amp;rsquo;ll have to have running in the background at all times, several binaries you&amp;rsquo;ll need to use occasionally for regular tasks, and of course the various external services (such as a IIIF server, SFTP server, MySQL / MariaDB, Apache / nginx, Open ONI and the ONI Agent, etc.</description>
     </item>
     
     <item>
@@ -34,7 +34,7 @@ Somebody will want to monitor the output from the various automated processes, s
       <guid>https://uoregon-libraries.github.io/newspaper-curation-app/setup/installation/</guid>
       <description>Development If you&amp;rsquo;re developing on NCA, installation will differ from standing up a production server. Please see our Development Guide.
 Preliminary Setup Manual installation has several prerequisites:
-Poppler Utils for PDF processing OpenJPEG 2 + command-line tools for JP2 generation GhostScript GraphicsMagick MariaDB A IIIF server capable of handling tiled JP2 files without a ton of overhead (e.g., RAIS) Apache/nginx for authentication as well as proxying to NCA and the IIIF server Please note: The easiest way to get a quick demo / test setup of NCA is via our Docker configuration / setup:</description>
+Poppler Utils for PDF processing OpenJPEG 2 + command-line tools for JP2 generation GhostScript GraphicsMagick MariaDB A IIIF server capable of handling tiled JP2 files without a ton of overhead (e.g., RAIS) Apache/nginx for authentication as well as proxying to NCA and the IIIF server Two running Open ONI applications: staging and production.</description>
     </item>
     
     <item>
@@ -45,7 +45,7 @@ Poppler Utils for PDF processing OpenJPEG 2 + command-line tools for JP2 generat
       <guid>https://uoregon-libraries.github.io/newspaper-curation-app/setup/user-setup/</guid>
       <description>Once the applications are installed and configured, you&amp;rsquo;ll need an admin user. Start the NCA server in debug mode:
 ./bin/server -c ./settings --debug This lets you fake an admin login via http://your.site/users?debuguser=admin. You can then set up other users as necessary. Once you have Apache set up to do the authentication, you should never run in debug mode on production servers.
-For development use, docker-compose.override.yml-example is already set up to run in debug mode.</description>
+For development use, compose.override.yml-example is already set up to run in debug mode.</description>
     </item>
     
     <item>

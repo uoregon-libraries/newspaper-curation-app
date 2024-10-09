@@ -13,7 +13,7 @@
       
       <guid>https://uoregon-libraries.github.io/newspaper-curation-app/setup/services/</guid>
       <description>You should at least understand everything in this document at a high level before moving on to the setup/installation documents, as the NCA suite is a set of tools, not a single application that does it all.
-Overview NCA has two key services which you&amp;rsquo;ll have to have running in the background at all times, several binaries you&amp;rsquo;ll need to use occasionally for regular tasks, and of course the various external services (such as a IIIF server, SFTP server, MySQL / MariaDB, Apache / nginx, etc.</description>
+Overview NCA has two key services which you&amp;rsquo;ll have to have running in the background at all times, several binaries you&amp;rsquo;ll need to use occasionally for regular tasks, and of course the various external services (such as a IIIF server, SFTP server, MySQL / MariaDB, Apache / nginx, Open ONI and the ONI Agent, etc.</description>
     </item>
     
     <item>
@@ -32,8 +32,8 @@ Make sure there aren&amp;rsquo;t already existing jobs that do what you want! Th
       <pubDate>Mon, 01 Jan 0001 00:00:00 +0000</pubDate>
       
       <guid>https://uoregon-libraries.github.io/newspaper-curation-app/contributing/dev-guide/</guid>
-      <description>It is assumed developers will use Docker for the database, RAIS (IIIF server), and SFTPGo. The rest of the tools are most easily installed locally, and the NCA binaries themselves are in fact easier by far to install locally versus building them in an image when code changes.
-Requirements / Setup Local dependencies A supported version of Go (e.g., if 1.16 is the latest, you want 1.15 or 1.16) revive: go install github.</description>
+      <description>It is assumed developers will use Docker for dependencies outside this repository: database, RAIS (IIIF server), the ONI Agent (there&amp;rsquo;s a dev version available for testing), and SFTPGo. The rest of the tools are most easily installed locally, and the NCA binaries themselves are in fact easier by far to install locally versus building them in an image when code changes.
+Requirements / Setup Local dependencies A supported version of Go (e.</description>
     </item>
     
     <item>
@@ -63,7 +63,7 @@ Somebody will want to monitor the output from the various automated processes, s
       
       <guid>https://uoregon-libraries.github.io/newspaper-curation-app/workflow/technical/</guid>
       <description>This document attempts to explain the entire workflow from upload to batch generation in a way that developers can understand what&amp;rsquo;s needed and how to at least begin investigating if something goes wrong.
-Jobs and the Job Queue The job runner regularly scans the database looking for jobs to run. The default setup splits jobs up to ensure quick jobs, like moving an issue from one location to another on the filesystem, are run separately from slow jobs like generating JP2 files.</description>
+Jobs and the Job Queue All background work in NCA is made up of relatively small parts tied together in a single &amp;ldquo;pipeline&amp;rdquo;. A pipeline represents a distinct operation that is made up of smaller units, the jobs themselves.</description>
     </item>
     
     <item>
@@ -94,7 +94,7 @@ Provision a real record, including things like an LCCN This is a must for us, ot
       <guid>https://uoregon-libraries.github.io/newspaper-curation-app/setup/installation/</guid>
       <description>Development If you&amp;rsquo;re developing on NCA, installation will differ from standing up a production server. Please see our Development Guide.
 Preliminary Setup Manual installation has several prerequisites:
-Poppler Utils for PDF processing OpenJPEG 2 + command-line tools for JP2 generation GhostScript GraphicsMagick MariaDB A IIIF server capable of handling tiled JP2 files without a ton of overhead (e.g., RAIS) Apache/nginx for authentication as well as proxying to NCA and the IIIF server Please note: The easiest way to get a quick demo / test setup of NCA is via our Docker configuration / setup:</description>
+Poppler Utils for PDF processing OpenJPEG 2 + command-line tools for JP2 generation GhostScript GraphicsMagick MariaDB A IIIF server capable of handling tiled JP2 files without a ton of overhead (e.g., RAIS) Apache/nginx for authentication as well as proxying to NCA and the IIIF server Two running Open ONI applications: staging and production.</description>
     </item>
     
     <item>
@@ -115,7 +115,7 @@ Go is not Ruby / Python / PHP / node. You aren&amp;rsquo;t installing a systemwi
       
       <guid>https://uoregon-libraries.github.io/newspaper-curation-app/specs/upload-specs/</guid>
       <description>Uploads: Folder and File Specs Publishers (or in-house scanners) who upload issues must adhere to very strict structures for issue organization.
-Born-Digital The folder structure tells us the newspaper title and issue date. e.g., /mnt/news/sftp/sftpuser/2018-01-02 would mean the January 2nd, 2018 edition of title whose SFTP login is &amp;ldquo;sftpuser&amp;rdquo;.
+Born-Digital (PDFs uploaded via SFTP) The folder structure tells us the newspaper title and issue date. e.g., /mnt/news/sftp/sftpuser/2018-01-02 would mean the January 2nd, 2018 edition of title whose SFTP login is &amp;ldquo;sftpuser&amp;rdquo;.
 The issue should contain PDFs and nothing else. Publishers should never upload tertiary files. Ideally, publishers should upload one PDF for the entire issue, with pages in the order they wish to see on the ONI site, as that reduces (or eliminates) the need to have anybody reviewing these issues&amp;rsquo; pages.</description>
     </item>
     
@@ -135,7 +135,7 @@ Edit src/privilege/role.go if the new privilege(s) are going to be tied to an en
       <pubDate>Mon, 01 Jan 0001 00:00:00 +0000</pubDate>
       
       <guid>https://uoregon-libraries.github.io/newspaper-curation-app/contributing/documentation/</guid>
-      <description>The documentation for this site is produce using Hugo and a custom theme based on the look and feel of TechDoc, a contributed Hugo theme.
+      <description>The documentation for this site is produced using Hugo and a custom theme based on the look and feel of TechDoc, a contributed Hugo theme.
 We want our documentation to help you use NCA (okay, again, if I&amp;rsquo;m being honest, this is really just for UO to remember how to use our app), and as such the documentation itself needs to be easy to edit and keep up-to-date.
 Starting out Get Hugo installed.</description>
     </item>
@@ -158,7 +158,7 @@ Manual Deletion If issues got to the page-review step when they shouldn&amp;rsqu
       <guid>https://uoregon-libraries.github.io/newspaper-curation-app/setup/user-setup/</guid>
       <description>Once the applications are installed and configured, you&amp;rsquo;ll need an admin user. Start the NCA server in debug mode:
 ./bin/server -c ./settings --debug This lets you fake an admin login via http://your.site/users?debuguser=admin. You can then set up other users as necessary. Once you have Apache set up to do the authentication, you should never run in debug mode on production servers.
-For development use, docker-compose.override.yml-example is already set up to run in debug mode.</description>
+For development use, compose.override.yml-example is already set up to run in debug mode.</description>
     </item>
     
     <item>
@@ -199,7 +199,7 @@ Add a title to NCA with sftp credential information. If necessary, import the ti
       
       <guid>https://uoregon-libraries.github.io/newspaper-curation-app/contributing/testing/</guid>
       <description>Unit Testing Running unit tests is easy:
-make test This compiles all of the code and tests any *_test.go files. Test coverage is spotty at best right now, but the compile-time checks catch the most common problems, like typos in variable names.
+make test This compiles all of the code and tests any *_test.go files. Test coverage is spotty at best right now, but the compile-time checks, and static analysis run by make, catch most of the kinds of problems you&amp;rsquo;d test for in PHP/Ruby/Python/etc (variable typos, misuse of a function, etc.)
 Contributors: feel free to add more unit tests to improve overall coverage!
 Manual Testing Manually testing NCA can be time-consuming, as you have to find, copy, and then load issues into NCA, enter metadata, etc.</description>
     </item>
