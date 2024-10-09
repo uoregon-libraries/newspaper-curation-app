@@ -288,15 +288,13 @@
 
 <main id="maincontent"><h1>Users</h1><p>Once the applications are installed and configured, you&rsquo;ll need an admin user.
 Start the NCA server in debug mode:</p>
-<pre><code>./bin/server -c ./settings --debug
-</code></pre>
-<p>This lets you fake an admin login via <code>http://your.site/users?debuguser=admin</code>.
+<div class="highlight"><pre tabindex="0" style="color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4;"><code class="language-bash" data-lang="bash"><span style="display:flex;"><span>./bin/server -c ./settings --debug
+</span></span></code></pre></div><p>This lets you fake an admin login via <code>http://your.site/users?debuguser=admin</code>.
 You can then set up other users as necessary. Once you have Apache set up to
 do the authentication, you should never run in debug mode on production servers.</p>
-<p>For development use, <code>docker-compose.override.yml-example</code> is already set up to
-run in debug mode. Assuming you follow the
-<a href="../../contributing/dev-guide">development guide&rsquo;s instructions</a>, you won&rsquo;t have to
-do anything special to fake your login.</p>
+<p>For development use, <code>compose.override.yml-example</code> is already set up to run in
+debug mode. Assuming you follow the <a href="https://uoregon-libraries.github.io/newspaper-curation-app/contributing/dev-guide/">development guide&rsquo;s</a>
+instructions, you won&rsquo;t have to do anything special to fake your login.</p>
 <nav class="pagination" aria-label="Pagination">
 
   <a class="nav nav-prev" href="https://uoregon-libraries.github.io/newspaper-curation-app/setup/installation/">← Prev - Installation</a>

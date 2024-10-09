@@ -23,7 +23,7 @@
 <meta itemprop="name" content="Fixing &#34;Stuck&#34; Issues">
 <meta itemprop="description" content="Removing issues from NCA which can&#39;t get derivatives generated or have other issues leaving them stuck but invisible to the UI">
 
-<meta itemprop="wordCount" content="296">
+<meta itemprop="wordCount" content="305">
 <meta itemprop="keywords" content="" /></head>
 <body>
   <div class="container"><div class="skip"><a href="#maincontent">Skip to main content</a></div>
@@ -294,13 +294,14 @@ you have enough publishers that you get hundreds of pages uploaded each week.</p
 one area where a developer used to have to clean up the filesystem and database
 manually. As of NCA v3.8.0, there is a tool which can handle this in a
 significantly less painful way.</p>
-<h2 id="purging-dead-issues">Purging Dead Issues</h2>
-<p>A normal invocation of <code>make</code> creates <code>bin/purge-dead-issues</code>. This tool&rsquo;s sole
-purpose is to find issues which have a failed job and can no longer move
-through NCA&rsquo;s workflow.</p>
+<h2 id="cleaning-dead-issues">Cleaning Dead Issues</h2>
+<p>A normal invocation of <code>make</code> creates <code>bin/remove-dead-issues</code>. This tool&rsquo;s
+sole purpose is to find issues which have a failed job and can no longer move
+through NCA&rsquo;s workflow, and remove them from NCA&rsquo;s database and on-disk
+workflow location.</p>
 <p>Under the hood, this command does the following:</p>
 <ul>
-<li>Finds all issues that are valid candidates for purging. To be valid, an issue:
+<li>Finds all issues that are candidates for removal. To be removed, an issue:
 <ul>
 <li>Is in the &ldquo;awaiting processing&rdquo; state</li>
 <li>Has at least one failed job - as in &ldquo;failed&rdquo;, which means failed forever,
@@ -311,7 +312,7 @@ not <code>failed_done</code>, which indicates a temporary failure which was retr
 </li>
 <li>Ends all jobs that were stuck - this means failed jobs as well as any &ldquo;on
 hold&rdquo; jobs that had been waiting for a failed job to finish</li>
-<li>Creates a new job to purge the issue. This uses the same logic as issues
+<li>Creates a new job to delete the issue. This uses the same logic as issues
 that are flagged as having errors and removed from NCA.</li>
 </ul>
 <p>Once the tool has been run, you&rsquo;ll have stuck issues in the configured

@@ -343,9 +343,8 @@ default quota for new users.</p>
 <p>The API endpoint is simply the SFTPGo host combined with the path <code>/api/v2</code>.
 For our docker setup, the internal service is <code>http://sftpgo:8080</code>, so our API
 configuration looks like this:</p>
-<pre><code>SFTPGO_API_URL=&quot;http://sftpgo:8080/api/v2&quot;
-</code></pre>
-<p>The default quota is five gigabytes, but you can adjust this as needed. You
+<pre tabindex="0"><code>SFTPGO_API_URL=&#34;http://sftpgo:8080/api/v2&#34;
+</code></pre><p>The default quota is five gigabytes, but you can adjust this as needed. You
 will likely want <em>something</em>, however: this ensures one publisher can&rsquo;t blast
 hundreds of gigs (or even terabytes) of data, taking your server down and
 preventing all other publishers from uploading anything.</p>
@@ -357,9 +356,8 @@ will have to use the Bash scripts in the <code>sftpgo/</code> directory. You wil
 provide the environment variable <code>SETTINGS_PATH</code> with a value corresponding to
 the path to your NCA <code>settings</code> file to these Bash scripts. An example
 invocation of the key-fetcher might look like this:</p>
-<pre><code>SETTINGS_PATH=/path/to/settings sftpgo/get_admin_api_key.sh
-</code></pre>
-<p>That is the only script that <em>must</em> be run. It will prompt for admin user
+<div class="highlight"><pre tabindex="0" style="color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4;"><code class="language-bash" data-lang="bash"><span style="display:flex;"><span>SETTINGS_PATH<span style="color:#f92672">=</span>/path/to/settings sftpgo/get_admin_api_key.sh
+</span></span></code></pre></div><p>That is the only script that <em>must</em> be run. It will prompt for admin user
 credentials, use them to request an API key for that user, store the key in the
 NCA <code>settings</code> file automatically, and then call the accompanying script
 <code>test_api_key.sh</code> to verify the key was fetched and set up properly.</p>

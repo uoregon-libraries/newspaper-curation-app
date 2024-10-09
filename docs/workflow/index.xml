@@ -13,7 +13,7 @@
       
       <guid>https://uoregon-libraries.github.io/newspaper-curation-app/workflow/technical/</guid>
       <description>This document attempts to explain the entire workflow from upload to batch generation in a way that developers can understand what&amp;rsquo;s needed and how to at least begin investigating if something goes wrong.
-Jobs and the Job Queue The job runner regularly scans the database looking for jobs to run. The default setup splits jobs up to ensure quick jobs, like moving an issue from one location to another on the filesystem, are run separately from slow jobs like generating JP2 files.</description>
+Jobs and the Job Queue All background work in NCA is made up of relatively small parts tied together in a single &amp;ldquo;pipeline&amp;rdquo;. A pipeline represents a distinct operation that is made up of smaller units, the jobs themselves.</description>
     </item>
     
     <item>
