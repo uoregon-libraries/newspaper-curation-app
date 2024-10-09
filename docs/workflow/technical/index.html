@@ -23,7 +23,7 @@
 <meta itemprop="name" content="Technical Details">
 <meta itemprop="description" content="Deeper explanation of NCA&#39;s various workflows">
 
-<meta itemprop="wordCount" content="1826">
+<meta itemprop="wordCount" content="2107">
 <meta itemprop="keywords" content="" /></head>
 <body>
   <div class="container"><div class="skip"><a href="#maincontent">Skip to main content</a></div>
@@ -290,18 +290,40 @@
 generation in a way that developers can understand what&rsquo;s needed and how to at
 least begin investigating if something goes wrong.</p>
 <h2 id="jobs-and-the-job-queue">Jobs and the Job Queue</h2>
-<p>The job runner regularly scans the database looking for jobs to run. The
-default setup splits jobs up to ensure quick jobs, like moving an issue from
-one location to another on the filesystem, are run separately from slow jobs
-like generating JP2 files. This ensures that slow jobs don&rsquo;t hold up the
-faster jobs, but could be confusing if you&rsquo;re expecting to see jobs run in the
-order they are queued. It also tends to make raw job logs confusing. Grouping
-jobs by pipeline can help simplify database-level job diagnostics.</p>
-<p>The job runner also looks for issues in the scan and page review areas that
-are ready to enter the workflow.</p>
+<p>All background work in NCA is made up of relatively small parts tied together
+in a single &ldquo;pipeline&rdquo;. A pipeline represents a distinct operation that is made
+up of smaller units, the jobs themselves. A job is usually the smallest atomic
+&ldquo;thing&rdquo; we can run: updating an issue status in the database, calling out to
+openjpeg to generate JP2 derivatives from an issue&rsquo;s PDFs, etc. We attempt to
+make all jobs idempotent: running a job that already ran should never change
+the database / file system / app state.</p>
+<p>The pipeline organizes jobs into the more complex operations. For instance,
+when it&rsquo;s time to pull PDFs from SFTP into NCA, that generates a pipeline
+consisting of over a dozen atomic jobs: things like updating the issue&rsquo;s status
+so NCA knows it&rsquo;s being worked on, copying the files to the workflow location,
+splitting pages, etc. Even the &ldquo;move files&rdquo; operations are idempotent: the copy
+is one job, then a job verifies that the copied files are correct, and then a
+third job removes the source files.</p>
+<p>The job runner, started by the <code>run-jobs</code> binary, regularly scans the database
+looking for jobs to run. The default setup has different queues to keep
+I/O-heavy jobs, such as derivative generation, from delaying fast jobs like
+small database updates. This makes NCA more efficient, as jobs can run in
+parallel when there won&rsquo;t be resource contention. Jobs in the same pipeline
+will never be run in parallel, as it&rsquo;s assumed there are dependencies from one
+to the next, but when multiple pipelines are queued up, NCA will process
+whatever is next in each pipeline.</p>
+<p>If you&rsquo;re trying to watch job logs as a whole, this can be confusing: a
+pipeline&rsquo;s jobs will run in their sequence, but different pipelines can be
+running at the same time, so job logs can look chaotic. If you&rsquo;re trying to
+watch jobs for a given operation, you&rsquo;ll want to group them by pipeline to make
+sense of what&rsquo;s going on.</p>
+<p>The job runner also looks for issues in the scan and page review areas that are
+ready to enter the workflow. These aren&rsquo;t actual jobs and aren&rsquo;t tied to
+pipelines, they&rsquo;re just a separate background task that&rsquo;s always being watched.</p>
 <p>All jobs store logs in the database, but these are currently not exposed to end
 users (not even admins). To help mitigate this, the job runner also logs to
-STDERR, so those can be captured and reviewed.</p>
+STDERR, though without pipeline filtering, those again can be tricky to parse
+without some advanced log filtering application.</p>
 <h2 id="uploads">Uploads</h2>
 <p>Whenever issues are uploaded into NCA, the application&rsquo;s &ldquo;Uploaded Issues&rdquo;
 pages will display these issues along with any obvious errors the application
@@ -357,6 +379,19 @@ issue folder after the derivative has been generated successfully</li>
 </ul>
 <p>These two factors make it easy to re-kick-off a derivative process without
 worrying about data corruption.</p>
+<p>Note that different OSes can report to NCA that something worked when the OS
+still has yet to fully sync the files. This is out of NCA&rsquo;s control, and it is
+exceedingly rare that it causes problems, but really unusual events (like a
+very unfortunately-timed power failure, or catastrophic OS crash) can leave
+things in a state that causes problems which NCA can&rsquo;t do anything about. These
+kinds of events are virtually nonexistent even when power failures occur, but there are ways to help prevent problems:</p>
+<ul>
+<li>Make sure your system has a UPS so small power failures don&rsquo;t cause problems.</li>
+<li>Make sure your system&rsquo;s got enough disk space! Disk exhaustion is one of the
+worst problems that even modern OSes still handle very poorly.</li>
+<li>Replace faulty hardware! A hard-crash that&rsquo;s bad enough can interrupt a
+process before the OS has a chance to finalize file I/O.</li>
+</ul>
 <h2 id="error-reports">Error Reports</h2>
 <p>If an issue has some kind of problem which cannot be fixed with metadata entry,
 the metadata person will report an error. Once an error is reported, the issue
@@ -365,13 +400,13 @@ have to decide how to handle it. See <a href="https://uoregon-libraries.github.i
 <h2 id="post-metadata--batch-generation">Post-Metadata / Batch Generation</h2>
 <p>After metadata has been entered and approved, the issue is considered &ldquo;done&rdquo;.
 An issue XML will be generated (using the METS template defined by the setting
-<code>METS_XML_TEMPLATE_PATH</code>) and born-digital issues&rsquo; original PDF(s) is/are moved
-into the issue location for safe-keeping. Assuming these are done without
-error, the issue is marked &ldquo;ready for batching&rdquo;.</p>
+<code>METS_XML_TEMPLATE_PATH</code>) and born-digital issues&rsquo; original PDFs are moved into
+the issue location for safe-keeping. Assuming these are done without error, the
+issue is marked &ldquo;ready for batching&rdquo;.</p>
 <p>A &ldquo;batch builder&rdquo; can then select organizations (e.g., the MARC org codes) they
 want batches built for by visiting the &ldquo;Create Batches&rdquo; page in NCA. General
 high-level aggregate data should give the batch builder enough information to
-choose what to batch, after which they decide  how big the batches should be.</p>
+choose what to batch, after which they decide how big the batches should be.</p>
 <p>Alternatively, the batch queue command-line script (compiled to
 <code>bin/queue-batches</code>) grabs all issues which are ready to be batched, organizes
 them by organization (a.k.a., MARC Org Code / awardee) for batching (<em>each
@@ -383,40 +418,34 @@ is necessary to handle cases where an issue had to have special treatment after
 the bulk of a batch was completed, and would otherwise just sit and wait
 indefinitely.</p>
 <h2 id="batch-management">Batch Management</h2>
-<p>Once a batch is generated and all jobs related to it are complete, the files
-will be put into the configured <code>BATCH_OUTPUT_PATH</code>, the live files (non-TIFF,
-non-tar originals, etc.) are synced to the <code>BATCH_PRODUCTION_PATH</code>, and the
-&ldquo;Batches&rdquo; page in NCA will show it to users with the &ldquo;batch loader&rdquo; role.</p>
-<p>At this point the batch can be loaded into staging. NCA&rsquo;s batch page,
-accessible by activating the relevant link in the batch list, will use your
-configuration to provide bash commands that batch loaders can copy and paste in
-order to get the batch onto your staging ONI instance.</p>
-<p><em>Note: if your staging system mounts files differently than your NCA
-server, the commands may have to be altered. e.g., NCA might use
-<code>/mnt/news/outgoing</code> while staging uses <code>/mnt/libnca</code>.</em></p>
-<p>Once loaded onto staging, the batch loader flags a batch as being ready for QC
-(quality control). The batch will then be visible to batch reviewers, letting
-them know action is needed to approve the batch. The batch page will have a
-link to the staging environment&rsquo;s batch page for easier review, as well as two
-possible actions to take: approve the batch for production or reject it from
-staging due to problems in one or more issues.</p>
+<p>Once a batch is queued for generation:</p>
+<ul>
+<li>The files will be put into the configured <code>BATCH_OUTPUT_PATH</code></li>
+<li>The live files (non-TIFF, non-tar originals, etc.) are synced to the
+<code>BATCH_PRODUCTION_PATH</code></li>
+<li>NCA sends a command to the staging ONI Agent (configured via <code>STAGING_AGENT</code>)
+to load the batch</li>
+<li>NCA polls the agent until the batch load is reported as successful</li>
+</ul>
+<p>Once all these jobs are complete, the batch will be visible to batch reviewers,
+letting them know action is needed to approve the batch. The batch page will
+have a link to the staging environment&rsquo;s batch page for easier review, as well
+as two possible actions to take: approve the batch for production or reject it
+from staging due to problems in one or more issues.</p>
 <p>If rejected, batch reviewers will need to find and flag the problem issues so
 NCA can process the rest of the batch. Issues will be flagged as unfixable
 (moving to a state where issue managers will have to take action), and the
 batch reviewer will need to enter a comment to help identify what was wrong.
 Once issues are done being flagged, the batch reviewer can finalize the batch,
-rebuilding it with only the good issues, and moving it into the &ldquo;ready for
-staging&rdquo; state, where a batch loader is guided through purging and reloading
-the batch for another round of QC.</p>
-<p>Once a batch has been approved in staging, NCA will mark the batch as ready to
-go live. Upon visiting the batch page in NCA, the batch loader will get
-instructions for loading the batch to production. <em>The same caveat applies here
-as when loading to staging: if file mounts differ from NCA&rsquo;s mount locations,
-the batch loader will need to adjust the commands NCA provides.</em></p>
-<p>After batches are live, the batch loader flags it as such in NCA, and NCA will
-move the original batch and any backups (the source PDFs for born-digital
-batches, for instance) to the archival location specificed by the configured
-<code>BATCH_ARCHIVE_PATH</code>. At this point the batch is ready for final archival.</p>
+rebuilding it with only the good issues, and NCA will reload it on staging
+where it will be ready for another round of QC.</p>
+<p>Once a batch has been approved in staging, NCA will contact the production ONI
+Agent (configured via <code>PRODUCTION_AGENT</code>) to load it live, and then poll the
+agent regularly until the batch load has completed.</p>
+<p>After batches are live, NCA will move the original batch and any backups (the
+source PDFs for born-digital batches, for instance) to the archival location
+specificed by the configured <code>BATCH_ARCHIVE_PATH</code>. At this point the batch is
+ready for final archival.</p>
 <h2 id="batch-archival">Batch Archival</h2>
 <p>At UO, our archive path is actually a &ldquo;staging area&rdquo; for batches which are
 getting ready for a move to the dark archive. Your process may not be quite the

@@ -23,7 +23,7 @@
 <meta itemprop="name" content="Testing">
 <meta itemprop="description" content="Automated and manual testing of NCA">
 
-<meta itemprop="wordCount" content="244">
+<meta itemprop="wordCount" content="259">
 <meta itemprop="keywords" content="" /></head>
 <body>
   <div class="container"><div class="skip"><a href="#maincontent">Skip to main content</a></div>
@@ -288,11 +288,11 @@
 
 <main id="maincontent"><h1>Testing</h1><h2 id="unit-testing">Unit Testing</h2>
 <p>Running unit tests is easy:</p>
-<pre><code>make test
-</code></pre>
-<p>This compiles all of the code and tests any <code>*_test.go</code> files. Test coverage
-is spotty at best right now, but the compile-time checks catch the most common
-problems, like typos in variable names.</p>
+<div class="highlight"><pre tabindex="0" style="color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4;"><code class="language-bash" data-lang="bash"><span style="display:flex;"><span>make test
+</span></span></code></pre></div><p>This compiles all of the code and tests any <code>*_test.go</code> files. Test coverage is
+spotty at best right now, but the compile-time checks, and static analysis run
+by <code>make</code>, catch most of the kinds of problems you&rsquo;d test for in
+PHP/Ruby/Python/etc (variable typos, misuse of a function, etc.)</p>
 <p>Contributors: feel free to add more unit tests to improve overall coverage!</p>
 <h2 id="manual-testing">Manual Testing</h2>
 <p>Manually testing NCA can be time-consuming, as you have to find, copy, and then

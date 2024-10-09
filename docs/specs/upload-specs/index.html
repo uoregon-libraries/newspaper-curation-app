@@ -23,7 +23,7 @@
 <meta itemprop="name" content="Uploads: Folder and File Specs">
 <meta itemprop="description" content="Detailed specifications for uploaded issues&#39; files">
 
-<meta itemprop="wordCount" content="420">
+<meta itemprop="wordCount" content="457">
 <meta itemprop="keywords" content="" /></head>
 <body>
   <div class="container"><div class="skip"><a href="#maincontent">Skip to main content</a></div>
@@ -289,7 +289,7 @@
 <main id="maincontent"><h1>Uploads: Folder and File Specs</h1><h2 id="uploads-folder-and-file-specs">Uploads: Folder and File Specs</h2>
 <p>Publishers (or in-house scanners) who upload issues must adhere to very strict
 structures for issue organization.</p>
-<h3 id="born-digital">Born-Digital</h3>
+<h3 id="born-digital-pdfs-uploaded-via-sftp">Born-Digital (PDFs uploaded via SFTP)</h3>
 <p>The folder structure tells us the newspaper title and issue date. e.g.,
 <code>/mnt/news/sftp/sftpuser/2018-01-02</code> would mean the January 2nd, 2018 edition
 of title whose SFTP login is &ldquo;sftpuser&rdquo;.</p>
@@ -305,7 +305,10 @@ folder name.</p>
 <p><strong>Note</strong>: Currently NCA puts all born-digital issues into a single MARC Org
 Code when generating batches (determined by the <code>PDF_BATCH_MARC_ORG_CODE</code>
 setting), and doesn&rsquo;t support having multiple editions of a single date.</p>
-<h3 id="scans">Scans</h3>
+<h3 id="scans-tiffs-with-ocred-pdfs">Scans (TIFFs with OCRed PDFs)</h3>
+<p>Scanned issues must be copied directly to the location NCA sees in the
+configured <code>SCAN_UPLOAD_PATH</code>. This is currently <em>not</em> done with the same SFTP
+process used for publisher uploads.</p>
 <p>The folder structure tells us the same information as with born-digital
 uploads with a few exceptions:</p>
 <ul>
