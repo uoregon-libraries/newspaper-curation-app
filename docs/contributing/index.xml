@@ -12,8 +12,8 @@
       <pubDate>Mon, 01 Jan 0001 00:00:00 +0000</pubDate>
       
       <guid>https://uoregon-libraries.github.io/newspaper-curation-app/contributing/dev-guide/</guid>
-      <description>It is assumed developers will use Docker for the database, RAIS (IIIF server), and SFTPGo. The rest of the tools are most easily installed locally, and the NCA binaries themselves are in fact easier by far to install locally versus building them in an image when code changes.
-Requirements / Setup Local dependencies A supported version of Go (e.g., if 1.16 is the latest, you want 1.15 or 1.16) revive: go install github.</description>
+      <description>It is assumed developers will use Docker for dependencies outside this repository: ONI (staging and production, and services for both), database, RAIS (IIIF server), the ONI Agents (staging and production), and SFTPGo. The rest of the tools are most easily installed locally, and the NCA binaries themselves are in fact easier by far to install locally versus building them in an image when code changes.
+Requirements / Setup Local dependencies A supported version of Go (e.</description>
     </item>
     
     <item>
@@ -33,7 +33,7 @@ Go is not Ruby / Python / PHP / node. You aren&amp;rsquo;t installing a systemwi
       <pubDate>Mon, 01 Jan 0001 00:00:00 +0000</pubDate>
       
       <guid>https://uoregon-libraries.github.io/newspaper-curation-app/contributing/documentation/</guid>
-      <description>The documentation for this site is produce using Hugo and a custom theme based on the look and feel of TechDoc, a contributed Hugo theme.
+      <description>The documentation for this site is produced using Hugo and a custom theme based on the look and feel of TechDoc, a contributed Hugo theme.
 We want our documentation to help you use NCA (okay, again, if I&amp;rsquo;m being honest, this is really just for UO to remember how to use our app), and as such the documentation itself needs to be easy to edit and keep up-to-date.
 Starting out Get Hugo installed.</description>
     </item>
@@ -45,7 +45,7 @@ Starting out Get Hugo installed.</description>
       
       <guid>https://uoregon-libraries.github.io/newspaper-curation-app/contributing/testing/</guid>
       <description>Unit Testing Running unit tests is easy:
-make test This compiles all of the code and tests any *_test.go files. Test coverage is spotty at best right now, but the compile-time checks catch the most common problems, like typos in variable names.
+make test This compiles all of the code and tests any *_test.go files. Test coverage is spotty at best right now, but the compile-time checks, and static analysis run by make, catch most of the kinds of problems you&amp;rsquo;d test for in PHP/Ruby/Python/etc (variable typos, misuse of a function, etc.)
 Contributors: feel free to add more unit tests to improve overall coverage!
 Manual Testing Manually testing NCA can be time-consuming, as you have to find, copy, and then load issues into NCA, enter metadata, etc.</description>
     </item>

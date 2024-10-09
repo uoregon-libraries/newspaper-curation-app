@@ -285,9 +285,8 @@
 generally understanding what goes on without necessarily worrying about all the
 inner workings.</p>
 <h2 id="setup">Setup</h2>
-<p>See <a href="../setup/server-setup">Server Setup</a> for getting the software installed, and
-<a href="../setup/services">Services</a> for information about running the services NCA
-requires.</p>
+<p>See <a href="https://uoregon-libraries.github.io/newspaper-curation-app/setup/server-setup/">Server Setup</a> for getting the software installed, and
+<a href="https://uoregon-libraries.github.io/newspaper-curation-app/setup/services/">Services</a> for information about running the services NCA requires.</p>
 <ol>
 <li>Server is set up, directories mounted</li>
 <li>Settings file (<code>/usr/local/nca/settings</code>, for example) is customized as needed</li>
@@ -296,12 +295,12 @@ requires.</p>
 <li>MARC Org Code manager creates awardee codes NCA will need to know about</li>
 </ol>
 <h2 id="uploads">Uploads</h2>
-<h3 id="sftp-born-digital">SFTP (Born Digital)</h3>
+<h3 id="pdf-sftp-born-digital">PDF SFTP (Born Digital)</h3>
 <ol>
 <li>Publishers upload PDF issues routinely to your servers
 <ul>
 <li>Uploads either go directly into NCA&rsquo;s SFTP folder, or a script can be built to move them</li>
-<li><a href="../specs/upload-specs">See our detailed folder and filename specs</a></li>
+<li><a href="https://uoregon-libraries.github.io/newspaper-curation-app/specs/upload-specs/">See our detailed folder and filename specs</a></li>
 </ul>
 </li>
 <li>Uploaded issues are individually verified and queued by a workflow manager using the &ldquo;Uploaded Issues&rdquo; section of the NCA web app
@@ -333,12 +332,12 @@ requires.</p>
 </ul>
 </li>
 </ol>
-<h3 id="scanned-in-house">Scanned in-house</h3>
+<h3 id="tiffpdf-scans">TIFF/PDF Scans</h3>
 <ol>
 <li>Digital imaging personnel scan papers and run them through OCR to produce a TIFF and PDF file
 <ul>
 <li>We use Abbyy for scanning, and the output PDF works with NCA</li>
-<li><a href="../specs/upload-specs">See our detailed folder and filename specs</a></li>
+<li><a href="https://uoregon-libraries.github.io/newspaper-curation-app/specs/upload-specs/">See our detailed folder and filename specs</a></li>
 </ul>
 </li>
 <li>Issues&rsquo; PDFs and TIFFs are uploaded
@@ -377,25 +376,25 @@ page and choose which MOCs should have issues batched.</li>
 <li>Batches will be put into the configured <code>BATCH_OUTPUT_PATH</code>, and required
 files (e.g., not TIFFs) will be synced to production (as configured via
 <code>BATCH_PRODUCTION_PATH</code>).</li>
-<li>A batch loader must manually load the batches into a staging server and then
-flag them as ready for QC</li>
+<li>NCA will call out to the configured ONI Agent on staging to load the batch.
+Once the ONI job is done, the batch will be marked ready for QC.</li>
 <li>A batch reviewer does quality control on the staging server, verifying the
 batch&rsquo;s issues look good
 <ul>
 <li>If all is well, batch reviewer marks the issue as ready for production</li>
 <li>If not, they reject the batch and can then get individual issues pulled
 out to be re-curated or rejected from NCA entirely. The remaining issues
-are put into a new batch which is then set as being ready for staging
-(repeating step 5).</li>
+are put into a new batch which is then rebuilt and sent to staging
+(repeating steps 5 and 6).</li>
 </ul>
 </li>
-<li>Batches that are ready for production get loaded to prod by a batch loader.</li>
-<li>Batch loader flags the batch as &ldquo;live&rdquo;, and NCA moves its files to the
-configured <code>BATCH_ARCHIVE_PATH</code>.</li>
+<li>Batches that are ready for production get loaded to prod by the production
+ONI Agent, and get flagged &ldquo;live&rdquo; when the agent reports the job as complete.</li>
+<li>NCA moves the batch files to the configured <code>BATCH_ARCHIVE_PATH</code>.</li>
 <li>Once the batch can be confirmed as fully archived, a batch loader flags it
 as archived.</li>
 <li>Somebody with command-line access to NCA will run <code>delete-live-done-issues</code>
-(or set up a cron job) to purge unneeded files from NCA that are part of
+(or set up a cron job) to clean unneeded files from NCA that are part of
 archived batches. It only deletes files when a batch is at least four weeks
 past its archive date to ensure any final problems can be handled.</li>
 </ol>

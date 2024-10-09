@@ -23,7 +23,7 @@
 <meta itemprop="name" content="Developer&#39;s Guide">
 <meta itemprop="description" content="Developing on NCA">
 
-<meta itemprop="wordCount" content="1645">
+<meta itemprop="wordCount" content="1656">
 <meta itemprop="keywords" content="" /></head>
 <body>
   <div class="container"><div class="skip"><a href="#maincontent">Skip to main content</a></div>
@@ -286,10 +286,12 @@
 </div>
 
 
-<main id="maincontent"><h1>Developer&#39;s Guide</h1><p>It is assumed developers will use Docker for the database, RAIS (IIIF server), and
-SFTPGo. The rest of the tools are most easily installed locally, and the NCA
-binaries themselves are in fact easier by far to install locally versus
-building them in an image when code changes.</p>
+<main id="maincontent"><h1>Developer&#39;s Guide</h1><p>It is assumed developers will use Docker for dependencies outside this
+repository: ONI (staging and production, and services for both), database, RAIS
+(IIIF server), the ONI Agents (staging and production), and SFTPGo. The rest of
+the tools are most easily installed locally, and the NCA binaries themselves
+are in fact easier by far to install locally versus building them in an image
+when code changes.</p>
 <h2 id="requirements--setup">Requirements / Setup</h2>
 <h3 id="local-dependencies">Local dependencies</h3>
 <ul>
@@ -304,20 +306,18 @@ simpler initial install, but there are a few considerations as you edit and
 test the code. See <a href="../../contributing/not-compiling-locally">Not Compiling Locally</a>.</p>
 <h2 id="environment-setup">Environment Setup</h2>
 <p>In all cases you&rsquo;ll need the NCA code repository:</p>
-<pre><code>git clone git@github.com:uoregon-libraries/newspaper-curation-app.git nca
-cd nca
-</code></pre>
-<p>You don&rsquo;t have to specify &ldquo;nca&rdquo; as the destination; I just find it easier to
+<div class="highlight"><pre tabindex="0" style="color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4;"><code class="language-bash" data-lang="bash"><span style="display:flex;"><span>git clone git@github.com:uoregon-libraries/newspaper-curation-app.git nca
+</span></span><span style="display:flex;"><span>cd nca
+</span></span></code></pre></div><p>You don&rsquo;t have to specify &ldquo;nca&rdquo; as the destination; I just find it easier to
 use than the full name. When reading the documentation, if you don&rsquo;t call it
 &ldquo;nca&rdquo;, make sure you mentally replace references to that directory / app name.</p>
 <h3 id="hybrid-developer">Hybrid Developer</h3>
 <p>As mentioned before, Docker is the preferred method <em>for the external services
 only</em>. The various command-line tools, including NCA, should just be installed
 locally.</p>
-<p>If you want to go fully local on baremetal, it should be a pretty easy
-transition. Whether you use docker for a database or not, for instance, you
-have to specify how NCA connects to it. This makes the Hybrid approach ideal
-for staying mostly in sync with a production setup.</p>
+<p>If you want to go fully local on baremetal, it shouldn&rsquo;t be too difficult, but
+you&rsquo;ll need to set up everything yourself, including ONI, and configure
+everything manually.</p>
 <h4 id="configuration">Configuration</h4>
 <h5 id="paths">Paths</h5>
 <p><em>All paths in the settings file</em> need to point to your local filesystem. The
@@ -326,7 +326,7 @@ Here are some examples:</p>
 <ul>
 <li><code>APP_ROOT=&quot;/home/jechols/nca&quot;</code></li>
 <li><code>WORKFLOW_PATH=&quot;/home/jechols/nca/test/fakemount/workflow&quot;</code></li>
-<li><code>METS_XML_TEMPLATE_PATH=&quot;/home/jechols/projects/work/nca/templates/xml/mets.go.html&quot;</code></li>
+<li><code>METS_XML_TEMPLATE_PATH=&quot;/home/jechols/nca/templates/xml/mets.go.html&quot;</code></li>
 </ul>
 <p>Make sure you edit your settings file and adjust <em>all paths</em>, not just those
 shown above!</p>
@@ -337,39 +337,41 @@ install these to a location NCA can find, but if not, you may have to make
 symlinks. Or offer up a PR that fixes this and makes all shell-executed
 binaries configurable.</p>
 <h5 id="docker-services">Docker Services</h5>
-<p><code>docker-compose.override.yml</code> must expose RAIS (&ldquo;iiif&rdquo;), mysql, and SFTPGo to
-the local server via &ldquo;ports&rdquo; declarations, and settings need to reflect these
-values. For example, this is how the RAIS server might be configured:</p>
-<pre tabindex="0"><code># docker-compose.override.yml:
-version: &#39;2&#39;
-services:
-  iiif:
-    volumes:
-      - ./test/fakemount/workflow:/var/local/images:z
-    ports:
-      - 12415:12415
-    environment:
-      - RAIS_IIIFBASEURL=http://localhost:12415
-...
-
-
-# settings:
-...
-IIIF_BASE_URL=&#34;http://localhost:12415/images/iiif&#34;
-...
-</code></pre><h5 id="nca-web-server">NCA Web Server</h5>
+<p>Start by copying the included <code>compose.override-hybrid-example.yml</code> file to
+<code>compose.override.yml</code>. The example has everything needed to run the full stack
+locally with minimal fuss.</p>
+<p><code>compose.override.yml</code> must expose RAIS (&ldquo;iiif&rdquo;), mysql, both oni-agents, and
+SFTPGo to the local server via &ldquo;ports&rdquo; declarations, and settings need to
+reflect these values. It is also useful to expose the oni web services for
+testing that NCA is sending the batches to the right ONI instance.</p>
+<p>For example, if you use the hybrid compose override values as-is, the critical
+settings would look like this:</p>
+<pre tabindex="0"><code>IIIF_BASE_URL=http://localhost:12415/images/iiif
+STAGING_NEWS_WEBROOT=&#34;http://localhost:8082&#34;
+DB_HOST=&#34;127.0.0.1&#34;
+DB_PORT=3306
+DB_USER=&#34;nca&#34;
+DB_PASSWORD=&#34;nca&#34;
+DB_DATABASE=&#34;nca&#34;
+SFTPGO_API_URL=&#34;http://localhost:8081/api/v2&#34;
+STAGING_AGENT=&#34;localhost:2223&#34;
+PRODUCTION_AGENT=&#34;localhost:2222&#34;
+</code></pre><p>Unfortunately, <code>NEWS_WEBROOT</code> needs to be set to a running ONI instance that
+has the JSON endpoints patched, which isn&rsquo;t in a vanilla ONI instance. NCA
+requires those APIs to pull live issue data, and will not run if you try to
+point to a vanilla ONI setup.</p>
+<h5 id="nca-web-server">NCA Web Server</h5>
 <p><code>WEBROOT</code> should just be localhost and whatever port you want. e.g.,
-<code>WEBROOT=&quot;http://localhost:8080&quot;</code>. NCA simply parses that and listens on the
-given port.</p>
+<code>WEBROOT=&quot;http://localhost:3333&quot;</code>. The port must reflect the port NCA listens
+to, as configured in the <code>BIND_ADDRESS</code>.</p>
 <h4 id="local-development-aliases">Local Development Aliases</h4>
 <p>A handy script, <code>scripts/localdev.sh</code>, has been provided for easier development
 and testing. Using it via <code>source</code> will expose several useful functions for
 easing a more local development environment. Docker is still expected for the
-IIIF server, SFTPGo, and the database, but the NCA applications will be
-completely local.</p>
+various external services, but the NCA applications will be completely local.</p>
 <p>For this to work, however:</p>
 <ul>
-<li>You should read and understand the Docker image definition</li>
+<li>You should read and understand the Docker image definitions</li>
 <li>You must install the command-line tools locally:
 <ul>
 <li>poppler utils</li>
@@ -391,7 +393,7 @@ the script:</p>
 &ldquo;clean slate&rdquo;:
 <ul>
 <li>Deletes the stack, including database volumes</li>
-<li>Starts up key services (db, iiif, sftpgo)</li>
+<li>Starts up key services (<em>db, iiif, sftpgo, and oni services</em>)</li>
 <li>Once the database is ready, runs the DB migrations and ingests seed data if
 you have any (<code>docker/mysql/nca-seed-data.sql</code>)</li>
 </ul>
@@ -400,7 +402,7 @@ you have any (<code>docker/mysql/nca-seed-data.sql</code>)</li>
 get the database migrations run</li>
 <li><code>server</code> prepares, compiles, and runs the HTTP server:
 <ul>
-<li>Starts up the necessary pieces of the docker stack (db, iiif, sftpgo)</li>
+<li>Starts up the necessary pieces of the docker stack (see above)</li>
 <li>Provisions a valid SFTPGo key in your <code>settings</code> file</li>
 <li>Compiles the HTTP server in case any changes have been made to the source</li>
 <li>Runs the server in debug mode</li>
@@ -408,7 +410,7 @@ get the database migrations run</li>
 </li>
 <li><code>workers</code> prepares and starts the job runner:
 <ul>
-<li>Starts up key docker services (db, iiif, sftpgo)</li>
+<li>Starts up key docker services (see above)</li>
 <li>Compiles <code>run-jobs</code> in case the source code changed</li>
 <li>Runs the standard &ldquo;watchall&rdquo; subcommand for the job runner</li>
 </ul>
@@ -423,65 +425,48 @@ script itself and won&rsquo;t be documented. Reading through the script may stil
 useful to better understand how it works in case you want to run some commands
 manually.</p>
 <h3 id="docker-with-local-compilation">Docker With Local Compilation</h3>
-<p>This is not recommended, because it can be easy to get things &ldquo;out of sync&rdquo;,
-such as when your host system has a different architecture from the docker
-image (in which case the compiled binaries won&rsquo;t run) or the compiled binaries
-aren&rsquo;t mounted inside the container properly (in which case you could be
-running a different version of the code than you&rsquo;re editing).</p>
+<p><strong>This is not recommended</strong>, because it can be easy to get things &ldquo;out of
+sync&rdquo;, such as when your host system has a different architecture from the
+docker image (in which case the compiled binaries won&rsquo;t run) or the compiled
+binaries aren&rsquo;t mounted inside the container properly (in which case you could
+be running a different version of the code than you&rsquo;re editing).</p>
 <p>This approach also doesn&rsquo;t match the recommended production setup, where docker
 isn&rsquo;t used for any of the stack.</p>
 <p>However, this approach can be easier than the &ldquo;hybrid&rdquo; approach above if you
 don&rsquo;t want to deal with all the command-line tool installs (openjpeg, poppler,
 graphicsmagick, ghostscript) and figuring out the various docker settings to
-expose the services NCA needs (database, sftpgo, IIIF).</p>
+expose the services NCA needs (database, sftpgo, oni-agent, IIIF).</p>
 <h4 id="copy-docker-configuration">Copy docker configuration</h4>
-<pre><code>cp docker-compose.override.yml-example docker-compose.override.yml
+<pre><code>cp compose.override-example.yml compose.override.yml
 </code></pre>
-<p>The override file specifies useful things like automatically mounting your
-local binaries to speed up the edit+compile+test loop, mounting in your local
-templates and static files, mapping the proxy service&rsquo;s port, and running in
-debug mode.</p>
-<pre><code>cp env-example .env
-vim .env
-</code></pre>
-<p><code>.env</code> sets up default environment variables which <code>docker compose</code> commands
-will use. A sample file might look like this:</p>
-<div class="highlight"><pre tabindex="0" style="color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4;"><code class="language-bash" data-lang="bash"><span style="display:flex;"><span>APP_URL<span style="color:#f92672">=</span><span style="color:#e6db74">&#34;https://jechols.uoregon.edu&#34;</span>
-</span></span><span style="display:flex;"><span>NCA_NEWS_WEBROOT<span style="color:#f92672">=</span><span style="color:#e6db74">&#34;https://oregonnews.uoregon.edu&#34;</span>
-</span></span></code></pre></div><p>This would say that all app URLs should begin with
-<code>https://jechols.uoregon.edu</code> (the default is <code>localhost</code>, which is usually
-fine for simple dev work), and that the live issues are found on
-<code>https://oregonnews.uoregon.edu</code>. The live newspaper server is expected to
-have the legacy chronam JSON handlers, as described in
-<a href="../../setup/services">Services</a>.</p>
+<p>You&rsquo;ll have to figure out setting up binary mounts on your own, as the example
+file is built in a more &ldquo;production-like&rdquo; approach, where everything is built
+and run in a container.</p>
 <h4 id="compile">Compile</h4>
-<pre><code>make
-</code></pre>
-<p>Binaries have to be built before starting up docker if you are mounting them
+<div class="highlight"><pre tabindex="0" style="color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4;"><code class="language-bash" data-lang="bash"><span style="display:flex;"><span>make
+</span></span></code></pre></div><p>Binaries have to be built before starting up docker if you are mounting them
 into the container.</p>
 <h4 id="get-all-images">Get all images</h4>
-<pre><code>docker compose build
-docker compose pull
-</code></pre>
-<p>Building the NCA application image will take a long time. Grab some coffee.
-And maybe a nap&hellip;.</p>
-<p>Note that once it&rsquo;s been built, further builds will be quick as docker will
-cache the expensive operations (compiling custom versions of poppler and
-openjpeg) and only update what has changed (e.g., NCA source code).</p>
+<div class="highlight"><pre tabindex="0" style="color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4;"><code class="language-bash" data-lang="bash"><span style="display:flex;"><span>docker compose build
+</span></span><span style="display:flex;"><span>docker compose pull
+</span></span></code></pre></div><p>Building the images will take a little while. Grab some coffee.</p>
+<p>Note that once everything has been built, further builds will be quick as
+docker will cache the expensive operations (updating the <code>dnf</code> cache,
+downloading and installing dependencies, etc) and only update what has changed
+(e.g., NCA source code).</p>
 <h4 id="start-the-stack">Start the stack</h4>
-<p>Run <code>docker compose up</code>, and the application will be available at
-<code>$APP_URL/nca</code>. Note that on the first run it will take a while to respond as
-the system is caching all known issues - including those on the defined live
-site.</p>
+<p>Run <code>docker compose up</code>, and all applications will start, exposing ports to
+your host however they&rsquo;re defined. Note that on the first run it will take a
+while to respond as the system is caching all known issues - including those on
+the defined live site.</p>
 <h4 id="edit--compile--test-loop">Edit + Compile + Test Loop</h4>
 <p>Here&rsquo;s a nice shortcut one can use to speed up the process since, unlike PHP,
 this project requires compilation before it starts up:</p>
-<pre><code>alias dc='docker compose'
-make fast
-dc restart web proxy workers
-dc logs -f web proxy workers
-</code></pre>
-<p>The alias just makes it easier to work with docker in general, and can be put
+<div class="highlight"><pre tabindex="0" style="color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4;"><code class="language-bash" data-lang="bash"><span style="display:flex;"><span>alias dc<span style="color:#f92672">=</span><span style="color:#e6db74">&#39;docker compose&#39;</span>
+</span></span><span style="display:flex;"><span>make fast
+</span></span><span style="display:flex;"><span>dc restart web proxy workers
+</span></span><span style="display:flex;"><span>dc logs -f web proxy workers
+</span></span></code></pre></div><p>The alias just makes it easier to work with docker in general, and can be put
 into a <code>.bash_aliases</code> file or similar.</p>
 <h3 id="100-docker">100% Docker</h3>
 <p>This is not recommended for development as you&rsquo;ll have to rebuild the docker
@@ -498,7 +483,7 @@ for details on doing dev this way.</p>
 <p>You won&rsquo;t get far without setting up some test issues. NCA has a rudimentary
 setup for grabbing issues from a live server and turning them into testable
 data for local use.</p>
-<p>Note that the test scripts/recipes assume devs are using the &ldquo;Hybrid&rdquo; approach
+<p>Note that the test scripts/recipes assume devs are using the &ldquo;hybrid&rdquo; approach
 to development.</p>
 <p>The processes are detailed in the <code>test</code> subdirectory of the NCA project and
 explained at a high level on the <a href="../../contributing/testing">Testing</a> page.</p>
@@ -507,13 +492,12 @@ explained at a high level on the <a href="../../contributing/testing">Testing</a
 Everything which compiles into a standalone binary lives in <code>src/cmd/</code>.
 Comprehensive documentation exists only in the source code, but can be viewed
 with <code>go doc</code>; e.g.:</p>
-<pre><code># Read the entire &quot;issuefinder&quot; package's documentation
-go doc ./src/issuefinder
-
-# Read the Finder type's documentation
-go doc ./src/issuefinder Finder
-</code></pre>
-<h3 id="validation">Validation</h3>
+<div class="highlight"><pre tabindex="0" style="color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4;"><code class="language-bash" data-lang="bash"><span style="display:flex;"><span><span style="color:#75715e"># Read the entire &#34;issuefinder&#34; package&#39;s documentation</span>
+</span></span><span style="display:flex;"><span>go doc ./src/issuefinder
+</span></span><span style="display:flex;"><span>
+</span></span><span style="display:flex;"><span><span style="color:#75715e"># Read the Finder type&#39;s documentation</span>
+</span></span><span style="display:flex;"><span>go doc ./src/issuefinder Finder
+</span></span></code></pre></div><h3 id="validation">Validation</h3>
 <p><code>make</code> will do basic linting and then compile the code if there were no
 compiliation / linter errors.</p>
 <p>There are a few unit tests which can be executed via <code>make test</code>. Coverage is
@@ -523,7 +507,7 @@ comprehensive end-to-end testing is explained in the
 <h3 id="general-development-notes">General Development Notes</h3>
 <ul>
 <li>If you make a database schema change (e.g., a new migration), or other major
-changes (e.g., changing your <code>docker-compose.override.yml</code> file), you should
+changes (e.g., changing your <code>compose.override.yml</code> file), you should
 bring the whole stack down and back up</li>
 <li>If things seem &ldquo;weird&rdquo;, bring the whole stack down and back up</li>
 <li>Only run <code>make fast</code> for quick test loops, as it skips static analysis
