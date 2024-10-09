@@ -96,6 +96,11 @@ easy trade-off, but it's certainly a big change.
     `qc_flagging`, or `deleted`
   - Unsafe: `pending`, `staging_ready`, or `passed_qc`
 - If you use docker compose, you probably need to rename your override to `compose.override.yml`
+- Install the ONI Agent onto your production and staging systems, and configure
+  NCA's new settings `STAGING_AGENT` and `PRODUCTION_AGENT`.
+  - Consider compiling `agent-test` and using it on your NCA server prior to
+    doing a full upgrade. This will help catch firewall issues, configuration
+    mishaps, etc.
 - Shut down NCA workers and HTTP daemon
 - Run database migrations:
   - `make && ./bin/migrate-database -c ./settings up`
