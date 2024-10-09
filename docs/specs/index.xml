@@ -23,7 +23,7 @@ Title: A distinct newspaper title, such as The Daily Prophet. All titles will ha
       
       <guid>https://uoregon-libraries.github.io/newspaper-curation-app/specs/upload-specs/</guid>
       <description>Uploads: Folder and File Specs Publishers (or in-house scanners) who upload issues must adhere to very strict structures for issue organization.
-Born-Digital The folder structure tells us the newspaper title and issue date. e.g., /mnt/news/sftp/sftpuser/2018-01-02 would mean the January 2nd, 2018 edition of title whose SFTP login is &amp;ldquo;sftpuser&amp;rdquo;.
+Born-Digital (PDFs uploaded via SFTP) The folder structure tells us the newspaper title and issue date. e.g., /mnt/news/sftp/sftpuser/2018-01-02 would mean the January 2nd, 2018 edition of title whose SFTP login is &amp;ldquo;sftpuser&amp;rdquo;.
 The issue should contain PDFs and nothing else. Publishers should never upload tertiary files. Ideally, publishers should upload one PDF for the entire issue, with pages in the order they wish to see on the ONI site, as that reduces (or eliminates) the need to have anybody reviewing these issues&amp;rsquo; pages.</description>
     </item>
     

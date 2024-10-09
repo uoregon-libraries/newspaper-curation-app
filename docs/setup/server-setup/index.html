@@ -23,7 +23,7 @@
 <meta itemprop="name" content="Server Setup">
 <meta itemprop="description" content="Setting up a new NCA toolsuite">
 
-<meta itemprop="wordCount" content="766">
+<meta itemprop="wordCount" content="754">
 <meta itemprop="keywords" content="" /></head>
 <body>
   <div class="container"><div class="skip"><a href="#maincontent">Skip to main content</a></div>
@@ -297,8 +297,8 @@ production, as there is still a great deal of room for human error.</p>
 <h2 id="preliminary-setup">Preliminary setup</h2>
 <p>Before anything can be done, the following setup has to happen:</p>
 <ol>
-<li>Make sure you understand the <a href="../../setup/services">Services</a> documentation and
-can get the stack up and running</li>
+<li>Make sure you understand the <a href="https://uoregon-libraries.github.io/newspaper-curation-app/setup/services/">Services</a> documentation and
+can get the stack up and running.</li>
 <li>Somebody mounts, symlinks, or otherwise sets up the sftp folder root so that
 each title has its own location directly off said root. e.g.,
 <code>/mnt/news/sftp/foo</code> should contain one title&rsquo;s issues, and
@@ -317,8 +317,8 @@ as it makes sense.
 <li><code>SCAN_UPLOAD_PATH</code> (<code>/mnt/news/scans</code>): This is where in-house scans would be uploaded.</li>
 <li><code>ORIGINAL_PDF_BACKUP_PATH</code> (<code>/mnt/news/backup/originals</code>): Short-term storage
 where uploaded PDFs will be moved after being split. They may need to be
-held a few months for embargoed issues, but they&rsquo;re auto-purged once the
-issue has been put into a batch.</li>
+held a few months, or even years, for embargoed issues, but they&rsquo;re
+auto-removed once the issue has been put into a batch.</li>
 <li><code>PDF_PAGE_REVIEW_PATH</code> (<code>/mnt/news/page-review</code>): Issues which came from
 born-digital SFTP uploads and are ready for manual page reordering - this
 should be exposed to whomever will manually review and reorder the
@@ -347,7 +347,7 @@ created. The app will use this to speed up issue lookups.</li>
 </ul>
 </li>
 <li>Make sure that the workflow path and the batch output path are on the same
-filesystem!  This ensures the batch generator will be able to hard-link
+filesystem! This ensures the batch generator will be able to hard-link
 files, rather than copying them, which saves a significant amount of time
 when building large batches.  <strong>NOTE</strong>: the system currently <em>requires</em>
 this, and will fail if an attempt to hard-link files fails.</li>
@@ -360,13 +360,11 @@ the uploads, but you&rsquo;ll have to ensure its &ldquo;root&rdquo; is either sy
 network-mounted to where NCA expects SFTPed files).</li>
 <li>All binaries (<code>server</code>, <code>run-jobs</code>, anything else in <code>bin/</code> you wish to
 run) are run as a user who can read and write to all paths</li>
-<li>Apache can read the scans path</li>
-<li>The systems which ingest batches into ONI (both staging and production)
-mount the <code>BATCH_PRODUCTION_PATH</code> at the same location NCA uses so that
-the ingest instructions are easy to follow.</li>
+<li>The systems which ingest batches into ONI are running an ONI Agent (see
+<a href="https://uoregon-libraries.github.io/newspaper-curation-app/setup/installation/">Installation</a>) that can read the batch files!</li>
 </ul>
 </li>
-<li>Run the servers and set up one or more users: <a href="../../setup/user-setup">User Setup</a></li>
+<li>Run the servers and set up one or more users: <a href="https://uoregon-libraries.github.io/newspaper-curation-app/setup/user-setup/">User Setup</a>.</li>
 <li>Somebody must set up the list of newspaper titles using the &ldquo;Manage
 Newspaper Titles&rdquo; functionality. Nothing works if titles aren&rsquo;t set up!
 <ul>

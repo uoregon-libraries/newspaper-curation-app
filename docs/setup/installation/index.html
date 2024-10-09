@@ -23,7 +23,7 @@
 <meta itemprop="name" content="Installation">
 <meta itemprop="description" content="How to build and compile NCA">
 
-<meta itemprop="wordCount" content="633">
+<meta itemprop="wordCount" content="833">
 <meta itemprop="keywords" content="" /></head>
 <body>
   <div class="container"><div class="skip"><a href="#maincontent">Skip to main content</a></div>
@@ -288,7 +288,7 @@
 
 <main id="maincontent"><h1>Installation</h1><h2 id="development">Development</h2>
 <p>If you&rsquo;re developing on NCA, installation will differ from standing up a
-production server. Please see our <a href="../../contributing/dev-guide">Development Guide</a>.</p>
+production server. Please see our <a href="https://uoregon-libraries.github.io/newspaper-curation-app/contributing/dev-guide/">Development Guide</a>.</p>
 <h2 id="preliminary-setup">Preliminary Setup</h2>
 <p>Manual installation has several prerequisites:</p>
 <ul>
@@ -300,24 +300,44 @@ production server. Please see our <a href="../../contributing/dev-guide">Develop
 <li>A IIIF server capable of handling tiled JP2 files without a ton of overhead (e.g.,
 <a href="https://github.com/uoregon-libraries/rais-image-server">RAIS</a>)</li>
 <li>Apache/nginx for authentication as well as proxying to NCA and the IIIF server</li>
+<li>Two running <a href="https://github.com/open-oni/open-oni">Open ONI</a> applications: staging and production.</li>
+<li>An <a href="https://github.com/open-oni/oni-agent">ONI Agent</a> must be set up for each ONI instance in order to
+automate some of the functionality from NCA to ONI. The NCA server needs to
+be able to connect to the ONI Agent, but the agent&rsquo;s ports should not be open
+to any other traffic.
+<ul>
+<li>In our setup, we have an internal-network-only port for the agents, and
+they run using systemd so that they start on reboot and we can specify
+their settings directly in the systemd unit&rsquo;s environment. The ONI Agent
+README should be sufficient to get this working.</li>
+</ul>
+</li>
 </ul>
 <p><strong>Please note</strong>: The easiest way to get a quick demo / test setup of NCA is via
-our Docker configuration / setup:</p>
+our Docker configuration / setup, and using the dummy ONI Agent set up in
+docker compose builds:</p>
 <ul>
-<li><a href="https://github.com/uoregon-libraries/newspaper-curation-app/blob/main/docker-compose.yml">https://github.com/uoregon-libraries/newspaper-curation-app/blob/main/docker-compose.yml</a></li>
-<li><a href="https://github.com/uoregon-libraries/newspaper-curation-app/tree/main/docker">https://github.com/uoregon-libraries/newspaper-curation-app/tree/main/docker</a></li>
+<li><a href="https://github.com/uoregon-libraries/newspaper-curation-app/blob/main/compose.yml">compose.yml</a></li>
+<li><a href="https://github.com/uoregon-libraries/newspaper-curation-app/tree/main/docker">Docker</a></li>
 </ul>
-<p>This is great to try things out, or for a quick one-off use of NCA, but <strong>it is
-not recommended for production use</strong>.</p>
+<p>This is great to try things out, or for a quick one-off use of NCA. It is not
+recommended for production use: our docker compose setup is very dev-centric,
+and we currently don&rsquo;t have a setup that includes all the ONI pieces. You would
+have to manually do everything NCA currently automates with the ONI Agent, and
+you won&rsquo;t necessarily know what these are since NCA just sends off commands
+instead of telling somebody what to do. If you&rsquo;re building a few batches for a
+short-term project, this is probably manageable, but if you&rsquo;re running this for
+long-term curation and batch generation, you&rsquo;ll find this quickly becomes very
+difficult.</p>
 <p>We strongly recommend either crafting your own containerized setup with a mind
 to production reliability (which we haven&rsquo;t done) or just running NCA on bare
-metal - one the prerequisites above are installed, the rest of NCA is very easy
+metal - once the prerequisites above are installed, the rest of NCA is very easy
 to get running. If you go this route, you&rsquo;ll still find the docker setup
 helpful just in terms of understanding the full stack and configuration.</p>
 <h2 id="compile">Compile</h2>
 <p>Compilation requires:</p>
 <ul>
-<li><a href="https://golang.org/dl/">Go</a> 1.18 or later. Go is only required for
+<li>A supported version of <a href="https://golang.org/dl/">Go</a>. Go is only required for
 compilation: its runtime does not need to be installed in production as long
 as you compile on the same architecture your production system has (or change
 the <code>Makefile</code> to cross-compile for the targeted architecture).</li>
@@ -343,7 +363,7 @@ HTTP listener, and <code>bin/run-jobs</code>, the job queue processor.</p>
 <p>Note that even if you do use Docker, for development you&rsquo;ll probably want to
 run all NCA&rsquo;s binaries locally and just have them communicate with the
 dockerized services (IIIF server, database, and SFTPGo). Again, see our
-<a href="../../contributing/dev-guide">Development Guide</a> for details.</p>
+<a href="https://uoregon-libraries.github.io/newspaper-curation-app/contributing/dev-guide/">Development Guide</a> for details.</p>
 <h3 id="security-updates">Security Updates</h3>
 <p>Every now and then a security issue arises in the Go standard library. It&rsquo;s
 rare that something critical shows up, but it isn&rsquo;t a bad idea to regularly
