@@ -49,17 +49,17 @@ type Config struct {
 	MARCLocation2 string `setting:"MARC_LOCATION_2"`
 
 	// Paths to the various places we expect to find files
-	PDFUploadPath        string `setting:"PDF_UPLOAD_PATH" type:"path"`
-	ScanUploadPath       string `setting:"SCAN_UPLOAD_PATH" type:"path"`
-	PDFBackupPath        string `setting:"ORIGINAL_PDF_BACKUP_PATH" type:"path"`
-	PDFPageReviewPath    string `setting:"PDF_PAGE_REVIEW_PATH" type:"path"`
-	BatchOutputPath      string `setting:"BATCH_OUTPUT_PATH" type:"path"`
-	BatchProductionPath  string `setting:"BATCH_PRODUCTION_PATH" type:"path"`
-	BatchArchivePath     string `setting:"BATCH_ARCHIVE_PATH" type:"path"`
-	WorkflowPath         string `setting:"WORKFLOW_PATH" type:"path"`
-	ErroredIssuesPath    string `setting:"ERRORED_ISSUES_PATH" type:"path"`
-	IssueCachePath       string `setting:"ISSUE_CACHE_PATH" type:"path"`
-	AppRoot              string `setting:"APP_ROOT" type:"path"`
+	PDFUploadPath        string `setting:"PDF_UPLOAD_PATH" type:"path,create"`
+	ScanUploadPath       string `setting:"SCAN_UPLOAD_PATH" type:"path,create"`
+	PDFBackupPath        string `setting:"ORIGINAL_PDF_BACKUP_PATH" type:"path,create"`
+	PDFPageReviewPath    string `setting:"PDF_PAGE_REVIEW_PATH" type:"path,create"`
+	BatchOutputPath      string `setting:"BATCH_OUTPUT_PATH" type:"path,create"`
+	BatchProductionPath  string `setting:"BATCH_PRODUCTION_PATH" type:"path,create"`
+	BatchArchivePath     string `setting:"BATCH_ARCHIVE_PATH" type:"path,create"`
+	WorkflowPath         string `setting:"WORKFLOW_PATH" type:"path,create"`
+	ErroredIssuesPath    string `setting:"ERRORED_ISSUES_PATH" type:"path,create"`
+	IssueCachePath       string `setting:"ISSUE_CACHE_PATH" type:"path,create"`
+	AppRoot              string `setting:"APP_ROOT" type:"path,create"`
 	METSXMLTemplatePath  string `setting:"METS_XML_TEMPLATE_PATH" type:"file"`
 	BatchXMLTemplatePath string `setting:"BATCH_XML_TEMPLATE_PATH" type:"file"`
 
