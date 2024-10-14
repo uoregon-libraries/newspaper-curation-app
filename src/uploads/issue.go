@@ -8,15 +8,6 @@ import (
 	"github.com/uoregon-libraries/newspaper-curation-app/src/schema"
 )
 
-// DaysIssueConsideredDangerous is how long we require an issue to be untouched
-// prior to anybody queueing it
-const DaysIssueConsideredDangerous = 2
-
-// DaysIssueConsideredNew is how long we warn users that the issue is new - but
-// it can be queued before that warning goes away so long as
-// DaysIssueConsideredDangerous has elapsed
-const DaysIssueConsideredNew = 14
-
 // Issue wraps a schema.Issue to add upload- and queue-specific validations and
 // behavior
 type Issue struct {
@@ -54,12 +45,12 @@ func (i *Issue) ValidateFast() {
 	}
 	i.validatedFast = true
 
-	var hrs = 24 * DaysIssueConsideredDangerous
-	if time.Since(i.LastModified()) < time.Hour*time.Duration(hrs) {
-		i.ErrTooNew(hrs)
+	var d = i.conf.IssueDangerousDuration
+	if time.Since(i.LastModified()) < d {
+		i.ErrTooNew(d)
 	} else {
-		hrs = 24 * DaysIssueConsideredNew
-		if time.Since(i.LastModified()) < time.Hour*time.Duration(hrs) {
+		d = i.conf.IssueNewDuration
+		if time.Since(i.LastModified()) < d {
 			i.WarnTooNew()
 		}
 	}

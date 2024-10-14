@@ -7,6 +7,7 @@ import (
 	"fmt"
 	"net/url"
 	"strings"
+	"time"
 
 	"github.com/uoregon-libraries/gopkg/bashconf"
 	"github.com/uoregon-libraries/newspaper-curation-app/src/internal/datasize"
@@ -64,10 +65,14 @@ type Config struct {
 	BatchXMLTemplatePath string `setting:"BATCH_XML_TEMPLATE_PATH" type:"file"`
 
 	// Issue processor / batch maker rules
-	MinimumIssuePages   int    `setting:"MINIMUM_ISSUE_PAGES" type:"int"`
-	PDFBatchMARCOrgCode string `setting:"PDF_BATCH_MARC_ORG_CODE"`
-	MaxBatchSize        int    `setting:"MAX_BATCH_SIZE" type:"int"`
-	MinBatchSize        int    `setting:"MIN_BATCH_SIZE" type:"int"`
+	MinimumIssuePages      int    `setting:"MINIMUM_ISSUE_PAGES" type:"int"`
+	PDFBatchMARCOrgCode    string `setting:"PDF_BATCH_MARC_ORG_CODE"`
+	MaxBatchSize           int    `setting:"MAX_BATCH_SIZE" type:"int"`
+	MinBatchSize           int    `setting:"MIN_BATCH_SIZE" type:"int"`
+	IssueDangerous         string `setting:"DURATION_ISSUE_CONSIDERED_DANGEROUS"`
+	IssueNew               string `setting:"DURATION_ISSUE_CONSIDERED_NEW"`
+	IssueDangerousDuration time.Duration
+	IssueNewDuration       time.Duration
 
 	// Derivative generation rules
 	DPI           int     `setting:"DPI" type:"int"`
@@ -115,6 +120,16 @@ func Parse(filename string) (*Config, error) {
 
 	if c.MinimumIssuePages < 1 {
 		errors = append(errors, "invalid MINIMUM_ISSUE_PAGES: must be numeric and greater than 0")
+	}
+
+	c.IssueDangerousDuration, err = time.ParseDuration(c.IssueDangerous)
+	if err != nil {
+		errors = append(errors, fmt.Sprintf("invalid DURATION_ISSUE_CONSIDERED_DANGEROUS value: %s", err))
+	}
+
+	c.IssueNewDuration, err = time.ParseDuration(c.IssueNew)
+	if err != nil {
+		errors = append(errors, fmt.Sprintf("invalid DURATION_ISSUE_CONSIDERED_NEW value: %s", err))
 	}
 
 	if c.DPI < 72 {

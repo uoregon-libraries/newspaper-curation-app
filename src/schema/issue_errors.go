@@ -4,6 +4,7 @@ package schema
 
 import (
 	"fmt"
+	"time"
 
 	"github.com/uoregon-libraries/newspaper-curation-app/src/apperr"
 )
@@ -76,10 +77,16 @@ func (i *Issue) ErrFolderContents(extra string) apperr.Error {
 // ErrTooNew adds an error for issues which are too new to be processed.  hours
 // should be set to the minimum number of hours an issue should be untouched
 // before being considered "safe".
-func (i *Issue) ErrTooNew(hours int) apperr.Error {
+func (i *Issue) ErrTooNew(d time.Duration) apperr.Error {
+	var num = int(d.Hours())
+	var unit = "hours"
+	if num < 2 {
+		num = int(d.Minutes())
+		unit = "minutes"
+	}
 	return i.addError(&IssueError{
 		Err:  "too new for processing",
-		Msg:  fmt.Sprintf("Issue was modified too recently; it must be left alone for a minimum of %d hours before processing", hours),
+		Msg:  fmt.Sprintf("Issue was modified too recently; it must be left alone for a minimum of %d %s before processing", num, unit),
 		Prop: false,
 	})
 }
