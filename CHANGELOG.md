@@ -41,8 +41,17 @@ Batch automation!
 This is just after our v5 release, but it's a big enough set of changes that it
 again warrants a major version increase. This release will *require* a new
 service that you run on both staging and production, and it takes away the
-ability to manually load and purge batches. In most cases this should be an
-easy trade-off, but it's certainly a big change.
+instructions and workflow "pauses" for manually loading and purging batches. In
+most cases this should be an easy trade-off, but it's certainly a big change.
+
+There are also a handful of dev- and test-centric improvements primarily aimed
+at making it easier to build a full end-to-end test (NCA, ONI, and ONI Agent)
+using docker compose.
+
+### Fixed
+
+- The `localdev.sh` command for migrating the database now ensures the migrate
+  command is built first
 
 ### Added
 
@@ -50,6 +59,9 @@ easy trade-off, but it's certainly a big change.
   they can't take any actions.
 - New script for testing, `test/create-test-users.go`, which deletes existing
   users and then creates a new user for each role in NCA
+- NCA auto-creates various workflow directories if they don't exist. This
+  simplifies our docker setup as well as reducing out-of-sync situations when
+  the docker entrypoint didn't properly reflect all necessary directories.
 
 ### Changed
 
@@ -78,6 +90,8 @@ easy trade-off, but it's certainly a big change.
 - Most areas of NCA that used the term "purge", when referring to something
   other than the purging of a batch from ONI, have changed to some other term.
   This requires a migration (see notes below) to keep the database meaningful.
+- Minimum wait times for uploaded issues to be queued are now configurable
+  instead of hard-coded! Yay!
 
 [oni-agent]: <https://github.com/open-oni/oni-agent>
 
@@ -96,8 +110,16 @@ easy trade-off, but it's certainly a big change.
     `qc_flagging`, or `deleted`
   - Unsafe: `pending`, `staging_ready`, or `passed_qc`
 - If you use docker compose, you probably need to rename your override to `compose.override.yml`
-- Install the ONI Agent onto your production and staging systems, and configure
-  NCA's new settings `STAGING_AGENT` and `PRODUCTION_AGENT`.
+- Configure NCA's new settings:
+  - `STAGING_AGENT`: The *ssh endpoint* (not necessarily your public URL if you
+    have something like HAProxy in front of your servers!) to your staging
+    server's ONI Agent, e.g., "staging.oregonnews.uoregon.edu:2222"
+  - `PRODUCTION_AGENT`: The ssh endpoint to your production server's ONI Agent
+  - `DURATION_ISSUE_CONSIDERED_DANGEROUS`: How long after upload an issue must
+    wait before it's allowed to be queued for curation
+  - `DURATION_ISSUE_CONSIDERED_NEW`: How long after upload an issue gives a
+    warning about being new
+- Install the ONI Agent onto your production and staging systems
   - Consider compiling `agent-test` and using it on your NCA server prior to
     doing a full upgrade. This will help catch firewall issues, configuration
     mishaps, etc.
