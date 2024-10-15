@@ -75,6 +75,7 @@ bulk_queue_borndigital() {
 }
 
 migrate() {
+  make bin/migrate-database
   ./bin/migrate-database -c ./settings up
 }
 
