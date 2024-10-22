@@ -52,6 +52,8 @@ using docker compose.
 
 - The `localdev.sh` command for migrating the database now ensures the migrate
   command is built first
+- The `delete-live-done-issues` command will now report errors if a batch
+  cannot be finalized for some reason
 
 ### Added
 
