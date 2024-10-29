@@ -126,6 +126,7 @@ using docker compose.
     doing a full upgrade. This will help catch firewall issues, configuration
     mishaps, etc.
 - Shut down NCA workers and HTTP daemon
+- Delete the NCA issue cache (e.g., `rm /var/local/news/nca/cache -rf`)
 - Run database migrations:
   - `make && ./bin/migrate-database -c ./settings up`
 - Restart services
