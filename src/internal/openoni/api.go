@@ -10,6 +10,7 @@ import (
 	"time"
 
 	"github.com/tidwall/gjson"
+	"github.com/uoregon-libraries/newspaper-curation-app/src/models"
 	"golang.org/x/crypto/ssh"
 )
 
@@ -120,6 +121,17 @@ func (r *RPC) GetVersion() (version string, err error) {
 	}
 
 	return result.Get("version").String(), nil
+}
+
+// EnsureAwardee tells the agent to verify or create the given MOC in ONI
+func (r *RPC) EnsureAwardee(moc *models.MOC) (message string, err error) {
+	var result gjson.Result
+	result, err = r.do("ensure-awardee", moc.Code, moc.Name)
+	if err != nil {
+		return "", fmt.Errorf("calling ensure-awardee: %w", err)
+	}
+
+	return result.Get("message").String(), nil
 }
 
 // JobStatus is the "controlled" version of an ONI Agent's job-status response
