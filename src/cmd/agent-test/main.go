@@ -43,9 +43,26 @@ var aliases = map[string]string{
 
 var validCmds = []string{cmdLoad, cmdPurge, cmdStatus, cmdLogs}
 
+func setUsage(c *cli.CLI) {
+	c.AppendUsage(`Allows testing ONI Agents as well as running common commands against staging and production`)
+	var aliasmap = make(map[string][]string)
+	for alias, cmd := range aliases {
+		aliasmap[cmd] = append(aliasmap[cmd], alias)
+	}
+
+	var all []string
+	for _, cmd := range validCmds {
+		var aList = aliasmap[cmd]
+		sort.Strings(aList)
+		var s = strings.Join(aList, " / ")
+		all = append(all, fmt.Sprintf("%s (%s)", cmd, s))
+	}
+	c.AppendUsage("Valid commands and aliases: " + strings.Join(all, ", "))
+}
+
 func getOpts() (rpc *openoni.RPC, command string, args []string) {
 	var c = cli.New(&opts)
-	c.AppendUsage(`Allows testing ONI Agents as well as running common commands against staging and production`)
+	setUsage(c)
 	var conf = c.GetConf()
 
 	var connection string
@@ -55,7 +72,7 @@ func getOpts() (rpc *openoni.RPC, command string, args []string) {
 	case "production", "prod", "p":
 		connection = conf.ProductionAgentConnection
 	default:
-		log.Fatalf("Invalid environment %q", opts.Environment)
+		c.UsageFail("Invalid environment %q", opts.Environment)
 	}
 
 	var err error
@@ -65,7 +82,7 @@ func getOpts() (rpc *openoni.RPC, command string, args []string) {
 	}
 
 	if len(c.Args) == 0 {
-		log.Fatalf("You must specify a valid command")
+		c.UsageFail("You must specify a command")
 	}
 	command, args = c.Args[0], c.Args[1:]
 	if aliases[command] != "" {
@@ -78,7 +95,7 @@ func getOpts() (rpc *openoni.RPC, command string, args []string) {
 		}
 	}
 	if !valid {
-		log.Fatalf("Invalid command. You must choose one of: %s", strings.Join(validCmds, ", "))
+		c.UsageFail("%q is not a valid command", command)
 	}
 
 	var version string
@@ -96,6 +113,7 @@ func main() {
 	if len(args) == 0 {
 		args = []string{""}
 	}
+
 	switch command {
 	case cmdLoad:
 		doBatch(rpc, rpc.LoadBatch, args[0], false)
