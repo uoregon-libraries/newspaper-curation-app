@@ -3,12 +3,14 @@ package main
 import (
 	"fmt"
 	"log"
+	"sort"
 	"strconv"
 	"strings"
 	"time"
 
 	"github.com/uoregon-libraries/newspaper-curation-app/src/cli"
 	"github.com/uoregon-libraries/newspaper-curation-app/src/internal/openoni"
+	"github.com/uoregon-libraries/newspaper-curation-app/src/models"
 )
 
 type _opts struct {
@@ -19,21 +21,24 @@ type _opts struct {
 var opts _opts
 
 const (
-	cmdLoad   = "load-batch"
-	cmdPurge  = "purge-batch"
-	cmdStatus = "job-status"
-	cmdLogs   = "job-logs"
+	cmdLoad          = "load-batch"
+	cmdPurge         = "purge-batch"
+	cmdStatus        = "job-status"
+	cmdLogs          = "job-logs"
+	cmdEnsureAwardee = "ensure-awardee"
 )
 
 var aliases = map[string]string{
-	"load":  cmdLoad,
-	"bl":    cmdLoad,
-	"purge": cmdPurge,
-	"bp":    cmdPurge,
-	"stat":  cmdStatus,
-	"js":    cmdStatus,
-	"logs":  cmdLogs,
-	"jl":    cmdLogs,
+	"load":     cmdLoad,
+	"bl":       cmdLoad,
+	"purge":    cmdPurge,
+	"bp":       cmdPurge,
+	"stat":     cmdStatus,
+	"js":       cmdStatus,
+	"logs":     cmdLogs,
+	"jl":       cmdLogs,
+	"load-moc": cmdEnsureAwardee,
+	"lmoc":     cmdEnsureAwardee,
 }
 
 var validCmds = []string{cmdLoad, cmdPurge, cmdStatus, cmdLogs}
@@ -114,6 +119,18 @@ func main() {
 		for _, line := range logs {
 			fmt.Println(line)
 		}
+
+	case cmdEnsureAwardee:
+		if len(args) != 2 {
+			log.Fatalf("Invalid request: you must specify an org code and awardee's name")
+		}
+
+		var m = &models.MOC{Code: args[0], Name: args[1]}
+		var message, err = rpc.EnsureAwardee(m)
+		if err != nil {
+			log.Fatalf("Couldn't check/create awardee: %s", err)
+		}
+		fmt.Println("Success:", message)
 
 	default:
 		log.Fatalf("Command %q not handled in main", command)
