@@ -41,7 +41,7 @@ var aliases = map[string]string{
 	"lmoc":     cmdEnsureAwardee,
 }
 
-var validCmds = []string{cmdLoad, cmdPurge, cmdStatus, cmdLogs}
+var validCmds = []string{cmdLoad, cmdPurge, cmdStatus, cmdLogs, cmdEnsureAwardee}
 
 func setUsage(c *cli.CLI) {
 	c.AppendUsage(`Allows testing ONI Agents as well as running common commands against staging and production`)
