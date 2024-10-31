@@ -132,10 +132,6 @@ func refreshFakemount(testDir string) {
 			l.Criticalf("Unable to delete %q: %s", fullPath, err)
 			os.Exit(255)
 		}
-		if err := os.MkdirAll(fullPath, 0775); err != nil {
-			l.Criticalf("Unable to create %q: %s", fullPath, err)
-			os.Exit(255)
-		}
 	}
 }
 

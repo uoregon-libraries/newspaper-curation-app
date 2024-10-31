@@ -7,6 +7,7 @@ import (
 	"fmt"
 	"net/url"
 	"strings"
+	"time"
 
 	"github.com/uoregon-libraries/gopkg/bashconf"
 	"github.com/uoregon-libraries/newspaper-curation-app/src/internal/datasize"
@@ -49,25 +50,29 @@ type Config struct {
 	MARCLocation2 string `setting:"MARC_LOCATION_2"`
 
 	// Paths to the various places we expect to find files
-	PDFUploadPath        string `setting:"PDF_UPLOAD_PATH" type:"path"`
-	ScanUploadPath       string `setting:"SCAN_UPLOAD_PATH" type:"path"`
-	PDFBackupPath        string `setting:"ORIGINAL_PDF_BACKUP_PATH" type:"path"`
-	PDFPageReviewPath    string `setting:"PDF_PAGE_REVIEW_PATH" type:"path"`
-	BatchOutputPath      string `setting:"BATCH_OUTPUT_PATH" type:"path"`
-	BatchProductionPath  string `setting:"BATCH_PRODUCTION_PATH" type:"path"`
-	BatchArchivePath     string `setting:"BATCH_ARCHIVE_PATH" type:"path"`
-	WorkflowPath         string `setting:"WORKFLOW_PATH" type:"path"`
-	ErroredIssuesPath    string `setting:"ERRORED_ISSUES_PATH" type:"path"`
-	IssueCachePath       string `setting:"ISSUE_CACHE_PATH" type:"path"`
-	AppRoot              string `setting:"APP_ROOT" type:"path"`
+	PDFUploadPath        string `setting:"PDF_UPLOAD_PATH" type:"path,create"`
+	ScanUploadPath       string `setting:"SCAN_UPLOAD_PATH" type:"path,create"`
+	PDFBackupPath        string `setting:"ORIGINAL_PDF_BACKUP_PATH" type:"path,create"`
+	PDFPageReviewPath    string `setting:"PDF_PAGE_REVIEW_PATH" type:"path,create"`
+	BatchOutputPath      string `setting:"BATCH_OUTPUT_PATH" type:"path,create"`
+	BatchProductionPath  string `setting:"BATCH_PRODUCTION_PATH" type:"path,create"`
+	BatchArchivePath     string `setting:"BATCH_ARCHIVE_PATH" type:"path,create"`
+	WorkflowPath         string `setting:"WORKFLOW_PATH" type:"path,create"`
+	ErroredIssuesPath    string `setting:"ERRORED_ISSUES_PATH" type:"path,create"`
+	IssueCachePath       string `setting:"ISSUE_CACHE_PATH" type:"path,create"`
+	AppRoot              string `setting:"APP_ROOT" type:"path,create"`
 	METSXMLTemplatePath  string `setting:"METS_XML_TEMPLATE_PATH" type:"file"`
 	BatchXMLTemplatePath string `setting:"BATCH_XML_TEMPLATE_PATH" type:"file"`
 
 	// Issue processor / batch maker rules
-	MinimumIssuePages   int    `setting:"MINIMUM_ISSUE_PAGES" type:"int"`
-	PDFBatchMARCOrgCode string `setting:"PDF_BATCH_MARC_ORG_CODE"`
-	MaxBatchSize        int    `setting:"MAX_BATCH_SIZE" type:"int"`
-	MinBatchSize        int    `setting:"MIN_BATCH_SIZE" type:"int"`
+	MinimumIssuePages      int    `setting:"MINIMUM_ISSUE_PAGES" type:"int"`
+	PDFBatchMARCOrgCode    string `setting:"PDF_BATCH_MARC_ORG_CODE"`
+	MaxBatchSize           int    `setting:"MAX_BATCH_SIZE" type:"int"`
+	MinBatchSize           int    `setting:"MIN_BATCH_SIZE" type:"int"`
+	IssueDangerous         string `setting:"DURATION_ISSUE_CONSIDERED_DANGEROUS"`
+	IssueNew               string `setting:"DURATION_ISSUE_CONSIDERED_NEW"`
+	IssueDangerousDuration time.Duration
+	IssueNewDuration       time.Duration
 
 	// Derivative generation rules
 	DPI           int     `setting:"DPI" type:"int"`
@@ -115,6 +120,16 @@ func Parse(filename string) (*Config, error) {
 
 	if c.MinimumIssuePages < 1 {
 		errors = append(errors, "invalid MINIMUM_ISSUE_PAGES: must be numeric and greater than 0")
+	}
+
+	c.IssueDangerousDuration, err = time.ParseDuration(c.IssueDangerous)
+	if err != nil {
+		errors = append(errors, fmt.Sprintf("invalid DURATION_ISSUE_CONSIDERED_DANGEROUS value: %s", err))
+	}
+
+	c.IssueNewDuration, err = time.ParseDuration(c.IssueNew)
+	if err != nil {
+		errors = append(errors, fmt.Sprintf("invalid DURATION_ISSUE_CONSIDERED_NEW value: %s", err))
 	}
 
 	if c.DPI < 72 {

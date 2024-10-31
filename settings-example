@@ -196,6 +196,26 @@ MAX_BATCH_SIZE=10000
 # long in order to avoid issues being "stranded"
 MIN_BATCH_SIZE=5000
 
+# How long we require an issue to be untouched prior to anybody queueing it. If
+# set to zero, people can queue an issue *immediately* after upload. This is
+# not recommended if uploads aren't tightly restricted, but can make sense if
+# NCA curators are also the ones doing the uploading.
+#
+# Duration format follows the Go ["ParseDuration" function][1] To summarize
+# what you'd likely need, though: "1h" is one hour, "24h" would be one day,
+# "30m" would be 30 minutes, "1s" would be one second, etc. The default is 48h,
+# or two days.
+#
+# [1]: <https://pkg.go.dev/time#ParseDuration>
+DURATION_ISSUE_CONSIDERED_DANGEROUS=48h
+
+# How long we warn users that the issue is new - but it can be queued before
+# that warning goes away so long as DAYS_ISSUE_CONSIDERED_DANGEROUS has elapsed
+#
+# Duration format follows the Go "ParseDuration" function - see above. The
+# default of 336h is two weeks.
+DURATION_ISSUE_CONSIDERED_NEW=336h
+
 ###
 # Derivative settings
 ###
