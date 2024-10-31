@@ -48,7 +48,10 @@ func main() {
 
 	for _, b := range batches {
 		logger.Infof("Closing batch %q", b.FullName())
-		b.Finalize()
+		var err = b.Finalize()
+		if err != nil {
+			logger.Errorf("Unable to close %q: %s", b.FullName(), err)
+		}
 	}
 
 	err = removeIssues()
