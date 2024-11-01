@@ -11,7 +11,7 @@ nuke() {
 
 dcup() {
   echo "Starting up key docker services"
-  docker compose up -d iiif sftpgo db
+  docker compose up -d iiif sftpgo db oni-agent oni-web
   echo "Done (Starting up key docker services)"
 }
 
