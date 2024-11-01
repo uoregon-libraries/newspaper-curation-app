@@ -68,6 +68,13 @@ func (r *RPC) do(params ...string) (result gjson.Result, err error) {
 		r.call = r.defaultCall
 	}
 
+	// Quote all parameters the cheap and hacky way. This quotes the command as
+	// well, but that's a non-issue, as the ONI Agent processes everything,
+	// including the command, the same way (unquoting).
+	for i := range params {
+		params[i] = fmt.Sprintf("%q", params[i])
+	}
+
 	var data []byte
 	data, err = r.call(params)
 	if err != nil {
