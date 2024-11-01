@@ -1,0 +1,74 @@
+# This example override is suitable for a fully in-container stack. This is
+# somewhat production-like, or useful for quick demos / testing. For
+# most development, you should use the "hybrid" example.
+#
+# Copy this to `compose.override.yml` and tweak it however you need.
+services:
+  iiif:
+    environment:
+      - RAIS_IIIFBASEURL=http://localhost:3333
+
+  # NCA's web service. Adjust the news webroot to point to a server running the
+  # custom JSON APIs, otherwise NCA can't update its web issue cache. (TODO: We
+  # need to integrate that into core ONI so this repo works properly)
+  web:
+    environment:
+      - NCA_WEBROOT=http://localhost:3333
+      - NCA_IIIF_BASE_URL=http://localhost:3333/images/iiif
+      - NCA_NEWS_WEBROOT=https://oregonnews.uoregon.edu
+      - NCA_STAGING_NEWS_WEBROOT=http://localhost:8080
+      # Uncomment to adjust delay before uploaded issues can be queued into NCA
+      - NCA_DURATION_ISSUE_CONSIDERED_DANGEROUS=30s
+
+    # Uncomment to run in debug mode: absolutely NOT for production setups!
+    command: ./bin/server -c ./settings --debug
+
+    # Uncomment to keep the issue cache locally: very useful for destroying the
+    # entire stack, images, volumes, etc. without having to spend ten minutes
+    # rebuilding the cache.
+    volumes:
+      - ./tmp:/var/local/news/nca/cache
+
+  workers:
+    environment:
+      - NCA_NEWS_WEBROOT=https://oregonnews.uoregon.edu
+      - NCA_STAGING_NEWS_WEBROOT=http://localhost:8080
+
+  # Uncomment to be able to do local database debugging
+  db:
+    ports:
+      - 3306:3306
+
+  # nginx is exposed directly on port 80 to get to NCA and RAIS. If you change
+  # the port here, you need to add it to RAIS_IIIFBASEURL, NCA_WEBROOT, and
+  # NCA_IIIF_BASE_URL.
+  proxy:
+    ports:
+      - 3333:80
+
+  # SFTPGo: you won't likely need its web admin interface, but if you do, it's
+  # available on 8081 (so that ONI can be on the slightly more standard port
+  # 8080). The SFTP endpoint is exposed on port 2022 for uploading issues.
+  #
+  # In a true production environment where you can give an individual service a
+  # hostname, you should expose this on the standard ssh port (22) so that end
+  # users can sftp using their client's default settings.
+  sftpgo:
+    ports:
+      - 8081:8080
+      - 2022:2022
+
+  # RAIS for the ONI server: its base URL needs to match ONI's base URL
+  oni-iiif:
+    environment:
+      - RAIS_IIIFBASEURL=http://localhost:8080
+
+  # Open ONI is exposed on port 8080. If you change this port, you need to
+  # change 8080 throughout this override file: oni-iiif and the NCA web service
+  # both need to know the public URL.
+  oni-web:
+    ports:
+      - 8080:80
+    environment:
+      - ONI_BASE_URL=http://localhost:8080
+      - ONI_IIIF_URL=http://localhost:8080/images/iiif
