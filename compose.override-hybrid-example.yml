@@ -1,0 +1,48 @@
+# This is an example of overriding the core docker setup for a hybrid dev
+# stack, where NCA services are running locally, but all non-NCA services run
+# in containers.
+#
+# Copy this to `compose.override.yml` and tweak it however you need for your
+# dev environment. You'll need to adjust your NCA settings file to use the
+# local workflow directories, set up the IIIF path, etc.
+services:
+  # Mount the local workflow dir and expose RAIS directly to the host
+  iiif:
+    volumes:
+      - ./test/fakemount:/var/local:z
+    environment:
+      - RAIS_IIIFBASEURL=http://localhost:12415
+    ports:
+      - 12415:12415
+
+  # Expose the database so your local NCA can connect
+  db:
+    ports:
+      - 3306:3306
+
+  # Set up sftpgo to use the fake mountpoint and be web-accessible via port
+  # 8081 for administrative use, and port 2022 for sftp.
+  sftpgo:
+    volumes:
+      - ./test/fakemount/sftp:/srv/sftpgo/data:z
+    ports:
+      - 8081:8080
+      - 2022:2022
+
+  # Expose port 2222 to the ssh agent for local testing
+  oni-agent:
+    volumes:
+      - ./test/fakemount/production-batches:/mnt/news:z
+    ports:
+      - 2222:22
+
+  oni-iiif:
+    environment:
+      - RAIS_IIIFBASEURL=http://localhost:8081
+
+  oni-web:
+    ports:
+      - 8080:80
+    environment:
+      - ONI_BASE_URL=http://localhost:8081
+      - ONI_IIIF_URL=http://localhost:8081/images/iiif
