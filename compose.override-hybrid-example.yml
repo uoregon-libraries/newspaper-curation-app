@@ -4,7 +4,7 @@
 #
 # Copy this to `compose.override.yml` and tweak it however you need for your
 # dev environment. You'll need to adjust your NCA settings file to use the
-# local workflow directories, set up the IIIF path, etc.
+# local workflow directories, set up the IIIF and ONI URLs, etc.
 services:
   # Mount the local workflow dir and expose RAIS directly to the host
   iiif:
@@ -29,20 +29,44 @@ services:
       - 8081:8080
       - 2022:2022
 
-  # Expose port 2222 to the ssh agent for local testing
-  oni-agent:
+  # Expose port 2223 to the ssh agent (staging) for local testing
+  oni-agent-staging:
     volumes:
-      - ./test/fakemount/production-batches:/mnt/news:z
+      - ./test/fakemount/production-batches:/mnt/batches:z
+    ports:
+      - 2223:22
+
+  # Expose port 2222 to the ssh agent (production) for local testing
+  oni-agent-prod:
+    volumes:
+      - ./test/fakemount/production-batches:/mnt/batches:z
     ports:
       - 2222:22
 
   oni-iiif:
     environment:
-      - RAIS_IIIFBASEURL=http://localhost:8081
+      - RAIS_IIIFBASEURL=http://localhost:8080
+    volumes:
+      - ./test/fakemount/production-batches:/mnt/batches:z
 
-  oni-web:
+  # ONI staging is exposed on 8082
+  oni-staging:
+    environment:
+      - ONI_BASE_URL=http://localhost:8082
+      - ONI_IIIF_URL=http://localhost:8080/images/iiif
+    volumes:
+      - ./test/fakemount/production-batches:/mnt/batches:z
+    ports:
+      - 8082:80
+
+  # Open ONI (prod) is exposed on port 8080. If you change this port, you need
+  # to change 8080 throughout this override file: oni-iiif and the NCA web
+  # service both need to know the public URL.
+  oni-prod:
+    environment:
+      - ONI_BASE_URL=http://localhost:8080
+      - ONI_IIIF_URL=http://localhost:8080/images/iiif
+    volumes:
+      - ./test/fakemount/production-batches:/mnt/batches:z
     ports:
       - 8080:80
-    environment:
-      - ONI_BASE_URL=http://localhost:8081
-      - ONI_IIIF_URL=http://localhost:8081/images/iiif

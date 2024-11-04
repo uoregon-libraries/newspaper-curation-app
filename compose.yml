@@ -1,21 +1,25 @@
 name: nca
 
 networks:
-  oni:
+  oni-staging:
+  oni-prod:
   nca:
 
 volumes:
   db:
   oni-batches:
-  oni-data-mariadb:
-  oni-data-solr:
+  oni-staging-data-mariadb:
+  oni-staging-data-solr:
+  oni-prod-data-mariadb:
+  oni-prod-data-solr:
   issue-cache:
   nca-workflow:
   page-review:
   sftpgo-basedir:
   sftpgo-backups:
   sftpgo-home:
-  agent-rsa:
+  agent-staging-rsa:
+  agent-prod-rsa:
 
 services:
   #####
@@ -66,8 +70,6 @@ services:
       - NCA_PDF_UPLOAD_PATH=/mnt/sftpgo/data
       - NCA_PDF_PAGE_REVIEW_PATH=/mnt/page-review
       - NCA_BATCH_PRODUCTION_PATH=/mnt/batches
-      - NCA_STAGING_AGENT=oni-agent:22
-      - NCA_PRODUCTION_AGENT=oni-agent:22
     expose:
       - 8080
     depends_on:
@@ -114,17 +116,17 @@ services:
   #####
   # Agent
   #####
-  oni-agent:
+  oni-agent-staging:
     build:
       context: .
       dockerfile: ./docker/Dockerfile-oni
       target: agent
     volumes:
       - oni-batches:/mnt/batches
-      - agent-rsa:/etc/rsa/
+      - agent-staging-rsa:/etc/rsa/
     depends_on:
-      - oni-db
-      - oni-solr
+      - oni-staging-db
+      - oni-staging-solr
     environment:
       - BA_BIND=:22
       - HOST_KEY_FILE=/etc/rsa/oni-agent
@@ -134,13 +136,36 @@ services:
     expose:
       - 22
     networks:
-      oni:
+      oni-staging:
+      nca:
+
+  oni-agent-prod:
+    build:
+      context: .
+      dockerfile: ./docker/Dockerfile-oni
+      target: agent
+    volumes:
+      - oni-batches:/mnt/batches
+      - agent-prod-rsa:/etc/rsa/
+    depends_on:
+      - oni-prod-db
+      - oni-prod-solr
+    environment:
+      - BA_BIND=:22
+      - HOST_KEY_FILE=/etc/rsa/oni-agent
+      - ONI_LOCATION=/opt/openoni/
+      - BATCH_SOURCE=/mnt/batches
+      - DB_CONNECTION=openoni:openoni@tcp(oni-db:3306)/openoni
+    expose:
+      - 22
+    networks:
+      oni-prod:
       nca:
 
   #####
-  # Open ONI
+  # Open ONI: Staging
   #####
-  oni-db:
+  oni-staging-db:
     image: mariadb:10.6
     environment:
       - MYSQL_ROOT_PASSWORD=123456
@@ -149,24 +174,89 @@ services:
       - MYSQL_PASSWORD=openoni
     volumes:
       - ./repos/open-oni/conf/mysql/:/etc/mysql/conf.d:Z
-      - oni-data-mariadb:/var/lib/mysql
+      - oni-staging-data-mariadb:/var/lib/mysql
     networks:
-      oni:
+      oni-staging:
         aliases:
           - rdbms
 
-  oni-solr:
+  oni-staging-solr:
     image: solr:8-slim
     volumes:
-      - oni-data-solr:/var/solr
+      - oni-staging-data-solr:/var/solr
     command:
       - solr-precreate
       - openoni
     networks:
-      oni:
+      oni-staging:
         aliases:
           - solr
 
+  oni-staging:
+    build:
+      context: .
+      dockerfile: ./docker/Dockerfile-oni
+      target: oni
+    volumes:
+      - oni-batches:/mnt/batches
+    depends_on:
+      - oni-staging-db
+      - oni-staging-solr
+      - oni-iiif
+    environment:
+      - ONI_DEBUG=1
+    networks:
+      oni-staging:
+
+  #####
+  # Open ONI: Production
+  #####
+  oni-prod-db:
+    image: mariadb:10.6
+    environment:
+      - MYSQL_ROOT_PASSWORD=123456
+      - MYSQL_DATABASE=openoni
+      - MYSQL_USER=openoni
+      - MYSQL_PASSWORD=openoni
+    volumes:
+      - ./repos/open-oni/conf/mysql/:/etc/mysql/conf.d:Z
+      - oni-prod-data-mariadb:/var/lib/mysql
+    networks:
+      oni-prod:
+        aliases:
+          - rdbms
+
+  oni-prod-solr:
+    image: solr:8-slim
+    volumes:
+      - oni-prod-data-solr:/var/solr
+    command:
+      - solr-precreate
+      - openoni
+    networks:
+      oni-prod:
+        aliases:
+          - solr
+
+  oni-prod:
+    build:
+      context: .
+      dockerfile: ./docker/Dockerfile-oni
+      target: oni
+    volumes:
+      - oni-batches:/mnt/batches
+    depends_on:
+      - oni-prod-db
+      - oni-prod-solr
+      - oni-iiif
+    environment:
+      - ONI_DEBUG=0
+    networks:
+      oni-prod:
+
+  #####
+  # IIIF for both ONIs
+  #####
   oni-iiif:
     image: uolibraries/rais:4-alpine
     environment:
@@ -176,32 +266,9 @@ services:
     volumes:
       - oni-batches:/mnt/batches
     networks:
-      oni:
+      oni-staging:
         aliases:
           - rais
-
-  oni-web:
-    build:
-      context: .
-      dockerfile: ./docker/Dockerfile-oni
-      target: oni
-    volumes:
-      - oni-batches:/mnt/batches
-    depends_on:
-      - oni-db
-      - oni-solr
-      - oni-iiif
-    environment:
-      - APACHE_LOG_LEVEL=warn
-      - ONI_DB_HOST=rdbms
-      - ONI_DB_PORT=3306
-      - ONI_DB_NAME=openoni
-      - ONI_DB_USER=openoni
-      - ONI_DB_PASSWORD=openoni
-      - ONI_DEBUG=1
-      - ONI_HSTS_SECONDS=0
-      - ONI_LOG_LEVEL=INFO
-      - ONI_SECRET_KEY=openoni
-      - ONI_SOLR_URL=http://solr:8983
-    networks:
-      oni:
+      oni-prod:
+        aliases:
+          - rais
