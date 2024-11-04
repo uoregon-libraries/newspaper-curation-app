@@ -5,10 +5,10 @@ description: Developing on NCA
 ---
 
 It is assumed developers will use Docker for dependencies outside this
-repository: database, RAIS (IIIF server), the ONI Agent (there's a dev version
-available for testing), and SFTPGo. The rest of the tools are most easily
-installed locally, and the NCA binaries themselves are in fact easier by far to
-install locally versus building them in an image when code changes.
+repository: ONI (and its services), database, RAIS (IIIF server), the ONI
+Agent, and SFTPGo. The rest of the tools are most easily installed locally, and
+the NCA binaries themselves are in fact easier by far to install locally versus
+building them in an image when code changes.
 
 ## Requirements / Setup
 
@@ -43,10 +43,9 @@ As mentioned before, Docker is the preferred method *for the external services
 only*. The various command-line tools, including NCA, should just be installed
 locally.
 
-If you want to go fully local on baremetal, it should be a pretty easy
-transition. Whether you use docker for a database or not, for instance, you
-have to specify how NCA connects to it. This makes the hybrid approach ideal
-for staying mostly in sync with a production setup.
+If you want to go fully local on baremetal, it shouldn't be too difficult, but
+you'll need to set up everything yourself, including ONI, and configure
+everything manually.
 
 #### Configuration
 
@@ -72,7 +71,11 @@ binaries configurable.
 
 ##### Docker Services
 
-`compose.override.yml` must expose RAIS ("iiif"), mysql, dev-agent, and SFTPGo
+Start by copying the included `compose.override-hybrid-example.yml` file to
+`compose.override.yml`. The example has everything needed to run the full ONI +
+NCA stack locally with minimal fuss.
+
+`compose.override.yml` must expose RAIS ("iiif"), mysql, oni-agent, and SFTPGo
 to the local server via "ports" declarations, and settings need to reflect
 these values. For example, this is how the RAIS server might be configured:
 
@@ -99,8 +102,8 @@ IIIF_BASE_URL="http://localhost:12415/images/iiif"
 ##### NCA Web Server
 
 `WEBROOT` should just be localhost and whatever port you want. e.g.,
-`WEBROOT="http://localhost:8080"`. NCA simply parses that and listens on the
-given port.
+`WEBROOT="http://localhost:8080"`. The port must reflect the port NCA listens
+to, as configured in the `BIND_ADDRESS`.
 
 #### Local Development Aliases
 
@@ -129,18 +132,18 @@ the script:
 - `resetdb` initializes the database to prepare for NCA development from a
   "clean slate":
   - Deletes the stack, including database volumes
-  - Starts up key services (db, iiif, dev-agent, sftpgo)
+  - Starts up key services (*db, iiif, oni-web, oni-agent, sftpgo*)
   - Once the database is ready, runs the DB migrations and ingests seed data if
     you have any (`docker/mysql/nca-seed-data.sql`)
 - `migrate` can be run standalone if you don't have seed data and just need to
   get the database migrations run
 - `server` prepares, compiles, and runs the HTTP server:
-  - Starts up the necessary pieces of the docker stack (db, iiif, dev-agent, sftpgo)
+  - Starts up the necessary pieces of the docker stack (see above)
   - Provisions a valid SFTPGo key in your `settings` file
   - Compiles the HTTP server in case any changes have been made to the source
   - Runs the server in debug mode
 - `workers` prepares and starts the job runner:
-  - Starts up key docker services (db, iiif, dev-agent, sftpgo)
+  - Starts up key docker services (see above)
   - Compiles `run-jobs` in case the source code changed
   - Runs the standard "watchall" subcommand for the job runner
 
@@ -156,11 +159,11 @@ manually.
 
 ### Docker With Local Compilation
 
-This is not recommended, because it can be easy to get things "out of sync",
-such as when your host system has a different architecture from the docker
-image (in which case the compiled binaries won't run) or the compiled binaries
-aren't mounted inside the container properly (in which case you could be
-running a different version of the code than you're editing).
+**This is not recommended**, because it can be easy to get things "out of
+sync", such as when your host system has a different architecture from the
+docker image (in which case the compiled binaries won't run) or the compiled
+binaries aren't mounted inside the container properly (in which case you could
+be running a different version of the code than you're editing).
 
 This approach also doesn't match the recommended production setup, where docker
 isn't used for any of the stack.
@@ -168,34 +171,15 @@ isn't used for any of the stack.
 However, this approach can be easier than the "hybrid" approach above if you
 don't want to deal with all the command-line tool installs (openjpeg, poppler,
 graphicsmagick, ghostscript) and figuring out the various docker settings to
-expose the services NCA needs (database, sftpgo, dev-agent, IIIF).
+expose the services NCA needs (database, sftpgo, oni-agent, IIIF).
 
 #### Copy docker configuration
 
-    cp compose.override.yml-example compose.override.yml
+    cp compose.override-example.yml compose.override.yml
 
-The override file specifies useful things like automatically mounting your
-local binaries to speed up the edit+compile+test loop, mounting in your local
-templates and static files, mapping the proxy service's port, and running in
-debug mode.
-
-    cp env-example .env
-    vim .env
-
-`.env` sets up default environment variables which `docker compose` commands
-will use. A sample file might look like this:
-
-```bash
-APP_URL="https://jechols.uoregon.edu"
-NCA_NEWS_WEBROOT="https://oregonnews.uoregon.edu"
-```
-
-This would say that all app URLs should begin with
-`https://jechols.uoregon.edu` (the default is `localhost`, which is usually
-fine for simple dev work), and that the live issues are found on
-`https://oregonnews.uoregon.edu`. The live newspaper server is expected to
-have the legacy chronam JSON handlers, as described in
-[Services](/setup/services).
+You'll have to figure out setting up binary mounts on your own, as the example
+file is built in a more "production-like" approach, where everything is built
+and run in a container.
 
 #### Compile
 
@@ -213,19 +197,19 @@ docker compose build
 docker compose pull
 ```
 
-Building the "app" image will take a little while. Grab some coffee.
+Building the images will take a little while. Grab some coffee.
 
-Note that once it's been built, further builds will be quick as docker will
-cache the expensive operations (updating the `dnf` cache, downloading and
-installing dependencies, etc) and only update what has changed (e.g., NCA
-source code).
+Note that once everything has been built, further builds will be quick as
+docker will cache the expensive operations (updating the `dnf` cache,
+downloading and installing dependencies, etc) and only update what has changed
+(e.g., NCA source code).
 
 #### Start the stack
 
-Run `docker compose up`, and the application will be available at the
-configured `$APP_URL`. Note that on the first run it will take a while to
-respond as the system is caching all known issues - including those on the
-defined live site.
+Run `docker compose up`, and all applications will start, exposing ports to
+your host however they're defined. Note that on the first run it will take a
+while to respond as the system is caching all known issues - including those on
+the defined live site.
 
 #### Edit + Compile + Test Loop
 

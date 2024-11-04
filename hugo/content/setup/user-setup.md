@@ -15,7 +15,7 @@ This lets you fake an admin login via `http://your.site/users?debuguser=admin`.
 You can then set up other users as necessary. Once you have Apache set up to
 do the authentication, you should never run in debug mode on production servers.
 
-For development use, `compose.override.yml-example` is already set up to run in
+For development use, `scripts/localdev.sh` already runs the server in
 debug mode. Assuming you follow the [development guide's][dev-guide]
 instructions, you won't have to do anything special to fake your login.
 
