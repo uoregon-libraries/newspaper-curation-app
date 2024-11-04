@@ -204,6 +204,7 @@ services:
       - oni-staging-solr
       - oni-iiif
     environment:
+      - APACHE_LOG_LEVEL=info
       - ONI_DEBUG=1
     networks:
       oni-staging:
@@ -250,6 +251,7 @@ services:
       - oni-prod-solr
       - oni-iiif
     environment:
+      - APACHE_LOG_LEVEL=warn
       - ONI_DEBUG=0
     networks:
       oni-prod:
