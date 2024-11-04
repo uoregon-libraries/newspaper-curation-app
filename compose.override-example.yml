@@ -18,16 +18,16 @@ services:
       - NCA_NEWS_WEBROOT=https://oregonnews.uoregon.edu
       - NCA_STAGING_NEWS_WEBROOT=http://localhost:8080
       # Uncomment to adjust delay before uploaded issues can be queued into NCA
-      - NCA_DURATION_ISSUE_CONSIDERED_DANGEROUS=30s
+      #- NCA_DURATION_ISSUE_CONSIDERED_DANGEROUS=30s
 
     # Uncomment to run in debug mode: absolutely NOT for production setups!
-    command: ./bin/server -c ./settings --debug
+    #command: ./bin/server -c ./settings --debug
 
     # Uncomment to keep the issue cache locally: very useful for destroying the
     # entire stack, images, volumes, etc. without having to spend ten minutes
     # rebuilding the cache.
-    volumes:
-      - ./tmp:/var/local/news/nca/cache
+    #volumes:
+    #  - ./tmp:/var/local/news/nca/cache
 
   workers:
     environment:
@@ -35,9 +35,9 @@ services:
       - NCA_STAGING_NEWS_WEBROOT=http://localhost:8080
 
   # Uncomment to be able to do local database debugging
-  db:
-    ports:
-      - 3306:3306
+  #db:
+  #  ports:
+  #    - 3306:3306
 
   # nginx is exposed directly on port 80 to get to NCA and RAIS. If you change
   # the port here, you need to add it to RAIS_IIIFBASEURL, NCA_WEBROOT, and
