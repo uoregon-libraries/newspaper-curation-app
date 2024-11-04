@@ -5,10 +5,11 @@ description: Developing on NCA
 ---
 
 It is assumed developers will use Docker for dependencies outside this
-repository: ONI (and its services), database, RAIS (IIIF server), the ONI
-Agent, and SFTPGo. The rest of the tools are most easily installed locally, and
-the NCA binaries themselves are in fact easier by far to install locally versus
-building them in an image when code changes.
+repository: ONI (staging and production, and services for both), database, RAIS
+(IIIF server), the ONI Agents (staging and production), and SFTPGo. The rest of
+the tools are most easily installed locally, and the NCA binaries themselves
+are in fact easier by far to install locally versus building them in an image
+when code changes.
 
 ## Requirements / Setup
 
@@ -72,37 +73,39 @@ binaries configurable.
 ##### Docker Services
 
 Start by copying the included `compose.override-hybrid-example.yml` file to
-`compose.override.yml`. The example has everything needed to run the full ONI +
-NCA stack locally with minimal fuss.
+`compose.override.yml`. The example has everything needed to run the full stack
+locally with minimal fuss.
 
-`compose.override.yml` must expose RAIS ("iiif"), mysql, oni-agent, and SFTPGo
-to the local server via "ports" declarations, and settings need to reflect
-these values. For example, this is how the RAIS server might be configured:
+`compose.override.yml` must expose RAIS ("iiif"), mysql, both oni-agents, and
+SFTPGo to the local server via "ports" declarations, and settings need to
+reflect these values. It is also useful to expose the oni web services for
+testing that NCA is sending the batches to the right ONI instance.
+
+For example, if you use the hybrid compose override values as-is, the critical
+settings would look like this:
 
 ```
-# compose.override.yml:
-version: '2'
-services:
-  iiif:
-    volumes:
-      - ./test/fakemount/workflow:/var/local/images:z
-    ports:
-      - 12415:12415
-    environment:
-      - RAIS_IIIFBASEURL=http://localhost:12415
-...
-
-
-# settings:
-...
-IIIF_BASE_URL="http://localhost:12415/images/iiif"
-...
+IIIF_BASE_URL=http://localhost:12415/images/iiif
+STAGING_NEWS_WEBROOT="http://localhost:8082"
+DB_HOST="127.0.0.1"
+DB_PORT=3306
+DB_USER="nca"
+DB_PASSWORD="nca"
+DB_DATABASE="nca"
+SFTPGO_API_URL="http://localhost:8081/api/v2"
+STAGING_AGENT="localhost:2223"
+PRODUCTION_AGENT="localhost:2222"
 ```
+
+Unfortunately, `NEWS_WEBROOT` needs to be set to a running ONI instance that
+has the JSON endpoints patched, which isn't in a vanilla ONI instance. NCA
+requires those APIs to pull live issue data, and will not run if you try to
+point to a vanilla ONI setup.
 
 ##### NCA Web Server
 
 `WEBROOT` should just be localhost and whatever port you want. e.g.,
-`WEBROOT="http://localhost:8080"`. The port must reflect the port NCA listens
+`WEBROOT="http://localhost:3333"`. The port must reflect the port NCA listens
 to, as configured in the `BIND_ADDRESS`.
 
 #### Local Development Aliases
@@ -132,7 +135,7 @@ the script:
 - `resetdb` initializes the database to prepare for NCA development from a
   "clean slate":
   - Deletes the stack, including database volumes
-  - Starts up key services (*db, iiif, oni-web, oni-agent, sftpgo*)
+  - Starts up key services (*db, iiif, sftpgo, and oni services*)
   - Once the database is ready, runs the DB migrations and ingests seed data if
     you have any (`docker/mysql/nca-seed-data.sql`)
 - `migrate` can be run standalone if you don't have seed data and just need to

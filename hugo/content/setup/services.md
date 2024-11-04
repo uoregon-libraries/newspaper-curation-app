@@ -15,14 +15,19 @@ all times, several binaries you'll need to use occasionally for regular tasks,
 and of course the various external services (such as a IIIF server, SFTP
 server, MySQL / MariaDB, Apache / nginx, Open ONI and the ONI Agent, etc.).
 
-The docker setup is easy to get running, but *is not for production*. It shims
-in a fake ONI Agent for dev purposes. Only go the container route if you have
-the devops chops to build a real, production-ready setup.
+The docker setup is easy to get running, and extremely useful for learning how
+the stack is set up, but it's not something we recommend for production use. It
+bundles in two ONI servers and their dependencies (database, solr, and ONI
+Agent for both staging and production), there's no monitoring, and the setup
+has never been tested in a high-traffic environment.
 
-A bare-metal, manual installation is recommended. Manual installations are
-described in the [installation][installation] documentation, and can be
-reverse-engineered by reading the various docker files, especially if you're on
-a Redhat / CentOS / RockyLinux setup.
+*Only go the container route if you have the devops chops to build a real,
+production-ready setup.*
+
+A bare-metal, manual installation is fairly easy to set up as well. Manual
+installations are described in the [installation][installation] documentation,
+and can be reverse-engineered by reading the various docker files, especially
+if you're on a Redhat / CentOS / RockyLinux setup.
 
 [installation]: <{{% ref "installation" %}}>
 
