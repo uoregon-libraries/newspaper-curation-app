@@ -46,20 +46,13 @@ docker compose builds:
 [compose.yml]: <https://github.com/uoregon-libraries/newspaper-curation-app/blob/main/compose.yml>
 [docker-dir]: <https://github.com/uoregon-libraries/newspaper-curation-app/tree/main/docker>
 
-This is great to try things out, or for a quick one-off use of NCA. It is not
-recommended for production use: our docker compose setup is very dev-centric,
-and we currently don't have a setup that includes all the ONI pieces. You would
-have to manually do everything NCA currently automates with the ONI Agent, and
-you won't necessarily know what these are since NCA just sends off commands
-instead of telling somebody what to do. If you're building a few batches for a
-short-term project, this is probably manageable, but if you're running this for
-long-term curation and batch generation, you'll find this quickly becomes very
-difficult.
+This is great to try things out, or for a quick one-off use of NCA. We don't
+recommend using it as is for production, however.
 
 We strongly recommend either crafting your own containerized setup with a mind
 to production reliability (which we haven't done) or just running NCA on bare
-metal - once the prerequisites above are installed, the rest of NCA is very easy
-to get running. If you go this route, you'll still find the docker setup
+metal - once the prerequisites above are installed, the rest of NCA is very
+easy to get running. If you go this route, you'll still find the docker setup
 helpful just in terms of understanding the full stack and configuration.
 
 ## Compile
@@ -95,8 +88,7 @@ HTTP listener, and `bin/run-jobs`, the job queue processor.
 
 Note that even if you do use Docker, for development you'll probably want to
 run all NCA's binaries locally and just have them communicate with the
-dockerized services (IIIF server, database, and SFTPGo). Again, see our
-[Development Guide][dev-guide] for details.
+dockerized services. Again, see our [Development Guide][dev-guide] for details.
 
 ### Security Updates
 

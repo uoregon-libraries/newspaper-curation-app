@@ -44,11 +44,11 @@ finish_batches() {
   # Start workers, wait for jobs to complete (~30sec)
   workonce 2>&1 | tee -a workers.log
 
-  echo "Approve batches manually in NCA, then press [ENTER] continue"
+  echo "Verify batches are on ONI staging, approve them in NCA, then press [ENTER] continue"
   read
   workonce 2>&1 | tee -a workers.log
 
-  echo "Verify all batches' statuses are 'live', then press [ENTER] to continue"
+  echo "Verify batches are in ONI production and are 'live' in NCA, then press [ENTER] to continue"
   read
 }
 

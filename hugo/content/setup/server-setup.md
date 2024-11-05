@@ -30,7 +30,9 @@ Before anything can be done, the following setup has to happen:
      that NCA can reach. When NCA tells SFTPGo to provision titles, they get a
      subdirectory within the specified base directory.
 1. Somebody sets up the full swath of folders, mounting to network storage
-   as it makes sense.
+   as it makes sense. These will generally be auto-created, but comples setups
+   will want to carefully choose what's on local storage and what is on network
+   mount points.
    - `PDF_UPLOAD_PATH` (`/mnt/news/sftp`): One subfolder should exist per title
    - `SCAN_UPLOAD_PATH` (`/mnt/news/scans`): This is where in-house scans would be uploaded.
    - `ORIGINAL_PDF_BACKUP_PATH` (`/mnt/news/backup/originals`): Short-term storage
@@ -62,11 +64,11 @@ Before anything can be done, the following setup has to happen:
      wanted.
    - `ISSUE_CACHE_PATH` (`/var/local/news/nca/cache`): This just needs to be
      created. The app will use this to speed up issue lookups.
-1. Make sure that the workflow path and the batch output path are on the same
-   filesystem! This ensures the batch generator will be able to hard-link
+1. *The workflow path and the batch output path **must** live on the same
+   filesystem!* This ensures the batch generator will be able to hard-link
    files, rather than copying them, which saves a significant amount of time
-   when building large batches.  **NOTE**: the system currently *requires*
-   this, and will fail if an attempt to hard-link files fails.
+   when building large batches. The system currently *requires* this, and will
+   fail if an attempt to hard-link files fails.
 1. Permissions have to be set up such that:
    - Humans can rename PDFs in the page review path.
    - Humans can drop off scanned PDF/TIFF pairs in the scans path

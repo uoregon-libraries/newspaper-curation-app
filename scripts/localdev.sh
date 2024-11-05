@@ -1,4 +1,6 @@
 #!/usr/bin/env bash
+ONI_SERVICES="oni-agent-prod oni-agent-staging oni-prod oni-staging"
+
 wait_for_database() {
   MAX_TRIES=30
   TRIES=0
@@ -21,7 +23,7 @@ wait_for_database() {
 
 # Starts the dependent services needed by NCA
 start_docker_services() {
-  docker compose up -d db iiif sftpgo dev-agent
+  docker compose up -d db iiif sftpgo $ONI_SERVICES
 }
 
 # Resets the database, deleting and rebuilding all the seed data
@@ -42,11 +44,11 @@ prep_for_testing() {
   resetfakemount
   bulk_queue_borndigital
 
-  # Reset the IIIF and SFTPGo services since they'll be looking at a mount
+  # Reset the services which share files, since they'll be looking at a mount
   # point we just deleted
-  docker compose stop iiif sftpgo
-  docker compose rm -f iiif sftpgo
-  docker compose up -d iiif sftpgo
+  docker compose stop iiif sftpgo $ONI_SERVICES
+  docker compose rm -f iiif sftpgo $ONI_SERVICES
+  docker compose up -d iiif sftpgo $ONI_SERVICES
 }
 
 # Sets up all fake uploads from the test/fakemount dir, then bulk-queues all
