@@ -46,6 +46,9 @@ RUN . ./docker/_startup_lib.sh && verify_config
 # process and waits 10s to shut down the container
 RUN sed -i 's|^/startup.sh$|exec /startup.sh|' /entrypoint.sh
 
+# Uncomment this if you need Oregon's real MARC record list in order to load titles
+#RUN echo "MARC_RETRIEVAL_URLFORMAT = 'https://oregonnews.uoregon.edu/lccn/%s/marc.xml'" >> onisite/settings_local.py
+
 EXPOSE 80
 ENTRYPOINT /entrypoint.sh
 
