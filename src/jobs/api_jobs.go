@@ -48,8 +48,6 @@ func (j *BatchJob) queueAgentJob(name string, fn batchJobFunc) ProcessResponse {
 	// need to be scrutinized
 	j.DBBatch.ONIAgentJobID = jobid
 
-	// TODO: Insert job into the pipeline to wait for the ONI side to finish
-
 	// It's pretty critical that we save the batch data and queue a "wait for
 	// ONI" job since the ONI job was successfully created
 	err = j.runCritical(func() error {
