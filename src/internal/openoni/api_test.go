@@ -2,6 +2,7 @@ package openoni
 
 import (
 	"errors"
+	"fmt"
 	"strings"
 	"testing"
 
@@ -41,6 +42,11 @@ func getRPC(t *testing.T, name string, expectedParams []string, jsonOut []byte) 
 		t.Fatalf("Unable to provision new RPC: %s", err)
 	}
 	r.call = func(params []string) (data []byte, err error) {
+		// Quote expected params before comparison
+		for i := range expectedParams {
+			expectedParams[i] = fmt.Sprintf("%q", expectedParams[i])
+		}
+
 		if len(expectedParams) > 0 {
 			var diff = cmp.Diff(expectedParams, params)
 			if diff != "" {
