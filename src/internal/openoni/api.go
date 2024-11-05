@@ -87,7 +87,7 @@ func (r *RPC) do(params ...string) (result gjson.Result, err error) {
 	case "success":
 		return result, nil
 	case "error":
-		return result, fmt.Errorf("calling %q: %s", strings.Join(params, " "), result.Get("message").String())
+		return result, fmt.Errorf("calling %q: %s (%s)", strings.Join(params, " "), result.Get("message").String(), result.Get("error").String())
 	default:
 		return result, fmt.Errorf("parsing status for call to %q: invalid value %q", strings.Join(params, " "), status)
 	}
