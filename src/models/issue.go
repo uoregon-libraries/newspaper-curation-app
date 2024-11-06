@@ -683,8 +683,8 @@ func (i *Issue) SchemaIssue() (*schema.Issue, error) {
 	return si, err
 }
 
-// FindCompletedIssuesReadyForRemoval returns all issues which are be complete
-// and no longer needed in our workflow: tied to a closed (live_done) batch and
+// FindCompletedIssuesReadyForRemoval returns all issues which are complete and
+// no longer needed in our workflow: tied to a closed (live_done) batch and
 // ignored by NCA, but still contain a location
 func FindCompletedIssuesReadyForRemoval() ([]*Issue, error) {
 	var op = dbi.DB.Operation()
