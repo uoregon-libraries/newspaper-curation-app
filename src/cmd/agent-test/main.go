@@ -3,12 +3,14 @@ package main
 import (
 	"fmt"
 	"log"
+	"sort"
 	"strconv"
 	"strings"
 	"time"
 
 	"github.com/uoregon-libraries/newspaper-curation-app/src/cli"
 	"github.com/uoregon-libraries/newspaper-curation-app/src/internal/openoni"
+	"github.com/uoregon-libraries/newspaper-curation-app/src/models"
 )
 
 type _opts struct {
@@ -19,28 +21,48 @@ type _opts struct {
 var opts _opts
 
 const (
-	cmdLoad   = "load-batch"
-	cmdPurge  = "purge-batch"
-	cmdStatus = "job-status"
-	cmdLogs   = "job-logs"
+	cmdLoad          = "load-batch"
+	cmdPurge         = "purge-batch"
+	cmdStatus        = "job-status"
+	cmdLogs          = "job-logs"
+	cmdEnsureAwardee = "ensure-awardee"
 )
 
 var aliases = map[string]string{
-	"load":  cmdLoad,
-	"bl":    cmdLoad,
-	"purge": cmdPurge,
-	"bp":    cmdPurge,
-	"stat":  cmdStatus,
-	"js":    cmdStatus,
-	"logs":  cmdLogs,
-	"jl":    cmdLogs,
+	"load":     cmdLoad,
+	"bl":       cmdLoad,
+	"purge":    cmdPurge,
+	"bp":       cmdPurge,
+	"stat":     cmdStatus,
+	"js":       cmdStatus,
+	"logs":     cmdLogs,
+	"jl":       cmdLogs,
+	"load-moc": cmdEnsureAwardee,
+	"lmoc":     cmdEnsureAwardee,
 }
 
-var validCmds = []string{cmdLoad, cmdPurge, cmdStatus, cmdLogs}
+var validCmds = []string{cmdLoad, cmdPurge, cmdStatus, cmdLogs, cmdEnsureAwardee}
+
+func setUsage(c *cli.CLI) {
+	c.AppendUsage(`Allows testing ONI Agents as well as running common commands against staging and production`)
+	var aliasmap = make(map[string][]string)
+	for alias, cmd := range aliases {
+		aliasmap[cmd] = append(aliasmap[cmd], alias)
+	}
+
+	var all []string
+	for _, cmd := range validCmds {
+		var aList = aliasmap[cmd]
+		sort.Strings(aList)
+		var s = strings.Join(aList, " / ")
+		all = append(all, fmt.Sprintf("%s (%s)", cmd, s))
+	}
+	c.AppendUsage("Valid commands and aliases: " + strings.Join(all, ", "))
+}
 
 func getOpts() (rpc *openoni.RPC, command string, args []string) {
 	var c = cli.New(&opts)
-	c.AppendUsage(`Allows testing ONI Agents as well as running common commands against staging and production`)
+	setUsage(c)
 	var conf = c.GetConf()
 
 	var connection string
@@ -50,7 +72,7 @@ func getOpts() (rpc *openoni.RPC, command string, args []string) {
 	case "production", "prod", "p":
 		connection = conf.ProductionAgentConnection
 	default:
-		log.Fatalf("Invalid environment %q", opts.Environment)
+		c.UsageFail("Invalid environment %q", opts.Environment)
 	}
 
 	var err error
@@ -60,7 +82,7 @@ func getOpts() (rpc *openoni.RPC, command string, args []string) {
 	}
 
 	if len(c.Args) == 0 {
-		log.Fatalf("You must specify a valid command")
+		c.UsageFail("You must specify a command")
 	}
 	command, args = c.Args[0], c.Args[1:]
 	if aliases[command] != "" {
@@ -73,7 +95,7 @@ func getOpts() (rpc *openoni.RPC, command string, args []string) {
 		}
 	}
 	if !valid {
-		log.Fatalf("Invalid command. You must choose one of: %s", strings.Join(validCmds, ", "))
+		c.UsageFail("%q is not a valid command", command)
 	}
 
 	var version string
@@ -91,6 +113,7 @@ func main() {
 	if len(args) == 0 {
 		args = []string{""}
 	}
+
 	switch command {
 	case cmdLoad:
 		doBatch(rpc, rpc.LoadBatch, args[0], false)
@@ -114,6 +137,18 @@ func main() {
 		for _, line := range logs {
 			fmt.Println(line)
 		}
+
+	case cmdEnsureAwardee:
+		if len(args) != 2 {
+			log.Fatalf("Invalid request: you must specify an org code and awardee's name")
+		}
+
+		var m = &models.MOC{Code: args[0], Name: args[1]}
+		var message, err = rpc.EnsureAwardee(m)
+		if err != nil {
+			log.Fatalf("Couldn't check/create awardee: %s", err)
+		}
+		fmt.Println("Success:", message)
 
 	default:
 		log.Fatalf("Command %q not handled in main", command)

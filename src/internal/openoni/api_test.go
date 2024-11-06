@@ -2,10 +2,12 @@ package openoni
 
 import (
 	"errors"
+	"fmt"
 	"strings"
 	"testing"
 
 	"github.com/google/go-cmp/cmp"
+	"github.com/uoregon-libraries/newspaper-curation-app/src/models"
 )
 
 func TestNew(t *testing.T) {
@@ -41,6 +43,11 @@ func getRPC(t *testing.T, name string, expectedParams []string, jsonOut []byte) 
 		t.Fatalf("Unable to provision new RPC: %s", err)
 	}
 	r.call = func(params []string) (data []byte, err error) {
+		// Quote expected params before comparison
+		for i := range expectedParams {
+			expectedParams[i] = fmt.Sprintf("%q", expectedParams[i])
+		}
+
 		if len(expectedParams) > 0 {
 			var diff = cmp.Diff(expectedParams, params)
 			if diff != "" {
@@ -154,6 +161,17 @@ func TestPurgeBatch(t *testing.T) {
 				t.Fatalf("PurgeBatch(%q) (json %q): expected job id %d, got %d", tc.batch, tc.json, tc.jobID, id)
 			}
 		})
+	}
+}
+
+func TestEnsureAwardee(t *testing.T) {
+	var r = getRPC(t, "EnsureAwardee", []string{"ensure-awardee", "code", "name"}, []byte(`{"status": "success", "message": "test"}`))
+	var message, err = r.EnsureAwardee(&models.MOC{Code: "code", Name: "name"})
+	if message != "test" {
+		t.Errorf(`EnsureAwardee should return the message "test". Got %q`, message)
+	}
+	if err != nil {
+		t.Errorf("EnsureAwardee should not have an error, got %s", err)
 	}
 }
 

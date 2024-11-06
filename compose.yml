@@ -132,6 +132,7 @@ services:
       - HOST_KEY_FILE=/etc/rsa/oni-agent
       - ONI_LOCATION=/opt/openoni/
       - BATCH_SOURCE=/mnt/batches
+      - DB_CONNECTION=openoni:openoni@tcp(oni-staging-db:3306)/openoni
     expose:
       - 22
     networks:
@@ -154,6 +155,7 @@ services:
       - HOST_KEY_FILE=/etc/rsa/oni-agent
       - ONI_LOCATION=/opt/openoni/
       - BATCH_SOURCE=/mnt/batches
+      - DB_CONNECTION=openoni:openoni@tcp(oni-prod-db:3306)/openoni
     expose:
       - 22
     networks:

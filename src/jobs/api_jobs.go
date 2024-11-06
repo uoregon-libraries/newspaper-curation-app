@@ -48,8 +48,6 @@ func (j *BatchJob) queueAgentJob(name string, fn batchJobFunc) ProcessResponse {
 	// need to be scrutinized
 	j.DBBatch.ONIAgentJobID = jobid
 
-	// TODO: Insert job into the pipeline to wait for the ONI side to finish
-
 	// It's pretty critical that we save the batch data and queue a "wait for
 	// ONI" job since the ONI job was successfully created
 	err = j.runCritical(func() error {
@@ -86,6 +84,25 @@ func (j *ONILoadBatch) Process(c *config.Config) ProcessResponse {
 		return PRFailure
 	}
 
+	var moc *models.MOC
+	var code = j.BatchJob.DBBatch.MARCOrgCode
+	moc, err = models.FindMOCByCode(code)
+	if err != nil {
+		j.Logger.Errorf("Error looking up MOC %q: %s", code, err)
+		return PRFailure
+	}
+	if moc == nil {
+		j.Logger.Errorf("Error looking up MOC %q: no such code exists", code)
+		return PRFatal
+	}
+
+	var msg string
+	msg, err = agent.EnsureAwardee(moc)
+	if err != nil {
+		j.Logger.Errorf("ONI Agent couldn't verify awardee's existence: %s", err)
+		return PRFailure
+	}
+	j.Logger.Infof("ONI Agent ensure-awardee response: %s", msg)
 	return j.queueAgentJob("load batch", agent.LoadBatch)
 }
 

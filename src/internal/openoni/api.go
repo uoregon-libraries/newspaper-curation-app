@@ -10,6 +10,7 @@ import (
 	"time"
 
 	"github.com/tidwall/gjson"
+	"github.com/uoregon-libraries/newspaper-curation-app/src/models"
 	"golang.org/x/crypto/ssh"
 )
 
@@ -67,6 +68,13 @@ func (r *RPC) do(params ...string) (result gjson.Result, err error) {
 		r.call = r.defaultCall
 	}
 
+	// Quote all parameters the cheap and hacky way. This quotes the command as
+	// well, but that's a non-issue, as the ONI Agent processes everything,
+	// including the command, the same way (unquoting).
+	for i := range params {
+		params[i] = fmt.Sprintf("%q", params[i])
+	}
+
 	var data []byte
 	data, err = r.call(params)
 	if err != nil {
@@ -79,7 +87,7 @@ func (r *RPC) do(params ...string) (result gjson.Result, err error) {
 	case "success":
 		return result, nil
 	case "error":
-		return result, fmt.Errorf("calling %q: %s", strings.Join(params, " "), result.Get("message").String())
+		return result, fmt.Errorf("calling %q: %s (%s)", strings.Join(params, " "), result.Get("message").String(), result.Get("error").String())
 	default:
 		return result, fmt.Errorf("parsing status for call to %q: invalid value %q", strings.Join(params, " "), status)
 	}
@@ -120,6 +128,17 @@ func (r *RPC) GetVersion() (version string, err error) {
 	}
 
 	return result.Get("version").String(), nil
+}
+
+// EnsureAwardee tells the agent to verify or create the given MOC in ONI
+func (r *RPC) EnsureAwardee(moc *models.MOC) (message string, err error) {
+	var result gjson.Result
+	result, err = r.do("ensure-awardee", moc.Code, moc.Name)
+	if err != nil {
+		return "", fmt.Errorf("calling ensure-awardee: %w", err)
+	}
+
+	return result.Get("message").String(), nil
 }
 
 // JobStatus is the "controlled" version of an ONI Agent's job-status response
