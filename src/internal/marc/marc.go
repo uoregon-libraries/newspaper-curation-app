@@ -35,6 +35,7 @@ type marcXML struct {
 
 // MARC holds the raw data parsed from an XML source
 type MARC struct {
+	LCCN     string
 	Title    string
 	Location string
 	Language string
@@ -56,6 +57,14 @@ func ParseXML(r io.Reader) (*MARC, error) {
 	var marc = &MARC{}
 
 	for _, df := range mx.Datafields {
+		if df.Tag == "010" {
+			for _, sf := range df.Subfields {
+				if sf.Code == "a" {
+					marc.LCCN = sf.Data
+				}
+			}
+		}
+
 		if df.Tag == "245" {
 			for _, sf := range df.Subfields {
 				if sf.Code == "a" {
