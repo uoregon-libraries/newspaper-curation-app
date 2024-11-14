@@ -1,40 +1,15 @@
 package titlehandler
 
 import (
-	"encoding/xml"
 	"fmt"
 	"io"
 	"net/http"
 	"os"
-	"regexp"
 	"strings"
 
 	"github.com/uoregon-libraries/newspaper-curation-app/src/internal/logger"
+	"github.com/uoregon-libraries/newspaper-curation-app/src/internal/marc"
 )
-
-var marcStripLocRE = regexp.MustCompile(`[ /:,]+$`)
-
-type subfield struct {
-	Code string `xml:"code,attr"`
-	Data string `xml:",innerxml"`
-}
-
-type datafield struct {
-	Subfields []subfield `xml:"subfield"`
-	Ind1      string     `xml:"ind1,attr"`
-	Ind2      string     `xml:"ind2,attr"`
-	Tag       string     `xml:"tag,attr"`
-}
-
-type controlfield struct {
-	Tag  string `xml:"tag,attr"`
-	Data string `xml:",innerxml"`
-}
-
-type marc struct {
-	Datafields    []datafield    `xml:"datafield"`
-	Controlfields []controlfield `xml:"controlfield"`
-}
 
 // pullMARCForTitle pulls the MARC record from the library of congress and sets the
 // title's data if successful
@@ -74,60 +49,25 @@ func lookupMARC(t *Title, marcLoc string) error {
 	} else {
 		reader, err = getMarcLocal(marcLoc)
 	}
-
-	// An error from the Get call is not a deal-breaker, though we do want to
-	// report it
 	if err != nil {
-		return err
+		return fmt.Errorf("preparing MARC XML reader: %w", err)
 	}
 	defer reader.Close()
 
-	var data []byte
-	data, err = io.ReadAll(reader)
-	// An error reading the response is also not a deal-breaker, but a bit weirder
-	if err != nil {
-		return fmt.Errorf("reading response body: %w", err)
-	}
-
-	var m marc
-	err = xml.Unmarshal(data, &m)
-	if err != nil {
-		return fmt.Errorf("unmarshaling response body: %w", err)
-	}
-
-	for _, df := range m.Datafields {
-		if df.Tag == "245" {
-			for _, sf := range df.Subfields {
-				if sf.Code == "a" {
-					t.MARCTitle = sf.Data
-				}
-			}
-		}
-
-		if df.Tag == "260" || df.Tag == "264" {
-			for _, sf := range df.Subfields {
-				if sf.Code == "a" {
-					t.MARCLocation = marcStripLocRE.ReplaceAllString(sf.Data, "")
-				}
-			}
-		}
-	}
-	for _, cf := range m.Controlfields {
-		if cf.Tag == "008" {
-			runes := []rune(cf.Data)
-			t.LangCode3 = string(runes[35:38])
-		}
-	}
+	var m *marc.MARC
+	m, err = marc.ParseXML(reader)
+	t.MARCTitle = m.Title()
+	t.MARCLocation = m.Location()
+	t.LangCode3 = m.Language()
 	if t.MARCTitle == "" || t.MARCLocation == "" {
-		return fmt.Errorf("invalid xml response: title and location must not be blank")
+		return fmt.Errorf("parsing MARC XML: title and location must not be blank")
 	}
 
 	t.ValidLCCN = true
 
-	// Hopefully this saves, but if not we're not losing irreplacable data, so we just log the error and move on
 	err = t.Save()
 	if err != nil {
-		return fmt.Errorf("unable to save title (id %d) after MARC data pull: %w", t.ID, err)
+		return fmt.Errorf("saving title (id %d) after MARC XML read: %w", t.ID, err)
 	}
 
 	return nil
