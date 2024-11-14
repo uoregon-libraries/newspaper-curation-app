@@ -7,6 +7,8 @@ import (
 	"fmt"
 	"io"
 	"regexp"
+
+	"github.com/uoregon-libraries/gopkg/xmlnode"
 )
 
 var marcStripLocRE = regexp.MustCompile(`[ /:,]+$`)
@@ -49,9 +51,36 @@ func ParseXML(r io.Reader) (*MARC, error) {
 	}
 
 	var mx marcXML
-	err = xml.Unmarshal(data, &mx)
+	var root = new(xmlnode.Node)
+	err = xml.Unmarshal(data, root)
 	if err != nil {
-		return nil, fmt.Errorf("unmarshaling xml: %w", err)
+		return nil, fmt.Errorf("unmarshaling xml into generic structure: %w", err)
+	}
+	switch root.XMLName.Local {
+	case "collection":
+		if len(root.Nodes) == 0 {
+			return nil, fmt.Errorf("parsing generic xml: root node has no children")
+		}
+		if len(root.Nodes) > 1 {
+			return nil, fmt.Errorf("parsing generic xml: root node has too many children")
+		}
+		var data2, err = xml.Marshal(root.Nodes[0])
+		if err != nil {
+			return nil, fmt.Errorf("parsing generic xml: internal error re-exporting <record>: %w", err)
+		}
+		err = xml.Unmarshal(data2, &mx)
+		if err != nil {
+			return nil, fmt.Errorf("unmarshaling <record>: %w", err)
+		}
+
+	case "record":
+		err = xml.Unmarshal(data, &mx)
+		if err != nil {
+			return nil, fmt.Errorf("unmarshaling <record>: %w", err)
+		}
+
+	default:
+		return nil, fmt.Errorf(`unmarshaling xml: root node should be "collection" or "record" (got %q)`, root.XMLName.Local)
 	}
 
 	var marc = &MARC{}
