@@ -26,6 +26,12 @@ func getFile(t *testing.T, name string) *os.File {
 	return f
 }
 
+func compare(t *testing.T, field, expected, got string) {
+	if expected != got {
+		t.Errorf("%s should have been %s, got %s", field, expected, got)
+	}
+}
+
 func TestParseXML(t *testing.T) {
 	var tests = map[string]struct {
 		file     string
@@ -60,35 +66,10 @@ func TestParseXML(t *testing.T) {
 				return
 			}
 
-			var field, expected, got string
-
-			field = "LCCN"
-			expected = tc.lccn
-			got = m.LCCN()
-			if expected != got {
-				t.Errorf("%s should have been %s, got %s", field, expected, got)
-			}
-
-			field = "Title"
-			expected = tc.title
-			got = m.Title()
-			if expected != got {
-				t.Errorf("%s should have been %s, got %s", field, expected, got)
-			}
-
-			field = "Location"
-			expected = tc.location
-			got = m.Location()
-			if expected != got {
-				t.Errorf("%s should have been %s, got %s", field, expected, got)
-			}
-
-			field = "Language"
-			expected = tc.language
-			got = m.Language()
-			if expected != got {
-				t.Errorf("%s should have been %s, got %s", field, expected, got)
-			}
+			compare(t, "LCCN", tc.lccn, m.LCCN())
+			compare(t, "Title", tc.title, m.Title())
+			compare(t, "Location", tc.location, m.Location())
+			compare(t, "Language", tc.language, m.Language())
 		})
 	}
 }
