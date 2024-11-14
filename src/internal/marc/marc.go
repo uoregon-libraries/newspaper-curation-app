@@ -44,14 +44,15 @@ type MARC struct {
 	Language string
 }
 
-// ParseXML returns a new MARC instance from the XML in the given [io.Reader]
-func ParseXML(r io.Reader) (*MARC, error) {
+// parse is our low-level XML parser that gets the raw data structure set up,
+// but doesn't do any data processing / translating
+func parse(r io.Reader) (*marcXML, error) {
 	var data, err = io.ReadAll(r)
 	if err != nil {
 		return nil, fmt.Errorf("reading MARC xml: %w", err)
 	}
 
-	var mx marcXML
+	var mx = new(marcXML)
 	var root = new(xmlnode.Node)
 	err = xml.Unmarshal(data, root)
 	if err != nil {
@@ -69,19 +70,29 @@ func ParseXML(r io.Reader) (*MARC, error) {
 		if err != nil {
 			return nil, fmt.Errorf("parsing generic xml: internal error re-exporting <record>: %w", err)
 		}
-		err = xml.Unmarshal(data2, &mx)
+		err = xml.Unmarshal(data2, mx)
 		if err != nil {
 			return nil, fmt.Errorf("unmarshaling <record>: %w", err)
 		}
 
 	case "record":
-		err = xml.Unmarshal(data, &mx)
+		err = xml.Unmarshal(data, mx)
 		if err != nil {
 			return nil, fmt.Errorf("unmarshaling <record>: %w", err)
 		}
 
 	default:
 		return nil, fmt.Errorf(`unmarshaling xml: root node should be "collection" or "record" (got %q)`, root.XMLName.Local)
+	}
+
+	return mx, nil
+}
+
+// ParseXML returns a new MARC instance from the XML in the given [io.Reader]
+func ParseXML(r io.Reader) (*MARC, error) {
+	var mx, err = parse(r)
+	if err != nil {
+		return nil, err
 	}
 
 	var marc = &MARC{}
