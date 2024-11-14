@@ -7,6 +7,7 @@ import (
 	"fmt"
 	"io"
 	"regexp"
+	"strings"
 
 	"github.com/uoregon-libraries/gopkg/xmlnode"
 )
@@ -89,7 +90,7 @@ func ParseXML(r io.Reader) (*MARC, error) {
 		if df.Tag == "010" {
 			for _, sf := range df.Subfields {
 				if sf.Code == "a" {
-					marc.LCCN = sf.Data
+					marc.LCCN = strings.Replace(sf.Data, " ", "", -1)
 				}
 			}
 		}
