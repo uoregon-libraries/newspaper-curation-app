@@ -64,28 +64,28 @@ func TestParseXML(t *testing.T) {
 
 			field = "LCCN"
 			expected = tc.lccn
-			got = m.LCCN
+			got = m.LCCN()
 			if expected != got {
 				t.Errorf("%s should have been %s, got %s", field, expected, got)
 			}
 
 			field = "Title"
 			expected = tc.title
-			got = m.Title
+			got = m.Title()
 			if expected != got {
 				t.Errorf("%s should have been %s, got %s", field, expected, got)
 			}
 
 			field = "Location"
 			expected = tc.location
-			got = m.Location
+			got = m.Location()
 			if expected != got {
 				t.Errorf("%s should have been %s, got %s", field, expected, got)
 			}
 
 			field = "Language"
 			expected = tc.language
-			got = m.Language
+			got = m.Language()
 			if expected != got {
 				t.Errorf("%s should have been %s, got %s", field, expected, got)
 			}

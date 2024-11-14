@@ -56,9 +56,9 @@ func lookupMARC(t *Title, marcLoc string) error {
 
 	var m *marc.MARC
 	m, err = marc.ParseXML(reader)
-	t.MARCTitle = m.Title
-	t.MARCLocation = m.Location
-	t.LangCode3 = m.Language
+	t.MARCTitle = m.Title()
+	t.MARCLocation = m.Location()
+	t.LangCode3 = m.Language()
 	if t.MARCTitle == "" || t.MARCLocation == "" {
 		return fmt.Errorf("parsing MARC XML: title and location must not be blank")
 	}

@@ -38,10 +38,65 @@ type marcXML struct {
 
 // MARC holds the raw data parsed from an XML source
 type MARC struct {
-	LCCN     string
-	Title    string
-	Location string
-	Language string
+	raw    *marcXML
+	fields map[string]string
+}
+
+func newMARC(raw *marcXML) *MARC {
+	var m = &MARC{raw: raw, fields: make(map[string]string)}
+
+	for _, cf := range raw.Controlfields {
+		m.fields[cf.Tag] = cf.Data
+	}
+	for _, df := range raw.Datafields {
+		for _, sf := range df.Subfields {
+			m.fields[df.Tag+"$"+sf.Code] = sf.Data
+		}
+	}
+
+	return m
+}
+
+// Get returns the value of the field with the given tag. Control fields, such
+// as "008", have no code, and can be requested directly. Data fields have
+// subfields, and must include a tag to indicate which subfield, e.g., tag
+// "245" and code "a".
+func (m *MARC) Get(tag, code string) string {
+	if code == "" {
+		return m.fields[tag]
+	}
+	return m.fields[tag+"$"+code]
+}
+
+// LCCN returns field 010 $a, stripped of all spaces
+func (m *MARC) LCCN() string {
+	return strings.Replace(m.Get("010", "a"), " ", "", -1)
+}
+
+// Title returns field 245 $a from MARC
+func (m *MARC) Title() string {
+	return strings.TrimSpace(m.Get("245", "a"))
+}
+
+// Location returns the value in field 260 $a or 264 $a, with special
+// characters removed. Field 264 is given precedence.
+func (m *MARC) Location() string {
+	var location = m.Get("264", "a")
+	if location == "" {
+		location = m.Get("260", "a")
+	}
+
+	return marcStripLocRE.ReplaceAllString(location, "")
+}
+
+// Language returns the three-character language code from field 008
+func (m *MARC) Language() string {
+	var lang = []rune(m.Get("008", ""))
+	if len(lang) < 38 {
+		return ""
+	}
+
+	return string(lang[35:38])
 }
 
 // parse is our low-level XML parser that gets the raw data structure set up,
@@ -95,39 +150,5 @@ func ParseXML(r io.Reader) (*MARC, error) {
 		return nil, err
 	}
 
-	var marc = &MARC{}
-
-	for _, df := range mx.Datafields {
-		if df.Tag == "010" {
-			for _, sf := range df.Subfields {
-				if sf.Code == "a" {
-					marc.LCCN = strings.Replace(sf.Data, " ", "", -1)
-				}
-			}
-		}
-
-		if df.Tag == "245" {
-			for _, sf := range df.Subfields {
-				if sf.Code == "a" {
-					marc.Title = sf.Data
-				}
-			}
-		}
-
-		if df.Tag == "260" || df.Tag == "264" {
-			for _, sf := range df.Subfields {
-				if sf.Code == "a" {
-					marc.Location = marcStripLocRE.ReplaceAllString(sf.Data, "")
-				}
-			}
-		}
-	}
-	for _, cf := range mx.Controlfields {
-		if cf.Tag == "008" {
-			runes := []rune(cf.Data)
-			marc.Language = string(runes[35:38])
-		}
-	}
-
-	return marc, nil
+	return newMARC(mx), nil
 }
