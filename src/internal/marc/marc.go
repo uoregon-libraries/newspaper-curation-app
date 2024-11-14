@@ -75,7 +75,13 @@ func (m *MARC) LCCN() string {
 
 // Title returns field 245 $a from MARC
 func (m *MARC) Title() string {
-	return strings.TrimSpace(m.Get("245", "a"))
+	var a = strings.TrimSpace(m.Get("245", "a"))
+	var b = strings.TrimSpace(m.Get("245", "b"))
+
+	if b != "" {
+		return a + " " + b
+	}
+	return a
 }
 
 // Location returns the value in field 260 $a or 264 $a, with special

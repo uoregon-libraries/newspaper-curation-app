@@ -37,7 +37,7 @@ func TestParseXML(t *testing.T) {
 		"collection-wrapped MARC file": {
 			file:     "2002260445-UnitedAmerican.mrk",
 			lccn:     "2002260445",
-			title:    "The united American :",
+			title:    "The united American : a magazine of good citizenchip.",
 			location: "Portland, Or.",
 			language: "eng",
 		},
