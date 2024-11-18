@@ -5,7 +5,7 @@ import (
 	"github.com/uoregon-libraries/newspaper-curation-app/src/models"
 )
 
-// FindInProcessIssues aggregates all issues which have been indexed in the database
+// FindInProcessIssues aggregates all issues which are in NCA's workflow states
 func (s *Searcher) FindInProcessIssues() error {
 	var err = s.init()
 	if err != nil {
