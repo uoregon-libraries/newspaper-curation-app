@@ -3,6 +3,7 @@ package main
 import (
 	"fmt"
 	"log"
+	"os"
 	"sort"
 	"strconv"
 	"strings"
@@ -21,27 +22,29 @@ type _opts struct {
 var opts _opts
 
 const (
-	cmdLoad          = "load-batch"
-	cmdPurge         = "purge-batch"
+	cmdLoadBatch     = "load-batch"
+	cmdPurgeBatch    = "purge-batch"
 	cmdStatus        = "job-status"
 	cmdLogs          = "job-logs"
 	cmdEnsureAwardee = "ensure-awardee"
+	cmdLoadTitle     = "load-title"
 )
 
 var aliases = map[string]string{
-	"load":     cmdLoad,
-	"bl":       cmdLoad,
-	"purge":    cmdPurge,
-	"bp":       cmdPurge,
+	"load":     cmdLoadBatch,
+	"bl":       cmdLoadBatch,
+	"purge":    cmdPurgeBatch,
+	"bp":       cmdPurgeBatch,
 	"stat":     cmdStatus,
 	"js":       cmdStatus,
 	"logs":     cmdLogs,
 	"jl":       cmdLogs,
 	"load-moc": cmdEnsureAwardee,
 	"lmoc":     cmdEnsureAwardee,
+	"lt":       cmdLoadTitle,
 }
 
-var validCmds = []string{cmdLoad, cmdPurge, cmdStatus, cmdLogs, cmdEnsureAwardee}
+var validCmds = []string{cmdLoadBatch, cmdPurgeBatch, cmdStatus, cmdLogs, cmdEnsureAwardee, cmdLoadTitle}
 
 func setUsage(c *cli.CLI) {
 	c.AppendUsage(`Allows testing ONI Agents as well as running common commands against staging and production`)
@@ -115,9 +118,9 @@ func main() {
 	}
 
 	switch command {
-	case cmdLoad:
+	case cmdLoadBatch:
 		doBatch(rpc, rpc.LoadBatch, args[0], false)
-	case cmdPurge:
+	case cmdPurgeBatch:
 		doBatch(rpc, rpc.PurgeBatch, args[0], true)
 
 	case cmdStatus:
@@ -149,6 +152,22 @@ func main() {
 			log.Fatalf("Couldn't check/create awardee: %s", err)
 		}
 		fmt.Println("Success:", message)
+
+	case cmdLoadTitle:
+		if args[0] == "" {
+			log.Fatalf("Invald request: you must specify a filename")
+		}
+		var fname = args[0]
+		var data, err = os.ReadFile(fname)
+		if err != nil {
+			log.Fatalf("Unable to read %q: %s", fname, err)
+		}
+		var message string
+		message, err = rpc.LoadTitle(data)
+		if err != nil {
+			log.Fatalf("Unable to load title from %q: %s", fname, err)
+		}
+		log.Println("Success:", message)
 
 	default:
 		log.Fatalf("Command %q not handled in main", command)
