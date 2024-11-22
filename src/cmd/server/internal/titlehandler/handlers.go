@@ -21,8 +21,9 @@ import (
 )
 
 var (
-	basePath string
-	conf     *config.Config
+	basePath       string
+	uploadMARCPath string
+	conf           *config.Config
 
 	// layout is the base template, cloned from the responder's layout, from
 	// which all subpages are built
@@ -33,28 +34,37 @@ var (
 
 	// formTmpl is the form for adding or editing a title
 	formTmpl *tmpl.Template
+
+	// uploadMARCTmpl is the form for uploading a new MARC record to add to local
+	// storage as well as sending on to ONI
+	uploadMARCTmpl *tmpl.Template
 )
 
 // Setup sets up all the routing rules and other configuration
 func Setup(r *mux.Router, baseWebPath string, c *config.Config) {
 	conf = c
 	basePath = baseWebPath
+	uploadMARCPath = path.Join(basePath, "upload-marc")
+
 	var s = r.PathPrefix(basePath).Subrouter()
 	s.Path("").Handler(canView(listHandler))
 	s.Path("/new").Handler(canModify(newHandler))
 	s.Path("/edit").Handler(canModify(editHandler))
 	s.Path("/save").Methods("POST").Handler(canModify(saveHandler))
 	s.Path("/validate").Methods("POST").Handler(canModify(validateHandler))
+	s.Path("/upload-marc").Methods("GET").Handler(canModify(showMARCFormHandler))
 
 	layout = responder.Layout.Clone()
 	layout.Funcs(tmpl.FuncMap{
-		"TitlesHomeURL": func() string { return basePath },
-		"SFTPGoEnabled": func() bool { return c.SFTPGoEnabled },
+		"TitlesHomeURL":       func() string { return basePath },
+		"TitlesUploadMARCURL": func() string { return uploadMARCPath },
+		"SFTPGoEnabled":       func() bool { return c.SFTPGoEnabled },
 	})
 	layout.Path = path.Join(layout.Path, "titles")
 
 	listTmpl = layout.MustBuild("list.go.html")
 	formTmpl = layout.MustBuild("form.go.html")
+	uploadMARCTmpl = layout.MustBuild("upload-marc.go.html")
 }
 
 func getTitle(r *responder.Responder) (t *Title, handled bool) {
@@ -363,4 +373,10 @@ func validateHandler(w http.ResponseWriter, req *http.Request) {
 	}
 	http.SetCookie(w, &http.Cookie{Name: alertLevel, Value: response, Path: "/"})
 	http.Redirect(w, r.Request, basePath, http.StatusFound)
+}
+
+func showMARCFormHandler(w http.ResponseWriter, req *http.Request) {
+	var r = responder.Response(w, req)
+	r.Vars.Title = "Upload MARC XML"
+	r.Render(uploadMARCTmpl)
 }
