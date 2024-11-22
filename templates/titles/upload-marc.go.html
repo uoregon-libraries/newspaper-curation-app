@@ -1,0 +1,31 @@
+{{block "content" .}}
+
+<!--
+  This page is partly based on MDN's [File Example][1] HTML/JS/CSS.
+
+  [1]: <https://github.com/mdn/learning-area/blob/main/html/forms/file-examples/file-example.html>
+-->
+
+<form id="marc-upload-form" method="post" action="{{TitlesUploadMARCURL}}" enctype="multipart/form-data">
+  <div class="row mb-3">
+    <div class="col-sm-2">
+      <label class="btn btn-outline" for="marc-uploader">Choose File(s)...</label>
+      <input type="file" class="visually-hidden" id="marc-uploader" name="marc" accept=".xml, .mrk" multiple />
+    </div>
+    <div class="col-sm-2">
+      <button class="btn btn-primary" type="Submit">Upload</button>
+    </div>
+    <div id="preview" class="col-sm-8">
+      <p>No files currently selected for upload</p>
+    </div>
+  </div>
+</form>
+
+</body>
+</html>
+
+{{end}}
+
+{{block "extrajs" .}}
+{{IncludeJS "upload"}}
+{{end}}
