@@ -1,9 +1,12 @@
 package titlehandler
 
 import (
+	"bytes"
 	"encoding/base64"
 	"fmt"
 	"html/template"
+	"io/ioutil"
+	"mime/multipart"
 	"net/http"
 	"path"
 	"strconv"
@@ -11,6 +14,8 @@ import (
 	"github.com/gorilla/mux"
 	"github.com/uoregon-libraries/newspaper-curation-app/internal/datasize"
 	"github.com/uoregon-libraries/newspaper-curation-app/internal/logger"
+	"github.com/uoregon-libraries/newspaper-curation-app/internal/marc"
+	"github.com/uoregon-libraries/newspaper-curation-app/internal/openoni"
 	"github.com/uoregon-libraries/newspaper-curation-app/src/cmd/server/internal/responder"
 	"github.com/uoregon-libraries/newspaper-curation-app/src/config"
 	"github.com/uoregon-libraries/newspaper-curation-app/src/dbi"
@@ -38,13 +43,25 @@ var (
 	// uploadMARCTmpl is the form for uploading a new MARC record to add to local
 	// storage as well as sending on to ONI
 	uploadMARCTmpl *tmpl.Template
+
+	// ONI Agent RPCs
+	stagAgent, prodAgent *openoni.RPC
 )
 
 // Setup sets up all the routing rules and other configuration
 func Setup(r *mux.Router, baseWebPath string, c *config.Config) {
+	var err error
 	conf = c
 	basePath = baseWebPath
 	uploadMARCPath = path.Join(basePath, "upload-marc")
+	stagAgent, err = openoni.New(conf.StagingAgentConnection)
+	if err != nil {
+		panic(fmt.Sprintf("Staging ONI Agent connection string %q is invalid: %s", conf.StagingAgentConnection, err))
+	}
+	prodAgent, err = openoni.New(conf.ProductionAgentConnection)
+	if err != nil {
+		panic(fmt.Sprintf("Production ONI Agent connection string %q is invalid: %s", conf.ProductionAgentConnection, err))
+	}
 
 	var s = r.PathPrefix(basePath).Subrouter()
 	s.Path("").Handler(canView(listHandler))
@@ -53,6 +70,7 @@ func Setup(r *mux.Router, baseWebPath string, c *config.Config) {
 	s.Path("/save").Methods("POST").Handler(canModify(saveHandler))
 	s.Path("/validate").Methods("POST").Handler(canModify(validateHandler))
 	s.Path("/upload-marc").Methods("GET").Handler(canModify(showMARCFormHandler))
+	s.Path("/upload-marc").Methods("POST").Handler(canModify(processMARCUploadHandler))
 
 	layout = responder.Layout.Clone()
 	layout.Funcs(tmpl.FuncMap{
@@ -379,4 +397,96 @@ func showMARCFormHandler(w http.ResponseWriter, req *http.Request) {
 	var r = responder.Response(w, req)
 	r.Vars.Title = "Upload MARC XML"
 	r.Render(uploadMARCTmpl)
+}
+
+// loadTitle tries to read, parse, and then send the given uploaded file to
+// both staging and production ONIs. If parsing is successful, a [marc.MARC]
+// will be returned. On any errors, a human-friendly string is returned to
+// explain the problem.
+func loadTitle(fh *multipart.FileHeader) (m *marc.MARC, message string) {
+	var fname = fh.Filename
+	var f, err = fh.Open()
+	var upload []byte
+	if err == nil {
+		upload, err = ioutil.ReadAll(f)
+		f.Close()
+	}
+	if err != nil {
+		logger.Errorf("Unable to get uploaded file %q: %s", fname, err)
+		return nil, "Internal error reading file"
+	}
+
+	// Do a quick sanity check that the data is valid MARC
+	var buf = new(bytes.Buffer)
+	_, _ = buf.Write(upload)
+	m, err = marc.ParseXML(f)
+	if err != nil {
+		logger.Errorf("Invalid XML uploaded in file %q: %s", fh.Filename, err)
+		return nil, "File is invalid or doesn't contain MARC XML"
+	}
+
+	var msg string
+	msg, err = stagAgent.LoadTitle(upload)
+	if err != nil {
+		logger.Errorf("Error requesting title load from ONI Agent (staging) for %q: message: %q, error: %s", fname, msg, err)
+		return m, "Failed to load into staging ONI"
+	}
+	msg, err = prodAgent.LoadTitle(upload)
+	if err != nil {
+		logger.Errorf("Error requesting title load from ONI Agent (prod) for %q: message: %q, error: %s", fname, msg, err)
+		return m, "Failed to load into production ONI"
+	}
+
+	logger.Infof("Title load for %q successful: %q", fh.Filename, msg)
+	return m, ""
+}
+
+func processMARCUploadHandler(w http.ResponseWriter, req *http.Request) {
+	var r = responder.Response(w, req)
+
+	// Pull out the file data using a modified version of FormFile (which only
+	// supports a single upload per field for some reason)
+	var err = req.ParseMultipartForm(32 << 20)
+	if err != nil {
+		logger.Errorf("Unable to parse form: %s", err)
+		r.Error(http.StatusInternalServerError, "Unable to read uploaded files. Try again or contact support.")
+		return
+	}
+
+	var fhs []*multipart.FileHeader
+	if req.MultipartForm != nil && req.MultipartForm.File != nil {
+		fhs = req.MultipartForm.File["marc"]
+	}
+
+	if len(fhs) == 0 {
+		http.SetCookie(w, &http.Cookie{Name: "Alert", Value: "No files uploaded. Please upload one or more files to continue.", Path: "/"})
+		http.Redirect(w, req, uploadMARCPath, http.StatusBadRequest)
+		return
+	}
+
+	type uploadResult struct {
+		Filename     string
+		MARC         *marc.MARC
+		ErrorMessage string
+	}
+	var successes, failures []uploadResult
+	for _, fh := range fhs {
+		var m, errmsg = loadTitle(fh)
+		var result = uploadResult{Filename: fh.Filename, MARC: m, ErrorMessage: errmsg}
+
+		if errmsg != "" {
+			failures = append(failures, result)
+			continue
+		}
+
+		successes = append(successes, result)
+		r.Audit(models.AuditActionUploadMARC, fmt.Sprintf("Filename %q, LCCN %q, MARC Title %q", fh.Filename, m.LCCN(), m.Title()))
+
+		// TODO: We can do a lot more here if the upload worked
+		//
+		// - Use MARC record's LCCN to update existing records' data
+		// - Create a new record "stub"
+		// - Flag unvalidated titles as now being valid
+	}
+	r.Error(http.StatusInternalServerError, "Not implemented")
 }
