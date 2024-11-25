@@ -36,6 +36,7 @@ const (
 	AuditActionAutosave
 	AuditActionSaveDraft
 	AuditActionSaveQueue
+	AuditActionUploadMARC
 
 	AuditActionOverflow
 )
@@ -60,6 +61,7 @@ var dbAuditActions = map[AuditAction]string{
 	AuditActionAutosave:         "autosave",
 	AuditActionSaveDraft:        "savedraft",
 	AuditActionSaveQueue:        "savequeue",
+	AuditActionUploadMARC:       "upload-marc",
 }
 
 // String returns the human-readable value for an action
@@ -87,6 +89,7 @@ var auditActionLookup = map[string]AuditAction{
 	"autosave":           AuditActionAutosave,
 	"savedraft":          AuditActionSaveDraft,
 	"savequeue":          AuditActionSaveQueue,
+	"upload-marc":        AuditActionUploadMARC,
 }
 
 // AuditActionFromString returns the action int for the given string, if the
