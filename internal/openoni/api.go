@@ -66,8 +66,7 @@ func (r *RPC) defaultCall(params slist, payload []byte) (data []byte, err error)
 		// [bytes.NewBuffer], which takes control of the underlying data and
 		// documents that the caller should *never use it again*.
 		var stdin = new(bytes.Buffer)
-		// A [bytes.Buffer] will never fail to write
-		_, _ = stdin.Write(payload)
+		_, _ = stdin.WriteString(string(payload) + "\n\nEND\n")
 		s.Stdin = stdin
 	}
 
