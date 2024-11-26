@@ -8,8 +8,8 @@ import (
 
 	flags "github.com/jessevdk/go-flags"
 	"github.com/uoregon-libraries/gopkg/wordutils"
+	"github.com/uoregon-libraries/newspaper-curation-app/internal/logger"
 	"github.com/uoregon-libraries/newspaper-curation-app/src/config"
-	"github.com/uoregon-libraries/newspaper-curation-app/src/internal/logger"
 	"github.com/uoregon-libraries/newspaper-curation-app/src/version"
 )
 

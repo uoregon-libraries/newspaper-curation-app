@@ -10,7 +10,7 @@ import (
 	"time"
 
 	"github.com/uoregon-libraries/gopkg/bashconf"
-	"github.com/uoregon-libraries/newspaper-curation-app/src/internal/datasize"
+	"github.com/uoregon-libraries/newspaper-curation-app/internal/datasize"
 )
 
 // Config holds the configuration needed for this application to work

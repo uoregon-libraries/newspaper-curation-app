@@ -6,9 +6,9 @@ import (
 	"os"
 	"time"
 
+	"github.com/uoregon-libraries/newspaper-curation-app/internal/logger"
 	"github.com/uoregon-libraries/newspaper-curation-app/src/cli"
 	"github.com/uoregon-libraries/newspaper-curation-app/src/dbi"
-	"github.com/uoregon-libraries/newspaper-curation-app/src/internal/logger"
 	"github.com/uoregon-libraries/newspaper-curation-app/src/models"
 	"github.com/uoregon-libraries/newspaper-curation-app/src/schema"
 )

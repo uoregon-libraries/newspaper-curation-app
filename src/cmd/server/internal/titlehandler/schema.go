@@ -5,8 +5,8 @@ import (
 	"sort"
 	"strings"
 
+	"github.com/uoregon-libraries/newspaper-curation-app/internal/datasize"
 	"github.com/uoregon-libraries/newspaper-curation-app/src/duration"
-	"github.com/uoregon-libraries/newspaper-curation-app/src/internal/datasize"
 	"github.com/uoregon-libraries/newspaper-curation-app/src/models"
 	"github.com/uoregon-libraries/newspaper-curation-app/src/schema"
 )

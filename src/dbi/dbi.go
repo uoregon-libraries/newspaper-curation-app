@@ -11,7 +11,7 @@ import (
 	"time"
 
 	"github.com/Nerdmaster/magicsql"
-	"github.com/uoregon-libraries/newspaper-curation-app/src/internal/sftpgo"
+	"github.com/uoregon-libraries/newspaper-curation-app/internal/sftpgo"
 
 	// We need to pull in mysql for the side-effect it offers us (allowing
 	// "mysql" as a driver name), not the actual code it provides

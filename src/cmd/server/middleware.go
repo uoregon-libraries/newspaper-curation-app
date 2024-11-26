@@ -3,8 +3,8 @@ package main
 import (
 	"net/http"
 
+	"github.com/uoregon-libraries/newspaper-curation-app/internal/logger"
 	"github.com/uoregon-libraries/newspaper-curation-app/src/cmd/server/internal/responder"
-	"github.com/uoregon-libraries/newspaper-curation-app/src/internal/logger"
 )
 
 // nocache is a Middleware function to send back no-cache header

@@ -1,8 +1,8 @@
 package main
 
 import (
-	"github.com/uoregon-libraries/newspaper-curation-app/src/internal/issuequeue"
-	"github.com/uoregon-libraries/newspaper-curation-app/src/internal/logger"
+	"github.com/uoregon-libraries/newspaper-curation-app/internal/issuequeue"
+	"github.com/uoregon-libraries/newspaper-curation-app/internal/logger"
 	"github.com/uoregon-libraries/newspaper-curation-app/src/models"
 	"github.com/uoregon-libraries/newspaper-curation-app/src/schema"
 )

@@ -6,8 +6,8 @@ import (
 	"path"
 	"strconv"
 
+	"github.com/uoregon-libraries/newspaper-curation-app/internal/logger"
 	"github.com/uoregon-libraries/newspaper-curation-app/src/cmd/server/internal/responder"
-	"github.com/uoregon-libraries/newspaper-curation-app/src/internal/logger"
 	"github.com/uoregon-libraries/newspaper-curation-app/src/models"
 	"github.com/uoregon-libraries/newspaper-curation-app/src/schema"
 	"github.com/uoregon-libraries/newspaper-curation-app/src/web/tmpl"

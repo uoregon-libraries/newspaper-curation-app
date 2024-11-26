@@ -11,8 +11,8 @@ import (
 	"strings"
 
 	"github.com/uoregon-libraries/gopkg/fileutil"
+	"github.com/uoregon-libraries/newspaper-curation-app/internal/logger"
 	"github.com/uoregon-libraries/newspaper-curation-app/src/cmd/server/internal/responder"
-	"github.com/uoregon-libraries/newspaper-curation-app/src/internal/logger"
 )
 
 // FileHandler attempts to find and display a file to the browser
