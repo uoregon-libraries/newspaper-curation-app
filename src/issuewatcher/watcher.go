@@ -11,8 +11,8 @@ import (
 	"sync"
 	"time"
 
+	"github.com/uoregon-libraries/newspaper-curation-app/internal/logger"
 	"github.com/uoregon-libraries/newspaper-curation-app/src/config"
-	"github.com/uoregon-libraries/newspaper-curation-app/src/internal/logger"
 )
 
 // A Watcher wraps the Scanner to provide a long-running issue watcher which

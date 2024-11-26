@@ -1,8 +1,8 @@
 package main
 
 import (
+	"github.com/uoregon-libraries/newspaper-curation-app/internal/logger"
 	"github.com/uoregon-libraries/newspaper-curation-app/src/config"
-	"github.com/uoregon-libraries/newspaper-curation-app/src/internal/logger"
 	"github.com/uoregon-libraries/newspaper-curation-app/src/issuewatcher"
 	"github.com/uoregon-libraries/newspaper-curation-app/src/schema"
 	"github.com/uoregon-libraries/newspaper-curation-app/src/uploads"

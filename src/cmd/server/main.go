@@ -11,6 +11,7 @@ import (
 
 	"github.com/gorilla/mux"
 	flags "github.com/jessevdk/go-flags"
+	"github.com/uoregon-libraries/newspaper-curation-app/internal/logger"
 	"github.com/uoregon-libraries/newspaper-curation-app/src/cmd/server/internal/audithandler"
 	"github.com/uoregon-libraries/newspaper-curation-app/src/cmd/server/internal/batchhandler"
 	"github.com/uoregon-libraries/newspaper-curation-app/src/cmd/server/internal/batchmakerhandler"
@@ -24,7 +25,6 @@ import (
 	"github.com/uoregon-libraries/newspaper-curation-app/src/cmd/server/internal/workflowhandler"
 	"github.com/uoregon-libraries/newspaper-curation-app/src/config"
 	"github.com/uoregon-libraries/newspaper-curation-app/src/dbi"
-	"github.com/uoregon-libraries/newspaper-curation-app/src/internal/logger"
 	"github.com/uoregon-libraries/newspaper-curation-app/src/issuewatcher"
 	"github.com/uoregon-libraries/newspaper-curation-app/src/web/webutil"
 )

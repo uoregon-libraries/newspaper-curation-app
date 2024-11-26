@@ -1,10 +1,10 @@
 package main
 
 import (
+	"github.com/uoregon-libraries/newspaper-curation-app/internal/logger"
 	"github.com/uoregon-libraries/newspaper-curation-app/src/cli"
 	"github.com/uoregon-libraries/newspaper-curation-app/src/config"
 	"github.com/uoregon-libraries/newspaper-curation-app/src/dbi"
-	"github.com/uoregon-libraries/newspaper-curation-app/src/internal/logger"
 	"github.com/uoregon-libraries/newspaper-curation-app/src/jobs"
 )
 

@@ -8,8 +8,8 @@ import (
 	"strings"
 	"time"
 
-	"github.com/uoregon-libraries/newspaper-curation-app/src/internal/lastmod"
-	"github.com/uoregon-libraries/newspaper-curation-app/src/internal/logger"
+	"github.com/uoregon-libraries/newspaper-curation-app/internal/lastmod"
+	"github.com/uoregon-libraries/newspaper-curation-app/internal/logger"
 )
 
 var pdfFilenameRegex = regexp.MustCompile(`(?i:^[0-9]+.pdf)`)

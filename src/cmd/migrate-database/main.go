@@ -9,10 +9,10 @@ import (
 	_ "github.com/go-sql-driver/mysql"
 
 	"github.com/pressly/goose/v3"
+	"github.com/uoregon-libraries/newspaper-curation-app/internal/logger"
 	"github.com/uoregon-libraries/newspaper-curation-app/src/cli"
 	"github.com/uoregon-libraries/newspaper-curation-app/src/config"
 	"github.com/uoregon-libraries/newspaper-curation-app/src/dbi"
-	"github.com/uoregon-libraries/newspaper-curation-app/src/internal/logger"
 
 	// Finally, we have to include the migrations dir/package for its side-effect
 	// of migrations which self-register

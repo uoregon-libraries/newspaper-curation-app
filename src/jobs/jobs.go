@@ -1,7 +1,7 @@
 package jobs
 
 import (
-	"github.com/uoregon-libraries/newspaper-curation-app/src/internal/logger"
+	"github.com/uoregon-libraries/newspaper-curation-app/internal/logger"
 	"github.com/uoregon-libraries/newspaper-curation-app/src/models"
 )
 

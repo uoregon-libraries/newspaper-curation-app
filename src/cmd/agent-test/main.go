@@ -8,8 +8,8 @@ import (
 	"strings"
 	"time"
 
+	"github.com/uoregon-libraries/newspaper-curation-app/internal/openoni"
 	"github.com/uoregon-libraries/newspaper-curation-app/src/cli"
-	"github.com/uoregon-libraries/newspaper-curation-app/src/internal/openoni"
 	"github.com/uoregon-libraries/newspaper-curation-app/src/models"
 )
 

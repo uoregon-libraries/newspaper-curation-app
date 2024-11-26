@@ -9,7 +9,7 @@ import (
 	"strings"
 	"time"
 
-	"github.com/uoregon-libraries/newspaper-curation-app/src/internal/logger"
+	"github.com/uoregon-libraries/newspaper-curation-app/internal/logger"
 	"github.com/uoregon-libraries/newspaper-curation-app/src/jobs"
 	"github.com/uoregon-libraries/newspaper-curation-app/src/models"
 )

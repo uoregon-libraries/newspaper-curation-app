@@ -7,8 +7,8 @@ import (
 	"os"
 	"strings"
 
-	"github.com/uoregon-libraries/newspaper-curation-app/src/internal/logger"
-	"github.com/uoregon-libraries/newspaper-curation-app/src/internal/marc"
+	"github.com/uoregon-libraries/newspaper-curation-app/internal/logger"
+	"github.com/uoregon-libraries/newspaper-curation-app/internal/marc"
 )
 
 // pullMARCForTitle pulls the MARC record from the library of congress and sets the

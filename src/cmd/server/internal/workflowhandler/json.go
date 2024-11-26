@@ -3,7 +3,7 @@ package workflowhandler
 import (
 	"time"
 
-	"github.com/uoregon-libraries/newspaper-curation-app/src/internal/humanize"
+	"github.com/uoregon-libraries/newspaper-curation-app/internal/humanize"
 	"github.com/uoregon-libraries/newspaper-curation-app/src/models"
 )
 

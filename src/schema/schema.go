@@ -14,9 +14,9 @@ import (
 	"time"
 
 	"github.com/uoregon-libraries/gopkg/fileutil"
+	"github.com/uoregon-libraries/newspaper-curation-app/internal/lastmod"
+	"github.com/uoregon-libraries/newspaper-curation-app/internal/logger"
 	"github.com/uoregon-libraries/newspaper-curation-app/src/apperr"
-	"github.com/uoregon-libraries/newspaper-curation-app/src/internal/lastmod"
-	"github.com/uoregon-libraries/newspaper-curation-app/src/internal/logger"
 )
 
 // WorkflowStep describes the location within the workflow any issue can exist

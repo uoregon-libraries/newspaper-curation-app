@@ -9,7 +9,7 @@ import (
 
 	"github.com/uoregon-libraries/gopkg/fileutil"
 	ltype "github.com/uoregon-libraries/gopkg/logger"
-	"github.com/uoregon-libraries/newspaper-curation-app/src/internal/logger"
+	"github.com/uoregon-libraries/newspaper-curation-app/internal/logger"
 )
 
 // RateFactor is our constant divisor / multiplier for rates.  We store
