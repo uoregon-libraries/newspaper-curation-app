@@ -20,9 +20,18 @@ build_and_clean() {
   rm -f workers.log
 }
 
+load_titles() {
+  cd test
+  go run load-marc.go -c ../settings
+  cd ..
+}
+
 prep_and_backup_00() {
   if [[ ! -d ./backup/00-$name ]]; then
     prep_for_testing
+    docker compose up -d oni-agent-staging oni-agent-prod
+    sleep 1
+    load_titles
 
     # Save state using the "name" variable from above
     ./manage backup 00-$name
