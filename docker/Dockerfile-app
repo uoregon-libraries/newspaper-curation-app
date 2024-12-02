@@ -12,6 +12,7 @@ WORKDIR /usr/local/src/nca
 COPY ./Makefile /usr/local/src/nca/Makefile
 COPY ./scripts /usr/local/src/nca/scripts
 COPY ./src /usr/local/src/nca/src
+COPY ./internal /usr/local/src/nca/internal
 COPY ./go.mod /usr/local/src/nca/go.mod
 COPY ./go.sum /usr/local/src/nca/go.sum
 COPY ./revive.toml /usr/local/src/nca/revive.toml
