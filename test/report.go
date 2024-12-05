@@ -328,17 +328,17 @@ func main() {
 	// everything, but it should cover enough to have confidence that an
 	// end-to-end test isn't totally hosed.
 	var sqlFiles = make(map[string][]byte)
-	sqlFiles[filepath.Join(repdir, "dump-batches.sql")] = []byte(sqldump(`
+	sqlFiles[filepath.Join(repdir, "dump-batches.sql")] = []byte(stripIdentifiers(sqldump(`
 		SELECT marc_org_code, name, status, location
 		FROM batches
 		ORDER BY marc_org_code, name, status
-	`))
-	sqlFiles[filepath.Join(repdir, "dump-actions.sql")] = []byte(sqldump(`
+	`)))
+	sqlFiles[filepath.Join(repdir, "dump-actions.sql")] = []byte(stripIdentifiers(sqldump(`
 		SELECT a.object_type, a.action_type, u.login, a.message
 		FROM actions a
 		LEFT OUTER JOIN users u ON (a.user_id = u.id)
 		ORDER BY a.object_type, a.action_type, u.login, a.message
-	`))
+	`)))
 	sqlFiles[filepath.Join(repdir, "dump-issues.sql")] = []byte(stripIdentifiers(sqldump(`
 		SELECT
 			marc_org_code, date, date_as_labeled, volume, issue, edition,
