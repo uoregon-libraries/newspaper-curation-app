@@ -99,7 +99,7 @@ func Parse(filename string) (*Config, error) {
 	}
 
 	// Database connection string: build it, but also make sure port is valid
-	c.DatabaseConnect = fmt.Sprintf("%s:%s@tcp(%s:%d)/%s", bc.Get("DB_USER"),
+	c.DatabaseConnect = fmt.Sprintf("%s:%s@tcp(%s:%d)/%s?parseTime=true", bc.Get("DB_USER"),
 		bc.Get("DB_PASSWORD"), bc.Get("DB_HOST"), c.DBPort, bc.Get("DB_DATABASE"))
 
 	// SFTPGo API URL is special: we want an actual URL out of it, but we also
