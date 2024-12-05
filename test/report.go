@@ -10,6 +10,7 @@ import (
 	"regexp"
 	"sort"
 	"strings"
+	"time"
 
 	"github.com/uoregon-libraries/gopkg/fileutil"
 	"github.com/uoregon-libraries/gopkg/hasher"
@@ -17,6 +18,7 @@ import (
 	"github.com/uoregon-libraries/newspaper-curation-app/src/cli"
 	"github.com/uoregon-libraries/newspaper-curation-app/src/config"
 	"github.com/uoregon-libraries/newspaper-curation-app/src/dbi"
+	"github.com/uoregon-libraries/newspaper-curation-app/src/models"
 )
 
 var conf *config.Config
@@ -47,6 +49,67 @@ func (r replacer) ReplaceAll(b []byte) []byte {
 	return r.search.ReplaceAll(b, []byte(r.replace))
 }
 
+var batchRenames map[string]string
+
+// cacheBatchData store the information about a batch for renaming report
+// output text and filenames
+func cacheBatchData() {
+	batchRenames = make(map[string]string)
+	var sql = `
+		SELECT
+			b.marc_org_code, b.created_at, b.name,
+			GROUP_CONCAT(DISTINCT i.lccn ORDER BY i.lccn SEPARATOR ''),
+			SUM(i.page_count)
+		FROM batches b
+		JOIN issues i ON (i.batch_id = b.id) GROUP BY b.id
+	`
+	var op = dbi.DB.Operation()
+	var rows = op.Query(sql)
+	if op.Err() != nil {
+		l.Fatalf("Unable to query database for batch rename map: %s", op.Err())
+	}
+	var moc, name, titles, pages string
+	var created time.Time
+	for rows.Next() {
+		rows.Scan(&moc, &created, &name, &titles, &pages)
+		if op.Err() != nil {
+			l.Fatalf("Unable to query database for batch rename map: %s", op.Err())
+		}
+		var b = &models.Batch{MARCOrgCode: moc, CreatedAt: created, Name: name}
+		var bnormal = &models.Batch{
+			MARCOrgCode: moc,
+			CreatedAt:   time.UnixMilli(1136243045000),
+			Name:        "Pages" + pages + "Titles" + titles,
+		}
+		batchRenames[b.Name] = bnormal.Name
+		batchRenames[b.FullName()] = bnormal.FullName()
+	}
+}
+
+// renameBatches finds any occurrence of any batch names in the given text and
+// replaces them with a name based on what the batch contains so that testing
+// is more accurate. Jobs can run out of order from one test run to the next,
+// which has made validation very cumbersome lately.
+//
+// A batch name will be replaced based on whether it's a partial name or a full
+// name. e.g., "T4PineGendenwithaTramplingNightshade" is a partial name and
+// "batch_oru_20230101T4PineGendenwithaTramplingNightshade_ver01" would be a
+// full name.
+//
+// The first time this is called, a query is run against the database to cache
+// all the batch information we need for renaming.
+func renameBatches(s string) string {
+	if batchRenames == nil {
+		cacheBatchData()
+	}
+
+	for search, replace := range batchRenames {
+		s = strings.Replace(s, search, replace, -1)
+	}
+
+	return s
+}
+
 // These are all here to strip out anything not in the matched group -
 // basically datestamps and workflow issue database ids. Matches are replaced
 // with the first group only.
@@ -64,6 +127,8 @@ func stripIdentifiers(s string) string {
 	for _, r := range idRegexes {
 		s = r.ReplaceAllString(s)
 	}
+	s = renameBatches(s)
+
 	return s
 }
 
@@ -73,13 +138,6 @@ var xmlRegexes = []replacer{
 	{regexp.MustCompile(`<fileName>.*</fileName>`), `<fileName>XYZZY</fileName>`},
 	{regexp.MustCompile(`\bID="TB\.[^"]*"`), `ID="XYZZY"`},
 	{regexp.MustCompile(`<metsHdr CREATEDATE="....-..-..T..:..:..">`), `<metsHdr CREATEDATE="2006-01-02T15:04:05">`},
-}
-
-// batchRenameRegexes removes the datestamp from a post-processed report output
-// filename. This is just one regex for now, but keeping this pattern is
-// easiest in case this needs more.
-var batchRenameRegexes = []replacer{
-	{regexp.MustCompile(`(batch_[^_]+_)[0-9]+([A-Z])`), `${1}20060102${2}`},
 }
 
 // actionsRegexes removes datestamps and job ids from actions.txt
@@ -108,14 +166,6 @@ func cleanXML(raw []byte) []byte {
 // cleanActions returns a copy of `raw` with date, time, and job id scrubbed
 func cleanActions(raw []byte) []byte {
 	return clean(raw, actionsRegexes)
-}
-
-// stripBatchDatestamps returns a new path with its batch datestamp replaced
-func stripBatchDatestamps(pth string) string {
-	for _, r := range batchRenameRegexes {
-		pth = r.ReplaceAllString(pth)
-	}
-	return pth
 }
 
 // sqldump returns a string that should match the output of "mysql -Ne ..."
@@ -167,15 +217,11 @@ type Path struct {
 // a file. It generates a relative path, scrubbed of identifiers, for
 // outputting a new file or reporting information about a file.
 func newPath(basedir, reportDir, pth string) *Path {
-	// TODO: We really need to fix this, but for comparison we're keeping the
-	// output exactly the same as the shell script, which means that while output
-	// paths get datestamps scrubbed, the file manifest doesn't.
 	var p = &Path{absPath: pth}
 	var tmp = strings.Replace(pth, basedir+"/", "", 1)
 	tmp = stripIdentifiers(tmp)
 	p.relPath = "./" + tmp
 
-	tmp = stripBatchDatestamps(tmp)
 	tmp = strings.Replace(tmp, "/", "__", -1)
 	tmp = strings.Replace(tmp, "fakemount__", "", 1)
 	p.outputPath = filepath.Join(reportDir, tmp)
