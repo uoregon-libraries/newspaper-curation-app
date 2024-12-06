@@ -164,7 +164,9 @@ func clean(raw []byte, replacers []replacer) []byte {
 // cleanXML returns a copy of the raw data with dates and other identifiers
 // scrubbed for easier report diffing
 func cleanXML(raw []byte) []byte {
-	return clean(raw, xmlRegexes)
+	var cleaned = clean(raw, xmlRegexes)
+	cleaned = []byte(renameBatches(string(cleaned)))
+	return cleaned
 }
 
 // cleanActions returns a copy of `raw` with date, time, and job id scrubbed
