@@ -1,0 +1,80 @@
+<?xml version="1.0" encoding="UTF-8"?>
+
+<alto xmlns="http://schema.ccs-gmbh.com/ALTO">
+  <Description>
+    <MeasurementUnit>inch1200</MeasurementUnit>
+    <sourceImageInformation>
+      <fileName>XYZZY</fileName>
+    </sourceImageInformation>
+    <OCRProcessing ID="OCR.0">
+      <ocrProcessingStep>
+        <processingStepSettings>N/A</processingStepSettings>
+        <processingSoftware>
+          <softwareCreator>UO Libraries</softwareCreator>
+          <softwareName>NCA: The Batch Maker</softwareName>
+          <softwareVersion>XYZZY</softwareVersion>
+        </processingSoftware>
+      </ocrProcessingStep>
+    </OCRProcessing>
+  </Description>
+  <Styles>
+    <TextStyle ID="TS_10.0" FONTSIZE="10.0" />
+  </Styles>
+  <Layout>
+  <Page ID="PAGE.0" HEIGHT="3200" WIDTH="2300" PHYSICAL_IMG_NR="11" PROCESSING="OCR.0" PC="0.99">
+    <PrintSpace ID="PS.0" HEIGHT="3200.0" WIDTH="2300.0" HPOS="0.0" VPOS="0.0">
+
+      <TextBlock xmlns:ns1="http://www.w3.org/1999/xlink" ID="XYZZY" HEIGHT="52.9" WIDTH="842.3" HPOS="729.3" VPOS="122.0" ns1:type="simple" language="eng">
+        <TextLine ID="XYZZY" HEIGHT="52.9" WIDTH="842.3" HPOS="729.3" VPOS="122.0">
+          <String ID="XYZZY" STYLEREFS="TS_10.0" HEIGHT="52.9" WIDTH="106.2" HPOS="729.3" VPOS="122.0" CONTENT="Run" WC="0.99" />
+          <String ID="XYZZY" STYLEREFS="TS_10.0" HEIGHT="52.9" WIDTH="53.9" HPOS="850.8" VPOS="122.0" CONTENT="to" WC="0.99" />
+          <String ID="XYZZY" STYLEREFS="TS_10.0" HEIGHT="52.9" WIDTH="87.5" HPOS="920.0" VPOS="122.0" CONTENT="the" WC="0.99" />
+          <String ID="XYZZY" STYLEREFS="TS_10.0" HEIGHT="52.9" WIDTH="171.4" HPOS="1022.7" VPOS="122.0" CONTENT="Rogue" WC="0.99" />
+          <String ID="XYZZY" STYLEREFS="TS_10.0" HEIGHT="52.9" WIDTH="123.8" HPOS="1209.4" VPOS="122.0" CONTENT="from" WC="0.99" />
+          <String ID="XYZZY" STYLEREFS="TS_10.0" HEIGHT="52.9" WIDTH="87.5" HPOS="1348.5" VPOS="122.0" CONTENT="the" WC="0.99" />
+          <String ID="XYZZY" STYLEREFS="TS_10.0" HEIGHT="52.9" WIDTH="120.3" HPOS="1451.2" VPOS="122.0" CONTENT="Past" WC="0.99" />
+          
+        </TextLine>
+      </TextBlock>
+
+      <TextBlock xmlns:ns2="http://www.w3.org/1999/xlink" ID="XYZZY" HEIGHT="25.9" WIDTH="225.7" HPOS="1550.3" VPOS="3076.5" ns2:type="simple" language="eng">
+        <TextLine ID="XYZZY" HEIGHT="25.9" WIDTH="225.7" HPOS="1550.3" VPOS="3076.5">
+          <String ID="XYZZY" STYLEREFS="TS_10.0" HEIGHT="25.9" WIDTH="146.4" HPOS="1550.3" VPOS="3076.5" CONTENT="September" WC="0.99" />
+          <String ID="XYZZY" STYLEREFS="TS_10.0" HEIGHT="25.9" WIDTH="71.6" HPOS="1704.4" VPOS="3076.5" CONTENT="2020" WC="0.99" />
+          
+        </TextLine>
+      </TextBlock>
+
+      <TextBlock xmlns:ns3="http://www.w3.org/1999/xlink" ID="XYZZY" HEIGHT="25.8" WIDTH="20.4" HPOS="1826.7" VPOS="3077.4" ns3:type="simple" language="eng">
+        <TextLine ID="XYZZY" HEIGHT="25.8" WIDTH="20.4" HPOS="1826.7" VPOS="3077.4">
+          <String ID="XYZZY" STYLEREFS="TS_10.0" HEIGHT="25.8" WIDTH="20.4" HPOS="1826.7" VPOS="3077.4" CONTENT="&#34;" WC="0.99" />
+          
+        </TextLine>
+      </TextBlock>
+
+      <TextBlock xmlns:ns4="http://www.w3.org/1999/xlink" ID="XYZZY" HEIGHT="25.8" WIDTH="154.0" HPOS="1892.8" VPOS="3077.4" ns4:type="simple" language="eng">
+        <TextLine ID="XYZZY" HEIGHT="25.8" WIDTH="154.0" HPOS="1892.8" VPOS="3077.4">
+          <String ID="XYZZY" STYLEREFS="TS_10.0" HEIGHT="25.8" WIDTH="74.1" HPOS="1892.8" VPOS="3077.4" CONTENT="Siletz" WC="0.99" />
+          <String ID="XYZZY" STYLEREFS="TS_10.0" HEIGHT="25.8" WIDTH="72.3" HPOS="1974.5" VPOS="3077.4" CONTENT="News" WC="0.99" />
+          
+        </TextLine>
+      </TextBlock>
+
+      <TextBlock xmlns:ns5="http://www.w3.org/1999/xlink" ID="XYZZY" HEIGHT="25.9" WIDTH="20.4" HPOS="2111.1" VPOS="3077.0" ns5:type="simple" language="eng">
+        <TextLine ID="XYZZY" HEIGHT="25.9" WIDTH="20.4" HPOS="2111.1" VPOS="3077.0">
+          <String ID="XYZZY" STYLEREFS="TS_10.0" HEIGHT="25.9" WIDTH="20.4" HPOS="2111.1" VPOS="3077.0" CONTENT="&#34;" WC="0.99" />
+          
+        </TextLine>
+      </TextBlock>
+
+      <TextBlock xmlns:ns6="http://www.w3.org/1999/xlink" ID="XYZZY" HEIGHT="26.5" WIDTH="36.2" HPOS="2168.0" VPOS="3077.0" ns6:type="simple" language="eng">
+        <TextLine ID="XYZZY" HEIGHT="26.5" WIDTH="36.2" HPOS="2168.0" VPOS="3077.0">
+          <String ID="XYZZY" STYLEREFS="TS_10.0" HEIGHT="26.5" WIDTH="36.2" HPOS="2168.0" VPOS="3077.0" CONTENT="11" WC="0.99" />
+          
+        </TextLine>
+      </TextBlock>
+
+    </PrintSpace>
+  </Page>
+</Layout>
+</alto>

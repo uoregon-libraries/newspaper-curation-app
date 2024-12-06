@@ -1,0 +1,62 @@
+<?xml version="1.0" encoding="UTF-8"?>
+
+<alto xmlns="http://schema.ccs-gmbh.com/ALTO">
+  <Description>
+    <MeasurementUnit>inch1200</MeasurementUnit>
+    <sourceImageInformation>
+      <fileName>XYZZY</fileName>
+    </sourceImageInformation>
+    <OCRProcessing ID="OCR.0">
+      <ocrProcessingStep>
+        <processingStepSettings>N/A</processingStepSettings>
+        <processingSoftware>
+          <softwareCreator>UO Libraries</softwareCreator>
+          <softwareName>NCA: The Batch Maker</softwareName>
+          <softwareVersion>XYZZY</softwareVersion>
+        </processingSoftware>
+      </ocrProcessingStep>
+    </OCRProcessing>
+  </Description>
+  <Styles>
+    <TextStyle ID="TS_10.0" FONTSIZE="10.0" />
+  </Styles>
+  <Layout>
+  <Page ID="PAGE.0" HEIGHT="4188" WIDTH="1950" PHYSICAL_IMG_NR="4" PROCESSING="OCR.0" PC="0.99">
+    <PrintSpace ID="PS.0" HEIGHT="4188.0" WIDTH="1950.0" HPOS="0.0" VPOS="0.0">
+
+      <TextBlock xmlns:ns1="http://www.w3.org/1999/xlink" ID="XYZZY" HEIGHT="20.5" WIDTH="30.6" HPOS="11.6" VPOS="21.2" ns1:type="simple" language="eng">
+        <TextLine ID="XYZZY" HEIGHT="20.5" WIDTH="30.6" HPOS="11.6" VPOS="21.2">
+          <String ID="XYZZY" STYLEREFS="TS_10.0" HEIGHT="20.5" WIDTH="30.6" HPOS="11.6" VPOS="21.2" CONTENT="4A" WC="0.99" />
+          
+        </TextLine>
+      </TextBlock>
+
+      <TextBlock xmlns:ns2="http://www.w3.org/1999/xlink" ID="XYZZY" HEIGHT="7.7" WIDTH="8.5" HPOS="50.1" VPOS="25.6" ns2:type="simple" language="eng">
+        <TextLine ID="XYZZY" HEIGHT="7.7" WIDTH="8.5" HPOS="50.1" VPOS="25.6">
+          <String ID="XYZZY" STYLEREFS="TS_10.0" HEIGHT="7.7" WIDTH="8.5" HPOS="50.1" VPOS="25.6" CONTENT="ï" WC="0.99" />
+          
+        </TextLine>
+      </TextBlock>
+
+      <TextBlock xmlns:ns3="http://www.w3.org/1999/xlink" ID="XYZZY" HEIGHT="20.5" WIDTH="187.8" HPOS="66.7" VPOS="21.2" ns3:type="simple" language="eng">
+        <TextLine ID="XYZZY" HEIGHT="20.5" WIDTH="187.8" HPOS="66.7" VPOS="21.2">
+          <String ID="XYZZY" STYLEREFS="TS_10.0" HEIGHT="20.5" WIDTH="85.7" HPOS="66.7" VPOS="21.2" CONTENT="APPEAL" WC="0.99" />
+          <String ID="XYZZY" STYLEREFS="TS_10.0" HEIGHT="20.5" WIDTH="96.3" HPOS="158.2" VPOS="21.2" CONTENT="TRIBUNE" WC="0.99" />
+          
+        </TextLine>
+      </TextBlock>
+
+      <TextBlock xmlns:ns4="http://www.w3.org/1999/xlink" ID="XYZZY" HEIGHT="20.5" WIDTH="305.7" HPOS="1632.8" VPOS="21.2" ns4:type="simple" language="eng">
+        <TextLine ID="XYZZY" HEIGHT="20.5" WIDTH="305.7" HPOS="1632.8" VPOS="21.2">
+          <String ID="XYZZY" STYLEREFS="TS_10.0" HEIGHT="20.5" WIDTH="151.1" HPOS="1632.8" VPOS="21.2" CONTENT="WEDNESDAY," WC="0.99" />
+          <String ID="XYZZY" STYLEREFS="TS_10.0" HEIGHT="20.5" WIDTH="53.7" HPOS="1789.8" VPOS="21.2" CONTENT="MAY" WC="0.99" />
+          <String ID="XYZZY" STYLEREFS="TS_10.0" HEIGHT="20.5" WIDTH="33.0" HPOS="1849.4" VPOS="21.2" CONTENT="25," WC="0.99" />
+          <String ID="XYZZY" STYLEREFS="TS_10.0" HEIGHT="20.5" WIDTH="50.4" HPOS="1888.1" VPOS="21.2" CONTENT="2016" WC="0.99" />
+          
+        </TextLine>
+      </TextBlock>
+
+    </PrintSpace>
+  </Page>
+</Layout>
+</alto>

@@ -1,0 +1,663 @@
+<?xml version="1.0" encoding="UTF-8"?>
+
+<alto xmlns="http://schema.ccs-gmbh.com/ALTO">
+  <Description>
+    <MeasurementUnit>inch1200</MeasurementUnit>
+    <sourceImageInformation>
+      <fileName>XYZZY</fileName>
+    </sourceImageInformation>
+    <OCRProcessing ID="OCR.0">
+      <ocrProcessingStep>
+        <processingStepSettings>N/A</processingStepSettings>
+        <processingSoftware>
+          <softwareCreator>UO Libraries</softwareCreator>
+          <softwareName>NCA: The Batch Maker</softwareName>
+          <softwareVersion>XYZZY</softwareVersion>
+        </processingSoftware>
+      </ocrProcessingStep>
+    </OCRProcessing>
+  </Description>
+  <Styles>
+    <TextStyle ID="TS_10.0" FONTSIZE="10.0" />
+  </Styles>
+  <Layout>
+  <Page ID="PAGE.0" HEIGHT="3093" WIDTH="2496" PHYSICAL_IMG_NR="19" PROCESSING="OCR.0" PC="0.99">
+    <PrintSpace ID="PS.0" HEIGHT="3093.0" WIDTH="2496.0" HPOS="0.0" VPOS="0.0">
+
+      <TextBlock xmlns:ns1="http://www.w3.org/1999/xlink" ID="XYZZY" HEIGHT="18.6" WIDTH="278.1" HPOS="1975.5" VPOS="272.0" ns1:type="simple" language="eng">
+        <TextLine ID="XYZZY" HEIGHT="18.6" WIDTH="278.1" HPOS="1975.5" VPOS="272.0">
+          <String ID="XYZZY" STYLEREFS="TS_10.0" HEIGHT="18.6" WIDTH="55.3" HPOS="1975.5" VPOS="272.0" CONTENT="January" WC="0.99" />
+          <String ID="XYZZY" STYLEREFS="TS_10.0" HEIGHT="18.6" WIDTH="132.1" HPOS="2037.5" VPOS="272.1" CONTENT="7.2QQ5’jM«t" WC="0.99" />
+          <String ID="XYZZY" STYLEREFS="TS_10.0" HEIGHT="18.6" WIDTH="74.6" HPOS="2179.0" VPOS="272.0" CONTENT="mit^47" WC="0.99" />
+          
+        </TextLine>
+      </TextBlock>
+
+      <TextBlock xmlns:ns2="http://www.w3.org/1999/xlink" ID="XYZZY" HEIGHT="33.3" WIDTH="372.4" HPOS="1805.0" VPOS="552.7" ns2:type="simple" language="eng">
+        <TextLine ID="XYZZY" HEIGHT="33.3" WIDTH="372.4" HPOS="1805.0" VPOS="552.7">
+          <String ID="XYZZY" STYLEREFS="TS_10.0" HEIGHT="33.3" WIDTH="74.7" HPOS="1805.0" VPOS="552.7" CONTENT="Chat" WC="0.99" />
+          <String ID="XYZZY" STYLEREFS="TS_10.0" HEIGHT="33.2" WIDTH="55.0" HPOS="1892.5" VPOS="552.8" CONTENT="live" WC="0.99" />
+          <String ID="XYZZY" STYLEREFS="TS_10.0" HEIGHT="33.2" WIDTH="66.7" HPOS="1959.5" VPOS="552.8" CONTENT="with" WC="0.99" />
+          <String ID="XYZZY" STYLEREFS="TS_10.0" HEIGHT="33.1" WIDTH="136.9" HPOS="2040.5" VPOS="552.8" CONTENT="LOCALS" WC="0.99" />
+          
+        </TextLine>
+      </TextBlock>
+
+      <TextBlock xmlns:ns3="http://www.w3.org/1999/xlink" ID="XYZZY" HEIGHT="23.5" WIDTH="270.8" HPOS="854.5" VPOS="1268.4" ns3:type="simple" language="eng">
+        <TextLine ID="XYZZY" HEIGHT="23.5" WIDTH="270.8" HPOS="854.5" VPOS="1268.4">
+          <String ID="XYZZY" STYLEREFS="TS_10.0" HEIGHT="23.4" WIDTH="106.3" HPOS="854.5" VPOS="1268.4" CONTENT="Cascade" WC="0.99" />
+          <String ID="XYZZY" STYLEREFS="TS_10.0" HEIGHT="23.5" WIDTH="60.7" HPOS="968.5" VPOS="1268.4" CONTENT="AIDS" WC="0.99" />
+          <String ID="XYZZY" STYLEREFS="TS_10.0" HEIGHT="23.4" WIDTH="87.8" HPOS="1037.5" VPOS="1268.4" CONTENT="Project" WC="0.99" />
+          
+        </TextLine>
+      </TextBlock>
+
+      <TextBlock xmlns:ns4="http://www.w3.org/1999/xlink" ID="XYZZY" HEIGHT="29.4" WIDTH="198.6" HPOS="926.0" VPOS="1296.7" ns4:type="simple" language="eng">
+        <TextLine ID="XYZZY" HEIGHT="29.4" WIDTH="198.6" HPOS="926.0" VPOS="1296.7">
+          <String ID="XYZZY" STYLEREFS="TS_10.0" HEIGHT="29.4" WIDTH="198.6" HPOS="926.0" VPOS="1296.7" CONTENT="503-223-5907" WC="0.99" />
+          
+        </TextLine>
+      </TextBlock>
+      <TextBlock xmlns:ns5="http://www.w3.org/1999/xlink" ID="XYZZY" HEIGHT="23.5" WIDTH="252.3" HPOS="872.0" VPOS="1331.8" ns5:type="simple" language="eng">
+        <TextLine ID="XYZZY" HEIGHT="23.5" WIDTH="252.3" HPOS="872.0" VPOS="1331.8">
+          <String ID="XYZZY" STYLEREFS="TS_10.0" HEIGHT="23.5" WIDTH="88.9" HPOS="872.0" VPOS="1331.9" CONTENT="Oregon" WC="0.99" />
+          <String ID="XYZZY" STYLEREFS="TS_10.0" HEIGHT="23.5" WIDTH="60.5" HPOS="970.0" VPOS="1331.8" CONTENT="AIDS" WC="0.99" />
+          <String ID="XYZZY" STYLEREFS="TS_10.0" HEIGHT="23.5" WIDTH="85.7" HPOS="1038.5" VPOS="1331.9" CONTENT="Hotline" WC="0.99" />
+          
+        </TextLine>
+      </TextBlock>
+
+      <TextBlock xmlns:ns6="http://www.w3.org/1999/xlink" ID="XYZZY" HEIGHT="43.0" WIDTH="179.3" HPOS="210.0" VPOS="1354.2" ns6:type="simple" language="eng">
+        <TextLine ID="XYZZY" HEIGHT="43.0" WIDTH="179.3" HPOS="210.0" VPOS="1354.2">
+          <String ID="XYZZY" STYLEREFS="TS_10.0" HEIGHT="43.0" WIDTH="179.3" HPOS="210.0" VPOS="1354.2" CONTENT="Cascade" WC="0.99" />
+          
+        </TextLine>
+      </TextBlock>
+
+      <TextBlock xmlns:ns7="http://www.w3.org/1999/xlink" ID="XYZZY" HEIGHT="29.4" WIDTH="193.2" HPOS="931.5" VPOS="1360.2" ns7:type="simple" language="eng">
+        <TextLine ID="XYZZY" HEIGHT="29.4" WIDTH="193.2" HPOS="931.5" VPOS="1360.2">
+          <String ID="XYZZY" STYLEREFS="TS_10.0" HEIGHT="29.4" WIDTH="193.2" HPOS="931.5" VPOS="1360.2" CONTENT="800-777-2437" WC="0.99" />
+          
+        </TextLine>
+      </TextBlock>
+
+      <TextBlock xmlns:ns8="http://www.w3.org/1999/xlink" ID="XYZZY" HEIGHT="54.8" WIDTH="502.2" HPOS="1363.5" VPOS="1363.5" ns8:type="simple" language="eng">
+        <TextLine ID="XYZZY" HEIGHT="54.8" WIDTH="502.2" HPOS="1363.5" VPOS="1363.5">
+          <String ID="XYZZY" STYLEREFS="TS_10.0" HEIGHT="54.7" WIDTH="167.7" HPOS="1363.5" VPOS="1363.6" CONTENT="888-M" WC="0.99" />
+          <String ID="XYZZY" STYLEREFS="TS_10.0" HEIGHT="54.8" WIDTH="74.8" HPOS="1540.5" VPOS="1363.5" CONTENT="EG" WC="0.99" />
+          <String ID="XYZZY" STYLEREFS="TS_10.0" HEIGHT="54.7" WIDTH="84.5" HPOS="1622.5" VPOS="1363.6" CONTENT="AM" WC="0.99" />
+          <String ID="XYZZY" STYLEREFS="TS_10.0" HEIGHT="54.8" WIDTH="71.7" HPOS="1715.5" VPOS="1363.5" CONTENT="AT" WC="0.99" />
+          <String ID="XYZZY" STYLEREFS="TS_10.0" HEIGHT="54.6" WIDTH="69.3" HPOS="1796.5" VPOS="1363.6" CONTENT="ES" WC="0.99" />
+          
+        </TextLine>
+      </TextBlock>
+
+      <TextBlock xmlns:ns9="http://www.w3.org/1999/xlink" ID="XYZZY" HEIGHT="55.5" WIDTH="300.2" HPOS="824.0" VPOS="1395.4" ns9:type="simple" language="eng">
+        <TextLine ID="XYZZY" HEIGHT="23.5" WIDTH="236.6" HPOS="887.5" VPOS="1395.4">
+          <String ID="XYZZY" STYLEREFS="TS_10.0" HEIGHT="23.4" WIDTH="140.6" HPOS="887.5" VPOS="1395.5" CONTENT="Multnomah" WC="0.99" />
+          <String ID="XYZZY" STYLEREFS="TS_10.0" HEIGHT="23.5" WIDTH="87.2" HPOS="1037.0" VPOS="1395.4" CONTENT="County" WC="0.99" />
+          
+        </TextLine><TextLine ID="XYZZY" HEIGHT="23.5" WIDTH="300.2" HPOS="824.0" VPOS="1427.4">
+          <String ID="XYZZY" STYLEREFS="TS_10.0" HEIGHT="23.5" WIDTH="78.6" HPOS="824.0" VPOS="1427.4" CONTENT="Health" WC="0.99" />
+          <String ID="XYZZY" STYLEREFS="TS_10.0" HEIGHT="23.5" WIDTH="64.0" HPOS="911.5" VPOS="1427.4" CONTENT="Dept" WC="0.99" />
+          <String ID="XYZZY" STYLEREFS="TS_10.0" HEIGHT="23.4" WIDTH="41.7" HPOS="985.0" VPOS="1427.4" CONTENT="HIV" WC="0.99" />
+          <String ID="XYZZY" STYLEREFS="TS_10.0" HEIGHT="23.5" WIDTH="90.2" HPOS="1034.0" VPOS="1427.4" CONTENT="Testing" WC="0.99" />
+          
+        </TextLine>
+      </TextBlock>
+
+      <TextBlock xmlns:ns10="http://www.w3.org/1999/xlink" ID="XYZZY" HEIGHT="30.4" WIDTH="633.9" HPOS="1309.0" VPOS="1425.5" ns10:type="simple" language="eng">
+        <TextLine ID="XYZZY" HEIGHT="30.4" WIDTH="633.9" HPOS="1309.0" VPOS="1425.5">
+          <String ID="XYZZY" STYLEREFS="TS_10.0" HEIGHT="30.4" WIDTH="60.2" HPOS="1309.0" VPOS="1425.6" CONTENT="Get" WC="0.99" />
+          <String ID="XYZZY" STYLEREFS="TS_10.0" HEIGHT="30.4" WIDTH="96.5" HPOS="1384.5" VPOS="1425.5" CONTENT="ready" WC="0.99" />
+          <String ID="XYZZY" STYLEREFS="TS_10.0" HEIGHT="30.4" WIDTH="33.3" HPOS="1494.5" VPOS="1425.5" CONTENT="to" WC="0.99" />
+          <String ID="XYZZY" STYLEREFS="TS_10.0" HEIGHT="30.3" WIDTH="86.5" HPOS="1543.0" VPOS="1425.6" CONTENT="meet" WC="0.99" />
+          <String ID="XYZZY" STYLEREFS="TS_10.0" HEIGHT="30.3" WIDTH="156.3" HPOS="1644.0" VPOS="1425.6" CONTENT="someone" WC="0.99" />
+          <String ID="XYZZY" STYLEREFS="TS_10.0" HEIGHT="30.3" WIDTH="128.4" HPOS="1814.5" VPOS="1425.6" CONTENT="TODAY!" WC="0.99" />
+          
+        </TextLine>
+      </TextBlock>
+
+      <TextBlock xmlns:ns11="http://www.w3.org/1999/xlink" ID="XYZZY" HEIGHT="29.4" WIDTH="198.0" HPOS="925.5" VPOS="1455.7" ns11:type="simple" language="eng">
+        <TextLine ID="XYZZY" HEIGHT="29.4" WIDTH="198.0" HPOS="925.5" VPOS="1455.7">
+          <String ID="XYZZY" STYLEREFS="TS_10.0" HEIGHT="29.4" WIDTH="198.0" HPOS="925.5" VPOS="1455.7" CONTENT="503-988-3775" WC="0.99" />
+          
+        </TextLine>
+      </TextBlock>
+
+      <TextBlock xmlns:ns12="http://www.w3.org/1999/xlink" ID="XYZZY" HEIGHT="43.0" WIDTH="153.1" HPOS="219.5" VPOS="1501.6" ns12:type="simple" language="eng">
+        <TextLine ID="XYZZY" HEIGHT="43.0" WIDTH="153.1" HPOS="219.5" VPOS="1501.6">
+          <String ID="XYZZY" STYLEREFS="TS_10.0" HEIGHT="43.0" WIDTH="153.1" HPOS="219.5" VPOS="1501.6" CONTENT="Project" WC="0.99" />
+          
+        </TextLine>
+      </TextBlock>
+
+      <TextBlock xmlns:ns13="http://www.w3.org/1999/xlink" ID="XYZZY" HEIGHT="41.0" WIDTH="319.0" HPOS="1598.5" VPOS="1489.2" ns13:type="simple" language="eng">
+        <TextLine ID="XYZZY" HEIGHT="41.0" WIDTH="319.0" HPOS="1598.5" VPOS="1489.2">
+          <String ID="XYZZY" STYLEREFS="TS_10.0" HEIGHT="41.0" WIDTH="248.3" HPOS="1598.5" VPOS="1489.2" CONTENT="MegaMates" WC="0.99" />
+          <String ID="XYZZY" STYLEREFS="TS_10.0" HEIGHT="29.2" WIDTH="67.0" HPOS="1850.5" VPOS="1498.4" CONTENT=".com" WC="0.99" />
+          
+        </TextLine>
+      </TextBlock>
+
+      <TextBlock xmlns:ns14="http://www.w3.org/1999/xlink" ID="XYZZY" HEIGHT="23.5" WIDTH="239.5" HPOS="884.0" VPOS="1490.4" ns14:type="simple" language="eng">
+        <TextLine ID="XYZZY" HEIGHT="23.5" WIDTH="239.5" HPOS="884.0" VPOS="1490.4">
+          <String ID="XYZZY" STYLEREFS="TS_10.0" HEIGHT="23.4" WIDTH="78.1" HPOS="884.0" VPOS="1490.5" CONTENT="Online" WC="0.99" />
+          <String ID="XYZZY" STYLEREFS="TS_10.0" HEIGHT="23.5" WIDTH="152.4" HPOS="971.0" VPOS="1490.4" CONTENT="information:" WC="0.99" />
+          
+        </TextLine>
+      </TextBlock>
+
+      <TextBlock xmlns:ns15="http://www.w3.org/1999/xlink" ID="XYZZY" HEIGHT="29.3" WIDTH="315.1" HPOS="808.0" VPOS="1519.2" ns15:type="simple" language="eng">
+        <TextLine ID="XYZZY" HEIGHT="29.3" WIDTH="315.1" HPOS="808.0" VPOS="1519.2">
+          <String ID="XYZZY" STYLEREFS="TS_10.0" HEIGHT="29.3" WIDTH="315.1" HPOS="808.0" VPOS="1519.2" CONTENT="www.man2manpdx.us" WC="0.99" />
+          
+        </TextLine>
+      </TextBlock>
+
+      <TextBlock xmlns:ns16="http://www.w3.org/1999/xlink" ID="XYZZY" HEIGHT="12.7" WIDTH="121.2" HPOS="468.5" VPOS="1542.1" ns16:type="simple" language="eng">
+        <TextLine ID="XYZZY" HEIGHT="12.7" WIDTH="121.2" HPOS="468.5" VPOS="1542.1">
+          <String ID="XYZZY" STYLEREFS="TS_10.0" HEIGHT="12.7" WIDTH="7.9" HPOS="468.5" VPOS="1542.1" CONTENT="a" WC="0.99" />
+          <String ID="XYZZY" STYLEREFS="TS_10.0" HEIGHT="12.7" WIDTH="56.7" HPOS="481.0" VPOS="1542.1" CONTENT="program" WC="0.99" />
+          <String ID="XYZZY" STYLEREFS="TS_10.0" HEIGHT="12.7" WIDTH="13.6" HPOS="541.5" VPOS="1542.1" CONTENT="pt" WC="0.99" />
+          <String ID="XYZZY" STYLEREFS="TS_10.0" HEIGHT="12.7" WIDTH="31.2" HPOS="558.5" VPOS="1542.1" CONTENT="CAP" WC="0.99" />
+          
+        </TextLine>
+      </TextBlock>
+
+      <TextBlock xmlns:ns17="http://www.w3.org/1999/xlink" ID="XYZZY" HEIGHT="12.7" WIDTH="103.7" HPOS="1384.5" VPOS="1568.2" ns17:type="simple" language="eng">
+        <TextLine ID="XYZZY" HEIGHT="12.7" WIDTH="103.7" HPOS="1384.5" VPOS="1568.2">
+          <String ID="XYZZY" STYLEREFS="TS_10.0" HEIGHT="12.7" WIDTH="47.7" HPOS="1384.5" VPOS="1568.2" CONTENT="©2004" WC="0.99" />
+          <String ID="XYZZY" STYLEREFS="TS_10.0" HEIGHT="12.7" WIDTH="19.2" HPOS="1437.0" VPOS="1568.2" CONTENT="PC" WC="0.99" />
+          <String ID="XYZZY" STYLEREFS="TS_10.0" HEIGHT="12.7" WIDTH="27.2" HPOS="1461.0" VPOS="1568.2" CONTENT="LLC" WC="0.99" />
+          
+        </TextLine>
+      </TextBlock>
+
+      <TextBlock xmlns:ns18="http://www.w3.org/1999/xlink" ID="XYZZY" HEIGHT="161.2" WIDTH="946.5" HPOS="191.0" VPOS="1655.3" ns18:type="simple" language="eng">
+        <TextLine ID="XYZZY" HEIGHT="76.3" WIDTH="946.5" HPOS="191.0" VPOS="1655.3">
+          <String ID="XYZZY" STYLEREFS="TS_10.0" HEIGHT="76.3" WIDTH="258.5" HPOS="191.0" VPOS="1655.3" CONTENT="Who’s" WC="0.99" />
+          <String ID="XYZZY" STYLEREFS="TS_10.0" HEIGHT="76.3" WIDTH="303.7" HPOS="471.0" VPOS="1655.3" CONTENT="Waiting" WC="0.99" />
+          <String ID="XYZZY" STYLEREFS="TS_10.0" HEIGHT="76.2" WIDTH="116.7" HPOS="795.0" VPOS="1655.3" CONTENT="for" WC="0.99" />
+          <String ID="XYZZY" STYLEREFS="TS_10.0" HEIGHT="76.2" WIDTH="208.6" HPOS="929.0" VPOS="1655.4" CONTENT="You?" WC="0.99" />
+          
+        </TextLine><TextLine ID="XYZZY" HEIGHT="70.4" WIDTH="492.4" HPOS="196.5" VPOS="1746.0">
+          <String ID="XYZZY" STYLEREFS="TS_10.0" HEIGHT="70.4" WIDTH="41.2" HPOS="196.5" VPOS="1746.0" CONTENT="L" WC="0.99" />
+          <String ID="XYZZY" STYLEREFS="TS_10.0" HEIGHT="56.3" WIDTH="81.8" HPOS="237.5" VPOS="1757.1" CONTENT="ive" WC="0.99" />
+          <String ID="XYZZY" STYLEREFS="TS_10.0" HEIGHT="70.4" WIDTH="40.1" HPOS="347.5" VPOS="1746.0" CONTENT="L" WC="0.99" />
+          <String ID="XYZZY" STYLEREFS="TS_10.0" HEIGHT="56.4" WIDTH="150.0" HPOS="387.5" VPOS="1757.1" CONTENT="ocal" WC="0.99" />
+          <String ID="XYZZY" STYLEREFS="TS_10.0" HEIGHT="70.4" WIDTH="59.1" HPOS="562.5" VPOS="1746.0" CONTENT="M" WC="0.99" />
+          <String ID="XYZZY" STYLEREFS="TS_10.0" HEIGHT="56.4" WIDTH="67.4" HPOS="621.5" VPOS="1757.1" CONTENT="en" WC="0.99" />
+          
+        </TextLine>
+      </TextBlock>
+
+      <TextBlock xmlns:ns19="http://www.w3.org/1999/xlink" ID="XYZZY" HEIGHT="17.6" WIDTH="432.7" HPOS="1527.5" VPOS="1564.4" ns19:type="simple" language="eng">
+        <TextLine ID="XYZZY" HEIGHT="17.6" WIDTH="432.7" HPOS="1527.5" VPOS="1564.4">
+          <String ID="XYZZY" STYLEREFS="TS_10.0" HEIGHT="17.6" WIDTH="71.4" HPOS="1527.5" VPOS="1564.4" CONTENT="Friendly" WC="0.99" />
+          <String ID="XYZZY" STYLEREFS="TS_10.0" HEIGHT="17.6" WIDTH="86.1" HPOS="1606.0" VPOS="1564.4" CONTENT="Customer" WC="0.99" />
+          <String ID="XYZZY" STYLEREFS="TS_10.0" HEIGHT="17.6" WIDTH="39.9" HPOS="1698.5" VPOS="1564.4" CONTENT="Care" WC="0.99" />
+          <String ID="XYZZY" STYLEREFS="TS_10.0" HEIGHT="17.6" WIDTH="34.7" HPOS="1746.5" VPOS="1564.4" CONTENT="24/7" WC="0.99" />
+          <String ID="XYZZY" STYLEREFS="TS_10.0" HEIGHT="17.6" WIDTH="44.5" HPOS="1788.5" VPOS="1564.4" CONTENT="(888)" WC="0.99" />
+          <String ID="XYZZY" STYLEREFS="TS_10.0" HEIGHT="17.6" WIDTH="118.7" HPOS="1841.5" VPOS="1564.4" CONTENT="MEGAMATES" WC="0.99" />
+          
+        </TextLine>
+      </TextBlock>
+
+      <TextBlock xmlns:ns20="http://www.w3.org/1999/xlink" ID="XYZZY" HEIGHT="50.9" WIDTH="942.9" HPOS="1225.5" VPOS="1647.1" ns20:type="simple" language="eng">
+        <TextLine ID="XYZZY" HEIGHT="50.9" WIDTH="942.9" HPOS="1225.5" VPOS="1647.1">
+          <String ID="XYZZY" STYLEREFS="TS_10.0" HEIGHT="50.7" WIDTH="159.6" HPOS="1225.5" VPOS="1647.2" CONTENT="idue" WC="0.99" />
+          <String ID="XYZZY" STYLEREFS="TS_10.0" HEIGHT="50.8" WIDTH="208.2" HPOS="1424.5" VPOS="1647.1" CONTENT="uong." WC="0.99" />
+          <String ID="XYZZY" STYLEREFS="TS_10.0" HEIGHT="50.8" WIDTH="159.7" HPOS="1670.5" VPOS="1647.1" CONTENT="Uue" WC="0.99" />
+          <String ID="XYZZY" STYLEREFS="TS_10.0" HEIGHT="50.9" WIDTH="300.9" HPOS="1867.5" VPOS="1647.1" CONTENT="strong." WC="0.99" />
+          
+        </TextLine>
+      </TextBlock>
+
+      <TextBlock xmlns:ns21="http://www.w3.org/1999/xlink" ID="XYZZY" HEIGHT="66.5" WIDTH="411.4" HPOS="1472.5" VPOS="1732.6" ns21:type="simple" language="eng">
+        <TextLine ID="XYZZY" HEIGHT="66.5" WIDTH="411.4" HPOS="1472.5" VPOS="1732.6">
+          <String ID="XYZZY" STYLEREFS="TS_10.0" HEIGHT="66.5" WIDTH="411.4" HPOS="1472.5" VPOS="1732.6" CONTENT="T*G?Si*tG?d" WC="0.99" />
+          
+        </TextLine>
+      </TextBlock>
+      <TextBlock xmlns:ns22="http://www.w3.org/1999/xlink" ID="XYZZY" HEIGHT="41.1" WIDTH="562.5" HPOS="1224.5" VPOS="1819.1" ns22:type="simple" language="eng">
+        <TextLine ID="XYZZY" HEIGHT="41.1" WIDTH="562.5" HPOS="1224.5" VPOS="1819.1">
+          <String ID="XYZZY" STYLEREFS="TS_10.0" HEIGHT="41.1" WIDTH="94.8" HPOS="1224.5" VPOS="1819.1" CONTENT="Free" WC="0.99" />
+          <String ID="XYZZY" STYLEREFS="TS_10.0" HEIGHT="41.1" WIDTH="174.8" HPOS="1337.5" VPOS="1819.2" CONTENT="Walk-In" WC="0.99" />
+          <String ID="XYZZY" STYLEREFS="TS_10.0" HEIGHT="41.1" WIDTH="82.8" HPOS="1533.5" VPOS="1819.1" CONTENT="HIV" WC="0.99" />
+          <String ID="XYZZY" STYLEREFS="TS_10.0" HEIGHT="41.0" WIDTH="155.5" HPOS="1631.5" VPOS="1819.2" CONTENT="Testing" WC="0.99" />
+          
+        </TextLine>
+      </TextBlock>
+      <TextBlock xmlns:ns23="http://www.w3.org/1999/xlink" ID="XYZZY" HEIGHT="25.5" WIDTH="649.2" HPOS="1225.0" VPOS="1864.2" ns23:type="simple" language="eng">
+        <TextLine ID="XYZZY" HEIGHT="25.5" WIDTH="649.2" HPOS="1225.0" VPOS="1864.2">
+          <String ID="XYZZY" STYLEREFS="TS_10.0" HEIGHT="25.4" WIDTH="10.1" HPOS="1225.0" VPOS="1864.3" CONTENT="•" WC="0.99" />
+          <String ID="XYZZY" STYLEREFS="TS_10.0" HEIGHT="25.3" WIDTH="152.1" HPOS="1245.0" VPOS="1864.3" CONTENT="Anonymous" WC="0.99" />
+          <String ID="XYZZY" STYLEREFS="TS_10.0" HEIGHT="25.5" WIDTH="9.6" HPOS="1410.0" VPOS="1864.2" CONTENT="•" WC="0.99" />
+          <String ID="XYZZY" STYLEREFS="TS_10.0" HEIGHT="25.4" WIDTH="91.0" HPOS="1431.5" VPOS="1864.2" CONTENT="Needle" WC="0.99" />
+          <String ID="XYZZY" STYLEREFS="TS_10.0" HEIGHT="25.4" WIDTH="53.2" HPOS="1534.5" VPOS="1864.3" CONTENT="Free" WC="0.99" />
+          <String ID="XYZZY" STYLEREFS="TS_10.0" HEIGHT="25.4" WIDTH="10.1" HPOS="1600.0" VPOS="1864.3" CONTENT="•" WC="0.99" />
+          <String ID="XYZZY" STYLEREFS="TS_10.0" HEIGHT="25.4" WIDTH="84.8" HPOS="1622.0" VPOS="1864.2" CONTENT="Results" WC="0.99" />
+          <String ID="XYZZY" STYLEREFS="TS_10.0" HEIGHT="25.4" WIDTH="21.1" HPOS="1718.5" VPOS="1864.2" CONTENT="in" WC="0.99" />
+          <String ID="XYZZY" STYLEREFS="TS_10.0" HEIGHT="25.4" WIDTH="47.2" HPOS="1752.0" VPOS="1864.2" CONTENT="one" WC="0.99" />
+          <String ID="XYZZY" STYLEREFS="TS_10.0" HEIGHT="25.3" WIDTH="64.2" HPOS="1810.0" VPOS="1864.3" CONTENT="week" WC="0.99" />
+          
+        </TextLine>
+      </TextBlock>
+
+      <TextBlock xmlns:ns24="http://www.w3.org/1999/xlink" ID="XYZZY" HEIGHT="7.8" WIDTH="11.2" HPOS="982.5" VPOS="1925.0" ns24:type="simple" language="eng">
+        <TextLine ID="XYZZY" HEIGHT="7.8" WIDTH="11.2" HPOS="982.5" VPOS="1925.0">
+          <String ID="XYZZY" STYLEREFS="TS_10.0" HEIGHT="7.8" WIDTH="11.2" HPOS="982.5" VPOS="1925.0" CONTENT="«" WC="0.99" />
+          
+        </TextLine>
+      </TextBlock>
+
+      <TextBlock xmlns:ns25="http://www.w3.org/1999/xlink" ID="XYZZY" HEIGHT="25.4" WIDTH="370.7" HPOS="1221.5" VPOS="1905.8" ns25:type="simple" language="eng">
+        <TextLine ID="XYZZY" HEIGHT="25.4" WIDTH="370.7" HPOS="1221.5" VPOS="1905.8">
+          <String ID="XYZZY" STYLEREFS="TS_10.0" HEIGHT="25.3" WIDTH="103.8" HPOS="1221.5" VPOS="1905.9" CONTENT="Monday" WC="0.99" />
+          <String ID="XYZZY" STYLEREFS="TS_10.0" HEIGHT="25.4" WIDTH="81.7" HPOS="1336.5" VPOS="1905.8" CONTENT="Nights" WC="0.99" />
+          <String ID="XYZZY" STYLEREFS="TS_10.0" HEIGHT="25.4" WIDTH="58.7" HPOS="1429.5" VPOS="1905.8" CONTENT="5:30" WC="0.99" />
+          <String ID="XYZZY" STYLEREFS="TS_10.0" HEIGHT="25.4" WIDTH="25.1" HPOS="1497.5" VPOS="1905.8" CONTENT="to" WC="0.99" />
+          <String ID="XYZZY" STYLEREFS="TS_10.0" HEIGHT="25.4" WIDTH="57.7" HPOS="1534.5" VPOS="1905.8" CONTENT="7:30" WC="0.99" />
+          
+        </TextLine>
+      </TextBlock>
+
+      <TextBlock xmlns:ns26="http://www.w3.org/1999/xlink" ID="XYZZY" HEIGHT="7.8" WIDTH="21.5" HPOS="1006.0" VPOS="1925.0" ns26:type="simple" language="eng">
+        <TextLine ID="XYZZY" HEIGHT="7.8" WIDTH="21.5" HPOS="1006.0" VPOS="1925.0">
+          <String ID="XYZZY" STYLEREFS="TS_10.0" HEIGHT="7.8" WIDTH="21.5" HPOS="1006.0" VPOS="1925.0" CONTENT="fl" WC="0.99" />
+          
+        </TextLine>
+      </TextBlock>
+
+      <TextBlock xmlns:ns27="http://www.w3.org/1999/xlink" ID="XYZZY" HEIGHT="56.9" WIDTH="158.3" HPOS="364.5" VPOS="1933.7" ns27:type="simple" language="eng">
+        <TextLine ID="XYZZY" HEIGHT="27.5" WIDTH="147.8" HPOS="368.0" VPOS="1933.7">
+          <String ID="XYZZY" STYLEREFS="TS_10.0" HEIGHT="27.5" WIDTH="64.9" HPOS="368.0" VPOS="1933.7" CONTENT="FOR" WC="0.99" />
+          <String ID="XYZZY" STYLEREFS="TS_10.0" HEIGHT="27.4" WIDTH="72.8" HPOS="443.0" VPOS="1933.7" CONTENT="NEW" WC="0.99" />
+          
+        </TextLine><TextLine ID="XYZZY" HEIGHT="27.4" WIDTH="158.3" HPOS="364.5" VPOS="1963.2">
+          <String ID="XYZZY" STYLEREFS="TS_10.0" HEIGHT="27.4" WIDTH="158.3" HPOS="364.5" VPOS="1963.2" CONTENT="MEMBERS:" WC="0.99" />
+          
+        </TextLine>
+      </TextBlock>
+
+      <TextBlock xmlns:ns28="http://www.w3.org/1999/xlink" ID="XYZZY" HEIGHT="46.6" WIDTH="482.9" HPOS="1221.5" VPOS="1935.6" ns28:type="simple" language="eng">
+        <TextLine ID="XYZZY" HEIGHT="19.6" WIDTH="482.9" HPOS="1221.5" VPOS="1935.6">
+          <String ID="XYZZY" STYLEREFS="TS_10.0" HEIGHT="19.6" WIDTH="122.9" HPOS="1221.5" VPOS="1935.7" CONTENT="Washington" WC="0.99" />
+          <String ID="XYZZY" STYLEREFS="TS_10.0" HEIGHT="19.5" WIDTH="74.4" HPOS="1354.0" VPOS="1935.7" CONTENT="County" WC="0.99" />
+          <String ID="XYZZY" STYLEREFS="TS_10.0" HEIGHT="19.6" WIDTH="67.5" HPOS="1438.0" VPOS="1935.6" CONTENT="Health" WC="0.99" />
+          <String ID="XYZZY" STYLEREFS="TS_10.0" HEIGHT="19.5" WIDTH="59.6" HPOS="1514.5" VPOS="1935.7" CONTENT="Clinic" WC="0.99" />
+          <String ID="XYZZY" STYLEREFS="TS_10.0" HEIGHT="19.5" WIDTH="5.6" HPOS="1584.0" VPOS="1935.7" CONTENT="-" WC="0.99" />
+          <String ID="XYZZY" STYLEREFS="TS_10.0" HEIGHT="19.6" WIDTH="103.9" HPOS="1600.5" VPOS="1935.6" CONTENT="Beaverton" WC="0.99" />
+          
+        </TextLine><TextLine ID="XYZZY" HEIGHT="19.6" WIDTH="416.5" HPOS="1224.5" VPOS="1962.6">
+          <String ID="XYZZY" STYLEREFS="TS_10.0" HEIGHT="19.6" WIDTH="68.7" HPOS="1224.5" VPOS="1962.6" CONTENT="12550" WC="0.99" />
+          <String ID="XYZZY" STYLEREFS="TS_10.0" HEIGHT="19.5" WIDTH="35.0" HPOS="1302.5" VPOS="1962.7" CONTENT="SW" WC="0.99" />
+          <String ID="XYZZY" STYLEREFS="TS_10.0" HEIGHT="19.6" WIDTH="39.7" HPOS="1346.0" VPOS="1962.6" CONTENT="2nd" WC="0.99" />
+          <String ID="XYZZY" STYLEREFS="TS_10.0" HEIGHT="19.5" WIDTH="85.9" HPOS="1396.0" VPOS="1962.7" CONTENT="(between" WC="0.99" />
+          <String ID="XYZZY" STYLEREFS="TS_10.0" HEIGHT="19.5" WIDTH="38.1" HPOS="1492.0" VPOS="1962.7" CONTENT="Hall" WC="0.99" />
+          <String ID="XYZZY" STYLEREFS="TS_10.0" HEIGHT="19.5" WIDTH="14.5" HPOS="1538.5" VPOS="1962.7" CONTENT="&amp;" WC="0.99" />
+          <String ID="XYZZY" STYLEREFS="TS_10.0" HEIGHT="19.6" WIDTH="79.0" HPOS="1562.0" VPOS="1962.6" CONTENT="Watson)" WC="0.99" />
+          
+        </TextLine>
+      </TextBlock>
+
+      <TextBlock xmlns:ns29="http://www.w3.org/1999/xlink" ID="XYZZY" HEIGHT="25.5" WIDTH="553.9" HPOS="1222.0" VPOS="2001.3" ns29:type="simple" language="eng">
+        <TextLine ID="XYZZY" HEIGHT="25.5" WIDTH="553.9" HPOS="1222.0" VPOS="2001.3">
+          <String ID="XYZZY" STYLEREFS="TS_10.0" HEIGHT="25.5" WIDTH="72.3" HPOS="1222.0" VPOS="2001.3" CONTENT="NOW" WC="0.99" />
+          <String ID="XYZZY" STYLEREFS="TS_10.0" HEIGHT="25.5" WIDTH="75.4" HPOS="1304.5" VPOS="2001.3" CONTENT="OPEN" WC="0.99" />
+          <String ID="XYZZY" STYLEREFS="TS_10.0" HEIGHT="25.4" WIDTH="116.3" HPOS="1391.0" VPOS="2001.4" CONTENT="Thursday" WC="0.99" />
+          <String ID="XYZZY" STYLEREFS="TS_10.0" HEIGHT="25.5" WIDTH="81.1" HPOS="1518.5" VPOS="2001.3" CONTENT="Nights" WC="0.99" />
+          <String ID="XYZZY" STYLEREFS="TS_10.0" HEIGHT="25.4" WIDTH="59.4" HPOS="1611.5" VPOS="2001.3" CONTENT="5:30" WC="0.99" />
+          <String ID="XYZZY" STYLEREFS="TS_10.0" HEIGHT="25.4" WIDTH="24.0" HPOS="1681.0" VPOS="2001.3" CONTENT="to" WC="0.99" />
+          <String ID="XYZZY" STYLEREFS="TS_10.0" HEIGHT="25.5" WIDTH="58.4" HPOS="1717.5" VPOS="2001.3" CONTENT="7:30" WC="0.99" />
+          
+        </TextLine>
+      </TextBlock>
+
+      <TextBlock xmlns:ns30="http://www.w3.org/1999/xlink" ID="XYZZY" HEIGHT="44.9" WIDTH="181.1" HPOS="196.5" VPOS="2055.1" ns30:type="simple" language="eng">
+        <TextLine ID="XYZZY" HEIGHT="44.9" WIDTH="181.1" HPOS="196.5" VPOS="2055.1">
+          <String ID="XYZZY" STYLEREFS="TS_10.0" HEIGHT="44.9" WIDTH="181.1" HPOS="196.5" VPOS="2055.1" CONTENT="Portland" WC="0.99" />
+          
+        </TextLine>
+      </TextBlock>
+
+      <TextBlock xmlns:ns31="http://www.w3.org/1999/xlink" ID="XYZZY" HEIGHT="46.1" WIDTH="645.7" HPOS="1220.5" VPOS="2031.7" ns31:type="simple" language="eng">
+        <TextLine ID="XYZZY" HEIGHT="19.6" WIDTH="443.4" HPOS="1220.5" VPOS="2031.7">
+          <String ID="XYZZY" STYLEREFS="TS_10.0" HEIGHT="19.5" WIDTH="123.7" HPOS="1220.5" VPOS="2031.7" CONTENT="Washington" WC="0.99" />
+          <String ID="XYZZY" STYLEREFS="TS_10.0" HEIGHT="19.5" WIDTH="74.4" HPOS="1353.5" VPOS="2031.8" CONTENT="County" WC="0.99" />
+          <String ID="XYZZY" STYLEREFS="TS_10.0" HEIGHT="19.6" WIDTH="67.5" HPOS="1437.5" VPOS="2031.7" CONTENT="Health" WC="0.99" />
+          <String ID="XYZZY" STYLEREFS="TS_10.0" HEIGHT="19.6" WIDTH="58.0" HPOS="1514.5" VPOS="2031.7" CONTENT="Clinic" WC="0.99" />
+          <String ID="XYZZY" STYLEREFS="TS_10.0" HEIGHT="19.5" WIDTH="5.6" HPOS="1583.0" VPOS="2031.7" CONTENT="-" WC="0.99" />
+          <String ID="XYZZY" STYLEREFS="TS_10.0" HEIGHT="19.5" WIDTH="65.3" HPOS="1598.5" VPOS="2031.8" CONTENT="Tigard" WC="0.99" />
+          
+        </TextLine><TextLine ID="XYZZY" HEIGHT="19.6" WIDTH="642.3" HPOS="1224.0" VPOS="2058.1">
+          <String ID="XYZZY" STYLEREFS="TS_10.0" HEIGHT="19.5" WIDTH="65.1" HPOS="1224.0" VPOS="2058.2" CONTENT="15296" WC="0.99" />
+          <String ID="XYZZY" STYLEREFS="TS_10.0" HEIGHT="19.5" WIDTH="33.6" HPOS="1298.0" VPOS="2058.2" CONTENT="SW" WC="0.99" />
+          <String ID="XYZZY" STYLEREFS="TS_10.0" HEIGHT="19.5" WIDTH="67.4" HPOS="1339.5" VPOS="2058.2" CONTENT="Royalty" WC="0.99" />
+          <String ID="XYZZY" STYLEREFS="TS_10.0" HEIGHT="19.5" WIDTH="47.0" HPOS="1415.0" VPOS="2058.2" CONTENT="Pkwy" WC="0.99" />
+          <String ID="XYZZY" STYLEREFS="TS_10.0" HEIGHT="19.5" WIDTH="67.5" HPOS="1470.5" VPOS="2058.2" CONTENT="(behind" WC="0.99" />
+          <String ID="XYZZY" STYLEREFS="TS_10.0" HEIGHT="19.6" WIDTH="27.1" HPOS="1546.5" VPOS="2058.2" CONTENT="Les" WC="0.99" />
+          <String ID="XYZZY" STYLEREFS="TS_10.0" HEIGHT="19.5" WIDTH="72.6" HPOS="1581.0" VPOS="2058.2" CONTENT="Schwöb" WC="0.99" />
+          <String ID="XYZZY" STYLEREFS="TS_10.0" HEIGHT="19.5" WIDTH="59.1" HPOS="1660.0" VPOS="2058.2" CONTENT="ocross" WC="0.99" />
+          <String ID="XYZZY" STYLEREFS="TS_10.0" HEIGHT="19.6" WIDTH="43.2" HPOS="1726.0" VPOS="2058.1" CONTENT="from" WC="0.99" />
+          <String ID="XYZZY" STYLEREFS="TS_10.0" HEIGHT="19.5" WIDTH="39.6" HPOS="1778.0" VPOS="2058.2" CONTENT="King" WC="0.99" />
+          <String ID="XYZZY" STYLEREFS="TS_10.0" HEIGHT="19.5" WIDTH="40.2" HPOS="1826.0" VPOS="2058.2" CONTENT="City)" WC="0.99" />
+          
+        </TextLine>
+      </TextBlock>
+
+      <TextBlock xmlns:ns32="http://www.w3.org/1999/xlink" ID="XYZZY" HEIGHT="19.6" WIDTH="44.5" HPOS="603.5" VPOS="2077.6" ns32:type="simple" language="eng">
+        <TextLine ID="XYZZY" HEIGHT="19.6" WIDTH="44.5" HPOS="603.5" VPOS="2077.6">
+          <String ID="XYZZY" STYLEREFS="TS_10.0" HEIGHT="19.6" WIDTH="28.5" HPOS="603.5" VPOS="2077.6" CONTENT="11" WC="0.99" />
+          <String ID="XYZZY" STYLEREFS="TS_10.0" HEIGHT="19.5" WIDTH="4.5" HPOS="643.5" VPOS="2077.6" CONTENT="I" WC="0.99" />
+          
+        </TextLine>
+      </TextBlock>
+
+      <TextBlock xmlns:ns33="http://www.w3.org/1999/xlink" ID="XYZZY" HEIGHT="40.9" WIDTH="293.5" HPOS="194.5" VPOS="2102.2" ns33:type="simple" language="eng">
+        <TextLine ID="XYZZY" HEIGHT="40.9" WIDTH="293.5" HPOS="194.5" VPOS="2102.2">
+          <String ID="XYZZY" STYLEREFS="TS_10.0" HEIGHT="40.9" WIDTH="293.5" HPOS="194.5" VPOS="2102.2" CONTENT="503-548-8888" WC="0.99" />
+          
+        </TextLine>
+      </TextBlock>
+
+      <TextBlock xmlns:ns34="http://www.w3.org/1999/xlink" ID="XYZZY" HEIGHT="69.3" WIDTH="457.8" HPOS="1357.5" VPOS="2116.2" ns34:type="simple" language="eng">
+        <TextLine ID="XYZZY" HEIGHT="33.3" WIDTH="377.6" HPOS="1398.5" VPOS="2116.2">
+          <String ID="XYZZY" STYLEREFS="TS_10.0" HEIGHT="33.3" WIDTH="53.7" HPOS="1398.5" VPOS="2116.2" CONTENT="For" WC="0.99" />
+          <String ID="XYZZY" STYLEREFS="TS_10.0" HEIGHT="33.2" WIDTH="86.6" HPOS="1465.5" VPOS="2116.2" CONTENT="more" WC="0.99" />
+          <String ID="XYZZY" STYLEREFS="TS_10.0" HEIGHT="33.2" WIDTH="209.1" HPOS="1567.0" VPOS="2116.2" CONTENT="information," WC="0.99" />
+          
+        </TextLine><TextLine ID="XYZZY" HEIGHT="33.3" WIDTH="457.8" HPOS="1357.5" VPOS="2152.2">
+          <String ID="XYZZY" STYLEREFS="TS_10.0" HEIGHT="33.2" WIDTH="107.9" HPOS="1357.5" VPOS="2152.3" CONTENT="please" WC="0.99" />
+          <String ID="XYZZY" STYLEREFS="TS_10.0" HEIGHT="33.3" WIDTH="56.2" HPOS="1480.0" VPOS="2152.2" CONTENT="call" WC="0.99" />
+          <String ID="XYZZY" STYLEREFS="TS_10.0" HEIGHT="33.3" WIDTH="263.9" HPOS="1551.5" VPOS="2152.2" CONTENT="503184614965." WC="0.99" />
+          
+        </TextLine>
+      </TextBlock>
+
+      <TextBlock xmlns:ns35="http://www.w3.org/1999/xlink" ID="XYZZY" HEIGHT="33.2" WIDTH="106.5" HPOS="194.0" VPOS="2160.7" ns35:type="simple" language="eng">
+        <TextLine ID="XYZZY" HEIGHT="33.2" WIDTH="106.5" HPOS="194.0" VPOS="2160.7">
+          <String ID="XYZZY" STYLEREFS="TS_10.0" HEIGHT="33.2" WIDTH="106.5" HPOS="194.0" VPOS="2160.7" CONTENT="Salem" WC="0.99" />
+          
+        </TextLine>
+      </TextBlock>
+
+      <TextBlock xmlns:ns36="http://www.w3.org/1999/xlink" ID="XYZZY" HEIGHT="12.7" WIDTH="57.5" HPOS="1246.5" VPOS="2188.5" ns36:type="simple" language="eng">
+        <TextLine ID="XYZZY" HEIGHT="12.7" WIDTH="57.5" HPOS="1246.5" VPOS="2188.5">
+          <String ID="XYZZY" STYLEREFS="TS_10.0" HEIGHT="12.7" WIDTH="57.5" HPOS="1246.5" VPOS="2188.5" CONTENT="°4fGOT‘" WC="0.99" />
+          
+        </TextLine>
+      </TextBlock>
+
+      <TextBlock xmlns:ns37="http://www.w3.org/1999/xlink" ID="XYZZY" HEIGHT="35.1" WIDTH="230.7" HPOS="194.0" VPOS="2201.3" ns37:type="simple" language="eng">
+        <TextLine ID="XYZZY" HEIGHT="35.1" WIDTH="230.7" HPOS="194.0" VPOS="2201.3">
+          <String ID="XYZZY" STYLEREFS="TS_10.0" HEIGHT="35.1" WIDTH="230.7" HPOS="194.0" VPOS="2201.3" CONTENT="503-581-2200" WC="0.99" />
+          
+        </TextLine>
+      </TextBlock>
+      <TextBlock xmlns:ns38="http://www.w3.org/1999/xlink" ID="XYZZY" HEIGHT="33.2" WIDTH="187.3" HPOS="193.5" VPOS="2254.2" ns38:type="simple" language="eng">
+        <TextLine ID="XYZZY" HEIGHT="33.2" WIDTH="187.3" HPOS="193.5" VPOS="2254.2">
+          <String ID="XYZZY" STYLEREFS="TS_10.0" HEIGHT="33.2" WIDTH="187.3" HPOS="193.5" VPOS="2254.2" CONTENT="Vancouver" WC="0.99" />
+          
+        </TextLine>
+      </TextBlock>
+
+      <TextBlock xmlns:ns39="http://www.w3.org/1999/xlink" ID="XYZZY" HEIGHT="7.8" WIDTH="15.0" HPOS="900.0" VPOS="2273.9" ns39:type="simple" language="eng">
+        <TextLine ID="XYZZY" HEIGHT="7.8" WIDTH="15.0" HPOS="900.0" VPOS="2273.9">
+          <String ID="XYZZY" STYLEREFS="TS_10.0" HEIGHT="7.8" WIDTH="6.6" HPOS="900.0" VPOS="2273.9" CONTENT="■i" WC="0.99" />
+          <String ID="XYZZY" STYLEREFS="TS_10.0" HEIGHT="7.8" WIDTH="1.5" HPOS="913.5" VPOS="2273.9" CONTENT="■" WC="0.99" />
+          
+        </TextLine>
+      </TextBlock>
+      <TextBlock xmlns:ns40="http://www.w3.org/1999/xlink" ID="XYZZY" HEIGHT="7.8" WIDTH="3.0" HPOS="919.5" VPOS="2282.0" ns40:type="simple" language="eng">
+        <TextLine ID="XYZZY" HEIGHT="7.8" WIDTH="3.0" HPOS="919.5" VPOS="2282.0">
+          <String ID="XYZZY" STYLEREFS="TS_10.0" HEIGHT="7.8" WIDTH="3.0" HPOS="919.5" VPOS="2282.0" CONTENT="■" WC="0.99" />
+          
+        </TextLine>
+      </TextBlock>
+
+      <TextBlock xmlns:ns41="http://www.w3.org/1999/xlink" ID="XYZZY" HEIGHT="7.8" WIDTH="4.0" HPOS="893.5" VPOS="2282.0" ns41:type="simple" language="eng">
+        <TextLine ID="XYZZY" HEIGHT="7.8" WIDTH="4.0" HPOS="893.5" VPOS="2282.0">
+          <String ID="XYZZY" STYLEREFS="TS_10.0" HEIGHT="7.8" WIDTH="4.0" HPOS="893.5" VPOS="2282.0" CONTENT=":" WC="0.99" />
+          
+        </TextLine>
+      </TextBlock>
+
+      <TextBlock xmlns:ns42="http://www.w3.org/1999/xlink" ID="XYZZY" HEIGHT="35.2" WIDTH="246.5" HPOS="193.0" VPOS="2295.1" ns42:type="simple" language="eng">
+        <TextLine ID="XYZZY" HEIGHT="35.2" WIDTH="246.5" HPOS="193.0" VPOS="2295.1">
+          <String ID="XYZZY" STYLEREFS="TS_10.0" HEIGHT="35.2" WIDTH="232.5" HPOS="193.0" VPOS="2295.1" CONTENT="360-838-8888" WC="0.99" />
+          <String ID="XYZZY" STYLEREFS="TS_10.0" HEIGHT="35.1" WIDTH="5.0" HPOS="434.5" VPOS="2295.2" CONTENT="•" WC="0.99" />
+          
+        </TextLine>
+      </TextBlock>
+
+      <TextBlock xmlns:ns43="http://www.w3.org/1999/xlink" ID="XYZZY" HEIGHT="19.5" WIDTH="41.1" HPOS="1060.0" VPOS="2302.7" ns43:type="simple" language="eng">
+        <TextLine ID="XYZZY" HEIGHT="19.5" WIDTH="41.1" HPOS="1060.0" VPOS="2302.7">
+          <String ID="XYZZY" STYLEREFS="TS_10.0" HEIGHT="19.5" WIDTH="41.1" HPOS="1060.0" VPOS="2302.7" CONTENT="&lt;BÜ" WC="0.99" />
+          
+        </TextLine>
+      </TextBlock>
+
+      <TextBlock xmlns:ns44="http://www.w3.org/1999/xlink" ID="XYZZY" HEIGHT="33.1" WIDTH="131.2" HPOS="193.5" VPOS="2348.2" ns44:type="simple" language="eng">
+        <TextLine ID="XYZZY" HEIGHT="33.1" WIDTH="131.2" HPOS="193.5" VPOS="2348.2">
+          <String ID="XYZZY" STYLEREFS="TS_10.0" HEIGHT="33.1" WIDTH="131.2" HPOS="193.5" VPOS="2348.2" CONTENT="Eugene" WC="0.99" />
+          
+        </TextLine>
+      </TextBlock>
+      <TextBlock xmlns:ns45="http://www.w3.org/1999/xlink" ID="XYZZY" HEIGHT="7.8" WIDTH="1.1" HPOS="899.5" VPOS="2385.0" ns45:type="simple" language="eng">
+        <TextLine ID="XYZZY" HEIGHT="7.8" WIDTH="1.1" HPOS="899.5" VPOS="2385.0">
+          <String ID="XYZZY" STYLEREFS="TS_10.0" HEIGHT="7.8" WIDTH="1.1" HPOS="899.5" VPOS="2385.0" CONTENT="■" WC="0.99" />
+          
+        </TextLine>
+      </TextBlock>
+
+      <TextBlock xmlns:ns46="http://www.w3.org/1999/xlink" ID="XYZZY" HEIGHT="35.1" WIDTH="231.4" HPOS="192.0" VPOS="2387.8" ns46:type="simple" language="eng">
+        <TextLine ID="XYZZY" HEIGHT="35.1" WIDTH="231.4" HPOS="192.0" VPOS="2387.8">
+          <String ID="XYZZY" STYLEREFS="TS_10.0" HEIGHT="35.1" WIDTH="231.4" HPOS="192.0" VPOS="2387.8" CONTENT="541-434-0300" WC="0.99" />
+          
+        </TextLine>
+      </TextBlock>
+
+      <TextBlock xmlns:ns47="http://www.w3.org/1999/xlink" ID="XYZZY" HEIGHT="7.8" WIDTH="7.7" HPOS="768.0" VPOS="2395.0" ns47:type="simple" language="eng">
+        <TextLine ID="XYZZY" HEIGHT="7.8" WIDTH="7.7" HPOS="768.0" VPOS="2395.0">
+          <String ID="XYZZY" STYLEREFS="TS_10.0" HEIGHT="7.8" WIDTH="7.7" HPOS="768.0" VPOS="2395.0" CONTENT="&#34;•" WC="0.99" />
+          
+        </TextLine>
+      </TextBlock>
+
+      <TextBlock xmlns:ns48="http://www.w3.org/1999/xlink" ID="XYZZY" HEIGHT="21.5" WIDTH="14.6" HPOS="581.5" VPOS="2395.8" ns48:type="simple" language="eng">
+        <TextLine ID="XYZZY" HEIGHT="21.5" WIDTH="14.6" HPOS="581.5" VPOS="2395.8">
+          <String ID="XYZZY" STYLEREFS="TS_10.0" HEIGHT="21.5" WIDTH="14.6" HPOS="581.5" VPOS="2395.8" CONTENT="1" WC="0.99" />
+          
+        </TextLine>
+      </TextBlock>
+      <TextBlock xmlns:ns49="http://www.w3.org/1999/xlink" ID="XYZZY" HEIGHT="21.5" WIDTH="16.5" HPOS="601.0" VPOS="2428.3" ns49:type="simple" language="eng">
+        <TextLine ID="XYZZY" HEIGHT="21.5" WIDTH="16.5" HPOS="601.0" VPOS="2428.3">
+          <String ID="XYZZY" STYLEREFS="TS_10.0" HEIGHT="21.5" WIDTH="16.5" HPOS="601.0" VPOS="2428.3" CONTENT="4" WC="0.99" />
+          
+        </TextLine>
+      </TextBlock>
+
+      <TextBlock xmlns:ns50="http://www.w3.org/1999/xlink" ID="XYZZY" HEIGHT="33.2" WIDTH="135.8" HPOS="191.0" VPOS="2440.7" ns50:type="simple" language="eng">
+        <TextLine ID="XYZZY" HEIGHT="33.2" WIDTH="135.8" HPOS="191.0" VPOS="2440.7">
+          <String ID="XYZZY" STYLEREFS="TS_10.0" HEIGHT="33.2" WIDTH="135.8" HPOS="191.0" VPOS="2440.7" CONTENT="Tacoma" WC="0.99" />
+          
+        </TextLine>
+      </TextBlock>
+
+      <TextBlock xmlns:ns51="http://www.w3.org/1999/xlink" ID="XYZZY" HEIGHT="50.9" WIDTH="420.0" HPOS="1687.5" VPOS="2289.6" ns51:type="simple" language="eng">
+        <TextLine ID="XYZZY" HEIGHT="50.9" WIDTH="420.0" HPOS="1687.5" VPOS="2289.6">
+          <String ID="XYZZY" STYLEREFS="TS_10.0" HEIGHT="50.9" WIDTH="140.9" HPOS="1687.5" VPOS="2289.6" CONTENT="TALK" WC="0.99" />
+          <String ID="XYZZY" STYLEREFS="TS_10.0" HEIGHT="50.9" WIDTH="47.7" HPOS="1849.5" VPOS="2289.6" CONTENT="IS" WC="0.99" />
+          <String ID="XYZZY" STYLEREFS="TS_10.0" HEIGHT="50.7" WIDTH="191.1" HPOS="1916.5" VPOS="2289.7" CONTENT="CHEAP," WC="0.99" />
+          
+        </TextLine>
+      </TextBlock>
+
+      <TextBlock xmlns:ns52="http://www.w3.org/1999/xlink" ID="XYZZY" HEIGHT="91.8" WIDTH="529.4" HPOS="1634.5" VPOS="2358.2" ns52:type="simple" language="eng">
+        <TextLine ID="XYZZY" HEIGHT="91.8" WIDTH="529.4" HPOS="1634.5" VPOS="2358.2">
+          <String ID="XYZZY" STYLEREFS="TS_10.0" HEIGHT="91.8" WIDTH="256.1" HPOS="1634.5" VPOS="2358.2" CONTENT="fiCTIOn" WC="0.99" />
+          <String ID="XYZZY" STYLEREFS="TS_10.0" HEIGHT="91.8" WIDTH="248.4" HPOS="1915.5" VPOS="2358.2" CONTENT="TALKS!" WC="0.99" />
+          
+        </TextLine>
+      </TextBlock>
+
+      <TextBlock xmlns:ns53="http://www.w3.org/1999/xlink" ID="XYZZY" HEIGHT="35.1" WIDTH="231.3" HPOS="191.0" VPOS="2480.2" ns53:type="simple" language="eng">
+        <TextLine ID="XYZZY" HEIGHT="35.1" WIDTH="231.3" HPOS="191.0" VPOS="2480.2">
+          <String ID="XYZZY" STYLEREFS="TS_10.0" HEIGHT="35.1" WIDTH="231.3" HPOS="191.0" VPOS="2480.2" CONTENT="253-592-8888" WC="0.99" />
+          
+        </TextLine>
+      </TextBlock>
+
+      <TextBlock xmlns:ns54="http://www.w3.org/1999/xlink" ID="XYZZY" HEIGHT="44.9" WIDTH="324.0" HPOS="191.5" VPOS="2524.1" ns54:type="simple" language="eng">
+        <TextLine ID="XYZZY" HEIGHT="44.9" WIDTH="324.0" HPOS="191.5" VPOS="2524.1">
+          <String ID="XYZZY" STYLEREFS="TS_10.0" HEIGHT="44.9" WIDTH="118.9" HPOS="191.5" VPOS="2524.1" CONTENT="Other" WC="0.99" />
+          <String ID="XYZZY" STYLEREFS="TS_10.0" HEIGHT="44.9" WIDTH="112.6" HPOS="327.5" VPOS="2524.1" CONTENT="Local" WC="0.99" />
+          <String ID="XYZZY" STYLEREFS="TS_10.0" HEIGHT="44.9" WIDTH="59.0" HPOS="456.5" VPOS="2524.1" CONTENT="#’s" WC="0.99" />
+          
+        </TextLine>
+      </TextBlock>
+      <TextBlock xmlns:ns55="http://www.w3.org/1999/xlink" ID="XYZZY" HEIGHT="41.1" WIDTH="316.1" HPOS="194.5" VPOS="2572.0" ns55:type="simple" language="eng">
+        <TextLine ID="XYZZY" HEIGHT="41.1" WIDTH="316.1" HPOS="194.5" VPOS="2572.0">
+          <String ID="XYZZY" STYLEREFS="TS_10.0" HEIGHT="41.1" WIDTH="12.6" HPOS="194.5" VPOS="2572.1" CONTENT="1" WC="0.99" />
+          <String ID="XYZZY" STYLEREFS="TS_10.0" HEIGHT="41.1" WIDTH="294.1" HPOS="216.5" VPOS="2572.0" CONTENT="-800-777-8000" WC="0.99" />
+          
+        </TextLine>
+      </TextBlock>
+
+      <TextBlock xmlns:ns56="http://www.w3.org/1999/xlink" ID="XYZZY" HEIGHT="62.5" WIDTH="398.1" HPOS="185.0" VPOS="2667.5" ns56:type="simple" language="eng">
+        <TextLine ID="XYZZY" HEIGHT="62.5" WIDTH="398.1" HPOS="185.0" VPOS="2667.5">
+          <String ID="XYZZY" STYLEREFS="TS_10.0" HEIGHT="62.5" WIDTH="178.9" HPOS="185.0" VPOS="2667.5" CONTENT="FREE" WC="0.99" />
+          <String ID="XYZZY" STYLEREFS="TS_10.0" HEIGHT="62.5" WIDTH="200.1" HPOS="383.0" VPOS="2667.6" CONTENT="TRIAL" WC="0.99" />
+          
+        </TextLine>
+      </TextBlock>
+
+      <TextBlock xmlns:ns57="http://www.w3.org/1999/xlink" ID="XYZZY" HEIGHT="37.1" WIDTH="224.4" HPOS="182.5" VPOS="2727.6" ns57:type="simple" language="eng">
+        <TextLine ID="XYZZY" HEIGHT="37.1" WIDTH="224.4" HPOS="182.5" VPOS="2727.6">
+          <String ID="XYZZY" STYLEREFS="TS_10.0" HEIGHT="37.1" WIDTH="125.6" HPOS="182.5" VPOS="2727.6" CONTENT="CODE:" WC="0.99" />
+          <String ID="XYZZY" STYLEREFS="TS_10.0" HEIGHT="37.0" WIDTH="86.4" HPOS="320.5" VPOS="2727.6" CONTENT="6110" WC="0.99" />
+          
+        </TextLine>
+      </TextBlock>
+
+      <TextBlock xmlns:ns58="http://www.w3.org/1999/xlink" ID="XYZZY" HEIGHT="37.1" WIDTH="31.2" HPOS="557.5" VPOS="2727.5" ns58:type="simple" language="eng">
+        <TextLine ID="XYZZY" HEIGHT="37.1" WIDTH="31.2" HPOS="557.5" VPOS="2727.5">
+          <String ID="XYZZY" STYLEREFS="TS_10.0" HEIGHT="37.1" WIDTH="31.2" HPOS="557.5" VPOS="2727.5" CONTENT="f" WC="0.99" />
+          
+        </TextLine>
+      </TextBlock>
+
+      <TextBlock xmlns:ns59="http://www.w3.org/1999/xlink" ID="XYZZY" HEIGHT="21.5" WIDTH="115.5" HPOS="1804.0" VPOS="2526.4" ns59:type="simple" language="eng">
+        <TextLine ID="XYZZY" HEIGHT="21.5" WIDTH="115.5" HPOS="1804.0" VPOS="2526.4">
+          <String ID="XYZZY" STYLEREFS="TS_10.0" HEIGHT="21.5" WIDTH="115.5" HPOS="1804.0" VPOS="2526.4" CONTENT="Portland:" WC="0.99" />
+          
+        </TextLine>
+      </TextBlock>
+
+      <TextBlock xmlns:ns60="http://www.w3.org/1999/xlink" ID="XYZZY" HEIGHT="21.4" WIDTH="176.0" HPOS="1965.9" VPOS="2526.4" ns60:type="simple" language="eng">
+        <TextLine ID="XYZZY" HEIGHT="21.4" WIDTH="176.0" HPOS="1965.9" VPOS="2526.4">
+          <String ID="XYZZY" STYLEREFS="TS_10.0" HEIGHT="21.4" WIDTH="176.0" HPOS="1965.9" VPOS="2526.4" CONTENT="503-222-6USA" WC="0.99" />
+          
+        </TextLine>
+      </TextBlock>
+
+      <TextBlock xmlns:ns61="http://www.w3.org/1999/xlink" ID="XYZZY" HEIGHT="21.5" WIDTH="135.8" HPOS="1803.5" VPOS="2561.9" ns61:type="simple" language="eng">
+        <TextLine ID="XYZZY" HEIGHT="21.5" WIDTH="135.8" HPOS="1803.5" VPOS="2561.9">
+          <String ID="XYZZY" STYLEREFS="TS_10.0" HEIGHT="21.5" WIDTH="135.8" HPOS="1803.5" VPOS="2561.9" CONTENT="Vancouver:" WC="0.99" />
+          
+        </TextLine>
+      </TextBlock>
+
+      <TextBlock xmlns:ns62="http://www.w3.org/1999/xlink" ID="XYZZY" HEIGHT="21.5" WIDTH="174.9" HPOS="1966.0" VPOS="2561.9" ns62:type="simple" language="eng">
+        <TextLine ID="XYZZY" HEIGHT="21.5" WIDTH="174.9" HPOS="1966.0" VPOS="2561.9">
+          <String ID="XYZZY" STYLEREFS="TS_10.0" HEIGHT="21.5" WIDTH="174.9" HPOS="1966.0" VPOS="2561.9" CONTENT="360-696-5254" WC="0.99" />
+          
+        </TextLine>
+      </TextBlock>
+
+      <TextBlock xmlns:ns63="http://www.w3.org/1999/xlink" ID="XYZZY" HEIGHT="21.5" WIDTH="93.3" HPOS="1803.0" VPOS="2597.8" ns63:type="simple" language="eng">
+        <TextLine ID="XYZZY" HEIGHT="21.5" WIDTH="93.3" HPOS="1803.0" VPOS="2597.8">
+          <String ID="XYZZY" STYLEREFS="TS_10.0" HEIGHT="21.5" WIDTH="93.3" HPOS="1803.0" VPOS="2597.8" CONTENT="Seattle:" WC="0.99" />
+          
+        </TextLine>
+      </TextBlock>
+
+      <TextBlock xmlns:ns64="http://www.w3.org/1999/xlink" ID="XYZZY" HEIGHT="21.5" WIDTH="175.2" HPOS="1965.0" VPOS="2597.8" ns64:type="simple" language="eng">
+        <TextLine ID="XYZZY" HEIGHT="21.5" WIDTH="175.2" HPOS="1965.0" VPOS="2597.8">
+          <String ID="XYZZY" STYLEREFS="TS_10.0" HEIGHT="21.5" WIDTH="175.2" HPOS="1965.0" VPOS="2597.8" CONTENT="206-753-2429" WC="0.99" />
+          
+        </TextLine>
+      </TextBlock>
+
+      <TextBlock xmlns:ns65="http://www.w3.org/1999/xlink" ID="XYZZY" HEIGHT="21.5" WIDTH="98.0" HPOS="1803.5" VPOS="2633.3" ns65:type="simple" language="eng">
+        <TextLine ID="XYZZY" HEIGHT="21.5" WIDTH="98.0" HPOS="1803.5" VPOS="2633.3">
+          <String ID="XYZZY" STYLEREFS="TS_10.0" HEIGHT="21.5" WIDTH="98.0" HPOS="1803.5" VPOS="2633.3" CONTENT="Everett:" WC="0.99" />
+          
+        </TextLine>
+      </TextBlock>
+
+      <TextBlock xmlns:ns66="http://www.w3.org/1999/xlink" ID="XYZZY" HEIGHT="21.4" WIDTH="175.6" HPOS="1964.1" VPOS="2633.4" ns66:type="simple" language="eng">
+        <TextLine ID="XYZZY" HEIGHT="21.4" WIDTH="175.6" HPOS="1964.1" VPOS="2633.4">
+          <String ID="XYZZY" STYLEREFS="TS_10.0" HEIGHT="21.4" WIDTH="175.6" HPOS="1964.1" VPOS="2633.4" CONTENT="425-405-2429" WC="0.99" />
+          
+        </TextLine>
+      </TextBlock>
+
+      <TextBlock xmlns:ns67="http://www.w3.org/1999/xlink" ID="XYZZY" HEIGHT="21.5" WIDTH="94.4" HPOS="1802.5" VPOS="2668.8" ns67:type="simple" language="eng">
+        <TextLine ID="XYZZY" HEIGHT="21.5" WIDTH="94.4" HPOS="1802.5" VPOS="2668.8">
+          <String ID="XYZZY" STYLEREFS="TS_10.0" HEIGHT="21.5" WIDTH="94.4" HPOS="1802.5" VPOS="2668.8" CONTENT="Tacoma" WC="0.99" />
+          
+        </TextLine>
+      </TextBlock>
+
+      <TextBlock xmlns:ns68="http://www.w3.org/1999/xlink" ID="XYZZY" HEIGHT="21.5" WIDTH="175.2" HPOS="1965.0" VPOS="2668.8" ns68:type="simple" language="eng">
+        <TextLine ID="XYZZY" HEIGHT="21.5" WIDTH="175.2" HPOS="1965.0" VPOS="2668.8">
+          <String ID="XYZZY" STYLEREFS="TS_10.0" HEIGHT="21.5" WIDTH="175.2" HPOS="1965.0" VPOS="2668.8" CONTENT="253-359-2429" WC="0.99" />
+          
+        </TextLine>
+      </TextBlock>
+
+      <TextBlock xmlns:ns69="http://www.w3.org/1999/xlink" ID="XYZZY" HEIGHT="60.6" WIDTH="333.8" HPOS="1808.0" VPOS="2721.2" ns69:type="simple" language="eng">
+        <TextLine ID="XYZZY" HEIGHT="60.6" WIDTH="333.8" HPOS="1808.0" VPOS="2721.2">
+          <String ID="XYZZY" STYLEREFS="TS_10.0" HEIGHT="60.6" WIDTH="333.8" HPOS="1808.0" VPOS="2721.2" CONTENT="LIVELINE" WC="0.99" />
+          
+        </TextLine>
+      </TextBlock>
+      <TextBlock xmlns:ns70="http://www.w3.org/1999/xlink" ID="XYZZY" HEIGHT="21.6" WIDTH="341.1" HPOS="1802.5" VPOS="2782.7" ns70:type="simple" language="eng">
+        <TextLine ID="XYZZY" HEIGHT="21.6" WIDTH="341.1" HPOS="1802.5" VPOS="2782.7">
+          <String ID="XYZZY" STYLEREFS="TS_10.0" HEIGHT="21.5" WIDTH="68.9" HPOS="1802.5" VPOS="2782.8" CONTENT="CHAT," WC="0.99" />
+          <String ID="XYZZY" STYLEREFS="TS_10.0" HEIGHT="21.5" WIDTH="150.9" HPOS="1882.0" VPOS="2782.8" CONTENT="PERSONALS," WC="0.99" />
+          <String ID="XYZZY" STYLEREFS="TS_10.0" HEIGHT="21.6" WIDTH="100.5" HPOS="2043.0" VPOS="2782.7" CONTENT="FORUMS" WC="0.99" />
+          
+        </TextLine>
+      </TextBlock>
+
+      <TextBlock xmlns:ns71="http://www.w3.org/1999/xlink" ID="XYZZY" HEIGHT="29.4" WIDTH="476.8" HPOS="443.5" VPOS="2807.7" ns71:type="simple" language="eng">
+        <TextLine ID="XYZZY" HEIGHT="29.4" WIDTH="476.8" HPOS="443.5" VPOS="2807.7">
+          <String ID="XYZZY" STYLEREFS="TS_10.0" HEIGHT="29.4" WIDTH="396.5" HPOS="443.5" VPOS="2807.7" CONTENT="www.lnteractiveMale.com" WC="0.99" />
+          <String ID="XYZZY" STYLEREFS="TS_10.0" HEIGHT="29.3" WIDTH="52.3" HPOS="868.0" VPOS="2807.8" CONTENT="18&#43;" WC="0.99" />
+          
+        </TextLine>
+      </TextBlock>
+
+      <TextBlock xmlns:ns72="http://www.w3.org/1999/xlink" ID="XYZZY" HEIGHT="19.6" WIDTH="665.8" HPOS="1360.0" VPOS="2828.3" ns72:type="simple" language="eng">
+        <TextLine ID="XYZZY" HEIGHT="19.6" WIDTH="665.8" HPOS="1360.0" VPOS="2828.3">
+          <String ID="XYZZY" STYLEREFS="TS_10.0" HEIGHT="19.5" WIDTH="99.7" HPOS="1360.0" VPOS="2828.4" CONTENT="Unlimited" WC="0.99" />
+          <String ID="XYZZY" STYLEREFS="TS_10.0" HEIGHT="19.6" WIDTH="32.1" HPOS="1468.0" VPOS="2828.4" CONTENT="VIP" WC="0.99" />
+          <String ID="XYZZY" STYLEREFS="TS_10.0" HEIGHT="19.5" WIDTH="128.5" HPOS="1508.5" VPOS="2828.4" CONTENT="Subscription" WC="0.99" />
+          <String ID="XYZZY" STYLEREFS="TS_10.0" HEIGHT="19.5" WIDTH="4.0" HPOS="1655.0" VPOS="2828.4" CONTENT="I" WC="0.99" />
+          <String ID="XYZZY" STYLEREFS="TS_10.0" HEIGHT="19.6" WIDTH="76.4" HPOS="1670.5" VPOS="2828.3" CONTENT="day-$9," WC="0.99" />
+          <String ID="XYZZY" STYLEREFS="TS_10.0" HEIGHT="19.5" WIDTH="4.1" HPOS="1764.5" VPOS="2828.4" CONTENT="I" WC="0.99" />
+          <String ID="XYZZY" STYLEREFS="TS_10.0" HEIGHT="19.6" WIDTH="105.7" HPOS="1780.0" VPOS="2828.3" CONTENT="week-$24," WC="0.99" />
+          <String ID="XYZZY" STYLEREFS="TS_10.0" HEIGHT="19.5" WIDTH="11.1" HPOS="1899.5" VPOS="2828.4" CONTENT="8" WC="0.99" />
+          <String ID="XYZZY" STYLEREFS="TS_10.0" HEIGHT="19.5" WIDTH="106.8" HPOS="1919.0" VPOS="2828.4" CONTENT="weeks-$99" WC="0.99" />
+          
+        </TextLine>
+      </TextBlock>
+
+    </PrintSpace>
+  </Page>
+</Layout>
+</alto>

@@ -1,0 +1,582 @@
+<?xml version="1.0" encoding="UTF-8"?>
+
+
+<mets xmlns="http://www.loc.gov/METS/"
+  xmlns:mods="http://www.loc.gov/mods/v3"
+  xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+  xmlns:mix="http://www.loc.gov/mix/"
+  xmlns:ndnp="http://www.loc.gov/ndnp"
+  xmlns:premis="http://www.oclc.org/premis"
+  xmlns:xlink="http://www.w3.org/1999/xlink"
+  xsi:schemaLocation="http://www.loc.gov/METS/ http://www.loc.gov/standards/mets/version17/mets.v1-7.xsd http://www.loc.gov/mods/v3 http://www.loc.gov/standards/mods/v3/mods-3-3.xsd"
+  LABEL="Polk County itemizer observer. (Dallas, Or.), 2010-04-19"
+  PROFILE="urn:library-of-congress:mets:profiles:ndnp:issue:v1.5"
+  TYPE="urn:library-of-congress:ndnp:mets:newspaper:issue"
+>
+  
+  <metsHdr CREATEDATE="2006-01-02T15:04:05">
+    <agent ROLE="CREATOR" TYPE="ORGANIZATION">
+      <name>University of Oregon</name>
+    </agent>
+  </metsHdr>
+  <dmdSec ID="issueModsBib">
+    <mdWrap LABEL="Issue metadata" MDTYPE="MODS">
+      <xmlData>
+        <mods:mods>
+          <mods:relatedItem type="host">
+            <mods:identifier type="lccn">sn96088087</mods:identifier>
+            <mods:part>
+              
+              <mods:detail type="volume">
+                <mods:number>0</mods:number>
+              </mods:detail>
+              
+              
+              <mods:detail type="issue">
+                <mods:number>0</mods:number>
+              </mods:detail>
+              
+              <mods:detail type="edition">
+                <mods:number>1</mods:number>
+                
+              </mods:detail>
+            </mods:part>
+          </mods:relatedItem>
+          <mods:originInfo>
+            <mods:dateIssued encoding="iso8601">2010-04-19</mods:dateIssued>
+            
+          </mods:originInfo>
+          <mods:note type="noteAboutReproduction">Present</mods:note>
+          
+          <mods:accessCondition>http://www.europeana.eu/rights/rr-f/</mods:accessCondition>
+          
+        </mods:mods>
+      </xmlData>
+    </mdWrap>
+  </dmdSec>
+  
+  <dmdSec ID="pageModsBib1">
+    <mdWrap MDTYPE="MODS" LABEL="Page metadata">
+      <xmlData>
+        <mods:mods>
+          <mods:part>
+            <mods:extent unit="pages">
+              <mods:start>1</mods:start>
+            </mods:extent>
+            
+          </mods:part>
+          <mods:relatedItem type="original">
+            <mods:physicalDescription>
+              <mods:form type="print" />
+            </mods:physicalDescription>
+            <mods:location>
+              <mods:physicalLocation authority="marcorg" displayLabel="University of Oregon Libraries; Eugene, OR">oru</mods:physicalLocation>
+            </mods:location>
+          </mods:relatedItem>
+          <mods:note type="agencyResponsibleForReproduction" displayLabel="University of Oregon Libraries; Eugene, OR">oru</mods:note>
+          <mods:note type="noteAboutReproduction">Present</mods:note>
+        </mods:mods>
+      </xmlData>
+    </mdWrap>
+  </dmdSec>
+  
+  <dmdSec ID="pageModsBib2">
+    <mdWrap MDTYPE="MODS" LABEL="Page metadata">
+      <xmlData>
+        <mods:mods>
+          <mods:part>
+            <mods:extent unit="pages">
+              <mods:start>2</mods:start>
+            </mods:extent>
+            
+          </mods:part>
+          <mods:relatedItem type="original">
+            <mods:physicalDescription>
+              <mods:form type="print" />
+            </mods:physicalDescription>
+            <mods:location>
+              <mods:physicalLocation authority="marcorg" displayLabel="University of Oregon Libraries; Eugene, OR">oru</mods:physicalLocation>
+            </mods:location>
+          </mods:relatedItem>
+          <mods:note type="agencyResponsibleForReproduction" displayLabel="University of Oregon Libraries; Eugene, OR">oru</mods:note>
+          <mods:note type="noteAboutReproduction">Present</mods:note>
+        </mods:mods>
+      </xmlData>
+    </mdWrap>
+  </dmdSec>
+  
+  <dmdSec ID="pageModsBib3">
+    <mdWrap MDTYPE="MODS" LABEL="Page metadata">
+      <xmlData>
+        <mods:mods>
+          <mods:part>
+            <mods:extent unit="pages">
+              <mods:start>3</mods:start>
+            </mods:extent>
+            
+          </mods:part>
+          <mods:relatedItem type="original">
+            <mods:physicalDescription>
+              <mods:form type="print" />
+            </mods:physicalDescription>
+            <mods:location>
+              <mods:physicalLocation authority="marcorg" displayLabel="University of Oregon Libraries; Eugene, OR">oru</mods:physicalLocation>
+            </mods:location>
+          </mods:relatedItem>
+          <mods:note type="agencyResponsibleForReproduction" displayLabel="University of Oregon Libraries; Eugene, OR">oru</mods:note>
+          <mods:note type="noteAboutReproduction">Present</mods:note>
+        </mods:mods>
+      </xmlData>
+    </mdWrap>
+  </dmdSec>
+  
+  <dmdSec ID="pageModsBib4">
+    <mdWrap MDTYPE="MODS" LABEL="Page metadata">
+      <xmlData>
+        <mods:mods>
+          <mods:part>
+            <mods:extent unit="pages">
+              <mods:start>4</mods:start>
+            </mods:extent>
+            
+          </mods:part>
+          <mods:relatedItem type="original">
+            <mods:physicalDescription>
+              <mods:form type="print" />
+            </mods:physicalDescription>
+            <mods:location>
+              <mods:physicalLocation authority="marcorg" displayLabel="University of Oregon Libraries; Eugene, OR">oru</mods:physicalLocation>
+            </mods:location>
+          </mods:relatedItem>
+          <mods:note type="agencyResponsibleForReproduction" displayLabel="University of Oregon Libraries; Eugene, OR">oru</mods:note>
+          <mods:note type="noteAboutReproduction">Present</mods:note>
+        </mods:mods>
+      </xmlData>
+    </mdWrap>
+  </dmdSec>
+  
+  <dmdSec ID="pageModsBib5">
+    <mdWrap MDTYPE="MODS" LABEL="Page metadata">
+      <xmlData>
+        <mods:mods>
+          <mods:part>
+            <mods:extent unit="pages">
+              <mods:start>5</mods:start>
+            </mods:extent>
+            
+          </mods:part>
+          <mods:relatedItem type="original">
+            <mods:physicalDescription>
+              <mods:form type="print" />
+            </mods:physicalDescription>
+            <mods:location>
+              <mods:physicalLocation authority="marcorg" displayLabel="University of Oregon Libraries; Eugene, OR">oru</mods:physicalLocation>
+            </mods:location>
+          </mods:relatedItem>
+          <mods:note type="agencyResponsibleForReproduction" displayLabel="University of Oregon Libraries; Eugene, OR">oru</mods:note>
+          <mods:note type="noteAboutReproduction">Present</mods:note>
+        </mods:mods>
+      </xmlData>
+    </mdWrap>
+  </dmdSec>
+  
+  <dmdSec ID="pageModsBib6">
+    <mdWrap MDTYPE="MODS" LABEL="Page metadata">
+      <xmlData>
+        <mods:mods>
+          <mods:part>
+            <mods:extent unit="pages">
+              <mods:start>6</mods:start>
+            </mods:extent>
+            
+          </mods:part>
+          <mods:relatedItem type="original">
+            <mods:physicalDescription>
+              <mods:form type="print" />
+            </mods:physicalDescription>
+            <mods:location>
+              <mods:physicalLocation authority="marcorg" displayLabel="University of Oregon Libraries; Eugene, OR">oru</mods:physicalLocation>
+            </mods:location>
+          </mods:relatedItem>
+          <mods:note type="agencyResponsibleForReproduction" displayLabel="University of Oregon Libraries; Eugene, OR">oru</mods:note>
+          <mods:note type="noteAboutReproduction">Present</mods:note>
+        </mods:mods>
+      </xmlData>
+    </mdWrap>
+  </dmdSec>
+  
+  <dmdSec ID="pageModsBib7">
+    <mdWrap MDTYPE="MODS" LABEL="Page metadata">
+      <xmlData>
+        <mods:mods>
+          <mods:part>
+            <mods:extent unit="pages">
+              <mods:start>7</mods:start>
+            </mods:extent>
+            
+          </mods:part>
+          <mods:relatedItem type="original">
+            <mods:physicalDescription>
+              <mods:form type="print" />
+            </mods:physicalDescription>
+            <mods:location>
+              <mods:physicalLocation authority="marcorg" displayLabel="University of Oregon Libraries; Eugene, OR">oru</mods:physicalLocation>
+            </mods:location>
+          </mods:relatedItem>
+          <mods:note type="agencyResponsibleForReproduction" displayLabel="University of Oregon Libraries; Eugene, OR">oru</mods:note>
+          <mods:note type="noteAboutReproduction">Present</mods:note>
+        </mods:mods>
+      </xmlData>
+    </mdWrap>
+  </dmdSec>
+  
+  <dmdSec ID="pageModsBib8">
+    <mdWrap MDTYPE="MODS" LABEL="Page metadata">
+      <xmlData>
+        <mods:mods>
+          <mods:part>
+            <mods:extent unit="pages">
+              <mods:start>8</mods:start>
+            </mods:extent>
+            
+          </mods:part>
+          <mods:relatedItem type="original">
+            <mods:physicalDescription>
+              <mods:form type="print" />
+            </mods:physicalDescription>
+            <mods:location>
+              <mods:physicalLocation authority="marcorg" displayLabel="University of Oregon Libraries; Eugene, OR">oru</mods:physicalLocation>
+            </mods:location>
+          </mods:relatedItem>
+          <mods:note type="agencyResponsibleForReproduction" displayLabel="University of Oregon Libraries; Eugene, OR">oru</mods:note>
+          <mods:note type="noteAboutReproduction">Present</mods:note>
+        </mods:mods>
+      </xmlData>
+    </mdWrap>
+  </dmdSec>
+  
+  <dmdSec ID="pageModsBib9">
+    <mdWrap MDTYPE="MODS" LABEL="Page metadata">
+      <xmlData>
+        <mods:mods>
+          <mods:part>
+            <mods:extent unit="pages">
+              <mods:start>9</mods:start>
+            </mods:extent>
+            
+          </mods:part>
+          <mods:relatedItem type="original">
+            <mods:physicalDescription>
+              <mods:form type="print" />
+            </mods:physicalDescription>
+            <mods:location>
+              <mods:physicalLocation authority="marcorg" displayLabel="University of Oregon Libraries; Eugene, OR">oru</mods:physicalLocation>
+            </mods:location>
+          </mods:relatedItem>
+          <mods:note type="agencyResponsibleForReproduction" displayLabel="University of Oregon Libraries; Eugene, OR">oru</mods:note>
+          <mods:note type="noteAboutReproduction">Present</mods:note>
+        </mods:mods>
+      </xmlData>
+    </mdWrap>
+  </dmdSec>
+  
+  <dmdSec ID="pageModsBib10">
+    <mdWrap MDTYPE="MODS" LABEL="Page metadata">
+      <xmlData>
+        <mods:mods>
+          <mods:part>
+            <mods:extent unit="pages">
+              <mods:start>10</mods:start>
+            </mods:extent>
+            
+          </mods:part>
+          <mods:relatedItem type="original">
+            <mods:physicalDescription>
+              <mods:form type="print" />
+            </mods:physicalDescription>
+            <mods:location>
+              <mods:physicalLocation authority="marcorg" displayLabel="University of Oregon Libraries; Eugene, OR">oru</mods:physicalLocation>
+            </mods:location>
+          </mods:relatedItem>
+          <mods:note type="agencyResponsibleForReproduction" displayLabel="University of Oregon Libraries; Eugene, OR">oru</mods:note>
+          <mods:note type="noteAboutReproduction">Present</mods:note>
+        </mods:mods>
+      </xmlData>
+    </mdWrap>
+  </dmdSec>
+  
+  <dmdSec ID="pageModsBib11">
+    <mdWrap MDTYPE="MODS" LABEL="Page metadata">
+      <xmlData>
+        <mods:mods>
+          <mods:part>
+            <mods:extent unit="pages">
+              <mods:start>11</mods:start>
+            </mods:extent>
+            
+          </mods:part>
+          <mods:relatedItem type="original">
+            <mods:physicalDescription>
+              <mods:form type="print" />
+            </mods:physicalDescription>
+            <mods:location>
+              <mods:physicalLocation authority="marcorg" displayLabel="University of Oregon Libraries; Eugene, OR">oru</mods:physicalLocation>
+            </mods:location>
+          </mods:relatedItem>
+          <mods:note type="agencyResponsibleForReproduction" displayLabel="University of Oregon Libraries; Eugene, OR">oru</mods:note>
+          <mods:note type="noteAboutReproduction">Present</mods:note>
+        </mods:mods>
+      </xmlData>
+    </mdWrap>
+  </dmdSec>
+  
+  <dmdSec ID="pageModsBib12">
+    <mdWrap MDTYPE="MODS" LABEL="Page metadata">
+      <xmlData>
+        <mods:mods>
+          <mods:part>
+            <mods:extent unit="pages">
+              <mods:start>12</mods:start>
+            </mods:extent>
+            
+          </mods:part>
+          <mods:relatedItem type="original">
+            <mods:physicalDescription>
+              <mods:form type="print" />
+            </mods:physicalDescription>
+            <mods:location>
+              <mods:physicalLocation authority="marcorg" displayLabel="University of Oregon Libraries; Eugene, OR">oru</mods:physicalLocation>
+            </mods:location>
+          </mods:relatedItem>
+          <mods:note type="agencyResponsibleForReproduction" displayLabel="University of Oregon Libraries; Eugene, OR">oru</mods:note>
+          <mods:note type="noteAboutReproduction">Present</mods:note>
+        </mods:mods>
+      </xmlData>
+    </mdWrap>
+  </dmdSec>
+  
+  <fileSec>
+    
+    <fileGrp ID="pageFileGrp1">
+      <file ID="serviceFile1" USE="service">
+        <FLocat LOCTYPE="OTHER" OTHERLOCTYPE="file" xlink:href="0001.jp2" />
+      </file>
+      <file ID="otherDerivativeFile1" USE="derivative">
+        <FLocat LOCTYPE="OTHER" OTHERLOCTYPE="file" xlink:href="0001.pdf" />
+      </file>
+      <file ID="ocrFile1" USE="ocr">
+        <FLocat LOCTYPE="OTHER" OTHERLOCTYPE="file" xlink:href="0001.xml" />
+      </file>
+    </fileGrp>
+    
+    <fileGrp ID="pageFileGrp2">
+      <file ID="serviceFile2" USE="service">
+        <FLocat LOCTYPE="OTHER" OTHERLOCTYPE="file" xlink:href="0002.jp2" />
+      </file>
+      <file ID="otherDerivativeFile2" USE="derivative">
+        <FLocat LOCTYPE="OTHER" OTHERLOCTYPE="file" xlink:href="0002.pdf" />
+      </file>
+      <file ID="ocrFile2" USE="ocr">
+        <FLocat LOCTYPE="OTHER" OTHERLOCTYPE="file" xlink:href="0002.xml" />
+      </file>
+    </fileGrp>
+    
+    <fileGrp ID="pageFileGrp3">
+      <file ID="serviceFile3" USE="service">
+        <FLocat LOCTYPE="OTHER" OTHERLOCTYPE="file" xlink:href="0003.jp2" />
+      </file>
+      <file ID="otherDerivativeFile3" USE="derivative">
+        <FLocat LOCTYPE="OTHER" OTHERLOCTYPE="file" xlink:href="0003.pdf" />
+      </file>
+      <file ID="ocrFile3" USE="ocr">
+        <FLocat LOCTYPE="OTHER" OTHERLOCTYPE="file" xlink:href="0003.xml" />
+      </file>
+    </fileGrp>
+    
+    <fileGrp ID="pageFileGrp4">
+      <file ID="serviceFile4" USE="service">
+        <FLocat LOCTYPE="OTHER" OTHERLOCTYPE="file" xlink:href="0004.jp2" />
+      </file>
+      <file ID="otherDerivativeFile4" USE="derivative">
+        <FLocat LOCTYPE="OTHER" OTHERLOCTYPE="file" xlink:href="0004.pdf" />
+      </file>
+      <file ID="ocrFile4" USE="ocr">
+        <FLocat LOCTYPE="OTHER" OTHERLOCTYPE="file" xlink:href="0004.xml" />
+      </file>
+    </fileGrp>
+    
+    <fileGrp ID="pageFileGrp5">
+      <file ID="serviceFile5" USE="service">
+        <FLocat LOCTYPE="OTHER" OTHERLOCTYPE="file" xlink:href="0005.jp2" />
+      </file>
+      <file ID="otherDerivativeFile5" USE="derivative">
+        <FLocat LOCTYPE="OTHER" OTHERLOCTYPE="file" xlink:href="0005.pdf" />
+      </file>
+      <file ID="ocrFile5" USE="ocr">
+        <FLocat LOCTYPE="OTHER" OTHERLOCTYPE="file" xlink:href="0005.xml" />
+      </file>
+    </fileGrp>
+    
+    <fileGrp ID="pageFileGrp6">
+      <file ID="serviceFile6" USE="service">
+        <FLocat LOCTYPE="OTHER" OTHERLOCTYPE="file" xlink:href="0006.jp2" />
+      </file>
+      <file ID="otherDerivativeFile6" USE="derivative">
+        <FLocat LOCTYPE="OTHER" OTHERLOCTYPE="file" xlink:href="0006.pdf" />
+      </file>
+      <file ID="ocrFile6" USE="ocr">
+        <FLocat LOCTYPE="OTHER" OTHERLOCTYPE="file" xlink:href="0006.xml" />
+      </file>
+    </fileGrp>
+    
+    <fileGrp ID="pageFileGrp7">
+      <file ID="serviceFile7" USE="service">
+        <FLocat LOCTYPE="OTHER" OTHERLOCTYPE="file" xlink:href="0007.jp2" />
+      </file>
+      <file ID="otherDerivativeFile7" USE="derivative">
+        <FLocat LOCTYPE="OTHER" OTHERLOCTYPE="file" xlink:href="0007.pdf" />
+      </file>
+      <file ID="ocrFile7" USE="ocr">
+        <FLocat LOCTYPE="OTHER" OTHERLOCTYPE="file" xlink:href="0007.xml" />
+      </file>
+    </fileGrp>
+    
+    <fileGrp ID="pageFileGrp8">
+      <file ID="serviceFile8" USE="service">
+        <FLocat LOCTYPE="OTHER" OTHERLOCTYPE="file" xlink:href="0008.jp2" />
+      </file>
+      <file ID="otherDerivativeFile8" USE="derivative">
+        <FLocat LOCTYPE="OTHER" OTHERLOCTYPE="file" xlink:href="0008.pdf" />
+      </file>
+      <file ID="ocrFile8" USE="ocr">
+        <FLocat LOCTYPE="OTHER" OTHERLOCTYPE="file" xlink:href="0008.xml" />
+      </file>
+    </fileGrp>
+    
+    <fileGrp ID="pageFileGrp9">
+      <file ID="serviceFile9" USE="service">
+        <FLocat LOCTYPE="OTHER" OTHERLOCTYPE="file" xlink:href="0009.jp2" />
+      </file>
+      <file ID="otherDerivativeFile9" USE="derivative">
+        <FLocat LOCTYPE="OTHER" OTHERLOCTYPE="file" xlink:href="0009.pdf" />
+      </file>
+      <file ID="ocrFile9" USE="ocr">
+        <FLocat LOCTYPE="OTHER" OTHERLOCTYPE="file" xlink:href="0009.xml" />
+      </file>
+    </fileGrp>
+    
+    <fileGrp ID="pageFileGrp10">
+      <file ID="serviceFile10" USE="service">
+        <FLocat LOCTYPE="OTHER" OTHERLOCTYPE="file" xlink:href="0010.jp2" />
+      </file>
+      <file ID="otherDerivativeFile10" USE="derivative">
+        <FLocat LOCTYPE="OTHER" OTHERLOCTYPE="file" xlink:href="0010.pdf" />
+      </file>
+      <file ID="ocrFile10" USE="ocr">
+        <FLocat LOCTYPE="OTHER" OTHERLOCTYPE="file" xlink:href="0010.xml" />
+      </file>
+    </fileGrp>
+    
+    <fileGrp ID="pageFileGrp11">
+      <file ID="serviceFile11" USE="service">
+        <FLocat LOCTYPE="OTHER" OTHERLOCTYPE="file" xlink:href="0011.jp2" />
+      </file>
+      <file ID="otherDerivativeFile11" USE="derivative">
+        <FLocat LOCTYPE="OTHER" OTHERLOCTYPE="file" xlink:href="0011.pdf" />
+      </file>
+      <file ID="ocrFile11" USE="ocr">
+        <FLocat LOCTYPE="OTHER" OTHERLOCTYPE="file" xlink:href="0011.xml" />
+      </file>
+    </fileGrp>
+    
+    <fileGrp ID="pageFileGrp12">
+      <file ID="serviceFile12" USE="service">
+        <FLocat LOCTYPE="OTHER" OTHERLOCTYPE="file" xlink:href="0012.jp2" />
+      </file>
+      <file ID="otherDerivativeFile12" USE="derivative">
+        <FLocat LOCTYPE="OTHER" OTHERLOCTYPE="file" xlink:href="0012.pdf" />
+      </file>
+      <file ID="ocrFile12" USE="ocr">
+        <FLocat LOCTYPE="OTHER" OTHERLOCTYPE="file" xlink:href="0012.xml" />
+      </file>
+    </fileGrp>
+    
+  </fileSec>
+  <structMap>
+    <div DMDID="issueModsBib" TYPE="np:issue">
+      
+      <div DMDID="pageModsBib1" TYPE="np:page">
+        <fptr FILEID="serviceFile1" />
+        <fptr FILEID="otherDerivativeFile1" />
+        <fptr FILEID="ocrFile1" />
+      </div>
+      
+      <div DMDID="pageModsBib2" TYPE="np:page">
+        <fptr FILEID="serviceFile2" />
+        <fptr FILEID="otherDerivativeFile2" />
+        <fptr FILEID="ocrFile2" />
+      </div>
+      
+      <div DMDID="pageModsBib3" TYPE="np:page">
+        <fptr FILEID="serviceFile3" />
+        <fptr FILEID="otherDerivativeFile3" />
+        <fptr FILEID="ocrFile3" />
+      </div>
+      
+      <div DMDID="pageModsBib4" TYPE="np:page">
+        <fptr FILEID="serviceFile4" />
+        <fptr FILEID="otherDerivativeFile4" />
+        <fptr FILEID="ocrFile4" />
+      </div>
+      
+      <div DMDID="pageModsBib5" TYPE="np:page">
+        <fptr FILEID="serviceFile5" />
+        <fptr FILEID="otherDerivativeFile5" />
+        <fptr FILEID="ocrFile5" />
+      </div>
+      
+      <div DMDID="pageModsBib6" TYPE="np:page">
+        <fptr FILEID="serviceFile6" />
+        <fptr FILEID="otherDerivativeFile6" />
+        <fptr FILEID="ocrFile6" />
+      </div>
+      
+      <div DMDID="pageModsBib7" TYPE="np:page">
+        <fptr FILEID="serviceFile7" />
+        <fptr FILEID="otherDerivativeFile7" />
+        <fptr FILEID="ocrFile7" />
+      </div>
+      
+      <div DMDID="pageModsBib8" TYPE="np:page">
+        <fptr FILEID="serviceFile8" />
+        <fptr FILEID="otherDerivativeFile8" />
+        <fptr FILEID="ocrFile8" />
+      </div>
+      
+      <div DMDID="pageModsBib9" TYPE="np:page">
+        <fptr FILEID="serviceFile9" />
+        <fptr FILEID="otherDerivativeFile9" />
+        <fptr FILEID="ocrFile9" />
+      </div>
+      
+      <div DMDID="pageModsBib10" TYPE="np:page">
+        <fptr FILEID="serviceFile10" />
+        <fptr FILEID="otherDerivativeFile10" />
+        <fptr FILEID="ocrFile10" />
+      </div>
+      
+      <div DMDID="pageModsBib11" TYPE="np:page">
+        <fptr FILEID="serviceFile11" />
+        <fptr FILEID="otherDerivativeFile11" />
+        <fptr FILEID="ocrFile11" />
+      </div>
+      
+      <div DMDID="pageModsBib12" TYPE="np:page">
+        <fptr FILEID="serviceFile12" />
+        <fptr FILEID="otherDerivativeFile12" />
+        <fptr FILEID="ocrFile12" />
+      </div>
+      
+    </div>
+  </structMap>
+</mets>

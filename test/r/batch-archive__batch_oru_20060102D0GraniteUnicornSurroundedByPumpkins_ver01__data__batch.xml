@@ -1,0 +1,9 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<ndnp:batch xmlns:ndnp="http://www.loc.gov/ndnp" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xmlns="http://www.loc.gov/ndnp" name="batch_oru_20241203D0GraniteUnicornSurroundedByPumpkins_ver01" awardee="oru" awardYear="2024">
+  <issue lccn="2004260523" issueDate="2010-05-25" editionOrder="01">2004260523/print/2010052501/2010052501.xml</issue>
+  <issue lccn="2013202554" issueDate="2005-01-08" editionOrder="01">2013202554/print/2005010801/2005010801.xml</issue>
+  <issue lccn="2021242619" issueDate="2020-09-02" editionOrder="01">2021242619/print/2020090201/2020090201.xml</issue>
+  <issue lccn="sn00063621" issueDate="1915-02-20" editionOrder="01">sn00063621/print/1915022001/1915022001.xml</issue>
+  <issue lccn="sn96088073" issueDate="1801-05-08" editionOrder="01">sn96088073/print/1801050801/1801050801.xml</issue>
+  <issue lccn="sn96088087" issueDate="2010-04-19" editionOrder="01">sn96088087/print/2010041901/2010041901.xml</issue>
+</ndnp:batch>
