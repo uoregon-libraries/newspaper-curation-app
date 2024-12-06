@@ -80,7 +80,5 @@ else
 fi
 
 wait_db
-cd test
-./report.sh $name
-cd ..
+go run test/report.go -c ./settings --dir=$(pwd)/test --name=$name
 echo "DONE"
