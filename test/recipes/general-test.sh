@@ -49,13 +49,23 @@ if [[ ! -d ./backup/02-$name ]]; then
   ./manage backup 02-$name
 else
   echo "Detected backup 02; skipping processing"
-  echo "Restoring backup 02 to begin step 03"
-  ./manage restore 02-$name
+  if [[ ! -d ./backup/03-$name ]]; then
+    echo "Restoring backup 02 to begin step 03"
+    ./manage restore 02-$name
+  fi
 fi
 
-finish_batches
+if [[ ! -d ./backup/03-$name ]]; then
+  wait_db
+  finish_batches
 
-cd test
-./report.sh $name
-cd ..
+  ./manage backup 03-$name
+else
+  echo "Detected backup 03; skipping processing"
+  echo "Restoring backup 03 and writing report"
+  ./manage restore 03-$name
+fi
+
+wait_db
+go run test/report.go -c ./settings --dir=$(pwd)/test --name=$name
 echo "DONE"

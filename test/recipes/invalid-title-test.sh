@@ -48,8 +48,10 @@ if [[ ! -d ./backup/02-$name ]]; then
   ./manage backup 02-$name
 else
   echo "Detected backup 02; skipping processing"
-  echo "Restoring backup 02 to begin step 03"
-  ./manage restore 02-$name
+  if [[ ! -d ./backup/03-$name ]]; then
+    echo "Restoring backup 02 to begin step 03"
+    ./manage restore 02-$name
+  fi
 fi
 
 wait_db
@@ -66,8 +68,18 @@ mysql -unca -pnca -Dnca -h127.0.0.1 -e "
     LIMIT 1
 "
 
-finish_batches
+if [[ ! -d ./backup/03-$name ]]; then
+  wait_db
+  finish_batches
 
+  ./manage backup 03-$name
+else
+  echo "Detected backup 03; skipping processing"
+  echo "Restoring backup 03 and writing report"
+  ./manage restore 03-$name
+fi
+
+wait_db
 cd test
 ./report.sh $name
 cd ..

@@ -16,7 +16,7 @@ get_testname() {
 
 build_and_clean() {
   make clean
-  make
+  make fast
   rm -f workers.log
 }
 
