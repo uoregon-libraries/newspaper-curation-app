@@ -49,12 +49,11 @@ func (r replacer) ReplaceAll(b []byte) []byte {
 	return r.search.ReplaceAll(b, []byte(r.replace))
 }
 
-var batchRenames map[string]string
+var batchRenames []replacer
 
 // cacheBatchData store the information about a batch for renaming report
 // output text and filenames
 func cacheBatchData() {
-	batchRenames = make(map[string]string)
 	var sql = `
 		SELECT
 			b.marc_org_code, b.created_at, b.name,
@@ -81,8 +80,14 @@ func cacheBatchData() {
 			CreatedAt:   time.UnixMilli(1136243045000),
 			Name:        "Pages" + pages + "Titles" + titles,
 		}
-		batchRenames[b.Name] = bnormal.Name
-		batchRenames[b.FullName()] = bnormal.FullName()
+		batchRenames = append(batchRenames, replacer{
+			search:  regexp.MustCompile(regexp.QuoteMeta(b.FullName())),
+			replace: bnormal.FullName(),
+		})
+		batchRenames = append(batchRenames, replacer{
+			search:  regexp.MustCompile(regexp.QuoteMeta(b.Name)),
+			replace: bnormal.Name,
+		})
 	}
 }
 
@@ -103,10 +108,9 @@ func renameBatches(s string) string {
 		cacheBatchData()
 	}
 
-	for search, replace := range batchRenames {
-		s = strings.Replace(s, search, replace, -1)
+	for _, r := range batchRenames {
+		s = r.ReplaceAllString(s)
 	}
-
 	return s
 }
 
