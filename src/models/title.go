@@ -26,8 +26,8 @@ type Title struct {
 	LangCode3     string
 }
 
-// FindTitle searches the database for a single title
-func FindTitle(where string, args ...any) (*Title, error) {
+// findTitle searches the database for a single title
+func findTitle(where string, args ...any) (*Title, error) {
 	var op = dbi.DB.Operation()
 	op.Dbg = dbi.Debug
 	var t = &Title{}
@@ -35,9 +35,14 @@ func FindTitle(where string, args ...any) (*Title, error) {
 	return t, op.Err()
 }
 
-// FindTitleByID wraps FindTitle to simplify basic finding
+// FindTitleByID gets a title with the given ID
 func FindTitleByID(id int64) (*Title, error) {
-	return FindTitle("id = ?", id)
+	return findTitle("id = ?", id)
+}
+
+// FindTitleByLCCN gets a title with the given LCCN
+func FindTitleByLCCN(lccn string) (*Title, error) {
+	return findTitle("lccn = ?", lccn)
 }
 
 // TitleList holds a full list of database titles for quick scan operations on
