@@ -417,9 +417,8 @@ func loadTitle(fh *multipart.FileHeader) (m *marc.MARC, message string) {
 	}
 
 	// Do a quick sanity check that the data is valid MARC
-	var buf = new(bytes.Buffer)
-	_, _ = buf.Write(upload)
-	m, err = marc.ParseXML(f)
+	var buf = bytes.NewReader(upload)
+	m, err = marc.ParseXML(buf)
 	if err != nil {
 		logger.Errorf("Invalid XML uploaded in file %q: %s", fh.Filename, err)
 		return nil, "File is invalid or doesn't contain MARC XML"
