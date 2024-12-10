@@ -44,6 +44,9 @@ var (
 	// storage as well as sending on to ONI
 	uploadMARCTmpl *tmpl.Template
 
+	// uploadResultsTmpl tells the user what happened when uploading MARC files
+	uploadResultsTmpl *tmpl.Template
+
 	// ONI Agent RPCs
 	stagAgent, prodAgent *openoni.RPC
 )
@@ -77,12 +80,15 @@ func Setup(r *mux.Router, baseWebPath string, c *config.Config) {
 		"TitlesHomeURL":       func() string { return basePath },
 		"TitlesUploadMARCURL": func() string { return uploadMARCPath },
 		"SFTPGoEnabled":       func() bool { return c.SFTPGoEnabled },
+		"StagingRootURL":      func() string { return conf.StagingNewsWebroot },
+		"ProdRootURL":         func() string { return conf.NewsWebroot },
 	})
 	layout.Path = path.Join(layout.Path, "titles")
 
 	listTmpl = layout.MustBuild("list.go.html")
 	formTmpl = layout.MustBuild("form.go.html")
 	uploadMARCTmpl = layout.MustBuild("upload-marc.go.html")
+	uploadResultsTmpl = layout.MustBuild("upload-results.go.html")
 }
 
 func getTitle(r *responder.Responder) (t *Title, handled bool) {
@@ -466,26 +472,58 @@ func processMARCUploadHandler(w http.ResponseWriter, req *http.Request) {
 	type uploadResult struct {
 		Filename     string
 		MARC         *marc.MARC
+		New          bool
+		EditTitleURL string
 		ErrorMessage string
 	}
-	var successes, failures []uploadResult
+	var successes, failures []*uploadResult
 	for _, fh := range fhs {
 		var m, errmsg = loadTitle(fh)
-		var result = uploadResult{Filename: fh.Filename, MARC: m, ErrorMessage: errmsg}
-
+		var result = &uploadResult{Filename: fh.Filename, MARC: m, ErrorMessage: errmsg}
 		if errmsg != "" {
+			failures = append(failures, result)
+			continue
+		}
+		var t, err = models.FindTitleByLCCN(m.LCCN())
+		if err != nil {
+			logger.Errorf("After-upload title work: getting title by LCCN %q: %s", m.LCCN(), err)
+			result.ErrorMessage = "Internal error processing title. Try again or contact support."
+			failures = append(failures, result)
+			continue
+		}
+
+		if t.ID == 0 {
+			result.New = true
+			t = &models.Title{
+				Name:         m.Title(),
+				LCCN:         m.LCCN(),
+				MARCTitle:    m.Title(),
+				MARCLocation: m.Location(),
+				ValidLCCN:    true,
+				LangCode3:    m.Language(),
+			}
+		} else {
+			t.ValidLCCN = true
+			t.MARCTitle = m.Title()
+			t.MARCLocation = m.Location()
+			t.LangCode3 = m.Language()
+		}
+
+		err = t.Save()
+		if err != nil {
+			logger.Errorf("After-upload title work: saving title (%q / %q): %s", t.Name, t.LCCN, err)
+			result.ErrorMessage = "Internal error processing title. Try again or contact support."
 			failures = append(failures, result)
 			continue
 		}
 
 		successes = append(successes, result)
+		result.EditTitleURL = path.Join(basePath, "edit?id="+strconv.FormatInt(t.ID, 10))
 		r.Audit(models.AuditActionUploadMARC, fmt.Sprintf("Filename %q, LCCN %q, MARC Title %q", fh.Filename, m.LCCN(), m.Title()))
-
-		// TODO: We can do a lot more here if the upload worked
-		//
-		// - Use MARC record's LCCN to update existing records' data
-		// - Create a new record "stub"
-		// - Flag unvalidated titles as now being valid
 	}
-	r.Error(http.StatusInternalServerError, "Not implemented")
+
+	r.Vars.Title = "Upload Results"
+	r.Vars.Data["Successes"] = successes
+	r.Vars.Data["Failures"] = failures
+	r.Render(uploadResultsTmpl)
 }

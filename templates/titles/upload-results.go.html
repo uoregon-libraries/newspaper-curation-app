@@ -1,0 +1,44 @@
+{{define "all-success"}}
+<h2>{{pluralize "Title" "Titles" (len .Data.Successes)}} Uploaded</h2>
+
+{{range .Data.Successes}}
+<div class="card">
+  <div class="card-body">
+    <h5 class="card-title">{{.MARC.Title}} ({{.MARC.LCCN}})<h5>
+    {{if .New}}
+    <p class="card-subtitle marc-new-warning">
+      Note: this title is new to NCA. Please edit it to provide details such as
+      SFTP username, rights statement, etc.
+    </p>
+    {{end}}
+  </div>
+  <dl class="list-group list-group-flush">
+    <li class="list-group-item">Filename: {{.Filename}}</li>
+    <li class="list-group-item"><a href="{{.EditTitleURL}}">View / update title in NCA</a></li>
+    <li class="list-group-item"><a href="{{StagingRootURL}}/lccn/{{.MARC.LCCN}}/">View in ONI (Staging)</a></li>
+    <li class="list-group-item"><a href="{{ProdRootURL}}/lccn/{{.MARC.LCCN}}/">View in ONI (Production)</a></li>
+  </dl>
+</div>
+{{end}}
+
+{{end}}
+
+{{define "partial-success"}}
+Some uploads succeeded
+{{end}}
+
+{{define "no-success"}}
+No uploads succeeded
+{{end}}
+
+{{block "content" .}}
+
+{{if not .Data.Failures}}
+  {{template "all-success" .}}
+{{else if not .Data.Successes}}
+  {{template "no-success" .}}
+{{else}}
+  {{template "partial-success" .}}
+{{end}}
+
+{{end}}
