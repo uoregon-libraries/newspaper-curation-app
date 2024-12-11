@@ -3,15 +3,19 @@
 package main
 
 import (
+	"bytes"
 	"os"
 	"path/filepath"
 	"sort"
 
 	"github.com/uoregon-libraries/gopkg/fileutil"
 	"github.com/uoregon-libraries/gopkg/logger"
+	"github.com/uoregon-libraries/newspaper-curation-app/internal/marc"
 	"github.com/uoregon-libraries/newspaper-curation-app/internal/openoni"
 	"github.com/uoregon-libraries/newspaper-curation-app/src/cli"
 	"github.com/uoregon-libraries/newspaper-curation-app/src/config"
+	"github.com/uoregon-libraries/newspaper-curation-app/src/dbi"
+	"github.com/uoregon-libraries/newspaper-curation-app/src/models"
 )
 
 var conf *config.Config
@@ -26,6 +30,10 @@ var l = logger.New(logger.Debug, false)
 func getOpts() {
 	var c = cli.New(&opts)
 	conf = c.GetConf()
+	var err = dbi.DBConnect(conf.DatabaseConnect)
+	if err != nil {
+		l.Fatalf("Unable to connect to DB: %s", err)
+	}
 }
 
 func main() {
@@ -62,6 +70,12 @@ func main() {
 			l.Fatalf("Unable to read file %q: %s", f, err)
 		}
 
+		var m *marc.MARC
+		m, err = marc.ParseXML(bytes.NewReader(data))
+		if err != nil {
+			l.Fatalf("Unable to parse %q into a MARC record: %s", f, err)
+		}
+
 		_, err = stagAgent.LoadTitle(data)
 		if err != nil {
 			l.Fatalf("Unable to load %q to staging: %s", f, err)
@@ -71,6 +85,29 @@ func main() {
 			l.Fatalf("Unable to load %q to production: %s", f, err)
 		}
 		l.Infof("Successfully loaded %q to staging and production", f)
+
+		var t *models.Title
+		t, err = models.FindTitleByLCCN(m.LCCN())
+		if err != nil {
+			l.Fatalf("Unable to check the database for this title (fname %q, lccn %q): %s", f, m.LCCN(), err)
+		}
+
+		// Create or update title. TODO: centralize this?
+		t.LCCN = m.LCCN()
+		t.Name = m.Title() + " (" + m.Location() + ")"
+		t.ValidLCCN = true
+		t.MARCTitle = m.Title()
+		t.MARCLocation = m.Location()
+		t.LangCode3 = m.Language()
+
+		// Put in fake SFTP stuff so we can do sftpgo-based uploads if we want
+		t.LegacyPass = "pass"
+		t.SFTPUser = t.LCCN
+
+		err = t.Save()
+		if err != nil {
+			l.Fatalf("Unable to save title (fname %q, lccn %q): %s", f, m.LCCN(), err)
+		}
 	}
 }
 
