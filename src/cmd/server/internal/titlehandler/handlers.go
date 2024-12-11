@@ -494,20 +494,17 @@ func processMARCUploadHandler(w http.ResponseWriter, req *http.Request) {
 
 		if t.ID == 0 {
 			result.New = true
-			t = &models.Title{
-				Name:         m.Title(),
-				LCCN:         m.LCCN(),
-				MARCTitle:    m.Title(),
-				MARCLocation: m.Location(),
-				ValidLCCN:    true,
-				LangCode3:    m.Language(),
-			}
-		} else {
-			t.ValidLCCN = true
-			t.MARCTitle = m.Title()
-			t.MARCLocation = m.Location()
-			t.LangCode3 = m.Language()
 		}
+
+		// [models.FindTitleByLCCN] returns an immediately-usable empty title if
+		// nothing is found, so this is always safe: we're either updating an
+		// existing title or adding a new one.
+		t.LCCN = m.LCCN()
+		t.Name = m.Title() + " (" + m.Location() + ")"
+		t.ValidLCCN = true
+		t.MARCTitle = m.Title()
+		t.MARCLocation = m.Location()
+		t.LangCode3 = m.Language()
 
 		err = t.Save()
 		if err != nil {
