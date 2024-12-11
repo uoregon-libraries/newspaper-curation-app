@@ -1,25 +1,55 @@
-{{define "all-success"}}
-<h2>{{pluralize "Title" "Titles" (len .Data.Successes)}} Uploaded</h2>
+{{define "successes"}}
 
-{{range .Data.Successes}}
-<div class="card">
-  <div class="card-body">
-    <h5 class="card-title">{{.MARC.Title}} ({{.MARC.LCCN}})<h5>
-    {{if .New}}
-    <p class="card-subtitle marc-new-warning">
-      Note: this title is new to NCA. Please edit it to provide details such as
-      SFTP username, rights statement, etc.
-    </p>
-    {{end}}
+<h3>{{pluralize "upload" "uploads" (len .)}} succeeded:</h3>
+<div class="row mb-3">
+  {{range .}}
+  <div class="col-sm-6">
+    <div class="card mb-3">
+      <div class="card-header">
+        <h4 class="card-title h5">{{.MARC.Title}} ({{.MARC.LCCN}})</h4>
+        {{if .New}}
+        <p class="card-subtitle marc-new-warning">
+          Note: this title is new to NCA. Please edit it to provide details such as
+          SFTP username, rights statement, etc.
+        </p>
+        {{end}}
+      </div>
+      <div class="card-body">
+        <ul>
+          <li>File: <code>{{.Filename}}</code></li>
+          <li><a href="{{.EditTitleURL}}">View / update title in NCA</a></li>
+          <li><a href="{{StagingRootURL}}/lccn/{{.MARC.LCCN}}/">View in ONI (Staging)</a></li>
+          <li><a href="{{ProdRootURL}}/lccn/{{.MARC.LCCN}}/">View in ONI (Production)</a></li>
+        </ul>
+      </div>
+    </div>
   </div>
-  <dl class="list-group list-group-flush">
-    <li class="list-group-item">Filename: {{.Filename}}</li>
-    <li class="list-group-item"><a href="{{.EditTitleURL}}">View / update title in NCA</a></li>
-    <li class="list-group-item"><a href="{{StagingRootURL}}/lccn/{{.MARC.LCCN}}/">View in ONI (Staging)</a></li>
-    <li class="list-group-item"><a href="{{ProdRootURL}}/lccn/{{.MARC.LCCN}}/">View in ONI (Production)</a></li>
-  </dl>
+  {{end}}
 </div>
+
 {{end}}
+
+
+
+{{define "failures"}}
+
+<h3>{{pluralize "upload" "uploads" (len .)}} failed:</h3>
+<div class="row mb-3">
+  {{range .}}
+  <div class="col-sm-6">
+    <div class="card mb-3">
+      <div class="card-header">
+        <h4 class="card-title h5">File: <code>{{.Filename}}</code></h4>
+      </div>
+      <div class="card-body">
+        <div>
+          {{.ErrorMessage}}
+        </div>
+      </div>
+    </div>
+  </div>
+  {{end}}
+</div>
 
 {{end}}
 
@@ -34,11 +64,15 @@ No uploads succeeded
 {{block "content" .}}
 
 {{if not .Data.Failures}}
-  {{template "all-success" .}}
+  <h2>Success</h2>
+  {{template "successes" .Data.Successes}}
 {{else if not .Data.Successes}}
-  {{template "no-success" .}}
+  <h2>Error: no titles created</h2>
+  {{template "failures" .Data.Failures}}
 {{else}}
-  {{template "partial-success" .}}
+  <h2>Partial Success</h2>
+  {{template "failures" .Data.Failures}}
+  {{template "successes" .Data.Successes}}
 {{end}}
 
 {{end}}

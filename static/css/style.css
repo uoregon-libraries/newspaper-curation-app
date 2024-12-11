@@ -172,4 +172,5 @@ label.btn:has(+input:focus-visible) {
 .marc-new-warning {
   color: var(--bs-warning-text-emphasis);
   font-size: 0.75em;
+  margin-top: 0.25em;
 }
