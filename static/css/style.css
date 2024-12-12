@@ -168,9 +168,3 @@ label.btn:has(+input:focus-visible) {
 	border-color: var(--bs-btn-hover-border-color);
 	box-shadow: var(--bs-btn-focus-box-shadow);
 }
-
-.marc-new-warning {
-  color: var(--bs-warning-text-emphasis);
-  font-size: 0.75em;
-  margin-top: 0.25em;
-}

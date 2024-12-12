@@ -17,3 +17,9 @@
     border: 1px solid var(--bs-body-color);
   }
 }
+
+.marc-new-warning {
+  color: var(--bs-warning-text-emphasis);
+  font-size: 0.75em;
+  margin-top: 0.25em;
+}
