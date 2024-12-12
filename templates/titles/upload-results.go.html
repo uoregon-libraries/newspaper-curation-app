@@ -1,0 +1,78 @@
+{{define "successes"}}
+
+<h3>{{pluralize "upload" "uploads" (len .)}} succeeded:</h3>
+<div class="row mb-3">
+  {{range .}}
+  <div class="col-sm-6">
+    <div class="card mb-3">
+      <div class="card-header">
+        <h4 class="card-title h5">{{.MARC.Title}} ({{.MARC.LCCN}})</h4>
+        {{if .New}}
+        <p class="card-subtitle marc-new-warning">
+          Note: this title is new to NCA. Please edit it to provide details such as
+          SFTP username, rights statement, etc.
+        </p>
+        {{end}}
+      </div>
+      <div class="card-body">
+        <ul>
+          <li>File: <code>{{.Filename}}</code></li>
+          <li><a href="{{.EditTitleURL}}">View / update title in NCA</a></li>
+          <li><a href="{{StagingRootURL}}/lccn/{{.MARC.LCCN}}/">View in ONI (Staging)</a></li>
+          <li><a href="{{ProdRootURL}}/lccn/{{.MARC.LCCN}}/">View in ONI (Production)</a></li>
+        </ul>
+      </div>
+    </div>
+  </div>
+  {{end}}
+</div>
+
+{{end}}
+
+
+
+{{define "failures"}}
+
+<h3>{{pluralize "upload" "uploads" (len .)}} failed:</h3>
+<div class="row mb-3">
+  {{range .}}
+  <div class="col-sm-6">
+    <div class="card mb-3">
+      <div class="card-header">
+        <h4 class="card-title h5">File: <code>{{.Filename}}</code></h4>
+      </div>
+      <div class="card-body">
+        <div>
+          {{.ErrorMessage}}
+        </div>
+      </div>
+    </div>
+  </div>
+  {{end}}
+</div>
+
+{{end}}
+
+{{define "partial-success"}}
+Some uploads succeeded
+{{end}}
+
+{{define "no-success"}}
+No uploads succeeded
+{{end}}
+
+{{block "content" .}}
+
+{{if not .Data.Failures}}
+  <h2>Success</h2>
+  {{template "successes" .Data.Successes}}
+{{else if not .Data.Successes}}
+  <h2>Error: no titles created</h2>
+  {{template "failures" .Data.Failures}}
+{{else}}
+  <h2>Partial Success</h2>
+  {{template "failures" .Data.Failures}}
+  {{template "successes" .Data.Successes}}
+{{end}}
+
+{{end}}

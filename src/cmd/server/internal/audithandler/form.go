@@ -25,7 +25,7 @@ type form struct {
 
 var actionLookup = map[string][]models.AuditAction{
 	"Uploads":        {models.AuditActionQueue},
-	"Titles":         {models.AuditActionSaveTitle, models.AuditActionValidateTitle},
+	"Titles":         {models.AuditActionSaveTitle, models.AuditActionValidateTitle, models.AuditActionUploadMARC},
 	"MARC Org Codes": {models.AuditActionCreateMoc, models.AuditActionUpdateMoc, models.AuditActionDeleteMoc},
 	"Users":          {models.AuditActionSaveUser, models.AuditActionDeactivateUser},
 	"Issue Workflow": {

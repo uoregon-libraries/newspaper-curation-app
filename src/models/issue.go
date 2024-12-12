@@ -308,7 +308,7 @@ func FindIssue(id int64) (*Issue, error) {
 		return nil, op.Err()
 	}
 	var err error
-	i.Title, err = FindTitle("lccn = ?", i.LCCN)
+	i.Title, err = FindTitleByLCCN(i.LCCN)
 	if err != nil {
 		return nil, err
 	}

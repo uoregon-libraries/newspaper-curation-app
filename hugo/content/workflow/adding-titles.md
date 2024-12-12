@@ -16,13 +16,12 @@ for titles not indexed elsewhere. Here's our process:
     this and knows the right people to contact
 - Generate MARC XML for the title(s)
   - [MarcEdit](https://marcedit.reeset.net) is a popular choice for this
-- Ingest the XML into ONI:
-  - Put the MARC XML files into a filesystem location ONI can read
-  - Use the ONI administration command `load_titles` to ingest, e.g.:
-    `./manage.py load_titles /path/to/marcxml/`
-- Point NCA to your local ONI server instead of, or in addition to, Library of
-  Congress. This can be done by modifyting the NCA settings `MARC_LOCATION_1`
-  and/or `MARC_LOCATION_2`. e.g.:
+- Upload the XML into NCA. This creates records in staging and production ONI
+  instances as well as a record "stub" in NCA.
+- If you already have titles in ONI, and don't want to upload their MARC
+  records, you can also point NCA to your local ONI server instead of, or in
+  addition to, Library of Congress. This can be done by modifyting the NCA
+  settings `MARC_LOCATION_1` and/or `MARC_LOCATION_2`. e.g.:
   ```
   MARC_LOCATION_1="https://oregonnews.uoregon.edu/lccn/{{lccn}}/marc.xml"
   MARC_LOCATION_2="https://chroniclingamerica.loc.gov/lccn/{{lccn}}/marc.xml"

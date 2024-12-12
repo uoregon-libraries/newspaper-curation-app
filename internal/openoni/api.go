@@ -2,6 +2,7 @@
 package openoni
 
 import (
+	"bytes"
 	"errors"
 	"fmt"
 	"sort"
@@ -14,10 +15,13 @@ import (
 	"golang.org/x/crypto/ssh"
 )
 
+// This is dumb but lets us build and pass around string slices in a clearer way
+type slist []string
+
 // RPC manages the ssh connections to a single ONI Agent
 type RPC struct {
 	connection string
-	call       func([]string) ([]byte, error)
+	call       func(slist, []byte) ([]byte, error)
 }
 
 // New parses the connection string into a server and port. Its format must be
@@ -36,7 +40,7 @@ func New(connection string) (*RPC, error) {
 	return &RPC{connection: connection}, nil
 }
 
-func (r *RPC) defaultCall(params []string) (data []byte, err error) {
+func (r *RPC) defaultCall(params slist, payload []byte) (data []byte, err error) {
 	var cfg = &ssh.ClientConfig{
 		HostKeyCallback: ssh.InsecureIgnoreHostKey(),
 		Timeout:         time.Second * 10,
@@ -55,15 +59,25 @@ func (r *RPC) defaultCall(params []string) (data []byte, err error) {
 	}
 
 	var cmd = strings.Join(params, " ")
-	data, err = s.Output(cmd)
-	if err != nil {
-		return data, fmt.Errorf("sending command %q to server: %w", cmd, err)
+
+	// If we have a payload, set the session's Stdin to a readable buffer
+	if payload != nil {
+		// We write the payload to an empty buffer rather than using it directly in
+		// [bytes.NewBuffer], which takes control of the underlying data and
+		// documents that the caller should *never use it again*.
+		var stdin = new(bytes.Buffer)
+		_, _ = stdin.WriteString(string(payload) + "\n\nEND\n")
+		s.Stdin = stdin
 	}
 
-	return data, nil
+	data, err = s.Output(cmd)
+	if err != nil {
+		err = fmt.Errorf("sending %q (no payload) to ONI Agent: %w", cmd, err)
+	}
+	return data, err
 }
 
-func (r *RPC) do(params ...string) (result gjson.Result, err error) {
+func (r *RPC) do(params slist, payload []byte) (result gjson.Result, err error) {
 	if r.call == nil {
 		r.call = r.defaultCall
 	}
@@ -76,7 +90,7 @@ func (r *RPC) do(params ...string) (result gjson.Result, err error) {
 	}
 
 	var data []byte
-	data, err = r.call(params)
+	data, err = r.call(params, payload)
 	if err != nil {
 		return result, err
 	}
@@ -87,7 +101,7 @@ func (r *RPC) do(params ...string) (result gjson.Result, err error) {
 	case "success":
 		return result, nil
 	case "error":
-		return result, fmt.Errorf("calling %q: %s (%s)", strings.Join(params, " "), result.Get("message").String(), result.Get("error").String())
+		return result, fmt.Errorf("agent response: %s (%s)", result.Get("message").String(), result.Get("error").String())
 	default:
 		return result, fmt.Errorf("parsing status for call to %q: invalid value %q", strings.Join(params, " "), status)
 	}
@@ -98,7 +112,7 @@ func (r *RPC) do(params ...string) (result gjson.Result, err error) {
 // job's status for completion.
 func (r *RPC) LoadBatch(name string) (id int64, err error) {
 	var result gjson.Result
-	result, err = r.do("load-batch", name)
+	result, err = r.do(slist{"load-batch", name}, nil)
 	if err != nil {
 		return 0, fmt.Errorf("requesting batch load: %w", err)
 	}
@@ -111,7 +125,7 @@ func (r *RPC) LoadBatch(name string) (id int64, err error) {
 // job's status for completion.
 func (r *RPC) PurgeBatch(name string) (id int64, err error) {
 	var result gjson.Result
-	result, err = r.do("purge-batch", name)
+	result, err = r.do(slist{"purge-batch", name}, nil)
 	if err != nil {
 		return 0, fmt.Errorf("requesting batch purge: %w", err)
 	}
@@ -122,7 +136,7 @@ func (r *RPC) PurgeBatch(name string) (id int64, err error) {
 // GetVersion returns the version string of the ONI Agent
 func (r *RPC) GetVersion() (version string, err error) {
 	var result gjson.Result
-	result, err = r.do("version")
+	result, err = r.do(slist{"version"}, nil)
 	if err != nil {
 		return "", fmt.Errorf("requesting ONI Agent version: %w", err)
 	}
@@ -133,9 +147,21 @@ func (r *RPC) GetVersion() (version string, err error) {
 // EnsureAwardee tells the agent to verify or create the given MOC in ONI
 func (r *RPC) EnsureAwardee(moc *models.MOC) (message string, err error) {
 	var result gjson.Result
-	result, err = r.do("ensure-awardee", moc.Code, moc.Name)
+	result, err = r.do(slist{"ensure-awardee", moc.Code, moc.Name}, nil)
 	if err != nil {
 		return "", fmt.Errorf("calling ensure-awardee: %w", err)
+	}
+
+	return result.Get("message").String(), nil
+}
+
+// LoadTitle sends data to an ONI Agent's "load-title" command. data needs to
+// be valid MARC XML.
+func (r *RPC) LoadTitle(data []byte) (message string, err error) {
+	var result gjson.Result
+	result, err = r.do(slist{"load-title"}, data)
+	if err != nil {
+		return "", fmt.Errorf("calling load-title: %w", err)
 	}
 
 	return result.Get("message").String(), nil
@@ -168,7 +194,7 @@ func (js JobStatus) valid() bool {
 // GetJobStatus returns the status response from ONI Agent for the given job id
 func (r *RPC) GetJobStatus(id int64) (js JobStatus, err error) {
 	var result gjson.Result
-	result, err = r.do("job-status", strconv.FormatInt(id, 10))
+	result, err = r.do(slist{"job-status", strconv.FormatInt(id, 10)}, nil)
 	if err == nil {
 		result = result.Get("job")
 		if !result.Exists() {
@@ -190,7 +216,7 @@ func (r *RPC) GetJobStatus(id int64) (js JobStatus, err error) {
 // job's output streams
 func (r *RPC) GetJobLogs(id int64) (logs []string, err error) {
 	var result gjson.Result
-	result, err = r.do("job-logs", strconv.FormatInt(id, 10))
+	result, err = r.do(slist{"job-logs", strconv.FormatInt(id, 10)}, nil)
 	if err == nil {
 		result = result.Get("job")
 		if !result.Exists() {

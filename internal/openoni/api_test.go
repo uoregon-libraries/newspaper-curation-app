@@ -37,12 +37,12 @@ func TestNew(t *testing.T) {
 
 // getRPC returns an RPC, crashing if an error occurs since this is using a
 // hard-coded connection string that should always work
-func getRPC(t *testing.T, name string, expectedParams []string, jsonOut []byte) *RPC {
+func getRPC(t *testing.T, name string, expectedParams slist, expectPayload bool, jsonOut []byte) *RPC {
 	var r, err = New("foo:2222")
 	if err != nil {
 		t.Fatalf("Unable to provision new RPC: %s", err)
 	}
-	r.call = func(params []string) (data []byte, err error) {
+	r.call = func(params slist, payload []byte) (data []byte, err error) {
 		// Quote expected params before comparison
 		for i := range expectedParams {
 			expectedParams[i] = fmt.Sprintf("%q", expectedParams[i])
@@ -53,6 +53,14 @@ func getRPC(t *testing.T, name string, expectedParams []string, jsonOut []byte) 
 			if diff != "" {
 				t.Fatalf("%s called with invalid params: %s", name, diff)
 			}
+		}
+
+		var hasPayload = len(payload) > 0
+		if expectPayload && !hasPayload {
+			t.Fatalf("%s expects a payload, had none", name)
+		}
+		if !expectPayload && hasPayload {
+			t.Fatalf("%s expects empty payload, had %s", name, string(payload))
 		}
 
 		return jsonOut, nil
@@ -76,14 +84,14 @@ func TestDo(t *testing.T) {
 		t.Run(name, func(t *testing.T) {
 			var r, _ = New("foo:2222")
 
-			r.call = func(_ []string) (data []byte, err error) {
+			r.call = func(_ slist, _ []byte) (data []byte, err error) {
 				if tc.hasError {
 					err = errors.New("fake error")
 				}
 				return []byte(tc.json), err
 			}
 
-			var _, err = r.do("param")
+			var _, err = r.do(slist{"param"}, nil)
 			if tc.hasError == true && err == nil {
 				t.Fatalf("JSON %q should have given an error", tc.json)
 			}
@@ -109,7 +117,7 @@ func TestLoadBatch(t *testing.T) {
 	var cmd = "load-batch"
 	for name, tc := range tests {
 		t.Run(name, func(t *testing.T) {
-			var r = getRPC(t, "LoadBatch", []string{cmd, tc.batch}, []byte(tc.json))
+			var r = getRPC(t, "LoadBatch", slist{cmd, tc.batch}, false, []byte(tc.json))
 
 			var id, err = r.LoadBatch(tc.batch)
 			if tc.hasError {
@@ -144,7 +152,7 @@ func TestPurgeBatch(t *testing.T) {
 	var cmd = "purge-batch"
 	for name, tc := range tests {
 		t.Run(name, func(t *testing.T) {
-			var r = getRPC(t, "PurgeBatch", []string{cmd, tc.batch}, []byte(tc.json))
+			var r = getRPC(t, "PurgeBatch", slist{cmd, tc.batch}, false, []byte(tc.json))
 
 			var id, err = r.PurgeBatch(tc.batch)
 			if tc.hasError {
@@ -165,13 +173,24 @@ func TestPurgeBatch(t *testing.T) {
 }
 
 func TestEnsureAwardee(t *testing.T) {
-	var r = getRPC(t, "EnsureAwardee", []string{"ensure-awardee", "code", "name"}, []byte(`{"status": "success", "message": "test"}`))
+	var r = getRPC(t, "EnsureAwardee", slist{"ensure-awardee", "code", "name"}, false, []byte(`{"status": "success", "message": "test"}`))
 	var message, err = r.EnsureAwardee(&models.MOC{Code: "code", Name: "name"})
 	if message != "test" {
 		t.Errorf(`EnsureAwardee should return the message "test". Got %q`, message)
 	}
 	if err != nil {
 		t.Errorf("EnsureAwardee should not have an error, got %s", err)
+	}
+}
+
+func TestLoadTitle(t *testing.T) {
+	var r = getRPC(t, "LoadTitle", slist{"load-title"}, true, []byte(`{"status": "success", "message": "test"}`))
+	var message, err = r.LoadTitle([]byte("foo"))
+	if message != "test" {
+		t.Errorf(`LoadTitle should return the message "test". Got %q`, message)
+	}
+	if err != nil {
+		t.Errorf("LoadTitle should not have an error, got %s", err)
 	}
 }
 
@@ -209,7 +228,7 @@ func TestGetJobLogs(t *testing.T) {
 	var idstr = "27"
 	for name, tc := range tests {
 		t.Run(name, func(t *testing.T) {
-			var r = getRPC(t, "GetJobLogs", []string{cmd, idstr}, []byte(tc.json))
+			var r = getRPC(t, "GetJobLogs", slist{cmd, idstr}, false, []byte(tc.json))
 
 			var logs, err = r.GetJobLogs(27)
 			if tc.hasError {
@@ -272,7 +291,7 @@ func TestGetJobStatus(t *testing.T) {
 	var idstr = "27"
 	for name, tc := range tests {
 		t.Run(name, func(t *testing.T) {
-			var r = getRPC(t, "GetJobStatus", []string{cmd, idstr}, []byte(tc.json))
+			var r = getRPC(t, "GetJobStatus", slist{cmd, idstr}, false, []byte(tc.json))
 
 			var st, err = r.GetJobStatus(27)
 			if tc.hasError {

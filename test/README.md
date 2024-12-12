@@ -6,27 +6,27 @@ whole lot of repetitive data entry.
 
 ## Prerequisites
 
-To make this work, you will want to do local development with docker
-"assistance". This means you have docker running the database, the IIIF server,
-and the SFTP server, but your NCA-native apps are compiled locally and run
-directly. You can try to follow along using a different approach, but this
-guide is meant for that use-case since it's the approach we use for quick dev
-work.
+To make this work, you *must* be following the ["Hybrid Dev" approach to
+development][hybrid-dev]. If you don't, the scripts and recipes here will not
+work! This means you have docker running the database, the IIIF server, and the
+SFTP server, but your NCA-native apps are compiled locally and run directly.
 
 You will need some pieces of the local dev script. You can read it and try to
 do things manually, but the easiest approach is simply to source the script
 into bash: `source <NCA root>/scripts/localdev.sh`.
 
+[hybrid-dev]: <https://uoregon-libraries.github.io/newspaper-curation-app/contributing/dev-guide/#hybrid-developer>
+
 ## Source Data
 
 To start, you need source data. We have [a repository of Oregon data][1] for
-this, but it may not be too useful to everybody since you'll have to create
-dummy titles and MARC org codes. But it could be useful to look at or as a
-starting point if you change some directory names to match your actual titles.
+this. It's obviously very Oregon-specific, but it could be useful to look at or
+as a starting point if you change some directory names to match your actual
+titles / awardees.
 
 [1]: <https://github.com/uoregon-libraries/nca-test-data>
 
-All data you want to bring into a test NCA instance will live under
+All issues you want to bring into a test NCA instance will live under
 `sources/scans` or `sources/sftp`. The `scans` dir would be for issues which
 have TIFFs and PDFs, where the TIFF is the record of source and the PDF has the
 OCR data. `sftp` is for born-digital issues which only have PDFs.
@@ -50,12 +50,27 @@ Examples:
   Bohemia Nugget*, using the MARC org code representing "University of Oregon
   Libraries".
 
+---
+
+*Note*: If you have titles that can't be found on Chronicling America, or you
+simply don't want to add them to NCA yourself, **you also need to provide MARC
+XML records** in the `sources/marc-xml` directory. The filenames have to end in
+either `.xml` or `.mrk`.
+
+If you don't provide these, you won't be able to queue up batches in NCA
+without manually adding the titles. And if they aren't available on Chronicling
+America, batches will fail to load into ONI. 
+
+You can manually run the `load-marc.go` helper to load these, or use the
+local-dev `prep_for_testing` alias, detailed in "Ingest Sources" below.
+
 ### Want A Subset?
 
-The `test/` directory ignores anything below it beginning with "sources", so if
-you want, you could have a huge list of source issues in something like
-"sources-all", and just copy in a subset of issues when you are testing a
-specific situation. This will make the ingest and curation a lot faster.
+This directory's `.gitignore` is set up so that anything beginning with
+"sources" will be ignored from any git commands. If you want, you could have a
+huge list of source issues in something like "sources-all", and just copy in a
+subset of issues when you are testing a specific situation. This can make the
+test runs significantly faster.
 
 ## Ingest Sources
 
@@ -64,17 +79,17 @@ by using `scripts/localdev.sh` in the root of the NCA project. It exposes a
 function, `prep_for_testing`, which does the following:
 
 - Deletes everything in the database
-- Loads seed data from `docker/mysql/nca-seed-data.sql`:
-  - This is a hard-coded filename - it must be *exactly* as written above.
-  - This file is *not* provided - you have to export things yourself or write
-    your own SQL here. The two critical tables for getting data to work are
-    `titles` and `mocs`.
-  - Currently this requires you to do local development for the Go side of
-    things (because that's how I'm doing it) and use docker for the external
-    services (MySQL, IIIF server, and SFTPGo).
 - Removes all files from your fake newspaper "network mount"
-  (`test/fakemount`).
-- Runs `copy-sources.go` to bring all source files into the fake mount.
+  (`<NCA root>/test/fakemount`, mounted by default in docker containers when
+  using the "Hybrid Developer" approach).
+- Creates test users via `create-test-users.go`: one user is created per
+  distinct NCA role.
+- Seeds the database with two MARC Organization codes (awardees) so that the
+  NCA test data repository (see above) will work out of the box.
+- Runs `copy-sources.go` to bring all source PDFs and TIFFs into `fakemount` in
+  the structure NCA requires.
+- Runs `load-marc.go` to get all titles (from `test/sources/marc-xml`) loaded
+  into NCA as well as both configured ONI instances.
 - Runs the NCA bulk issue queue app to take every born-digital issue and
   prepare it for page renumbering.
   - This is run once per LCCN because of how NCA's bulk issue queue app was
