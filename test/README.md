@@ -52,18 +52,17 @@ Examples:
 
 ---
 
-*Note*: If you have titles that can't be found on Chronicling America, **you
-also need to provide MARC XML records** in the `sources/marc-xml` directory and
-then run the title loading script, e.g.:
-
-```bash
-cd test
-go run load-marc.go -c ../settings
-cd ..
-```
-
-Without these, batches will fail to load into ONI. The filenames have to end in
+*Note*: If you have titles that can't be found on Chronicling America, or you
+simply don't want to add them to NCA yourself, **you also need to provide MARC
+XML records** in the `sources/marc-xml` directory. The filenames have to end in
 either `.xml` or `.mrk`.
+
+If you don't provide these, you won't be able to queue up batches in NCA
+without manually adding the titles. And if they aren't available on Chronicling
+America, batches will fail to load into ONI. 
+
+You can manually run the `load-marc.go` helper to load these, or use the
+local-dev `prep_for_testing` alias, detailed in "Ingest Sources" below.
 
 ### Want A Subset?
 
@@ -80,14 +79,17 @@ by using `scripts/localdev.sh` in the root of the NCA project. It exposes a
 function, `prep_for_testing`, which does the following:
 
 - Deletes everything in the database
-- Loads seed data from `docker/mysql/nca-seed-data.sql`:
-  - This is a hard-coded filename - it must be *exactly* as written above.
-  - This file is *not* provided - you have to export things yourself or write
-    your own SQL here. The two critical tables for getting data to work are
-    `titles` and `mocs`.
 - Removes all files from your fake newspaper "network mount"
-  (`test/fakemount`).
-- Runs `copy-sources.go` to bring all source files into the fake mount.
+  (`<NCA root>/test/fakemount`, mounted by default in docker containers when
+  using the "Hybrid Developer" approach).
+- Creates test users via `create-test-users.go`: one user is created per
+  distinct NCA role.
+- Seeds the database with two MARC Organization codes (awardees) so that the
+  NCA test data repository (see above) will work out of the box.
+- Runs `copy-sources.go` to bring all source PDFs and TIFFs into `fakemount` in
+  the structure NCA requires.
+- Runs `load-marc.go` to get all titles (from `test/sources/marc-xml`) loaded
+  into NCA as well as both configured ONI instances.
 - Runs the NCA bulk issue queue app to take every born-digital issue and
   prepare it for page renumbering.
   - This is run once per LCCN because of how NCA's bulk issue queue app was
