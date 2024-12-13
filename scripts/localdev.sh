@@ -82,7 +82,13 @@ migrate() {
 }
 
 load_seed_data() {
-  mysql -unca -pnca -Dnca -h127.0.0.1 < ./docker/mysql/nca-seed-data.sql
+  mysql -unca -pnca -Dnca -h127.0.0.1 -e "INSERT INTO mocs (code, name) VALUES
+    ('oru','University of Oregon Libraries; Eugene, OR'),
+    ('hoodriverlibrary','Hood River County Library District; Hood River, OR');"
+  pushd .
+  cd ./test
+  go run load-marc.go -c ../settings
+  popd
 }
 
 create_test_users() {

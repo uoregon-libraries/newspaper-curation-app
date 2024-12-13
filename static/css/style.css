@@ -4,7 +4,13 @@ body {
   padding-bottom: 70px;
 }
 
-a:focus, button:focus {
+a:focus, button:focus, label.btn:has(+ input:focus) {
+  outline: 1px solid var(--bs-primary-text-emphasis);
+  box-shadow: 0px 0px 0px 2px var(--bs-body-color);
+  transition: none;
+}
+
+a:focus, button:focus, label.btn:has(+ input:focus) {
   outline: 1px solid var(--bs-primary-text-emphasis);
   box-shadow: 0px 0px 0px 2px var(--bs-body-color);
   transition: none;
@@ -146,7 +152,19 @@ button.copy {
 /* Simple outline button style to replicate the old "default" button */
 .btn-outline {
   --bs-btn-border-color: oklch(15% 0 0);
+  --bs-btn-hover-border-color: oklch(15% 0 0);
+  --bs-btn-hover-bg: oklch(28% 0.15 265);
+  --bs-btn-color: var(--bs-body-color);
+  --bs-btn-hover-color: oklch(95% 0 0);
 }
-[data-bs-theme=dark] .btn-outline {
+[data-bs-theme=dark] .btn-outline, label.btn-outline:has(+ input:focus) {
   --bs-btn-border-color: oklch(85% 0 0);
+  --bs-btn-hover-border-color: oklch(85% 0 0);
+  --bs-btn-hover-bg: oklch(28% 0.15 265);
+}
+label.btn:has(+input:focus-visible) {
+	color: var(--bs-btn-hover-color);
+	background-color: var(--bs-btn-hover-bg);
+	border-color: var(--bs-btn-hover-border-color);
+	box-shadow: var(--bs-btn-focus-box-shadow);
 }

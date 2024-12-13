@@ -28,7 +28,7 @@ func (job *BuildMETS) Process(c *config.Config) ProcessResponse {
 	job.outputXMLPath = job.DBIssue.METSFile()
 
 	var err error
-	job.Title, err = models.FindTitle("lccn = ?", job.DBIssue.LCCN)
+	job.Title, err = models.FindTitleByLCCN(job.DBIssue.LCCN)
 	if err != nil {
 		job.Logger.Errorf("Unable to look up title for issue id %d (LCCN %q): %s", job.DBIssue.ID, job.DBIssue.LCCN, err)
 		return PRFailure
