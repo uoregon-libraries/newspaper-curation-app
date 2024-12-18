@@ -40,8 +40,8 @@ func (c *CanValidation) Approve() bool {
 	return c.batch.Status == models.BatchStatusQCReady
 }
 
-// Reject is true if the user can reject in-QC batches and batch is ready for QC
-func (c *CanValidation) Reject() bool {
+// RejectQC is true if the user can reject in-QC batches and batch is ready for QC
+func (c *CanValidation) RejectQC() bool {
 	if !c.user.PermittedTo(privilege.RejectQCReadyBatches) {
 		return false
 	}
