@@ -165,7 +165,7 @@ func qcRejectFormHandler(w http.ResponseWriter, req *http.Request) {
 	if !ok {
 		return
 	}
-	if !r.batch.Can().Reject() {
+	if !r.batch.Can().RejectQC() {
 		r.Error(http.StatusForbidden, "You are not permitted to reject this batch")
 		return
 	}
@@ -179,7 +179,7 @@ func qcRejectHandler(w http.ResponseWriter, req *http.Request) {
 	if !ok {
 		return
 	}
-	if !r.batch.Can().Reject() {
+	if !r.batch.Can().RejectQC() {
 		r.Error(http.StatusForbidden, "You are not permitted to reject this batch")
 		return
 	}
