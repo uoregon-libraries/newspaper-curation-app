@@ -64,7 +64,7 @@ var (
 	RoleBatchBuilder    = newRole("batch builder", "Can generate new batches on demand")
 	RoleBatchReviewer   = newRole("batch reviewer",
 		"Can view, reject, and approve batches which NCA has built but which are not yet in production.")
-	RoleBatchLoader = newRole("batch loader", "Can load and purge batches on staging and production. This role states the user has these abilities, but in NCA this really just means they can view and flag batches as being loaded / ready for QC.")
+	RoleBatchLoader = newRole("batch loader", "Can flag batches for archive as well as manually load and purge batches (NCA doesn't use this, but it may be useful to know).")
 )
 
 // roles is our internal map of string to Role object
