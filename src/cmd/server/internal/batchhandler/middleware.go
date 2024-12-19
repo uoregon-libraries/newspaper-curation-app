@@ -30,3 +30,7 @@ func canReject(h http.HandlerFunc) http.Handler {
 func canArchive(h http.HandlerFunc) http.Handler {
 	return responder.MustHavePrivilege(privilege.ArchiveBatches, h)
 }
+
+func canFlagLive(h http.HandlerFunc) http.Handler {
+	return responder.MustHavePrivilege(privilege.CorrectLiveBatches, h)
+}
