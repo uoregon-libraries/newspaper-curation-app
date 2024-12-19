@@ -18,6 +18,9 @@
         {{if eq . "archive"}}
           {{template "action-archive" $.Data.Batch}}
         {{end}}
+        {{if eq . "flag-live"}}
+          {{template "action-flag-live" $.Data.Batch}}
+        {{end}}
         {{if eq . "none"}}
           {{template "action-none" $.Data.Batch}}
         {{end}}
@@ -93,6 +96,15 @@
 <form action="{{SetArchivedURL .}}" method="POST">
   <button class="btn btn-primary" type="submit">Mark Batch "Archived"</button>
 </form>
+{{end}}
+
+{{define "action-flag-live"}}
+<p>
+  This batch is live, but minor changes may be made: you can remove a subset of
+  issues, put them back into NCA, and have the batch rebuilt and re-pushed.
+</p>
+
+<div><a class="btn btn-primary" href="{{FlagLiveBatchURL .}}">Flag Batch For Corrections...</a></div>
 {{end}}
 
 {{define "action-none"}}

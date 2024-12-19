@@ -44,6 +44,9 @@ var (
 	// Flag batches as archived and ready to begin the deletion countdown
 	ArchiveBatches = newPrivilege(RoleBatchLoader)
 
+	// Perform some kind of correction on live batches
+	CorrectLiveBatches = newPrivilege(RoleBatchReviewer)
+
 	// Site managers only
 	ListAuditLogs = newPrivilege(RoleSiteManager)
 

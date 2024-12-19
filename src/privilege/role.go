@@ -63,7 +63,7 @@ var (
 	RoleWorkflowManager = newRole("workflow manager", "Can queue SFTP and scanned issues for processing")
 	RoleBatchBuilder    = newRole("batch builder", "Can generate new batches on demand")
 	RoleBatchReviewer   = newRole("batch reviewer",
-		"Can view, reject, and approve batches which NCA has built but which are not yet in production.")
+		"Can view, reject, and approve batches which NCA has built but which are not yet in production. Can flag production batches for correction and rebuild them.")
 	RoleBatchLoader = newRole("batch loader", "Can flag batches for archive as well as manually load and purge batches (NCA doesn't use this, but it may be useful to know).")
 )
 

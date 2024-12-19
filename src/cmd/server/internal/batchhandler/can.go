@@ -49,6 +49,16 @@ func (c *CanValidation) RejectQC() bool {
 	return c.batch.Status == models.BatchStatusQCReady
 }
 
+// FlagLive is true if the user can correct batches that have gone live.
+// Obviously only valid on live batches.
+func (c *CanValidation) FlagLive() bool {
+	if !c.user.PermittedTo(privilege.CorrectLiveBatches) {
+		return false
+	}
+
+	return c.batch.StatusMeta.Live
+}
+
 // FlagIssues is true if the user can reject in-QC batches and batch is ready
 // for issue flagging
 func (c *CanValidation) FlagIssues() bool {
