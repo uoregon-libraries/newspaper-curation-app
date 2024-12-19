@@ -173,7 +173,6 @@ services:
       - MYSQL_USER=openoni
       - MYSQL_PASSWORD=openoni
     volumes:
-      - ./repos/open-oni/conf/mysql/:/etc/mysql/conf.d:Z
       - oni-staging-data-mariadb:/var/lib/mysql
     networks:
       oni-staging:
@@ -220,7 +219,6 @@ services:
       - MYSQL_USER=openoni
       - MYSQL_PASSWORD=openoni
     volumes:
-      - ./repos/open-oni/conf/mysql/:/etc/mysql/conf.d:Z
       - oni-prod-data-mariadb:/var/lib/mysql
     networks:
       oni-prod:
