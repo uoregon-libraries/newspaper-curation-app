@@ -44,6 +44,9 @@ var (
 	// Flag batches as archived and ready to begin the deletion countdown
 	ArchiveBatches = newPrivilege(RoleBatchLoader)
 
+	// Perform some kind of correction on live batches
+	CorrectLiveBatches = newPrivilege(RoleBatchReviewer)
+
 	// Admins only
 	ModifyValidatedLCCNs = newPrivilege()
 	ListAuditLogs        = newPrivilege()

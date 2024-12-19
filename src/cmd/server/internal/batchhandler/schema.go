@@ -107,8 +107,13 @@ func (b *Batch) Actions() []string {
 		actions = append(actions, "flag")
 	}
 
-	if b.ReadyForArchive() && b.Can().Archive() {
-		actions = append(actions, "archive")
+	if b.ReadyForArchive() {
+		if b.Can().Archive() {
+			actions = append(actions, "archive")
+		}
+		if b.Can().FlagLive() {
+			actions = append(actions, "flag-live")
+		}
 	}
 
 	if len(actions) == 0 {
