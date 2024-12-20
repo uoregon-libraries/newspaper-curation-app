@@ -201,6 +201,7 @@ func CreateBatch(webroot, moc string, issues []*Issue) (*Batch, error) {
 
 	var chksum = crc32.ChecksumIEEE([]byte(webroot))
 	b.Name = RandomBatchName(uint32(b.ID) + chksum)
+	b.GenerateFullName()
 	for _, i := range issues {
 		i.BatchID = b.ID
 		_ = i.SaveOp(op, ActionTypeInternalProcess, SystemUser.ID, fmt.Sprintf("added to batch %q", b.Name))
