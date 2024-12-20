@@ -102,11 +102,11 @@ func qcApproveHandler(w http.ResponseWriter, req *http.Request) {
 	// TODO: send job to ONI to load batch live
 	var err = r.batch.Save(models.ActionTypeApproveBatch, r.Vars.User.ID, "")
 	if err != nil {
-		logger.Criticalf(`Unable to log "approve batch" action for batch %d (%s): %s`, r.batch.ID, r.batch.FullName(), err)
+		logger.Criticalf(`Unable to log "approve batch" action for batch %d (%s): %s`, r.batch.ID, r.batch.FullName, err)
 	} else {
 		err = jobs.QueueBatchGoLive(r.batch.Batch, conf)
 		if err != nil {
-			logger.Criticalf(`Unable to queue go-live job for batch %d (%s): %s`, r.batch.ID, r.batch.FullName(), err)
+			logger.Criticalf(`Unable to queue go-live job for batch %d (%s): %s`, r.batch.ID, r.batch.FullName, err)
 		}
 	}
 
@@ -142,7 +142,7 @@ func setArchivedHandler(w http.ResponseWriter, req *http.Request) {
 	r.batch.ArchivedAt = time.Now()
 	var err = r.batch.SaveWithoutAction()
 	if err != nil {
-		logger.Criticalf(`Unable to flag batch %d (%s) as archived: %s`, r.batch.ID, r.batch.FullName(), err)
+		logger.Criticalf(`Unable to flag batch %d (%s) as archived: %s`, r.batch.ID, r.batch.FullName, err)
 
 		// Reload the batch and rerender
 		r, ok = getBatchResponder(w, req)
@@ -191,7 +191,7 @@ func qcRejectHandler(w http.ResponseWriter, req *http.Request) {
 		// Since we're merely re-rending the template, we must put the batch back
 		// to its original state or the template could be weird/broken
 		r.batch.Status = oldStatus
-		logger.Criticalf("Unable to reject batch %d (%s): %s", r.batch.ID, r.batch.FullName(), err)
+		logger.Criticalf("Unable to reject batch %d (%s): %s", r.batch.ID, r.batch.FullName, err)
 		r.Vars.Title = "Error saving batch"
 		r.Vars.Alert = template.HTML("Unable to reject batch. Try again or contact support.")
 		r.Render(rejectFormTmpl)

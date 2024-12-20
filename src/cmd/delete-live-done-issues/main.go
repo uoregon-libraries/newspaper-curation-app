@@ -47,10 +47,10 @@ func main() {
 	}
 
 	for _, b := range batches {
-		logger.Infof("Closing batch %q", b.FullName())
+		logger.Infof("Closing batch %q", b.FullName)
 		var err = b.Finalize()
 		if err != nil {
-			logger.Errorf("Unable to close %q: %s", b.FullName(), err)
+			logger.Errorf("Unable to close %q: %s", b.FullName, err)
 		}
 	}
 
@@ -81,7 +81,7 @@ func warning(issues []*models.Issue) {
 	fmt.Println()
 	fmt.Println("The following batches are affected:")
 	for _, b := range batches {
-		fmt.Printf("  - %s\n", b.FullName())
+		fmt.Printf("  - %s\n", b.FullName)
 	}
 
 	fmt.Println()
