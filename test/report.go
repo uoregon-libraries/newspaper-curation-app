@@ -81,8 +81,8 @@ func cacheBatchData() {
 			Name:        "Pages" + pages + "Titles" + titles,
 		}
 		batchRenames = append(batchRenames, replacer{
-			search:  regexp.MustCompile(regexp.QuoteMeta(b.FullName())),
-			replace: bnormal.FullName(),
+			search:  regexp.MustCompile(regexp.QuoteMeta(b.FullName)),
+			replace: bnormal.FullName,
 		})
 		batchRenames = append(batchRenames, replacer{
 			search:  regexp.MustCompile(regexp.QuoteMeta(b.Name)),
