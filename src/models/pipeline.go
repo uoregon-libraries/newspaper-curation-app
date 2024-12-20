@@ -134,7 +134,7 @@ func QueueBatchJobs(name PipelineName, batch *Batch, jobs ...*Job) error {
 		return err
 	}
 
-	var p = newPipeline(name, fmt.Sprintf("batch %s", batch.FullName()))
+	var p = newPipeline(name, fmt.Sprintf("batch %s", batch.FullName))
 	p.ObjectType = JobObjectTypeBatch
 	p.ObjectID = batch.ID
 	return p.queueSerialOp(op, jobs...)
