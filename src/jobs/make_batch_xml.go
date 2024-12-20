@@ -15,7 +15,7 @@ type MakeBatchXML struct {
 
 // Process generates the batch XML file
 func (j *MakeBatchXML) Process(c *config.Config) ProcessResponse {
-	var bName = j.DBBatch.FullName()
+	var bName = j.DBBatch.FullName
 	j.Logger.Debugf("Generating batch XML for batch %q", bName)
 
 	// Set up variables

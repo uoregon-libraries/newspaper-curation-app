@@ -39,7 +39,7 @@ var (
 
 func batchNewsURL(root string, b *Batch) string {
 	var u, _ = url.Parse(root)
-	u.Path = path.Join("batches", b.FullName())
+	u.Path = path.Join("batches", b.FullName)
 	return u.String() + "/"
 }
 

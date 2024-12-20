@@ -42,7 +42,7 @@ func (j *CreateBatchStructure) Process(*config.Config) ProcessResponse {
 	var iList []*models.Issue
 	iList, err = j.DBBatch.Issues()
 	if err != nil {
-		j.Logger.Criticalf("Unable to read issues for %q: %s", j.DBBatch.FullName(), err)
+		j.Logger.Criticalf("Unable to read issues for %q: %s", j.DBBatch.FullName, err)
 		return PRFailure
 	}
 	for _, issue := range iList {
@@ -52,7 +52,7 @@ func (j *CreateBatchStructure) Process(*config.Config) ProcessResponse {
 			err = linkFiles(issue.Location, destPath)
 		}
 		if err != nil {
-			j.Logger.Criticalf("Unable to link issue %q into batch %q: %s", issue.Key(), j.DBBatch.FullName(), err)
+			j.Logger.Criticalf("Unable to link issue %q into batch %q: %s", issue.Key(), j.DBBatch.FullName, err)
 			return PRFailure
 		}
 	}
