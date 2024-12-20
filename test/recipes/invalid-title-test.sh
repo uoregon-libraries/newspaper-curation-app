@@ -36,7 +36,7 @@ if [[ ! -d ./backup/01-$name ]]; then
 else
   echo "Detected backup 01; skipping processing"
   if [[ ! -d ./backup/02-$name ]]; then
-    echo "Restoring backup 01 to begin step 02"
+    echo "Restoring backup 01"
     ./manage restore 01-$name
   fi
 fi
@@ -49,7 +49,7 @@ if [[ ! -d ./backup/02-$name ]]; then
 else
   echo "Detected backup 02; skipping processing"
   if [[ ! -d ./backup/03-$name ]]; then
-    echo "Restoring backup 02 to begin step 03"
+    echo "Restoring backup 02"
     ./manage restore 02-$name
   fi
 fi
@@ -70,13 +70,26 @@ mysql -unca -pnca -Dnca -h127.0.0.1 -e "
 
 if [[ ! -d ./backup/03-$name ]]; then
   wait_db
-  finish_batches
+  queue_batches
 
   ./manage backup 03-$name
 else
   echo "Detected backup 03; skipping processing"
-  echo "Restoring backup 03 and writing report"
-  ./manage restore 03-$name
+  if [[ ! -d ./backup/04-$name ]]; then
+    echo "Restoring backup 03"
+    ./manage restore 03-$name
+  fi
+fi
+
+if [[ ! -d ./backup/04-$name ]]; then
+  wait_db
+  run_batch_jobs
+
+  ./manage backup 04-$name
+else
+  echo "Detected backup 04; skipping processing"
+  echo "Restoring backup 04"
+  ./manage restore 04-$name
 fi
 
 wait_db

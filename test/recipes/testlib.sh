@@ -44,7 +44,7 @@ prep_and_backup_00() {
   fi
 }
 
-finish_batches() {
+queue_batches() {
   wait_db
 
   # Generate batches
@@ -55,6 +55,9 @@ finish_batches() {
 
   echo "Verify batches are on ONI staging, approve them in NCA, then press [ENTER] continue"
   read
+}
+
+run_batch_jobs() {
   workonce 2>&1 | tee -a workers.log
 
   echo "Verify batches are in ONI production and are 'live' in NCA, then press [ENTER] to continue"
