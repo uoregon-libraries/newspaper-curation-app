@@ -80,6 +80,7 @@ func cacheBatchData() {
 			CreatedAt:   time.UnixMilli(1136243045000),
 			Name:        "Pages" + pages + "Titles" + titles,
 		}
+		bnormal.GenerateFullName()
 		batchRenames = append(batchRenames, replacer{
 			search:  regexp.MustCompile(regexp.QuoteMeta(b.FullName)),
 			replace: bnormal.FullName,
