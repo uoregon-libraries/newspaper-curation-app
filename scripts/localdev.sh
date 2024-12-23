@@ -86,6 +86,26 @@ load_seed_data() {
     ('oru','University of Oregon Libraries; Eugene, OR'),
     ('hoodriverlibrary','Hood River County Library District; Hood River, OR');"
   pushd .
+
+  # I hate this hack, but it seems loading titles into ONI interacts with Solr
+  # in some disastrous way if ONI hasn't finished setting up the Solr schema
+  # bits, and currently we don't have a way to do a simple "are you
+  # initialized?" query for ONI
+  echo -n "Waiting for ONI staging"
+  while true; do
+    echo -n "."
+    docker compose exec oni-staging curl -s --head localhost >/dev/null && break
+    sleep 1
+  done
+  echo
+  echo -n "Waiting for ONI production"
+  while true; do
+    echo -n "."
+    docker compose exec oni-prod curl -s --head localhost >/dev/null && break
+    sleep 1
+  done
+  echo
+
   cd ./test
   go run load-marc.go -c ../settings
   popd

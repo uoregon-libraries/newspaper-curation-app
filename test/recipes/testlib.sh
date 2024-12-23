@@ -2,6 +2,7 @@
 set -eu
 
 wait_db() {
+  start_docker_services
   set +e && wait_for_database && set -e
 }
 
