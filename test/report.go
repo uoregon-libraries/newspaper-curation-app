@@ -80,9 +80,10 @@ func cacheBatchData() {
 			CreatedAt:   time.UnixMilli(1136243045000),
 			Name:        "Pages" + pages + "Titles" + titles,
 		}
+		bnormal.GenerateFullName()
 		batchRenames = append(batchRenames, replacer{
-			search:  regexp.MustCompile(regexp.QuoteMeta(b.FullName())),
-			replace: bnormal.FullName(),
+			search:  regexp.MustCompile(regexp.QuoteMeta(b.FullName)),
+			replace: bnormal.FullName,
 		})
 		batchRenames = append(batchRenames, replacer{
 			search:  regexp.MustCompile(regexp.QuoteMeta(b.Name)),
@@ -271,6 +272,12 @@ func main() {
 		filelist = append(filelist, path)
 		return err
 	})
+	if err != nil {
+		l.Fatalf("Unable to search for files in %q: %s", fakemount, err)
+	}
+	if len(filelist) == 0 {
+		l.Fatalf("Unable to search for files in %q: nothing found", fakemount)
+	}
 	sort.Strings(filelist)
 
 	// Create a complete list of all [Path]s

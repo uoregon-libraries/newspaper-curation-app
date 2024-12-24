@@ -36,7 +36,7 @@ func getONIAgent(j *Job, c *config.Config) (*openoni.RPC, error) {
 type batchJobFunc func(batchname string) (jobid int64, err error)
 
 func (j *BatchJob) queueAgentJob(name string, fn batchJobFunc) ProcessResponse {
-	var jobid, err = fn(j.DBBatch.FullName())
+	var jobid, err = fn(j.DBBatch.FullName)
 	if err != nil {
 		j.Logger.Errorf("Error calling ONI Agent: %s", err)
 		return PRFailure
