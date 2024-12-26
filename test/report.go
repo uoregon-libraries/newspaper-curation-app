@@ -75,6 +75,7 @@ func cacheBatchData() {
 			l.Fatalf("Unable to query database for batch rename map: %s", op.Err())
 		}
 		var b = &models.Batch{MARCOrgCode: moc, CreatedAt: created, Name: name}
+		b.GenerateFullName()
 		var bnormal = &models.Batch{
 			MARCOrgCode: moc,
 			CreatedAt:   time.UnixMilli(1136243045000),
