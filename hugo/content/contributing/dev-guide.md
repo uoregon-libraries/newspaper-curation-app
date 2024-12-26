@@ -136,8 +136,8 @@ the script:
   "clean slate":
   - Deletes the stack, including database volumes
   - Starts up key services (*db, iiif, sftpgo, and oni services*)
-  - Once the database is ready, runs the DB migrations and ingests seed data if
-    you have any (`docker/mysql/nca-seed-data.sql`)
+  - Once the database is ready, runs the DB migrations and ingests basic seed
+    data that helps our test data repo.
 - `migrate` can be run standalone if you don't have seed data and just need to
   get the database migrations run
 - `server` prepares, compiles, and runs the HTTP server:
