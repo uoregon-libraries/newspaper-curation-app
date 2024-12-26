@@ -81,6 +81,11 @@ migrate() {
   ./bin/migrate-database -c ./settings up
 }
 
+# This is primarily for making the dev setup a lot faster by skipping migrations
+make_init_sql() {
+  source ./settings && mysqldump --host="$DB_HOST" --user="$DB_USER" --password="$DB_PASSWORD" --databases "$DB_DATABASE" --routines --triggers > docker/init.sql
+}
+
 load_seed_data() {
   mysql -unca -pnca -Dnca -h127.0.0.1 -e "INSERT INTO mocs (code, name) VALUES
     ('oru','University of Oregon Libraries; Eugene, OR'),
