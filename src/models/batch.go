@@ -92,6 +92,7 @@ type Batch struct {
 	ID            int64 `sql:",primary"`
 	MARCOrgCode   string
 	Name          string
+	FullName      string
 	CreatedAt     time.Time
 	ArchivedAt    time.Time
 	WentLiveAt    time.Time
@@ -152,9 +153,27 @@ func ActionableBatches() ([]*Batch, error) {
 	return findBatches(qry, statusList...)
 }
 
+// AllBatches grabs every batch in the database, including those currently in
+// some kind of system process. Deleted batches are still ignored, as those
+// should never need any actions, even by admins and devs.
+func AllBatches() ([]*Batch, error) {
+	return findBatches("status <> ?", BatchStatusDeleted)
+}
+
 // FindLiveArchivedBatches returns all batches that are live and archived
 func FindLiveArchivedBatches() ([]*Batch, error) {
 	return findBatches("status = ?", BatchStatusLiveArchived)
+}
+
+// GenerateFullName sets the batch FullName, used as the directory name for
+// Open ONI to ingest. This should only ever be generated *once* per batch to
+// ensure that no matter what we change, this value, and thus the computed file
+// path, will always be consistent.
+//
+// We expose this as a public function so that we can migrate old data where
+// batches didn't have a "permaname".
+func (b *Batch) GenerateFullName() {
+	b.FullName = fmt.Sprintf("batch_%s_%s%s_ver01", b.MARCOrgCode, b.CreatedAt.Format("20060102"), b.Name)
 }
 
 // CreateBatch creates a batch in the database, using its ID combined with the
@@ -182,6 +201,7 @@ func CreateBatch(webroot, moc string, issues []*Issue) (*Batch, error) {
 
 	var chksum = crc32.ChecksumIEEE([]byte(webroot))
 	b.Name = RandomBatchName(uint32(b.ID) + chksum)
+	b.GenerateFullName()
 	for _, i := range issues {
 		i.BatchID = b.ID
 		_ = i.SaveOp(op, ActionTypeInternalProcess, SystemUser.ID, fmt.Sprintf("added to batch %q", b.Name))
@@ -221,15 +241,6 @@ func (b *Batch) Issues() ([]*Issue, error) {
 // FlaggedIssues returns all issues flagged for removal from this batch
 func (b *Batch) FlaggedIssues() ([]*FlaggedIssue, error) {
 	return findFlaggedIssues("batch_id = ?", b.ID)
-}
-
-// FullName returns the name of a batch as it is needed for chronam / ONI.
-//
-// Note that currently we assume all generated batches will be _ver01, because
-// we would usually generate a completely new batch if one were in such a state
-// as to need to be pulled from production.
-func (b *Batch) FullName() string {
-	return fmt.Sprintf("batch_%s_%s%s_ver01", b.MARCOrgCode, b.CreatedAt.Format("20060102"), b.Name)
 }
 
 // AwardYear uses the batch creation date to produce the "award year" - this is
@@ -425,7 +436,7 @@ func (b *Batch) Finalize() error {
 func (b *Batch) deserialize() error {
 	b.StatusMeta = bs(b.Status)
 	if b.StatusMeta == noStatus {
-		return fmt.Errorf("invalid status %q on batch %s", b.Status, b.FullName())
+		return fmt.Errorf("invalid status %q on batch %s", b.Status, b.FullName)
 	}
 
 	return nil

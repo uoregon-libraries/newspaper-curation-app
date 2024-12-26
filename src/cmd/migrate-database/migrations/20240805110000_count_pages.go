@@ -10,7 +10,7 @@ import (
 )
 
 func init() {
-	goose.AddMigration(upCountIssuePages, downCountIssuePages)
+	goose.AddMigration(upCountIssuePages, noop)
 }
 
 // upCountIssuePages is an expensive little hack, but it's a one-time cost: we
@@ -39,10 +39,5 @@ func upCountIssuePages(_ *sql.Tx) error {
 			return fmt.Errorf("saving issue %q: %w", issue.Key(), err)
 		}
 	}
-	return nil
-}
-
-// downCountIssuePages is a no-op; page counts are deleted from the table anyway
-func downCountIssuePages(_ *sql.Tx) error {
 	return nil
 }

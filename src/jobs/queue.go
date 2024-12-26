@@ -190,7 +190,7 @@ func QueueMakeBatch(batch *models.Batch, c *config.Config) error {
 // essential files to the live location, and load it onto staging.
 func getJobsForMakeBatch(batch *models.Batch, c *config.Config) []*models.Job {
 	// Prepare the various directory vars we'll need
-	var batchname = batch.FullName()
+	var batchname = batch.FullName
 	var wipDir = filepath.Join(c.BatchOutputPath, ".wip-"+batchname)
 	var outDir = filepath.Join(c.BatchOutputPath, batchname)
 	var liveDir = filepath.Join(c.BatchProductionPath, batchname)
@@ -328,7 +328,7 @@ func getJobsForFinalizingFlaggedIssues(batch *models.Batch, flagged []*models.Fl
 	// First: jobs to destroy the two batch dirs. The full-batch dir contains
 	// hard links and easily rebuilt metadata (e.g., the bagit info), and the
 	// live dir is just a copy of those files, so this is not really dangerous
-	var liveDir = filepath.Join(c.BatchProductionPath, batch.FullName())
+	var liveDir = filepath.Join(c.BatchProductionPath, batch.FullName)
 	jobs = append(jobs,
 		models.NewJob(models.JobTypeKillDir, makeLocArgs(liveDir)),
 		models.NewJob(models.JobTypeKillDir, makeLocArgs(batch.Location)),
@@ -389,7 +389,7 @@ func QueueBatchForDeletion(batch *models.Batch, flagged []*models.FlaggedIssue, 
 // QueueBatchGoLive fires off all jobs needed to ingest a batch live and get it
 // ready for archiving.
 func QueueBatchGoLive(batch *models.Batch, c *config.Config) error {
-	var finalPath = filepath.Join(c.BatchArchivePath, batch.FullName())
+	var finalPath = filepath.Join(c.BatchArchivePath, batch.FullName)
 	var jobs []*models.Job
 
 	// First we need jobs to push the batch to production ONI
