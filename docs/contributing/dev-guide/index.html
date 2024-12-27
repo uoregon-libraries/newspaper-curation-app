@@ -23,7 +23,7 @@
 <meta itemprop="name" content="Developer&#39;s Guide">
 <meta itemprop="description" content="Developing on NCA">
 
-<meta itemprop="wordCount" content="1656">
+<meta itemprop="wordCount" content="1658">
 <meta itemprop="keywords" content="" /></head>
 <body>
   <div class="container"><div class="skip"><a href="#maincontent">Skip to main content</a></div>
@@ -394,8 +394,8 @@ the script:</p>
 <ul>
 <li>Deletes the stack, including database volumes</li>
 <li>Starts up key services (<em>db, iiif, sftpgo, and oni services</em>)</li>
-<li>Once the database is ready, runs the DB migrations and ingests seed data if
-you have any (<code>docker/mysql/nca-seed-data.sql</code>)</li>
+<li>Once the database is ready, runs the DB migrations and ingests basic seed
+data that helps our test data repo.</li>
 </ul>
 </li>
 <li><code>migrate</code> can be run standalone if you don&rsquo;t have seed data and just need to
