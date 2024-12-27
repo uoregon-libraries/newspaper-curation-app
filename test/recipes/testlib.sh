@@ -49,7 +49,7 @@ queue_batches() {
   wait_db
 
   # Generate batches
-  ./bin/queue-batches -c ./settings
+  ./bin/queue-batches -c ./settings 2>&1 | tee -a queue-batches.log
 
   # Start workers, wait for jobs to complete (~30sec)
   workonce 2>&1 | tee -a workers.log
