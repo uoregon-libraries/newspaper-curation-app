@@ -284,8 +284,8 @@ UNLOCK TABLES;
 /*!50003 SET @saved_cs_client      = @@character_set_client */ ;
 /*!50003 SET @saved_cs_results     = @@character_set_results */ ;
 /*!50003 SET @saved_col_connection = @@collation_connection */ ;
-/*!50003 SET character_set_client  = utf8mb3 */ ;
-/*!50003 SET character_set_results = utf8mb3 */ ;
+/*!50003 SET character_set_client  = utf8mb4 */ ;
+/*!50003 SET character_set_results = utf8mb4 */ ;
 /*!50003 SET collation_connection  = utf8mb4_uca1400_ai_ci */ ;
 /*!50003 SET @saved_sql_mode       = @@sql_mode */ ;
 /*!50003 SET sql_mode              = 'STRICT_TRANS_TABLES,ERROR_FOR_DIVISION_BY_ZERO,NO_AUTO_CREATE_USER,NO_ENGINE_SUBSTITUTION' */ ;
@@ -387,7 +387,7 @@ CREATE TABLE `mocs` (
   `code` tinytext DEFAULT NULL,
   `name` mediumtext DEFAULT NULL,
   PRIMARY KEY (`id`)
-) ENGINE=InnoDB AUTO_INCREMENT=3 DEFAULT CHARSET=utf8mb3 COLLATE=utf8mb3_bin;
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb3 COLLATE=utf8mb3_bin;
 /*!40101 SET character_set_client = @saved_cs_client */;
 
 --
@@ -396,7 +396,6 @@ CREATE TABLE `mocs` (
 
 LOCK TABLES `mocs` WRITE;
 /*!40000 ALTER TABLE `mocs` DISABLE KEYS */;
-INSERT INTO `mocs` VALUES (1,'oru','University of Oregon Libraries; Eugene, OR'),(2,'hoodriverlibrary','Hood River County Library District; Hood River, OR');
 /*!40000 ALTER TABLE `mocs` ENABLE KEYS */;
 UNLOCK TABLES;
 
@@ -475,7 +474,7 @@ CREATE TABLE `titles` (
   `lang_code3` tinytext DEFAULT NULL,
   `sftp_connected` tinyint(4) DEFAULT NULL,
   PRIMARY KEY (`id`)
-) ENGINE=InnoDB AUTO_INCREMENT=13 DEFAULT CHARSET=utf8mb3 COLLATE=utf8mb3_bin;
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb3 COLLATE=utf8mb3_bin;
 /*!40101 SET character_set_client = @saved_cs_client */;
 
 --
@@ -484,7 +483,6 @@ CREATE TABLE `titles` (
 
 LOCK TABLES `titles` WRITE;
 /*!40000 ALTER TABLE `titles` DISABLE KEYS */;
-INSERT INTO `titles` VALUES (2,'Appeal tribune. (Silverton, Or.)','2004260523','',1,NULL,'2004260523','pass','Appeal tribune.','Silverton, Or.',0,'','eng',0),(3,'Just out. (Portland, OR)','2013202554','',1,NULL,'2013202554','pass','Just out.','Portland, OR',0,'','eng',0),(4,'Northwest labor press. (Portland , Ore.)','2018252080','',1,NULL,'2018252080','pass','Northwest labor press.','Portland , Ore.',0,'','eng',0),(5,'Siletz news / (Siletz, OR)','2021242619','',1,NULL,'2021242619','pass','Siletz news /','Siletz, OR',0,'','eng',0),(6,'Keizertimes. (Salem, Or.)','sn00063621','',1,NULL,'sn00063621','pass','Keizertimes.','Salem, Or.',0,'','eng',0),(7,'The daily Astorian. (Astoria, Or.)','sn83008376','',1,NULL,'sn83008376','pass','The daily Astorian.','Astoria, Or.',0,'','eng',0),(8,'East Oregonian : E.O. (Pendleton, OR)','sn88086023','',1,NULL,'sn88086023','pass','East Oregonian : E.O.','Pendleton, OR',0,'','eng',0),(9,'Wallowa County chieftain. (Enterprise, Wallowa County, Or.)','sn90057139','',1,NULL,'sn90057139','pass','Wallowa County chieftain.','Enterprise, Wallowa County, Or.',0,'','eng',0),(10,'Cottage Grove sentinel. (Cottage Grove, Or.)','sn96088073','',1,NULL,'sn96088073','pass','Cottage Grove sentinel.','Cottage Grove, Or.',0,'','eng',0),(11,'Polk County itemizer observer. (Dallas, Or)','sn96088087','',1,NULL,'sn96088087','pass','Polk County itemizer observer.','Dallas, Or',0,'','eng',0),(12,'Vernonia eagle. (Vernonia, Or.)','sn99063854','',1,NULL,'sn99063854','pass','Vernonia eagle.','Vernonia, Or.',0,'','eng',0);
 /*!40000 ALTER TABLE `titles` ENABLE KEYS */;
 UNLOCK TABLES;
 
@@ -501,7 +499,7 @@ CREATE TABLE `users` (
   `roles` text DEFAULT NULL,
   `deactivated` tinyint(4) NOT NULL DEFAULT 0,
   PRIMARY KEY (`id`)
-) ENGINE=InnoDB AUTO_INCREMENT=14 DEFAULT CHARSET=utf8mb3 COLLATE=utf8mb3_bin;
+) ENGINE=InnoDB AUTO_INCREMENT=3 DEFAULT CHARSET=utf8mb3 COLLATE=utf8mb3_bin;
 /*!40101 SET character_set_client = @saved_cs_client */;
 
 --
@@ -510,7 +508,7 @@ CREATE TABLE `users` (
 
 LOCK TABLES `users` WRITE;
 /*!40000 ALTER TABLE `users` DISABLE KEYS */;
-INSERT INTO `users` VALUES (3,'admin','admin',0),(4,'titlemanager','title manager',0),(5,'issuecurator','issue curator',0),(6,'issuereviewer','issue reviewer',0),(7,'issuemanager','issue manager',0),(8,'usermanager','user manager',0),(9,'marcorgcodemanager','marc org code manager',0),(10,'workflowmanager','workflow manager',0),(11,'batchbuilder','batch builder',0),(12,'batchreviewer','batch reviewer',0),(13,'batchloader','batch loader',0);
+INSERT INTO `users` VALUES (1,'admin','admin',0),(2,'sysadmin','admin',0);
 /*!40000 ALTER TABLE `users` ENABLE KEYS */;
 UNLOCK TABLES;
 
@@ -551,4 +549,4 @@ USE `nca`;
 /*!40101 SET COLLATION_CONNECTION=@OLD_COLLATION_CONNECTION */;
 /*!40111 SET SQL_NOTES=@OLD_SQL_NOTES */;
 
--- Dump completed on 2024-12-26 15:10:44
+-- Dump completed on 2024-12-30 13:45:51
