@@ -34,6 +34,29 @@ Brief description, if necessary
 ### Migration
 -->
 
+## v6.0.1
+
+Batch names are now stored permanently instead of calculated on the fly, and
+the local development and testing is less likely to give "weird" Solr problems.
+
+### Fixed
+
+- Batch names are now stored in the database when a batch is built, rather than
+  computed as needed. This fixes weird datestamp inconsistency when a batch is
+  generated on a server with one timezone, and links to staging/production are
+  generated in a different timezone. This also prevents us from having massive
+  problems if we make a major change to the batch name generation algorithm.
+- Devs: `scripts/localdev.sh` no longer loads titles into ONI instances
+  immediately after database setup is done. This was sometimes happening faster
+  than ONI could initialize the Solr schema, which caused wonderful silent Solr
+  problems that would prevent loading batches, but with error messages that
+  didn't really explain the root problem well.
+
+### Migration
+
+- Run database migrations:
+  - `make && ./bin/migrate-database -c ./settings up`
+
 ## v6.0.0
 
 Batch automation! Awardee automation!! MARC XML uploading and automation!!!

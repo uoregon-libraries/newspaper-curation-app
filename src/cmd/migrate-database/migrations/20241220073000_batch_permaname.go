@@ -19,7 +19,7 @@ func upAddBatchPermaname(tx *sql.Tx) error {
 	}
 
 	var batches []*models.Batch
-	batches, err = models.ActionableBatches()
+	batches, err = models.AllBatches()
 	if err != nil {
 		return fmt.Errorf("reading batches from db: %w", err)
 	}
