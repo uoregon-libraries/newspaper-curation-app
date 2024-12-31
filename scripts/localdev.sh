@@ -82,7 +82,12 @@ migrate() {
 }
 
 # This is primarily for making the dev setup a lot faster by skipping migrations
-make_init_sql() {
+reset_and_build_init_sql() {
+  echo > docker/init.sql
+  docker compose down -v
+  dc up -d db
+  wait_for_database
+  migrate
   source ./settings && mysqldump --host="$DB_HOST" --user="$DB_USER" --password="$DB_PASSWORD" --databases "$DB_DATABASE" --routines --triggers > docker/init.sql
 }
 

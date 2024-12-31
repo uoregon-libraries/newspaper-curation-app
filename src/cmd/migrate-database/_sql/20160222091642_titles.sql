@@ -14,7 +14,7 @@ CREATE TABLE `titles` (
   `sftp_pass` TINYTEXT,
   `embargoed` TINYINT,
   PRIMARY KEY (`id`)
-) ENGINE=InnoDB AUTO_INCREMENT=2 DEFAULT CHARSET=utf8 COLLATE=utf8_bin;
+) ENGINE=InnoDB DEFAULT CHARSET=utf8 COLLATE=utf8_bin;
 /*!40101 SET character_set_client = @saved_cs_client */;
 
 -- +goose Down

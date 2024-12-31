@@ -98,8 +98,8 @@ func InitRootTemplate(templatePath string) {
 		"FullPath":   webutil.FullPath,
 		"ProdURL":    func() string { return webutil.ProductionURL },
 		"Comment":    HTMLComment,
-		"TimeString": func(t time.Time) string { return t.Format("2006-01-02 15:04") },
-		"dtstr":      func(t time.Time) string { return t.Format("on Jan 2, 2006 at 3:04pm") },
+		"TimeString": func(t time.Time) string { return t.Local().Format("2006-01-02 15:04") },
+		"dtstr":      func(t time.Time) string { return t.Local().Format("on Jan 2, 2006 at 3:04pm") },
 		"actionVerb": actionVerb,
 		"pluralize":  pluralize,
 		"nl2br": func(s string) template.HTML {
