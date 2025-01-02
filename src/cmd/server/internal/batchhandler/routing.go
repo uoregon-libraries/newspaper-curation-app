@@ -73,17 +73,22 @@ func Setup(r *mux.Router, baseWebPath string, c *config.Config) {
 	s.Path("/{batch_id}/flag-issues").Methods("GET").Handler(canReject(flagIssuesFormHandler))
 	s.Path("/{batch_id}/flag-issues").Methods("POST").Handler(canReject(flagIssuesHandler))
 
+	// Routes related to flagging / correcting live issues
+	s.Path("/{batch_id}/flag-live").Methods("GET").Handler(canFlagLive(flagLiveBatchFormHandler))
+	s.Path("/{batch_id}/flag-live").Methods("POST").Handler(canFlagLive(flagLiveBatchHandler))
+
 	layout = responder.Layout.Clone()
 	layout.Funcs(tmpl.FuncMap{
-		"BatchesHomeURL":  func() string { return basePath },
-		"StagingRootURL":  func() string { return conf.StagingNewsWebroot },
-		"ViewURL":         func(b *Batch) string { return batchURL(b) },
-		"SetArchivedURL":  func(b *Batch) string { return batchURL(b, "archive") },
-		"ApproveURL":      func(b *Batch) string { return batchURL(b, "approve") },
-		"RejectURL":       func(b *Batch) string { return batchURL(b, "reject") },
-		"FlagIssuesURL":   flagIssuesURL,
-		"StagingBatchURL": func(b *Batch) string { return batchNewsURL(conf.StagingNewsWebroot, b) },
-		"ProdBatchURL":    func(b *Batch) string { return batchNewsURL(conf.NewsWebroot, b) },
+		"BatchesHomeURL":   func() string { return basePath },
+		"StagingRootURL":   func() string { return conf.StagingNewsWebroot },
+		"ViewURL":          func(b *Batch) string { return batchURL(b) },
+		"SetArchivedURL":   func(b *Batch) string { return batchURL(b, "archive") },
+		"ApproveURL":       func(b *Batch) string { return batchURL(b, "approve") },
+		"RejectURL":        func(b *Batch) string { return batchURL(b, "reject") },
+		"FlagIssuesURL":    flagIssuesURL,
+		"FlagLiveBatchURL": func(b *Batch) string { return batchURL(b, "flag-live") },
+		"StagingBatchURL":  func(b *Batch) string { return batchNewsURL(conf.StagingNewsWebroot, b) },
+		"ProdBatchURL":     func(b *Batch) string { return batchNewsURL(conf.NewsWebroot, b) },
 	})
 	layout.Path = path.Join(layout.Path, "batches")
 
