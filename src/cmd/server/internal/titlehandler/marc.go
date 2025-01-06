@@ -56,6 +56,10 @@ func lookupMARC(t *Title, marcLoc string) error {
 
 	var m *marc.MARC
 	m, err = marc.ParseXML(reader)
+	if err != nil {
+		return fmt.Errorf("parsing MARC XML: %w", err)
+	}
+
 	t.MARCTitle = m.Title()
 	t.MARCLocation = m.Location()
 	t.LangCode3 = m.Language()
