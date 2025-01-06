@@ -34,6 +34,15 @@ Brief description, if necessary
 ### Migration
 -->
 
+## v6.0.2
+
+Hotfix for crash when creating a title that doesn't have MARC in your first
+configured MARC site (`MARC_LOCATION_1`).
+
+- Failure to download a valid MARC record no longer **crashes** NCA. I'm not
+  entirely sure how this happened, though, as Go's `net/http` is built to
+  auto-recover from basically any crash.
+
 ## v6.0.1
 
 Batch names are now stored permanently instead of calculated on the fly, and
