@@ -1,10 +1,13 @@
-// This script forcibly completes jobs that are pending so that the next job in
-// the sequence can begin. This is only useful for jobs that are stuck in some
-// way, such as a directory rename where the source is missing and the
-// destination isn't actually desired. This is rare, but can happen if jobs
-// fail catastrophically due to files manually being removed.
+// This script forcibly completes jobs that are failed or pending so that the
+// next job in the sequence can begin. This is only useful for jobs that are
+// stuck in some way, such as a directory rename where the source is missing
+// and the destination isn't actually desired. This is rare, but can happen if
+// jobs fail catastrophically due to files manually being removed.
 //
-// Please don't use this script except in exceedingly rare situations.
+// Please don't use this script except in exceedingly rare situations. Most of
+// the time it will have to be run, then a one-queue worker must be run and
+// monitored, and subsequent jobs may or may not succeed, resulting in more
+// runs of this tool.
 
 package main
 
