@@ -1,27 +1,24 @@
 # Newspaper Curation App
 
-**Note**: this project should not be considered production-ready unless you
-have a developer who can make sense of some of the inner workings.  The
-application / suite work, but there are quite a few situations where somebody
-needs to really dig to deal with problems.
+**Note**: this project isn't non-tech-user-friendly! You will need to have at
+least a part-time developer who can make sense of some of the inner workings.
+The application / suite work, but there are quite a few situations where
+somebody needs to really dig to deal with problems.
 
-For instance, a scanner error may require deleting the issue record from the
-database, moving the issue's TIFF/PDF files somewhere they can be examined and
-fixed by the scanning team, etc.
+For instance, external integrations can be finicky, particularly when trying to
+automate Open ONI commands. If your ONI instance fails to ingest a batch that
+NCA sends it, you likely need somebody to get their hands dirty in order to
+diagnose and fix the problem. This may mean looking through the codebases of
+these projects, doing manual database cleanup, etc.
 
-There are also improvements which need to be made to automate more parts of the
-process.  For instance, right now if an issue has errors, but manages to slip
-through to the batching phase, fixing the batch requires the use of a somewhat
-archaic command-line utility that isn't terribly well-documented.
+More generally, there are a wide variety of problems which can happen out of
+the application's scope, and which can only be fixed by manual intervention,
+usually do to human errors which are inherent in publisher-uploaded PDFs and
+scanned+OCRed historic titles.
 
-In general, there are undocumented problems which can happen out of the
-application's scope, and which can only be fixed by manual intervention due to
-features we haven't had time to build and/or general human error inherent in
-publisher-uploaded PDFs and scanned+OCRed historic titles.
-
-**Note 2**: NCA isn't meant as an out-of-the-box solution for anybody but us.
-Some of the tools may be generic, but there is no customization of things like
-workflow rules, template theming, etc.
+**Note 2**: NCA isn't meant as a customizable out-of-the-box solution. Most of
+the tools are reusable by anybody curating newspapers, but there is no way to
+apply your own branding, set up complex workflow rules, etc.
 
 Ye be warned.
 
