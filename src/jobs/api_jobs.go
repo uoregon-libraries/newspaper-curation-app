@@ -48,8 +48,8 @@ func (j *BatchJob) queueAgentJob(name string, fn batchJobFunc) ProcessResponse {
 	// need to be scrutinized
 	j.DBBatch.ONIAgentJobID = jobid
 
-	// It's pretty critical that we save the batch data and queue a "wait for
-	// ONI" job since the ONI job was successfully created
+	// It's pretty critical that we save the batch data since the ONI job was
+	// successfully created
 	err = j.runCritical(func() error {
 		var msg = fmt.Sprintf("Sent ONI Agent the %s command", name)
 		var err = j.DBBatch.Save(models.ActionTypeInternalProcess, models.SystemUser.ID, msg)
