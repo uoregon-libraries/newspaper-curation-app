@@ -168,10 +168,10 @@ func (j *ONIWaitForJob) Process(c *config.Config) ProcessResponse {
 		return PRTryLater
 	case openoni.JobStatusFailStart:
 		j.Logger.Errorf("ONI Agent job %d failed to start", jobID)
-		return PRFatal
+		return PRFailure
 	case openoni.JobStatusFailed:
 		j.Logger.Errorf("ONI Agent job %d failed to complete", jobID)
-		return PRFatal
+		return PRFailure
 	case openoni.JobStatusSuccessful:
 		j.Logger.Infof("ONI Agent reports job completed successfully")
 		return PRSuccess
