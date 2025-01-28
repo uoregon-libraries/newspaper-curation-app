@@ -508,7 +508,7 @@ func (j *Job) failAndRetryGroup(op *magicsql.Operation) error {
 	}
 
 	// Grab all entwined jobs
-	var sourceJobs, err = findJobs("pipeline_id = ? AND entwine_id = ? ORDER BY sequence", j.PipelineID, j.EntwineID)
+	var sourceJobs, err = findJobs("pipeline_id = ? AND entwine_id = ? AND status <> ? ORDER BY sequence", j.PipelineID, j.EntwineID, JobStatusFailedDone)
 	if err != nil {
 		return fmt.Errorf("getting entwined jobs: %w", err)
 	}
