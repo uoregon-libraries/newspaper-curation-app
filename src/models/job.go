@@ -3,6 +3,7 @@ package models
 import (
 	"encoding/json"
 	"fmt"
+	"math/rand"
 	"strings"
 	"time"
 
@@ -143,6 +144,7 @@ type Job struct {
 	PipelineID  int64
 	Sequence    int
 	RetryCount  int
+	EntwineID   int64
 	logs        []*JobLog
 
 	// The job won't be run until sometime after RunAt. Usually it's very close,
@@ -415,6 +417,20 @@ func (j *Job) QueueSiblingJobs(list []*Job) error {
 	}
 
 	return op.Err()
+}
+
+// EntwineJobs "connects" the passed-in jobs so that on any failure, the list
+// as a whole is requeued instead of justthe job which failed. This should only
+// be used for jobs where the *group* is idempotent **or** resilience is so
+// critical that idempotence is worth losing.
+//
+// Please NEVER use this for jobs that aren't in the same pipeline!
+func EntwineJobs(list []*Job) {
+	rand.Seed(time.Now().UnixNano())
+	var n = rand.Int63()
+	for _, j := range list {
+		j.EntwineID = n
+	}
 }
 
 // TryLater updates the job's status back to pending and sets its run-at to now
