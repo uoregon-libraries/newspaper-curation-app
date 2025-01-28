@@ -441,33 +441,101 @@ func (j *Job) TryLater(delay time.Duration) error {
 	return j.Save()
 }
 
-// FailAndRetry closes out j and queues a new, duplicate job ready for
-// processing.  We do this instead of just rerunning a job so that the job logs
-// can be tied to a distinct instance of a job, making it easier to debug
-// things like command-line failures for a particular run.
-func (j *Job) FailAndRetry() (*Job, error) {
-	var op = dbi.DB.Operation()
-	op.BeginTransaction()
-
-	var clone = j.Clone()
-	clone.Status = string(JobStatusPending)
-	clone.RetryCount++
-
-	// Calculate the delay - essentially exponential backoff but starting at ~30
-	// seconds and capping at 24 hours
-	var delay = time.Second << uint(clone.RetryCount+3)
+// retryDelay returns the time to delay the next run of a job, based on how many
+// retries it's already had, using a 30-second to 24-hour exponential backoff
+// formula.
+func retryDelay(count int) time.Duration {
+	// Calculate the delay for starting the next job(s) - essentially exponential
+	// backoff but starting at ~30 seconds and capping at 24 hours
+	var delay = time.Second << uint(count+3)
 	var maxDelay = time.Hour * 24
 	if delay > maxDelay {
 		delay = maxDelay
 	}
-	clone.RunAt = time.Now().Add(delay)
+
+	return delay
+}
+
+// FailAndRetry closes out j and queues a new, duplicate job ready for
+// processing.  We do this instead of just rerunning a job so that the job logs
+// can be tied to a distinct instance of a job, making it easier to debug
+// things like command-line failures for a particular run.
+//
+// If a job is in an entwinement group, the whole group is closed, duplicated,
+// and retried, starting with the first in sequence.
+func (j *Job) FailAndRetry() error {
+	var err error
+	var op = dbi.DB.Operation()
+	op.BeginTransaction()
+
+	if j.EntwineID == 0 {
+		_, err = j.failAndRetrySingle(op)
+	} else {
+		err = j.failAndRetryGroup(op)
+	}
+
+	if err != nil {
+		op.Rollback()
+		return err
+	}
+
+	op.EndTransaction()
+	return op.Err()
+}
+
+func (j *Job) failAndRetrySingle(op *magicsql.Operation) (*Job, error) {
+	var clone = j.Clone()
+	clone.Status = string(JobStatusPending)
+	clone.RetryCount++
+	clone.RunAt = time.Now().Add(retryDelay(clone.RetryCount))
 	_ = clone.SaveOp(op)
 
 	j.Status = string(JobStatusFailedDone)
 	_ = j.SaveOp(op)
 
-	op.EndTransaction()
 	return clone, op.Err()
+}
+
+// failAndRetryGroup collects all jobs entwined with j, clones them, and
+// closes out the originals, much like retrying a single job. The first (by
+// sequence) will be set to pending while the rest are put on hold. The retry
+// count is based on the group as a whole, not the job which failed, so we use
+// the first job in the group for that as well.
+func (j *Job) failAndRetryGroup(op *magicsql.Operation) error {
+	// If there's no entwinement ID, something went wrong
+	if j.EntwineID == 0 {
+		return fmt.Errorf("retrying group: invalid job %d, no entwinement id", j.ID)
+	}
+
+	// Grab all entwined jobs
+	var sourceJobs, err = findJobs("pipeline_id = ? AND entwine_id = ? ORDER BY sequence", j.PipelineID, j.EntwineID)
+	if err != nil {
+		return fmt.Errorf("getting entwined jobs: %w", err)
+	}
+
+	// If there are fewer than two entwined jobs, we have a problem
+	if len(sourceJobs) < 2 {
+		return fmt.Errorf("getting entwined jobs: %d jobs found, should have been at least two", len(sourceJobs))
+	}
+
+	// In terms of failure process, the first job is the "coordinator" - it holds
+	// the only data that matters for the rest of the group.
+	var coordinator, _ = sourceJobs[0].failAndRetrySingle(op)
+
+	// All other jobs are set to on-hold, and use the coordinator's retry and
+	// run-at values
+	for _, job := range sourceJobs[1:] {
+		var clone = job.Clone()
+		clone.Status = string(JobStatusOnHold)
+		clone.RetryCount = coordinator.RetryCount
+		clone.RunAt = coordinator.RunAt
+		_ = clone.SaveOp(op)
+
+		job.Status = string(JobStatusFailedDone)
+		_ = job.SaveOp(op)
+	}
+
+	return j.SaveOp(op)
 }
 
 // RenewDeadJob takes a failed (NOT failed_done) job and queues a new job as if
