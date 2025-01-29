@@ -185,14 +185,12 @@ func FindJob(id int64) (*Job, error) {
 	return jobs[0], err
 }
 
-// findJobs wraps all the job finding functionality so helpers can be
+// findJobsOp wraps all the job finding functionality so helpers can be
 // one-liners.  This is purposely *not* exported to enforce a stricter API.
 //
 // NOTE: All instantiations from the database must go through this function to
 // properly set up their args map!
-func findJobs(where string, args ...any) ([]*Job, error) {
-	var op = dbi.DB.Operation()
-	op.Dbg = dbi.Debug
+func findJobsOp(op *magicsql.Operation, where string, args ...any) ([]*Job, error) {
 	var list []*Job
 	op.Select("jobs", &Job{}).Where(where, args...).AllObjects(&list)
 	for _, j := range list {
@@ -202,6 +200,13 @@ func findJobs(where string, args ...any) ([]*Job, error) {
 		}
 	}
 	return list, op.Err()
+}
+
+// findJobs calls findJobsOp after creating a single-use [magicsql.Operation]
+func findJobs(where string, args ...any) ([]*Job, error) {
+	var op = dbi.DB.Operation()
+	op.Dbg = dbi.Debug
+	return findJobsOp(op, where, args...)
 }
 
 // PopNextPendingJob is a helper for locking the database to pull the oldest
@@ -508,7 +513,7 @@ func (j *Job) failAndRetryGroup(op *magicsql.Operation) error {
 	}
 
 	// Grab all entwined jobs
-	var sourceJobs, err = findJobs("pipeline_id = ? AND entwine_id = ? AND status <> ? ORDER BY sequence", j.PipelineID, j.EntwineID, JobStatusFailedDone)
+	var sourceJobs, err = findJobsOp(op, "pipeline_id = ? AND entwine_id = ? AND status <> ? ORDER BY sequence", j.PipelineID, j.EntwineID, JobStatusFailedDone)
 	if err != nil {
 		return fmt.Errorf("getting entwined jobs: %w", err)
 	}
