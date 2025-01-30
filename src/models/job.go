@@ -536,24 +536,34 @@ func (j *Job) failAndRetryGroup(op *magicsql.Operation) error {
 		return fmt.Errorf("getting entwined jobs: %d jobs found, should have been at least two", len(sourceJobs))
 	}
 
-	// In terms of failure process, the first job is the "coordinator" - it holds
-	// the only data that matters for the rest of the group.
-	var coordinator, _ = sourceJobs[0].failAndRetrySingle(op)
+	var clones []*Job
 
-	// All other jobs are set to on-hold, and use the coordinator's retry and
-	// run-at values
-	for _, job := range sourceJobs[1:] {
-		var clone = job.Clone()
-		clone.Status = string(JobStatusOnHold)
-		clone.RetryCount = coordinator.RetryCount
-		clone.RunAt = coordinator.RunAt
-		_ = clone.SaveOp(op)
-
-		job.Status = string(JobStatusFailedDone)
-		_ = job.SaveOp(op)
+	// All jobs are retried, but only the first is allowed to be pending
+	for i, job := range sourceJobs {
+		var clone, err = job.failAndRetrySingle(op)
+		if err != nil {
+			return fmt.Errorf("retrying entwined job (id %d): %w", job.ID, err)
+		}
+		if i > 0 {
+			clone.Status = string(JobStatusOnHold)
+			err = clone.SaveOp(op)
+			if err != nil {
+				return fmt.Errorf("updating entwined job (id %d) status to on-hold: %w", job.ID, err)
+			}
+		}
+		clones = append(clones, clone)
 	}
 
-	return j.SaveOp(op)
+	// Re-entwine jobs and save them again so their entwine ID isn't likely to
+	// conflict with the closed jobs, just to be extra safe
+	EntwineJobs(clones)
+	for _, job := range clones {
+		err = job.SaveOp(op)
+		if err != nil {
+			return fmt.Errorf("re-entwining job (id %d): %w", job.ID, err)
+		}
+	}
+	return nil
 }
 
 // RenewDeadJob takes a failed (NOT failed_done) job and queues a new job as if
