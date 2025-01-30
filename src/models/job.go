@@ -371,29 +371,42 @@ func CompleteJob(j *Job) error {
 	j.CompletedAt = time.Now()
 	_ = j.SaveOp(op)
 
-	// If there are any unfinished jobs at the same sequence number, we don't
-	// need to do anything more
-	var n = countJobsOp(op, "pipeline_id = ? AND sequence <= ? AND status not in (?, ?)", j.PipelineID, j.Sequence, JobStatusFailedDone, JobStatusSuccessful)
+	// If there are any pending jobs in this pipeline, we don't need to do
+	// anything more
+	var n = countJobsOp(op, "pipeline_id = ? AND status = ?", j.PipelineID, JobStatusPending)
 	if n > 0 {
 		return op.Err()
 	}
 
-	// If there are no jobs left, the pipeline is done and we can close it
-	n = countJobsOp(op, "pipeline_id = ? AND status not in (?, ?)", j.PipelineID, JobStatusFailedDone, JobStatusSuccessful)
+	// No pending jobs? Grab the next on-hold job, then, and set it to pending.
+	var onHoldJobs []*Job
+	onHoldJobs, err = findJobsOp(op, "pipeline_id = ? AND status = ? ORDER BY sequence", j.PipelineID, JobStatusOnHold)
+	if len(onHoldJobs) > 0 {
+		var nextJob = onHoldJobs[0]
+		nextJob.Status = string(JobStatusPending)
+		return nextJob.SaveOp(op)
+	}
+
+	// No pending *or* on-hold jobs? Check for anything that's in-process or
+	// failed-but-open. If we ever support parallel job runners, it's possible
+	// that we'll have this situation.
+	n = countJobsOp(op, "pipeline_id = ? AND status IN (?, ?)", j.PipelineID, JobStatusInProcess, JobStatusFailed)
+	if n > 0 {
+		return op.Err()
+	}
+
+	// Nothing pending, nothing on hold, nothing in process, nothing failed but
+	// awaiting retry. Time to close the pipeline? For safety, we only close the
+	// pipeline if its only jobs are those which have been completed or closed.
+	n = countJobsOp(op, "pipeline_id = ? AND status NOT IN (?, ?)", JobStatusSuccessful, JobStatusFailedDone)
 	if n == 0 {
 		p.CompletedAt = time.Now()
 		return p.saveOp(op)
 	}
 
-	// There are jobs left, but they're on hold, so let's fix that.
-	//
-	// TODO: DON'T hard-code the Sequence + 1 here! If we ever want jobs that
-	// have space between them, or we allow an individual job to be queued but
-	// then removed for some reason, this breaks and debugging would be a pain.
-	// Probably not likely, but it's very little work to find the next sequence
-	// instead of just assuming.
-	op.Exec("UPDATE jobs SET status = ? WHERE pipeline_id = ? AND sequence = ?", JobStatusPending, j.PipelineID, j.Sequence+1)
-	return op.Err()
+	// This shouldn't happen, but we need to catch it just in case. A renamed job
+	// status could hose us, or adding a new job status we forget to check, etc.
+	return fmt.Errorf("pipeline %d has invalid jobs: cannot continue or close the pipeline", j.PipelineID)
 }
 
 // Clone returns a shallow copy of the job with key data cleared (database id,
