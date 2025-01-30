@@ -398,7 +398,7 @@ func CompleteJob(j *Job) error {
 	// Nothing pending, nothing on hold, nothing in process, nothing failed but
 	// awaiting retry. Time to close the pipeline? For safety, we only close the
 	// pipeline if its only jobs are those which have been completed or closed.
-	n = countJobsOp(op, "pipeline_id = ? AND status NOT IN (?, ?)", JobStatusSuccessful, JobStatusFailedDone)
+	n = countJobsOp(op, "pipeline_id = ? AND status NOT IN (?, ?)", j.PipelineID, JobStatusSuccessful, JobStatusFailedDone)
 	if n == 0 {
 		p.CompletedAt = time.Now()
 		return p.saveOp(op)
