@@ -134,6 +134,10 @@ type ONIWaitForJob struct {
 // been set in the ID arg
 func (j *ONIWaitForJob) Valid() bool {
 	var id = j.DBBatch.ONIAgentJobID
+	if id == -1 {
+		j.Logger.Infof("ONIWaitForJob done: Agent reported unnecessary job")
+		return true
+	}
 	if id < 1 {
 		j.Logger.Errorf("ONIWaitForJob created with an invalid id (%d)", id)
 		return false
