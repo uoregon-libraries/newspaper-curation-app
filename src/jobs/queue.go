@@ -88,7 +88,7 @@ func getJobsForMoveDir(source, destination string, exclusions ...string) []*mode
 // getJobsForONIBatch returns jobs that are either for loading or purging an
 // ONI batch on the given environment, pre-set to be entwined.
 func getJobsForONIBatch(batch *models.Batch, jType models.JobType, env string) []*models.Job {
-	var queue = batch.BuildJob(jType, makeLocArgs(serverTypeStaging))
+	var queue = batch.BuildJob(jType, makeLocArgs(env))
 	var wait = batch.BuildJob(models.JobTypeONIWaitForJob, makeLocArgs(env))
 	models.EntwineJobs([]*models.Job{queue, wait})
 	return []*models.Job{queue, wait}
