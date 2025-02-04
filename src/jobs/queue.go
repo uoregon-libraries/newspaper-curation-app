@@ -85,6 +85,15 @@ func getJobsForMoveDir(source, destination string, exclusions ...string) []*mode
 	return jobs
 }
 
+// getJobsForONIBatch returns jobs that are either for loading or purging an
+// ONI batch on the given environment, pre-set to be entwined.
+func getJobsForONIBatch(batch *models.Batch, jType models.JobType, env string) []*models.Job {
+	var queue = batch.BuildJob(jType, makeLocArgs(env))
+	var wait = batch.BuildJob(models.JobTypeONIWaitForJob, makeLocArgs(env))
+	models.EntwineJobs([]*models.Job{queue, wait})
+	return []*models.Job{queue, wait}
+}
+
 // QueueSFTPIssueMove queues up an issue move into the workflow area followed
 // by a page-split and then a move to the page review area
 //
@@ -217,13 +226,10 @@ func getJobsForMakeBatch(batch *models.Batch, c *config.Config) []*models.Job {
 	// Finally, the last jobs copy the essential files to the final path so we
 	// can ingest them into staging
 	jobs = append(jobs, getJobsForCopyDir(outDir, liveDir, "*.tif", "*.tiff", "*.TIF", "*.TIFF", "*.tar.bz", "*.tar")...)
-	jobs = append(jobs,
-		batch.BuildJob(models.JobTypeBatchAction, makeActionArgs("copied to live path")),
-		batch.BuildJob(models.JobTypeONILoadBatch, makeLocArgs(serverTypeStaging)),
-		batch.BuildJob(models.JobTypeONIWaitForJob, makeLocArgs(serverTypeStaging)),
-		batch.BuildJob(models.JobTypeBatchAction, makeActionArgs("ingested on staging")),
-		batch.BuildJob(models.JobTypeSetBatchStatus, makeBSArgs(models.BatchStatusQCReady)),
-	)
+	jobs = append(jobs, batch.BuildJob(models.JobTypeBatchAction, makeActionArgs("copied to live path")))
+	jobs = append(jobs, getJobsForONIBatch(batch, models.JobTypeONILoadBatch, serverTypeStaging)...)
+	jobs = append(jobs, batch.BuildJob(models.JobTypeBatchAction, makeActionArgs("ingested on staging")))
+	jobs = append(jobs, batch.BuildJob(models.JobTypeSetBatchStatus, makeBSArgs(models.BatchStatusQCReady)))
 
 	return jobs
 }
@@ -336,11 +342,8 @@ func getJobsForFinalizingFlaggedIssues(batch *models.Batch, flagged []*models.Fl
 	)
 
 	// Next purge the batch from staging
-	jobs = append(jobs,
-		batch.BuildJob(models.JobTypeONIPurgeBatch, makeLocArgs(serverTypeStaging)),
-		batch.BuildJob(models.JobTypeONIWaitForJob, makeLocArgs(serverTypeStaging)),
-		batch.BuildJob(models.JobTypeBatchAction, makeActionArgs("purged batch from staging")),
-	)
+	jobs = append(jobs, getJobsForONIBatch(batch, models.JobTypeONIPurgeBatch, serverTypeStaging)...)
+	jobs = append(jobs, batch.BuildJob(models.JobTypeBatchAction, makeActionArgs("purged batch from staging")))
 
 	// Now we remove issues one at a time so we can easily resume / restart.
 	// Removing an issue means we first remove the METS XML file, and only when
@@ -393,8 +396,7 @@ func QueueBatchGoLive(batch *models.Batch, c *config.Config) error {
 	var jobs []*models.Job
 
 	// First we need jobs to push the batch to production ONI
-	jobs = append(jobs, batch.BuildJob(models.JobTypeONILoadBatch, makeLocArgs(serverTypeProd)))
-	jobs = append(jobs, batch.BuildJob(models.JobTypeONIWaitForJob, makeLocArgs(serverTypeProd)))
+	jobs = append(jobs, getJobsForONIBatch(batch, models.JobTypeONILoadBatch, serverTypeProd)...)
 	jobs = append(jobs, batch.BuildJob(models.JobTypeBatchAction, makeActionArgs("ingested on production")))
 
 	// Then archive-move jobs

@@ -48,8 +48,8 @@ func (j *BatchJob) queueAgentJob(name string, fn batchJobFunc) ProcessResponse {
 	// need to be scrutinized
 	j.DBBatch.ONIAgentJobID = jobid
 
-	// It's pretty critical that we save the batch data and queue a "wait for
-	// ONI" job since the ONI job was successfully created
+	// It's pretty critical that we save the batch data since the ONI job was
+	// successfully created
 	err = j.runCritical(func() error {
 		var msg = fmt.Sprintf("Sent ONI Agent the %s command", name)
 		var err = j.DBBatch.Save(models.ActionTypeInternalProcess, models.SystemUser.ID, msg)
@@ -134,6 +134,10 @@ type ONIWaitForJob struct {
 // been set in the ID arg
 func (j *ONIWaitForJob) Valid() bool {
 	var id = j.DBBatch.ONIAgentJobID
+	if id == -1 {
+		j.Logger.Infof("ONIWaitForJob done: Agent reported unnecessary job")
+		return true
+	}
 	if id < 1 {
 		j.Logger.Errorf("ONIWaitForJob created with an invalid id (%d)", id)
 		return false
@@ -168,10 +172,10 @@ func (j *ONIWaitForJob) Process(c *config.Config) ProcessResponse {
 		return PRTryLater
 	case openoni.JobStatusFailStart:
 		j.Logger.Errorf("ONI Agent job %d failed to start", jobID)
-		return PRFatal
+		return PRFailure
 	case openoni.JobStatusFailed:
 		j.Logger.Errorf("ONI Agent job %d failed to complete", jobID)
-		return PRFatal
+		return PRFailure
 	case openoni.JobStatusSuccessful:
 		j.Logger.Infof("ONI Agent reports job completed successfully")
 		return PRSuccess

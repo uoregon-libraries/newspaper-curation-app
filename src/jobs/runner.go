@@ -188,13 +188,12 @@ func (r *Runner) handleFailure(pr Processor) {
 		return
 	}
 
-	var retryJob, err = dbj.FailAndRetry()
+	var err = dbj.FailAndRetry()
 	if err != nil {
 		r.logger.Criticalf("Unable to requeue failed job (job: %d): %s", dbj.ID, err)
 		return
 	}
-	r.logger.Warnf("Failed job %d: retrying via job %d at %s (try #%d)",
-		dbj.ID, retryJob.ID, retryJob.RunAt, retryJob.RetryCount)
+	r.logger.Warnf("Failed job %d: retrying later", dbj.ID)
 }
 
 func (r *Runner) handleTryLater(pr Processor) {

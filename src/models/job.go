@@ -3,6 +3,7 @@ package models
 import (
 	"encoding/json"
 	"fmt"
+	"math/rand"
 	"strings"
 	"time"
 
@@ -143,6 +144,7 @@ type Job struct {
 	PipelineID  int64
 	Sequence    int
 	RetryCount  int
+	EntwineID   int64
 	logs        []*JobLog
 
 	// The job won't be run until sometime after RunAt. Usually it's very close,
@@ -183,14 +185,12 @@ func FindJob(id int64) (*Job, error) {
 	return jobs[0], err
 }
 
-// findJobs wraps all the job finding functionality so helpers can be
+// findJobsOp wraps all the job finding functionality so helpers can be
 // one-liners.  This is purposely *not* exported to enforce a stricter API.
 //
 // NOTE: All instantiations from the database must go through this function to
 // properly set up their args map!
-func findJobs(where string, args ...any) ([]*Job, error) {
-	var op = dbi.DB.Operation()
-	op.Dbg = dbi.Debug
+func findJobsOp(op *magicsql.Operation, where string, args ...any) ([]*Job, error) {
 	var list []*Job
 	op.Select("jobs", &Job{}).Where(where, args...).AllObjects(&list)
 	for _, j := range list {
@@ -200,6 +200,13 @@ func findJobs(where string, args ...any) ([]*Job, error) {
 		}
 	}
 	return list, op.Err()
+}
+
+// findJobs calls findJobsOp after creating a single-use [magicsql.Operation]
+func findJobs(where string, args ...any) ([]*Job, error) {
+	var op = dbi.DB.Operation()
+	op.Dbg = dbi.Debug
+	return findJobsOp(op, where, args...)
 }
 
 // PopNextPendingJob is a helper for locking the database to pull the oldest
@@ -364,29 +371,42 @@ func CompleteJob(j *Job) error {
 	j.CompletedAt = time.Now()
 	_ = j.SaveOp(op)
 
-	// If there are any unfinished jobs at the same sequence number, we don't
-	// need to do anything more
-	var n = countJobsOp(op, "pipeline_id = ? AND sequence <= ? AND status not in (?, ?)", j.PipelineID, j.Sequence, JobStatusFailedDone, JobStatusSuccessful)
+	// If there are any pending jobs in this pipeline, we don't need to do
+	// anything more
+	var n = countJobsOp(op, "pipeline_id = ? AND status = ?", j.PipelineID, JobStatusPending)
 	if n > 0 {
 		return op.Err()
 	}
 
-	// If there are no jobs left, the pipeline is done and we can close it
-	n = countJobsOp(op, "pipeline_id = ? AND status not in (?, ?)", j.PipelineID, JobStatusFailedDone, JobStatusSuccessful)
+	// No pending jobs? Grab the next on-hold job, then, and set it to pending.
+	var onHoldJobs []*Job
+	onHoldJobs, err = findJobsOp(op, "pipeline_id = ? AND status = ? ORDER BY sequence", j.PipelineID, JobStatusOnHold)
+	if len(onHoldJobs) > 0 {
+		var nextJob = onHoldJobs[0]
+		nextJob.Status = string(JobStatusPending)
+		return nextJob.SaveOp(op)
+	}
+
+	// No pending *or* on-hold jobs? Check for anything that's in-process or
+	// failed-but-open. If we ever support parallel job runners, it's possible
+	// that we'll have this situation.
+	n = countJobsOp(op, "pipeline_id = ? AND status IN (?, ?)", j.PipelineID, JobStatusInProcess, JobStatusFailed)
+	if n > 0 {
+		return op.Err()
+	}
+
+	// Nothing pending, nothing on hold, nothing in process, nothing failed but
+	// awaiting retry. Time to close the pipeline? For safety, we only close the
+	// pipeline if its only jobs are those which have been completed or closed.
+	n = countJobsOp(op, "pipeline_id = ? AND status NOT IN (?, ?)", j.PipelineID, JobStatusSuccessful, JobStatusFailedDone)
 	if n == 0 {
 		p.CompletedAt = time.Now()
 		return p.saveOp(op)
 	}
 
-	// There are jobs left, but they're on hold, so let's fix that.
-	//
-	// TODO: DON'T hard-code the Sequence + 1 here! If we ever want jobs that
-	// have space between them, or we allow an individual job to be queued but
-	// then removed for some reason, this breaks and debugging would be a pain.
-	// Probably not likely, but it's very little work to find the next sequence
-	// instead of just assuming.
-	op.Exec("UPDATE jobs SET status = ? WHERE pipeline_id = ? AND sequence = ?", JobStatusPending, j.PipelineID, j.Sequence+1)
-	return op.Err()
+	// This shouldn't happen, but we need to catch it just in case. A renamed job
+	// status could hose us, or adding a new job status we forget to check, etc.
+	return fmt.Errorf("pipeline %d has invalid jobs: cannot continue or close the pipeline", j.PipelineID)
 }
 
 // Clone returns a shallow copy of the job with key data cleared (database id,
@@ -417,6 +437,20 @@ func (j *Job) QueueSiblingJobs(list []*Job) error {
 	return op.Err()
 }
 
+// EntwineJobs "connects" the passed-in jobs so that on any failure, the list
+// as a whole is requeued instead of justthe job which failed. This should only
+// be used for jobs where the *group* is idempotent **or** resilience is so
+// critical that idempotence is worth losing.
+//
+// Please NEVER use this for jobs that aren't in the same pipeline!
+func EntwineJobs(list []*Job) {
+	rand.Seed(time.Now().UnixNano())
+	var n = rand.Int63()
+	for _, j := range list {
+		j.EntwineID = n
+	}
+}
+
 // TryLater updates the job's status back to pending and sets its run-at to now
 // plus the given delay
 func (j *Job) TryLater(delay time.Duration) error {
@@ -425,33 +459,111 @@ func (j *Job) TryLater(delay time.Duration) error {
 	return j.Save()
 }
 
-// FailAndRetry closes out j and queues a new, duplicate job ready for
-// processing.  We do this instead of just rerunning a job so that the job logs
-// can be tied to a distinct instance of a job, making it easier to debug
-// things like command-line failures for a particular run.
-func (j *Job) FailAndRetry() (*Job, error) {
-	var op = dbi.DB.Operation()
-	op.BeginTransaction()
-
-	var clone = j.Clone()
-	clone.Status = string(JobStatusPending)
-	clone.RetryCount++
-
-	// Calculate the delay - essentially exponential backoff but starting at ~30
-	// seconds and capping at 24 hours
-	var delay = time.Second << uint(clone.RetryCount+3)
+// retryDelay returns the time to delay the next run of a job, based on how many
+// retries it's already had, using a 30-second to 24-hour exponential backoff
+// formula.
+func retryDelay(count int) time.Duration {
+	// Calculate the delay for starting the next job(s) - essentially exponential
+	// backoff but starting at ~30 seconds and capping at 24 hours
+	var delay = time.Second << uint(count+3)
 	var maxDelay = time.Hour * 24
 	if delay > maxDelay {
 		delay = maxDelay
 	}
-	clone.RunAt = time.Now().Add(delay)
+
+	return delay
+}
+
+// FailAndRetry closes out j and queues a new, duplicate job ready for
+// processing.  We do this instead of just rerunning a job so that the job logs
+// can be tied to a distinct instance of a job, making it easier to debug
+// things like command-line failures for a particular run.
+//
+// If a job is in an entwinement group, the whole group is closed, duplicated,
+// and retried, starting with the first in sequence.
+func (j *Job) FailAndRetry() error {
+	var err error
+	var op = dbi.DB.Operation()
+	op.BeginTransaction()
+
+	if j.EntwineID == 0 {
+		_, err = j.failAndRetrySingle(op)
+	} else {
+		err = j.failAndRetryGroup(op)
+	}
+
+	if err != nil {
+		op.Rollback()
+		return err
+	}
+
+	op.EndTransaction()
+	return op.Err()
+}
+
+func (j *Job) failAndRetrySingle(op *magicsql.Operation) (*Job, error) {
+	var clone = j.Clone()
+	clone.Status = string(JobStatusPending)
+	clone.RetryCount++
+	clone.RunAt = time.Now().Add(retryDelay(clone.RetryCount))
 	_ = clone.SaveOp(op)
 
 	j.Status = string(JobStatusFailedDone)
 	_ = j.SaveOp(op)
 
-	op.EndTransaction()
 	return clone, op.Err()
+}
+
+// failAndRetryGroup collects all jobs entwined with j, clones them, and
+// closes out the originals, much like retrying a single job. The first (by
+// sequence) will be set to pending while the rest are put on hold. The retry
+// count is based on the group as a whole, not the job which failed, so we use
+// the first job in the group for that as well.
+func (j *Job) failAndRetryGroup(op *magicsql.Operation) error {
+	// If there's no entwinement ID, something went wrong
+	if j.EntwineID == 0 {
+		return fmt.Errorf("retrying group: invalid job %d, no entwinement id", j.ID)
+	}
+
+	// Grab all entwined jobs
+	var sourceJobs, err = findJobsOp(op, "pipeline_id = ? AND entwine_id = ? AND status <> ? ORDER BY sequence", j.PipelineID, j.EntwineID, JobStatusFailedDone)
+	if err != nil {
+		return fmt.Errorf("getting entwined jobs: %w", err)
+	}
+
+	// If there are fewer than two entwined jobs, we have a problem
+	if len(sourceJobs) < 2 {
+		return fmt.Errorf("getting entwined jobs: %d jobs found, should have been at least two", len(sourceJobs))
+	}
+
+	var clones []*Job
+
+	// All jobs are retried, but only the first is allowed to be pending
+	for i, job := range sourceJobs {
+		var clone, err = job.failAndRetrySingle(op)
+		if err != nil {
+			return fmt.Errorf("retrying entwined job (id %d): %w", job.ID, err)
+		}
+		if i > 0 {
+			clone.Status = string(JobStatusOnHold)
+			err = clone.SaveOp(op)
+			if err != nil {
+				return fmt.Errorf("updating entwined job (id %d) status to on-hold: %w", job.ID, err)
+			}
+		}
+		clones = append(clones, clone)
+	}
+
+	// Re-entwine jobs and save them again so their entwine ID isn't likely to
+	// conflict with the closed jobs, just to be extra safe
+	EntwineJobs(clones)
+	for _, job := range clones {
+		err = job.SaveOp(op)
+		if err != nil {
+			return fmt.Errorf("re-entwining job (id %d): %w", job.ID, err)
+		}
+	}
+	return nil
 }
 
 // RenewDeadJob takes a failed (NOT failed_done) job and queues a new job as if
