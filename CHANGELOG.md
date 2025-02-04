@@ -78,6 +78,11 @@ Better ONI Agent integration and some dev improvements
   state for `init.sql`, rather than the situations where it ends up being easy
   to accidentally add test data.
 
+### Migration
+
+- Run database migrations:
+  - `make && ./bin/migrate-database -c ./settings up`
+
 ## v6.0.2
 
 Hotfix for crash when creating a title that doesn't have MARC in your first
