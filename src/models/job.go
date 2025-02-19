@@ -479,6 +479,11 @@ func retryDelay(count int) time.Duration {
 // can be tied to a distinct instance of a job, making it easier to debug
 // things like command-line failures for a particular run.
 //
+// If the job is in a fatal fail state (`failed` rather than `failed_done`),
+// its clone will have a retry count of zero, indicating a fresh restart,
+// otherwise its retry count increments, because fatal jobs never retry
+// automatically, only when requested manually.
+//
 // If a job is in an entwinement group, the whole group is closed, duplicated,
 // and retried, starting with the first in sequence.
 func (j *Job) FailAndRetry() error {
@@ -504,7 +509,11 @@ func (j *Job) FailAndRetry() error {
 func (j *Job) failAndRetrySingle(op *magicsql.Operation) (*Job, error) {
 	var clone = j.Clone()
 	clone.Status = string(JobStatusPending)
-	clone.RetryCount++
+	if j.Status == string(JobStatusFailed) {
+		clone.RetryCount = 0
+	} else {
+		clone.RetryCount++
+	}
 	clone.RunAt = time.Now().Add(retryDelay(clone.RetryCount))
 	_ = clone.SaveOp(op)
 
@@ -564,29 +573,4 @@ func (j *Job) failAndRetryGroup(op *magicsql.Operation) error {
 		}
 	}
 	return nil
-}
-
-// RenewDeadJob takes a failed (NOT failed_done) job and queues a new job as if
-// it were being created for the first time, and is set to run immediately.
-//
-// This is used after manual intervention for a job that exhausted all retries.
-func RenewDeadJob(j *Job) (*Job, error) {
-	if j.Status != string(JobStatusFailed) {
-		return nil, fmt.Errorf("cannot restart unfailed job")
-	}
-
-	var op = dbi.DB.Operation()
-	op.BeginTransaction()
-
-	var clone = j.Clone()
-	clone.Status = string(JobStatusPending)
-	clone.RetryCount = 0
-	clone.RunAt = time.Now()
-	_ = clone.SaveOp(op)
-
-	j.Status = string(JobStatusFailedDone)
-	_ = j.SaveOp(op)
-
-	op.EndTransaction()
-	return clone, op.Err()
 }
