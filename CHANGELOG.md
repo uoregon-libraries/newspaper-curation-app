@@ -34,6 +34,17 @@ Brief description, if necessary
 ### Migration
 -->
 
+## v6.1.1
+
+Hotfix: "entwined jobs" (those which are group-retried on failure, like ONI
+Agent jobs) use consistent restart/retry logic.
+
+### Fixed
+
+- Manually restarting a fatally-failed job (with `run-jobs requeue`) now
+  properly restarts all entwined jobs, just like the automatic temporary
+  failure retry loop does.
+
 ## v6.1.0
 
 Better ONI Agent integration and some dev improvements
