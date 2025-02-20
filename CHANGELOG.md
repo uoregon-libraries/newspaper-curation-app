@@ -34,6 +34,55 @@ Brief description, if necessary
 ### Migration
 -->
 
+## v6.1.0
+
+Better ONI Agent integration and some dev improvements
+
+### Fixed
+
+- Jobs involving external services (ONI Agent) are now set up such that the
+  whole group is retried when something goes wrong. This fixes the "wait for
+  ONI" loop when an ONI Agent job fails:
+  - NCA queues a job that will call out to ONI Agent (e.g., load a batch). This
+    job almost always succeeds because it's just asking the agent to put
+    something in *its* job queue.
+  - NCA queues a job to check ONI Agent for success. This fails if the Agent's
+    job failed.
+  - On failure of any job, NCA retries that job. In this case, it *only*
+    retries the "check for success" job. Which just rechecks a failed Agent
+    job.
+  - The "check for success" job fails, and a retry is queued. But no matter how
+    many times you ask "did you succeed?", if you don't start a new external
+    job, the answer is still "no".
+- ONI Agent's magic "job is redundant and not queued" response is now handled
+  properly as a success. (e.g., queueing a batch to be loaded when it's already
+  been loaded successfully)
+- All MariaDB triggers use UTC time instead of local time
+- All times displayed to users are local instead of some being UTC
+- Devs: database initialization is a bit better in the docker setup: the
+  no-longer-necessary seed file is gone and a new SQL initialization script
+  exists to pre-build the DB structure that the current DB migrations create.
+  This lets you skip the re-running all the migrations every time you reset the
+  database (generally a pain when doing lots of testing).
+
+### Added
+
+- Devs: New test recipe script for helping guide a fake Solr outage test
+- Devs: The integration tests now log the output of `bin/queue-batches` for
+  easier debugging.
+
+### Changed
+
+- Devs: the `init.sql` regenerating helper function in `scripts/localdev.sh` is
+  now a *destructive* operation. This is necessary to ensure a valid starting
+  state for `init.sql`, rather than the situations where it ends up being easy
+  to accidentally add test data.
+
+### Migration
+
+- Run database migrations:
+  - `make && ./bin/migrate-database -c ./settings up`
+
 ## v6.0.2
 
 Hotfix for crash when creating a title that doesn't have MARC in your first
