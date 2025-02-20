@@ -1,10 +1,9 @@
 #!/usr/bin/env bash
 set -eu
 
-# This script's purpose is to just run through an end-to-end test starting from
-# nothing, faking curation, then generating and approving batches. It's a good
-# starting point for building other tests, and an okay test when doing a refactor
-# that may cause unexpected changes.
+# This script's purpose is to just run through an end-to-end test, but guiding
+# the tester to deliberately break ONI to test NCA's handling of external job
+# failures (entwined job retry / restart).
 
 source test/recipes/testlib.sh
 source scripts/localdev.sh
