@@ -5,6 +5,7 @@ import (
 	"fmt"
 	"os"
 	"testing"
+	"time"
 
 	"github.com/chromedp/cdproto/cdp"
 	"github.com/chromedp/cdproto/page"
@@ -15,9 +16,27 @@ import (
 // browser defines a structure that holds all the bits we need in order to
 // automate browser testing. This lets us call into a simple API, get fairly
 // granular results, and not have to prefix everything with chromedp.Run(...).
+//
+// We violate the "never store context" rule (See
+// https://go.dev/blog/context-and-structs for details), but this struct is
+// test-only, doesn't have an exposed API, and doesn't have any functions where
+// our use-case would benefit from per-call context passing.
 type browser struct {
 	t   *testing.T
 	ctx context.Context
+}
+
+func newBrowser(t *testing.T) *browser {
+	var c1, c2, c3 context.CancelFunc
+	var ctx context.Context
+	ctx, c1 = chromedp.NewRemoteAllocator(context.Background(), headlessURL)
+	ctx, c2 = context.WithTimeout(ctx, time.Second*120)
+	ctx, c3 = chromedp.NewContext(ctx)
+	t.Cleanup(func() { c1(); c2(); c3() })
+
+	var b = &browser{t: t, ctx: ctx}
+	b.run(chromedp.EmulateViewport(1920, 4320), "setting initial viewport")
+	return b
 }
 
 func (b *browser) exit(message string, screenshot bool) {
@@ -55,6 +74,10 @@ func (b *browser) run(action chromedp.Action, msg string) {
 
 func (b *browser) visit(url string) {
 	b.run(chromedp.Navigate(url), fmt.Sprintf("visiting URL %q", url))
+}
+
+func (b *browser) followLink(pth string) {
+	b.find(fmt.Sprintf("a[href$='/%s']", pth)).click()
 }
 
 func (b *browser) getLocation() string {
