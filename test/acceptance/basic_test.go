@@ -13,19 +13,19 @@ func TestNCAHome(t *testing.T) {
 	var b = newBrowser(t)
 
 	b.visit(ncaURL)
-	b.getBody().assertHasText("This text will not appear anywhere in the output")
+	b.getBody().assertHasText("Welcome to NCA!")
 }
 
 func TestONIProdHome(t *testing.T) {
 	var b = newBrowser(t)
 
 	b.visit(oniProdURL)
-	b.getBody().assertHasText("This text will not appear anywhere in the output")
+	b.getBody().assertHasText("Welcome to the YOUR_LONG_PROJECT_NAME")
 }
 
 func TestONIStagingHome(t *testing.T) {
 	var b = newBrowser(t)
 
 	b.visit(oniStagingURL)
-	b.getBody().assertHasText("This text will not appear anywhere in the output")
+	b.getBody().assertHasText("Welcome to the YOUR_LONG_PROJECT_NAME")
 }
