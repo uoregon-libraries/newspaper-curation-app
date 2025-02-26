@@ -31,6 +31,7 @@ type MakeDerivatives struct {
 	OPJCompress           string
 	OPJDecompress         string
 	GhostScript           string
+	GraphicsMagick        string
 }
 
 // Process generates the derivatives for the job's issue
@@ -40,6 +41,7 @@ func (md *MakeDerivatives) Process(c *config.Config) ProcessResponse {
 	md.OPJCompress = c.OPJCompress
 	md.OPJDecompress = c.OPJDecompress
 	md.GhostScript = c.GhostScript
+	md.GraphicsMagick = c.GraphicsMagick
 	md.JP2DPI = c.DPI
 	md.JP2Quality = c.Quality
 
@@ -190,6 +192,7 @@ func (md *MakeDerivatives) createJP2(file string) (ok bool) {
 	transformer.OPJCompress = md.OPJCompress
 	transformer.OPJDecompress = md.OPJDecompress
 	transformer.GhostScript = md.GhostScript
+	transformer.GraphicsMagick = md.GraphicsMagick
 
 	var err = transformer.Transform()
 	if err != nil {
