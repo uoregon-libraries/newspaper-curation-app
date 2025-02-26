@@ -44,16 +44,12 @@ type Transformer struct {
 // various binaries and use of the default logger
 func New(source, output string, quality float64, resolution int, overwrite bool) *Transformer {
 	return &Transformer{
-		SourceFile:     source,
-		OutputJP2:      output,
-		OPJCompress:    "opj_compress",
-		OPJDecompress:  "opj_decompress",
-		GhostScript:    "gs",
-		GraphicsMagick: "gm",
-		Quality:        quality,
-		PDFResolution:  resolution,
-		OverwriteJP2:   overwrite,
-		Logger:         logger.Logger,
+		SourceFile:    source,
+		OutputJP2:     output,
+		Quality:       quality,
+		PDFResolution: resolution,
+		OverwriteJP2:  overwrite,
+		Logger:        logger.Logger,
 	}
 }
 
