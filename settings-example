@@ -14,6 +14,11 @@ GRAPHICS_MAGICK="gm"
 OPJ_COMPRESS="opj2_compress"
 OPJ_DECOMPRESS="opj2_decompress"
 
+# Same as above, but for the Poppler PDF processing utilities: `pdfseparate`
+# and `pdftotext`
+PDF_SEPARATE="pdfseparate"
+PDF_TO_TEXT="pdftotext"
+
 ###
 # Web configuration
 ###

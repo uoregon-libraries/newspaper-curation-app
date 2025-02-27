@@ -32,6 +32,7 @@ type MakeDerivatives struct {
 	OPJDecompress         string
 	GhostScript           string
 	GraphicsMagick        string
+	PDFToText             string
 }
 
 // Process generates the derivatives for the job's issue
@@ -42,6 +43,7 @@ func (md *MakeDerivatives) Process(c *config.Config) ProcessResponse {
 	md.OPJDecompress = c.OPJDecompress
 	md.GhostScript = c.GhostScript
 	md.GraphicsMagick = c.GraphicsMagick
+	md.PDFToText = c.PDFToText
 	md.JP2DPI = c.DPI
 	md.JP2Quality = c.Quality
 
@@ -175,6 +177,7 @@ func (md *MakeDerivatives) createAltoXML(file string, pageno int) (ok bool) {
 	var transformer = alto.New(file, outputFile, md.AltoDPI, pageno, false)
 	transformer.Logger = md.Logger
 	transformer.LangCode3 = md.IssueJob.DBIssue.Title.LangCode()
+	transformer.PDFToText = md.PDFToText
 	var err = transformer.Transform()
 
 	if err != nil {
