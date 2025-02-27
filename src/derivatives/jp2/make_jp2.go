@@ -18,42 +18,42 @@ import (
 // operation.
 const RateFactor = 8.0
 
-// Transformer is the PDF/TIFF-to-JP2 structure.  Paths to various binaries
-// have sane defaults, but can be overridden if necessary.  A custom
-// logger.Logger can be used for logging, otherwise the default logger is used.
+// Transformer is the PDF/TIFF-to-JP2 structure, which contains both
+// configuration state (paths to binaries, JP2 quality, etc.) and in-process
+// data. A custom logger.Logger can be used for logging, otherwise the default
+// logger is used.
 type Transformer struct {
-	SourceFile string
-	OutputJP2  string
-	tmpPNG     string
-	tmpPNGTest string
-	tmpJP2     string
+	// General configuration
+	SourceFile    string
+	OutputJP2     string
+	Quality       float64
+	PDFResolution int
+	OverwriteJP2  bool // if true, doesn't skip files which already exist
+	Logger        *ltype.Logger
 
+	// Executable binary paths - must be set by the caller
 	OPJCompress    string
 	OPJDecompress  string
 	GhostScript    string
 	GraphicsMagick string
-	Quality        float64
-	PDFResolution  int
-	OverwriteJP2   bool // if true, doesn't skip files which already exist
 
-	err    error
-	Logger *ltype.Logger
+	// Fields which manage internal state
+	err        error
+	tmpPNG     string
+	tmpPNGTest string
+	tmpJP2     string
 }
 
 // New creates a new PDF/TIFF-to-JP2 transformer with default values for the
 // various binaries and use of the default logger
 func New(source, output string, quality float64, resolution int, overwrite bool) *Transformer {
 	return &Transformer{
-		SourceFile:     source,
-		OutputJP2:      output,
-		OPJCompress:    "opj_compress",
-		OPJDecompress:  "opj_decompress",
-		GhostScript:    "gs",
-		GraphicsMagick: "gm",
-		Quality:        quality,
-		PDFResolution:  resolution,
-		OverwriteJP2:   overwrite,
-		Logger:         logger.Logger,
+		SourceFile:    source,
+		OutputJP2:     output,
+		Quality:       quality,
+		PDFResolution: resolution,
+		OverwriteJP2:  overwrite,
+		Logger:        logger.Logger,
 	}
 }
 

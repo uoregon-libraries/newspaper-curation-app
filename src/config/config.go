@@ -34,9 +34,12 @@ type Config struct {
 	ProductionAgentConnection string `setting:"PRODUCTION_AGENT"`
 
 	// Binary paths
-	GhostScript   string `setting:"GHOSTSCRIPT"`
-	OPJCompress   string `setting:"OPJ_COMPRESS"`
-	OPJDecompress string `setting:"OPJ_DECOMPRESS"`
+	GhostScript    string `setting:"GHOSTSCRIPT"`
+	GraphicsMagick string `setting:"GRAPHICS_MAGICK"`
+	OPJCompress    string `setting:"OPJ_COMPRESS"`
+	OPJDecompress  string `setting:"OPJ_DECOMPRESS"`
+	PDFSeparate    string `setting:"PDF_SEPARATE"`
+	PDFToText      string `setting:"PDF_TO_TEXT"`
 
 	// Web configuration
 	Webroot            string `setting:"WEBROOT" type:"url"`

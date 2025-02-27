@@ -22,6 +22,7 @@ type Transformer struct {
 	ImageNumber        int
 	LangCode3          string
 	OverwriteXML       bool // if true, doesn't skip files which already exist
+	PDFToText          string
 
 	// Logger can be set up manually for customized logging, otherwise it just
 	// gets set to the default logger
@@ -86,7 +87,7 @@ func (t *Transformer) pdfToText() {
 	}
 	defer os.Remove(tmpfile)
 
-	if !shell.ExecSubgroup("pdftotext", t.Logger, t.PDFFilename, "-bbox-layout", tmpfile) {
+	if !shell.ExecSubgroup(t.PDFToText, t.Logger, t.PDFFilename, "-bbox-layout", tmpfile) {
 		t.err = fmt.Errorf("unable to run pdftotext")
 		return
 	}

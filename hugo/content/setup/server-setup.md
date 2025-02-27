@@ -29,10 +29,16 @@ Before anything can be done, the following setup has to happen:
      `SFTPGO_DATA_PROVIDER__USERS_BASE_DIR` in your `sftpgo.env` to a location
      that NCA can reach. When NCA tells SFTPGo to provision titles, they get a
      subdirectory within the specified base directory.
-1. Somebody sets up the full swath of folders, mounting to network storage
-   as it makes sense. These will generally be auto-created, but comples setups
-   will want to carefully choose what's on local storage and what is on network
-   mount points.
+1. The `settings` file must be created, generally by copying `settings-example`
+   and customizing it as needed.
+   - It is *very important* that you verify that the binary paths are set up
+     correctly (`OPJ_COMPRESS`, `PDF_TO_TEXT`, etc.). Most defaults will work
+     as-is, but it will save a lot of headaches to verify that the values in
+     `settings` are correct.
+1. Somebody sets up the full swath of folders, mounting to network storage as
+   it makes sense, and sets them up in `settings`. These paths will generally
+   be auto-created, but complex setups will want to carefully choose what's on
+   local storage and what is on network mount points.
    - `PDF_UPLOAD_PATH` (`/mnt/news/sftp`): One subfolder should exist per title
    - `SCAN_UPLOAD_PATH` (`/mnt/news/scans`): This is where in-house scans would be uploaded.
    - `ORIGINAL_PDF_BACKUP_PATH` (`/mnt/news/backup/originals`): Short-term storage

@@ -9,3 +9,5 @@
 /.env
 /test/*-report/
 /mysql-export/
+/workers.log
+/queue-batches.log

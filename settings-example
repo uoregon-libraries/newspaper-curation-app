@@ -6,10 +6,18 @@
 # set to "gs", but may need to be tweaked on some systems.
 GHOSTSCRIPT="gs"
 
+# And graphicsmagick? Again, usually this can be left as-is.
+GRAPHICS_MAGICK="gm"
+
 # What is the path to the opj binaries?  This may be opj_compress /
 # opj_decompress, opj2_*, or a full path, depending on a variety of factors....
 OPJ_COMPRESS="opj2_compress"
 OPJ_DECOMPRESS="opj2_decompress"
+
+# Same as above, but for the Poppler PDF processing utilities: `pdfseparate`
+# and `pdftotext`
+PDF_SEPARATE="pdfseparate"
+PDF_TO_TEXT="pdftotext"
 
 ###
 # Web configuration

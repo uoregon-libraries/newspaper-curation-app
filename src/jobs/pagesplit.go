@@ -22,6 +22,7 @@ type PageSplit struct {
 	TempDir      string // Where we do all page-level processing
 	OutputDir    string // Where we copy files after processing
 	GhostScript  string // The path to gs for combining the PDF
+	PDFSeparate  string // The path to the `pdfseparate` binary for page-splitting
 	MinPages     int    // Number of pages below which we refuse to process
 }
 
@@ -42,6 +43,7 @@ func (ps *PageSplit) Process(conf *config.Config) ProcessResponse {
 	}
 
 	ps.GhostScript = conf.GhostScript
+	ps.PDFSeparate = conf.PDFSeparate
 	ps.MinPages = conf.MinimumIssuePages
 	if ps.process() {
 		return PRSuccess
@@ -116,7 +118,7 @@ func (ps *PageSplit) combinePDF() (ok bool) {
 // splitPages ensures we end up with exactly one PDF per page
 func (ps *PageSplit) splitPages() (ok bool) {
 	ps.Logger.Infof("Splitting PDF(s)")
-	return shell.ExecSubgroup("pdfseparate", ps.Logger, ps.CombinedFile, filepath.Join(ps.TempDir, "seq-%d.pdf"))
+	return shell.ExecSubgroup(ps.PDFSeparate, ps.Logger, ps.CombinedFile, filepath.Join(ps.TempDir, "seq-%d.pdf"))
 }
 
 // fixPageNames converts sequenced PDFs to have 4-digit page numbers
