@@ -64,11 +64,10 @@ Make sure you edit your settings file and adjust *all paths*, not just those
 shown above!
 
 The settings file's "command" paths must match the path on your local system:
-`GHOSTSCRIPT`, `OPJ_COMPRESS`. Unfortunately the GraphicsMagick and various
-Poppler tools are hard-coded currently. Standard linux package managers should
-install these to a location NCA can find, but if not, you may have to make
-symlinks. Or offer up a PR that fixes this and makes all shell-executed
-binaries configurable.
+`GHOSTSCRIPT`, `OPJ_COMPRESS`, etc. The defaults work in most cases, but you
+may need to change things to use a local install of some commands, for
+instance, or if you're testing in an environment where your `PATH` won't point
+to the installed tools.
 
 ##### Docker Services
 
