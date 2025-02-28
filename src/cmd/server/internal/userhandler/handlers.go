@@ -109,8 +109,8 @@ func newHandler(w http.ResponseWriter, req *http.Request) {
 	r.Render(formTmpl)
 }
 
-// editHandler loads the user by id and renders the edit form.  Users are not
-// allowed to edit themselves or admins.
+// editHandler loads the user by id and renders the edit form. Users are not
+// allowed to edit themselves or sysops.
 func editHandler(w http.ResponseWriter, req *http.Request) {
 	var r = responder.Response(w, req)
 	var u, handled = getUserForModify(r)
