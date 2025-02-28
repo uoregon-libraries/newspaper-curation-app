@@ -81,7 +81,7 @@ func (r *Responder) Render(t *tmpl.Template) {
 	var err = t.Execute(buffer, r.Vars)
 	if err != nil {
 		logger.Criticalf("Unable to render template %q: %s", t.Path, err)
-		http.Error(r.Writer, "NCA has experienced an internal error while trying to render the page. Please contact the administrator for assistance.", http.StatusInternalServerError)
+		http.Error(r.Writer, "NCA has experienced an internal error while trying to render the page. Please contact the system administrator for assistance.", http.StatusInternalServerError)
 		return
 	}
 	_, err = io.Copy(r.Writer, buffer)

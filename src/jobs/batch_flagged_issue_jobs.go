@@ -10,7 +10,7 @@ import (
 )
 
 // FinalizeBatchFlaggedIssue is responsible for database changes needed to mark
-// the issue as (a) no longer in a batch, and (b) needing admin action (set to
+// the issue as (a) no longer in a batch, and (b) needing user action (set to
 // being an unfixable-error issue)
 type FinalizeBatchFlaggedIssue struct {
 	*IssueJob
