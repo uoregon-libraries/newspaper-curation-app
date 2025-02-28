@@ -44,7 +44,7 @@ var (
 	// Flag batches as archived and ready to begin the deletion countdown
 	ArchiveBatches = newPrivilege(RoleBatchLoader)
 
-	// Admins only
+	// SysOps only
 	ModifyValidatedLCCNs = newPrivilege()
 	ListAuditLogs        = newPrivilege()
 )
@@ -71,7 +71,7 @@ func newPrivilege(roles ...*Role) *Privilege {
 
 // AllowedBy returns whether the privilege is allowed by the given role
 func (p *Privilege) AllowedBy(r *Role) bool {
-	if r == RoleAdmin || p.roles[RoleAny] {
+	if r == RoleSysOp || p.roles[RoleAny] {
 		return true
 	}
 

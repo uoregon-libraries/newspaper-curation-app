@@ -26,10 +26,8 @@ func oneline(s string) string {
 // Hard-coded list of roles
 var (
 	RoleAny   = newRole("-any-", "N/A")
-	RoleAdmin = newRole("admin",
-		`No restrictions.  These users can modify data not meant for modification
-		outside of initial setup and data repair situations, such as sftp
-		user/password, LCCNs which have already been validated, etc.`)
+	RoleSysOp = newRole("sysop",
+		`No restrictions. SysOps can do basically anything NCA allows. Users with this role can mistakenly break data. Only give this role to users who have access to run SQL directly against NCA's database.`)
 	RoleTitleManager = newRole("title manager",
 		`Has access to add and change newspaper titles, including the ability to
 		view the sftp authorization information`)
@@ -54,7 +52,7 @@ var roles = make(map[string]*Role)
 
 // AssignableRoles is a list of roles which can be assigned to a user
 var AssignableRoles = []*Role{
-	RoleAdmin,
+	RoleSysOp,
 	RoleTitleManager,
 	RoleIssueCurator,
 	RoleIssueReviewer,

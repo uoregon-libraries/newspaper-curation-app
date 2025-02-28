@@ -155,7 +155,7 @@ func ActionableBatches() ([]*Batch, error) {
 
 // AllBatches grabs every batch in the database, including those currently in
 // some kind of system process. Deleted batches are still ignored, as those
-// should never need any actions, even by admins and devs.
+// should never need any actions, even by sysops.
 func AllBatches() ([]*Batch, error) {
 	return findBatches("status <> ?", BatchStatusDeleted)
 }

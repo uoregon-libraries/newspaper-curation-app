@@ -153,9 +153,9 @@ func (u *User) PermittedTo(priv *privilege.Privilege) bool {
 	return priv.AllowedByAny(u.Roles())
 }
 
-// IsAdmin is true if this user has the admin role
-func (u *User) IsAdmin() bool {
-	return u.HasRole(privilege.RoleAdmin)
+// IsSysOp is true if this user has the SysOp role
+func (u *User) IsSysOp() bool {
+	return u.HasRole(privilege.RoleSysOp)
 }
 
 // Save stores the user's data to the database, rewriting the roles list
@@ -215,12 +215,12 @@ func (u *User) CanGrant(role *privilege.Role) bool {
 		return false
 	}
 
-	// Admins can grant anything
-	if u.IsAdmin() {
+	// SysOps can grant anything
+	if u.IsSysOp() {
 		return true
 	}
 
-	// Users who aren't admins cannot grant roles they don't have
+	// Users who aren't SysOps cannot grant roles they don't have
 	for _, r := range u.Roles() {
 		if role == r {
 			return true
@@ -238,13 +238,13 @@ func (u *User) CanModifyUser(user *User) bool {
 		return false
 	}
 
-	// Otherwise, admins can do anything to anybody
-	if u.IsAdmin() {
+	// Otherwise, SysOps can do anything to anybody
+	if u.IsSysOp() {
 		return true
 	}
 
-	// Nobody can modify an admin but another admin
-	if user.IsAdmin() {
+	// Nobody can modify a SysOp but another SysOp
+	if user.IsSysOp() {
 		return false
 	}
 

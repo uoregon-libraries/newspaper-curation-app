@@ -107,8 +107,8 @@ func TestCanGrant(t *testing.T) {
 	}
 
 	u.roles = nil
-	u.Grant(privilege.RoleAdmin)
+	u.Grant(privilege.RoleSysOp)
 	if !u.CanGrant(privilege.RoleUserManager) {
-		t.Errorf("Admin should be allowed to grant user manager role")
+		t.Errorf("SysOp should be allowed to grant user manager role")
 	}
 }

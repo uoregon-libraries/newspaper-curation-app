@@ -86,15 +86,15 @@ func listHandler(w http.ResponseWriter, req *http.Request) {
 		return
 	}
 
-	// Non-admins don't see admins at all
-	if !r.Vars.User.IsAdmin() {
-		var nonAdmins []*models.User
+	// Normal users (non-sysops) don't see sysops
+	if !r.Vars.User.IsSysOp() {
+		var normies []*models.User
 		for _, u := range users {
-			if !u.IsAdmin() {
-				nonAdmins = append(nonAdmins, u)
+			if !u.IsSysOp() {
+				normies = append(normies, u)
 			}
 		}
-		users = nonAdmins
+		users = normies
 	}
 
 	r.Vars.Data["Users"] = users
