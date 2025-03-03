@@ -46,7 +46,7 @@ ready to enter the workflow. These aren't actual jobs and aren't tied to
 pipelines, they're just a separate background task that's always being watched.
 
 All jobs store logs in the database, but these are currently not exposed to end
-users (not even admins). To help mitigate this, the job runner also logs to
+users (not even SysOps). To help mitigate this, the job runner also logs to
 STDERR, though without pipeline filtering, those again can be tricky to parse
 without some advanced log filtering application.
 

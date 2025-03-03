@@ -18,7 +18,7 @@ See [Server Setup][server-setup] for getting the software installed, and
 
 1. Server is set up, directories mounted
 1. Settings file (`/usr/local/nca/settings`, for example) is customized as needed
-1. Admin starts NCA in debug mode to create users
+1. A dev or system administrator starts NCA in debug mode to create users
 1. Title manager creates title records for all titles the app will see
 1. MARC Org Code manager creates awardee codes NCA will need to know about
 

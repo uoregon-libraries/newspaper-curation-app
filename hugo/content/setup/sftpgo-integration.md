@@ -126,12 +126,12 @@ key.
 
 ## Usage
 
-Once SFTPGo is integrated, any titles created in NCA will be sent to SFTPGo.
-If you had been doing sftp the traditional way (local accounts using ssh with
-the login shell disabled), you will find that a big advantage to SFTPGo is that
-it doesn't need a local system administrator to manage users, quotas, etc.
-Provisioning accounts will be automated from NCA, and management can be done
-using the SFTPGo web API or the REST endpoints.
+Once SFTPGo is integrated, any titles created in NCA will be sent to SFTPGo. If
+you had been doing sftp the traditional way (local accounts using ssh with the
+login shell disabled), you will find that a big advantage to SFTPGo is that it
+doesn't need a Linux administrator to manage users, quotas, etc. Provisioning
+accounts will be automated from NCA, and management can be done using the
+SFTPGo web API or the REST endpoints.
 
 ## Bulk loading
 
