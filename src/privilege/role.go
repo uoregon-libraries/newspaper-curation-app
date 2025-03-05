@@ -23,7 +23,12 @@ func oneline(s string) string {
 	return oneLineRegexp.ReplaceAllString(s, " ")
 }
 
-// Hard-coded list of roles
+// Hard-coded list of roles.
+//
+// NOTE: due to past-self's failings, you *must never* change a role's name
+// (e.g., "issue curator" or "user manager") here! These names are stored in
+// the database exactly as they're written here. Smart approach? Nope. Stuck
+// with it? Yup.
 var (
 	RoleAny   = newRole("-any-", "N/A")
 	RoleSysOp = newRole("sysop",
