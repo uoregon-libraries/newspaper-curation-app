@@ -35,11 +35,28 @@ func NewUser(login string) *User {
 }
 
 func (u *User) deserialize() {
-	u.buildRoles()
+	var roleStrings = strings.Split(u.RolesString, ",")
+	u.roles = make([]*privilege.Role, 0)
+	for _, rs := range roleStrings {
+		if rs == "" {
+			continue
+		}
+		var role = privilege.FindRole(rs)
+		if role == nil {
+			logger.Errorf("User %s has an invalid role: %s", u.Login, role)
+			continue
+		}
+		u.roles = append(u.roles, role)
+	}
 }
 
 func (u *User) serialize() {
-	u.RolesString = u.makeRoleString()
+	var roleNames = make([]string, len(u.roles))
+	for i, r := range u.roles {
+		roleNames[i] = r.Name
+	}
+
+	u.RolesString = strings.Join(roleNames, ",")
 }
 
 // ActiveUsers returns all users in the database who have the "active" status
@@ -110,9 +127,6 @@ func FindUserByID(id int64) *User {
 
 // Roles returns the split list of roles assigned to a user
 func (u *User) Roles() []*privilege.Role {
-	if len(u.roles) == 0 {
-		u.buildRoles()
-	}
 	return u.roles
 }
 
@@ -125,22 +139,6 @@ func (u *User) HasRole(role *privilege.Role) bool {
 	}
 
 	return false
-}
-
-func (u *User) buildRoles() {
-	var roleStrings = strings.Split(u.RolesString, ",")
-	u.roles = make([]*privilege.Role, 0)
-	for _, rs := range roleStrings {
-		if rs == "" {
-			continue
-		}
-		var role = privilege.FindRole(rs)
-		if role == nil {
-			logger.Errorf("User %s has an invalid role: %s", u.Login, role)
-			continue
-		}
-		u.roles = append(u.roles, role)
-	}
 }
 
 // PermittedTo returns true if this user has priv in his privilege list
@@ -172,15 +170,6 @@ func (u *User) Save() error {
 	u.serialize()
 	op.Save("users", u)
 	return op.Err()
-}
-
-func (u *User) makeRoleString() string {
-	var roleNames = make([]string, len(u.roles))
-	for i, r := range u.roles {
-		roleNames[i] = r.Name
-	}
-
-	return strings.Join(roleNames, ",")
 }
 
 // Grant adds the given role to this user's list of roles if it hasn't already
