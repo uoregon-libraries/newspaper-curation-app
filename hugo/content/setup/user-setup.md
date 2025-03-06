@@ -7,11 +7,11 @@ description: Creating a new NCA "SysOp"
 ## Create a SysOp
 
 A SysOp, or System Operator, is a privileged user with access to do anything in
-NCA. All isntallations will require at least one of these just to get set up,
+NCA. All installations will require at least one of these just to get set up,
 and most likely a dev or system administrator will need this role on an ongoing
 basis.
 
-To get the first sysop, follow the intallation and configuration instructions,
+To get the first sysop, follow the installation and configuration instructions,
 and then start the server in debug mode:
 
 ```bash
