@@ -35,11 +35,17 @@ that the user has in fact been authenticated by Apache.
 
 In security terms: authentication is done by Apache; authorization by NCA.
 
+You will probably want at least one "Site Manager". This person has access to
+anything that any other roles have, with the exception of sysops. Site managers
+can generally be non-technical people who need to be able to manage the vast
+majority of day-to-day NCA processes, such as creating titles, adding and
+deactivating users, etc.
+
 ## Finalize
 
 Once you have Apache set up to do the authentication, and you have the sysop(s)
-set up, stop NCA's HTTP listener. Subsequent startups should never use the
-`--debug` flag in a production environment.
+and site manager(s) set up, stop NCA's HTTP listener. Subsequent startups
+should never use the `--debug` flag in a production environment.
 
 ## Development
 
