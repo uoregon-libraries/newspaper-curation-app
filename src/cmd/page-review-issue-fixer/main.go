@@ -117,7 +117,7 @@ func getIssues(keys []string) ([]*models.Issue, error) {
 
 func removeIssue(i *models.Issue) error {
 	var u = models.SystemUser
-	var comment = `Manually removed from "page review" queue by SysOp (dev or ops person using command-line tools)`
+	var comment = `Manually removed from "page review" queue via command-line tools`
 	var err = i.PrepForRemoval(u.ID, comment)
 	if err != nil {
 		return fmt.Errorf("unable to prepare issue %d for removal: %w", i.ID, err)
