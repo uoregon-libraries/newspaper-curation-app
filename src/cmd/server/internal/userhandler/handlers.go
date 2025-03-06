@@ -75,29 +75,25 @@ func getUserForModify(r *responder.Responder) (u *models.User, handled bool) {
 	return u, false
 }
 
-// listHandler spits out the list of users
+// listHandler spits out the list of users the current user can view
 func listHandler(w http.ResponseWriter, req *http.Request) {
 	var r = responder.Response(w, req)
 	r.Vars.Title = "Users"
-	var users, err = models.ActiveUsers()
+	var activeUsers, err = models.ActiveUsers()
 	if err != nil {
 		logger.Errorf("Unable to load user list: %s", err)
 		r.Error(http.StatusInternalServerError, "Error trying to pull user list - try again or contact support")
 		return
 	}
 
-	// Normal users (non-sysops) don't see sysops
-	if !r.Vars.User.IsSysOp() {
-		var normies []*models.User
-		for _, u := range users {
-			if !u.IsSysOp() {
-				normies = append(normies, u)
-			}
+	var viewableUsers []*models.User
+	for _, u := range activeUsers {
+		if u.CanViewUser(u) {
+			viewableUsers = append(viewableUsers, u)
 		}
-		users = normies
 	}
 
-	r.Vars.Data["Users"] = users
+	r.Vars.Data["Users"] = viewableUsers
 	r.Render(listTmpl)
 }
 
