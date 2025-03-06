@@ -34,6 +34,7 @@ var (
 	RoleAny   = newRole("-any-", "N/A")
 	RoleSysOp = newRole("sysop",
 		`No restrictions. SysOps can do basically anything NCA allows. Users with this role can mistakenly break data. Only give this role to users who have access to run SQL directly against NCA's database.`)
+	RoleSiteManager  = newRole("site manager", `Site managers can do nearly everything in the system, with very few restrictions. They are a combination of every other basic and management role.`)
 	RoleTitleManager = newRole("title manager",
 		`Has access to add and change newspaper titles, including the ability to
 		view the sftp authorization information`)
@@ -113,6 +114,7 @@ func NewRoleSet(roles ...*Role) *RoleSet {
 func AssignableRoles() *RoleSet {
 	return NewRoleSet(
 		RoleSysOp,
+		RoleSiteManager,
 		RoleTitleManager,
 		RoleIssueCurator,
 		RoleIssueReviewer,
@@ -178,7 +180,7 @@ func (rs *RoleSet) Names() []string {
 }
 
 // List returns a logically sorted version of the underlying roles list. The
-// sorted data prioritizes SysOp first, then sorts by name.
+// sorted data prioritizes SysOp and site manager first, then sorts by name.
 func (rs *RoleSet) List() []*Role {
 	var roles []*Role
 	for r := range rs.items {
@@ -187,6 +189,9 @@ func (rs *RoleSet) List() []*Role {
 
 	sort.Slice(roles, func(i, j int) bool {
 		if roles[i] == RoleSysOp {
+			return true
+		}
+		if roles[i] == RoleSiteManager && roles[j] != RoleSysOp {
 			return true
 		}
 

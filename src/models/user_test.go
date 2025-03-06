@@ -3,6 +3,7 @@ package models
 import (
 	"testing"
 
+	"github.com/google/go-cmp/cmp"
 	"github.com/uoregon-libraries/newspaper-curation-app/src/privilege"
 )
 
@@ -51,6 +52,35 @@ func TestGrantNew(t *testing.T) {
 	var roles = u.EffectiveRoles()
 	if roles.Len() != 3 {
 		t.Errorf("Granting a new role should update the roles list (length should be 3; got %d)", roles.Len())
+	}
+}
+
+func TestEffectiveRoles(t *testing.T) {
+	var everything = privilege.AssignableRoles()
+	var nosysop = everything.Clone()
+	nosysop.Remove(privilege.RoleSysOp)
+
+	var tests = map[string]struct {
+		roles string
+		want  []string
+	}{
+		"sysop has everything":           {"sysop", everything.Names()},
+		"site manager has all but sysop": {"site manager", nosysop.Names()},
+		"basic user":                     {"issue curator,batch loader", []string{"batch loader", "issue curator"}},
+	}
+
+	for name, tc := range tests {
+		t.Run(name, func(t *testing.T) {
+			var u = NewUser("test")
+			u.RolesString = tc.roles
+			u.deserialize()
+			var got = u.EffectiveRoles().Names()
+			var diff = cmp.Diff(tc.want, got)
+
+			if diff != "" {
+				t.Errorf(diff)
+			}
+		})
 	}
 }
 

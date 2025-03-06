@@ -44,9 +44,11 @@ var (
 	// Flag batches as archived and ready to begin the deletion countdown
 	ArchiveBatches = newPrivilege(RoleBatchLoader)
 
+	// Site managers only
+	ListAuditLogs = newPrivilege(RoleSiteManager)
+
 	// SysOps only
 	ModifyValidatedLCCNs = newPrivilege()
-	ListAuditLogs        = newPrivilege()
 )
 
 // A Privilege is a single action a user may be able to take

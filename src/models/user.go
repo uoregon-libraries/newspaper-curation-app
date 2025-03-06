@@ -43,7 +43,7 @@ func NewUser(login string) *User {
 // deserialize gets business-logic-friendly values from raw database data:
 //
 // - The comma-separated roles are looked up and turned into a usable [privilege.RoleSet]
-// - SysOps get "implicit" roles set so they don't need to be manually granted all roles
+// - Sysops and site managers get "implicit" roles set so they don't need to be manually granted all roles
 func (u *User) deserialize() {
 	u.realRoles.Empty()
 	u.implicitRoles.Empty()
@@ -69,6 +69,21 @@ func (u *User) deserialize() {
 
 		u.implicitRoles = privilege.AssignableRoles()
 		u.implicitRoles.Remove(privilege.RoleSysOp)
+	}
+
+	// Similarly, if you aren't a SysOp but have a site manager role, we assign
+	// that as your only real role and add all non-sysop and non-site-manager
+	// roles to the implicit role list.
+	//
+	// NOTE: Order is important: the above SysOp check must happen first in case
+	// somebody is assigned SysOp *and* Site Manager. The above code will "reset"
+	// the user to just be SysOp, preventing this check from passing.
+	if u.realRoles.Contains(privilege.RoleSiteManager) {
+		u.realRoles = privilege.NewRoleSet(privilege.RoleSiteManager)
+
+		u.implicitRoles = privilege.AssignableRoles()
+		u.implicitRoles.Remove(privilege.RoleSysOp)
+		u.implicitRoles.Remove(privilege.RoleSiteManager)
 	}
 }
 
