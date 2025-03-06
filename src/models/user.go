@@ -151,8 +151,8 @@ func (u *User) PermittedTo(priv *privilege.Privilege) bool {
 	return priv.AllowedByAny(u.Roles())
 }
 
-// IsSysOp is true if this user has the SysOp role
-func (u *User) IsSysOp() bool {
+// isSysOp is true if this user has the SysOp role
+func (u *User) isSysOp() bool {
 	return u.HasRole(privilege.RoleSysOp)
 }
 
@@ -205,7 +205,7 @@ func (u *User) CanGrant(role *privilege.Role) bool {
 	}
 
 	// SysOps can grant anything
-	if u.IsSysOp() {
+	if u.isSysOp() {
 		return true
 	}
 
@@ -224,24 +224,24 @@ func (u *User) CanGrant(role *privilege.Role) bool {
 // invisible presence that are sort of given "emergency" powers but generally
 // don't interact with the system regularly.
 func (u *User) CanViewUser(target *User) bool {
-	return u.IsSysOp() || !target.IsSysOp()
+	return u.isSysOp() || !target.isSysOp()
 }
 
 // CanModifyUser tells us if u can modify the passed-in user
-func (u *User) CanModifyUser(user *User) bool {
+func (u *User) CanModifyUser(target *User) bool {
 	// First and foremost, let's never let somebody modify themselves - too easy
 	// to accidentally ruin things
-	if u.ID == user.ID {
+	if u.ID == target.ID {
 		return false
 	}
 
 	// Otherwise, SysOps can do anything to anybody
-	if u.IsSysOp() {
+	if u.isSysOp() {
 		return true
 	}
 
 	// Nobody can modify a SysOp but another SysOp
-	if user.IsSysOp() {
+	if target.isSysOp() {
 		return false
 	}
 
