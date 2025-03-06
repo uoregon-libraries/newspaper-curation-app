@@ -79,14 +79,14 @@ func (p *Privilege) AllowedBy(r *Role) bool {
 }
 
 // AllowedByAny returns true if any of the roles can access this privilege
-func (p *Privilege) AllowedByAny(roles []*Role) bool {
+func (p *Privilege) AllowedByAny(roles *RoleSet) bool {
 	// Special case: even if there are no roles, some privileges are still
 	// allowed to be accessed
 	if p.roles[RoleAny] {
 		return true
 	}
 
-	for _, r := range roles {
+	for r := range roles.items {
 		if p.AllowedBy(r) {
 			return true
 		}

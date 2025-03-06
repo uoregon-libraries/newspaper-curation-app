@@ -17,7 +17,13 @@ type User struct {
 	Guest       bool   `sql:"-"`
 	IP          string `sql:"-"`
 	Deactivated bool
-	roles       []*privilege.Role
+
+	// realRoles is the actual list of roles a user has based on RolesString
+	realRoles *privilege.RoleSet
+
+	// implicitRoles are roles that this user's realRoles grant implicitly, such
+	// as SysOps being given all roles
+	implicitRoles *privilege.RoleSet
 }
 
 // EmptyUser gives us a way to avoid returning a nil *User while still being
@@ -31,12 +37,19 @@ var SystemUser = &User{ID: -1, Login: "System Process"}
 
 // NewUser returns an empty user with no roles or ID
 func NewUser(login string) *User {
-	return &User{Login: login}
+	return &User{Login: login, realRoles: privilege.NewRoleSet(), implicitRoles: privilege.NewRoleSet()}
 }
 
+// deserialize gets business-logic-friendly values from raw database data:
+//
+// - The comma-separated roles are looked up and turned into a usable [privilege.RoleSet]
+// - SysOps get "implicit" roles set so they don't need to be manually granted all roles
 func (u *User) deserialize() {
+	u.realRoles.Empty()
+	u.implicitRoles.Empty()
+
+	// Figure out real roles based on the database string
 	var roleStrings = strings.Split(u.RolesString, ",")
-	u.roles = make([]*privilege.Role, 0)
 	for _, rs := range roleStrings {
 		if rs == "" {
 			continue
@@ -46,17 +59,24 @@ func (u *User) deserialize() {
 			logger.Errorf("User %s has an invalid role: %s", u.Login, role)
 			continue
 		}
-		u.roles = append(u.roles, role)
+		u.realRoles.Insert(role)
+	}
+
+	// If you're a SysOp, your real roles list should just be SysOp, and your
+	// implicit roles should get everything *but* SysOp.
+	if u.realRoles.Contains(privilege.RoleSysOp) {
+		u.realRoles = privilege.NewRoleSet(privilege.RoleSysOp)
+
+		u.implicitRoles = privilege.AssignableRoles()
+		u.implicitRoles.Remove(privilege.RoleSysOp)
 	}
 }
 
+// serialize turns business-logic-friendly values into raw DB-friendly data:
+//
+// - All roles (privilege.Role) have their names put into a deduped, sorted, comma-separated string
 func (u *User) serialize() {
-	var roleNames = make([]string, len(u.roles))
-	for i, r := range u.roles {
-		roleNames[i] = r.Name
-	}
-
-	u.RolesString = strings.Join(roleNames, ",")
+	u.RolesString = strings.Join(u.realRoles.Names(), ",")
 }
 
 // ActiveUsers returns all users in the database who have the "active" status
@@ -125,20 +145,15 @@ func FindUserByID(id int64) *User {
 	return user
 }
 
-// Roles returns the split list of roles assigned to a user
-func (u *User) Roles() []*privilege.Role {
-	return u.roles
+// GrantedRoles returns just the roles this user has explictitly been granted
+func (u *User) GrantedRoles() *privilege.RoleSet {
+	return u.realRoles.Clone()
 }
 
-// HasRole returns true if the user has role in their list of roles
-func (u *User) HasRole(role *privilege.Role) bool {
-	for _, r := range u.Roles() {
-		if r == role {
-			return true
-		}
-	}
-
-	return false
+// EffectiveRoles returns the calculated list of all roles this user has,
+// whether explicitly granted, temporarily granted, or implicitly given.
+func (u *User) EffectiveRoles() *privilege.RoleSet {
+	return u.realRoles.Union(u.implicitRoles)
 }
 
 // PermittedTo returns true if this user has priv in his privilege list
@@ -148,12 +163,12 @@ func (u *User) PermittedTo(priv *privilege.Privilege) bool {
 	if u.Deactivated {
 		return false
 	}
-	return priv.AllowedByAny(u.Roles())
+	return priv.AllowedByAny(u.EffectiveRoles())
 }
 
 // isSysOp is true if this user has the SysOp role
 func (u *User) isSysOp() bool {
-	return u.HasRole(privilege.RoleSysOp)
+	return u.EffectiveRoles().Contains(privilege.RoleSysOp)
 }
 
 // Save stores the user's data to the database, rewriting the roles list
@@ -175,48 +190,29 @@ func (u *User) Save() error {
 // Grant adds the given role to this user's list of roles if it hasn't already
 // been set
 func (u *User) Grant(role *privilege.Role) {
-	u.deserialize()
-	for _, r := range u.roles {
-		if r == role {
-			return
-		}
-	}
-
-	u.roles = append(u.roles, role)
-	u.serialize()
+	u.realRoles.Insert(role)
 }
 
 // Deny removes the given role from this user's roles list
 func (u *User) Deny(role *privilege.Role) {
-	for i, r := range u.roles {
-		if r == role {
-			u.roles = append(u.roles[:i], u.roles[i+1:]...)
-			u.serialize()
-			return
-		}
-	}
+	u.realRoles.Remove(role)
 }
 
-// CanGrant returns true if this user can grant the given role to other users
+// CanGrant returns true if the user can assign a given role to others.
+// Assignment is allowed if a user has a role explicitly, or one of their roles
+// grants the role implicitly.
 func (u *User) CanGrant(role *privilege.Role) bool {
 	// If this person can't modify users, they cannot grant anything
 	if !u.PermittedTo(privilege.ModifyUsers) {
 		return false
 	}
 
-	// SysOps can grant anything
-	if u.isSysOp() {
-		return true
-	}
-
-	// Users who aren't SysOps cannot grant roles they don't have
-	for _, r := range u.Roles() {
-		if role == r {
-			return true
-		}
-	}
-
-	return false
+	// We are very deliberate about the roles we allow here, only checking the
+	// real roles and implicit roles, rather than using EffectiveRoles. This
+	// ensures that if we ever add some form of temporary roles, a user can't
+	// then reassign them permanently.
+	var assignable = u.realRoles.Union(u.implicitRoles)
+	return assignable.Contains(role)
 }
 
 // CanViewUser tells us if u can even *see* the target users. This allows us to

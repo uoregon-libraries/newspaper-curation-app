@@ -42,7 +42,8 @@ func Setup(r *mux.Router, baseWebPath string) {
 	layout = responder.Layout.Clone()
 	layout.Funcs(tmpl.FuncMap{
 		"UsersHomeURL": func() string { return basePath },
-		"Roles":        func() []*privilege.Role { return privilege.AssignableRoles },
+		"Roles":        func() []*privilege.Role { return privilege.AssignableRoles().List() },
+		"HasRole":      func(u *models.User, r *privilege.Role) bool { return u.GrantedRoles().Contains(r) },
 	})
 	layout.Path = path.Join(layout.Path, "users")
 
