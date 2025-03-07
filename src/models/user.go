@@ -45,8 +45,8 @@ func NewUser(login string) *User {
 // - The comma-separated roles are looked up and turned into a usable [privilege.RoleSet]
 // - Sysops and site managers get "implicit" roles set so they don't need to be manually granted all roles
 func (u *User) deserialize() {
-	u.realRoles.Empty()
-	u.implicitRoles.Empty()
+	u.realRoles = privilege.NewRoleSet()
+	u.implicitRoles = privilege.NewRoleSet()
 
 	// Figure out real roles based on the database string
 	var roleStrings = strings.Split(u.RolesString, ",")
