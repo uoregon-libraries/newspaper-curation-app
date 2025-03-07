@@ -89,7 +89,7 @@ func listHandler(w http.ResponseWriter, req *http.Request) {
 
 	var viewableUsers []*models.User
 	for _, u := range activeUsers {
-		if u.CanViewUser(u) {
+		if r.Vars.User.CanViewUser(u) {
 			viewableUsers = append(viewableUsers, u)
 		}
 	}
