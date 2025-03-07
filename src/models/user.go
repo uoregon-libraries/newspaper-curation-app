@@ -230,7 +230,7 @@ func (u *User) CanGrant(role *privilege.Role) bool {
 	return assignable.Contains(role)
 }
 
-// CanViewUser tells us if u can even *see* the target users. This allows us to
+// CanViewUser tells us if u can even *see* the target user. This allows us to
 // keep sysops hidden, mostly to avoid confusion since sysops are sort of an
 // invisible presence that are sort of given "emergency" powers but generally
 // don't interact with the system regularly.
