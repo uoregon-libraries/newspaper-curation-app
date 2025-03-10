@@ -29,6 +29,22 @@ var (
 	formTmpl *tmpl.Template
 )
 
+// canListUser lets us filter SysOps out of the user list for anybody who isn't
+// a SysOp.
+//
+// This function is unnecessarily verbose, but the shorter ways of writing this
+// keep confusing me, so...
+func canListUser(current *models.User, target *models.User) bool {
+	if current.GrantedRoles().Contains(privilege.RoleSysOp) {
+		return true
+	}
+	if target.GrantedRoles().Contains(privilege.RoleSysOp) {
+		return false
+	}
+
+	return true
+}
+
 // Setup sets up all the routing rules and other configuration
 func Setup(r *mux.Router, baseWebPath string) {
 	basePath = baseWebPath
@@ -44,6 +60,7 @@ func Setup(r *mux.Router, baseWebPath string) {
 		"UsersHomeURL": func() string { return basePath },
 		"Roles":        func() []*privilege.Role { return privilege.AssignableRoles().List() },
 		"HasRole":      func(u *models.User, r *privilege.Role) bool { return u.GrantedRoles().Contains(r) },
+		"CanListUser":  canListUser,
 	})
 	layout.Path = path.Join(layout.Path, "users")
 
@@ -89,7 +106,7 @@ func listHandler(w http.ResponseWriter, req *http.Request) {
 
 	var viewableUsers []*models.User
 	for _, u := range activeUsers {
-		if r.Vars.User.CanViewUser(u) {
+		if canListUser(r.Vars.User, u) {
 			viewableUsers = append(viewableUsers, u)
 		}
 	}
