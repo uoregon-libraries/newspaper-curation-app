@@ -150,7 +150,7 @@ func TestRoleSet(t *testing.T) {
 			t.Error("Union should contain user manager from rs2")
 		}
 		var got = union.Names()
-		var expected = []string{"site manager", "sysop", "user manager"}
+		var expected = []string{"sysop", "site manager", "user manager"}
 
 		var diff = cmp.Diff(got, expected)
 		if diff != "" {
@@ -168,6 +168,29 @@ func TestRoleSet(t *testing.T) {
 
 		if len(rs.items) != 0 {
 			t.Errorf("After Empty(), RoleSet should have no roles, got %v", rs.Names())
+		}
+	})
+
+	t.Run("List", func(t *testing.T) {
+		var rs = NewRoleSet(
+			FindRole("site manager"),
+			FindRole("sysop"),
+			FindRole("title manager"),
+			FindRole("batch loader"),
+			FindRole("issue curator"),
+		)
+
+		var got = rs.List()
+		var want = []*Role{
+			FindRole("sysop"),
+			FindRole("site manager"),
+			FindRole("batch loader"),
+			FindRole("issue curator"),
+			FindRole("title manager"),
+		}
+		var diff = cmp.Diff(got, want)
+		if diff != "" {
+			t.Fatal(diff)
 		}
 	})
 }

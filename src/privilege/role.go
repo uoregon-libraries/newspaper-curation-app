@@ -15,6 +15,19 @@ type Role struct {
 	Desc string
 }
 
+// priority is a stupid hack to ensure sort order is logical - sysop first, then
+// site manager, then roles by name
+func (r *Role) priority() int {
+	if r == RoleSysOp {
+		return 0
+	}
+	if r == RoleSiteManager {
+		return 1
+	}
+
+	return 2
+}
+
 var oneLineRegexp = regexp.MustCompile(`\s*\n\s*`)
 
 // oneline turns a multi-line string into a single line by collapsing newlines
@@ -172,10 +185,9 @@ func (rs *RoleSet) Empty() {
 // Names returns a sorted slice of roles' names
 func (rs *RoleSet) Names() []string {
 	var roleNames []string
-	for r := range rs.items {
+	for _, r := range rs.List() {
 		roleNames = append(roleNames, r.Name)
 	}
-	sort.Strings(roleNames)
 	return roleNames
 }
 
@@ -188,13 +200,10 @@ func (rs *RoleSet) List() []*Role {
 	}
 
 	sort.Slice(roles, func(i, j int) bool {
-		if roles[i] == RoleSysOp {
-			return true
+		var ap, bp = roles[i].priority(), roles[j].priority()
+		if ap != bp {
+			return ap < bp
 		}
-		if roles[i] == RoleSiteManager {
-			return roles[j] != RoleSysOp
-		}
-
 		return roles[i].Name < roles[j].Name
 	})
 
