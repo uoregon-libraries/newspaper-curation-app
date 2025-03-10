@@ -191,8 +191,8 @@ func (rs *RoleSet) List() []*Role {
 		if roles[i] == RoleSysOp {
 			return true
 		}
-		if roles[i] == RoleSiteManager && roles[j] != RoleSysOp {
-			return true
+		if roles[i] == RoleSiteManager {
+			return roles[j] != RoleSysOp
 		}
 
 		return roles[i].Name < roles[j].Name
