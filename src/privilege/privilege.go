@@ -44,9 +44,11 @@ var (
 	// Flag batches as archived and ready to begin the deletion countdown
 	ArchiveBatches = newPrivilege(RoleBatchLoader)
 
-	// Admins only
+	// Site managers only
+	ListAuditLogs = newPrivilege(RoleSiteManager)
+
+	// SysOps only
 	ModifyValidatedLCCNs = newPrivilege()
-	ListAuditLogs        = newPrivilege()
 )
 
 // A Privilege is a single action a user may be able to take
@@ -71,7 +73,7 @@ func newPrivilege(roles ...*Role) *Privilege {
 
 // AllowedBy returns whether the privilege is allowed by the given role
 func (p *Privilege) AllowedBy(r *Role) bool {
-	if r == RoleAdmin || p.roles[RoleAny] {
+	if r == RoleSysOp || p.roles[RoleAny] {
 		return true
 	}
 
@@ -79,14 +81,14 @@ func (p *Privilege) AllowedBy(r *Role) bool {
 }
 
 // AllowedByAny returns true if any of the roles can access this privilege
-func (p *Privilege) AllowedByAny(roles []*Role) bool {
+func (p *Privilege) AllowedByAny(roles *RoleSet) bool {
 	// Special case: even if there are no roles, some privileges are still
 	// allowed to be accessed
 	if p.roles[RoleAny] {
 		return true
 	}
 
-	for _, r := range roles {
+	for r := range roles.items {
 		if p.AllowedBy(r) {
 			return true
 		}

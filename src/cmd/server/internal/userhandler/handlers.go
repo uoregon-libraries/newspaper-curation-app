@@ -29,6 +29,22 @@ var (
 	formTmpl *tmpl.Template
 )
 
+// canListUser lets us filter SysOps out of the user list for anybody who isn't
+// a SysOp.
+//
+// This function is unnecessarily verbose, but the shorter ways of writing this
+// keep confusing me, so...
+func canListUser(current *models.User, target *models.User) bool {
+	if current.GrantedRoles().Contains(privilege.RoleSysOp) {
+		return true
+	}
+	if target.GrantedRoles().Contains(privilege.RoleSysOp) {
+		return false
+	}
+
+	return true
+}
+
 // Setup sets up all the routing rules and other configuration
 func Setup(r *mux.Router, baseWebPath string) {
 	basePath = baseWebPath
@@ -42,7 +58,9 @@ func Setup(r *mux.Router, baseWebPath string) {
 	layout = responder.Layout.Clone()
 	layout.Funcs(tmpl.FuncMap{
 		"UsersHomeURL": func() string { return basePath },
-		"Roles":        func() []*privilege.Role { return privilege.AssignableRoles },
+		"Roles":        func() []*privilege.Role { return privilege.AssignableRoles().List() },
+		"HasRole":      func(u *models.User, r *privilege.Role) bool { return u.GrantedRoles().Contains(r) },
+		"CanListUser":  canListUser,
 	})
 	layout.Path = path.Join(layout.Path, "users")
 
@@ -75,29 +93,25 @@ func getUserForModify(r *responder.Responder) (u *models.User, handled bool) {
 	return u, false
 }
 
-// listHandler spits out the list of users
+// listHandler spits out the list of users the current user can view
 func listHandler(w http.ResponseWriter, req *http.Request) {
 	var r = responder.Response(w, req)
 	r.Vars.Title = "Users"
-	var users, err = models.ActiveUsers()
+	var activeUsers, err = models.ActiveUsers()
 	if err != nil {
 		logger.Errorf("Unable to load user list: %s", err)
 		r.Error(http.StatusInternalServerError, "Error trying to pull user list - try again or contact support")
 		return
 	}
 
-	// Non-admins don't see admins at all
-	if !r.Vars.User.IsAdmin() {
-		var nonAdmins []*models.User
-		for _, u := range users {
-			if !u.IsAdmin() {
-				nonAdmins = append(nonAdmins, u)
-			}
+	var viewableUsers []*models.User
+	for _, u := range activeUsers {
+		if canListUser(r.Vars.User, u) {
+			viewableUsers = append(viewableUsers, u)
 		}
-		users = nonAdmins
 	}
 
-	r.Vars.Data["Users"] = users
+	r.Vars.Data["Users"] = viewableUsers
 	r.Render(listTmpl)
 }
 
@@ -109,8 +123,8 @@ func newHandler(w http.ResponseWriter, req *http.Request) {
 	r.Render(formTmpl)
 }
 
-// editHandler loads the user by id and renders the edit form.  Users are not
-// allowed to edit themselves or admins.
+// editHandler loads the user by id and renders the edit form. Users are not
+// allowed to edit themselves or sysops.
 func editHandler(w http.ResponseWriter, req *http.Request) {
 	var r = responder.Response(w, req)
 	var u, handled = getUserForModify(r)

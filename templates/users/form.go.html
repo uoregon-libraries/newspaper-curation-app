@@ -28,11 +28,11 @@
 
       <td class="radio-group">
         <input type="radio" id="{{$count}}-on"
-          name="role-{{$role.Name}}" value="1" {{if $.Data.User.HasRole .}}checked{{end}} />
+          name="role-{{$role.Name}}" value="1" {{if HasRole $.Data.User .}}checked{{end}} />
         <label for="{{$count}}-on">Assigned</label>
 
         <input type="radio" id="{{$count}}-off"
-          name="role-{{$role.Name}}" value="0" {{if not ($.Data.User.HasRole .)}}checked{{end}} />
+          name="role-{{$role.Name}}" value="0" {{if not (HasRole $.Data.User .)}}checked{{end}} />
         <label for="{{$count}}-off">Not assigned</label>
       </td>
 

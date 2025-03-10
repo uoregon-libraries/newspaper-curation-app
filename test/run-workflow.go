@@ -74,7 +74,7 @@ func main() {
 		os.Exit(0)
 	}
 
-	var u = models.FindActiveUserWithLogin("admin")
+	var u = models.FindActiveUserWithLogin("sysop")
 	if u == nil {
 		l.Fatalf("Cannot enter dummy metadata: no user")
 	}

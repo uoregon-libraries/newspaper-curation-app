@@ -41,8 +41,8 @@ func main() {
 		l.Fatalf("Error deleting existing users: %s", result.Err())
 	}
 
-	for _, role := range privilege.AssignableRoles {
-		var u = &models.User{Login: strings.ToLower(strings.Replace(role.Name, " ", "", -1))}
+	for _, role := range privilege.AssignableRoles().List() {
+		var u = models.NewUser(strings.ToLower(strings.Replace(role.Name, " ", "", -1)))
 		u.Grant(role)
 		l.Debugf("Creating user named %q with role %q", u.Login, role.Name)
 		var err = u.Save()

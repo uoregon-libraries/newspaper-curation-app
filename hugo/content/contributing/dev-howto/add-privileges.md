@@ -10,10 +10,19 @@ them to a role, and then have NCA use them.
 - Edit `src/privilege/role.go` if the new privilege(s) are going to be tied to
   an entirely new role.
 - Edit `src/privilege/privilege.go` and add the item in the big list of vars.
-  You have to define what role(s) can have said privilege. Super-admins always
-  have all privileges and aren't specified explicitly, but the privilege does
-  require a definition, even if it's just an empty role list.
-  - e.g., `ModifyValidatedLCCNs = newPrivilege()`
+  You have to define what role(s) can have said privilege.
+  - Site Managers have all privileges of non-sysop roles, and don't need to be
+    mentioned unless they're the only user with a particular privilege.
+  - SysOps always have all privileges and aren't specified explicitly, but the
+    privilege does require a definition, even if it's just an empty role list.
+  - Examples:
+    - `PrivA = newPrivilege(RoleCurator)`: `PrivA` is explicitly given to
+      curators and implicitly to site managers and sysops. No other users will
+      have PrivA access.
+    - `PrivB = newPrivilege(RoleSiteManager)`: `PrivB` is explicitly given to
+      site managers, and implicitly to sysops.
+    - `PrivC = newPrivilege()`: `PrivC` is implicitly given to sysops. Nobody
+      else, not even site managers, will have this privilege.
 - If the privilege needs to be used in handlers, use a middleware function.
   - The `audithandler` has a simple example of this, where a `canView` function
     wraps access to all routes.

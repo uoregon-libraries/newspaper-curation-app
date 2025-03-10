@@ -1,7 +1,8 @@
 -- +goose Up
--- SQL in section 'Up' is executed when this migration is applied
-INSERT INTO users (login, roles) VALUES('sysadmin', 'admin');
+-- This is a no-op: if we delete this migration, goose may have odd issues
+-- because it'll know the migration was applied, but won't be able to match a
+-- file.
+SELECT 1;
 
 -- +goose Down
--- SQL in section 'Down' is executed when this migration is rolled back
-DELETE FROM users WHERE login = 'sysadmin';
+SELECT 1;

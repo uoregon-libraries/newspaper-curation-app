@@ -20,7 +20,7 @@ func enterErrorHandler(resp *responder.Responder, i *Issue) {
 }
 
 // saveErrorHandler records the error in the database, unclaims the issue, and
-// flags it as needing admin attention
+// flags it as needing an issue manager's attention
 func saveErrorHandler(resp *responder.Responder, i *Issue) {
 	var emsg = resp.Request.FormValue("error")
 	if emsg == "" {

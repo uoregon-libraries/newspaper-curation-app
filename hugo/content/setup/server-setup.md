@@ -89,11 +89,11 @@ Before anything can be done, the following setup has to happen:
 1. Somebody must set up the list of newspaper titles using the "Manage
    Newspaper Titles" functionality. Nothing works if titles aren't set up!
    - See [Adding Titles][1] for details.
-1. Somebody has to set up at least one MARC Org Code in the admin app's "MARC
-   Org Codes" area. This should match the code set up in the app's settings.
-   If in-house scanning is done, and awardees will differ from your primary
-   awardee's code, you would set up those awardees before putting their scanned
-   images into the scan folder.
+1. Somebody has to set up at least one MARC Org Code on NCA's web app in the
+   "MARC Org Codes" area. This should match the code set up in the app's
+   settings. If in-house scanning is done, and awardees will differ from your
+   primary awardee's code, you would set up those awardees before putting their
+   scanned images into the scan folder.
 
 [services]: <{{% ref "/setup/services" %}}>
 [installation]: <{{% ref "installation" %}}>

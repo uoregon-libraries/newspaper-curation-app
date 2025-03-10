@@ -20,13 +20,6 @@ func Can(u *models.User, b *Batch) *CanValidation {
 // View returns true if the user's privileges allow seeing details for our
 // batch, based primarily on its status
 func (c *CanValidation) View() bool {
-	// Allow admins to view any batch. We have some statuses we don't normally
-	// show, but there's no harm in allowing them to be displayed to admins if
-	// they for some odd reason choose to hack up the URL.
-	if c.user.HasRole(privilege.RoleAdmin) {
-		return true
-	}
-
 	return c.batch.Status != models.BatchStatusDeleted && c.batch.Status != models.BatchStatusPending
 }
 

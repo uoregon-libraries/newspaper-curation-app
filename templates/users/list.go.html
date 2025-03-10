@@ -17,6 +17,7 @@
 
   <tbody>
     {{range .Data.Users}}
+      {{if CanListUser $.User .}}
       <tr>
         <td>{{.Login}}</td>
         <td>{{.RolesString}}</td>
@@ -37,6 +38,7 @@
           {{end}}
         </td>
       </tr>
+      {{end}}
     {{end}}
   </tbody>
 </table>
