@@ -62,6 +62,12 @@ func (u *User) deserialize() {
 		u.realRoles.Insert(role)
 	}
 
+	u.cleanRoles()
+}
+
+// cleanRoles removes unnecessary roles from the user. If a role is granted
+// implicitly, it shouldn't be in the user's list separately.
+func (u *User) cleanRoles() {
 	// If you're a SysOp, your real roles list should just be SysOp, and your
 	// implicit roles should get everything *but* SysOp.
 	if u.realRoles.Contains(privilege.RoleSysOp) {
@@ -91,6 +97,7 @@ func (u *User) deserialize() {
 //
 // - All roles (privilege.Role) have their names put into a deduped, sorted, comma-separated string
 func (u *User) serialize() {
+	u.cleanRoles()
 	u.RolesString = strings.Join(u.realRoles.Names(), ",")
 }
 
