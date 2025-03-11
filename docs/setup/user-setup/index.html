@@ -4,7 +4,7 @@
 <meta http-equiv="X-UA-Compatible" content="IE=edge">
 <meta name="viewport" content="width=device-width, initial-scale=1" />
 <title>Users - Newspaper Curation App</title>
-<meta name="description" content="Creating a new NCA administrative user">
+<meta name="description" content="Creating a new NCA &#34;SysOp&#34;">
 <meta name="generator" content="Hugo 0.117.0">
 <link rel="canonical" href="https://uoregon-libraries.github.io/newspaper-curation-app/setup/user-setup/">
 <link rel="stylesheet" href="https://uoregon-libraries.github.io/newspaper-curation-app/css/theme.css">
@@ -12,18 +12,18 @@
 <link rel="stylesheet" href="https://uoregon-libraries.github.io/newspaper-curation-app/css/treeview-navigation.css">
 <script src="https://uoregon-libraries.github.io/newspaper-curation-app/js/headerlink.js"></script>
 <script src="https://uoregon-libraries.github.io/newspaper-curation-app/js/treeview-navigation.js"></script><meta property="og:title" content="Users" />
-<meta property="og:description" content="Creating a new NCA administrative user" />
+<meta property="og:description" content="Creating a new NCA &#34;SysOp&#34;" />
 <meta property="og:type" content="article" />
 <meta property="og:url" content="https://uoregon-libraries.github.io/newspaper-curation-app/setup/user-setup/" /><meta property="article:section" content="setup" />
 
 
 <meta name="twitter:card" content="summary"/>
 <meta name="twitter:title" content="Users"/>
-<meta name="twitter:description" content="Creating a new NCA administrative user"/>
+<meta name="twitter:description" content="Creating a new NCA &#34;SysOp&#34;"/>
 <meta itemprop="name" content="Users">
-<meta itemprop="description" content="Creating a new NCA administrative user">
+<meta itemprop="description" content="Creating a new NCA &#34;SysOp&#34;">
 
-<meta itemprop="wordCount" content="90">
+<meta itemprop="wordCount" content="318">
 <meta itemprop="keywords" content="" /></head>
 <body>
   <div class="container"><div class="skip"><a href="#maincontent">Skip to main content</a></div>
@@ -286,15 +286,39 @@
 </div>
 
 
-<main id="maincontent"><h1>Users</h1><p>Once the applications are installed and configured, you&rsquo;ll need an admin user.
-Start the NCA server in debug mode:</p>
+<main id="maincontent"><h1>Users</h1><h2 id="create-a-sysop">Create a SysOp</h2>
+<p>A SysOp, or System Operator, is a privileged user with access to do anything in
+NCA. All installations will require at least one of these just to get set up,
+and most likely a dev or system administrator will need this role on an ongoing
+basis.</p>
+<p>To get the first sysop, follow the installation and configuration instructions,
+and then start the server in debug mode:</p>
 <div class="highlight"><pre tabindex="0" style="color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4;"><code class="language-bash" data-lang="bash"><span style="display:flex;"><span>./bin/server -c ./settings --debug
-</span></span></code></pre></div><p>This lets you fake an admin login via <code>http://your.site/users?debuguser=admin</code>.
-You can then set up other users as necessary. Once you have Apache set up to
-do the authentication, you should never run in debug mode on production servers.</p>
-<p>For development use, <code>scripts/localdev.sh</code> already runs the server in
-debug mode. Assuming you follow the <a href="https://uoregon-libraries.github.io/newspaper-curation-app/contributing/dev-guide/">development guide&rsquo;s</a>
-instructions, you won&rsquo;t have to do anything special to fake your login.</p>
+</span></span></code></pre></div><p>Debug, among other things, lets you fake a login via
+<code>http://your.site/users?debuguser=&lt;user&gt;</code>. NCA by default starts with a user
+named &ldquo;sysop&rdquo; with the sysop privileges. Simply replace <code>&lt;user&gt;</code> with <code>sysop</code>
+and you&rsquo;ll have full control of NCA.</p>
+<h2 id="create-users">Create Users</h2>
+<p>From here you can set up whatever users you need. NCA&rsquo;s role list should
+describe the abilities fairly well, and won&rsquo;t be duplicated here.</p>
+<p>Users&rsquo; logins should match whatever authentication system you&rsquo;re using in your
+app proxy (e.g., Apache with LDAP). NCA will assume whatever Apache sends in
+the <code>X-Remote-User</code> header is going to match a user in the local database, and
+that the user has in fact been authenticated by Apache.</p>
+<p>In security terms: authentication is done by Apache; authorization by NCA.</p>
+<p>You will probably want at least one &ldquo;Site Manager&rdquo;. This person has access to
+anything that any other roles have, with the exception of sysops. Site managers
+can generally be non-technical people who need to be able to manage the vast
+majority of day-to-day NCA processes, such as creating titles, adding and
+deactivating users, etc.</p>
+<h2 id="finalize">Finalize</h2>
+<p>Once you have Apache set up to do the authentication, and you have the sysop(s)
+and site manager(s) set up, stop NCA&rsquo;s HTTP listener. Subsequent startups
+should never use the <code>--debug</code> flag in a production environment.</p>
+<h2 id="development">Development</h2>
+<p>For development use, <code>scripts/localdev.sh</code> already runs the server in debug
+mode. Assuming you follow the <a href="https://uoregon-libraries.github.io/newspaper-curation-app/contributing/dev-guide/">development guide&rsquo;s</a> instructions,
+you&rsquo;ll always be in debug mode and able to fake any login, including sysop.</p>
 <nav class="pagination" aria-label="Pagination">
 
   <a class="nav nav-prev" href="https://uoregon-libraries.github.io/newspaper-curation-app/setup/installation/">← Prev - Installation</a>

@@ -23,7 +23,7 @@
 <meta itemprop="name" content="Server Setup">
 <meta itemprop="description" content="Setting up a new NCA toolsuite">
 
-<meta itemprop="wordCount" content="775">
+<meta itemprop="wordCount" content="839">
 <meta itemprop="keywords" content="" /></head>
 <body>
   <div class="container"><div class="skip"><a href="#maincontent">Skip to main content</a></div>
@@ -310,10 +310,19 @@ that NCA can reach. When NCA tells SFTPGo to provision titles, they get a
 subdirectory within the specified base directory.</li>
 </ul>
 </li>
-<li>Somebody sets up the full swath of folders, mounting to network storage
-as it makes sense. These will generally be auto-created, but comples setups
-will want to carefully choose what&rsquo;s on local storage and what is on network
-mount points.
+<li>The <code>settings</code> file must be created, generally by copying <code>settings-example</code>
+and customizing it as needed.
+<ul>
+<li>It is <em>very important</em> that you verify that the binary paths are set up
+correctly (<code>OPJ_COMPRESS</code>, <code>PDF_TO_TEXT</code>, etc.). Most defaults will work
+as-is, but it will save a lot of headaches to verify that the values in
+<code>settings</code> are correct.</li>
+</ul>
+</li>
+<li>Somebody sets up the full swath of folders, mounting to network storage as
+it makes sense, and sets them up in <code>settings</code>. These paths will generally
+be auto-created, but complex setups will want to carefully choose what&rsquo;s on
+local storage and what is on network mount points.
 <ul>
 <li><code>PDF_UPLOAD_PATH</code> (<code>/mnt/news/sftp</code>): One subfolder should exist per title</li>
 <li><code>SCAN_UPLOAD_PATH</code> (<code>/mnt/news/scans</code>): This is where in-house scans would be uploaded.</li>
@@ -373,11 +382,11 @@ Newspaper Titles&rdquo; functionality. Nothing works if titles aren&rsquo;t set 
 <li>See <a href="https://uoregon-libraries.github.io/newspaper-curation-app/workflow/adding-titles/">Adding Titles</a> for details.</li>
 </ul>
 </li>
-<li>Somebody has to set up at least one MARC Org Code in the admin app&rsquo;s &ldquo;MARC
-Org Codes&rdquo; area. This should match the code set up in the app&rsquo;s settings.
-If in-house scanning is done, and awardees will differ from your primary
-awardee&rsquo;s code, you would set up those awardees before putting their scanned
-images into the scan folder.</li>
+<li>Somebody has to set up at least one MARC Org Code on NCA&rsquo;s web app in the
+&ldquo;MARC Org Codes&rdquo; area. This should match the code set up in the app&rsquo;s
+settings. If in-house scanning is done, and awardees will differ from your
+primary awardee&rsquo;s code, you would set up those awardees before putting their
+scanned images into the scan folder.</li>
 </ol>
 <nav class="pagination" aria-label="Pagination">
 
