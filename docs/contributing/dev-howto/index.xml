@@ -33,7 +33,7 @@ Open up src/config/config.go and add a value to the Config struct. Choose the da
       
       <guid>https://uoregon-libraries.github.io/newspaper-curation-app/contributing/dev-howto/add-privileges/</guid>
       <description>New privileges require a lot of different changes in order to create them, tie them to a role, and then have NCA use them.
-Edit src/privilege/role.go if the new privilege(s) are going to be tied to an entirely new role. Edit src/privilege/privilege.go and add the item in the big list of vars. You have to define what role(s) can have said privilege. Super-admins always have all privileges and aren&amp;rsquo;t specified explicitly, but the privilege does require a definition, even if it&amp;rsquo;s just an empty role list.</description>
+Edit src/privilege/role.go if the new privilege(s) are going to be tied to an entirely new role. Edit src/privilege/privilege.go and add the item in the big list of vars. You have to define what role(s) can have said privilege. Site Managers have all privileges of non-sysop roles, and don&amp;rsquo;t need to be mentioned unless they&amp;rsquo;re the only user with a particular privilege.</description>
     </item>
     
   </channel>

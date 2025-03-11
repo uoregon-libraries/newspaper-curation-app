@@ -23,7 +23,7 @@
 <meta itemprop="name" content="Developer&#39;s Guide">
 <meta itemprop="description" content="Developing on NCA">
 
-<meta itemprop="wordCount" content="1658">
+<meta itemprop="wordCount" content="1652">
 <meta itemprop="keywords" content="" /></head>
 <body>
   <div class="container"><div class="skip"><a href="#maincontent">Skip to main content</a></div>
@@ -331,11 +331,10 @@ Here are some examples:</p>
 <p>Make sure you edit your settings file and adjust <em>all paths</em>, not just those
 shown above!</p>
 <p>The settings file&rsquo;s &ldquo;command&rdquo; paths must match the path on your local system:
-<code>GHOSTSCRIPT</code>, <code>OPJ_COMPRESS</code>. Unfortunately the GraphicsMagick and various
-Poppler tools are hard-coded currently. Standard linux package managers should
-install these to a location NCA can find, but if not, you may have to make
-symlinks. Or offer up a PR that fixes this and makes all shell-executed
-binaries configurable.</p>
+<code>GHOSTSCRIPT</code>, <code>OPJ_COMPRESS</code>, etc. The defaults work in most cases, but you
+may need to change things to use a local install of some commands, for
+instance, or if you&rsquo;re testing in an environment where your <code>PATH</code> won&rsquo;t point
+to the installed tools.</p>
 <h5 id="docker-services">Docker Services</h5>
 <p>Start by copying the included <code>compose.override-hybrid-example.yml</code> file to
 <code>compose.override.yml</code>. The example has everything needed to run the full stack

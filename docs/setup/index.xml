@@ -43,9 +43,9 @@ Poppler Utils for PDF processing OpenJPEG 2 + command-line tools for JP2 generat
       <pubDate>Mon, 01 Jan 0001 00:00:00 +0000</pubDate>
       
       <guid>https://uoregon-libraries.github.io/newspaper-curation-app/setup/user-setup/</guid>
-      <description>Once the applications are installed and configured, you&amp;rsquo;ll need an admin user. Start the NCA server in debug mode:
-./bin/server -c ./settings --debug This lets you fake an admin login via http://your.site/users?debuguser=admin. You can then set up other users as necessary. Once you have Apache set up to do the authentication, you should never run in debug mode on production servers.
-For development use, scripts/localdev.sh already runs the server in debug mode.</description>
+      <description>Create a SysOp A SysOp, or System Operator, is a privileged user with access to do anything in NCA. All installations will require at least one of these just to get set up, and most likely a dev or system administrator will need this role on an ongoing basis.
+To get the first sysop, follow the installation and configuration instructions, and then start the server in debug mode:
+./bin/server -c .</description>
     </item>
     
     <item>

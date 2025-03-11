@@ -34,6 +34,68 @@ Brief description, if necessary
 ### Migration
 -->
 
+## v6.2.0
+
+The "roles and tools" update.
+
+Oh, and some important test stuff got added.
+
+This is the "roles, tools, and tests" update. Hmm.
+
+### Added
+
+- New role, "Site Manager", to represent a user who isn't a dev/ops person, but
+  has most access in NCA.
+- The role "admin" is replaced with "sysop", as in "system operator"
+  (old-school term). This should be both weird enough and also clear enough to
+  state this is somebody who has absolute power, not to be confused with a
+  non-technical admin like the project manager.
+  - As part of this, a lot of application text has been clarified or updated,
+    as has our documentation.
+- The database state created by NCA now includes a user with the login "sysop"
+  rather than "admin", and the previous "admin" and "sysadmin" users, if they
+  are in your system, will be deactivated.
+  - Dev: this also changes the seed data! You'll have to adjust your URL
+    parameter from `debuguser=admin` to `debuguser=sysop`.
+- Dev: privileges and roles have been massively refactored to make future
+  changes a lot less cumbersome.
+- Dev: unit testing for privileges and roles!
+- New acceptance tests have been added under `test/acceptance` as Go unit
+  tests. These are extremely basic for now just to get something started, but
+  they need a lot of work.
+
+### Changed
+
+- External tools' paths are now configurable. This will enable more people to
+  use NCA than before, because custom install paths for some tools could
+  prevent NCA from working. For example, it was assuming that `gm` would always
+  run the Graphics Magick tools; in a handful of situations this would fail.
+
+### Migration
+
+- Make sure you look at the changes in `settings-example` compared to your
+  `settings` file. In particular, you'll need to make sure `GRAPHICS_MAGICK`,
+  `PDF_SEPARATE`, and `PDF_TO_TEXT` are set. The defaults will work for most
+  people. And if you're already using NCA, the defaults will give you the same
+  processing that was already happening.
+- Migrate the database:
+  - **Important**: if you're using "sysadmin" or "admin" today, (a) *stop doing
+    this and create real users*, but (b) if you really need generic
+    system-built users, **those two will be deactivated** after migrating. You
+    will need to change your processes to rely instead on the "sysop" user.
+  - `make && ./bin/migrate-database -c ./settings up`
+- Consider downgrading people who have "sysop" to the new "Site Manager" role.
+  This role has access to most things, but won't be able to perform some
+  actions that are dangerous. Moving forward, sysops will get more and more
+  dangerous privileges, while the site admins will only get privileges that
+  are safe for a non-dev user.
+
+### Removed
+
+- Admins (now SysOps) no longer have access to "hack" a batch URL to view
+  deleted or in-process batches. This was undocumented, so shouldn't affect
+  anybody greatly, and probably shouldn't have been added in the first place.
+
 ## v6.1.1
 
 Hotfix: "entwined jobs" (those which are group-retried on failure, like ONI

@@ -23,7 +23,7 @@
 <meta itemprop="name" content="Add Privileges / Roles">
 <meta itemprop="description" content="Adding a new privilege and making it do something">
 
-<meta itemprop="wordCount" content="296">
+<meta itemprop="wordCount" content="372">
 <meta itemprop="keywords" content="" /></head>
 <body>
   <div class="container"><div class="skip"><a href="#maincontent">Skip to main content</a></div>
@@ -292,11 +292,23 @@ them to a role, and then have NCA use them.</p>
 <li>Edit <code>src/privilege/role.go</code> if the new privilege(s) are going to be tied to
 an entirely new role.</li>
 <li>Edit <code>src/privilege/privilege.go</code> and add the item in the big list of vars.
-You have to define what role(s) can have said privilege. Super-admins always
-have all privileges and aren&rsquo;t specified explicitly, but the privilege does
-require a definition, even if it&rsquo;s just an empty role list.
+You have to define what role(s) can have said privilege.
 <ul>
-<li>e.g., <code>ModifyValidatedLCCNs = newPrivilege()</code></li>
+<li>Site Managers have all privileges of non-sysop roles, and don&rsquo;t need to be
+mentioned unless they&rsquo;re the only user with a particular privilege.</li>
+<li>SysOps always have all privileges and aren&rsquo;t specified explicitly, but the
+privilege does require a definition, even if it&rsquo;s just an empty role list.</li>
+<li>Examples:
+<ul>
+<li><code>PrivA = newPrivilege(RoleCurator)</code>: <code>PrivA</code> is explicitly given to
+curators and implicitly to site managers and sysops. No other users will
+have PrivA access.</li>
+<li><code>PrivB = newPrivilege(RoleSiteManager)</code>: <code>PrivB</code> is explicitly given to
+site managers, and implicitly to sysops.</li>
+<li><code>PrivC = newPrivilege()</code>: <code>PrivC</code> is implicitly given to sysops. Nobody
+else, not even site managers, will have this privilege.</li>
+</ul>
+</li>
 </ul>
 </li>
 <li>If the privilege needs to be used in handlers, use a middleware function.

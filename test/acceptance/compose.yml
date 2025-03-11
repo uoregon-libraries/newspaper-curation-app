@@ -1,0 +1,4 @@
+services:
+  headless:
+    image: browserless/chrome
+    network_mode: host

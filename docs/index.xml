@@ -126,7 +126,7 @@ The issue should contain PDFs and nothing else. Publishers should never upload t
       
       <guid>https://uoregon-libraries.github.io/newspaper-curation-app/contributing/dev-howto/add-privileges/</guid>
       <description>New privileges require a lot of different changes in order to create them, tie them to a role, and then have NCA use them.
-Edit src/privilege/role.go if the new privilege(s) are going to be tied to an entirely new role. Edit src/privilege/privilege.go and add the item in the big list of vars. You have to define what role(s) can have said privilege. Super-admins always have all privileges and aren&amp;rsquo;t specified explicitly, but the privilege does require a definition, even if it&amp;rsquo;s just an empty role list.</description>
+Edit src/privilege/role.go if the new privilege(s) are going to be tied to an entirely new role. Edit src/privilege/privilege.go and add the item in the big list of vars. You have to define what role(s) can have said privilege. Site Managers have all privileges of non-sysop roles, and don&amp;rsquo;t need to be mentioned unless they&amp;rsquo;re the only user with a particular privilege.</description>
     </item>
     
     <item>
@@ -156,9 +156,9 @@ Manual Deletion If issues got to the page-review step when they shouldn&amp;rsqu
       <pubDate>Mon, 01 Jan 0001 00:00:00 +0000</pubDate>
       
       <guid>https://uoregon-libraries.github.io/newspaper-curation-app/setup/user-setup/</guid>
-      <description>Once the applications are installed and configured, you&amp;rsquo;ll need an admin user. Start the NCA server in debug mode:
-./bin/server -c ./settings --debug This lets you fake an admin login via http://your.site/users?debuguser=admin. You can then set up other users as necessary. Once you have Apache set up to do the authentication, you should never run in debug mode on production servers.
-For development use, scripts/localdev.sh already runs the server in debug mode.</description>
+      <description>Create a SysOp A SysOp, or System Operator, is a privileged user with access to do anything in NCA. All installations will require at least one of these just to get set up, and most likely a dev or system administrator will need this role on an ongoing basis.
+To get the first sysop, follow the installation and configuration instructions, and then start the server in debug mode:
+./bin/server -c .</description>
     </item>
     
     <item>
