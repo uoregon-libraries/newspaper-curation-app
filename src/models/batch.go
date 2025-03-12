@@ -24,11 +24,11 @@ const (
 
 // BatchStatus describes the metadata corresponding to a database status
 type BatchStatus struct {
-	Status      string
-	Live        bool
-	Staging     bool
-	NeedsAction bool
-	Description string
+	Status      string // Raw status value
+	Live        bool   // Loaded onto production
+	Staging     bool   // Loaded onto staging
+	NeedsAction bool   // Is this batch waiting on some human process?
+	Description string // Human-friendly status text
 }
 
 var noStatus BatchStatus
