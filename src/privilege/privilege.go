@@ -24,10 +24,10 @@ var (
 	ViewUploadedIssues   = newPrivilege(RoleWorkflowManager)
 	ModifyUploadedIssues = newPrivilege(RoleWorkflowManager)
 
-	// Search for issues across all locations - this could really be more open,
-	// but I don't see it being necessary for anybody but workflow managers at
-	// the moment
-	SearchIssues = newPrivilege(RoleWorkflowManager)
+	// Search for issues across all locations (NCA workflow, uploads, and in
+	// production). No need to restrict this as it's just an informational
+	// display at the moment.
+	SearchIssues = newPrivilege(RoleAny)
 
 	// Generate new batches from the UI
 	GenerateBatches = newPrivilege(RoleBatchBuilder)
