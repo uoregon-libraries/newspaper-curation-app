@@ -13,11 +13,7 @@ class DisclosureNav {
     this.controlledNodes = [];
     this.openIndex = null;
     this.useArrowKeys = true;
-    this.topLevelNodes = [
-      ...this.rootNode.querySelectorAll(
-        '.main-link, button[aria-expanded][aria-controls]'
-      ),
-    ];
+    this.topLevelNodes = [document.querySelector('#main-home-link'), ...this.rootNode.querySelectorAll('.main-link, button[aria-expanded][aria-controls]')];
 
     this.topLevelNodes.forEach((node) => {
       // handle button + menu
