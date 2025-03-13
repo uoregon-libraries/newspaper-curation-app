@@ -2,8 +2,10 @@
   --navmenu-dropdown-bg: oklch(95% 0 0);
   --navmenu-dropdown-fg: oklch(25% 0 0);
   --navmenu-dropdown-border: oklch(15% 0 0);
-  --navmenu-dropdown-selected-fg: oklch(15% 0.04 285);
   --navmenu-dropdown-selected-bg: oklch(95% 0 0);
+  --navmenu-dropdown-selected-fg: oklch(15% 0.04 285);
+  --navmenu-active-bg: oklch(85% 0.04 285);
+  --navmenu-active-fg: oklch(15% 0 0);
 }
 
 [data-bs-theme=dark] {
@@ -12,6 +14,8 @@
   --navmenu-dropdown-border: oklch(85% 0 0);
   --navmenu-dropdown-selected-bg: oklch(15% 0.04 285);
   --navmenu-dropdown-selected-fg: oklch(95% 0 0);
+  --navmenu-active-bg: oklch(15% 0 0);
+  --navmenu-active-fg: oklch(85% 0.04 285);
 }
 
 .disclosure-nav {
@@ -87,6 +91,12 @@
 
 .disclosure-nav .main-link + button::after {
   margin-left: 0;
+}
+
+.disclosure-nav button[aria-expanded="true"] {
+	color: var(--navmenu-active-fg);
+	background-color: var(--navmenu-active-bg);
+	border-color: var(--bs-btn-hover-border-color);
 }
 
 .disclosure-nav button:focus,
