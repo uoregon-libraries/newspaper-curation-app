@@ -20,6 +20,9 @@
     {{IncludeJS "copy-clipboard"}}
     {{RawJS "cta-modal/cta-modal.js"}}
     {{IncludeCSS "upload"}}
+
+    {{IncludeCSS "disclosure-navigation"}}
+    {{IncludeJS "disclosureMenu"}}
   </head>
 
   <body>
@@ -35,42 +38,80 @@
         </button>
 
         <div class="collapse navbar-collapse" id="navbar-collapse">
-          <ul class="navbar-nav me-auto mb-2 mb-lg-0">
-            {{if .User.PermittedTo ListTitles}}
-              <li class="nav-item"><a class="nav-link" href="{{FullPath "titles"}}">Titles</a></li>
-            {{end}}
+          <ul class="disclosure-nav navbar-nav me-auto mb-2 mb-lg-0">
+            <li class="nav-item">
+              <button type="button" aria-expanded="true" aria-controls="workflow-menu">
+                Workflow
+              </button>
+              <ul id="workflow-menu">
+                {{if .User.PermittedTo ViewUploadedIssues}}
+                <li class="nav-item"><a class="nav-link" href="{{FullPath "uploadedissues"}}">
+                  View uploaded issues not yet in NCA
+                </a></li>
+                {{end}}
 
-            {{if .User.PermittedTo ViewUploadedIssues}}
-            <li class="nav-item"><a class="nav-link" href="{{FullPath "uploadedissues"}}">Uploaded Issues</a></li>
-            {{end}}
+                {{if .User.PermittedTo ViewMetadataWorkflow}}
+                <li class="nav-item"><a class="nav-link" href="{{FullPath "workflow"}}">
+                  Curate and/or review issue metadata
+                </a></li>
+                {{end}}
 
-            {{if .User.PermittedTo ViewBatchStatus}}
-            <li class="nav-item"><a class="nav-link" href="{{FullPath "batches"}}">Manage Batches</a></li>
-            {{end}}
+                {{if .User.PermittedTo GenerateBatches}}
+                <li class="nav-item"><a class="nav-link" href="{{FullPath "batchmaker"}}">
+                  Create new batches
+                </a></li>
+                {{end}}
 
-            {{if .User.PermittedTo GenerateBatches}}
-            <li class="nav-item"><a class="nav-link" href="{{FullPath "batchmaker"}}">Create Batches</a></li>
-            {{end}}
+                {{if .User.PermittedTo ViewBatchStatus}}
+                <li class="nav-item"><a class="nav-link" href="{{FullPath "batches"}}">
+                  View and manage existing batches</a></li>
+                {{end}}
+              </ul>
+            </li>
 
-            {{if .User.PermittedTo ViewMetadataWorkflow}}
-              <li class="nav-item"><a class="nav-link" href="{{FullPath "workflow"}}">Workflow</a></li>
-            {{end}}
+            <li class="nav-item">
+              <button type="button" aria-expanded="true" aria-controls="tools-menu">
+                Tools
+              </button>
+              <ul id="tools-menu">
+                {{if .User.PermittedTo SearchIssues}}
+                  <li class="nav-item"><a class="nav-link" href="{{FullPath "find"}}">
+                    Find issues
+                  </a></li>
+                {{end}}
 
-            {{if .User.PermittedTo SearchIssues}}
-              <li class="nav-item"><a class="nav-link" href="{{FullPath "find"}}">Find Issues</a></li>
-            {{end}}
+                {{if .User.PermittedTo ListUsers}}
+                  <li class="nav-item"><a class="nav-link" href="{{FullPath "users"}}">
+                    Manage users
+                  </a></li>
+                {{end}}
 
-            {{if .User.PermittedTo ListAuditLogs}}
-              <li class="nav-item"><a class="nav-link" href="{{FullPath "logs"}}">Logs</a></li>
-            {{end}}
+                {{if .User.PermittedTo ListAuditLogs}}
+                  <li class="nav-item"><a class="nav-link" href="{{FullPath "logs"}}">
+                    View audit logs
+                  </a></li>
+                {{end}}
+              </ul>
+            </li>
 
-            {{if .User.PermittedTo ManageMOCs}}
-              <li class="nav-item"><a class="nav-link" href="{{FullPath "mocs"}}">MARC Org Codes</a></li>
-            {{end}}
+            <li class="nav-item">
+              <button type="button" aria-expanded="true" aria-controls="list-management-menu">
+                Lists
+              </button>
+              <ul id="list-management-menu">
+                {{if .User.PermittedTo ListTitles}}
+                  <li class="nav-item"><a class="nav-link" href="{{FullPath "titles"}}">
+                    View, edit, and update titles
+                  </a></li>
+                {{end}}
 
-            {{if .User.PermittedTo ListUsers}}
-              <li class="nav-item"><a class="nav-link" href="{{FullPath "users"}}">Users</a></li>
-            {{end}}
+                {{if .User.PermittedTo ManageMOCs}}
+                <li class="nav-item"><a class="nav-link" href="{{FullPath "mocs"}}">
+                  View and manage MARC organization codes
+                </a></li>
+                {{end}}
+              </ul>
+            </li>
           </ul>
           <span class="navbar-text">
             {{- if .User.Guest}}
