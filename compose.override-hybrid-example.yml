@@ -5,6 +5,11 @@
 # Copy this to `compose.override.yml` and tweak it however you need for your
 # dev environment. You'll need to adjust your NCA settings file to use the
 # local workflow directories, set up the IIIF and ONI URLs, etc.
+
+# Change this if you run multiple stacks at once (e.g., using git worktrees) to
+# avoid one stack breaking another's data
+name: nca
+
 services:
   # Mount the local workflow dir and expose RAIS directly to the host
   iiif:
