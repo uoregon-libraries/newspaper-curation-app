@@ -29,11 +29,27 @@ type User struct {
 // EmptyUser gives us a way to avoid returning a nil *User while still being
 // able to detect a user not being found.  Also lets us use any User functions
 // without risking a panic.
-var EmptyUser = &User{Login: "N/A", Guest: true}
+var EmptyUser = emptyUser()
+
+// emptyUser actually creates our hard-coded EmptyUser, making sure to use
+// NewUser so the structure is fully initialized
+func emptyUser() *User {
+	var u = NewUser("N/A")
+	u.Guest = true
+	return u
+}
 
 // SystemUser is an "internal" object we can use to represent actions the
 // system takes, comments from the processing as opposed to people, etc.
-var SystemUser = &User{ID: -1, Login: "System Process"}
+var SystemUser = systemUser()
+
+// systemUser actually creates our hard-coded SystemUser, making sure to use
+// NewUser so the structure is fully initialized
+func systemUser() *User {
+	var u = NewUser("System Process")
+	u.ID = -1
+	return u
+}
 
 // NewUser returns an empty user with no roles or ID
 func NewUser(login string) *User {
@@ -153,7 +169,7 @@ func FindUserByID(id int64) *User {
 		return SystemUser
 	}
 
-	var user = &User{}
+	var user = NewUser("")
 	var op = dbi.DB.Operation()
 	var ok = op.Select("users", &User{}).Where("id = ?", id).First(user)
 	if op.Err() != nil {
