@@ -102,7 +102,7 @@
 .disclosure-nav button:focus,
 .disclosure-nav button:focus-visible,
 .disclosure-nav button:hover,
-.disclosure-nav .main-link:focus {
+.disclosure-nav .main-link:focus,
 .disclosure-nav .main-link:focus-visible {
 	color: var(--bs-btn-hover-color);
 	background-color: var(--bs-btn-hover-bg);
