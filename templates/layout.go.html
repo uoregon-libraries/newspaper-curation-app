@@ -46,25 +46,26 @@
               <ul id="workflow-menu">
                 {{if .User.PermittedTo ViewUploadedIssues}}
                 <li class="nav-item"><a class="nav-link" href="{{FullPath "uploadedissues"}}">
-                  View uploaded issues not yet in NCA
+                  Manage Uploaded Issues
                 </a></li>
                 {{end}}
 
                 {{if .User.PermittedTo ViewMetadataWorkflow}}
                 <li class="nav-item"><a class="nav-link" href="{{FullPath "workflow"}}">
-                  Curate and/or review issue metadata
+                  Curate / Review Issues
                 </a></li>
                 {{end}}
 
                 {{if .User.PermittedTo GenerateBatches}}
                 <li class="nav-item"><a class="nav-link" href="{{FullPath "batchmaker"}}">
-                  Create new batches
+                  Create Batches
                 </a></li>
                 {{end}}
 
                 {{if .User.PermittedTo ViewBatchStatus}}
                 <li class="nav-item"><a class="nav-link" href="{{FullPath "batches"}}">
-                  View and manage existing batches</a></li>
+                  Manage Batches
+                </a></li>
                 {{end}}
               </ul>
             </li>
@@ -101,13 +102,13 @@
               <ul id="list-management-menu">
                 {{if .User.PermittedTo ListTitles}}
                   <li class="nav-item"><a class="nav-link" href="{{FullPath "titles"}}">
-                    View, edit, and update titles
+                    Titles
                   </a></li>
                 {{end}}
 
                 {{if .User.PermittedTo ManageMOCs}}
                 <li class="nav-item"><a class="nav-link" href="{{FullPath "mocs"}}">
-                  View and manage MARC organization codes
+                  MARC Org Codes
                 </a></li>
                 {{end}}
               </ul>
