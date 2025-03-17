@@ -111,3 +111,9 @@
 	box-shadow: var(--bs-btn-focus-box-shadow);
   position: relative;
 }
+
+/* Hide buttons that don't have submenu items - this can happen because the
+ * items are added based on a user's roles */
+.disclosure-nav > li.nav-item:not(:has(> ul > li:nth-child(1))) {
+  display: none;
+}
