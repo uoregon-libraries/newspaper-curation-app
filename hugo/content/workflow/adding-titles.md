@@ -16,8 +16,9 @@ for titles not indexed elsewhere. Here's our process:
     this and knows the right people to contact
 - Generate MARC XML for the title(s)
   - [MarcEdit](https://marcedit.reeset.net) is a popular choice for this
-- Upload the XML into NCA. This creates records in staging and production ONI
-  instances as well as a record "stub" in NCA.
+- Upload the XML into NCA (Lists -> Titles, "Upload a MARC record"). This
+  creates records in staging and production ONI instances as well as a record
+  "stub" in NCA.
 - If you already have titles in ONI, and don't want to upload their MARC
   records, you can also point NCA to your local ONI server instead of, or in
   addition to, Library of Congress. This can be done by modifyting the NCA

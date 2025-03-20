@@ -109,7 +109,7 @@ ButtonExpand.prototype.handleBlur = function (event) {
 
 window.addEventListener('load', function (event) {
 
-  var buttons =  document.querySelectorAll('button[aria-expanded][aria-controls]');
+  var buttons =  document.querySelectorAll('[data-widget=simple-disclosure]');
 
   for (var i = 0; i < buttons.length; i++) {
     var be = new ButtonExpand(buttons[i]);

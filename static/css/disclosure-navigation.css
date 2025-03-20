@@ -1,0 +1,119 @@
+:root, [data-bs-theme=light] {
+  --navmenu-dropdown-bg: oklch(95% 0 0);
+  --navmenu-dropdown-fg: oklch(25% 0 0);
+  --navmenu-dropdown-border: oklch(15% 0 0);
+  --navmenu-dropdown-selected-bg: oklch(95% 0 0);
+  --navmenu-dropdown-selected-fg: oklch(15% 0.04 285);
+  --navmenu-active-bg: oklch(85% 0.04 285);
+  --navmenu-active-fg: oklch(15% 0 0);
+}
+
+[data-bs-theme=dark] {
+  --navmenu-dropdown-bg: oklch(5% 0 0);
+  --navmenu-dropdown-fg: oklch(75% 0 0);
+  --navmenu-dropdown-border: oklch(85% 0 0);
+  --navmenu-dropdown-selected-bg: oklch(15% 0.04 285);
+  --navmenu-dropdown-selected-fg: oklch(95% 0 0);
+  --navmenu-active-bg: oklch(15% 0 0);
+  --navmenu-active-fg: oklch(85% 0.04 285);
+}
+
+.disclosure-nav {
+  display: flex;
+  list-style-type: none;
+  padding: 0;
+  margin: 0;
+}
+
+.disclosure-nav ul {
+  z-index: 99999;
+  background-color: var(--navmenu-dropdown-bg);
+  color: var(--navmenu-dropdown-fg);
+  border: 1px solid var(--navmenu-dropdown-border);
+  border-top-width: 5px;
+  border-radius: 0 0 4px 4px;
+  display: block;
+  list-style-type: none;
+  margin: 0;
+  min-width: 200px;
+  padding: 0;
+  position: absolute;
+  top: 100%;
+}
+
+.disclosure-nav li {
+  margin: 0;
+}
+
+.disclosure-nav > li {
+  display: flex;
+  position: relative;
+}
+
+.disclosure-nav ul a {
+  border: 0;
+  display: block;
+  margin: 0;
+  padding: 0.5em 1em;
+}
+
+.disclosure-nav ul a:hover,
+.disclosure-nav ul a:focus {
+  background-color: var(--navmenu-dropdown-selected-bg);
+  color: var(--navmenu-dropdown-selected-fg);
+  margin-bottom: 0;
+  text-decoration: none;
+}
+
+.disclosure-nav ul a:focus {
+  outline: 5px solid var(--navmenu-dropdown-border);
+  position: relative;
+}
+
+.disclosure-nav button,
+.disclosure-nav .main-link {
+  align-items: center;
+  background-color: transparent;
+  border: 1px solid transparent;
+  display: flex;
+  padding: 1em;
+}
+
+.disclosure-nav button::after {
+  content: "";
+  border-bottom: 1px solid var(--navmenu-dropdown-border);
+  border-right: 1px solid var(--navmenu-dropdown-border);
+  height: 0.5em;
+  margin-left: 0.75em;
+  width: 0.5em;
+  transform: rotate(45deg);
+}
+
+.disclosure-nav .main-link + button::after {
+  margin-left: 0;
+}
+
+.disclosure-nav button[aria-expanded="true"] {
+	color: var(--navmenu-active-fg);
+	background-color: var(--navmenu-active-bg);
+	border-color: var(--bs-btn-hover-border-color);
+}
+
+.disclosure-nav button:focus,
+.disclosure-nav button:focus-visible,
+.disclosure-nav button:hover,
+.disclosure-nav .main-link:focus,
+.disclosure-nav .main-link:focus-visible {
+	color: var(--bs-btn-hover-color);
+	background-color: var(--bs-btn-hover-bg);
+	border-color: var(--bs-btn-hover-border-color);
+	outline: 0;
+	box-shadow: var(--bs-btn-focus-box-shadow);
+  position: relative;
+}
+
+/* Hide buttons that don't have submenu items - this can happen because the
+ * items are added based on a user's roles */
+.disclosure-nav > li.nav-item:not(:has(> ul > li:nth-child(1))) {
+  display: none;
+}
