@@ -1,6 +1,9 @@
 #!/usr/bin/env bash
 set -eu
 
+PROJECT=$(docker compose config --format json | jq '.name' | sed 's|"||g')
+VOLUMES=$(docker compose config --volumes | sed 's|"||g')
+
 nuke() {
   echo "Deleting the stack"
   docker compose kill
@@ -24,15 +27,23 @@ backup() {
   echo "Done (Taking down the stack gracefully)"
 
   echo "Deleting old backups (if any)"
-  vols="$dir/vols.tar"
   fakemount="$dir/fakemount.tar"
-  sudo rm -f $vols
-  sudo rm -f $fakemount
+  sudo rm -f $dir/*.tar
   echo "Done (Deleting old backups (if any))"
 
-  echo "Writing new backup files"
+  echo "Writing fakemount backup"
   sudo tar -cpf $fakemount ./test/fakemount
-  sudo su -c "cd /var/lib/docker/volumes && tar -cpf $vols ./nca*"
+
+  echo "Backing up docker volumes..."
+  for vol in $VOLUMES; do
+    name="${PROJECT}_${vol}"
+    voldir="/var/lib/docker/volumes/$name"
+    backup="$dir/volume-$vol.tar"
+    echo "  - Processing volume $vol"
+    echo "    ($voldir -> $backup)"
+    sudo su -c "cd $voldir && tar -cpf $backup ."
+  done
+
   echo "Done (Writing new backup files)"
 
   dcup
@@ -50,19 +61,32 @@ load_seed_data() {
 restore() {
   nuke
 
+  # This "create" usually won't matter, but it ensures all volumes have been
+  # created so we don't get errors trying to back them up
+  docker compose create
+
   dir="$1"
   echo "Restoring from $dir"
-  vols="$dir/vols.tar"
   fakemount="$dir/fakemount.tar"
   sudo tar -xspf $fakemount ./test/fakemount
-  sudo su -c "cd /var/lib/docker/volumes && tar -mxspf $vols"
+
+  echo "Restoring docker volumes..."
+  for vol in $VOLUMES; do
+    name="${PROJECT}_${vol}"
+    voldir="/var/lib/docker/volumes/$name"
+    backup="$dir/volume-$vol.tar"
+    echo "  - Processing volume $vol"
+    echo "    ($backup -> $voldir)"
+    sudo su -c "mkdir -p $voldir && cd $voldir && tar -mxspf $backup"
+  done
+
   echo "Done (Restoring from $dir)"
 
   dcup
 
   sleep 2
   echo "Hacking SFTPGo 'home' volume permissions"
-  sudo chown $(whoami):$(whoami) /var/lib/docker/volumes/nca_sftpgo-home/_data
+  sudo chown $(whoami):$(whoami) /var/lib/docker/volumes/${PROJECT}_sftpgo-home/_data
   echo "Done (Hacking SFTPGo 'home' volume permissions)"
 }
 
