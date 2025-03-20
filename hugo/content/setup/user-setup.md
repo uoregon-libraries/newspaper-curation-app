@@ -25,8 +25,9 @@ and you'll have full control of NCA.
 
 ## Create Users
 
-From here you can set up whatever users you need. NCA's role list should
-describe the abilities fairly well, and won't be duplicated here.
+From here you can set up whatever users you need (Tools -> Manage Users). NCA's
+role list should describe the abilities fairly well, and won't be duplicated
+here.
 
 Users' logins should match whatever authentication system you're using in your
 app proxy (e.g., Apache with LDAP). NCA will assume whatever Apache sends in
