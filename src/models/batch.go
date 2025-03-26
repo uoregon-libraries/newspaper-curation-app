@@ -24,11 +24,11 @@ const (
 
 // BatchStatus describes the metadata corresponding to a database status
 type BatchStatus struct {
-	Status      string
-	Live        bool
-	Staging     bool
-	NeedsAction bool
-	Description string
+	Status      string // Raw status value
+	Live        bool   // Loaded onto production
+	Staging     bool   // Loaded onto staging
+	NeedsAction bool   // Is this batch waiting on some human process?
+	Description string // Human-friendly status text
 }
 
 var noStatus BatchStatus
@@ -249,9 +249,9 @@ func (b *Batch) AwardYear() int {
 	return b.CreatedAt.Year()
 }
 
-// Actions loads all actions tied to this batch and orders them in
+// ActivityLog loads all actions tied to this batch and orders them in
 // chronological order (the newest are at the end of the list).
-func (b *Batch) Actions() ([]*Action, error) {
+func (b *Batch) ActivityLog() ([]*Action, error) {
 	var err error
 	if b.actions == nil {
 		b.actions, err = findActionsByObjectTypeAndID(actionObjectTypeBatch, b.ID)

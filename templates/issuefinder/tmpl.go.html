@@ -9,13 +9,15 @@
       </div>
 
       <div class="col-auto">
-        <select class="form-select" id="lccn" name="lccn">
-          {{range .Data.Titles}}
-            <option value="{{.LCCN}}" {{if eq .LCCN $.Data.LCCN}}selected="selected"{{end}}>
-              {{.Name}} - {{.LCCN}}
-            </option>
-          {{end}}
-        </select>
+        <input class="form-control" list="lccns" id="lccn" name="lccn" autocomplete="off" aria-describedby="title-lccn-help" value="{{.Data.LCCN}}" />
+        <div class="form-text" id="title-lccn-help">
+          Start a title's name in order to show a list of options. Or just enter an LCCN directly.
+        </div>
+        <datalist id="lccns">
+        {{range .Data.Titles}}
+        <option value="{{.LCCN}}">{{.Name}} - {{.LCCN}}</option>
+        {{end}}
+        </datalist>
       </div>
     </div>
 
@@ -55,10 +57,16 @@
       while leaving year at zero.
     </p>
     <p>
-      <em>Please note: it can take up to seven days for a new batch's issues to
-      show up.</em> A batch might show up in full moments after loading, it might
-      be partially listed and have some issues appear to be missing, or it might
-      not show up at all.
+      <em>Note: this will find any issues no matter the source, but
+      <strong><mark>only for titles NCA has tracked</mark></strong>.</em> If
+      you have legacy titles loaded from other systems, and those titles aren't
+      all in NCA, you will see "gaps" here!
+    </p>
+    <p>
+      <em>Also note: <strong><mark>it can take up to seven days</mark></strong>
+      for a new batch's issues to show up.</em> A batch might show all issues
+      immediately after loading, it might be partially listed and have some
+      issues appear to be missing, or it might not show up at all.
     </p>
   </div>
 </form>

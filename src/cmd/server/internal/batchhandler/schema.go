@@ -12,7 +12,7 @@ type Batch struct {
 	FlaggedIssues   []*models.FlaggedIssue
 	UnflaggedIssues []*models.Issue
 	Issues          []*models.Issue
-	Actions         []*models.Action
+	ActivityLog     []*models.Action
 	PageCount       int
 	cv              *CanValidation
 }
@@ -44,7 +44,7 @@ func wrapBatch(batch *models.Batch, currentUser *models.User) (*Batch, error) {
 		}
 	}
 
-	b.Actions, err = b.Batch.Actions()
+	b.ActivityLog, err = b.Batch.ActivityLog()
 	if err != nil {
 		return nil, fmt.Errorf("fetching batch %d (%q) actions: %w", b.Batch.ID, b.Batch.Name, err)
 	}
@@ -90,4 +90,30 @@ func (b *Batch) ReadyForFlaggingIssues() bool {
 // permissions
 func (b *Batch) Can() *CanValidation {
 	return b.cv
+}
+
+// Actions determines what the current user can do with the given batch, if
+// anything, returning "subtemplate" names that the batch view checks to
+// determine what to do.
+//
+// The return values here must be kept in sync with the list in the template.
+func (b *Batch) Actions() []string {
+	var actions []string
+	if b.ReadyForQC() && b.Can().Approve() {
+		actions = append(actions, "qc")
+	}
+
+	if b.ReadyForFlaggingIssues() && b.Can().FlagIssues() {
+		actions = append(actions, "flag")
+	}
+
+	if b.ReadyForArchive() && b.Can().Archive() {
+		actions = append(actions, "archive")
+	}
+
+	if len(actions) == 0 {
+		actions = append(actions, "none")
+	}
+
+	return actions
 }
