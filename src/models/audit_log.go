@@ -140,7 +140,7 @@ type AuditLogFinder struct {
 //	AuditLogs().Between(time.Date(), time.Now()).ForUser("jechols").Limit(100).Fetch()
 func AuditLogs() *AuditLogFinder {
 	var f = newCoreFinder("audit_logs", &AuditLog{})
-	f.conditions["action <> 'autosave'"] = nil
+	f.conditions["`action` <> 'autosave'"] = nil
 	f.ord = "`when` desc"
 	return &AuditLogFinder{coreFinder: f}
 }
