@@ -19,6 +19,10 @@ dcup() {
 }
 
 backup() {
+  # This "create" usually won't matter, but it ensures all volumes have been
+  # created so we don't get errors trying to back them up
+  docker compose create
+
   dir=$(realpath $1)
   mkdir -p $dir
 
@@ -60,10 +64,6 @@ load_seed_data() {
 
 restore() {
   nuke
-
-  # This "create" usually won't matter, but it ensures all volumes have been
-  # created so we don't get errors trying to back them up
-  docker compose create
 
   dir="$1"
   echo "Restoring from $dir"
