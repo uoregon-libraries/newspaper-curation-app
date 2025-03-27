@@ -1,31 +1,23 @@
 package models
 
 import (
-	"strings"
 	"time"
 
-	"github.com/Nerdmaster/magicsql"
-	"github.com/uoregon-libraries/newspaper-curation-app/src/dbi"
 	"github.com/uoregon-libraries/newspaper-curation-app/src/schema"
 )
 
 // IssueFinder is a pseudo-DSL for easily creating queries without needing to
 // know the underlying table structure
 type IssueFinder struct {
-	// see AuditLogFinder: this map is weird but useful
-	conditions map[string]any
-	op         *magicsql.Operation
-	ord        string
-	lim        int
+	*coreFinder
 }
 
 // Issues returns an IssueFinder: a scoped object for simple filtering of the
 // issues table with a very narrow DSL
 func Issues() *IssueFinder {
-	var f = &IssueFinder{conditions: make(map[string]any), op: dbi.DB.Operation()}
+	var f = newCoreFinder("issues", &Issue{})
 	f.conditions["ignored = ?"] = false
-	f.op.Dbg = dbi.Debug
-	return f
+	return &IssueFinder{coreFinder: f}
 }
 
 // LCCN returns a scope for finding issues with a particular title
@@ -114,35 +106,17 @@ func (f *IssueFinder) OrderBy(order string) *IssueFinder {
 	return f
 }
 
-func (f *IssueFinder) selector() magicsql.Select {
-	var where []string
-	var args []any
-	for k, v := range f.conditions {
-		where = append(where, "("+k+")")
-		if v != nil {
-			args = append(args, v)
-		}
-	}
-	var sel = f.op.Select("issues", &Issue{}).Where(strings.Join(where, " AND "), args...)
-	if f.lim > 0 {
-		sel = sel.Limit(uint64(f.lim))
-	}
-	if f.ord != "" {
-		sel = sel.Order(f.ord)
-	}
-
-	return sel
-}
-
 // Fetch returns all issues this scoped finder represents
 func (f *IssueFinder) Fetch() ([]*Issue, error) {
 	var list []*Issue
-	f.selector().AllObjects(&list)
-	deserializeIssues(list)
-	return list, f.op.Err()
+	var err = f.coreFinder.Fetch(&list)
+	if err == nil {
+		deserializeIssues(list)
+	}
+	return list, err
 }
 
 // Count returns the number of records this query would return
 func (f *IssueFinder) Count() (uint64, error) {
-	return f.selector().Count().RowCount(), f.op.Err()
+	return f.coreFinder.Count()
 }

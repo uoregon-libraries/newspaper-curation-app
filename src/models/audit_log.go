@@ -2,7 +2,6 @@ package models
 
 import (
 	"fmt"
-	"strings"
 	"time"
 
 	"github.com/uoregon-libraries/newspaper-curation-app/src/dbi"
@@ -131,12 +130,7 @@ func BuildAuditLog(ip, user string, action AuditAction, message string) (*AuditL
 // AuditLogFinder is a pseudo-DSL for easily creating queries without needing
 // to know the underlying table structure
 type AuditLogFinder struct {
-	// this looks weird, but making a map of conditions allows us to have helpers
-	// that just replace data instead of having to worry about deduping it. e.g.,
-	// if somebody calls f.ForUser("foo").ForUser("bar")
-	conditions map[string]any
-	ord        string
-	lim        int
+	*coreFinder
 }
 
 // AuditLogs returns a scoped object for use in simple filtering of the
@@ -145,10 +139,10 @@ type AuditLogFinder struct {
 //
 //	AuditLogs().Between(time.Date(), time.Now()).ForUser("jechols").Limit(100).Fetch()
 func AuditLogs() *AuditLogFinder {
-	var f = &AuditLogFinder{conditions: make(map[string]any)}
+	var f = newCoreFinder("audit_logs", &AuditLog{})
 	f.conditions["action <> 'autosave'"] = nil
 	f.ord = "`when` desc"
-	return f
+	return &AuditLogFinder{coreFinder: f}
 }
 
 // Between returns a scoped finder for limiting the results of the query to >=
@@ -168,11 +162,13 @@ func (f *AuditLogFinder) ForUser(u string) *AuditLogFinder {
 
 // ForActions scopes the finder to a specific list of actions.
 func (f *AuditLogFinder) ForActions(list ...AuditAction) *AuditLogFinder {
-	var dbActions = make([]string, len(list))
+	var dbActions = make([]any, len(list))
 	for i, action := range list {
 		dbActions[i] = dbAuditActions[action]
 	}
-	f.conditions["`action` IN (--IN--)"] = dbActions
+
+	// Use the magic "(??)" syntax so coreFinder handles the slice properly
+	f.conditions["`action` IN (??)"] = dbActions
 	return f
 }
 
@@ -186,45 +182,16 @@ func (f *AuditLogFinder) Limit(limit int) *AuditLogFinder {
 // AuditLog objects will be limited, but the second return value will indicate
 // how many total logs there were.
 func (f *AuditLogFinder) Fetch() ([]*AuditLog, uint64, error) {
-	var op = dbi.DB.Operation()
-	op.Dbg = dbi.Debug
-	op.Dbg = true
+	var num, err = f.coreFinder.Count()
+	if err != nil {
+		return nil, 0, err
+	}
+
 	var list []*AuditLog
-
-	var where []string
-	var args []any
-	for k, v := range f.conditions {
-		// Magic "IN" qualifier because this ORMy approach wasn't well-thought-out.
-		// Thanks, past self. AGAIN.
-		//
-		// Note that this setup adds more potential future pain: if anything other
-		// than a string array is used in an "IN" clause, this won't work.
-		if strings.Contains(k, "--IN--") {
-			var vals = v.([]string)
-			var placeholders = make([]string, len(vals))
-			for i, val := range vals {
-				placeholders[i] = "?"
-				args = append(args, val)
-			}
-			k = strings.Replace(k, "--IN--", strings.Join(placeholders, ","), 1)
-			where = append(where, k)
-		} else {
-			where = append(where, k)
-			if v != nil {
-				args = append(args, v)
-			}
-		}
+	err = f.coreFinder.Fetch(&list)
+	if err != nil {
+		return nil, 0, err
 	}
-	var selector = op.Select("audit_logs", &AuditLog{}).Where(strings.Join(where, " AND "), args...)
 
-	if f.ord != "" {
-		selector = selector.Order(f.ord)
-	}
-	var num = selector.Count().RowCount()
-	if f.lim > 0 {
-		selector = selector.Limit(uint64(f.lim))
-	}
-	selector.AllObjects(&list)
-
-	return list, num, op.Err()
+	return list, num, nil
 }
