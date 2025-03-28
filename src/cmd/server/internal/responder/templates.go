@@ -145,6 +145,8 @@ func InitRootTemplate(templatePath string) {
 		"ArchiveBatches":        func() *privilege.Privilege { return privilege.ArchiveBatches },
 		"ModifyValidatedLCCNs":  func() *privilege.Privilege { return privilege.ModifyValidatedLCCNs },
 		"ListAuditLogs":         func() *privilege.Privilege { return privilege.ListAuditLogs },
+		"FlagLiveIssues":        func() *privilege.Privilege { return privilege.FlagLiveIssues },
+		"RebuildLiveBatches":    func() *privilege.Privilege { return privilege.RebuildLiveBatches },
 	}
 
 	// Set up the layout and then our global templates
