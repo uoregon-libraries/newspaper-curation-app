@@ -10,9 +10,14 @@ import (
 
 // coreFinder holds the common logic for database finders. It's not meant to be
 // used directly, but embedded into specific finders like IssueFinder.
-// Generally the "outer" type should only need to alter conditions, order, and
-// limit.
-type coreFinder struct {
+// Generally the "outer" type should only need to alter conditions and order.
+//
+// The type parameter T represents the concrete finder type which embeds
+// coreFinder, allowing methods like Limit to return the correct type.
+type coreFinder[T any] struct {
+	// outer stores a pointer to the embedding struct (the concrete finder type)
+	outer T
+
 	// conditions holds the WHERE clauses for the query. The key is the SQL
 	// fragment, and the value is the argument for that fragment (if any). Use
 	// nil for fragments without arguments (e.g., "deleted_at IS NULL").
@@ -23,22 +28,29 @@ type coreFinder struct {
 	lim        int
 }
 
-// newCoreFinder initializes a coreFinder. It requires the table name and a
-// destination prototype object (e.g., &Issue{}).
-func newCoreFinder(tableName string, dest any) *coreFinder {
+// newCoreFinder initializes a coreFinder. It requires the embedding struct
+// (outer), the table name, and a destination prototype object (e.g., &Issue{}).
+func newCoreFinder[T any](outer T, tableName string, dest any) *coreFinder[T] {
 	var op = dbi.DB.Operation()
 	op.Dbg = dbi.Debug
 
-	return &coreFinder{
+	return &coreFinder[T]{
+		outer:      outer,
 		conditions: make(map[string]any),
 		op:         op,
 		sel:        op.Select(tableName, dest),
 	}
 }
 
+// Limit sets the max records to return
+func (f *coreFinder[T]) Limit(limit int) T {
+	f.lim = limit
+	return f.outer
+}
+
 // selector modifies the finder's internal magicsql.Select object based on the
 // finder's state (conditions, limit, order).
-func (f *coreFinder) selector() magicsql.Select {
+func (f *coreFinder[T]) selector() magicsql.Select {
 	var where []string
 	var args []any
 
@@ -88,14 +100,14 @@ func (f *coreFinder) selector() magicsql.Select {
 
 // Fetch runs the query and populates the given list with results. The list
 // argument must be a pointer to a slice of the destination type (e.g., &[]*Issue).
-func (f *coreFinder) Fetch(list any) error {
+func (f *coreFinder[T]) Fetch(list any) error {
 	f.selector().AllObjects(list)
 	return f.op.Err()
 }
 
 // Count returns the number of records this query would return, explicitly
 // ignoring any previously-set limit value
-func (f *coreFinder) Count() (uint64, error) {
+func (f *coreFinder[T]) Count() (uint64, error) {
 	var s = f.selector()
 	s.Limit(0)
 	return s.Count().RowCount(), f.op.Err()
