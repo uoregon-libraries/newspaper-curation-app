@@ -92,15 +92,6 @@ func (f *IssueFinder) NotCuratedBy(userID int64) *IssueFinder {
 	return f
 }
 
-// OrderBy sets an order for this finder.
-//
-// TODO: This currently requires a raw SQL order string which ties business
-// logic and DB schema too tightly. Not sure the best way to address this.
-func (f *IssueFinder) OrderBy(order string) *IssueFinder {
-	f.ord = order
-	return f
-}
-
 // Fetch returns all issues this scoped finder represents
 func (f *IssueFinder) Fetch() ([]*Issue, error) {
 	var list []*Issue

@@ -48,6 +48,15 @@ func (f *coreFinder[T]) Limit(limit int) T {
 	return f.outer
 }
 
+// OrderBy sets an order for this finder.
+//
+// TODO: This currently requires a raw SQL order string which ties business
+// logic and DB schema too tightly. Not sure the best way to address this.
+func (f *coreFinder[T]) OrderBy(order string) T {
+	f.ord = order
+	return f.outer
+}
+
 // selector modifies the finder's internal magicsql.Select object based on the
 // finder's state (conditions, limit, order).
 func (f *coreFinder[T]) selector() magicsql.Select {
