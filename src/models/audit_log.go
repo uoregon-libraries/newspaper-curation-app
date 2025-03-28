@@ -130,7 +130,7 @@ func BuildAuditLog(ip, user string, action AuditAction, message string) (*AuditL
 // AuditLogFinder is a pseudo-DSL for easily creating queries without needing
 // to know the underlying table structure
 type AuditLogFinder struct {
-	*coreFinder
+	*coreFinder[*AuditLogFinder]
 }
 
 // AuditLogs returns a scoped object for use in simple filtering of the
@@ -139,10 +139,11 @@ type AuditLogFinder struct {
 //
 //	AuditLogs().Between(time.Date(), time.Now()).ForUser("jechols").Limit(100).Fetch()
 func AuditLogs() *AuditLogFinder {
-	var f = newCoreFinder("audit_logs", &AuditLog{})
+	var f = &AuditLogFinder{}
+	f.coreFinder = newCoreFinder(f, "audit_logs", &AuditLog{})
 	f.conditions["`action` <> 'autosave'"] = nil
 	f.ord = "`when` desc"
-	return &AuditLogFinder{coreFinder: f}
+	return f
 }
 
 // Between returns a scoped finder for limiting the results of the query to >=
@@ -169,12 +170,6 @@ func (f *AuditLogFinder) ForActions(list ...AuditAction) *AuditLogFinder {
 
 	// Use the magic "(??)" syntax so coreFinder handles the slice properly
 	f.conditions["`action` IN (??)"] = dbActions
-	return f
-}
-
-// Limit makes f.Fetch() return at most limit AuditLog instances
-func (f *AuditLogFinder) Limit(limit int) *AuditLogFinder {
-	f.lim = limit
 	return f
 }
 

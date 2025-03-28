@@ -7,17 +7,18 @@ import (
 )
 
 // IssueFinder is a pseudo-DSL for easily creating queries without needing to
-// know the underlying table structure
+// know the underlying table structure.
 type IssueFinder struct {
-	*coreFinder
+	*coreFinder[*IssueFinder]
 }
 
 // Issues returns an IssueFinder: a scoped object for simple filtering of the
-// issues table with a very narrow DSL
+// issues table with a very narrow DSL.
 func Issues() *IssueFinder {
-	var f = newCoreFinder("issues", &Issue{})
+	var f = &IssueFinder{}
+	f.coreFinder = newCoreFinder(f, "issues", &Issue{})
 	f.conditions["ignored = ?"] = false
-	return &IssueFinder{coreFinder: f}
+	return f
 }
 
 // LCCN returns a scope for finding issues with a particular title
@@ -88,12 +89,6 @@ func (f *IssueFinder) Available() *IssueFinder {
 // be reviewed by a given logged-in user.
 func (f *IssueFinder) NotCuratedBy(userID int64) *IssueFinder {
 	f.conditions["metadata_entry_user_id <> ?"] = userID
-	return f
-}
-
-// Limit sets the max issues to return
-func (f *IssueFinder) Limit(limit int) *IssueFinder {
-	f.lim = limit
 	return f
 }
 

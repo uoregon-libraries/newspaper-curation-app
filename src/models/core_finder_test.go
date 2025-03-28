@@ -18,7 +18,9 @@ type mockModel struct {
 func TestCoreFinder(t *testing.T) {
 	dbi.DB = &magicsql.DB{}
 	t.Run("newCoreFinder", func(t *testing.T) {
-		var cf = newCoreFinder("mocks", &mockModel{})
+		// We pass nil for the outer argument as it's not used in the parts being
+		// tested here
+		var cf = newCoreFinder[any](nil, "mocks", &mockModel{})
 
 		if cf.conditions == nil {
 			t.Errorf("conditions should be initialized, but was nil")
@@ -91,7 +93,8 @@ func TestCoreFinder(t *testing.T) {
 
 		for name, tc := range tests {
 			t.Run(name, func(t *testing.T) {
-				var cf = newCoreFinder("mocks", &mockModel{})
+				// We pass nil for the outer argument - see above explanation
+				var cf = newCoreFinder[any](nil, "mocks", &mockModel{})
 				cf.conditions = tc.conditions
 				cf.lim = tc.limit
 				cf.ord = tc.order
