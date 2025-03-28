@@ -110,8 +110,3 @@ func (f *IssueFinder) Fetch() ([]*Issue, error) {
 	}
 	return list, err
 }
-
-// Count returns the number of records this query would return
-func (f *IssueFinder) Count() (uint64, error) {
-	return f.coreFinder.Count()
-}
