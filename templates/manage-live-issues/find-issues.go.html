@@ -1,0 +1,73 @@
+{{block "content" .}}
+
+<div class="row">
+  <h2>Filters</h2>
+  <form id="filter-form" role="form" aria-describedby="filter-form-help">
+    <div class="row mb-3">
+      <div class="col-md-6">
+        <label class="col-md-4 col-form-label" for="lccn">LCCN</label>
+        <div class="col-md-8">
+          <input class="form-control" list="titles" id="lccn" name="lccn" autocomplete="off" aria-describedby="lccn-help" />
+          <div id="lccn-help" class="form-text">
+            Enter an LCCN. You may start typing a title's LCCN or its name, and
+            on selection the appropriate LCCN will be set.
+          </div>
+        </div>
+
+        <datalist id="titles">
+          {{range .Data.Titles}}
+          <option value="{{.LCCN}}">{{.Name}} - {{.LCCN}}</option>
+          {{end}}
+        </datalist>
+      </div>
+
+      <div class="col-md-6">
+        <label class="col-md-4 col-form-label" for="moc">MARC Org Code</label>
+        <div class="col-md-8">
+          <input class="form-control" list="mocs" id="moc" name="moc" autocomplete="off" aria-describedby="moc-help" />
+          <div id="moc-help" class="form-text">
+            Enter a MARC Org Code. You may start typing a code or its name, and
+            on selection the appropriate code will be set.
+          </div>
+        </div>
+
+        <datalist id="mocs">
+          {{range .Data.MOCs}}
+          {{if .Name}}
+          <option value="{{.Code}}">{{.Name}} - {{.Code}}</option>
+          {{else}}
+          <option value="{{.Code}}">
+          {{end}}
+          {{end}}
+        </datalist>
+      </div>
+    </div>
+
+    <div class="row mb-3">
+      <div class="col-md-8 offset-md-4">
+        <button class="btn btn-primary" type="Submit">Apply</button>
+        <button class="btn btn-outline" type="Reset" id="clear-filters">Clear Filters</button>
+      </div>
+    </div>
+  </form>
+</div>
+
+<div class="row">
+  <div class="col-md-8"><h2>Issues</h2></div>
+  <div class="col-md-4">
+    <div id="json-status" role="status" class="alert alert-info" aria-live="polite">Status: N/A</div>
+  </div>
+</div>
+
+<div class="row">
+  <div id="available-issues" class="col-md-6">
+  </div>
+  <div id="selected-issues" class="col-md-6">
+  </div>
+</div>
+
+{{end}} <!-- block "content" -->
+
+{{block "extrajs" .}}
+  {{IncludeJS "manage-live-issues"}}
+{{end}}
