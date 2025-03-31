@@ -21,8 +21,16 @@ ButtonExpand.prototype.init = function () {
     this.controlledNode = document.getElementById(id);
   }
 
-  this.domNode.setAttribute('aria-expanded', 'false');
-  this.hideContent();
+  // Check URL parameters to determine initial state. Default to closed.
+  var params = new URLSearchParams(window.location.search);
+  var startOpen = params.get(id) === 'open';
+  if (startOpen) {
+    this.domNode.setAttribute('aria-expanded', 'true');
+    this.showContent();
+  } else {
+    this.domNode.setAttribute('aria-expanded', 'false');
+    this.hideContent();
+  }
 
   this.domNode.addEventListener('keydown',    this.handleKeydown.bind(this));
   this.domNode.addEventListener('click',      this.handleClick.bind(this));
@@ -40,18 +48,31 @@ ButtonExpand.prototype.hideContent = function () {
   if (this.controlledNode) {
     this.controlledNode.style.display = 'none';
   }
+};
 
+ButtonExpand.prototype.setUrlParam = function (key, value) {
+  var params = new URLSearchParams(window.location.search);
+  params.set(key, value);
+  var newRelativePathQuery = window.location.pathname + '?' + params.toString();
+  history.replaceState(null, '', newRelativePathQuery);
 };
 
 ButtonExpand.prototype.toggleExpand = function () {
+  var id = this.domNode.getAttribute('aria-controls');
 
   if (this.domNode.getAttribute('aria-expanded') === 'true') {
     this.domNode.setAttribute('aria-expanded', 'false');
     this.hideContent();
+    if (id) {
+      this.setUrlParam(id, 'closed');
+    }
   }
   else {
     this.domNode.setAttribute('aria-expanded', 'true');
     this.showContent();
+    if (id) {
+      this.setUrlParam(id, 'open');
+    }
   }
 };
 
