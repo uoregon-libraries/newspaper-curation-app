@@ -67,6 +67,12 @@
                   Manage Batches
                 </a></li>
                 {{end}}
+
+                {{if .User.PermittedTo FlagLiveIssues}}
+                <li class="nav-item"><a class="nav-link" href="{{FullPath "manage-live-issues"}}">
+                  Manage Live Issues
+                </a></li>
+                {{end}}
               </ul>
             </li>
 

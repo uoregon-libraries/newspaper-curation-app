@@ -16,6 +16,7 @@ import (
 	"github.com/uoregon-libraries/newspaper-curation-app/src/cmd/server/internal/batchhandler"
 	"github.com/uoregon-libraries/newspaper-curation-app/src/cmd/server/internal/batchmakerhandler"
 	"github.com/uoregon-libraries/newspaper-curation-app/src/cmd/server/internal/issuefinderhandler"
+	"github.com/uoregon-libraries/newspaper-curation-app/src/cmd/server/internal/managelivehandler"
 	"github.com/uoregon-libraries/newspaper-curation-app/src/cmd/server/internal/mochandler"
 	"github.com/uoregon-libraries/newspaper-curation-app/src/cmd/server/internal/responder"
 	"github.com/uoregon-libraries/newspaper-curation-app/src/cmd/server/internal/settings"
@@ -130,6 +131,7 @@ func startServer() {
 	titlehandler.Setup(r, path.Join(hp, "titles"), conf)
 	audithandler.Setup(r, path.Join(hp, "logs"))
 	batchmakerhandler.Setup(r, path.Join(hp, "batchmaker"), conf)
+	managelivehandler.Setup(r, path.Join(hp, "manage-live-issues"))
 
 	r.NewRoute().Path(hp).HandlerFunc(home)
 
