@@ -4,30 +4,19 @@
 *
 *   File:   ButtonExpand.js
 *
-*   Desc:   Checkbox widget that implements ARIA Authoring Practices
-*           for a menu of links
+*   Desc:   Disclosure button widget that implements ARIA Authoring Practices
 */
 
-/*
-*   @constructor ButtonExpand
-*
-*
-*/
 var ButtonExpand = function (domNode) {
-
   this.domNode = domNode;
-
   this.keyCode = Object.freeze({
     'RETURN': 13
   });
 };
 
 ButtonExpand.prototype.init = function () {
-
   this.controlledNode = false;
-
   var id = this.domNode.getAttribute('aria-controls');
-
   if (id) {
     this.controlledNode = document.getElementById(id);
   }
@@ -39,19 +28,15 @@ ButtonExpand.prototype.init = function () {
   this.domNode.addEventListener('click',      this.handleClick.bind(this));
   this.domNode.addEventListener('focus',      this.handleFocus.bind(this));
   this.domNode.addEventListener('blur',       this.handleBlur.bind(this));
-
 };
 
 ButtonExpand.prototype.showContent = function () {
-
   if (this.controlledNode) {
     this.controlledNode.style.display = 'block';
   }
-
 };
 
 ButtonExpand.prototype.hideContent = function () {
-
   if (this.controlledNode) {
     this.controlledNode.style.display = 'none';
   }
@@ -68,21 +53,15 @@ ButtonExpand.prototype.toggleExpand = function () {
     this.domNode.setAttribute('aria-expanded', 'true');
     this.showContent();
   }
-
 };
 
 /* EVENT HANDLERS */
 
 ButtonExpand.prototype.handleKeydown = function (event) {
-
   console.log('[keydown]');
-
   switch (event.keyCode) {
-
     case this.keyCode.RETURN:
-
       this.toggleExpand();
-
       event.stopPropagation();
       event.preventDefault();
       break;
@@ -90,7 +69,6 @@ ButtonExpand.prototype.handleKeydown = function (event) {
     default:
       break;
   }
-
 };
 
 ButtonExpand.prototype.handleClick = function (event) {
@@ -108,12 +86,9 @@ ButtonExpand.prototype.handleBlur = function (event) {
 /* Initialize Hide/Show Buttons */
 
 window.addEventListener('load', function (event) {
-
   var buttons =  document.querySelectorAll('[data-widget=simple-disclosure]');
-
   for (var i = 0; i < buttons.length; i++) {
     var be = new ButtonExpand(buttons[i]);
     be.init();
   }
-
 }, false);
