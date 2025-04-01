@@ -1,13 +1,22 @@
 (function() {
   'use strict';
 
+  const filterParams = ['lccn', 'moc'];
+
   window.addEventListener('DOMContentLoaded', (event) => {
     // If args are present, pre-fill the form and fetch issues
     let u = new URL(window.location);
     let srch = new URLSearchParams(u.search.substr(1));
-    document.getElementById('lccn').value = srch.get('lccn');
-    document.getElementById('moc').value = srch.get('moc');
-    if (srch.get('lccn') || srch.get('moc')) {
+    let filtersPresent = false;
+    for (const param of filterParams) {
+      const value = srch.get(param);
+      document.getElementById(param).value = value;
+      if (value) {
+        filtersPresent = true;
+      }
+    }
+
+    if (filtersPresent) {
       loadIssues();
     }
 
@@ -19,8 +28,9 @@
     e.preventDefault();
     let u = new URL(window.location);
     let srch = new URLSearchParams(u.search.substr(1));
-    srch.set('lccn', document.getElementById('lccn').value);
-    srch.set('moc', document.getElementById('moc').value);
+    for (const param of filterParams) {
+      srch.set(param, document.getElementById(param).value);
+    }
     u.search = srch.toString();
     history.replaceState(null, "", u);
     loadIssues();

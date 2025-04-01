@@ -120,15 +120,20 @@ func getJSONIssues(resp *responder.Responder) (*jsonResponse, error) {
 	var err error
 	var response = &jsonResponse{Code: http.StatusOK}
 
-	// Get filters to prepare our flat issue finder
+	// Build filter function map to prepare our flat issue finder
 	var finder = models.FlatIssues().Live()
-	var moc = resp.Request.FormValue("moc")
-	if moc != "" {
-		finder.MOC(moc)
+	var filterMap = map[string]func(string) *models.FlatIssueFinder{
+		"moc":  finder.MOC,
+		"lccn": finder.LCCN,
 	}
-	var lccn = resp.Request.FormValue("lccn")
-	if lccn != "" {
-		finder.LCCN(lccn)
+
+	// Apply filters based on request parameters
+	resp.Request.ParseForm()
+	for key, applyFilter := range filterMap {
+		var value = resp.Request.FormValue(key)
+		if value != "" {
+			finder = applyFilter(value)
+		}
 	}
 
 	response.TotalResults, err = finder.Count()
@@ -136,7 +141,6 @@ func getJSONIssues(resp *responder.Responder) (*jsonResponse, error) {
 		logger.Errorf("Error counting issues in live-issue JSON handler: %s", err)
 		return nil, err
 	}
-
 	response.Issues, err = finder.Limit(100).Fetch()
 	if err != nil {
 		logger.Errorf("Error reading issues in live-issue JSON handler: %s", err)
