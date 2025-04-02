@@ -24,6 +24,8 @@ enableAllRules = true
   Disabled = true
 [rule.cyclomatic]
   Disabled = true
+[rule.use-errors-new]
+  Disabled = true
 [rule.file-header]
   Disabled = true
 [rule.flag-parameter]
