@@ -1,6 +1,9 @@
 package duration
 
-import "testing"
+import (
+	"testing"
+	"time"
+)
 
 func TestParse(t *testing.T) {
 	var d, err = Parse("1 month 3 years 2 weeks 4 days")
@@ -171,5 +174,162 @@ func TestRFC3339(t *testing.T) {
 		if test.d.RFC3339() != test.expected {
 			t.Errorf("Expected %#v to be normalized to %q, but got %q", test.d, test.expected, test.d.RFC3339())
 		}
+	}
+}
+
+func TestAddDate(t *testing.T) {
+	tests := []struct {
+		name     string
+		start    time.Time
+		years    int
+		months   int
+		days     int
+		expected time.Time
+	}{
+		{
+			name:     "Jan31 plus 1 month caps at Feb 28th",
+			start:    time.Date(2023, time.January, 31, 12, 30, 0, 0, time.UTC),
+			months:   1,
+			expected: time.Date(2023, time.February, 28, 12, 30, 0, 0, time.UTC),
+		},
+		{
+			name:     "Jan31 plus 1 month on a leap year caps at Feb 29th",
+			start:    time.Date(2024, time.January, 31, 12, 30, 0, 0, time.UTC),
+			months:   1,
+			expected: time.Date(2024, time.February, 29, 12, 30, 0, 0, time.UTC),
+		},
+		{
+			name:     "Mar31 minus 1 month caps at Feb 28th",
+			start:    time.Date(2023, time.March, 31, 12, 30, 0, 0, time.UTC),
+			months:   -1,
+			expected: time.Date(2023, time.February, 28, 12, 30, 0, 0, time.UTC),
+		},
+		{
+			name:     "Mar31 minus 1 month leap year caps at Feb 29th",
+			start:    time.Date(2024, time.March, 31, 12, 30, 0, 0, time.UTC),
+			months:   -1,
+			expected: time.Date(2024, time.February, 29, 12, 30, 0, 0, time.UTC),
+		},
+		{
+			name:     "May31 plus 1 month",
+			start:    time.Date(2023, time.May, 31, 12, 30, 0, 0, time.UTC),
+			months:   1,
+			expected: time.Date(2023, time.June, 30, 12, 30, 0, 0, time.UTC),
+		},
+		{
+			name:     "Feb29 minus 1 year",
+			start:    time.Date(2024, time.February, 29, 12, 30, 0, 0, time.UTC),
+			years:    -1,
+			expected: time.Date(2023, time.February, 28, 12, 30, 0, 0, time.UTC),
+		},
+		{
+			name:     "Feb28 plus 1 year leap year",
+			start:    time.Date(2023, time.February, 28, 12, 30, 0, 0, time.UTC),
+			years:    1,
+			expected: time.Date(2024, time.February, 28, 12, 30, 0, 0, time.UTC),
+		},
+		{
+			name:     "Jan31 plus 1 month plus 5 days",
+			start:    time.Date(2023, time.January, 31, 12, 30, 0, 0, time.UTC),
+			months:   1,
+			days:     5,
+			expected: time.Date(2023, time.March, 5, 12, 30, 0, 0, time.UTC),
+		},
+		{
+			name:     "Zero duration doesn't change anything",
+			start:    time.Date(2023, time.July, 15, 12, 30, 0, 0, time.UTC),
+			expected: time.Date(2023, time.July, 15, 12, 30, 0, 0, time.UTC),
+		},
+		{
+			name:     "Simple day add",
+			start:    time.Date(2023, time.July, 15, 12, 30, 0, 0, time.UTC),
+			days:     5,
+			expected: time.Date(2023, time.July, 20, 12, 30, 0, 0, time.UTC),
+		},
+		{
+			name:     "Add 365 days, get exactly one year forward",
+			start:    time.Date(2022, time.July, 15, 12, 30, 0, 0, time.UTC),
+			days:     365,
+			expected: time.Date(2023, time.July, 15, 12, 30, 0, 0, time.UTC),
+		},
+		{
+			name:     "Add 365 days to pass a leap day, get +1 year, but -1 day",
+			start:    time.Date(2023, time.July, 15, 12, 30, 0, 0, time.UTC),
+			days:     365,
+			expected: time.Date(2024, time.July, 14, 12, 30, 0, 0, time.UTC),
+		},
+	}
+
+	for _, tc := range tests {
+		t.Run(tc.name, func(t *testing.T) {
+			got := addDate(tc.start, tc.years, tc.months, tc.days)
+			if !got.Equal(tc.expected) {
+				t.Errorf("addDate(%s, %dy, %dm, %dd): expected %s, but got %s",
+					tc.start.Format(time.RFC3339), tc.years, tc.months, tc.days,
+					tc.expected.Format(time.RFC3339), got.Format(time.RFC3339))
+			}
+		})
+	}
+}
+
+func TestAddToTime(t *testing.T) {
+	var jan15 = time.Date(2023, time.January, 15, 0, 0, 0, 0, time.UTC)
+	var jan31 = time.Date(2023, time.January, 31, 0, 0, 0, 0, time.UTC)
+	var feb29 = time.Date(2024, time.February, 29, 0, 0, 0, 0, time.UTC) // Leap year
+
+	tests := []struct {
+		name      string
+		startTime time.Time
+		d         Duration
+		expected  time.Time
+	}{
+		{"Zero", jan15, Duration{}, jan15},
+		{"DaysOnly", jan15, Duration{Days: 5}, time.Date(2023, time.January, 20, 0, 0, 0, 0, time.UTC)},
+		{"WeeksOnly", jan15, Duration{Weeks: 2}, time.Date(2023, time.January, 29, 0, 0, 0, 0, time.UTC)},
+		{"MonthsOnly Jan31", jan31, Duration{Months: 1}, time.Date(2023, time.February, 28, 0, 0, 0, 0, time.UTC)},
+		{"MonthsOnly Jan15", jan15, Duration{Months: 1}, time.Date(2023, time.February, 15, 0, 0, 0, 0, time.UTC)},
+		{"YearsOnly Jan31", jan31, Duration{Years: 2}, time.Date(2025, time.January, 31, 0, 0, 0, 0, time.UTC)},
+		{"LeapYearAdd Feb29", feb29, Duration{Years: 1}, time.Date(2025, time.February, 28, 0, 0, 0, 0, time.UTC)},
+		{"Complex Jan31", jan31, Duration{Years: 1, Months: 1, Weeks: 1, Days: 1}, time.Date(2024, time.March, 8, 0, 0, 0, 0, time.UTC)},
+	}
+
+	for _, tc := range tests {
+		t.Run(tc.name, func(t *testing.T) {
+			var got = tc.d.AddToTime(tc.startTime)
+			if !got.Equal(tc.expected) {
+				t.Errorf("Duration %#v from %s: expected %s, but got %s", tc.d, tc.startTime.Format(time.RFC3339), tc.expected.Format(time.RFC3339), got.Format(time.RFC3339))
+			}
+		})
+	}
+}
+
+func TestSubtractFromTime(t *testing.T) {
+	var mar31 = time.Date(2023, time.March, 31, 0, 0, 0, 0, time.UTC)
+	var mar15 = time.Date(2023, time.March, 15, 0, 0, 0, 0, time.UTC)
+	var feb29 = time.Date(2024, time.February, 29, 0, 0, 0, 0, time.UTC)
+
+	tests := []struct {
+		name      string
+		startTime time.Time
+		d         Duration
+		expected  time.Time
+	}{
+		{"Zero", mar15, Duration{}, mar15},
+		{"DaysOnly", mar15, Duration{Days: 5}, time.Date(2023, time.March, 10, 0, 0, 0, 0, time.UTC)},
+		{"WeeksOnly", mar15, Duration{Weeks: 2}, time.Date(2023, time.March, 1, 0, 0, 0, 0, time.UTC)},
+		{"MonthsOnly Mar31", mar31, Duration{Months: 1}, time.Date(2023, time.February, 28, 0, 0, 0, 0, time.UTC)},
+		{"MonthsOnly Mar15", mar15, Duration{Months: 1}, time.Date(2023, time.February, 15, 0, 0, 0, 0, time.UTC)},
+		{"YearsOnly Mar31", mar31, Duration{Years: 2}, time.Date(2021, time.March, 31, 0, 0, 0, 0, time.UTC)},
+		{"LeapYearSub Feb29", feb29, Duration{Years: 1}, time.Date(2023, time.February, 28, 0, 0, 0, 0, time.UTC)},
+		{"Complex Mar31", mar31, Duration{Years: 1, Months: 1, Weeks: 1, Days: 1}, time.Date(2022, time.February, 20, 0, 0, 0, 0, time.UTC)},
+	}
+
+	for _, tc := range tests {
+		t.Run(tc.name, func(t *testing.T) {
+			var got = tc.d.SubtractFromTime(tc.startTime)
+			if !got.Equal(tc.expected) {
+				t.Errorf("Duration %#v ago from %s: expected %s, but got %s", tc.d, tc.startTime.Format(time.RFC3339), tc.expected.Format(time.RFC3339), got.Format(time.RFC3339))
+			}
+		})
 	}
 }
