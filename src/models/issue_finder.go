@@ -7,17 +7,18 @@ import (
 )
 
 // IssueFinder is a pseudo-DSL for easily creating queries without needing to
-// know the underlying table structure
+// know the underlying table structure.
 type IssueFinder struct {
-	*coreFinder
+	*coreFinder[*IssueFinder]
 }
 
 // Issues returns an IssueFinder: a scoped object for simple filtering of the
-// issues table with a very narrow DSL
+// issues table with a very narrow DSL.
 func Issues() *IssueFinder {
-	var f = newCoreFinder("issues", &Issue{})
+	var f = &IssueFinder{}
+	f.coreFinder = newCoreFinder(f, "issues", &Issue{})
 	f.conditions["ignored = ?"] = false
-	return &IssueFinder{coreFinder: f}
+	return f
 }
 
 // LCCN returns a scope for finding issues with a particular title
@@ -91,21 +92,6 @@ func (f *IssueFinder) NotCuratedBy(userID int64) *IssueFinder {
 	return f
 }
 
-// Limit sets the max issues to return
-func (f *IssueFinder) Limit(limit int) *IssueFinder {
-	f.lim = limit
-	return f
-}
-
-// OrderBy sets an order for this finder.
-//
-// TODO: This currently requires a raw SQL order string which ties business
-// logic and DB schema too tightly. Not sure the best way to address this.
-func (f *IssueFinder) OrderBy(order string) *IssueFinder {
-	f.ord = order
-	return f
-}
-
 // Fetch returns all issues this scoped finder represents
 func (f *IssueFinder) Fetch() ([]*Issue, error) {
 	var list []*Issue
@@ -114,9 +100,4 @@ func (f *IssueFinder) Fetch() ([]*Issue, error) {
 		deserializeIssues(list)
 	}
 	return list, err
-}
-
-// Count returns the number of records this query would return
-func (f *IssueFinder) Count() (uint64, error) {
-	return f.coreFinder.Count()
 }
