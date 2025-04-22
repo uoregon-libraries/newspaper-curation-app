@@ -63,13 +63,10 @@ Compilation requires:
   compilation: its runtime does not need to be installed in production as long
   as you compile on the same architecture your production system has (or change
   the `Makefile` to cross-compile for the targeted architecture).
-- [revive](https://github.com/mgechev/revive): `go install github.com/mgechev/revive@latest`
-- `goimports` (replaces `gofmt`): `go install golang.org/x/tools/cmd/goimports@latest`
 
 The easiest way to compile is simply running `make` in the source directory.
 This will grab various Go packages the application requires, validate the
-current code (via revive, goimports, and go vet, for development purposes), and
-build all the binaries.
+current code, and build all the binaries.
 
 A full compilation from a clean repository should take about 15 seconds, though
 this can depend on network speed the first time dependencies are pulled from

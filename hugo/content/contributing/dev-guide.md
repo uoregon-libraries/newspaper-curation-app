@@ -17,7 +17,6 @@ when code changes.
 
 - A supported version of [Go](https://golang.org/dl/) (e.g., if 1.16 is the
   latest, you want 1.15 or 1.16)
-- [revive](https://github.com/mgechev/revive): `go install github.com/mgechev/revive@latest`
 - Install [Docker CE](https://docs.docker.com/install/), which will give you
   the `docker` and `docker compose` commands.
 
