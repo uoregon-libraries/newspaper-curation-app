@@ -26,10 +26,10 @@ bin/%: src/cmd/% $(SOURCES) $(SOURCEDIRS)
 	go build -ldflags="-s -w -X github.com/uoregon-libraries/newspaper-curation-app/src/version.Version=$(BUILD)" -o $@ github.com/uoregon-libraries/newspaper-curation-app/$<
 
 lint:
-	revive --config=./revive.toml --formatter=unix src/...
+	go tool revive --config=./revive.toml --formatter=unix src/...
 
 format:
-	find src/ -name "*.go" | xargs goimports -l -w
+	find src/ -name "*.go" | xargs go tool goimports -l -w
 
 test:
 	go test ./src/...
