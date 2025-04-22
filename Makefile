@@ -14,6 +14,10 @@ docs:
 deps:
 	go mod download
 
+.PHONY: audit
+audit:
+	go tool govulncheck ./src/... ./internal/...
+
 fast: deps build
 
 validate:
