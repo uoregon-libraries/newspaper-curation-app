@@ -1,7 +1,7 @@
 .PHONY: all docs deps fast validate build lint format test clean distclean
 
-SOURCES := $(shell find ./src -name "*.go")
-SOURCEDIRS := $(shell find ./src -type d)
+SOURCES := $(shell find ./src ./internal -name "*.go")
+SOURCEDIRS := $(shell find ./src ./internal -type d)
 BUILD := $(shell git describe --tags)
 
 all: deps validate build
@@ -29,10 +29,10 @@ lint:
 	go tool revive --config=./revive.toml --formatter=unix src/...
 
 format:
-	find src/ -name "*.go" | xargs go tool goimports -l -w
+	find src/ internal/ -name "*.go" | xargs go tool goimports -l -w
 
 test:
-	go test ./src/...
+	go test ./src/... ./internal/...
 
 clean:
 	rm bin/* -f
