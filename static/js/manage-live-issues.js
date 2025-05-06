@@ -42,9 +42,11 @@
 
     // Clear current search results and show loading status
     resultsDiv.innerHTML = '<p><em>Loading...</em></p>';
-    statusDiv.setAttribute('class', 'alert alert-info');
-    statusDiv.dataset.faded = false;
-    statusDiv.innerText = 'Fetching issues from server...';
+    let loading = setTimeout(() => {
+      statusDiv.setAttribute('class', 'alert alert-info');
+      statusDiv.dataset.faded = false;
+      statusDiv.innerText = 'Fetching issues from server...';
+    }, 200);
 
     let u = new URL(window.location);
     let srch = new URLSearchParams(u.search.substr(1));
@@ -70,7 +72,8 @@
       return;
     }
 
-    statusDiv.setAttribute('class', 'alert alert-success');
+    clearTimeout(loading);
+    statusDiv.setAttribute('class', 'alert');
     statusDiv.innerText = `Load complete: ${data.TotalResults} issues found.`;
     setTimeout(() => {
       statusDiv.dataset.faded = true;
