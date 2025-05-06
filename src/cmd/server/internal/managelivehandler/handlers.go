@@ -5,10 +5,12 @@ import (
 	"fmt"
 	"net/http"
 	"path"
+	"time"
 
 	"github.com/gorilla/mux"
 	"github.com/uoregon-libraries/newspaper-curation-app/internal/logger"
 	"github.com/uoregon-libraries/newspaper-curation-app/src/cmd/server/internal/responder"
+	"github.com/uoregon-libraries/newspaper-curation-app/src/duration"
 	"github.com/uoregon-libraries/newspaper-curation-app/src/models"
 	"github.com/uoregon-libraries/newspaper-curation-app/src/privilege"
 	"github.com/uoregon-libraries/newspaper-curation-app/src/schema"
@@ -125,6 +127,17 @@ func getJSONIssues(resp *responder.Responder) (*jsonResponse, error) {
 	var filterMap = map[string]func(string) *models.FlatIssueFinder{
 		"moc":  finder.MOC,
 		"lccn": finder.LCCN,
+		"went-live": func(val string) *models.FlatIssueFinder {
+			var d, err = duration.Parse(val)
+			// Errors shouldn't be possible unless somebody hacks the form, so we
+			// just pretend the filter wasn't there
+			if err != nil {
+				return finder
+			}
+			var now = time.Now()
+			var then = d.SubtractFromTime(now)
+			return finder.WentLiveBetween(then, now)
+		},
 	}
 
 	// Apply filters based on request parameters

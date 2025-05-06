@@ -38,6 +38,24 @@
       </div>
 
       <div class="row mb-3">
+        <label class="col-md-2 col-form-label" for="went-live">Went Live...</label>
+        <div class="col-md-4">
+          <select class="form-select" id="went-live" name="went-live" autocomplete="off" aria-describedby="went-live-days-ago-help">
+            <option value="">Anytime</option>
+            <option value="1W">1 week ago</option>
+            <option value="2W">2 weeks ago</option>
+            <option value="1M">1 month ago</option>
+            <option value="3M">3 months ago</option>
+            <option value="6M">6 months ago</option>
+            <option value="1Y">1 year ago</option>
+          </select>
+          <div id="went-live-help" class="form-text">
+            Find issues based on how recently they went live.
+          </div>
+        </div>
+      </div>
+
+      <div class="row mb-3">
         <div class="offset-md-2">
           <button class="btn btn-primary" type="Submit">Apply</button>
           <button class="btn btn-outline" type="Reset" id="clear-filters">Clear Filters</button>

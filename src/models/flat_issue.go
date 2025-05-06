@@ -81,6 +81,14 @@ func (f *FlatIssueFinder) Date(date string) *FlatIssueFinder {
 	return f
 }
 
+// WentLiveBetween returns a scoped finder for limiting the results of the
+// query to issues which went live on or after start, and on or before end
+func (f *FlatIssueFinder) WentLiveBetween(start, end time.Time) *FlatIssueFinder {
+	f.conditions["went_live_at >= ?"] = start
+	f.conditions["went_live_at <= ?"] = end
+	return f
+}
+
 // Fetch returns all issues this scoped finder represents
 func (f *FlatIssueFinder) Fetch() ([]*FlatIssue, error) {
 	var list []*FlatIssue

@@ -1,7 +1,7 @@
 (function() {
   'use strict';
 
-  const filterParams = ['lccn', 'moc'];
+  const filterParams = ['lccn', 'moc', 'went-live'];
 
   window.addEventListener('DOMContentLoaded', (event) => {
     // If args are present, pre-fill the form and fetch issues
