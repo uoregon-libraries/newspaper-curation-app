@@ -5,48 +5,44 @@
     <h2><button class="link disclosure" data-widget="simple-disclosure" aria-expanded="false" aria-controls="filter-form-wrapper">Filters</button></h2>
   </div>
   <div class="disclosure card-body" id="filter-form-wrapper">
-    <form class="row" id="filter-form" role="form" data-url="{{.Data.SearchURL}}">
+    <form id="filter-form" role="form" data-url="{{.Data.SearchURL}}">
 
       <div class="row mb-3">
-        <div class="col-md-6">
-          <label class="col-md-4 col-form-label" for="lccn">LCCN</label>
-          <div class="col-md-8">
-            <input class="form-control" list="titles" id="lccn" name="lccn" autocomplete="off" aria-describedby="lccn-help" />
-            <div id="lccn-help" class="form-text">
-              Enter an LCCN. You may start typing a title's LCCN or its name, and
-              on selection the appropriate LCCN will be set.
-            </div>
+        <label class="col-md-2 col-form-label" for="lccn">LCCN</label>
+        <div class="col-md-4">
+          <input class="form-control" list="titles" id="lccn" name="lccn" autocomplete="off" aria-describedby="lccn-help" />
+          <div id="lccn-help" class="form-text">
+            Enter an LCCN. You may start typing a title's LCCN or its name, and
+            on selection the appropriate LCCN will be set.
           </div>
-          <datalist id="titles">
-            {{range .Data.Titles}}
-            <option value="{{.LCCN}}">{{.Name}} - {{.LCCN}}</option>
-            {{end}}
-          </datalist>
         </div>
+        <datalist id="titles">
+          {{range .Data.Titles}}
+          <option value="{{.LCCN}}">{{.Name}} - {{.LCCN}}</option>
+          {{end}}
+        </datalist>
 
-        <div class="col-md-6">
-          <label class="col-md-4 col-form-label" for="moc">MARC Org Code</label>
-          <div class="col-md-8">
-            <input class="form-control" list="mocs" id="moc" name="moc" autocomplete="off" aria-describedby="moc-help" />
-            <div id="moc-help" class="form-text">
-              Enter a MARC Org Code. You may start typing a code or its name, and
-              on selection the appropriate code will be set.
-            </div>
+        <label class="col-md-2 col-form-label" for="moc">MARC Org Code</label>
+        <div class="col-md-4">
+          <input class="form-control" list="mocs" id="moc" name="moc" autocomplete="off" aria-describedby="moc-help" />
+          <div id="moc-help" class="form-text">
+            Enter a MARC Org Code. You may start typing a code or its name, and
+            on selection the appropriate code will be set.
           </div>
-          <datalist id="mocs">
-            {{range .Data.MOCs}}
-            <option value="{{.Code}}">{{if .Name}}{{.Name}} - {{end}}{{.Code}}</option>
-            {{end}}
-          </datalist>
         </div>
-      </div> <!-- row -->
+        <datalist id="mocs">
+          {{range .Data.MOCs}}
+          <option value="{{.Code}}">{{if .Name}}{{.Name}} - {{end}}{{.Code}}</option>
+          {{end}}
+        </datalist>
+      </div>
 
       <div class="row mb-3">
         <div class="offset-md-2">
           <button class="btn btn-primary" type="Submit">Apply</button>
           <button class="btn btn-outline" type="Reset" id="clear-filters">Clear Filters</button>
         </div>
-      </div> <!-- row -->
+      </div>
 
     </form>
   </div> <!-- card body -->
