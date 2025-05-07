@@ -4,85 +4,97 @@
 *
 *   File:   ButtonExpand.js
 *
-*   Desc:   Checkbox widget that implements ARIA Authoring Practices
-*           for a menu of links
+*   Desc:   Disclosure button widget that implements ARIA Authoring Practices
 */
 
-/*
-*   @constructor ButtonExpand
-*
-*
-*/
 var ButtonExpand = function (domNode) {
-
   this.domNode = domNode;
-
   this.keyCode = Object.freeze({
     'RETURN': 13
   });
 };
 
 ButtonExpand.prototype.init = function () {
-
   this.controlledNode = false;
-
   var id = this.domNode.getAttribute('aria-controls');
-
   if (id) {
     this.controlledNode = document.getElementById(id);
   }
 
-  this.domNode.setAttribute('aria-expanded', 'false');
-  this.hideContent();
+  // Check URL parameters to determine initial state. Default to closed.
+  var params = new URLSearchParams(window.location.search);
+  var startOpen = params.get(id) === 'open';
+  var hiddenInput = document.getElementById(id + '-url-param');
+  if (startOpen) {
+    this.domNode.setAttribute('aria-expanded', 'true');
+    this.showContent();
+    if (hiddenInput) {
+      hiddenInput.value = 'open';
+    }
+  } else {
+    this.domNode.setAttribute('aria-expanded', 'false');
+    this.hideContent();
+    if (hiddenInput) {
+      hiddenInput.value = 'closed';
+    }
+  }
 
   this.domNode.addEventListener('keydown',    this.handleKeydown.bind(this));
   this.domNode.addEventListener('click',      this.handleClick.bind(this));
   this.domNode.addEventListener('focus',      this.handleFocus.bind(this));
   this.domNode.addEventListener('blur',       this.handleBlur.bind(this));
-
 };
 
 ButtonExpand.prototype.showContent = function () {
-
   if (this.controlledNode) {
     this.controlledNode.style.display = 'block';
   }
-
 };
 
 ButtonExpand.prototype.hideContent = function () {
-
   if (this.controlledNode) {
     this.controlledNode.style.display = 'none';
   }
+};
 
+ButtonExpand.prototype.setUrlParam = function (key, value) {
+  var params = new URLSearchParams(window.location.search);
+  params.set(key, value);
+  var newRelativePathQuery = window.location.pathname + '?' + params.toString();
+  history.replaceState(null, '', newRelativePathQuery);
+
+  var hiddenInput = document.getElementById(key + '-url-param');
+  if (hiddenInput) {
+    hiddenInput.value = value;
+  }
 };
 
 ButtonExpand.prototype.toggleExpand = function () {
+  var id = this.domNode.getAttribute('aria-controls');
 
   if (this.domNode.getAttribute('aria-expanded') === 'true') {
     this.domNode.setAttribute('aria-expanded', 'false');
     this.hideContent();
+    if (id) {
+      this.setUrlParam(id, 'closed');
+    }
   }
   else {
     this.domNode.setAttribute('aria-expanded', 'true');
     this.showContent();
+    if (id) {
+      this.setUrlParam(id, 'open');
+    }
   }
-
 };
 
 /* EVENT HANDLERS */
 
 ButtonExpand.prototype.handleKeydown = function (event) {
-
   console.log('[keydown]');
-
   switch (event.keyCode) {
-
     case this.keyCode.RETURN:
-
       this.toggleExpand();
-
       event.stopPropagation();
       event.preventDefault();
       break;
@@ -90,7 +102,6 @@ ButtonExpand.prototype.handleKeydown = function (event) {
     default:
       break;
   }
-
 };
 
 ButtonExpand.prototype.handleClick = function (event) {
@@ -108,12 +119,9 @@ ButtonExpand.prototype.handleBlur = function (event) {
 /* Initialize Hide/Show Buttons */
 
 window.addEventListener('load', function (event) {
-
   var buttons =  document.querySelectorAll('[data-widget=simple-disclosure]');
-
   for (var i = 0; i < buttons.length; i++) {
     var be = new ButtonExpand(buttons[i]);
     be.init();
   }
-
 }, false);
