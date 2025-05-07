@@ -10,6 +10,7 @@ import (
 	"regexp"
 	"strconv"
 	"strings"
+	"time"
 )
 
 var reg = regexp.MustCompile(`(\d+)([a-zA-Z]+)`)
@@ -211,4 +212,65 @@ func (d Duration) RFC3339() string {
 // Zero returns true if the duration represents precisely zero
 func (d Duration) Zero() bool {
 	return d.Years == 0 && d.Months == 0 && d.Weeks == 0 && d.Days == 0
+}
+
+// addDate adds the specified number of years, months, and days to time t.
+// Unlike [time.AddDate], we want to handle month-end rollovers more
+// intuitively.
+//
+// For days, this isn't an issue. People expect when you add X days, you get a
+// precise number of days forward. Simple.
+//
+// Adding months or years is less simple. If it's Feb 29th, it's confusing if
+// "+1 year" results in March 1st. If it's July 31st, adding 2 months shouldn't
+// result in October first. People's brains aren't wired this way!
+func addDate(t time.Time, years, months, days int) time.Time {
+	// First we calculate the target month / year as explained above: avoid
+	// normalizing when year and month are changed
+	var currentYear, currentMonth, _ = t.Date()
+	var targetMonthInt = int(currentMonth) + months
+	var targetYear = currentYear + years
+	targetYear += (targetMonthInt - 1) / 12
+	targetMonthInt = (targetMonthInt-1)%12 + 1
+	if targetMonthInt <= 0 {
+		targetMonthInt += 12
+		targetYear--
+	}
+	var targetMonth = time.Month(targetMonthInt)
+
+	// Next we get the last day of the calculated target month by creating a date
+	// one month after, and subtracting a day.
+	var firstOfFollowingMonth = time.Date(targetYear, targetMonth+1, 1, 0, 0, 0, 0, t.Location())
+	var lastDayOfTargetMonth = firstOfFollowingMonth.AddDate(0, 0, -1).Day()
+
+	// Get the original day, capped at the last day of the target month
+	var originalDay = t.Day()
+	var newDay = originalDay
+	if newDay > lastDayOfTargetMonth {
+		newDay = lastDayOfTargetMonth
+	}
+
+	// Now we build the actual time.Time with t's Day (possibly capped) and the
+	// targeted year/month
+	var intermediateTime = time.Date(targetYear, targetMonth, newDay,
+		t.Hour(), t.Minute(), t.Second(), t.Nanosecond(), t.Location())
+
+	// Finally, add the days normally and return it
+	return intermediateTime.AddDate(0, 0, days)
+}
+
+// AddToTime returns the time.Time corresponding to the given time plus this
+// duration. It uses custom logic to handle month-end rollovers more
+// intuitively than the standard time.AddDate. Weeks and days are added
+// separately after month/year adjustments.
+func (d Duration) AddToTime(t time.Time) time.Time {
+	return addDate(t, d.Years, d.Months, d.Weeks*7+d.Days)
+}
+
+// SubtractFromTime returns the time.Time corresponding to the given time minus
+// this duration. It uses custom logic to handle month-end rollovers more
+// intuitively than the standard time.AddDate. Weeks and days are subtracted
+// separately after month/year adjustments.
+func (d Duration) SubtractFromTime(t time.Time) time.Time {
+	return addDate(t, -d.Years, -d.Months, -(d.Weeks*7 + d.Days))
 }
