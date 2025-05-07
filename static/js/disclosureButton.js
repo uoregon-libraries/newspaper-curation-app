@@ -24,12 +24,19 @@ ButtonExpand.prototype.init = function () {
   // Check URL parameters to determine initial state. Default to closed.
   var params = new URLSearchParams(window.location.search);
   var startOpen = params.get(id) === 'open';
+  var hiddenInput = document.getElementById(id + '-url-param');
   if (startOpen) {
     this.domNode.setAttribute('aria-expanded', 'true');
     this.showContent();
+    if (hiddenInput) {
+      hiddenInput.value = 'open';
+    }
   } else {
     this.domNode.setAttribute('aria-expanded', 'false');
     this.hideContent();
+    if (hiddenInput) {
+      hiddenInput.value = 'closed';
+    }
   }
 
   this.domNode.addEventListener('keydown',    this.handleKeydown.bind(this));
@@ -55,6 +62,11 @@ ButtonExpand.prototype.setUrlParam = function (key, value) {
   params.set(key, value);
   var newRelativePathQuery = window.location.pathname + '?' + params.toString();
   history.replaceState(null, '', newRelativePathQuery);
+
+  var hiddenInput = document.getElementById(key + '-url-param');
+  if (hiddenInput) {
+    hiddenInput.value = value;
+  }
 };
 
 ButtonExpand.prototype.toggleExpand = function () {
