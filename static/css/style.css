@@ -131,6 +131,9 @@ h2, h3, h4, h5, h6 {
 #json-status[data-faded=true] {
   color: var(--bs-body-bg);
 }
+#json-status.inline {
+  margin: 0px;
+}
 
 /* Improve alignment of "undo" button on the batch "flag issues" page */
 .unflag-form {
