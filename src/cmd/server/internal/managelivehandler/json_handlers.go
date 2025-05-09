@@ -4,6 +4,8 @@ import (
 	"encoding/json"
 	"fmt"
 	"net/http"
+	"path"
+	"strconv"
 	"time"
 
 	"github.com/uoregon-libraries/newspaper-curation-app/internal/logger"
@@ -14,9 +16,12 @@ import (
 
 type jsonIssue struct {
 	*models.FlatIssue
-	FullTitle   string
-	WentLiveAt  string
-	PublishedOn string
+	FullTitle    string
+	WentLiveAt   string
+	LiveIssueURL string
+	LiveTitleURL string
+	LiveBatchURL string
+	PublishedOn  string
 }
 
 const dateFmt = "Mon Jan _2, 2006"
@@ -29,6 +34,9 @@ func wrapIssue(i *models.FlatIssue) *jsonIssue {
 	}
 	ji.WentLiveAt = i.WentLiveAt.Format(dateFmt)
 	ji.FullTitle = fmt.Sprintf("%s (%s)", i.TitleName, i.LCCN)
+	ji.LiveTitleURL = path.Join(conf.NewsWebroot, "lccn", i.LCCN)
+	ji.LiveIssueURL = path.Join(ji.LiveTitleURL, i.Date, "ed-"+strconv.Itoa(i.Edition))
+	ji.LiveBatchURL = path.Join(conf.NewsWebroot, "batches", i.BatchFullName)
 
 	return ji
 }

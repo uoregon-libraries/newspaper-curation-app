@@ -97,6 +97,14 @@
     populateSearchResults(data.Issues, data.TotalResults);
   }
 
+  function makeLink(href, text) {
+    const link = document.createElement('a');
+    link.href = href;
+    link.textContent = text;
+
+    return link
+  }
+
   function populateSearchResults(issues, totalResults) {
     const srchMessage = document.getElementById('search-results-message');
     const table = document.getElementById('search-results-table');
@@ -124,9 +132,9 @@
     for (const issue of issues) {
       const row = tbody.insertRow();
 
-      row.insertCell().textContent = issue.FullTitle;
-      row.insertCell().textContent = issue.PublishedOn + ", ed. " + issue.Edition;
-      row.insertCell().textContent = issue.BatchName;
+      row.insertCell().appendChild(makeLink(issue.LiveTitleURL, issue.FullTitle));
+      row.insertCell().appendChild(makeLink(issue.LiveIssueURL, issue.PublishedOn + ", ed. " + issue.Edition));
+      row.insertCell().appendChild(makeLink(issue.LiveBatchURL, issue.BatchName));
       row.insertCell().textContent = issue.WentLiveAt;
 
       const cell = row.insertCell();
