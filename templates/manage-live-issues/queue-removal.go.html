@@ -1,0 +1,46 @@
+{{block "content" .}}
+
+<h2>Comments</h2>
+<p>
+  Once the issue is queued for removal, it will be waiting for <b>todo -
+  automated thing that occurs regularly, or something user has to manually
+  activate?</b>. After processing, this issue (and any others queued for
+  removal) will be back in NCA on the curation view under the "Unfixable
+  Errors" tab.
+</p>
+<form action="{{.Data.QueueURL}}" method="POST">
+  <input type="hidden" name="id" value="{{.Data.Issue.ID}}" />
+  <div class="row mb-3">
+    <label class="col-md-2 col-form-label" for="issue-removal-reason">Removal Reason</label>
+    <div class="col-md-10">
+      <textarea id="issue-removal-reason" name="error" class="form-control" rows="8"></textarea>
+    </div>
+  </div>
+
+  <div class="row mb-3">
+    <div class="col-md-10 offset-md-2">
+      <button class="btn btn-primary" type="Submit">Queue For Removal</button>
+    </div>
+  </div>
+</form>
+
+<h2>Issue Metadata</h2>
+{{with .Data.Issue}}
+<div class="row mb-3">
+  <div class="col-md-12">
+    <dl class="dl-horizontal">
+      <dt>Title</dt><dd>{{.Title.MARCTitle}} ({{.LCCN}})</dd>
+      <dt>MARC Org Code</dt><dd>{{.MARCOrgCode}}</dd>
+      <dt>Issue Date as labeled</dt><dd>{{.DateAsLabeled}}</dd>
+      <dt>Issue Date</dt><dd>{{.Date}}</dd>
+      <dt>Pages</td><dd>{{.PageCount}}</dd>
+      <dt>Volume number</dt><dd>{{.Volume}}</dd>
+      <dt>Issue number</dt><dd>{{.Issue}}</dd>
+      <dt>Edition number</dt><dd>{{.Edition}}</dd>
+      <dt>Edition label</dt><dd>{{.EditionLabel}}</dd>
+    </dl>
+  </div>
+</div>
+{{end}}
+
+{{end}}
