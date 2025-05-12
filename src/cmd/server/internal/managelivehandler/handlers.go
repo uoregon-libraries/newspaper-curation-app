@@ -1,8 +1,10 @@
 package managelivehandler
 
 import (
+	"fmt"
 	"net/http"
 	"path"
+	"strconv"
 
 	"github.com/gorilla/mux"
 	"github.com/uoregon-libraries/newspaper-curation-app/internal/logger"
@@ -25,6 +27,9 @@ var (
 	// findIssuesTmpl is the form for searching for issues that need to be pulled
 	// from prod
 	findIssuesTmpl *tmpl.Template
+
+	// queueRemovalTmpl is the form for confirming and explaining live issue removal
+	queueRemovalTmpl *tmpl.Template
 )
 
 // canFlagIssues verifies the user is allowed to use this part of NCA in the
@@ -42,10 +47,12 @@ func Setup(r *mux.Router, baseWebPath string, c *config.Config) {
 	var s = r.PathPrefix(basePath).Subrouter()
 	s.Path("").Handler(canFlagIssues(buildIssueFindForm))
 	s.Path("/search").Handler(canFlagIssues(jsonHandler))
+	s.Path("/queue-issue-removal").Handler(canFlagIssues(buildIssueQueueRemovalForm))
 
 	layout = responder.Layout.Clone()
 	layout.Path = path.Join(layout.Path, "manage-live-issues")
 	findIssuesTmpl = layout.MustBuild("find-issues.go.html")
+	queueRemovalTmpl = layout.MustBuild("queue-removal.go.html")
 }
 
 // buildIssueFindForm spits out the search form
@@ -70,6 +77,30 @@ func buildIssueFindForm(w http.ResponseWriter, req *http.Request) {
 	r.Vars.Data["SearchURL"] = path.Join(basePath, "search")
 	r.Vars.Data["QueueRemovalURL"] = path.Join(basePath, "queue-issue-removal")
 	r.Render(findIssuesTmpl)
+}
+
+func buildIssueQueueRemovalForm(w http.ResponseWriter, req *http.Request) {
+	var r = responder.Response(w, req)
+	r.Vars.Title = "Queue Live Issue For Removal"
+
+	r.Request.ParseForm()
+	var idstr = r.Request.FormValue("id")
+	var id, _ = strconv.ParseInt(idstr, 10, 64)
+	if id < 1 {
+		r.Error(http.StatusInternalServerError, fmt.Sprintf("Unable to load issue: %q is not a valid id.", idstr))
+		return
+	}
+
+	var err error
+	r.Vars.Data["Issue"], err = models.FindIssue(id)
+	if err != nil {
+		logger.Errorf("Unable to load issue for live-issue rejection form: %s", err)
+		r.Error(http.StatusInternalServerError, "Unable to load issue. Try again or contact support.")
+		return
+	}
+
+	r.Vars.Data["QueueURL"] = path.Join(basePath, "queue-issue-removal")
+	r.Render(queueRemovalTmpl)
 }
 
 // allTitles returns a list of titles we want users to have as filter options

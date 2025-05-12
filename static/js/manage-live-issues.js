@@ -139,6 +139,9 @@
 
       const cell = row.insertCell();
       const link = document.createElement('a');
+      let u = new URL(table.dataset.queueRemovalUrl, window.location.origin);
+      u.searchParams.set('id', issue.ID);
+      link.href = u.href;
       link.innerHTML = 'Remove...';
       link.setAttribute('class', 'btn btn-danger');
       cell.appendChild(link);
