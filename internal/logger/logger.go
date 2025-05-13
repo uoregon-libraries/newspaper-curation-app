@@ -6,7 +6,6 @@
 package logger
 
 import (
-	"fmt"
 	"os"
 
 	l "github.com/uoregon-libraries/gopkg/logger"
@@ -19,28 +18,28 @@ var Logger = l.New(l.Debug, false)
 // Debugf logs a debug-level message. This should be disabled in production
 // except when... well... debugging.
 func Debugf(format string, args ...any) {
-	Logger.Debugf(fmt.Sprintf(format, args...))
+	Logger.Debugf(format, args...)
 }
 
 // Infof logs an info-level message. These should just give general info that
 // helps uncover problems or tells us a train of some process we sometimes need
 // to manually check.
 func Infof(format string, args ...any) {
-	Logger.Infof(fmt.Sprintf(format, args...))
+	Logger.Infof(format, args...)
 }
 
 // Warnf logs a warn-level message. Use this when something goes wrong, but
 // doesn't really cause any problems, or the problems caused aren't something
 // that realistically can be addressed in code.
 func Warnf(format string, args ...any) {
-	Logger.Warnf(fmt.Sprintf(format, args...))
+	Logger.Warnf(format, args...)
 }
 
 // Errorf logs an error-level message. This should be used for things that we
 // don't expect, and need to fix. The current code is overusing this log level,
 // and should be looked at.
 func Errorf(format string, args ...any) {
-	Logger.Errorf(fmt.Sprintf(format, args...))
+	Logger.Errorf(format, args...)
 }
 
 // Criticalf logs a critical-level message. We should only use these when
@@ -48,7 +47,7 @@ func Errorf(format string, args ...any) {
 // fix issues, or something is just so unexpected that seeing this message
 // means some kind of attention is needed somewhere ASAP.
 func Criticalf(format string, args ...any) {
-	Logger.Criticalf(fmt.Sprintf(format, args...))
+	Logger.Criticalf(format, args...)
 }
 
 // Fatalf logs a critical-level message, then exits. The same rules apply here
@@ -56,6 +55,6 @@ func Criticalf(format string, args ...any) {
 // shouldn't be used in any of the daemons unless something just unbelievably
 // bad happens.
 func Fatalf(format string, args ...any) {
-	Logger.Fatalf(fmt.Sprintf(format, args...))
+	Logger.Fatalf(format, args...)
 	os.Exit(1)
 }
