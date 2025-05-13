@@ -48,6 +48,22 @@ type jsonResponse struct {
 	TotalResults uint64
 }
 
+type issueFilter func(val string) *models.FlatIssueFinder
+
+func wentLiveFilter(f *models.FlatIssueFinder) issueFilter {
+	return func(val string) *models.FlatIssueFinder {
+		var d, err = duration.Parse(val)
+		// Errors shouldn't be possible unless somebody hacks the form, so we
+		// just pretend the "went live" filter wasn't there
+		if err != nil {
+			return f
+		}
+		var now = time.Now()
+		var then = d.SubtractFromTime(now)
+		return f.WentLiveBetween(then, now)
+	}
+}
+
 // jsonHandler produces a JSON feed of issue information to enable
 // rendering a subset of issues
 func jsonHandler(w http.ResponseWriter, req *http.Request) {
@@ -83,20 +99,10 @@ func getJSONIssues(resp *responder.Responder) (*jsonResponse, error) {
 
 	// Build filter function map to prepare our flat issue finder
 	var finder = models.FlatIssues().Live()
-	var filterMap = map[string]func(string) *models.FlatIssueFinder{
-		"moc":  finder.MOC,
-		"lccn": finder.LCCN,
-		"went-live": func(val string) *models.FlatIssueFinder {
-			var d, err = duration.Parse(val)
-			// Errors shouldn't be possible unless somebody hacks the form, so we
-			// just pretend the "went live" filter wasn't there
-			if err != nil {
-				return finder
-			}
-			var now = time.Now()
-			var then = d.SubtractFromTime(now)
-			return finder.WentLiveBetween(then, now)
-		},
+	var filterMap = map[string]issueFilter{
+		"moc":       finder.MOC,
+		"lccn":      finder.LCCN,
+		"went-live": wentLiveFilter(finder),
 	}
 
 	// Apply filters based on request parameters
