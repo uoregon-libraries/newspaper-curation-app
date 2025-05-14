@@ -4,8 +4,10 @@ import (
 	"encoding/json"
 	"fmt"
 	"net/http"
+	"net/url"
 	"path"
 	"strconv"
+	"strings"
 	"time"
 
 	"github.com/uoregon-libraries/newspaper-curation-app/internal/logger"
@@ -64,6 +66,42 @@ func wentLiveFilter(f *models.FlatIssueFinder) issueFilter {
 	}
 }
 
+func urlFilter(f *models.FlatIssueFinder) issueFilter {
+	return func(val string) *models.FlatIssueFinder {
+		var u, err = url.Parse(val)
+
+		// Just like above: errors can be ignored
+		if err != nil {
+			logger.Warnf("Invalid URL in live issue filter form: %q", val)
+			return f
+		}
+
+		// Split and validate the path elements. Again, the form requires this
+		// stuff so we can silently fail if somebody is hacking up the form / URL
+		var parts = strings.Split(u.Path, "/")
+
+		// Paths start with a leading slash, so "parts" is off by one: we expect
+		// *three* elements (or more): the blank, then a literal "lccn", then the
+		// lccn value
+		if len(parts) < 3 || parts[1] != "lccn" {
+			logger.Warnf("Non-issue URL in live issue filter form: %q (%#v)", val, parts)
+			return f
+		}
+
+		var lccn = parts[2]
+		var date = ""
+		if len(parts) > 3 {
+			date = parts[3]
+		}
+
+		f = f.LCCN(lccn)
+		if date != "" {
+			f = f.Date(date)
+		}
+		return f
+	}
+}
+
 // jsonHandler produces a JSON feed of issue information to enable
 // rendering a subset of issues
 func jsonHandler(w http.ResponseWriter, req *http.Request) {
@@ -102,7 +140,9 @@ func getJSONIssues(resp *responder.Responder) (*jsonResponse, error) {
 	var filterMap = map[string]issueFilter{
 		"moc":       finder.MOC,
 		"lccn":      finder.LCCN,
+		"pubdate":   finder.Date,
 		"went-live": wentLiveFilter(finder),
+		"url":       urlFilter(finder),
 	}
 
 	// Apply filters based on request parameters

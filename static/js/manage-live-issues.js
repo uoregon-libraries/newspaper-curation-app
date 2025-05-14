@@ -1,7 +1,7 @@
 (function() {
   'use strict';
 
-  const filterParams = ['lccn', 'moc', 'went-live'];
+  const filterParams = ['lccn', 'moc', 'went-live', 'url', 'pubdate'];
   let statusFadeTimeout = null;
 
   window.addEventListener('DOMContentLoaded', (event) => {
