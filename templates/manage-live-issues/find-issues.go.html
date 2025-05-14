@@ -10,7 +10,7 @@
       <div class="row mb-3">
         <label class="col-md-2 col-form-label" for="url">Production URL</label>
         <div class="col-md-10">
-          <input class="form-control" type="text" id="url" name="url" autocomplete="off" aria-describedby="url-help" />
+          <input class="form-control" type="text" id="url" name="url" autocomplete="off" aria-describedby="url-help" pattern="https?://[^\/]+/lccn/[a-z0-9]{10}/?(\d\d\d\d-\d\d-\d\d/.*)?" />
           <div id="url-help" class="form-text">
             <p>
               Enter a URL to a production issue or title.
