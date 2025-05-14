@@ -8,6 +8,27 @@
     <form id="filter-form" role="form" data-url="{{.Data.SearchURL}}">
 
       <div class="row mb-3">
+        <label class="col-md-2 col-form-label" for="url">Production URL</label>
+        <div class="col-md-10">
+          <input class="form-control" type="text" id="url" name="url" autocomplete="off" aria-describedby="url-help" />
+          <div id="url-help" class="form-text">
+            <p>
+              Enter a URL to a production issue or title.
+            </p>
+
+            <p>
+              The URL must be a standard ONI title, issue, or page URL:
+              <ul>
+                <li><code>https://oregonnews.uoregon.edu/lccn/sn12345678</code> would filter by the title with "sn12345678" as its LCCN</li>
+                <li><code>https://oregonnews.uoregon.edu/lccn/sn12345678/2006-01-02/ed-1/seq-1/</code> would filter for the issue of "sn12345678" published on Jan 1, 2006.</li>
+                <li>Technical: the rule is that the path must start with "/lccn", followed by the LCCN, and optionally an issue date. Anything after the issue date is ignored.</li>
+              </ul>
+            </p>
+          </div>
+        </div>
+      </div>
+
+      <div class="row mb-3">
         <label class="col-md-2 col-form-label" for="lccn">LCCN</label>
         <div class="col-md-4">
           <input class="form-control" list="titles" id="lccn" name="lccn" autocomplete="off" aria-describedby="lccn-help" />
@@ -22,6 +43,17 @@
           {{end}}
         </datalist>
 
+        <label class="col-md-2 col-form-label" for="pubdate">Published On</label>
+        <div class="col-md-4">
+          <input class="form-control" type="text" id="pubdate" name="pubdate" aria-describedby="pubdate-help" pattern="(\d\d\d\d)(-\d\d)?(-\d\d)?" />
+          <div id="pubdate-help" class="form-text">
+            Enter the publication year, year + month, or year + month + day in
+            the form "YYYY", "YYYY-MM", or "YYYY-MM-DD", respectively.
+          </div>
+        </div>
+      </div>
+
+      <div class="row mb-3">
         <label class="col-md-2 col-form-label" for="moc">MARC Org Code</label>
         <div class="col-md-4">
           <input class="form-control" list="mocs" id="moc" name="moc" autocomplete="off" aria-describedby="moc-help" />
@@ -35,9 +67,7 @@
           <option value="{{.Code}}">{{if .Name}}{{.Name}} - {{end}}{{.Code}}</option>
           {{end}}
         </datalist>
-      </div>
 
-      <div class="row mb-3">
         <label class="col-md-2 col-form-label" for="went-live">Went Live Up To...</label>
         <div class="col-md-4">
           <select class="form-select" id="went-live" name="went-live" autocomplete="off" aria-describedby="went-live-days-ago-help">
