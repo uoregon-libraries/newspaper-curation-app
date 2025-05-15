@@ -16,6 +16,7 @@
         filtersPresent = true;
       }
     }
+
     if (filtersPresent) {
       loadIssues();
     }
@@ -26,6 +27,19 @@
 
   function fetchIssues(e) {
     e.preventDefault();
+
+    // Translate the URL arg (if present), and replace fields before we set the
+    // URL query
+    let fields = parseProdURL(document.getElementById('url').value);
+    if (fields['lccn']) {
+      document.getElementById('lccn').value = fields['lccn'];
+      document.getElementById('moc').value = '';
+      if (fields['date']) {
+        document.getElementById('pubdate').value = fields['date'];
+        document.getElementById('went-live').value = '';
+      }
+    }
+
     let u = new URL(window.location);
     let srch = new URLSearchParams(u.search.substr(1));
     for (const param of filterParams) {
@@ -34,6 +48,35 @@
     u.search = srch.toString();
     history.replaceState(null, '', u);
     loadIssues();
+  }
+
+  // parseProdURL sets form fields depending on the URL value:
+  //
+  // - If it's empty or invalid, we just ignore it
+  // - If valid, overwrite LCCN and erase MOC
+  // - If valid and an issue URL, also overwrite date and set went-live to
+  //   the initial (anytime) value
+  function parseProdURL(val) {
+    const url = new URL(val);
+    const parts = url.pathname.split('/');
+    let result = {};
+
+    // Sanity check: do we have "lccn"? It will be *second* because the URL
+    // path will always start with "/"
+    if (parts.length < 3 || parts[1] !== 'lccn') {
+      return result;
+    }
+
+    // Extract segments after "lccn"
+    const segments = parts.slice(2);
+    result['lccn'] = segments[0];
+
+    // If we have another segment, and it's not blank, it's the issue date
+    if (segments.length > 1 && segments[1] != '') {
+      result['date'] = segments[1];
+    }
+
+    return result;
   }
 
   async function loadIssues() {
