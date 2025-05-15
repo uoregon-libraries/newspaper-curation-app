@@ -313,12 +313,6 @@ func (i *Issue) JP2Files() []string {
 	return list
 }
 
-// IsLive returns true if the issue both has a batch *and* the batch appears to
-// be on the live site
-func (i *Issue) IsLive() bool {
-	return i.Batch != nil && i.Batch.Location[0:4] == "http"
-}
-
 // WorkflowIdentification returns a human-readable explanation of where an
 // issue is in the workflow - currently used for explaining duped issues.
 func (i *Issue) WorkflowIdentification() string {
