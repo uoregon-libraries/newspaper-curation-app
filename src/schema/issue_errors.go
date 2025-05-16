@@ -124,7 +124,7 @@ func (i *Issue) ErrDuped(dupe *Issue) apperr.Error {
 		IssueID:  dupe.DatabaseID,
 		Location: dupe.Location,
 		Name:     dupe.Title.Name + ", " + dupe.RawDate,
-		IsLive:   dupe.WorkflowStep == WSInProduction,
+		IsLive:   dupe.Live(),
 	})
 }
 
