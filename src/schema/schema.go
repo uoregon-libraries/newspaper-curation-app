@@ -40,6 +40,7 @@ const (
 	WSReadyForBatching       WorkflowStep = "ReadyForBatching"
 	WSReadyForRebatching     WorkflowStep = "ReadyForRebatching"
 	WSInProduction           WorkflowStep = "InProduction"
+	WSAwaitingProdRemoval    WorkflowStep = "AwaitingLiveRemoval"
 )
 
 // Batch represents high-level batch information
@@ -451,6 +452,9 @@ func (ws WorkflowStep) Text() string {
 	case WSInProduction:
 		return "a live issue"
 
+	case WSAwaitingProdRemoval:
+		return "a live issue queued for removal"
+
 	default:
 		return "an issue in an unknown state"
 	}
@@ -501,6 +505,11 @@ var stepOrder = map[WorkflowStep]int{
 	// Let's just make sure in-production always comes after everything else,
 	// even the unknown awaiting-processing issues
 	WSInProduction: math.MaxInt32,
+
+	// Awaiting live removal might seem like unfixable metadata, but a user could
+	// "unqueue" for removal, so until a process actually kicks off, we have to
+	// look at these like they're live.
+	WSAwaitingProdRemoval: math.MaxInt32,
 }
 
 // Before tells us if ws is logically before b in terms of issues flowing

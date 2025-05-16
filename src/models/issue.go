@@ -24,6 +24,7 @@ var allowedWorkflowSteps = []schema.WorkflowStep{
 	schema.WSReadyForBatching,
 	schema.WSReadyForRebatching,
 	schema.WSInProduction,
+	schema.WSAwaitingProdRemoval,
 }
 
 // Issue contains metadata about an issue for the various workflow tools' use

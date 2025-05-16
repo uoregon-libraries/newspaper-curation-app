@@ -35,7 +35,7 @@ func (i *Issue) Link() template.HTML {
 	case schema.WSSFTP, schema.WSScan:
 		return template.HTML("N/A: not in the system yet (needs to be queued)")
 
-	case schema.WSInProduction:
+	case schema.WSInProduction, schema.WSAwaitingProdRemoval:
 		contents = "Production page list"
 		var u, err = url.Parse(webutil.ProductionURL)
 		if err != nil {
