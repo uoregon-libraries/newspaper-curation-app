@@ -314,18 +314,20 @@ func (i *Issue) JP2Files() []string {
 	return list
 }
 
+// Live returns true if the workflow step indicates an issue that's in
+// production
+func (i *Issue) Live() bool {
+	return i.WorkflowStep == WSInProduction || i.WorkflowStep == WSAwaitingProdRemoval
+}
+
 // WorkflowIdentification returns a human-readable explanation of where an
 // issue is in the workflow - currently used for explaining duped issues.
 func (i *Issue) WorkflowIdentification() string {
-	// We use WorkflowStep's Text() string except when it's in a batch; for that
-	// case, we override the message to give a batch name.
-	switch i.WorkflowStep {
-	case WSInProduction:
-		return "a live issue in batch " + i.Batch.Fullname()
-
-	default:
-		return i.WorkflowStep.Text()
+	if i.Live() {
+		return i.WorkflowStep.Text() + " in batch " + i.Batch.Fullname()
 	}
+
+	return i.WorkflowStep.Text()
 }
 
 // addError attaches err to this issue and reports to the issue's title that it
@@ -354,7 +356,7 @@ func (i *Issue) addChildError() {
 // LastModified tells us when *any* change happened in an issue's folder.  This
 // will return a meaningless value on live issues.
 func (i *Issue) LastModified() time.Time {
-	if i.WorkflowStep == WSInProduction {
+	if i.Live() {
 		return time.Time{}
 	}
 	var t, err = lastmod.Time(i.Location)
@@ -412,7 +414,7 @@ func (i *Issue) CheckLiveDupes(lookup *Lookup) {
 	}
 
 	for _, i2 := range lookup.Issues(sKey) {
-		if i2.WorkflowStep == WSInProduction {
+		if i2.Live() {
 			i.ErrDuped(i2)
 		}
 	}
