@@ -371,28 +371,22 @@ func CompleteJob(j *Job) error {
 	j.CompletedAt = time.Now()
 	_ = j.SaveOp(op)
 
-	// If there are any pending jobs in this pipeline, we don't need to do
-	// anything more
-	var n = countJobsOp(op, "pipeline_id = ? AND status = ?", j.PipelineID, JobStatusPending)
+	// If there are any pending or in-process jobs in this pipeline, we don't
+	// need to do anything more. If there are any failed-but-open jobs, we have
+	// to hope they're in the process of requeuing themselves, but there's
+	// nothing for *this* job to do.
+	var n = countJobsOp(op, "pipeline_id = ? AND status IN (?, ?, ?)", j.PipelineID, JobStatusPending, JobStatusInProcess, JobStatusFailed)
 	if n > 0 {
 		return op.Err()
 	}
 
-	// No pending jobs? Grab the next on-hold job, then, and set it to pending.
+	// No unfinished jobs: grab the next on-hold job and set it to pending.
 	var onHoldJobs []*Job
 	onHoldJobs, err = findJobsOp(op, "pipeline_id = ? AND status = ? ORDER BY sequence", j.PipelineID, JobStatusOnHold)
 	if len(onHoldJobs) > 0 {
 		var nextJob = onHoldJobs[0]
 		nextJob.Status = string(JobStatusPending)
 		return nextJob.SaveOp(op)
-	}
-
-	// No pending *or* on-hold jobs? Check for anything that's in-process or
-	// failed-but-open. If we ever support parallel job runners, it's possible
-	// that we'll have this situation.
-	n = countJobsOp(op, "pipeline_id = ? AND status IN (?, ?)", j.PipelineID, JobStatusInProcess, JobStatusFailed)
-	if n > 0 {
-		return op.Err()
 	}
 
 	// Nothing pending, nothing on hold, nothing in process, nothing failed but
