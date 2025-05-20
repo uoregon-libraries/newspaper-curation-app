@@ -7,6 +7,7 @@ package logger
 
 import (
 	"os"
+	"strings"
 
 	l "github.com/uoregon-libraries/gopkg/logger"
 )
@@ -42,12 +43,15 @@ func Errorf(format string, args ...any) {
 	Logger.Errorf(format, args...)
 }
 
-// Criticalf logs a critical-level message. We should only use these when
-// something goes so badly wrong that dev intervention is likely necessary to
-// fix issues, or something is just so unexpected that seeing this message
-// means some kind of attention is needed somewhere ASAP.
-func Criticalf(format string, args ...any) {
-	Logger.Criticalf(format, args...)
+// CriticalFixNeeded logs a critical error, adding information about the error
+// that is passed in, and making it clear manual fixes are required. We should
+// only use this when something goes so badly wrong that dev intervention is
+// likely necessary to fix issues, or something is just so unexpected that
+// seeing this message means some kind of attention is needed somewhere ASAP.
+func CriticalFixNeeded(message string, err error) {
+	message += " (manual intervention is required, error: " + err.Error() + ")"
+	message = strings.Replace(message, "%", "%%", -1)
+	Logger.Criticalf(message)
 }
 
 // Fatalf logs a critical-level message, then exits. The same rules apply here
