@@ -134,6 +134,7 @@ func jsonHandler(resp *responder.Responder, _ *Issue) {
 	var data, err = json.Marshal(response)
 	if err != nil {
 		logger.CriticalFixNeeded(fmt.Sprintf("Unable to marshal issue JSON %#v", response), err)
+		data = []byte(`{"code": 500, "message": "Internal error"}`)
 	}
 	resp.Writer.Write(data)
 }
