@@ -1,6 +1,8 @@
 package uploads
 
 import (
+	"fmt"
+
 	"github.com/uoregon-libraries/newspaper-curation-app/internal/logger"
 	"github.com/uoregon-libraries/newspaper-curation-app/src/apperr"
 	"github.com/uoregon-libraries/newspaper-curation-app/src/jobs"
@@ -54,14 +56,14 @@ func (i *Issue) Queue() apperr.Error {
 	// Find a DB issue or create one
 	var dbi, err = models.FindIssueByKey(i.Key())
 	if err != nil {
-		logger.Criticalf("Unable to search for database issue %q: %s", i.Key(), err)
+		logger.Errorf("Unable to search for database issue %q: %s", i.Key(), err)
 		return dbErr()
 	}
 
 	if dbi == nil {
 		dbi, err = i.createDatabaseIssue()
 		if err != nil {
-			logger.Criticalf("Unable to save a new database issue: %s", err)
+			logger.Errorf("Unable to save a new database issue: %s", err)
 			return dbErr()
 		}
 	}
@@ -72,7 +74,7 @@ func (i *Issue) Queue() apperr.Error {
 	var jobList []*models.Job
 	jobList, err = dbi.Jobs()
 	if err != nil {
-		logger.Criticalf("Unable to query jobs associated with issue %q: %s", i.Key(), err)
+		logger.Errorf("Unable to query jobs associated with issue %q: %s", i.Key(), err)
 		return dbErr()
 	}
 	for _, job := range jobList {
@@ -81,7 +83,7 @@ func (i *Issue) Queue() apperr.Error {
 			job.Status = string(models.JobStatusFailedDone)
 			err = job.Save()
 			if err != nil {
-				logger.Criticalf("Unable to close failed job!  Manually fix this!  Job id %d; error: %s", job.ID, err)
+				logger.CriticalFixNeeded(fmt.Sprintf("Unable to close job %d after failure", job.ID), err)
 				return dbErr()
 			}
 		case models.JobStatusFailedDone:
@@ -90,7 +92,7 @@ func (i *Issue) Queue() apperr.Error {
 			logger.Infof("Pending job detected for issue %q (db id %d): job id %d. Not attempting to queue issue a second time.", i.Key(), dbi.ID, job.ID)
 			return nil
 		default:
-			logger.Criticalf("Unexpected job detected for issue %q (db id %d): job id %d, status %q",
+			logger.Errorf("Unexpected job detected for issue %q (db id %d): job id %d, status %q",
 				i.Key(), dbi.ID, job.ID, job.Status)
 			return brokenJobErr()
 		}
@@ -103,11 +105,11 @@ func (i *Issue) Queue() apperr.Error {
 	case schema.WSScan:
 		err = jobs.QueueMoveIssueForDerivatives(dbi, i.conf.WorkflowPath)
 	default:
-		logger.Criticalf("Invalid issue %q: workflow step %q isn't allowed for issue move jobs", i.Key(), i.WorkflowStep)
+		logger.Errorf("Invalid issue %q: workflow step %q isn't allowed for issue move jobs", i.Key(), i.WorkflowStep)
 		return badStepErr()
 	}
 	if err != nil {
-		logger.Criticalf("Unable to queue issue %q for move: %s", i.Key(), err)
+		logger.Errorf("Unable to queue issue %q for move: %s", i.Key(), err)
 		return dbErr()
 	}
 

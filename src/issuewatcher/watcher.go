@@ -109,7 +109,7 @@ func (w *Watcher) process() {
 		if r := recover(); r != nil {
 			var buf = make([]byte, 100000)
 			buf = buf[:runtime.Stack(buf, false)]
-			logger.Criticalf("issuewatcher: panic refreshing or serializing data: %v\n%s", r, buf)
+			logger.Errorf("issuewatcher: panic refreshing or serializing data: %v\n%s", r, buf)
 		}
 	}()
 

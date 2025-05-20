@@ -15,7 +15,7 @@ func scanScannerIssues(c *config.Config) {
 	logger.Debugf("scanner-scanner: reading issues - this may take a few minutes")
 	var err = scanner.Scan()
 	if err != nil {
-		logger.Criticalf("scanner-scanner: unable to read issues: %s", err)
+		logger.Errorf("scanner-scanner: unable to read issues: %s", err)
 		return
 	}
 	logger.Debugf("scanner-scanner: done reading issues")

@@ -32,7 +32,7 @@ func getBatchResponder(w http.ResponseWriter, req *http.Request) (r *Responder, 
 	var b *models.Batch
 	b, err = models.FindBatch(id)
 	if err != nil {
-		logger.Criticalf("Unable to load batch %d: %s", id, err)
+		logger.Errorf("Unable to load batch %d: %s", id, err)
 		r.Error(http.StatusInternalServerError, "Error loading batch - try again or contact support")
 		return r, false
 	}
@@ -43,7 +43,7 @@ func getBatchResponder(w http.ResponseWriter, req *http.Request) (r *Responder, 
 
 	r.batch, err = wrapBatch(b, r.Vars.User)
 	if err != nil {
-		logger.Criticalf("Error reading flagged issues for batch %d (%s): %s", r.batch.ID, r.batch.Name, err)
+		logger.Errorf("Error reading flagged issues for batch %d (%s): %s", r.batch.ID, r.batch.Name, err)
 		r.Error(http.StatusInternalServerError, "Error trying to read batch's issues - try again or contact support")
 		return r, false
 	}

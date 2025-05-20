@@ -19,7 +19,7 @@ type JobJob struct {
 func NewJobJob(dbJob *models.Job) *JobJob {
 	var j, err = newJobJob(dbJob)
 	if err != nil {
-		logger.Criticalf("Unable to create job-targeting job %d: %s", dbJob.ID, err)
+		logger.Errorf("Unable to build job-job (targeting job %d): %s", dbJob.ID, err)
 	}
 
 	return j

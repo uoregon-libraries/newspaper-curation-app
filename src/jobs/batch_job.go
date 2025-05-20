@@ -19,7 +19,7 @@ type BatchJob struct {
 func NewBatchJob(dbJob *models.Job) *BatchJob {
 	var j, err = newBatchJob(dbJob)
 	if err != nil {
-		logger.Criticalf("Unable to create batch job %d: %s", dbJob.ID, err)
+		logger.Errorf("Unable to create batch job %d: %s", dbJob.ID, err)
 	}
 	return j
 }

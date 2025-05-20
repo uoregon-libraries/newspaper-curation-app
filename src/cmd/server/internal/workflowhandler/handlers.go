@@ -133,7 +133,7 @@ func jsonHandler(resp *responder.Responder, _ *Issue) {
 	resp.Writer.WriteHeader(response.Code)
 	var data, err = json.Marshal(response)
 	if err != nil {
-		logger.Criticalf("Unable to marshal %#v: %s", response, err)
+		logger.CriticalFixNeeded(fmt.Sprintf("Unable to marshal issue JSON %#v", response), err)
 	}
 	resp.Writer.Write(data)
 }
@@ -236,7 +236,7 @@ func approveIssueMetadataHandler(resp *responder.Responder, i *Issue) {
 	// best and log loudly if it doesn't work
 	err = jobs.QueueFinalizeIssue(i.Issue)
 	if err != nil {
-		logger.Criticalf("Unable to queue issue finalization for issue id %d: %s", i.ID, err)
+		logger.CriticalFixNeeded(fmt.Sprintf("Unable to queue issue finalization for issue id %d", i.ID), err)
 	}
 	resp.Audit(models.AuditActionApproveMetadata, fmt.Sprintf("issue id %d", i.ID))
 	http.SetCookie(resp.Writer, &http.Cookie{Name: "Info", Value: "Issue approved", Path: "/"})
