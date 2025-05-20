@@ -48,5 +48,9 @@ func queueIssueForDerivatives(dbIssue *models.Issue, workflowPath string) {
 	}
 
 	// Queue up move to workflow dir
-	jobs.QueueMoveIssueForDerivatives(dbIssue, workflowPath)
+	err = jobs.QueueMoveIssueForDerivatives(dbIssue, workflowPath)
+	if err != nil {
+		logger.CriticalFixNeeded("Unable to queue issue for derivative processing", err)
+		return
+	}
 }
