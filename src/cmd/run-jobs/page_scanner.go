@@ -42,7 +42,7 @@ func queueIssueForDerivatives(dbIssue *models.Issue, workflowPath string) {
 	}
 	dbIssue.Location = newDir
 	dbIssue.WorkflowStep = schema.WSAwaitingProcessing
-	err = retry.Do(20, func() error {
+	err = retry.Do(time.Minute*10, func() error {
 		return dbIssue.SaveWithoutAction()
 	})
 	if err != nil {
@@ -51,7 +51,7 @@ func queueIssueForDerivatives(dbIssue *models.Issue, workflowPath string) {
 	}
 
 	// Queue up move to workflow dir
-	err = retry.Do(20, func() error {
+	err = retry.Do(time.Minute*10, func() error {
 		return jobs.QueueMoveIssueForDerivatives(dbIssue, workflowPath)
 	})
 	if err != nil {

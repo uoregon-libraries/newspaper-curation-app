@@ -173,7 +173,7 @@ func (r *Runner) process(pr Processor) {
 
 func (r *Runner) handleSuccess(pr Processor) {
 	var dbj = pr.DBJob()
-	var err = retry.Do(20, func() error {
+	var err = retry.Do(time.Minute*10, func() error {
 		return models.CompleteJob(dbj)
 	})
 	if err != nil {
@@ -191,7 +191,7 @@ func (r *Runner) handleFailure(pr Processor) {
 		return
 	}
 
-	var err = retry.Do(20, func() error {
+	var err = retry.Do(time.Minute*10, func() error {
 		return dbj.FailAndRetry()
 	})
 	if err != nil {
@@ -203,7 +203,7 @@ func (r *Runner) handleFailure(pr Processor) {
 
 func (r *Runner) handleTryLater(pr Processor) {
 	var dbj = pr.DBJob()
-	var err = retry.Do(20, func() error {
+	var err = retry.Do(time.Minute*10, func() error {
 		return dbj.TryLater(time.Minute)
 	})
 	if err != nil {
@@ -216,7 +216,7 @@ func (r *Runner) handleCriticalFailure(pr Processor) {
 	var dbj = pr.DBJob()
 	dbj.Status = string(models.JobStatusFailed)
 
-	var err = retry.Do(20, func() error {
+	var err = retry.Do(time.Minute*10, func() error {
 		return dbj.Save()
 	})
 	if err != nil {

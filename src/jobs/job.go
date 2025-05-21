@@ -135,11 +135,12 @@ func (l *jobLogger) Log(level ltype.LogLevel, message string) {
 		os.Stderr.WriteString(msg)
 	}
 
-	// This may not be worth a retry, since losing a log message is not a massive
-	// problem. But an error here probably means we lost the DB for more critical
-	// parts of the process, and it's easier for debugging if we can get logs in
-	// the DB, even if we risk duplicating a log message with the retry.
-	var err = retry.Do(10, func() error {
+	// This may not seem like it's worth such a long retry wait, since losing a
+	// log message is not a massive problem. But an error here probably means we
+	// lost the DB for more critical parts of the process, and it's easier for
+	// debugging if we can get logs in the DB, even if we risk duplicating a log
+	// message with the retry.
+	var err = retry.Do(time.Minute*10, func() error {
 		return l.db.WriteLog(level.String(), message)
 	})
 	if err != nil {

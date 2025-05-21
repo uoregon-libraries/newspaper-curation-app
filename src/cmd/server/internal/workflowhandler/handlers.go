@@ -5,6 +5,7 @@ import (
 	"fmt"
 	"html/template"
 	"net/http"
+	"time"
 
 	"github.com/uoregon-libraries/newspaper-curation-app/internal/logger"
 	"github.com/uoregon-libraries/newspaper-curation-app/internal/retry"
@@ -237,7 +238,7 @@ func approveIssueMetadataHandler(resp *responder.Responder, i *Issue) {
 	// if the jobs queue multiple times, but I *think* the cost of missing the
 	// queue entirely is worse: the issue was updated, but the jobs have to be
 	// manually queued somehow.
-	err = retry.Do(10, func() error {
+	err = retry.Do(time.Second*30, func() error {
 		return jobs.QueueFinalizeIssue(i.Issue)
 	})
 

@@ -115,11 +115,11 @@ func (r *Responder) flash(name string) template.HTML {
 // the database audit fails
 func (r *Responder) Audit(action models.AuditAction, msg string) {
 	var u = r.Vars.User
-	// We retry a handful of times here - audit log loss isn't tragic if it
+	// We retry for just a little bit here - audit log loss isn't tragic if it
 	// happens, and we don't want the user waiting for ages for retries. Duped
 	// audit logs would be annoying, but totally acceptable, so this retry is
 	// minimal risk.
-	var err = retry.Do(5, func() error {
+	var err = retry.Do(time.Second*15, func() error {
 		return models.CreateAuditLog(u.IP, u.Login, action, msg)
 	})
 	if err != nil {
