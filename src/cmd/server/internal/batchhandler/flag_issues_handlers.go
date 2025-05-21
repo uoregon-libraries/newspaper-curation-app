@@ -139,7 +139,7 @@ func unflagIssue(r *Responder) {
 
 	var issue, err = models.FindIssue(id)
 	if err != nil {
-		logger.Criticalf("Unable to look up issue %d: %s", id, err)
+		logger.Errorf("Unable to look up issue %d: %s", id, err)
 		r.Error(http.StatusInternalServerError, "Database error trying to unflag the issue. Try again or contact support.")
 		return
 	}
@@ -151,7 +151,7 @@ func unflagIssue(r *Responder) {
 
 	err = r.batch.UnflagIssue(issue)
 	if err != nil {
-		logger.Criticalf("Unable to unflag issue %d for batch %d (%s): %s", id, r.batch.ID, r.batch.Name, err)
+		logger.Errorf("Unable to unflag issue %d for batch %d (%s): %s", id, r.batch.ID, r.batch.Name, err)
 		r.Error(http.StatusInternalServerError, "Database error trying to unflag the issue. Try again or contact support.")
 		return
 	}
@@ -194,7 +194,7 @@ func flagIssue(r *Responder) {
 	var i *models.Issue
 	i, err = models.FindIssueByKey(key)
 	if err != nil {
-		logger.Criticalf("Error adding issue %q to batch %d (%s) for removal: %s", key, r.batch.ID, r.batch.Name, err)
+		logger.Errorf("Error adding issue %q to batch %d (%s) for removal: %s", key, r.batch.ID, r.batch.Name, err)
 		r.Error(http.StatusInternalServerError, "Database error trying to reject the issue. Try again or contact support.")
 		return
 	}
@@ -215,7 +215,7 @@ func flagIssue(r *Responder) {
 
 	err = r.batch.FlagIssue(i, r.Vars.User, desc)
 	if err != nil {
-		logger.Criticalf("Error adding issue %q to batch %d (%s) for removal: %s", key, r.batch.ID, r.batch.Name, err)
+		logger.Errorf("Error adding issue %q to batch %d (%s) for removal: %s", key, r.batch.ID, r.batch.Name, err)
 		r.Error(http.StatusInternalServerError, "Database error trying to reject the issue. Try again or contact support.")
 		return
 	}
@@ -227,7 +227,7 @@ func flagIssue(r *Responder) {
 func abortBatch(r *Responder) {
 	var err = r.batch.AbortIssueFlagging(r.Vars.User)
 	if err != nil {
-		logger.Criticalf("Unable to abort issue flagging for batch %d (%s): %s", r.batch.ID, r.batch.Name, err)
+		logger.Errorf("Unable to abort issue flagging for batch %d (%s): %s", r.batch.ID, r.batch.Name, err)
 		r.Error(http.StatusInternalServerError, "Database error trying to reset the batch. Try again or contact support.")
 		return
 	}
@@ -239,7 +239,7 @@ func abortBatch(r *Responder) {
 func finalizeBatch(r *Responder) {
 	var err = r.batch.Save(models.ActionTypeFinalizeBatch, r.Vars.User.ID, "")
 	if err != nil {
-		logger.Criticalf(`Unable to log "finalize batch" action for batch %d (%s): %s`, r.batch.ID, r.batch.Name, err)
+		logger.Errorf(`Unable to log "finalize batch" action for batch %d (%s): %s`, r.batch.ID, r.batch.Name, err)
 		r.Error(http.StatusInternalServerError, "Error trying to finalize the batch. Try again or contact support.")
 		return
 	}
@@ -254,7 +254,7 @@ func finalizeBatch(r *Responder) {
 	// background rather than just run a quick DB operation or something
 	err = jobs.QueueBatchFinalizeIssueFlagging(r.batch.Batch, r.batch.FlaggedIssues, conf)
 	if err != nil {
-		logger.Criticalf("Unable to queue job to finalize issue flagging for batch %d (%s): %s", r.batch.ID, r.batch.Name, err)
+		logger.Errorf("Unable to queue job to finalize issue flagging for batch %d (%s): %s", r.batch.ID, r.batch.Name, err)
 		r.Error(http.StatusInternalServerError, "Error trying to finalize the batch. Try again or contact support.")
 		return
 	}
@@ -266,7 +266,7 @@ func finalizeBatch(r *Responder) {
 func undoBatch(r *Responder) {
 	var err = r.batch.Save(models.ActionTypeUndoBatch, r.Vars.User.ID, "")
 	if err != nil {
-		logger.Criticalf(`Unable to log "undo batch" action for batch %d (%s): %s`, r.batch.ID, r.batch.Name, err)
+		logger.Errorf(`Unable to log "undo batch" action for batch %d (%s): %s`, r.batch.ID, r.batch.Name, err)
 		r.Error(http.StatusInternalServerError, "Error trying to undo the batch. Try again or contact support.")
 		return
 	}
@@ -277,7 +277,7 @@ func undoBatch(r *Responder) {
 func queueDeleteBatchJob(r *Responder) {
 	var err = jobs.QueueBatchForDeletion(r.batch.Batch, r.batch.FlaggedIssues, conf)
 	if err != nil {
-		logger.Criticalf("Unable to queue job to delete batch %d (%s): %s", r.batch.ID, r.batch.Name, err)
+		logger.Errorf("Unable to queue job to delete batch %d (%s): %s", r.batch.ID, r.batch.Name, err)
 		r.Error(http.StatusInternalServerError, "Error trying to finalize the batch. Try again or contact support.")
 		return
 	}

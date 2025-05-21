@@ -147,7 +147,7 @@ func (ps *PageSplit) fixPageNames() (ok bool) {
 		var pageNum int
 		pageNum, err = strconv.Atoi(matches[1])
 		if err != nil {
-			ps.Logger.Criticalf("Error parsing pagenum for %q: %s", fullPath, err)
+			ps.Logger.Errorf("Error parsing pagenum for %q: %s", fullPath, err)
 			return false
 		}
 

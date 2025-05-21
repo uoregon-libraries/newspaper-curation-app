@@ -226,8 +226,8 @@ func generateBatches(w http.ResponseWriter, req *http.Request) {
 		}
 		err = jobs.QueueMakeBatch(batch, conf)
 		if err != nil {
-			logger.Criticalf("Unable to queue batch %d (%q): %s", batch.ID, batch.FullName, err)
-			logger.Criticalf("Batch %d (%q) will likely need to be manually fixed in the database!", batch.ID, batch.FullName)
+			logger.Errorf("Unable to queue batch %d (%q): %s", batch.ID, batch.FullName, err)
+			logger.Errorf("Batch %d (%q) will likely need to be manually fixed in the database!", batch.ID, batch.FullName)
 			r.Error(http.StatusInternalServerError, "Error processing request - try again or contact support")
 			return
 		}

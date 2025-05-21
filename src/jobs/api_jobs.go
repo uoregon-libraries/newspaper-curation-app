@@ -63,7 +63,7 @@ func (j *BatchJob) queueAgentJob(name string, fn batchJobFunc) ProcessResponse {
 	})
 
 	if err != nil {
-		j.Logger.Criticalf("Unable to update batch: %s", err)
+		j.Logger.Criticalf("Unable to update batch after successfully queueing an ONI job! Manual intervention required! Error: %s", err)
 		return PRFatal
 	}
 
@@ -181,6 +181,6 @@ func (j *ONIWaitForJob) Process(c *config.Config) ProcessResponse {
 		return PRSuccess
 	}
 
-	j.Logger.Criticalf("Unknown value returned when requesting job status for job %d: %q", jobID, js)
+	j.Logger.Errorf("Unknown value returned when requesting job status for job %d: %q", jobID, js)
 	return PRFatal
 }

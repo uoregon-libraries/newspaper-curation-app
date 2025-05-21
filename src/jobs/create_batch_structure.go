@@ -33,7 +33,7 @@ func (j *CreateBatchStructure) Process(*config.Config) ProcessResponse {
 	// Create the top-level directories
 	err = os.MkdirAll(dataPath, 0755)
 	if err != nil {
-		j.Logger.Criticalf("Unable to create WIP data directory %q: %s", dataPath, err)
+		j.Logger.Errorf("Unable to create WIP data directory %q: %s", dataPath, err)
 		return PRFailure
 	}
 
@@ -42,7 +42,7 @@ func (j *CreateBatchStructure) Process(*config.Config) ProcessResponse {
 	var iList []*models.Issue
 	iList, err = j.DBBatch.Issues()
 	if err != nil {
-		j.Logger.Criticalf("Unable to read issues for %q: %s", j.DBBatch.FullName, err)
+		j.Logger.Errorf("Unable to read issues for %q: %s", j.DBBatch.FullName, err)
 		return PRFailure
 	}
 	for _, issue := range iList {
@@ -52,7 +52,7 @@ func (j *CreateBatchStructure) Process(*config.Config) ProcessResponse {
 			err = linkFiles(issue.Location, destPath)
 		}
 		if err != nil {
-			j.Logger.Criticalf("Unable to link issue %q into batch %q: %s", issue.Key(), j.DBBatch.FullName, err)
+			j.Logger.Errorf("Unable to link issue %q into batch %q: %s", issue.Key(), j.DBBatch.FullName, err)
 			return PRFailure
 		}
 	}

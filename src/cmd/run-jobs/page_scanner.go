@@ -1,6 +1,7 @@
 package main
 
 import (
+	"fmt"
 	"os"
 	"path/filepath"
 	"time"
@@ -42,10 +43,14 @@ func queueIssueForDerivatives(dbIssue *models.Issue, workflowPath string) {
 	dbIssue.WorkflowStep = schema.WSAwaitingProcessing
 	err = dbIssue.SaveWithoutAction()
 	if err != nil {
-		logger.Criticalf("Unable to update db Issue (location and awaiting page review status): %s", err)
+		logger.CriticalFixNeeded(fmt.Sprintf("Unable to update db Issue %d to set location=%q, status=%q", dbIssue.ID, dbIssue.Location, dbIssue.WorkflowStep), err)
 		return
 	}
 
 	// Queue up move to workflow dir
-	jobs.QueueMoveIssueForDerivatives(dbIssue, workflowPath)
+	err = jobs.QueueMoveIssueForDerivatives(dbIssue, workflowPath)
+	if err != nil {
+		logger.CriticalFixNeeded("Unable to queue issue for derivative processing", err)
+		return
+	}
 }

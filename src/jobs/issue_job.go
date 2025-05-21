@@ -21,7 +21,7 @@ type IssueJob struct {
 func NewIssueJob(dbJob *models.Job) *IssueJob {
 	var j, err = newIssueJob(dbJob)
 	if err != nil {
-		logger.Criticalf("Unable to create issue job %d: %s", dbJob.ID, err)
+		logger.Errorf("Unable to create issue job %d: %s", dbJob.ID, err)
 	}
 
 	return j

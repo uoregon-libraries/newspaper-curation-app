@@ -174,7 +174,7 @@ func (r *Runner) handleSuccess(pr Processor) {
 	var dbj = pr.DBJob()
 	var err = models.CompleteJob(dbj)
 	if err != nil {
-		r.logger.Criticalf("Unable to update job status after success (job: %d): %s", dbj.ID, err)
+		r.logger.Criticalf("Unable to update job %d after success! Manual intervention required! Error: %s", dbj.ID, err)
 		return
 	}
 
@@ -190,7 +190,7 @@ func (r *Runner) handleFailure(pr Processor) {
 
 	var err = dbj.FailAndRetry()
 	if err != nil {
-		r.logger.Criticalf("Unable to requeue failed job (job: %d): %s", dbj.ID, err)
+		r.logger.Criticalf("Unable to requeue job %d after failure! Manual intervention required! Error: %s", dbj.ID, err)
 		return
 	}
 	r.logger.Warnf("Failed job %d: retrying later", dbj.ID)
@@ -200,7 +200,7 @@ func (r *Runner) handleTryLater(pr Processor) {
 	var dbj = pr.DBJob()
 	var err = dbj.TryLater(time.Minute)
 	if err != nil {
-		r.logger.Criticalf("Unable to set job to try later (job: %d): %s", dbj.ID, err)
+		r.logger.Criticalf(`Unable to set job %d to "try later"! Manual intervention required! Error: %s`, dbj.ID, err)
 		return
 	}
 }
@@ -211,7 +211,7 @@ func (r *Runner) handleCriticalFailure(pr Processor) {
 
 	var err = dbj.Save()
 	if err != nil {
-		r.logger.Criticalf("Unable to update job status after failure (job: %d): %s", dbj.ID, err)
+		r.logger.Criticalf("Unable to update job %d after critical failure! Manual intervention required! Error: %s", dbj.ID, err)
 		return
 	}
 	r.logger.Infof("Job id %d **failed** (see job logs)", dbj.ID)

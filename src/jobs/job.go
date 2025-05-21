@@ -136,7 +136,7 @@ func (l *jobLogger) Log(level ltype.LogLevel, message string) {
 
 	var err = l.db.WriteLog(level.String(), message)
 	if err != nil {
-		logger.Criticalf("Unable to write log message %q to the database: %s", message, err)
+		logger.CriticalFixNeeded(fmt.Sprintf("Unable to write log message %q to the database", message), err)
 		return
 	}
 }

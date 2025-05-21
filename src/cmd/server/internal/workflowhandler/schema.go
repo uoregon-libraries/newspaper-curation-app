@@ -89,7 +89,7 @@ func (i *Issue) TaskDescription() string {
 		return "Was previously live; ready to be rebuilt in a batch and loaded"
 
 	default:
-		logger.Criticalf("Invalid workflow step for issue %d: %q", i.ID, i.WorkflowStepString)
+		logger.Errorf("Invalid workflow step for issue %d: %q", i.ID, i.WorkflowStepString)
 		return "UNKNOWN!"
 	}
 }
@@ -155,7 +155,7 @@ func (i *Issue) ValidateMetadata() {
 	var err error
 	i.si, err = i.Issue.SchemaIssue()
 	if err != nil {
-		logger.Criticalf("Unable to recreate schema.Issue for issue id %d: %s", i.ID, err)
+		logger.Errorf("Unable to recreate schema.Issue for issue id %d: %s", i.ID, err)
 		addError(apperr.New("Unknown error checking issue validity; contact support or try again"))
 		return
 	}
@@ -164,7 +164,7 @@ func (i *Issue) ValidateMetadata() {
 	var dupes []*models.Issue
 	dupes, err = models.FindIssuesByKey(i.Key())
 	if err != nil {
-		logger.Criticalf("Unable to query database for duped issues: issue id %d: %s", i.ID, err)
+		logger.Errorf("Unable to query database for duped issues: issue id %d: %s", i.ID, err)
 		addError(apperr.New("Unknown error checking issue validity; contact support or try again"))
 		return
 	}
@@ -176,7 +176,7 @@ func (i *Issue) ValidateMetadata() {
 		var dsi *schema.Issue
 		dsi, err = dupe.SchemaIssue()
 		if err != nil {
-			logger.Criticalf("Unable to recreate schema.Issue for duped issue id %d: %s", dupe.ID, err)
+			logger.Errorf("Unable to recreate schema.Issue for duped issue id %d: %s", dupe.ID, err)
 			addError(apperr.New("Unknown error checking issue validity; contact support or try again"))
 			return
 		}

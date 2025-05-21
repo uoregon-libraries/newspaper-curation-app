@@ -6,10 +6,10 @@ package responder
 import (
 	"bytes"
 	"encoding/base64"
+	"fmt"
 	"html/template"
 	"io"
 	"net/http"
-	"os"
 	"time"
 
 	"github.com/uoregon-libraries/newspaper-curation-app/internal/logger"
@@ -61,8 +61,8 @@ func (r *Responder) Render(t *tmpl.Template) {
 	if settings.DEBUG {
 		var clone, err = t.Rebuild()
 		if err != nil {
-			logger.Criticalf("Unable to rebuild template %q: %s", t.Path, err)
-			os.Exit(1)
+			logger.Errorf("Unable to rebuild template %q: %s", t.Path, err)
+			return
 		}
 		t = clone
 	}
@@ -80,7 +80,7 @@ func (r *Responder) Render(t *tmpl.Template) {
 	var buffer = new(bytes.Buffer)
 	var err = t.Execute(buffer, r.Vars)
 	if err != nil {
-		logger.Criticalf("Unable to render template %q: %s", t.Path, err)
+		logger.CriticalFixNeeded(fmt.Sprintf("Unable to render template %q", t.Path), err)
 		http.Error(r.Writer, "NCA has experienced an internal error while trying to render the page. Please contact the system administrator for assistance.", http.StatusInternalServerError)
 		return
 	}
@@ -116,7 +116,7 @@ func (r *Responder) Audit(action models.AuditAction, msg string) {
 	var u = r.Vars.User
 	var err = models.CreateAuditLog(u.IP, u.Login, action, msg)
 	if err != nil {
-		logger.Criticalf("Unable to write AuditLog{%s (%s), %q, %s}: %s", u.Login, u.IP, action, msg, err)
+		logger.CriticalFixNeeded(fmt.Sprintf("Unable to write AuditLog{%s (%s), %q, %s}", u.Login, u.IP, action, msg), err)
 	}
 }
 
