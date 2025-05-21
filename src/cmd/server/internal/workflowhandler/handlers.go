@@ -7,6 +7,7 @@ import (
 	"net/http"
 
 	"github.com/uoregon-libraries/newspaper-curation-app/internal/logger"
+	"github.com/uoregon-libraries/newspaper-curation-app/internal/retry"
 	"github.com/uoregon-libraries/newspaper-curation-app/src/cmd/server/internal/responder"
 	"github.com/uoregon-libraries/newspaper-curation-app/src/jobs"
 	"github.com/uoregon-libraries/newspaper-curation-app/src/models"
@@ -232,10 +233,17 @@ func approveIssueMetadataHandler(resp *responder.Responder, i *Issue) {
 		return
 	}
 
-	// We queue the issue finalization job, but whether it succeeds or not, the
-	// issue was already successfully approved, so we just have to hope for the
-	// best and log loudly if it doesn't work
-	err = jobs.QueueFinalizeIssue(i.Issue)
+	// Try to queue jobs a few times before giving up. This could be a major pain
+	// if the jobs queue multiple times, but I *think* the cost of missing the
+	// queue entirely is worse: the issue was updated, but the jobs have to be
+	// manually queued somehow.
+	err = retry.Do(10, func() error {
+		return jobs.QueueFinalizeIssue(i.Issue)
+	})
+
+	// Whether the issue finalization jobs were queued, the issue was already
+	// successfully approved, so we just have to hope for the best and log loudly
+	// if it doesn't work.
 	if err != nil {
 		logger.CriticalFixNeeded(fmt.Sprintf("Unable to queue issue finalization for issue id %d", i.ID), err)
 	}

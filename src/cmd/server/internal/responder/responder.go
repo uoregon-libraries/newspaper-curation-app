@@ -13,6 +13,7 @@ import (
 	"time"
 
 	"github.com/uoregon-libraries/newspaper-curation-app/internal/logger"
+	"github.com/uoregon-libraries/newspaper-curation-app/internal/retry"
 	"github.com/uoregon-libraries/newspaper-curation-app/src/cmd/server/internal/settings"
 	"github.com/uoregon-libraries/newspaper-curation-app/src/models"
 	"github.com/uoregon-libraries/newspaper-curation-app/src/version"
@@ -114,7 +115,13 @@ func (r *Responder) flash(name string) template.HTML {
 // the database audit fails
 func (r *Responder) Audit(action models.AuditAction, msg string) {
 	var u = r.Vars.User
-	var err = models.CreateAuditLog(u.IP, u.Login, action, msg)
+	// We retry a handful of times here - audit log loss isn't tragic if it
+	// happens, and we don't want the user waiting for ages for retries. Duped
+	// audit logs would be annoying, but totally acceptable, so this retry is
+	// minimal risk.
+	var err = retry.Do(5, func() error {
+		return models.CreateAuditLog(u.IP, u.Login, action, msg)
+	})
 	if err != nil {
 		logger.CriticalFixNeeded(fmt.Sprintf("Unable to write AuditLog{%s (%s), %q, %s}", u.Login, u.IP, action, msg), err)
 	}

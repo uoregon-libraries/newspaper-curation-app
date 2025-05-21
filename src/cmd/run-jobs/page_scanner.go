@@ -7,6 +7,7 @@ import (
 	"time"
 
 	"github.com/uoregon-libraries/newspaper-curation-app/internal/logger"
+	"github.com/uoregon-libraries/newspaper-curation-app/internal/retry"
 	"github.com/uoregon-libraries/newspaper-curation-app/src/config"
 	"github.com/uoregon-libraries/newspaper-curation-app/src/jobs"
 	"github.com/uoregon-libraries/newspaper-curation-app/src/models"
@@ -41,14 +42,18 @@ func queueIssueForDerivatives(dbIssue *models.Issue, workflowPath string) {
 	}
 	dbIssue.Location = newDir
 	dbIssue.WorkflowStep = schema.WSAwaitingProcessing
-	err = dbIssue.SaveWithoutAction()
+	err = retry.Do(20, func() error {
+		return dbIssue.SaveWithoutAction()
+	})
 	if err != nil {
 		logger.CriticalFixNeeded(fmt.Sprintf("Unable to update db Issue %d to set location=%q, status=%q", dbIssue.ID, dbIssue.Location, dbIssue.WorkflowStep), err)
 		return
 	}
 
 	// Queue up move to workflow dir
-	err = jobs.QueueMoveIssueForDerivatives(dbIssue, workflowPath)
+	err = retry.Do(20, func() error {
+		return jobs.QueueMoveIssueForDerivatives(dbIssue, workflowPath)
+	})
 	if err != nil {
 		logger.CriticalFixNeeded("Unable to queue issue for derivative processing", err)
 		return

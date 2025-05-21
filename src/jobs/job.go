@@ -8,6 +8,7 @@ import (
 
 	ltype "github.com/uoregon-libraries/gopkg/logger"
 	"github.com/uoregon-libraries/newspaper-curation-app/internal/logger"
+	"github.com/uoregon-libraries/newspaper-curation-app/internal/retry"
 	"github.com/uoregon-libraries/newspaper-curation-app/src/config"
 	"github.com/uoregon-libraries/newspaper-curation-app/src/models"
 )
@@ -134,7 +135,13 @@ func (l *jobLogger) Log(level ltype.LogLevel, message string) {
 		os.Stderr.WriteString(msg)
 	}
 
-	var err = l.db.WriteLog(level.String(), message)
+	// This may not be worth a retry, since losing a log message is not a massive
+	// problem. But an error here probably means we lost the DB for more critical
+	// parts of the process, and it's easier for debugging if we can get logs in
+	// the DB, even if we risk duplicating a log message with the retry.
+	var err = retry.Do(10, func() error {
+		return l.db.WriteLog(level.String(), message)
+	})
 	if err != nil {
 		logger.CriticalFixNeeded(fmt.Sprintf("Unable to write log message %q to the database", message), err)
 		return
