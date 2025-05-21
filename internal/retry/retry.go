@@ -10,7 +10,7 @@ import (
 
 const (
 	// InitialDelay is how long we wait on the first retry
-	InitialDelay = time.Second * 250
+	InitialDelay = time.Millisecond * 250
 
 	// MaxDelay is the longest interval between retries
 	MaxDelay = 5 * time.Second
