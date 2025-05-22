@@ -9,6 +9,7 @@ import (
 	"time"
 
 	"github.com/uoregon-libraries/gopkg/logger"
+	"github.com/uoregon-libraries/newspaper-curation-app/internal/retry"
 	"github.com/uoregon-libraries/newspaper-curation-app/src/config"
 	"github.com/uoregon-libraries/newspaper-curation-app/src/models"
 )
@@ -172,7 +173,9 @@ func (r *Runner) process(pr Processor) {
 
 func (r *Runner) handleSuccess(pr Processor) {
 	var dbj = pr.DBJob()
-	var err = models.CompleteJob(dbj)
+	var err = retry.Do(time.Minute*10, func() error {
+		return models.CompleteJob(dbj)
+	})
 	if err != nil {
 		r.logger.Criticalf("Unable to update job %d after success! Manual intervention required! Error: %s", dbj.ID, err)
 		return
@@ -188,7 +191,9 @@ func (r *Runner) handleFailure(pr Processor) {
 		return
 	}
 
-	var err = dbj.FailAndRetry()
+	var err = retry.Do(time.Minute*10, func() error {
+		return dbj.FailAndRetry()
+	})
 	if err != nil {
 		r.logger.Criticalf("Unable to requeue job %d after failure! Manual intervention required! Error: %s", dbj.ID, err)
 		return
@@ -198,7 +203,9 @@ func (r *Runner) handleFailure(pr Processor) {
 
 func (r *Runner) handleTryLater(pr Processor) {
 	var dbj = pr.DBJob()
-	var err = dbj.TryLater(time.Minute)
+	var err = retry.Do(time.Minute*10, func() error {
+		return dbj.TryLater(time.Minute)
+	})
 	if err != nil {
 		r.logger.Criticalf(`Unable to set job %d to "try later"! Manual intervention required! Error: %s`, dbj.ID, err)
 		return
@@ -209,7 +216,9 @@ func (r *Runner) handleCriticalFailure(pr Processor) {
 	var dbj = pr.DBJob()
 	dbj.Status = string(models.JobStatusFailed)
 
-	var err = dbj.Save()
+	var err = retry.Do(time.Minute*10, func() error {
+		return dbj.Save()
+	})
 	if err != nil {
 		r.logger.Criticalf("Unable to update job %d after critical failure! Manual intervention required! Error: %s", dbj.ID, err)
 		return

@@ -2,8 +2,10 @@ package jobs
 
 import (
 	"fmt"
+	"time"
 
 	"github.com/uoregon-libraries/newspaper-curation-app/internal/openoni"
+	"github.com/uoregon-libraries/newspaper-curation-app/internal/retry"
 	"github.com/uoregon-libraries/newspaper-curation-app/src/config"
 	"github.com/uoregon-libraries/newspaper-curation-app/src/models"
 )
@@ -50,7 +52,7 @@ func (j *BatchJob) queueAgentJob(name string, fn batchJobFunc) ProcessResponse {
 
 	// It's pretty critical that we save the batch data since the ONI job was
 	// successfully created
-	err = j.runCritical(func() error {
+	err = retry.Do(time.Minute*10, func() error {
 		var msg = fmt.Sprintf("Sent ONI Agent the %s command", name)
 		var err = j.DBBatch.Save(models.ActionTypeInternalProcess, models.SystemUser.ID, msg)
 		if err != nil {
