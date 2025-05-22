@@ -76,6 +76,9 @@ We mostly included bug fixes in this update. Mostly.
 - Devs: added `govulncheck`, the standard Go vulnerability checking tool.
   Activate via `make audit` or manually run it.
   - e.g., `go tool vulncheck ./src/... ./internal/...`
+- Devs: all tooling is now part of the `go.mod` "tool" section. This means
+  these tools are auto-installed when you simply pull dependencies, and are
+  invoked via `go tool <name>`.
 - The top navigation links are now put into dropdown menus to allow for more
   space. The new setup is *not* something I love, because of the added time it
   takes to get to something frequently used, but we really are running out of
@@ -85,9 +88,6 @@ We mostly included bug fixes in this update. Mostly.
 - Minor improvements to the issuefinder "help" wording.
 - All users can now use the issue finder since it's pretty safe, and has no
   destructive actions available.
-- All tooling is now part of the `go.mod` "tool" section. This means these
-  tools are auto-installed when you simply pull dependencies, and are invoked
-  via `go tool <name>`.
 - The audit log disclosure's state is now reflected in the URL, so copying and
   pasting URLs maintains not only the filters, but also whether the filter box
   is open or closed
