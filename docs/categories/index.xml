@@ -4,7 +4,8 @@
     <title>Categories on Newspaper Curation App</title>
     <link>https://uoregon-libraries.github.io/newspaper-curation-app/categories/</link>
     <description>Recent content in Categories on Newspaper Curation App</description>
-    <generator>Hugo -- gohugo.io</generator>
-    <language>en-us</language><atom:link href="https://uoregon-libraries.github.io/newspaper-curation-app/categories/index.xml" rel="self" type="application/rss+xml" />
+    <generator>Hugo</generator>
+    <language>en-us</language>
+    <atom:link href="https://uoregon-libraries.github.io/newspaper-curation-app/categories/index.xml" rel="self" type="application/rss+xml" />
   </channel>
 </rss>
