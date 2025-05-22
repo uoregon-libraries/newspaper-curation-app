@@ -16,8 +16,8 @@ var expectedDelays = []time.Duration{
 }
 
 type mockTime struct {
-	now time.Time
-	sleeps  []time.Duration
+	now    time.Time
+	sleeps []time.Duration
 }
 
 func newMT(start time.Time) *mockTime {
@@ -116,7 +116,7 @@ func TestRetryTimeout(t *testing.T) {
 	}
 
 	if totalSlept >= (maxWait + MaxDelay) {
-		t.Errorf("Total sleep time %v should be maxWait (%v) or slightly after (MaxDelay + maxWait: %v)", totalSlept, maxWait, maxWait + MaxDelay)
+		t.Errorf("Total sleep time %v should be maxWait (%v) or slightly after (MaxDelay + maxWait: %v)", totalSlept, maxWait, maxWait+MaxDelay)
 	}
 }
 
