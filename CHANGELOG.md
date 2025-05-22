@@ -34,6 +34,70 @@ Brief description, if necessary
 ### Migration
 -->
 
+## v6.3.0
+
+We mostly included bug fixes in this update. Mostly.
+
+### Fixed
+
+- Devs: the `manage` script uses docker's config more effectively in order to
+  ensure that backup and restore functions work, and process only the relevant
+  docker volumes, no matter what project name you configure in your compose
+  override.
+- Devs: all linting / validation tooling is now properly checking all
+  production code (had missed `internal` when moving packages there).
+- Logging is now better classified: if you see a "CRIT" in your logs, something
+  truly awful has happened, and requires manual intervention (sometimes data
+  cleanup, sometimes a code bug that needs a fix ASAP).
+- Fixed rare situations where a pipeline keeps doing its work when there's a
+  job earlier in the sequence that hasn't finished.
+
+### Added
+
+- Job runner resiliency! Jobs auto-retry on failure, but only if the database
+  can be contacted, because the database is where NCA stores job data. Now, in
+  addition to the DB-backed retry, extremely critical paths will actually wait
+  and retry when the database is unreachable. It won't wait forever, but for
+  handling minor outages or a DB server reboot, this should fix a whole slew of
+  very annoying data-cleanup problems.
+
+### Changed
+
+- Devs: minor code refactors:
+  - Terminology: batches now have an activity log, not "actions". Actions are
+    what a user can do, not what's been done. This only changes the field name,
+    sadly, not the database misnaming here.
+  - The batch view template now keeps the various states separate so it's
+    (hopefully) less messy to edit the HTML for a specific batch state.
+  - A handful of comment improvements
+- Devs: `src/models/issue.go` had its "finder" combined and centralized with
+  the one used by audit logs. Creating a new "light DSL" should be
+  significantly easier now.
+- Devs: added `govulncheck`, the standard Go vulnerability checking tool.
+  Activate via `make audit` or manually run it.
+  - e.g., `go tool vulncheck ./src/... ./internal/...`
+- The top navigation links are now put into dropdown menus to allow for more
+  space. The new setup is *not* something I love, because of the added time it
+  takes to get to something frequently used, but we really are running out of
+  space to just jam more stuff into a single "strip" at the top of the page.
+- The issuefinder UI is now a bit easier to use, as it provides a typeahead /
+  autocomplete search rather than a giant dropdown of all the titles.
+- Minor improvements to the issuefinder "help" wording.
+- All users can now use the issue finder since it's pretty safe, and has no
+  destructive actions available.
+- All tooling is now part of the `go.mod` "tool" section. This means these
+  tools are auto-installed when you simply pull dependencies, and are invoked
+  via `go tool <name>`.
+- The audit log disclosure's state is now reflected in the URL, so copying and
+  pasting URLs maintains not only the filters, but also whether the filter box
+  is open or closed
+
+### Removed
+
+- Removed the following binaries: find-dupes, find-issues, make-cache, and
+  rewrite-mets. These haven't been necessary for years, and/or their features
+  are now in NCA.
+
 ## v6.2.0
 
 The "roles and tools" update.
