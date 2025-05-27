@@ -36,6 +36,7 @@ const (
 	ActionTypeUndoBatch            ActionType = "undo-batch"
 	ActionTypeAbortBatchRejection  ActionType = "abort-reject-batch"
 	ActionTypeFlagBatchQCReady     ActionType = "flag-batch-qc-ready"
+	ActionTypePrepProdRemove       ActionType = "prep-prod-remove"
 )
 
 // Describe gives a human-readable explanation of what happened when a given
@@ -76,6 +77,8 @@ func (at ActionType) Describe() string {
 		return "Removed the batch, moving all issues back to NCA"
 	case ActionTypeFlagBatchQCReady:
 		return "flagged the batch as being ready for QC"
+	case ActionTypePrepProdRemove:
+		return "marked this issue for removal from production"
 	default:
 		return string(at)
 	}

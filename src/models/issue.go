@@ -433,6 +433,14 @@ func (i *Issue) PrepForRemoval(managerID int64, message string) error {
 	return i.Save(ActionTypeRemoveErrorIssue, managerID, message)
 }
 
+// PrepForProductionRemoval sets up the issue so nothing else will try to
+// process it while it waits for a job that will remove it from production and
+// put the files back into the NCA workflow
+func (i *Issue) PrepForProductionRemoval(userID int64, message string) error {
+	i.WorkflowStep = schema.WSAwaitingProdRemoval
+	return i.Save(ActionTypePrepProdRemove, userID, message)
+}
+
 // Save creates or updates the issue with an associated action and optional message
 func (i *Issue) Save(action ActionType, userID int64, message string) error {
 	var op = dbi.DB.Operation()

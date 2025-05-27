@@ -36,6 +36,7 @@ const (
 	AuditActionSaveDraft
 	AuditActionSaveQueue
 	AuditActionUploadMARC
+	AuditActionFlagLiveIssue
 
 	AuditActionOverflow
 )
@@ -61,6 +62,7 @@ var dbAuditActions = map[AuditAction]string{
 	AuditActionSaveDraft:        "savedraft",
 	AuditActionSaveQueue:        "savequeue",
 	AuditActionUploadMARC:       "upload-marc",
+	AuditActionFlagLiveIssue:    "flag-live-issue",
 }
 
 // String returns the human-readable value for an action
@@ -89,6 +91,7 @@ var auditActionLookup = map[string]AuditAction{
 	"savedraft":          AuditActionSaveDraft,
 	"savequeue":          AuditActionSaveQueue,
 	"upload-marc":        AuditActionUploadMARC,
+	"flag-live-issue":    AuditActionFlagLiveIssue,
 }
 
 // AuditActionFromString returns the action int for the given string, if the

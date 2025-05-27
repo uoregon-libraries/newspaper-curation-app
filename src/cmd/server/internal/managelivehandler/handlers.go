@@ -47,7 +47,8 @@ func Setup(r *mux.Router, baseWebPath string, c *config.Config) {
 	var s = r.PathPrefix(basePath).Subrouter()
 	s.Path("").Handler(canFlagIssues(buildIssueFindForm))
 	s.Path("/search").Handler(canFlagIssues(jsonHandler))
-	s.Path("/queue-issue-removal").Handler(canFlagIssues(buildIssueQueueRemovalForm))
+	s.Path("/queue-issue-removal").Methods("GET").Handler(canFlagIssues(buildIssueQueueRemovalForm))
+	s.Path("/queue-issue-removal").Methods("POST").Handler(canFlagIssues(handleIssueQueue))
 
 	layout = responder.Layout.Clone()
 	layout.Path = path.Join(layout.Path, "manage-live-issues")
@@ -101,6 +102,36 @@ func buildIssueQueueRemovalForm(w http.ResponseWriter, req *http.Request) {
 
 	r.Vars.Data["QueueURL"] = path.Join(basePath, "queue-issue-removal")
 	r.Render(queueRemovalTmpl)
+}
+
+func handleIssueQueue(w http.ResponseWriter, req *http.Request) {
+	var r = responder.Response(w, req)
+	r.Request.ParseForm()
+	var idstr = r.Request.FormValue("id")
+	var id, _ = strconv.ParseInt(idstr, 10, 64)
+	if id < 1 {
+		r.Error(http.StatusInternalServerError, fmt.Sprintf("Unable to load issue: %q is not a valid id.", idstr))
+		return
+	}
+
+	var i, err = models.FindIssue(id)
+	if err != nil {
+		logger.Errorf("Unable to load issue %d to queue for production removal: %s", id, err)
+		r.Error(http.StatusInternalServerError, "Unable to load issue. Try again or contact support.")
+		return
+	}
+
+	var comment = r.Request.FormValue("error")
+	err = i.PrepForProductionRemoval(r.Vars.User.ID, comment)
+	if err != nil {
+		logger.Errorf("Unable to prep issue %d for production removal: %s", id, err)
+		r.Error(http.StatusInternalServerError, "Unable to flag issue. Try again or contact support.")
+		return
+	}
+
+	r.Audit(models.AuditActionFlagLiveIssue, fmt.Sprintf("issue id %d", i.ID))
+	http.SetCookie(w, &http.Cookie{Name: "Info", Value: "Issue prepped for removal", Path: "/"})
+	http.Redirect(w, req, basePath, http.StatusFound)
 }
 
 // allTitles returns a list of titles we want users to have as filter options
