@@ -85,7 +85,7 @@ func ParseBatchname(fullname string) (*Batch, error) {
 	parts, ver = parts[:l-1], parts[l-1]
 	b.MARCOrgCode, b.Keyword = parts[1], strings.Join(parts[2:], "_")
 
-	if len(ver) != 5 || ver[:3] != "ver" {
+	if len(ver) < 5 || ver[:3] != "ver" {
 		return nil, fmt.Errorf("invalid version format")
 	}
 

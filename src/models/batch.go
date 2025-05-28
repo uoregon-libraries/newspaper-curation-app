@@ -96,6 +96,7 @@ type Batch struct {
 	CreatedAt     time.Time
 	ArchivedAt    time.Time
 	WentLiveAt    time.Time
+	Version       int
 	Status        string
 	StatusMeta    BatchStatus `sql:"-"`
 	Location      string
@@ -119,10 +120,10 @@ func findBatches(where string, args ...any) ([]*Batch, error) {
 	op.Dbg = dbi.Debug
 	var list []*Batch
 	op.Select("batches", &Batch{}).Where(where, args...).AllObjects(&list)
-	for _, j := range list {
-		var err = j.deserialize()
+	for _, b := range list {
+		var err = b.deserialize()
 		if err != nil {
-			return nil, fmt.Errorf("error decoding batch %d: %w", j.ID, err)
+			return nil, fmt.Errorf("error decoding batch %d: %w", b.ID, err)
 		}
 	}
 	return list, op.Err()
@@ -173,7 +174,7 @@ func FindLiveArchivedBatches() ([]*Batch, error) {
 // We expose this as a public function so that we can migrate old data where
 // batches didn't have a "permaname".
 func (b *Batch) GenerateFullName() {
-	b.FullName = fmt.Sprintf("batch_%s_%s%s_ver01", b.MARCOrgCode, b.CreatedAt.Format("20060102"), b.Name)
+	b.FullName = fmt.Sprintf("batch_%s_%s%s_ver%02d", b.MARCOrgCode, b.CreatedAt.Format("20060102"), b.Name, b.Version)
 }
 
 // CreateBatch creates a batch in the database, using its ID combined with the
@@ -193,7 +194,7 @@ func CreateBatch(webroot, moc string, issues []*Issue) (*Batch, error) {
 	op.BeginTransaction()
 	defer op.EndTransaction()
 
-	var b = &Batch{MARCOrgCode: moc, CreatedAt: time.Now(), issues: issues, Status: BatchStatusPending}
+	var b = &Batch{MARCOrgCode: moc, CreatedAt: time.Now(), issues: issues, Status: BatchStatusPending, Version: 1}
 	var err = b.SaveOpWithoutAction(op)
 	if err != nil {
 		return nil, err

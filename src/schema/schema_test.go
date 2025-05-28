@@ -10,7 +10,7 @@ import (
 )
 
 func TestParseBatchname(t *testing.T) {
-	var name = "batch_oru_fluffythedog_ver02"
+	var name = "batch_oru_fluffythedog_ver1302"
 	var b, err = ParseBatchname(name)
 	if err != nil {
 		t.Fatalf("Error parsing valid batch name: %s", err)
@@ -20,8 +20,9 @@ func TestParseBatchname(t *testing.T) {
 		t.Fatalf("b.Fullname() (%#v) doesn't match our input value", err)
 	}
 
-	if b.Version != 2 {
-		t.Fatalf("Batch %#v: version wasn't 2", b)
+	var expected = 1302
+	if b.Version != expected {
+		t.Fatalf("Batch %#v: expected version %d, got %d", b, expected, b.Version)
 	}
 }
 
