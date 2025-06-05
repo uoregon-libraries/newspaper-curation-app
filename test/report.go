@@ -5,6 +5,7 @@ package main
 import (
 	"database/sql"
 	"io/fs"
+	"log/slog"
 	"os"
 	"path/filepath"
 	"regexp"
@@ -86,10 +87,12 @@ func cacheBatchData() {
 			search:  regexp.MustCompile(regexp.QuoteMeta(b.FullName)),
 			replace: bnormal.FullName,
 		})
+		slog.Info("Rename batch: full name", "source", b.FullName, "dest", bnormal.FullName)
 		batchRenames = append(batchRenames, replacer{
 			search:  regexp.MustCompile(regexp.QuoteMeta(b.Name)),
 			replace: bnormal.Name,
 		})
+		slog.Info("Rename batch: short name", "source", b.Name, "dest", bnormal.Name)
 	}
 }
 
