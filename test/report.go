@@ -5,6 +5,7 @@ package main
 import (
 	"database/sql"
 	"io/fs"
+	"log/slog"
 	"os"
 	"path/filepath"
 	"regexp"
@@ -56,7 +57,7 @@ var batchRenames []replacer
 func cacheBatchData() {
 	var sql = `
 		SELECT
-			b.marc_org_code, b.created_at, b.name,
+			b.marc_org_code, b.created_at, b.name, b.version,
 			GROUP_CONCAT(DISTINCT i.lccn ORDER BY i.lccn SEPARATOR ''),
 			SUM(i.page_count)
 		FROM batches b
@@ -68,28 +69,32 @@ func cacheBatchData() {
 		l.Fatalf("Unable to query database for batch rename map: %s", op.Err())
 	}
 	var moc, name, titles, pages string
+	var version int
 	var created time.Time
 	for rows.Next() {
-		rows.Scan(&moc, &created, &name, &titles, &pages)
+		rows.Scan(&moc, &created, &name, &titles, &pages, &version)
 		if op.Err() != nil {
 			l.Fatalf("Unable to query database for batch rename map: %s", op.Err())
 		}
-		var b = &models.Batch{MARCOrgCode: moc, CreatedAt: created, Name: name}
+		var b = &models.Batch{MARCOrgCode: moc, CreatedAt: created, Name: name, Version: version}
 		b.GenerateFullName()
 		var bnormal = &models.Batch{
 			MARCOrgCode: moc,
 			CreatedAt:   time.UnixMilli(1136243045000),
 			Name:        "Pages" + pages + "Titles" + titles,
+			Version:     version,
 		}
 		bnormal.GenerateFullName()
 		batchRenames = append(batchRenames, replacer{
 			search:  regexp.MustCompile(regexp.QuoteMeta(b.FullName)),
 			replace: bnormal.FullName,
 		})
+		slog.Info("Rename batch: full name", "source", b.FullName, "dest", bnormal.FullName)
 		batchRenames = append(batchRenames, replacer{
 			search:  regexp.MustCompile(regexp.QuoteMeta(b.Name)),
 			replace: bnormal.Name,
 		})
+		slog.Info("Rename batch: short name", "source", b.Name, "dest", bnormal.Name)
 	}
 }
 
