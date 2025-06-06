@@ -5,13 +5,8 @@ version: 2
 jobs:
   build:
     docker:
-      # specify the version
-      - image: cimg/go:1.21
+      - image: cimg/go:1.24
       
     steps:
       - checkout
-
-      # specify any bash command here prefixed with `run: `
-      - run: go install github.com/mgechev/revive@v1.3.4
-      - run: go install golang.org/x/tools/cmd/goimports@latest
       - run: make deps validate test

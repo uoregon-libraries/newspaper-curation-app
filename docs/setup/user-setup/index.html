@@ -5,26 +5,27 @@
 <meta name="viewport" content="width=device-width, initial-scale=1" />
 <title>Users - Newspaper Curation App</title>
 <meta name="description" content="Creating a new NCA &#34;SysOp&#34;">
-<meta name="generator" content="Hugo 0.117.0">
+<meta name="generator" content="Hugo 0.147.5">
 <link rel="canonical" href="https://uoregon-libraries.github.io/newspaper-curation-app/setup/user-setup/">
 <link rel="stylesheet" href="https://uoregon-libraries.github.io/newspaper-curation-app/css/theme.css">
 <link rel="stylesheet" href="https://uoregon-libraries.github.io/newspaper-curation-app/css/chroma.css">
 <link rel="stylesheet" href="https://uoregon-libraries.github.io/newspaper-curation-app/css/treeview-navigation.css">
 <script src="https://uoregon-libraries.github.io/newspaper-curation-app/js/headerlink.js"></script>
-<script src="https://uoregon-libraries.github.io/newspaper-curation-app/js/treeview-navigation.js"></script><meta property="og:title" content="Users" />
-<meta property="og:description" content="Creating a new NCA &#34;SysOp&#34;" />
-<meta property="og:type" content="article" />
-<meta property="og:url" content="https://uoregon-libraries.github.io/newspaper-curation-app/setup/user-setup/" /><meta property="article:section" content="setup" />
+<script src="https://uoregon-libraries.github.io/newspaper-curation-app/js/treeview-navigation.js"></script><meta property="og:url" content="https://uoregon-libraries.github.io/newspaper-curation-app/setup/user-setup/">
+  <meta property="og:site_name" content="Newspaper Curation App">
+  <meta property="og:title" content="Users">
+  <meta property="og:description" content="Creating a new NCA &#34;SysOp&#34;">
+  <meta property="og:locale" content="en_us">
+  <meta property="og:type" content="article">
+    <meta property="article:section" content="setup">
 
+  <meta name="twitter:card" content="summary">
+  <meta name="twitter:title" content="Users">
+  <meta name="twitter:description" content="Creating a new NCA &#34;SysOp&#34;">
 
-<meta name="twitter:card" content="summary"/>
-<meta name="twitter:title" content="Users"/>
-<meta name="twitter:description" content="Creating a new NCA &#34;SysOp&#34;"/>
-<meta itemprop="name" content="Users">
-<meta itemprop="description" content="Creating a new NCA &#34;SysOp&#34;">
-
-<meta itemprop="wordCount" content="318">
-<meta itemprop="keywords" content="" /></head>
+  <meta itemprop="name" content="Users">
+  <meta itemprop="description" content="Creating a new NCA &#34;SysOp&#34;">
+  <meta itemprop="wordCount" content="322"></head>
 <body>
   <div class="container"><div class="skip"><a href="#maincontent">Skip to main content</a></div>
 <header>
@@ -299,8 +300,9 @@ and then start the server in debug mode:</p>
 named &ldquo;sysop&rdquo; with the sysop privileges. Simply replace <code>&lt;user&gt;</code> with <code>sysop</code>
 and you&rsquo;ll have full control of NCA.</p>
 <h2 id="create-users">Create Users</h2>
-<p>From here you can set up whatever users you need. NCA&rsquo;s role list should
-describe the abilities fairly well, and won&rsquo;t be duplicated here.</p>
+<p>From here you can set up whatever users you need (Tools -&gt; Manage Users). NCA&rsquo;s
+role list should describe the abilities fairly well, and won&rsquo;t be duplicated
+here.</p>
 <p>Users&rsquo; logins should match whatever authentication system you&rsquo;re using in your
 app proxy (e.g., Apache with LDAP). NCA will assume whatever Apache sends in
 the <code>X-Remote-User</code> header is going to match a user in the local database, and

@@ -4,79 +4,57 @@
     <title>Workflow on Newspaper Curation App</title>
     <link>https://uoregon-libraries.github.io/newspaper-curation-app/workflow/</link>
     <description>Recent content in Workflow on Newspaper Curation App</description>
-    <generator>Hugo -- gohugo.io</generator>
-    <language>en-us</language><atom:link href="https://uoregon-libraries.github.io/newspaper-curation-app/workflow/index.xml" rel="self" type="application/rss+xml" />
+    <generator>Hugo</generator>
+    <language>en-us</language>
+    <atom:link href="https://uoregon-libraries.github.io/newspaper-curation-app/workflow/index.xml" rel="self" type="application/rss+xml" />
     <item>
       <title>Technical Details</title>
       <link>https://uoregon-libraries.github.io/newspaper-curation-app/workflow/technical/</link>
       <pubDate>Mon, 01 Jan 0001 00:00:00 +0000</pubDate>
-      
       <guid>https://uoregon-libraries.github.io/newspaper-curation-app/workflow/technical/</guid>
-      <description>This document attempts to explain the entire workflow from upload to batch generation in a way that developers can understand what&amp;rsquo;s needed and how to at least begin investigating if something goes wrong.
-Jobs and the Job Queue All background work in NCA is made up of relatively small parts tied together in a single &amp;ldquo;pipeline&amp;rdquo;. A pipeline represents a distinct operation that is made up of smaller units, the jobs themselves.</description>
+      <description>&lt;p&gt;This document attempts to explain the entire workflow from upload to batch&#xA;generation in a way that developers can understand what&amp;rsquo;s needed and how to at&#xA;least begin investigating if something goes wrong.&lt;/p&gt;&#xA;&lt;h2 id=&#34;jobs-and-the-job-queue&#34;&gt;Jobs and the Job Queue&lt;/h2&gt;&#xA;&lt;p&gt;All background work in NCA is made up of relatively small parts tied together&#xA;in a single &amp;ldquo;pipeline&amp;rdquo;. A pipeline represents a distinct operation that is made&#xA;up of smaller units, the jobs themselves. A job is usually the smallest atomic&#xA;&amp;ldquo;thing&amp;rdquo; we can run: updating an issue status in the database, calling out to&#xA;openjpeg to generate JP2 derivatives from an issue&amp;rsquo;s PDFs, etc. We attempt to&#xA;make all jobs idempotent: running a job that already ran should never change&#xA;the database / file system / app state.&lt;/p&gt;</description>
     </item>
-    
     <item>
       <title>Adding Titles</title>
       <link>https://uoregon-libraries.github.io/newspaper-curation-app/workflow/adding-titles/</link>
       <pubDate>Mon, 01 Jan 0001 00:00:00 +0000</pubDate>
-      
       <guid>https://uoregon-libraries.github.io/newspaper-curation-app/workflow/adding-titles/</guid>
-      <description>Adding a title to NCA is very simple in cases where the title already exists somewhere external (e.g., Library of Congress), but can take a lot more work for titles not indexed elsewhere. Here&amp;rsquo;s our process:
-Provision a real record, including things like an LCCN This is a must for us, otherwise our Historic Oregon Newspapers site will misrepresent information that could be extremely confusing to end-users looking for more details.</description>
+      <description>&lt;p&gt;Adding a title to NCA is very simple in cases where the title already exists&#xA;somewhere external (e.g., Library of Congress), but can take a lot more work&#xA;for titles not indexed elsewhere. Here&amp;rsquo;s our process:&lt;/p&gt;&#xA;&lt;ul&gt;&#xA;&lt;li&gt;Provision a &lt;em&gt;real&lt;/em&gt; record, including things like an LCCN&#xA;&lt;ul&gt;&#xA;&lt;li&gt;This is a must for us, otherwise our &lt;a href=&#34;https://oregonnews.uoregon.edu/&#34;&gt;Historic Oregon Newspapers&lt;/a&gt;&#xA;site will misrepresent information that could be extremely confusing to&#xA;end-users looking for more details.&lt;/li&gt;&#xA;&lt;li&gt;Unfortunately this is black magic to me - we have a librarian who handles&#xA;this and knows the right people to contact&lt;/li&gt;&#xA;&lt;/ul&gt;&#xA;&lt;/li&gt;&#xA;&lt;li&gt;Generate MARC XML for the title(s)&#xA;&lt;ul&gt;&#xA;&lt;li&gt;&lt;a href=&#34;https://marcedit.reeset.net&#34;&gt;MarcEdit&lt;/a&gt; is a popular choice for this&lt;/li&gt;&#xA;&lt;/ul&gt;&#xA;&lt;/li&gt;&#xA;&lt;li&gt;Upload the XML into NCA (Lists -&amp;gt; Titles, &amp;ldquo;Upload a MARC record&amp;rdquo;). This&#xA;creates records in staging and production ONI instances as well as a record&#xA;&amp;ldquo;stub&amp;rdquo; in NCA.&lt;/li&gt;&#xA;&lt;li&gt;If you already have titles in ONI, and don&amp;rsquo;t want to upload their MARC&#xA;records, you can also point NCA to your local ONI server instead of, or in&#xA;addition to, Library of Congress. This can be done by modifyting the NCA&#xA;settings &lt;code&gt;MARC_LOCATION_1&lt;/code&gt; and/or &lt;code&gt;MARC_LOCATION_2&lt;/code&gt;. e.g.:&#xA;&lt;pre tabindex=&#34;0&#34;&gt;&lt;code&gt;MARC_LOCATION_1=&amp;#34;https://oregonnews.uoregon.edu/lccn/{{lccn}}/marc.xml&amp;#34;&#xA;MARC_LOCATION_2=&amp;#34;https://chroniclingamerica.loc.gov/lccn/{{lccn}}/marc.xml&amp;#34;&#xA;&lt;/code&gt;&lt;/pre&gt;&lt;/li&gt;&#xA;&lt;/ul&gt;</description>
     </item>
-    
     <item>
       <title>Handling Page Review Problems</title>
       <link>https://uoregon-libraries.github.io/newspaper-curation-app/workflow/handling-page-review-problems/</link>
       <pubDate>Mon, 01 Jan 0001 00:00:00 +0000</pubDate>
-      
       <guid>https://uoregon-libraries.github.io/newspaper-curation-app/workflow/handling-page-review-problems/</guid>
-      <description>The &amp;ldquo;page review&amp;rdquo; location is one of the most dangerous in the application due to the requirement that people manually edit and rename files. There are potentially a lot of difficult problems to manage here.
-Manual Deletion If issues got to the page-review step when they shouldn&amp;rsquo;t have, the only option is to remove them. Make sure you do this right. There is a tool for this process, and manually deleting issues will cause you pain (see below).</description>
+      <description>&lt;p&gt;The &amp;ldquo;page review&amp;rdquo; location is one of the most dangerous in the application due&#xA;to the requirement that people manually edit and rename files. There are&#xA;potentially a &lt;em&gt;lot&lt;/em&gt; of difficult problems to manage here.&lt;/p&gt;&#xA;&lt;h2 id=&#34;manual-deletion&#34;&gt;Manual Deletion&lt;/h2&gt;&#xA;&lt;p&gt;If issues got to the page-review step when they shouldn&amp;rsquo;t have, the only option&#xA;is to remove them.  &lt;strong&gt;Make sure you do this right&lt;/strong&gt;. There is a tool for this&#xA;process, and manually deleting issues will cause you &lt;em&gt;pain&lt;/em&gt; (see below).&lt;/p&gt;</description>
     </item>
-    
     <item>
       <title>Fixing &#34;Stuck&#34; Issues</title>
       <link>https://uoregon-libraries.github.io/newspaper-curation-app/workflow/fixing-stuck-issues/</link>
       <pubDate>Mon, 01 Jan 0001 00:00:00 +0000</pubDate>
-      
       <guid>https://uoregon-libraries.github.io/newspaper-curation-app/workflow/fixing-stuck-issues/</guid>
-      <description>Sometimes a publisher will upload a broken PDF that NCA cannot process. For smaller organizations, these kinds of problems are easy to prevent just via careful review. But for larger orgs, it&amp;rsquo;s often infeasible to do this, e.g., if you have enough publishers that you get hundreds of pages uploaded each week.
-When an issue gets stuck, NCA currently has no way to indicate this. This is one area where a developer used to have to clean up the filesystem and database manually.</description>
+      <description>&lt;p&gt;Sometimes a publisher will upload a broken PDF that NCA cannot process. For&#xA;smaller organizations, these kinds of problems are easy to prevent just via&#xA;careful review. But for larger orgs, it&amp;rsquo;s often infeasible to do this, e.g., if&#xA;you have enough publishers that you get hundreds of pages uploaded each week.&lt;/p&gt;&#xA;&lt;p&gt;When an issue gets stuck, NCA currently has no way to indicate this. This is&#xA;one area where a developer used to have to clean up the filesystem and database&#xA;manually. As of NCA v3.8.0, there is a tool which can handle this in a&#xA;significantly less painful way.&lt;/p&gt;</description>
     </item>
-    
     <item>
       <title>Fixing Flagged Workflow Issues</title>
       <link>https://uoregon-libraries.github.io/newspaper-curation-app/workflow/fixing-flagged-workflow-issues/</link>
       <pubDate>Mon, 01 Jan 0001 00:00:00 +0000</pubDate>
-      
       <guid>https://uoregon-libraries.github.io/newspaper-curation-app/workflow/fixing-flagged-workflow-issues/</guid>
-      <description>This refers to issues which were already queued from their uploaded location, had derivatives generated, and were ready for metadata entry.
-The metadata entry person flags errors to say essentially, &amp;ldquo;NCA&amp;rsquo;s UI cannot fix the problems on this issue&amp;rdquo;. We have seen a variety of problems like this:
-The PDF or JP2 image derivatives are corrupt in some way, even though the tools which generated them seemed to run without errors The pages are out of order - somebody reordered pages incorrectly, and the issue now has to be manually pulled, fixed, and re-inserted into the workflow The issue is incorrect in some other way, and wasn&amp;rsquo;t caught when queueing from the uploads area (e.</description>
+      <description>&lt;p&gt;This refers to issues which were already queued from their uploaded location,&#xA;had derivatives generated, and were ready for metadata entry.&lt;/p&gt;&#xA;&lt;p&gt;The metadata entry person flags errors to say essentially, &amp;ldquo;NCA&amp;rsquo;s UI cannot fix&#xA;the problems on this issue&amp;rdquo;. We have seen a variety of problems like this:&lt;/p&gt;&#xA;&lt;ul&gt;&#xA;&lt;li&gt;The PDF or JP2 image derivatives are corrupt in some way, even though the&#xA;tools which generated them seemed to run without errors&lt;/li&gt;&#xA;&lt;li&gt;The pages are out of order - somebody reordered pages incorrectly, and the&#xA;issue now has to be manually pulled, fixed, and re-inserted into the workflow&lt;/li&gt;&#xA;&lt;li&gt;The issue is incorrect in some other way, and wasn&amp;rsquo;t caught when queueing&#xA;from the uploads area (e.g., a publisher uploaded two issues in the same&#xA;location, pages were missing from an upload, etc.)&lt;/li&gt;&#xA;&lt;/ul&gt;&#xA;&lt;p&gt;Most errors can be caught prior to queueing an issue for processing, so it is&#xA;very important that curators be aware of the additional cost of having to fix&#xA;issues that are incorrect after they&amp;rsquo;ve gotten into the workflow.&lt;/p&gt;</description>
     </item>
-    
     <item>
       <title>Replacing Live Issues</title>
       <link>https://uoregon-libraries.github.io/newspaper-curation-app/workflow/fixing-live-batches/</link>
       <pubDate>Mon, 01 Jan 0001 00:00:00 +0000</pubDate>
-      
       <guid>https://uoregon-libraries.github.io/newspaper-curation-app/workflow/fixing-live-batches/</guid>
-      <description>Helper Script We&amp;rsquo;ve put together a helper script which can automate a lot of the preparation steps when a single LCCN needs a lot of issues pulled. It is hacky and hard-coded at the moment, but it doesn&amp;rsquo;t make any changes to anything, so it&amp;rsquo;s safe to try out, and even modify to suit other use-cases.
-To run: go run scripts/help-remove-issues.go &amp;lt;lccn&amp;gt; &amp;lt;issue dates filename&amp;gt; &amp;lt;path to NCA dir&amp;gt; &amp;lt;path to live batches&amp;gt;.</description>
+      <description>&lt;h2 id=&#34;helper-script&#34;&gt;Helper Script&lt;/h2&gt;&#xA;&lt;p&gt;We&amp;rsquo;ve put together a helper script which can automate a lot of the preparation&#xA;steps when a single LCCN needs a lot of issues pulled. It is hacky and&#xA;hard-coded at the moment, but it doesn&amp;rsquo;t make any changes to anything, so it&amp;rsquo;s&#xA;safe to try out, and even modify to suit other use-cases.&lt;/p&gt;&#xA;&lt;p&gt;To run: &lt;code&gt;go run scripts/help-remove-issues.go &amp;lt;lccn&amp;gt; &amp;lt;issue dates filename&amp;gt; &amp;lt;path to NCA dir&amp;gt; &amp;lt;path to live batches&amp;gt;&lt;/code&gt;.&lt;/p&gt;</description>
     </item>
-    
     <item>
       <title>&#34;Un-push&#34; Batch From Production</title>
       <link>https://uoregon-libraries.github.io/newspaper-curation-app/workflow/undo-batch-golive/</link>
       <pubDate>Mon, 01 Jan 0001 00:00:00 +0000</pubDate>
-      
       <guid>https://uoregon-libraries.github.io/newspaper-curation-app/workflow/undo-batch-golive/</guid>
-      <description>Sometimes a batch is messed up enough that it needs to be completely removed, rebuilt, and reingested, but it&amp;rsquo;s already in production. In the (rare) cases this happens and we haven&amp;rsquo;t already archived all the original files, we can un-push the batch and requeue the necessary issues.
-This procedure helps &amp;ldquo;un-push&amp;rdquo; batches, but only when all of the following are true:
-The batch was created by NCA, not a vendor. There&amp;rsquo;s currently no procedure for reading a non-NCA batch and putting its issues in the database.</description>
+      <description>&lt;p&gt;Sometimes a batch is messed up enough that it needs to be completely removed,&#xA;rebuilt, and reingested, but it&amp;rsquo;s already in production. In the (rare) cases&#xA;this happens &lt;em&gt;and&lt;/em&gt; we haven&amp;rsquo;t already archived all the original files, we can&#xA;un-push the batch and requeue the necessary issues.&lt;/p&gt;&#xA;&lt;p&gt;This procedure helps &amp;ldquo;un-push&amp;rdquo; batches, but only when all of the following are true:&lt;/p&gt;&#xA;&lt;ul&gt;&#xA;&lt;li&gt;The batch was created by NCA, not a vendor. There&amp;rsquo;s currently no procedure&#xA;for reading a non-NCA batch and putting its issues in the database.&lt;/li&gt;&#xA;&lt;li&gt;The batch is live, but hasn&amp;rsquo;t been fully archived yet&#xA;&lt;ul&gt;&#xA;&lt;li&gt;In theory you could still do this after archival, but the work gets a lot&#xA;more involved and isn&amp;rsquo;t in scope here.&lt;/li&gt;&#xA;&lt;/ul&gt;&#xA;&lt;/li&gt;&#xA;&lt;li&gt;All issues are still in NCA&amp;rsquo;s database and their files are still in the NCA&#xA;&amp;ldquo;workflow&amp;rdquo; location on disk (this is usually true until archival).&lt;/li&gt;&#xA;&lt;/ul&gt;&#xA;&lt;p&gt;This process is awful and you need to know what you&amp;rsquo;re doing, but here&amp;rsquo;s the rough outline:&lt;/p&gt;</description>
     </item>
-    
   </channel>
 </rss>

@@ -4,236 +4,162 @@
     <title>Home on Newspaper Curation App</title>
     <link>https://uoregon-libraries.github.io/newspaper-curation-app/</link>
     <description>Recent content in Home on Newspaper Curation App</description>
-    <generator>Hugo -- gohugo.io</generator>
-    <language>en-us</language><atom:link href="https://uoregon-libraries.github.io/newspaper-curation-app/index.xml" rel="self" type="application/rss+xml" />
+    <generator>Hugo</generator>
+    <language>en-us</language>
+    <atom:link href="https://uoregon-libraries.github.io/newspaper-curation-app/index.xml" rel="self" type="application/rss+xml" />
     <item>
       <title>Services and Apps</title>
       <link>https://uoregon-libraries.github.io/newspaper-curation-app/setup/services/</link>
       <pubDate>Mon, 01 Jan 0001 00:00:00 +0000</pubDate>
-      
       <guid>https://uoregon-libraries.github.io/newspaper-curation-app/setup/services/</guid>
-      <description>You should at least understand everything in this document at a high level before moving on to the setup/installation documents, as the NCA suite is a set of tools, not a single application that does it all.
-Overview NCA has two key services which you&amp;rsquo;ll have to have running in the background at all times, several binaries you&amp;rsquo;ll need to use occasionally for regular tasks, and of course the various external services (such as a IIIF server, SFTP server, MySQL / MariaDB, Apache / nginx, Open ONI and the ONI Agent, etc.</description>
+      <description>&lt;p&gt;You should at least understand everything in this document at a high level&#xA;before moving on to the setup/installation documents, as the NCA suite is a set&#xA;of tools, not a single application that does it all.&lt;/p&gt;&#xA;&lt;h2 id=&#34;overview&#34;&gt;Overview&lt;/h2&gt;&#xA;&lt;p&gt;NCA has two key services which you&amp;rsquo;ll have to have running in the background at&#xA;all times, several binaries you&amp;rsquo;ll need to use occasionally for regular tasks,&#xA;and of course the various external services (such as a IIIF server, SFTP&#xA;server, MySQL / MariaDB, Apache / nginx, Open ONI and the ONI Agent, etc.).&lt;/p&gt;</description>
     </item>
-    
     <item>
       <title>Add Job Types</title>
       <link>https://uoregon-libraries.github.io/newspaper-curation-app/contributing/dev-howto/add-job-types/</link>
       <pubDate>Mon, 01 Jan 0001 00:00:00 +0000</pubDate>
-      
       <guid>https://uoregon-libraries.github.io/newspaper-curation-app/contributing/dev-howto/add-job-types/</guid>
-      <description>When a new kind of job is required for backend processing, it has to be done properly in order to ensure it is used, set up, and processed by NCA.
-Make sure there aren&amp;rsquo;t already existing jobs that do what you want! There are a lot of jobs in NCA already, and some are meant to be very generic, such as JobTypeRenameDir. Read and make sure you understand all structs in src/jobs that implement Process Create a new JobType in src/models/job.</description>
+      <description>&lt;p&gt;When a new kind of job is required for backend processing, it has to be done&#xA;properly in order to ensure it is used, set up, and processed by NCA.&lt;/p&gt;&#xA;&lt;ul&gt;&#xA;&lt;li&gt;Make sure there aren&amp;rsquo;t already existing jobs that do what you want! There&#xA;are a lot of jobs in NCA already, and some are meant to be very generic, such&#xA;as &lt;code&gt;JobTypeRenameDir&lt;/code&gt;.&#xA;&lt;ul&gt;&#xA;&lt;li&gt;Read and make sure you understand &lt;em&gt;all structs&lt;/em&gt; in &lt;code&gt;src/jobs&lt;/code&gt; that&#xA;implement &lt;code&gt;Process&lt;/code&gt;&lt;/li&gt;&#xA;&lt;/ul&gt;&#xA;&lt;/li&gt;&#xA;&lt;li&gt;Create a new &lt;code&gt;JobType&lt;/code&gt; in &lt;a href=&#34;https://github.com/uoregon-libraries/newspaper-curation-app/blob/main/src/models/job.go&#34;&gt;&lt;code&gt;src/models/job.go&lt;/code&gt;&lt;/a&gt;.&#xA;&lt;ul&gt;&#xA;&lt;li&gt;Add the &lt;code&gt;JobType&lt;/code&gt; to the const list&#xA;&lt;ul&gt;&#xA;&lt;li&gt;Make sure the string is 100% unique within that list!&lt;/li&gt;&#xA;&lt;/ul&gt;&#xA;&lt;/li&gt;&#xA;&lt;li&gt;Add the new &lt;code&gt;JobType&lt;/code&gt; to the &lt;code&gt;ValidJobTypes&lt;/code&gt; list&lt;/li&gt;&#xA;&lt;/ul&gt;&#xA;&lt;/li&gt;&#xA;&lt;li&gt;Create a new struct that implements the &lt;code&gt;Process&lt;/code&gt; method.&#xA;&lt;ul&gt;&#xA;&lt;li&gt;Use an existing Go file if it makes sense (e.g., another metadata or&#xA;filesystem job) or create a new one in &lt;code&gt;src/jobs/&lt;/code&gt;.&lt;/li&gt;&#xA;&lt;li&gt;Make sure you document the type! What is its purpose?&lt;/li&gt;&#xA;&lt;li&gt;Need an example? The metadata jobs are very simple and can be found in&#xA;&lt;a href=&#34;https://github.com/uoregon-libraries/newspaper-curation-app/blob/main/src/jobs/metadata_jobs.go&#34;&gt;&lt;code&gt;src/jobs/metadata_jobs.go&lt;/code&gt;&lt;/a&gt;.&lt;/li&gt;&#xA;&lt;/ul&gt;&#xA;&lt;/li&gt;&#xA;&lt;li&gt;Wire up the &lt;code&gt;JobType&lt;/code&gt; to the concrete &lt;code&gt;Process&lt;/code&gt; implementor&#xA;&lt;ul&gt;&#xA;&lt;li&gt;This is done in &lt;a href=&#34;https://github.com/uoregon-libraries/newspaper-curation-app/blob/main/src/jobs/jobs.go&#34;&gt;&lt;code&gt;src/jobs/jobs.go&lt;/code&gt;&lt;/a&gt;, in the &lt;code&gt;DBJobToProcessor&lt;/code&gt; function&lt;/li&gt;&#xA;&lt;/ul&gt;&#xA;&lt;/li&gt;&#xA;&lt;li&gt;Queue a job of the new type.&#xA;&lt;ul&gt;&#xA;&lt;li&gt;See &lt;a href=&#34;https://github.com/uoregon-libraries/newspaper-curation-app/blob/main/src/jobs/queue.go&#34;&gt;&lt;code&gt;src/jobs/queue.go&lt;/code&gt;&lt;/a&gt;&lt;/li&gt;&#xA;&lt;li&gt;You might need to create a new arg value in &lt;code&gt;src/jobs/queue.go&lt;/code&gt;, like&#xA;&lt;code&gt;JobArgSource&lt;/code&gt;, &lt;code&gt;JobArgWorkflowStep&lt;/code&gt;, etc.&lt;/li&gt;&#xA;&lt;li&gt;You will certainly need to create the job and push it into a queue. This&#xA;happens in a &lt;code&gt;Queue...&lt;/code&gt; function (e.g., &lt;code&gt;QueueBatchForDeletion&lt;/code&gt;).&lt;/li&gt;&#xA;&lt;/ul&gt;&#xA;&lt;/li&gt;&#xA;&lt;li&gt;Make something run jobs of the new type.&#xA;&lt;ul&gt;&#xA;&lt;li&gt;For almost any new job, you&amp;rsquo;ll just add the type to an existing runner&#xA;function in &lt;a href=&#34;https://github.com/uoregon-libraries/newspaper-curation-app/blob/main/src/cmd/run-jobs/main.go&#34;&gt;&lt;code&gt;src/cmd/run-jobs/main.go&lt;/code&gt;&lt;/a&gt; (&lt;code&gt;runAllQueues&lt;/code&gt;). This ensures&#xA;a simple job runner invocation (with the &lt;code&gt;watchall&lt;/code&gt; argument) will run your&#xA;new job type.&lt;/li&gt;&#xA;&lt;/ul&gt;&#xA;&lt;/li&gt;&#xA;&lt;/ul&gt;</description>
     </item>
-    
     <item>
       <title>Developer&#39;s Guide</title>
       <link>https://uoregon-libraries.github.io/newspaper-curation-app/contributing/dev-guide/</link>
       <pubDate>Mon, 01 Jan 0001 00:00:00 +0000</pubDate>
-      
       <guid>https://uoregon-libraries.github.io/newspaper-curation-app/contributing/dev-guide/</guid>
-      <description>It is assumed developers will use Docker for dependencies outside this repository: ONI (staging and production, and services for both), database, RAIS (IIIF server), the ONI Agents (staging and production), and SFTPGo. The rest of the tools are most easily installed locally, and the NCA binaries themselves are in fact easier by far to install locally versus building them in an image when code changes.
-Requirements / Setup Local dependencies A supported version of Go (e.</description>
+      <description>&lt;p&gt;It is assumed developers will use Docker for dependencies outside this&#xA;repository: ONI (staging and production, and services for both), database, RAIS&#xA;(IIIF server), the ONI Agents (staging and production), and SFTPGo. The rest of&#xA;the tools are most easily installed locally, and the NCA binaries themselves&#xA;are in fact easier by far to install locally versus building them in an image&#xA;when code changes.&lt;/p&gt;&#xA;&lt;h2 id=&#34;requirements--setup&#34;&gt;Requirements / Setup&lt;/h2&gt;&#xA;&lt;h3 id=&#34;local-dependencies&#34;&gt;Local dependencies&lt;/h3&gt;&#xA;&lt;ul&gt;&#xA;&lt;li&gt;A supported version of &lt;a href=&#34;https://golang.org/dl/&#34;&gt;Go&lt;/a&gt; (e.g., if 1.16 is the&#xA;latest, you want 1.15 or 1.16)&lt;/li&gt;&#xA;&lt;li&gt;Install &lt;a href=&#34;https://docs.docker.com/install/&#34;&gt;Docker CE&lt;/a&gt;, which will give you&#xA;the &lt;code&gt;docker&lt;/code&gt; and &lt;code&gt;docker compose&lt;/code&gt; commands.&lt;/li&gt;&#xA;&lt;/ul&gt;&#xA;&lt;p&gt;If you choose not to compile on your host machine, you will have a slightly&#xA;simpler initial install, but there are a few considerations as you edit and&#xA;test the code. See &lt;a href=&#34;./contributing/not-compiling-locally&#34;&gt;Not Compiling Locally&lt;/a&gt;.&lt;/p&gt;</description>
     </item>
-    
     <item>
       <title>Glossary</title>
       <link>https://uoregon-libraries.github.io/newspaper-curation-app/specs/glossary/</link>
       <pubDate>Mon, 01 Jan 0001 00:00:00 +0000</pubDate>
-      
       <guid>https://uoregon-libraries.github.io/newspaper-curation-app/specs/glossary/</guid>
-      <description>NDNP / Newspaper Catalogers These are terms I&amp;rsquo;m trying to use properly, but which I sometimes still mess up. Don&amp;rsquo;t let that happen to you!
-Title: A distinct newspaper title, such as The Daily Prophet. All titles will have a unique LCCN. LCCN: Library of Congress Control Number: https://en.wikipedia.org/wiki/Library_of_Congress_Control_Number. In terms of NCA (and ONI and chronam), this uniquely identifies a newspaper title. Issue: A single published issue of a newspaper title, such as the April 20th edition of The Daily Prophet.</description>
+      <description>&lt;h2 id=&#34;ndnp--newspaper-catalogers&#34;&gt;NDNP / Newspaper Catalogers&lt;/h2&gt;&#xA;&lt;p&gt;These are terms I&amp;rsquo;m trying to use properly, but which I sometimes still mess&#xA;up. Don&amp;rsquo;t let that happen to you!&lt;/p&gt;&#xA;&lt;ul&gt;&#xA;&lt;li&gt;&lt;strong&gt;Title&lt;/strong&gt;: A distinct newspaper title, such as &lt;em&gt;The Daily Prophet&lt;/em&gt;. All&#xA;titles will have a unique LCCN.&lt;/li&gt;&#xA;&lt;li&gt;&lt;strong&gt;LCCN&lt;/strong&gt;: Library of Congress Control Number:&#xA;&lt;a href=&#34;https://en.wikipedia.org/wiki/Library_of_Congress_Control_Number&#34;&gt;https://en.wikipedia.org/wiki/Library_of_Congress_Control_Number&lt;/a&gt;. In terms&#xA;of NCA (and ONI and chronam), this uniquely identifies a newspaper title.&lt;/li&gt;&#xA;&lt;li&gt;&lt;strong&gt;Issue&lt;/strong&gt;: A single published issue of a newspaper title, such as the April&#xA;20th edition of &lt;em&gt;The Daily Prophet&lt;/em&gt;. Github users beware, it&amp;rsquo;s easy to hear&#xA;&amp;ldquo;I need you to fix an issue&amp;rdquo; and stare blankly before realizing what was&#xA;meant.&lt;/li&gt;&#xA;&lt;/ul&gt;&#xA;&lt;h2 id=&#34;made-up&#34;&gt;Made-up&lt;/h2&gt;&#xA;&lt;p&gt;Terms I&amp;rsquo;ve made up which may be important for developers and users:&lt;/p&gt;</description>
     </item>
-    
     <item>
       <title>Server Setup</title>
       <link>https://uoregon-libraries.github.io/newspaper-curation-app/setup/server-setup/</link>
       <pubDate>Mon, 01 Jan 0001 00:00:00 +0000</pubDate>
-      
       <guid>https://uoregon-libraries.github.io/newspaper-curation-app/setup/server-setup/</guid>
-      <description>Human Requirements Unfortunately, this process is still technical enough that you will need a devops person to at least get the system set up for processing. You&amp;rsquo;ll also need people who can reorder PDF pages (if necessary) as well as people who can enter and review newspaper issue metadata.
-Somebody will want to monitor the output from the various automated processes, such as QCing generated batches on a staging server prior to loading in production, as there is still a great deal of room for human error.</description>
+      <description>&lt;h2 id=&#34;human-requirements&#34;&gt;Human Requirements&lt;/h2&gt;&#xA;&lt;p&gt;Unfortunately, this process is still technical enough that you will need a&#xA;devops person to at least get the system set up for processing. You&amp;rsquo;ll also&#xA;need people who can reorder PDF pages (if necessary) as well as people who can&#xA;enter and review newspaper issue metadata.&lt;/p&gt;&#xA;&lt;p&gt;Somebody will want to monitor the output from the various automated processes,&#xA;such as QCing generated batches on a staging server prior to loading in&#xA;production, as there is still a great deal of room for human error.&lt;/p&gt;</description>
     </item>
-    
     <item>
       <title>Technical Details</title>
       <link>https://uoregon-libraries.github.io/newspaper-curation-app/workflow/technical/</link>
       <pubDate>Mon, 01 Jan 0001 00:00:00 +0000</pubDate>
-      
       <guid>https://uoregon-libraries.github.io/newspaper-curation-app/workflow/technical/</guid>
-      <description>This document attempts to explain the entire workflow from upload to batch generation in a way that developers can understand what&amp;rsquo;s needed and how to at least begin investigating if something goes wrong.
-Jobs and the Job Queue All background work in NCA is made up of relatively small parts tied together in a single &amp;ldquo;pipeline&amp;rdquo;. A pipeline represents a distinct operation that is made up of smaller units, the jobs themselves.</description>
+      <description>&lt;p&gt;This document attempts to explain the entire workflow from upload to batch&#xA;generation in a way that developers can understand what&amp;rsquo;s needed and how to at&#xA;least begin investigating if something goes wrong.&lt;/p&gt;&#xA;&lt;h2 id=&#34;jobs-and-the-job-queue&#34;&gt;Jobs and the Job Queue&lt;/h2&gt;&#xA;&lt;p&gt;All background work in NCA is made up of relatively small parts tied together&#xA;in a single &amp;ldquo;pipeline&amp;rdquo;. A pipeline represents a distinct operation that is made&#xA;up of smaller units, the jobs themselves. A job is usually the smallest atomic&#xA;&amp;ldquo;thing&amp;rdquo; we can run: updating an issue status in the database, calling out to&#xA;openjpeg to generate JP2 derivatives from an issue&amp;rsquo;s PDFs, etc. We attempt to&#xA;make all jobs idempotent: running a job that already ran should never change&#xA;the database / file system / app state.&lt;/p&gt;</description>
     </item>
-    
     <item>
       <title>Add Configuration Settings</title>
       <link>https://uoregon-libraries.github.io/newspaper-curation-app/contributing/dev-howto/add-config-items/</link>
       <pubDate>Mon, 01 Jan 0001 00:00:00 +0000</pubDate>
-      
       <guid>https://uoregon-libraries.github.io/newspaper-curation-app/contributing/dev-howto/add-config-items/</guid>
-      <description>Occasionally we need a new setting to be created so that users have a bit more control over the inner workings of NCA. This details the process of adding settings:
-Open up src/config/config.go and add a value to the Config struct. Choose the data type. In most cases a primitive is fine: string, int, float64, etc. Decide if the value should be pulled directly from the settings file or if you need to massage data manually.</description>
+      <description>&lt;p&gt;Occasionally we need a new setting to be created so that users have a bit more&#xA;control over the inner workings of NCA. This details the process of adding&#xA;settings:&lt;/p&gt;&#xA;&lt;ul&gt;&#xA;&lt;li&gt;Open up &lt;a href=&#34;https://github.com/uoregon-libraries/newspaper-curation-app/blob/main/src/config/config.go&#34;&gt;&lt;code&gt;src/config/config.go&lt;/code&gt;&lt;/a&gt; and add a value to the Config struct.&lt;/li&gt;&#xA;&lt;li&gt;Choose the data type. In most cases a primitive is fine: string, int,&#xA;float64, etc.&lt;/li&gt;&#xA;&lt;li&gt;Decide if the value should be pulled directly from the &lt;code&gt;settings&lt;/code&gt; file or if&#xA;you need to massage data manually. The former is usually the best option, but&#xA;not always possible.&lt;/li&gt;&#xA;&lt;li&gt;If the value is pulled directly from &lt;code&gt;settings&lt;/code&gt;, set up the struct tags:&#xA;&lt;ul&gt;&#xA;&lt;li&gt;At a minimum you must define which &lt;code&gt;settings&lt;/code&gt; value will populate the Go&#xA;config structure; e.g., the &lt;code&gt;config.Ghostscript&lt;/code&gt; value specifies&#xA;&lt;code&gt;setting:&amp;quot;GHOSTSCRIPT&amp;quot;&lt;/code&gt; in the struct tag, telling us the &lt;code&gt;settings&lt;/code&gt; file&amp;rsquo;s&#xA;&amp;ldquo;GHOSTSCRIPT&amp;rdquo; value is to be used.&lt;/li&gt;&#xA;&lt;li&gt;If you want validation, use a &amp;ldquo;type&amp;rdquo; struct tag, e.g., the &amp;ldquo;Webroot&amp;rdquo;&#xA;setting uses &lt;code&gt;type:&amp;quot;url&amp;quot;&lt;/code&gt; to specify that the value &lt;em&gt;must&lt;/em&gt; be a valid URL.&lt;/li&gt;&#xA;&lt;/ul&gt;&#xA;&lt;/li&gt;&#xA;&lt;li&gt;If the value is not directly pulled from &lt;code&gt;settings&lt;/code&gt;, modify &lt;code&gt;Parse()&lt;/code&gt; to read&#xA;the raw setting and set the config field accordingly.&lt;/li&gt;&#xA;&lt;li&gt;Open &lt;code&gt;settings-example&lt;/code&gt; and add the setting with some documentation&#xA;(bash-style comments) explaning what it does and how it should be used. When&#xA;you can, make sure the default &amp;ldquo;just works&amp;rdquo; with a standard docker setup.&lt;/li&gt;&#xA;&lt;/ul&gt;&#xA;&lt;p&gt;Notes:&lt;/p&gt;</description>
     </item>
-    
     <item>
       <title>Adding Titles</title>
       <link>https://uoregon-libraries.github.io/newspaper-curation-app/workflow/adding-titles/</link>
       <pubDate>Mon, 01 Jan 0001 00:00:00 +0000</pubDate>
-      
       <guid>https://uoregon-libraries.github.io/newspaper-curation-app/workflow/adding-titles/</guid>
-      <description>Adding a title to NCA is very simple in cases where the title already exists somewhere external (e.g., Library of Congress), but can take a lot more work for titles not indexed elsewhere. Here&amp;rsquo;s our process:
-Provision a real record, including things like an LCCN This is a must for us, otherwise our Historic Oregon Newspapers site will misrepresent information that could be extremely confusing to end-users looking for more details.</description>
+      <description>&lt;p&gt;Adding a title to NCA is very simple in cases where the title already exists&#xA;somewhere external (e.g., Library of Congress), but can take a lot more work&#xA;for titles not indexed elsewhere. Here&amp;rsquo;s our process:&lt;/p&gt;&#xA;&lt;ul&gt;&#xA;&lt;li&gt;Provision a &lt;em&gt;real&lt;/em&gt; record, including things like an LCCN&#xA;&lt;ul&gt;&#xA;&lt;li&gt;This is a must for us, otherwise our &lt;a href=&#34;https://oregonnews.uoregon.edu/&#34;&gt;Historic Oregon Newspapers&lt;/a&gt;&#xA;site will misrepresent information that could be extremely confusing to&#xA;end-users looking for more details.&lt;/li&gt;&#xA;&lt;li&gt;Unfortunately this is black magic to me - we have a librarian who handles&#xA;this and knows the right people to contact&lt;/li&gt;&#xA;&lt;/ul&gt;&#xA;&lt;/li&gt;&#xA;&lt;li&gt;Generate MARC XML for the title(s)&#xA;&lt;ul&gt;&#xA;&lt;li&gt;&lt;a href=&#34;https://marcedit.reeset.net&#34;&gt;MarcEdit&lt;/a&gt; is a popular choice for this&lt;/li&gt;&#xA;&lt;/ul&gt;&#xA;&lt;/li&gt;&#xA;&lt;li&gt;Upload the XML into NCA (Lists -&amp;gt; Titles, &amp;ldquo;Upload a MARC record&amp;rdquo;). This&#xA;creates records in staging and production ONI instances as well as a record&#xA;&amp;ldquo;stub&amp;rdquo; in NCA.&lt;/li&gt;&#xA;&lt;li&gt;If you already have titles in ONI, and don&amp;rsquo;t want to upload their MARC&#xA;records, you can also point NCA to your local ONI server instead of, or in&#xA;addition to, Library of Congress. This can be done by modifyting the NCA&#xA;settings &lt;code&gt;MARC_LOCATION_1&lt;/code&gt; and/or &lt;code&gt;MARC_LOCATION_2&lt;/code&gt;. e.g.:&#xA;&lt;pre tabindex=&#34;0&#34;&gt;&lt;code&gt;MARC_LOCATION_1=&amp;#34;https://oregonnews.uoregon.edu/lccn/{{lccn}}/marc.xml&amp;#34;&#xA;MARC_LOCATION_2=&amp;#34;https://chroniclingamerica.loc.gov/lccn/{{lccn}}/marc.xml&amp;#34;&#xA;&lt;/code&gt;&lt;/pre&gt;&lt;/li&gt;&#xA;&lt;/ul&gt;</description>
     </item>
-    
     <item>
       <title>Installation</title>
       <link>https://uoregon-libraries.github.io/newspaper-curation-app/setup/installation/</link>
       <pubDate>Mon, 01 Jan 0001 00:00:00 +0000</pubDate>
-      
       <guid>https://uoregon-libraries.github.io/newspaper-curation-app/setup/installation/</guid>
-      <description>Development If you&amp;rsquo;re developing on NCA, installation will differ from standing up a production server. Please see our Development Guide.
-Preliminary Setup Manual installation has several prerequisites:
-Poppler Utils for PDF processing OpenJPEG 2 + command-line tools for JP2 generation GhostScript GraphicsMagick MariaDB A IIIF server capable of handling tiled JP2 files without a ton of overhead (e.g., RAIS) Apache/nginx for authentication as well as proxying to NCA and the IIIF server Two running Open ONI applications: staging and production.</description>
+      <description>&lt;h2 id=&#34;development&#34;&gt;Development&lt;/h2&gt;&#xA;&lt;p&gt;If you&amp;rsquo;re developing on NCA, installation will differ from standing up a&#xA;production server. Please see our &lt;a href=&#34;https://uoregon-libraries.github.io/newspaper-curation-app/contributing/dev-guide/&#34;&gt;Development Guide&lt;/a&gt;.&lt;/p&gt;&#xA;&lt;h2 id=&#34;preliminary-setup&#34;&gt;Preliminary Setup&lt;/h2&gt;&#xA;&lt;p&gt;Manual installation has several prerequisites:&lt;/p&gt;&#xA;&lt;ul&gt;&#xA;&lt;li&gt;Poppler Utils for PDF processing&lt;/li&gt;&#xA;&lt;li&gt;OpenJPEG 2 + command-line tools for JP2 generation&lt;/li&gt;&#xA;&lt;li&gt;GhostScript&lt;/li&gt;&#xA;&lt;li&gt;GraphicsMagick&lt;/li&gt;&#xA;&lt;li&gt;MariaDB&lt;/li&gt;&#xA;&lt;li&gt;A IIIF server capable of handling tiled JP2 files without a ton of overhead (e.g.,&#xA;&lt;a href=&#34;https://github.com/uoregon-libraries/rais-image-server&#34;&gt;RAIS&lt;/a&gt;)&lt;/li&gt;&#xA;&lt;li&gt;Apache/nginx for authentication as well as proxying to NCA and the IIIF server&lt;/li&gt;&#xA;&lt;li&gt;Two running &lt;a href=&#34;https://github.com/open-oni/open-oni&#34;&gt;Open ONI&lt;/a&gt; applications: staging and production.&lt;/li&gt;&#xA;&lt;li&gt;An &lt;a href=&#34;https://github.com/open-oni/oni-agent&#34;&gt;ONI Agent&lt;/a&gt; (at least v1.7.0) must be set up for each ONI instance&#xA;in order to automate some of the functionality from NCA to ONI. The NCA&#xA;server needs to be able to connect to the ONI Agent, but the agent&amp;rsquo;s ports&#xA;should not be open to any other traffic.&#xA;&lt;ul&gt;&#xA;&lt;li&gt;In our setup, we have an internal-network-only port for the agents, and&#xA;they run using systemd so that they start on reboot and we can specify&#xA;their settings directly in the systemd unit&amp;rsquo;s environment. The ONI Agent&#xA;README should be sufficient to get this working.&lt;/li&gt;&#xA;&lt;/ul&gt;&#xA;&lt;/li&gt;&#xA;&lt;/ul&gt;&#xA;&lt;p&gt;&lt;strong&gt;Please note&lt;/strong&gt;: The easiest way to get a quick demo / test setup of NCA is via&#xA;our Docker configuration / setup, and using the dummy ONI Agent set up in&#xA;docker compose builds:&lt;/p&gt;</description>
     </item>
-    
     <item>
       <title>Not Compiling Locally</title>
       <link>https://uoregon-libraries.github.io/newspaper-curation-app/contributing/not-compiling-locally/</link>
       <pubDate>Mon, 01 Jan 0001 00:00:00 +0000</pubDate>
-      
       <guid>https://uoregon-libraries.github.io/newspaper-curation-app/contributing/not-compiling-locally/</guid>
-      <description>If you want to compile NCA inside a container, you are for the most part on your own. It&amp;rsquo;s doable and pretty easy, but it&amp;rsquo;s not part of the steps we&amp;rsquo;re going to outline, because it adds some annoyances.
-Why is it best to compile on your local machine instead of inside a container?
-Go is not Ruby / Python / PHP / node. You aren&amp;rsquo;t installing a systemwide runtime or futzing with things like rbenv, nvm, virtualenv, composer, &amp;hellip;.</description>
+      <description>&lt;p&gt;If you want to compile NCA inside a container, you are for the most part on&#xA;your own. It&amp;rsquo;s doable and pretty easy, but it&amp;rsquo;s not part of the steps we&amp;rsquo;re&#xA;going to outline, because it adds some annoyances.&lt;/p&gt;&#xA;&lt;p&gt;Why is it best to compile on your local machine instead of inside a container?&lt;/p&gt;&#xA;&lt;ul&gt;&#xA;&lt;li&gt;Go is not Ruby / Python / PHP / node. You aren&amp;rsquo;t installing a systemwide&#xA;runtime or futzing with things like rbenv, nvm, virtualenv, composer, &amp;hellip;.&lt;/li&gt;&#xA;&lt;li&gt;Go doesn&amp;rsquo;t even really require an install per se; you can choose to download&#xA;the binary distribution, set up some environment variables, and use it. No&#xA;sudo, no /usr/bin polluting, no complex compiling from sources.&lt;/li&gt;&#xA;&lt;li&gt;Same with go&amp;rsquo;s dependencies - &lt;code&gt;go install ...&lt;/code&gt; will install files in a space&#xA;that&amp;rsquo;s local to your user path. All NCA&amp;rsquo;s code dependencies are similarly&#xA;local. Everything &amp;ldquo;just works&amp;rdquo;. The only reason to use Docker for&#xA;development is the various external dependencies like RAIS, MySQL, etc.&lt;/li&gt;&#xA;&lt;li&gt;Vim (and other editors / IDEs) usually require Go tools to be installed&#xA;locally for code analysis, autocomplete, etc.&lt;/li&gt;&#xA;&lt;li&gt;This repository doesn&amp;rsquo;t have a deploy system for use inside containers; if&#xA;you want to compile inside the containers, it can be a little tricky:&#xA;&lt;ul&gt;&#xA;&lt;li&gt;Mount your code into &lt;code&gt;/usr/local/src/nca&lt;/code&gt;&lt;/li&gt;&#xA;&lt;li&gt;Within the container, go to the &lt;code&gt;/usr/local/src/nca&lt;/code&gt; directory for all commands like make, gofmt, etc.&lt;/li&gt;&#xA;&lt;li&gt;Copy binary files into &lt;code&gt;/usr/local/nca&lt;/code&gt;&lt;/li&gt;&#xA;&lt;/ul&gt;&#xA;&lt;/li&gt;&#xA;&lt;/ul&gt;&#xA;&lt;p&gt;For development, it&amp;rsquo;s just a lot easier to install Go locally, compile locally,&#xA;and run the binaries locally. The only &amp;ldquo;tricky&amp;rdquo; part is getting poppler,&#xA;graphics magick, and ghostscript installed. Which in most cases amounts to&#xA;three &amp;ldquo;apt install&amp;rdquo; (or equivalent) commands.&lt;/p&gt;</description>
     </item>
-    
     <item>
       <title>Uploads: Folder and File Specs</title>
       <link>https://uoregon-libraries.github.io/newspaper-curation-app/specs/upload-specs/</link>
       <pubDate>Mon, 01 Jan 0001 00:00:00 +0000</pubDate>
-      
       <guid>https://uoregon-libraries.github.io/newspaper-curation-app/specs/upload-specs/</guid>
-      <description>Uploads: Folder and File Specs Publishers (or in-house scanners) who upload issues must adhere to very strict structures for issue organization.
-Born-Digital (PDFs uploaded via SFTP) The folder structure tells us the newspaper title and issue date. e.g., /mnt/news/sftp/sftpuser/2018-01-02 would mean the January 2nd, 2018 edition of title whose SFTP login is &amp;ldquo;sftpuser&amp;rdquo;.
-The issue should contain PDFs and nothing else. Publishers should never upload tertiary files. Ideally, publishers should upload one PDF for the entire issue, with pages in the order they wish to see on the ONI site, as that reduces (or eliminates) the need to have anybody reviewing these issues&amp;rsquo; pages.</description>
+      <description>&lt;h2 id=&#34;uploads-folder-and-file-specs&#34;&gt;Uploads: Folder and File Specs&lt;/h2&gt;&#xA;&lt;p&gt;Publishers (or in-house scanners) who upload issues must adhere to very strict&#xA;structures for issue organization.&lt;/p&gt;&#xA;&lt;h3 id=&#34;born-digital-pdfs-uploaded-via-sftp&#34;&gt;Born-Digital (PDFs uploaded via SFTP)&lt;/h3&gt;&#xA;&lt;p&gt;The folder structure tells us the newspaper title and issue date. e.g.,&#xA;&lt;code&gt;/mnt/news/sftp/sftpuser/2018-01-02&lt;/code&gt; would mean the January 2nd, 2018 edition&#xA;of title whose SFTP login is &amp;ldquo;sftpuser&amp;rdquo;.&lt;/p&gt;&#xA;&lt;p&gt;The issue should contain PDFs and nothing else. Publishers should never upload&#xA;tertiary files. Ideally, publishers should upload one PDF for the entire&#xA;issue, with pages in the order they wish to see on the ONI site, as that&#xA;reduces (or eliminates) the need to have anybody reviewing these issues&amp;rsquo; pages.&lt;/p&gt;</description>
     </item>
-    
     <item>
       <title>Add Privileges / Roles</title>
       <link>https://uoregon-libraries.github.io/newspaper-curation-app/contributing/dev-howto/add-privileges/</link>
       <pubDate>Mon, 01 Jan 0001 00:00:00 +0000</pubDate>
-      
       <guid>https://uoregon-libraries.github.io/newspaper-curation-app/contributing/dev-howto/add-privileges/</guid>
-      <description>New privileges require a lot of different changes in order to create them, tie them to a role, and then have NCA use them.
-Edit src/privilege/role.go if the new privilege(s) are going to be tied to an entirely new role. Edit src/privilege/privilege.go and add the item in the big list of vars. You have to define what role(s) can have said privilege. Site Managers have all privileges of non-sysop roles, and don&amp;rsquo;t need to be mentioned unless they&amp;rsquo;re the only user with a particular privilege.</description>
+      <description>&lt;p&gt;New privileges require a lot of different changes in order to create them, tie&#xA;them to a role, and then have NCA use them.&lt;/p&gt;&#xA;&lt;ul&gt;&#xA;&lt;li&gt;Edit &lt;code&gt;src/privilege/role.go&lt;/code&gt; if the new privilege(s) are going to be tied to&#xA;an entirely new role.&lt;/li&gt;&#xA;&lt;li&gt;Edit &lt;code&gt;src/privilege/privilege.go&lt;/code&gt; and add the item in the big list of vars.&#xA;You have to define what role(s) can have said privilege.&#xA;&lt;ul&gt;&#xA;&lt;li&gt;Site Managers have all privileges of non-sysop roles, and don&amp;rsquo;t need to be&#xA;mentioned unless they&amp;rsquo;re the only user with a particular privilege.&lt;/li&gt;&#xA;&lt;li&gt;SysOps always have all privileges and aren&amp;rsquo;t specified explicitly, but the&#xA;privilege does require a definition, even if it&amp;rsquo;s just an empty role list.&lt;/li&gt;&#xA;&lt;li&gt;Examples:&#xA;&lt;ul&gt;&#xA;&lt;li&gt;&lt;code&gt;PrivA = newPrivilege(RoleCurator)&lt;/code&gt;: &lt;code&gt;PrivA&lt;/code&gt; is explicitly given to&#xA;curators and implicitly to site managers and sysops. No other users will&#xA;have PrivA access.&lt;/li&gt;&#xA;&lt;li&gt;&lt;code&gt;PrivB = newPrivilege(RoleSiteManager)&lt;/code&gt;: &lt;code&gt;PrivB&lt;/code&gt; is explicitly given to&#xA;site managers, and implicitly to sysops.&lt;/li&gt;&#xA;&lt;li&gt;&lt;code&gt;PrivC = newPrivilege()&lt;/code&gt;: &lt;code&gt;PrivC&lt;/code&gt; is implicitly given to sysops. Nobody&#xA;else, not even site managers, will have this privilege.&lt;/li&gt;&#xA;&lt;/ul&gt;&#xA;&lt;/li&gt;&#xA;&lt;/ul&gt;&#xA;&lt;/li&gt;&#xA;&lt;li&gt;If the privilege needs to be used in handlers, use a middleware function.&#xA;&lt;ul&gt;&#xA;&lt;li&gt;The &lt;code&gt;audithandler&lt;/code&gt; has a simple example of this, where a &lt;code&gt;canView&lt;/code&gt; function&#xA;wraps access to all routes.&lt;/li&gt;&#xA;&lt;li&gt;Fairly complex authorization middleware functions can be seen in the&#xA;&lt;code&gt;workflowhandler&lt;/code&gt; code, where the authorization functions verify not just&#xA;privileges, but also issue state, issue ownership, etc.&lt;/li&gt;&#xA;&lt;li&gt;In almost all situations where a new route or handler is created, an access&#xA;check of &lt;em&gt;some&lt;/em&gt; kind should be created.&lt;/li&gt;&#xA;&lt;/ul&gt;&#xA;&lt;/li&gt;&#xA;&lt;li&gt;If the privilege needs a check in the HTML templates:&#xA;&lt;ul&gt;&#xA;&lt;li&gt;First, you have to expose the privilege by name in&#xA;&lt;code&gt;src/cmd/server/internal/responder/templates.go&lt;/code&gt;. There&amp;rsquo;s a long list of&#xA;privileges there, exposed as functions, to help ensure compile-time&#xA;correctness of privilege checks.&lt;/li&gt;&#xA;&lt;li&gt;Second, you have to use the privilege. &lt;code&gt;templates/layout.go.html&lt;/code&gt; has&#xA;examples of using &lt;code&gt;.User.PermittedTo&lt;/code&gt; for deciding which navigation items&#xA;to expose.&lt;/li&gt;&#xA;&lt;/ul&gt;&#xA;&lt;/li&gt;&#xA;&lt;li&gt;Occasionally you may think it necessary to add a manual permissions check&#xA;somewhere in a handler. Usually this is a bad idea, but if you&amp;rsquo;re certain&#xA;such a check is necessary, you can find a few examples of this in various&#xA;handlers. If you don&amp;rsquo;t want to spend the time to figure out where they are&#xA;and how to emulate them, you probably don&amp;rsquo;t need them that badly :P&lt;/li&gt;&#xA;&lt;/ul&gt;</description>
     </item>
-    
     <item>
       <title>Contributing to Documentation</title>
       <link>https://uoregon-libraries.github.io/newspaper-curation-app/contributing/documentation/</link>
       <pubDate>Mon, 01 Jan 0001 00:00:00 +0000</pubDate>
-      
       <guid>https://uoregon-libraries.github.io/newspaper-curation-app/contributing/documentation/</guid>
-      <description>The documentation for this site is produced using Hugo and a custom theme based on the look and feel of TechDoc, a contributed Hugo theme.
-We want our documentation to help you use NCA (okay, again, if I&amp;rsquo;m being honest, this is really just for UO to remember how to use our app), and as such the documentation itself needs to be easy to edit and keep up-to-date.
-Starting out Get Hugo installed.</description>
+      <description>&lt;p&gt;The documentation for this site is produced using &lt;a href=&#34;https://gohugo.io/&#34;&gt;Hugo&lt;/a&gt; and a custom theme&#xA;based on the look and feel of &lt;a href=&#34;https://themes.gohugo.io/hugo-theme-techdoc/&#34;&gt;TechDoc&lt;/a&gt;, a contributed Hugo theme.&lt;/p&gt;&#xA;&lt;p&gt;We want our documentation to help you use NCA (okay, again, if I&amp;rsquo;m being&#xA;honest, this is really just for UO to remember how to use our app), and as such&#xA;the documentation itself needs to be easy to edit and keep up-to-date.&lt;/p&gt;&#xA;&lt;h2 id=&#34;starting-out&#34;&gt;Starting out&lt;/h2&gt;&#xA;&lt;p&gt;Get Hugo installed. It&amp;rsquo;s a trivial standalone application that can be&#xA;installed with minimal fuss: &lt;a href=&#34;https://gohugo.io/getting-started/installing&#34;&gt;installing Hugo&lt;/a&gt;.&lt;/p&gt;</description>
     </item>
-    
     <item>
       <title>Handling Page Review Problems</title>
       <link>https://uoregon-libraries.github.io/newspaper-curation-app/workflow/handling-page-review-problems/</link>
       <pubDate>Mon, 01 Jan 0001 00:00:00 +0000</pubDate>
-      
       <guid>https://uoregon-libraries.github.io/newspaper-curation-app/workflow/handling-page-review-problems/</guid>
-      <description>The &amp;ldquo;page review&amp;rdquo; location is one of the most dangerous in the application due to the requirement that people manually edit and rename files. There are potentially a lot of difficult problems to manage here.
-Manual Deletion If issues got to the page-review step when they shouldn&amp;rsquo;t have, the only option is to remove them. Make sure you do this right. There is a tool for this process, and manually deleting issues will cause you pain (see below).</description>
+      <description>&lt;p&gt;The &amp;ldquo;page review&amp;rdquo; location is one of the most dangerous in the application due&#xA;to the requirement that people manually edit and rename files. There are&#xA;potentially a &lt;em&gt;lot&lt;/em&gt; of difficult problems to manage here.&lt;/p&gt;&#xA;&lt;h2 id=&#34;manual-deletion&#34;&gt;Manual Deletion&lt;/h2&gt;&#xA;&lt;p&gt;If issues got to the page-review step when they shouldn&amp;rsquo;t have, the only option&#xA;is to remove them.  &lt;strong&gt;Make sure you do this right&lt;/strong&gt;. There is a tool for this&#xA;process, and manually deleting issues will cause you &lt;em&gt;pain&lt;/em&gt; (see below).&lt;/p&gt;</description>
     </item>
-    
     <item>
       <title>Users</title>
       <link>https://uoregon-libraries.github.io/newspaper-curation-app/setup/user-setup/</link>
       <pubDate>Mon, 01 Jan 0001 00:00:00 +0000</pubDate>
-      
       <guid>https://uoregon-libraries.github.io/newspaper-curation-app/setup/user-setup/</guid>
-      <description>Create a SysOp A SysOp, or System Operator, is a privileged user with access to do anything in NCA. All installations will require at least one of these just to get set up, and most likely a dev or system administrator will need this role on an ongoing basis.
-To get the first sysop, follow the installation and configuration instructions, and then start the server in debug mode:
-./bin/server -c .</description>
+      <description>&lt;h2 id=&#34;create-a-sysop&#34;&gt;Create a SysOp&lt;/h2&gt;&#xA;&lt;p&gt;A SysOp, or System Operator, is a privileged user with access to do anything in&#xA;NCA. All installations will require at least one of these just to get set up,&#xA;and most likely a dev or system administrator will need this role on an ongoing&#xA;basis.&lt;/p&gt;&#xA;&lt;p&gt;To get the first sysop, follow the installation and configuration instructions,&#xA;and then start the server in debug mode:&lt;/p&gt;&#xA;&lt;div class=&#34;highlight&#34;&gt;&lt;pre tabindex=&#34;0&#34; style=&#34;color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4;&#34;&gt;&lt;code class=&#34;language-bash&#34; data-lang=&#34;bash&#34;&gt;&lt;span style=&#34;display:flex;&#34;&gt;&lt;span&gt;./bin/server -c ./settings --debug&#xA;&lt;/span&gt;&lt;/span&gt;&lt;/code&gt;&lt;/pre&gt;&lt;/div&gt;&lt;p&gt;Debug, among other things, lets you fake a login via&#xA;&lt;code&gt;http://your.site/users?debuguser=&amp;lt;user&amp;gt;&lt;/code&gt;. NCA by default starts with a user&#xA;named &amp;ldquo;sysop&amp;rdquo; with the sysop privileges. Simply replace &lt;code&gt;&amp;lt;user&amp;gt;&lt;/code&gt; with &lt;code&gt;sysop&lt;/code&gt;&#xA;and you&amp;rsquo;ll have full control of NCA.&lt;/p&gt;</description>
     </item>
-    
     <item>
       <title>Fixing &#34;Stuck&#34; Issues</title>
       <link>https://uoregon-libraries.github.io/newspaper-curation-app/workflow/fixing-stuck-issues/</link>
       <pubDate>Mon, 01 Jan 0001 00:00:00 +0000</pubDate>
-      
       <guid>https://uoregon-libraries.github.io/newspaper-curation-app/workflow/fixing-stuck-issues/</guid>
-      <description>Sometimes a publisher will upload a broken PDF that NCA cannot process. For smaller organizations, these kinds of problems are easy to prevent just via careful review. But for larger orgs, it&amp;rsquo;s often infeasible to do this, e.g., if you have enough publishers that you get hundreds of pages uploaded each week.
-When an issue gets stuck, NCA currently has no way to indicate this. This is one area where a developer used to have to clean up the filesystem and database manually.</description>
+      <description>&lt;p&gt;Sometimes a publisher will upload a broken PDF that NCA cannot process. For&#xA;smaller organizations, these kinds of problems are easy to prevent just via&#xA;careful review. But for larger orgs, it&amp;rsquo;s often infeasible to do this, e.g., if&#xA;you have enough publishers that you get hundreds of pages uploaded each week.&lt;/p&gt;&#xA;&lt;p&gt;When an issue gets stuck, NCA currently has no way to indicate this. This is&#xA;one area where a developer used to have to clean up the filesystem and database&#xA;manually. As of NCA v3.8.0, there is a tool which can handle this in a&#xA;significantly less painful way.&lt;/p&gt;</description>
     </item>
-    
     <item>
       <title>Fixing Flagged Workflow Issues</title>
       <link>https://uoregon-libraries.github.io/newspaper-curation-app/workflow/fixing-flagged-workflow-issues/</link>
       <pubDate>Mon, 01 Jan 0001 00:00:00 +0000</pubDate>
-      
       <guid>https://uoregon-libraries.github.io/newspaper-curation-app/workflow/fixing-flagged-workflow-issues/</guid>
-      <description>This refers to issues which were already queued from their uploaded location, had derivatives generated, and were ready for metadata entry.
-The metadata entry person flags errors to say essentially, &amp;ldquo;NCA&amp;rsquo;s UI cannot fix the problems on this issue&amp;rdquo;. We have seen a variety of problems like this:
-The PDF or JP2 image derivatives are corrupt in some way, even though the tools which generated them seemed to run without errors The pages are out of order - somebody reordered pages incorrectly, and the issue now has to be manually pulled, fixed, and re-inserted into the workflow The issue is incorrect in some other way, and wasn&amp;rsquo;t caught when queueing from the uploads area (e.</description>
+      <description>&lt;p&gt;This refers to issues which were already queued from their uploaded location,&#xA;had derivatives generated, and were ready for metadata entry.&lt;/p&gt;&#xA;&lt;p&gt;The metadata entry person flags errors to say essentially, &amp;ldquo;NCA&amp;rsquo;s UI cannot fix&#xA;the problems on this issue&amp;rdquo;. We have seen a variety of problems like this:&lt;/p&gt;&#xA;&lt;ul&gt;&#xA;&lt;li&gt;The PDF or JP2 image derivatives are corrupt in some way, even though the&#xA;tools which generated them seemed to run without errors&lt;/li&gt;&#xA;&lt;li&gt;The pages are out of order - somebody reordered pages incorrectly, and the&#xA;issue now has to be manually pulled, fixed, and re-inserted into the workflow&lt;/li&gt;&#xA;&lt;li&gt;The issue is incorrect in some other way, and wasn&amp;rsquo;t caught when queueing&#xA;from the uploads area (e.g., a publisher uploaded two issues in the same&#xA;location, pages were missing from an upload, etc.)&lt;/li&gt;&#xA;&lt;/ul&gt;&#xA;&lt;p&gt;Most errors can be caught prior to queueing an issue for processing, so it is&#xA;very important that curators be aware of the additional cost of having to fix&#xA;issues that are incorrect after they&amp;rsquo;ve gotten into the workflow.&lt;/p&gt;</description>
     </item>
-    
     <item>
       <title>Onboarding A Publisher</title>
       <link>https://uoregon-libraries.github.io/newspaper-curation-app/setup/creating-publishers/</link>
       <pubDate>Mon, 01 Jan 0001 00:00:00 +0000</pubDate>
-      
       <guid>https://uoregon-libraries.github.io/newspaper-curation-app/setup/creating-publishers/</guid>
-      <description>Creating a publisher in NCA, at least for UO, requires several manual processes take place:
-Upload a MARC record for the title, and then edit them to provide SFTP credentials. Set up a user for sftp access if you aren&amp;rsquo;t using the SFTPGo integration (but you really should, it&amp;rsquo;s way easier) </description>
+      <description>&lt;p&gt;Creating a publisher in NCA, at least for UO, requires several manual processes&#xA;take place:&lt;/p&gt;&#xA;&lt;ul&gt;&#xA;&lt;li&gt;Upload a MARC record for the title, and then edit them to provide SFTP&#xA;credentials.&lt;/li&gt;&#xA;&lt;li&gt;Set up a user for sftp access if you aren&amp;rsquo;t using the SFTPGo integration (but&#xA;you really should, it&amp;rsquo;s way easier)&lt;/li&gt;&#xA;&lt;/ul&gt;</description>
     </item>
-    
     <item>
       <title>Testing</title>
       <link>https://uoregon-libraries.github.io/newspaper-curation-app/contributing/testing/</link>
       <pubDate>Mon, 01 Jan 0001 00:00:00 +0000</pubDate>
-      
       <guid>https://uoregon-libraries.github.io/newspaper-curation-app/contributing/testing/</guid>
-      <description>Unit Testing Running unit tests is easy:
-make test This compiles all of the code and tests any *_test.go files. Test coverage is spotty at best right now, but the compile-time checks, and static analysis run by make, catch most of the kinds of problems you&amp;rsquo;d test for in PHP/Ruby/Python/etc (variable typos, misuse of a function, etc.)
-Contributors: feel free to add more unit tests to improve overall coverage!
-Manual Testing Manually testing NCA can be time-consuming, as you have to find, copy, and then load issues into NCA, enter metadata, etc.</description>
+      <description>&lt;h2 id=&#34;unit-testing&#34;&gt;Unit Testing&lt;/h2&gt;&#xA;&lt;p&gt;Running unit tests is easy:&lt;/p&gt;&#xA;&lt;div class=&#34;highlight&#34;&gt;&lt;pre tabindex=&#34;0&#34; style=&#34;color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4;&#34;&gt;&lt;code class=&#34;language-bash&#34; data-lang=&#34;bash&#34;&gt;&lt;span style=&#34;display:flex;&#34;&gt;&lt;span&gt;make test&#xA;&lt;/span&gt;&lt;/span&gt;&lt;/code&gt;&lt;/pre&gt;&lt;/div&gt;&lt;p&gt;This compiles all of the code and tests any &lt;code&gt;*_test.go&lt;/code&gt; files. Test coverage is&#xA;spotty at best right now, but the compile-time checks, and static analysis run&#xA;by &lt;code&gt;make&lt;/code&gt;, catch most of the kinds of problems you&amp;rsquo;d test for in&#xA;PHP/Ruby/Python/etc (variable typos, misuse of a function, etc.)&lt;/p&gt;&#xA;&lt;p&gt;Contributors: feel free to add more unit tests to improve overall coverage!&lt;/p&gt;&#xA;&lt;h2 id=&#34;manual-testing&#34;&gt;Manual Testing&lt;/h2&gt;&#xA;&lt;p&gt;Manually testing NCA can be time-consuming, as you have to find, copy, and then&#xA;load issues into NCA, enter metadata, etc. If you repeat this often enough, you&#xA;may find the project&amp;rsquo;s &amp;ldquo;test&amp;rdquo; directory helpful. It contains documentation and&#xA;scripts which are meant to make real-world-like testing a lot easier.&lt;/p&gt;</description>
     </item>
-    
     <item>
       <title>SFTPGo Integration</title>
       <link>https://uoregon-libraries.github.io/newspaper-curation-app/setup/sftpgo-integration/</link>
       <pubDate>Mon, 01 Jan 0001 00:00:00 +0000</pubDate>
-      
       <guid>https://uoregon-libraries.github.io/newspaper-curation-app/setup/sftpgo-integration/</guid>
-      <description>SFTPGo is an sftp server that exposes APIs and a web interface for administration tasks. We&amp;rsquo;ve chosen to integrate NCA with SFTPGo in order to simplify the process of creating titles for a publisher that&amp;rsquo;s uploading newspaper PDFs.
-If you choose not to use this integration, publisher uploads will have to be managed entirely by you (as was the case prior to this integration), and NCA will not track SFTP data (which is a change from NCA 3.</description>
+      <description>&lt;p&gt;&lt;a href=&#34;https://github.com/drakkan/sftpgo&#34;&gt;SFTPGo&lt;/a&gt; is an sftp server that exposes APIs&#xA;and a web interface for administration tasks. We&amp;rsquo;ve chosen to integrate NCA&#xA;with SFTPGo in order to simplify the process of creating titles for a publisher&#xA;that&amp;rsquo;s uploading newspaper PDFs.&lt;/p&gt;&#xA;&lt;p&gt;If you choose not to use this integration, publisher uploads will have to be&#xA;managed entirely by you (as was the case prior to this integration), and NCA&#xA;will not track SFTP data (which is a change from NCA 3.x and prior).&lt;/p&gt;</description>
     </item>
-    
     <item>
       <title>Replacing Live Issues</title>
       <link>https://uoregon-libraries.github.io/newspaper-curation-app/workflow/fixing-live-batches/</link>
       <pubDate>Mon, 01 Jan 0001 00:00:00 +0000</pubDate>
-      
       <guid>https://uoregon-libraries.github.io/newspaper-curation-app/workflow/fixing-live-batches/</guid>
-      <description>Helper Script We&amp;rsquo;ve put together a helper script which can automate a lot of the preparation steps when a single LCCN needs a lot of issues pulled. It is hacky and hard-coded at the moment, but it doesn&amp;rsquo;t make any changes to anything, so it&amp;rsquo;s safe to try out, and even modify to suit other use-cases.
-To run: go run scripts/help-remove-issues.go &amp;lt;lccn&amp;gt; &amp;lt;issue dates filename&amp;gt; &amp;lt;path to NCA dir&amp;gt; &amp;lt;path to live batches&amp;gt;.</description>
+      <description>&lt;h2 id=&#34;helper-script&#34;&gt;Helper Script&lt;/h2&gt;&#xA;&lt;p&gt;We&amp;rsquo;ve put together a helper script which can automate a lot of the preparation&#xA;steps when a single LCCN needs a lot of issues pulled. It is hacky and&#xA;hard-coded at the moment, but it doesn&amp;rsquo;t make any changes to anything, so it&amp;rsquo;s&#xA;safe to try out, and even modify to suit other use-cases.&lt;/p&gt;&#xA;&lt;p&gt;To run: &lt;code&gt;go run scripts/help-remove-issues.go &amp;lt;lccn&amp;gt; &amp;lt;issue dates filename&amp;gt; &amp;lt;path to NCA dir&amp;gt; &amp;lt;path to live batches&amp;gt;&lt;/code&gt;.&lt;/p&gt;</description>
     </item>
-    
     <item>
       <title>&#34;Un-push&#34; Batch From Production</title>
       <link>https://uoregon-libraries.github.io/newspaper-curation-app/workflow/undo-batch-golive/</link>
       <pubDate>Mon, 01 Jan 0001 00:00:00 +0000</pubDate>
-      
       <guid>https://uoregon-libraries.github.io/newspaper-curation-app/workflow/undo-batch-golive/</guid>
-      <description>Sometimes a batch is messed up enough that it needs to be completely removed, rebuilt, and reingested, but it&amp;rsquo;s already in production. In the (rare) cases this happens and we haven&amp;rsquo;t already archived all the original files, we can un-push the batch and requeue the necessary issues.
-This procedure helps &amp;ldquo;un-push&amp;rdquo; batches, but only when all of the following are true:
-The batch was created by NCA, not a vendor. There&amp;rsquo;s currently no procedure for reading a non-NCA batch and putting its issues in the database.</description>
+      <description>&lt;p&gt;Sometimes a batch is messed up enough that it needs to be completely removed,&#xA;rebuilt, and reingested, but it&amp;rsquo;s already in production. In the (rare) cases&#xA;this happens &lt;em&gt;and&lt;/em&gt; we haven&amp;rsquo;t already archived all the original files, we can&#xA;un-push the batch and requeue the necessary issues.&lt;/p&gt;&#xA;&lt;p&gt;This procedure helps &amp;ldquo;un-push&amp;rdquo; batches, but only when all of the following are true:&lt;/p&gt;&#xA;&lt;ul&gt;&#xA;&lt;li&gt;The batch was created by NCA, not a vendor. There&amp;rsquo;s currently no procedure&#xA;for reading a non-NCA batch and putting its issues in the database.&lt;/li&gt;&#xA;&lt;li&gt;The batch is live, but hasn&amp;rsquo;t been fully archived yet&#xA;&lt;ul&gt;&#xA;&lt;li&gt;In theory you could still do this after archival, but the work gets a lot&#xA;more involved and isn&amp;rsquo;t in scope here.&lt;/li&gt;&#xA;&lt;/ul&gt;&#xA;&lt;/li&gt;&#xA;&lt;li&gt;All issues are still in NCA&amp;rsquo;s database and their files are still in the NCA&#xA;&amp;ldquo;workflow&amp;rdquo; location on disk (this is usually true until archival).&lt;/li&gt;&#xA;&lt;/ul&gt;&#xA;&lt;p&gt;This process is awful and you need to know what you&amp;rsquo;re doing, but here&amp;rsquo;s the rough outline:&lt;/p&gt;</description>
     </item>
-    
   </channel>
 </rss>
