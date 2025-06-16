@@ -157,14 +157,14 @@ func (r *RPC) EnsureAwardee(moc *models.MOC) (message string, err error) {
 
 // LoadTitle sends data to an ONI Agent's "load-title" command. data needs to
 // be valid MARC XML.
-func (r *RPC) LoadTitle(data []byte) (message string, err error) {
+func (r *RPC) LoadTitle(data []byte) (id int64, err error) {
 	var result gjson.Result
 	result, err = r.do(slist{"load-title"}, data)
 	if err != nil {
-		return "", fmt.Errorf("calling load-title: %w", err)
+		return 0, fmt.Errorf("calling load-title: %w", err)
 	}
 
-	return result.Get("message").String(), nil
+	return result.Get("job").Get("id").Int(), nil
 }
 
 // JobStatus is the "controlled" version of an ONI Agent's job-status response

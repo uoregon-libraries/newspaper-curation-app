@@ -184,13 +184,13 @@ func TestEnsureAwardee(t *testing.T) {
 }
 
 func TestLoadTitle(t *testing.T) {
-	var r = getRPC(t, "LoadTitle", slist{"load-title"}, true, []byte(`{"status": "success", "message": "test"}`))
-	var message, err = r.LoadTitle([]byte("foo"))
-	if message != "test" {
-		t.Errorf(`LoadTitle should return the message "test". Got %q`, message)
-	}
+	var r = getRPC(t, "LoadTitle", slist{"load-title"}, true, []byte(`{"status": "success", "job": {"id": 123}}`))
+	var id, err = r.LoadTitle([]byte("foo"))
 	if err != nil {
 		t.Errorf("LoadTitle should not have an error, got %s", err)
+	}
+	if id != 123 {
+		t.Errorf("LoadTitle should return the job id 123. Got %d", id)
 	}
 }
 
