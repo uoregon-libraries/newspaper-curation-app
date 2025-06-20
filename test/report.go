@@ -72,7 +72,7 @@ func cacheBatchData() {
 	var version int
 	var created time.Time
 	for rows.Next() {
-		rows.Scan(&moc, &created, &name, &titles, &pages, &version)
+		rows.Scan(&moc, &created, &name, &version, &titles, &pages)
 		if op.Err() != nil {
 			l.Fatalf("Unable to query database for batch rename map: %s", op.Err())
 		}
