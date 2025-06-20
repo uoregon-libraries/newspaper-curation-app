@@ -8,10 +8,17 @@
       <div class="card-header">
         <h4 class="card-title h5">{{.MARC.Title}} ({{.MARC.LCCN}})</h4>
         {{if .New}}
-        <p class="card-subtitle marc-new-warning">
-          Note: this title is new to NCA. Please edit it to provide details such as
-          SFTP username, rights statement, etc.
-        </p>
+        <div class="card-subtitle marc-new-warning">
+          <p>
+            Note: this title is new to NCA. Please edit it to provide details
+            such as SFTP username, rights statement, etc.
+          </p>
+          <p>
+            Also note that the ONI links below won't necessarily work
+            immediately; it can sometimes take a while for the ONI Agent to
+            finish loading titles.
+          </p>
+        </div>
         {{end}}
       </div>
       <div class="card-body">

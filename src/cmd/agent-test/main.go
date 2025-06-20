@@ -119,9 +119,9 @@ func main() {
 
 	switch command {
 	case cmdLoadBatch:
-		doBatch(rpc, rpc.LoadBatch, args[0], false)
+		queueJob(rpc, rpc.LoadBatch, args[0], false)
 	case cmdPurgeBatch:
-		doBatch(rpc, rpc.PurgeBatch, args[0], true)
+		queueJob(rpc, rpc.PurgeBatch, args[0], true)
 
 	case cmdStatus:
 		var id = getJobID(args[0])
@@ -162,12 +162,7 @@ func main() {
 		if err != nil {
 			log.Fatalf("Unable to read %q: %s", fname, err)
 		}
-		var message string
-		message, err = rpc.LoadTitle(data)
-		if err != nil {
-			log.Fatalf("Unable to load title from %q: %s", fname, err)
-		}
-		log.Println("Success:", message)
+		queueJob(rpc, rpc.LoadTitle, data, true)
 
 	default:
 		log.Fatalf("Command %q not handled in main", command)
@@ -183,14 +178,12 @@ func getJobID(s string) int64 {
 	return id
 }
 
-type batchFunc func(name string) (jobID int64, err error)
-
-func doBatch(rpc *openoni.RPC, fn batchFunc, batchname string, wait bool) {
-	var id, err = fn(batchname)
+func queueJob[P any](rpc *openoni.RPC, fn func(P) (int64, error), arg P, wait bool) {
+	var id, err = fn(arg)
 	if err != nil {
-		log.Fatalf("Couldn't request batch operation: %s", err)
+		log.Fatalf("Couldn't queue job: %s", err)
 	}
-	log.Printf("Queued job for batch operation: job id %d", id)
+	log.Printf("Queued job: job id %d", id)
 
 	if !wait {
 		log.Printf("Not waiting for long job; check status manually via the `job-status` command (job id %d)", id)
