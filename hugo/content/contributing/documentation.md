@@ -92,7 +92,7 @@ hard-coded links.
 
 You only have to specify the full path in a "ref" shortcode if you're linking
 to a document in a different subdirectory. Since this page is part of the
-"contributing" section, let's link to the [Testing][1] guide.
+"contributing" section, let's link to the [Testing][4] guide.
 
 [4]: <{{% ref "testing" %}}>
 
@@ -101,7 +101,7 @@ That paragraph, and the link destination, were created as such:
 ```
 You only have to specify the full path in a "ref" shortcode if you're linking
 to a document in a different subdirectory. Since this page is part of the
-"contributing" section, let's link to the [Testing][1] guide.
+"contributing" section, let's link to the [Testing][4] guide.
 
 [4]: <{{%/* ref "testing" */%}}>
 ```
