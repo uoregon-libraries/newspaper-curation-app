@@ -430,19 +430,20 @@ func loadTitle(fh *multipart.FileHeader) (m *marc.MARC, message string) {
 		return nil, "File is invalid or doesn't contain MARC XML"
 	}
 
-	var msg string
-	msg, err = stagAgent.LoadTitle(upload)
+	var stID, prID int64
+	stID, err = stagAgent.LoadTitle(upload)
 	if err != nil {
-		logger.Errorf("Error requesting title load from ONI Agent (staging) for %q: message: %q, error: %s", fname, msg, err)
+		logger.Errorf("Error queueing title load from ONI Agent (staging) for %q: error: %s", fname, err)
 		return m, "Failed to load into staging ONI"
 	}
-	msg, err = prodAgent.LoadTitle(upload)
+	prID, err = prodAgent.LoadTitle(upload)
 	if err != nil {
-		logger.Errorf("Error requesting title load from ONI Agent (prod) for %q: message: %q, error: %s", fname, msg, err)
+		logger.Errorf("Error queueing title load from ONI Agent (prod) for %q: error: %s", fname, err)
 		return m, "Failed to load into production ONI"
 	}
 
-	logger.Infof("Title load for %q successful: %q", fh.Filename, msg)
+	logger.Infof("Title load for %q started: job ids %d / %d (staging / prod)", fh.Filename, stID, prID)
+
 	return m, ""
 }
 

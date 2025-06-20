@@ -10,9 +10,20 @@
   <h2>Notes:</h2>
   <ul>
     <li>
+      <em>Titles loaded here are not loaded into ONI immediately</em>. They are
+      queued up along with other ONI jobs, such as batch loading and purging.
+      If there are a other pending ONI tasks, the uploaded MARC records have to
+      wait for those to finish, which can prevent titles from being validated.
+      If new titles show their LCCN is not valid, wait a bit and try to
+      re-validate them when they show up in your production ONI site.
+    </li>
+
+    <li>
       If you upload a lot of files at once, it will take a while for this page
       to respond. It is recommended you upload no more than 5 files at a time.
-    </li><li>
+    </li>
+
+    <li>
       The files must contain only <em>one</em> MARC record! Multi-record files
       are not currently supported.
     </li>
