@@ -7,6 +7,7 @@ import (
 	"os"
 	"path/filepath"
 	"sort"
+	"time"
 
 	"github.com/uoregon-libraries/gopkg/fileutil"
 	"github.com/uoregon-libraries/gopkg/logger"
@@ -63,7 +64,9 @@ func main() {
 	}
 
 	var data []byte
-	for _, f := range files {
+	var stIDs = make([]int64, len(files))
+	var prIDs = make([]int64, len(files))
+	for i, f := range files {
 		l.Infof("Loading title from MARC in %q", f)
 		data, err = os.ReadFile(f)
 		if err != nil {
@@ -76,15 +79,15 @@ func main() {
 			l.Fatalf("Unable to parse %q into a MARC record: %s", f, err)
 		}
 
-		_, err = stagAgent.LoadTitle(data)
+		stIDs[i], err = stagAgent.LoadTitle(data)
 		if err != nil {
 			l.Fatalf("Unable to load %q to staging: %s", f, err)
 		}
-		_, err = prodAgent.LoadTitle(data)
+		prIDs[i], err = prodAgent.LoadTitle(data)
 		if err != nil {
 			l.Fatalf("Unable to load %q to production: %s", f, err)
 		}
-		l.Infof("Successfully loaded %q to staging and production", f)
+		l.Infof("Successfully queued jobs to load %q to staging and production", f)
 
 		var t *models.Title
 		t, err = models.FindTitleByLCCN(m.LCCN())
@@ -109,6 +112,14 @@ func main() {
 			l.Fatalf("Unable to save title (fname %q, lccn %q): %s", f, m.LCCN(), err)
 		}
 	}
+
+	// Validate jobs are all successful
+	for _, id := range stIDs {
+		waitJob("staging", stagAgent, id)
+	}
+	for _, id := range prIDs {
+		waitJob("prod", prodAgent, id)
+	}
 }
 
 func getFiles(dir string, exts ...string) ([]string, error) {
@@ -123,4 +134,36 @@ func getFiles(dir string, exts ...string) ([]string, error) {
 
 	sort.Strings(fileList)
 	return fileList, err
+}
+
+func waitJob(env string, agent *openoni.RPC, id int64) {
+	for {
+		var js, err = agent.GetJobStatus(id)
+		if err != nil {
+			l.Fatalf("Unable to check %s job %d status: %s", env, id, err)
+		}
+
+		switch js {
+		case openoni.JobStatusPending:
+			l.Debugf("Job %d queued but not started; waiting", id)
+			time.Sleep(time.Second)
+
+		case openoni.JobStatusStarted:
+			l.Debugf("Job %d started but not finished; waiting", id)
+			time.Sleep(time.Second)
+
+		case openoni.JobStatusFailStart:
+			l.Fatalf("Job %d failed to start; exiting", id)
+
+		case openoni.JobStatusSuccessful:
+			l.Infof("Job %d successful; done waiting", id)
+			return
+
+		case openoni.JobStatusFailed:
+			l.Fatalf("Job %d failed; exiting", id)
+
+		default:
+			l.Fatalf("Invalid job status %q", js)
+		}
+	}
 }
