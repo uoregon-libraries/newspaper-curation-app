@@ -24,7 +24,7 @@ Manual installation has several prerequisites:
   [RAIS](https://github.com/uoregon-libraries/rais-image-server))
 - Apache/nginx for authentication as well as proxying to NCA and the IIIF server
 - Two running [Open ONI][oni] applications: staging and production.
-- An [ONI Agent][agent] (at least v1.7.0) must be set up for each ONI instance
+- An [ONI Agent][agent] (at least v1.8.0) must be set up for each ONI instance
   in order to automate some of the functionality from NCA to ONI. The NCA
   server needs to be able to connect to the ONI Agent, but the agent's ports
   should not be open to any other traffic.
