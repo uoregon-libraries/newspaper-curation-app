@@ -107,7 +107,7 @@ func (ps *PageSplit) combinePDF() (ok bool) {
 	var args = []string{
 		"-sDEVICE=pdfwrite", "-dCompatibilityLevel=1.6", "-dPDFSETTINGS=/default",
 		"-dNOPAUSE", "-dQUIET", "-dBATCH", "-dDetectDuplicateImages",
-		"-dCompressFonts=true", "-r150", "-sOutputFile=" + ps.CombinedFile,
+		"-dCompressFonts=true", "-r150", "-dAutoRotatePages=/None", "-sOutputFile=" + ps.CombinedFile,
 	}
 	for _, fi := range fileinfos {
 		args = append(args, filepath.Join(ps.DBIssue.Location, fi.Name()))
