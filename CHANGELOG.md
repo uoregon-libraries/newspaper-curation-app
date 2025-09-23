@@ -34,6 +34,35 @@ Brief description, if necessary
 ### Migration
 -->
 
+## v6.3.1
+
+Minor changes and more bug fixing. Fun!
+
+### Fixed
+
+- When pre-processing PDFs, pages should no longer occasionally auto-rotate. We
+  noticed this issue very rarely, so it wasn't something we even realized NCA
+  was doing, and we're still not entirely sure why. GhostScript simply has been
+  deciding to rotate some pages. Well... *no more*! We hope.
+
+### Added
+
+- Batches have versions stored to prepare for rebatching
+
+### Changed
+
+- When uploading MARC records, they are no longer immediately processed by your
+  ONI instances, as the ONI Agent needed to convert these into queued jobs that
+  don't try to run alongside other tasks. This means you won't actually know
+  for sure if a MARC record loads successfully (though NCA does some basic
+  validation on the records before sending them to ONI), and you'll have to
+  check your ONI instances to make sure titles did in fact get loaded properly.
+
+### Migration
+
+- Migrate the database:
+  - `make && ./bin/migrate-database -c ./settings up`
+
 ## v6.3.0
 
 We mostly included bug fixes in this update. Mostly.
