@@ -1,6 +1,6 @@
 module github.com/uoregon-libraries/newspaper-curation-app
 
-go 1.23.0
+go 1.24.0
 
 toolchain go1.24.2
 
@@ -14,8 +14,8 @@ require (
 	github.com/tidwall/gjson v1.17.1
 	github.com/tidwall/sjson v1.2.5
 	github.com/uoregon-libraries/gopkg v0.30.2
-	golang.org/x/crypto v0.35.0
-	golang.org/x/text v0.23.0
+	golang.org/x/crypto v0.45.0
+	golang.org/x/text v0.31.0
 )
 
 require (
@@ -35,11 +35,12 @@ require (
 	github.com/spf13/afero v1.14.0 // indirect
 	github.com/tidwall/match v1.1.1 // indirect
 	github.com/tidwall/pretty v1.2.1 // indirect
-	golang.org/x/mod v0.24.0 // indirect
-	golang.org/x/sync v0.12.0 // indirect
-	golang.org/x/sys v0.31.0 // indirect
-	golang.org/x/telemetry v0.0.0-20240522233618-39ace7a40ae7 // indirect
-	golang.org/x/tools v0.31.0 // indirect
+	golang.org/x/mod v0.29.0 // indirect
+	golang.org/x/sync v0.18.0 // indirect
+	golang.org/x/sys v0.38.0 // indirect
+	golang.org/x/telemetry v0.0.0-20251008203120-078029d740a8 // indirect
+	golang.org/x/tools v0.38.0 // indirect
+	golang.org/x/tools/go/packages/packagestest v0.1.1-deprecated // indirect
 	golang.org/x/vuln v1.1.4 // indirect
 )
 
