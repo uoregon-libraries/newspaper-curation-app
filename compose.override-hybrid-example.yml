@@ -16,7 +16,7 @@ services:
     volumes:
       - ./test/fakemount:/var/local:z
     environment:
-      - RAIS_IIIFBASEURL=http://localhost:12415
+      RAIS_IIIFBASEURL: "http://localhost:12415"
     ports:
       - "12415:12415"
 
@@ -50,15 +50,15 @@ services:
 
   oni-iiif:
     environment:
-      - RAIS_IIIFBASEURL=http://localhost:8080
+      RAIS_IIIFBASEURL: "http://localhost:8080"
     volumes:
       - ./test/fakemount/production-batches:/mnt/batches:z
 
   # ONI staging is exposed on 8082
   oni-staging:
     environment:
-      - ONI_BASE_URL=http://localhost:8082
-      - ONI_IIIF_URL=http://localhost:8080/images/iiif
+      ONI_BASE_URL: "http://localhost:8082"
+      ONI_IIIF_URL: "http://localhost:8080/images/iiif"
     volumes:
       - ./test/fakemount/production-batches:/mnt/batches:z
     ports:
@@ -69,8 +69,8 @@ services:
   # service both need to know the public URL.
   oni-prod:
     environment:
-      - ONI_BASE_URL=http://localhost:8080
-      - ONI_IIIF_URL=http://localhost:8080/images/iiif
+      ONI_BASE_URL: "http://localhost:8080"
+      ONI_IIIF_URL: "http://localhost:8080/images/iiif"
     volumes:
       - ./test/fakemount/production-batches:/mnt/batches:z
     ports:

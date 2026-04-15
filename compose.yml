@@ -28,10 +28,10 @@ services:
   db:
     image: docker.io/mariadb
     environment:
-      - MYSQL_ROOT_PASSWORD=123456
-      - MYSQL_DATABASE=nca
-      - MYSQL_USER=nca
-      - MYSQL_PASSWORD=nca
+      MYSQL_ROOT_PASSWORD: "123456"
+      MYSQL_DATABASE: "nca"
+      MYSQL_USER: "nca"
+      MYSQL_PASSWORD: "nca"
     volumes:
       - ./docker/mysql/:/etc/mysql/conf.d:Z
       - ./docker/init.sql:/docker-entrypoint-initdb.d/init.sql
@@ -42,9 +42,9 @@ services:
   iiif:
     image: docker.io/uolibraries/rais:4-alpine
     environment:
-      - RAIS_IIIFWEBPATH=/images/iiif
-      - RAIS_TILECACHELEN=250
-      - RAIS_TILEPATH=/var/local/workflow
+      RAIS_IIIFWEBPATH: "/images/iiif"
+      RAIS_TILECACHELEN: "250"
+      RAIS_TILEPATH: "/var/local/workflow"
     volumes:
       - nca-workflow:/var/local
     expose:
@@ -64,13 +64,13 @@ services:
       - page-review:/mnt/page-review
       - oni-batches:/mnt/batches
     environment:
-      - NCA_DB_HOST=db
-      - NCA_SFTP_API_URL=http://sftpgo:8080/api/v2
-      - NCA_SFTP_USER=admin
-      - NCA_SFTP_PASSWORD=password
-      - NCA_PDF_UPLOAD_PATH=/mnt/sftpgo/data
-      - NCA_PDF_PAGE_REVIEW_PATH=/mnt/page-review
-      - NCA_BATCH_PRODUCTION_PATH=/mnt/batches
+      NCA_DB_HOST: "db"
+      NCA_SFTP_API_URL: "http://sftpgo:8080/api/v2"
+      NCA_SFTP_USER: "admin"
+      NCA_SFTP_PASSWORD: "password"
+      NCA_PDF_UPLOAD_PATH: "/mnt/sftpgo/data"
+      NCA_PDF_PAGE_REVIEW_PATH: "/mnt/page-review"
+      NCA_BATCH_PRODUCTION_PATH: "/mnt/batches"
     expose:
       - 8080
     depends_on:
@@ -91,9 +91,9 @@ services:
       - 8080
       - 2022
     environment:
-      - SFTPGO_DATA_PROVIDER__CREATE_DEFAULT_ADMIN=true
-      - SFTPGO_DEFAULT_ADMIN_USERNAME=admin
-      - SFTPGO_DEFAULT_ADMIN_PASSWORD=password
+      SFTPGO_DATA_PROVIDER__CREATE_DEFAULT_ADMIN: "true"
+      SFTPGO_DEFAULT_ADMIN_USERNAME: "admin"
+      SFTPGO_DEFAULT_ADMIN_PASSWORD: "password"
     networks:
       nca:
 
@@ -129,11 +129,11 @@ services:
       - oni-staging-db
       - oni-staging-solr
     environment:
-      - BA_BIND=:22
-      - HOST_KEY_FILE=/etc/rsa/oni-agent
-      - ONI_LOCATION=/opt/openoni/
-      - BATCH_SOURCE=/mnt/batches
-      - DB_CONNECTION=openoni:openoni@tcp(oni-staging-db:3306)/openoni
+      BA_BIND: ":22"
+      HOST_KEY_FILE: "/etc/rsa/oni-agent"
+      ONI_LOCATION: "/opt/openoni/"
+      BATCH_SOURCE: "/mnt/batches"
+      DB_CONNECTION: "openoni:openoni@tcp(oni-staging-db:3306)/openoni"
     expose:
       - 22
     networks:
@@ -152,11 +152,11 @@ services:
       - oni-prod-db
       - oni-prod-solr
     environment:
-      - BA_BIND=:22
-      - HOST_KEY_FILE=/etc/rsa/oni-agent
-      - ONI_LOCATION=/opt/openoni/
-      - BATCH_SOURCE=/mnt/batches
-      - DB_CONNECTION=openoni:openoni@tcp(oni-prod-db:3306)/openoni
+      BA_BIND: ":22"
+      HOST_KEY_FILE: "/etc/rsa/oni-agent"
+      ONI_LOCATION: "/opt/openoni/"
+      BATCH_SOURCE: "/mnt/batches"
+      DB_CONNECTION: "openoni:openoni@tcp(oni-prod-db:3306)/openoni"
     expose:
       - 22
     networks:
@@ -169,10 +169,10 @@ services:
   oni-staging-db:
     image: docker.io/mariadb:10.6
     environment:
-      - MYSQL_ROOT_PASSWORD=123456
-      - MYSQL_DATABASE=openoni
-      - MYSQL_USER=openoni
-      - MYSQL_PASSWORD=openoni
+      MYSQL_ROOT_PASSWORD: "123456"
+      MYSQL_DATABASE: "openoni"
+      MYSQL_USER: "openoni"
+      MYSQL_PASSWORD: "openoni"
     volumes:
       - oni-staging-data-mariadb:/var/lib/mysql
     networks:
@@ -204,8 +204,8 @@ services:
       - oni-staging-solr
       - oni-iiif
     environment:
-      - APACHE_LOG_LEVEL=info
-      - ONI_DEBUG=1
+      APACHE_LOG_LEVEL: "info"
+      ONI_DEBUG: "1"
     networks:
       oni-staging:
 
@@ -215,10 +215,10 @@ services:
   oni-prod-db:
     image: docker.io/mariadb:10.6
     environment:
-      - MYSQL_ROOT_PASSWORD=123456
-      - MYSQL_DATABASE=openoni
-      - MYSQL_USER=openoni
-      - MYSQL_PASSWORD=openoni
+      MYSQL_ROOT_PASSWORD: "123456"
+      MYSQL_DATABASE: "openoni"
+      MYSQL_USER: "openoni"
+      MYSQL_PASSWORD: "openoni"
     volumes:
       - oni-prod-data-mariadb:/var/lib/mysql
     networks:
@@ -250,8 +250,8 @@ services:
       - oni-prod-solr
       - oni-iiif
     environment:
-      - APACHE_LOG_LEVEL=warn
-      - ONI_DEBUG=0
+      APACHE_LOG_LEVEL: "warn"
+      ONI_DEBUG: "0"
     networks:
       oni-prod:
 
@@ -261,9 +261,9 @@ services:
   oni-iiif:
     image: docker.io/uolibraries/rais:4-alpine
     environment:
-      - RAIS_IIIFWEBPATH=/images/iiif
-      - RAIS_TILECACHELEN=250
-      - RAIS_TILEPATH=/mnt/batches
+      RAIS_IIIFWEBPATH: "/images/iiif"
+      RAIS_TILECACHELEN: "250"
+      RAIS_TILEPATH: "/mnt/batches"
     volumes:
       - oni-batches:/mnt/batches
     networks:

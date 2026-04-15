@@ -11,7 +11,7 @@ name: nca
 services:
   iiif:
     environment:
-      - RAIS_IIIFBASEURL=http://localhost:3333
+      RAIS_IIIFBASEURL: "http://localhost:3333"
 
   # NCA's web service. Adjust the news webroot to point to a server running the
   # custom JSON APIs, otherwise NCA can't update its web issue cache. (TODO: We
@@ -19,12 +19,12 @@ services:
   # make the agent take over that responsibility, too)
   web:
     environment:
-      - NCA_WEBROOT=http://localhost:3333
-      - NCA_IIIF_BASE_URL=http://localhost:3333/images/iiif
-      - NCA_NEWS_WEBROOT=https://oregonnews.uoregon.edu
-      - NCA_STAGING_NEWS_WEBROOT=http://localhost:8082
+      NCA_WEBROOT: "http://localhost:3333"
+      NCA_IIIF_BASE_URL: "http://localhost:3333/images/iiif"
+      NCA_NEWS_WEBROOT: "https://oregonnews.uoregon.edu"
+      NCA_STAGING_NEWS_WEBROOT: "http://localhost:8082"
       # Uncomment to adjust delay before uploaded issues can be queued into NCA
-      #- NCA_DURATION_ISSUE_CONSIDERED_DANGEROUS=30s
+      #NCA_DURATION_ISSUE_CONSIDERED_DANGEROUS: "30s"
 
     # Uncomment to run in debug mode: absolutely NOT for production setups!
     #command: ./bin/server -c ./settings --debug
@@ -37,8 +37,8 @@ services:
 
   workers:
     environment:
-      - NCA_NEWS_WEBROOT=https://oregonnews.uoregon.edu
-      - NCA_STAGING_NEWS_WEBROOT=http://localhost:8082
+      NCA_NEWS_WEBROOT: "https://oregonnews.uoregon.edu"
+      NCA_STAGING_NEWS_WEBROOT: "http://localhost:8082"
 
   # Uncomment to be able to do local database debugging
   #db:
@@ -67,14 +67,14 @@ services:
   # RAIS for the ONI server: its base URL needs to match ONI's base URL
   oni-iiif:
     environment:
-      - RAIS_IIIFBASEURL=http://localhost:8080
+      RAIS_IIIFBASEURL: "http://localhost:8080"
 
   # ONI staging is exposed on 8082, but uses the same IIIF server as prod since
   # they share the batch mount
   oni-staging:
     environment:
-      - ONI_BASE_URL=http://localhost:8082
-      - ONI_IIIF_URL=http://localhost:8080/images/iiif
+      ONI_BASE_URL: "http://localhost:8082"
+      ONI_IIIF_URL: "http://localhost:8080/images/iiif"
     ports:
       - "8082:80"
 
@@ -83,7 +83,7 @@ services:
   # service both need to know the public URL.
   oni-prod:
     environment:
-      - ONI_BASE_URL=http://localhost:8080
-      - ONI_IIIF_URL=http://localhost:8080/images/iiif
+      ONI_BASE_URL: "http://localhost:8080"
+      ONI_IIIF_URL: "http://localhost:8080/images/iiif"
     ports:
       - "8080:80"
