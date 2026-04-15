@@ -26,7 +26,7 @@ services:
   # NCA
   #####
   db:
-    image: mariadb
+    image: docker.io/mariadb
     environment:
       - MYSQL_ROOT_PASSWORD=123456
       - MYSQL_DATABASE=nca
@@ -40,7 +40,7 @@ services:
       nca:
 
   iiif:
-    image: uolibraries/rais:4-alpine
+    image: docker.io/uolibraries/rais:4-alpine
     environment:
       - RAIS_IIIFWEBPATH=/images/iiif
       - RAIS_TILECACHELEN=250
@@ -82,7 +82,7 @@ services:
       nca:
 
   sftpgo:
-    image: drakkan/sftpgo:v2.5-alpine
+    image: docker.io/drakkan/sftpgo:v2.5-alpine
     volumes:
       - sftpgo-basedir:/srv/sftpgo
       - sftpgo-backups:/srv/sftpgo/backups
@@ -104,7 +104,7 @@ services:
       nca:
 
   proxy:
-    image: nginx:1.15
+    image: docker.io/nginx:1.15
     volumes:
       - ./docker/nginx/nca.conf:/etc/nginx/conf.d/default.conf:ro
     depends_on:
@@ -167,7 +167,7 @@ services:
   # Open ONI: Staging
   #####
   oni-staging-db:
-    image: mariadb:10.6
+    image: docker.io/mariadb:10.6
     environment:
       - MYSQL_ROOT_PASSWORD=123456
       - MYSQL_DATABASE=openoni
@@ -181,7 +181,7 @@ services:
           - rdbms
 
   oni-staging-solr:
-    image: solr:8-slim
+    image: docker.io/solr:8-slim
     volumes:
       - oni-staging-data-solr:/var/solr
     command:
@@ -213,7 +213,7 @@ services:
   # Open ONI: Production
   #####
   oni-prod-db:
-    image: mariadb:10.6
+    image: docker.io/mariadb:10.6
     environment:
       - MYSQL_ROOT_PASSWORD=123456
       - MYSQL_DATABASE=openoni
@@ -227,7 +227,7 @@ services:
           - rdbms
 
   oni-prod-solr:
-    image: solr:8-slim
+    image: docker.io/solr:8-slim
     volumes:
       - oni-prod-data-solr:/var/solr
     command:
@@ -259,7 +259,7 @@ services:
   # IIIF for both ONIs
   #####
   oni-iiif:
-    image: uolibraries/rais:4-alpine
+    image: docker.io/uolibraries/rais:4-alpine
     environment:
       - RAIS_IIIFWEBPATH=/images/iiif
       - RAIS_TILECACHELEN=250

@@ -1,4 +1,4 @@
-FROM golang:1 AS build
+FROM docker.io/golang:1 AS build
 LABEL maintainer="Jeremy Echols <jechols@uoregon.edu>"
 
 WORKDIR /usr/local/src/nca
@@ -24,7 +24,7 @@ RUN go build ./sudo.go
 # files and templates.  The worker system would need a bit more, like the
 # openjpeg tools, poppler, etc., but still wouldn't need the whole Go stack or
 # a Maria DB client.
-FROM rockylinux:9 AS app
+FROM docker.io/rockylinux:9 AS app
 LABEL maintainer="Jeremy Echols <jechols@uoregon.edu>"
 
 RUN dnf update -y && dnf upgrade --refresh -y
