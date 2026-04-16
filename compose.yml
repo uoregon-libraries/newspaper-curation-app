@@ -84,7 +84,7 @@ services:
   sftpgo:
     image: docker.io/drakkan/sftpgo:v2.5-alpine
     volumes:
-      - sftpgo-basedir:/srv/sftpgo
+      - sftpgo-basedir:/srv/sftpgo/data
       - sftpgo-backups:/srv/sftpgo/backups
       - sftpgo-home:/var/lib/sftpgo
     expose:
