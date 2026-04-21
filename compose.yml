@@ -17,7 +17,6 @@ services:
       MYSQL_USER: "nca"
       MYSQL_PASSWORD: "nca"
     volumes:
-      - ./docker/mysql/:/etc/mysql/conf.d:Z
       - ./docker/init.sql:/docker-entrypoint-initdb.d/init.sql
       - db:/var/lib/mysql
     networks:
