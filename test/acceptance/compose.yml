@@ -1,4 +1,4 @@
 services:
   headless:
-    image: browserless/chrome
+    image: docker.io/browserless/chrome
     network_mode: host
