@@ -161,6 +161,11 @@ func AllBatches() ([]*Batch, error) {
 	return findBatches("status <> ?", BatchStatusDeleted)
 }
 
+// FindLiveBatches returns all batches with the "live" status (awaiting archival)
+func FindLiveBatches() ([]*Batch, error) {
+	return findBatches("status = ?", BatchStatusLive)
+}
+
 // FindLiveArchivedBatches returns all batches that are live and archived
 func FindLiveArchivedBatches() ([]*Batch, error) {
 	return findBatches("status = ?", BatchStatusLiveArchived)
