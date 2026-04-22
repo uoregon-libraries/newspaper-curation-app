@@ -15,10 +15,10 @@ const cacheVersion = 1
 // bag has changed since validation, the fingerprint won't match and we'll
 // re-validate.
 type cacheEntry struct {
-	BatchID         int64     `json:"batch_id"`
-	ArchivePath     string    `json:"archive_path"`
-	TagFingerprint  string    `json:"tagmanifest_fingerprint"`
-	ValidatedAt     time.Time `json:"validated_at"`
+	BatchID        int64     `json:"batch_id"`
+	ArchivePath    string    `json:"archive_path"`
+	TagFingerprint string    `json:"tagmanifest_fingerprint"`
+	ValidatedAt    time.Time `json:"validated_at"`
 }
 
 // cacheFile is the on-disk format for the validation cache.
