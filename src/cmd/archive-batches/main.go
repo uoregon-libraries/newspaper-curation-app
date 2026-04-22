@@ -37,8 +37,8 @@ func main() {
 	if err != nil {
 		log.Fatalf("Error querying live batches: %s", err)
 	}
+	fmt.Printf("Database has %d batch(es) with 'live' status.\n", len(batches))
 	if len(batches) == 0 {
-		fmt.Println("No batches with 'live' status found.")
 		return
 	}
 
@@ -55,6 +55,8 @@ func main() {
 		}
 	}
 
+	fmt.Printf("Matched %d of %d in archive dir %s.\n\n", len(found), len(batches), opts.ArchiveDir)
+
 	if len(notFound) > 0 {
 		fmt.Printf("%d live batch(es) not found in archive directory:\n", len(notFound))
 		for _, name := range notFound {
@@ -64,12 +66,11 @@ func main() {
 	}
 
 	if len(found) == 0 {
-		fmt.Println("No live batches found in the archive directory.")
+		fmt.Println("No live batches found in the archive directory. Check that --archive-dir is correct.")
 		return
 	}
 
 	// Walk each found batch, show details, and confirm individually
-	fmt.Printf("Found %d live batch(es) in %s\n\n", len(found), opts.ArchiveDir)
 	var stdin = bufio.NewReader(os.Stdin)
 	var archived, skipped, failed int
 	for _, b := range found {
