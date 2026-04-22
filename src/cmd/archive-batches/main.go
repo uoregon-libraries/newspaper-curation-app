@@ -54,6 +54,23 @@ func main() {
 		log.Printf("WARNING: %s", cacheNote)
 	}
 
+	// Safety check: archive filesystems should always be mounted read-only. A
+	// writable mount almost certainly means the user pointed at the wrong path
+	// (e.g., the live batch production path), and marking those as archived
+	// would be disastrous. We check the kernel mount flag directly rather than
+	// probing with a write, since a failed write could just be a permissions
+	// quirk on a writable filesystem.
+	var readOnly bool
+	readOnly, err = archiveDirReadOnly(opts.ArchiveDir)
+	if err != nil {
+		log.Fatalf("Cannot use archive dir %s: %s", opts.ArchiveDir, err)
+	}
+	if !readOnly {
+		log.Fatalf("Refusing to run: archive dir %s is not on a read-only mount. "+
+			"Check that --archive-dir points at a read-only-mounted archive, not a production/workflow path.",
+			opts.ArchiveDir)
+	}
+
 	var batches []*models.Batch
 	batches, err = models.FindLiveBatches()
 	if err != nil {
