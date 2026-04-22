@@ -109,55 +109,42 @@ func main() {
 		return
 	}
 
-	// Walk each found batch, validate, show details, and confirm individually
+	// Phase 1: validate every found batch up front. Full bag validation is
+	// slow, so we do all of it before prompting — that lets the validation
+	// pass run unattended (overnight) and the operator answer prompts all at
+	// once when they come back.
+	fmt.Printf("Validating %d batch(es)...\n", len(found))
+	var ready []*readyBatch
+	var invalid int
+	for i, b := range found {
+		fmt.Printf("[%d/%d] %s\n", i+1, len(found), b.FullName)
+		var rb, ok = validateBatch(b, cache)
+		if !ok {
+			invalid++
+			continue
+		}
+		ready = append(ready, rb)
+	}
+
+	fmt.Printf("\nValidation complete: %d ready, %d invalid.\n\n", len(ready), invalid)
+	if len(ready) == 0 {
+		fmt.Println("Nothing to archive.")
+		return
+	}
+
+	// Phase 2: show each validated batch and confirm individually.
 	var stdin = bufio.NewReader(os.Stdin)
-	var archived, skipped, invalid, failed int
-	for _, b := range found {
-		var archivePath = filepath.Join(opts.ArchiveDir, b.FullName)
-
-		var issues []*models.Issue
-		issues, err = b.Issues()
-		if err != nil {
-			fmt.Printf("Cannot load issues for %s: %s\nSkipping.\n\n", b.FullName, err)
-			invalid++
-			continue
-		}
-
-		var xmlCount int
-		xmlCount, err = countIssuesInBatchXML(archivePath)
-		if err != nil {
-			fmt.Printf("Cannot read batch.xml for %s: %s\nSkipping.\n\n", b.FullName, err)
-			invalid++
-			continue
-		}
-		if xmlCount != len(issues) {
-			fmt.Printf("Issue count mismatch for %s: DB has %d, batch.xml has %d. Skipping.\n\n",
-				b.FullName, len(issues), xmlCount)
-			invalid++
-			continue
-		}
-
-		var validStatus string
-		if opts.SkipValidation {
-			validStatus = "SKIPPED (--skip-validation)"
-		} else {
-			var ok bool
-			validStatus, ok = ensureValidated(b, archivePath, cache)
-			if !ok {
-				invalid++
-				fmt.Println()
-				continue
-			}
-		}
-
+	var archived, skipped, failed int
+	for _, rb := range ready {
+		var b = rb.batch
 		fmt.Println("----------------------------------------")
 		fmt.Printf("Batch:      %s\n", b.FullName)
 		fmt.Printf("MARC Org:   %s\n", b.MARCOrgCode)
 		fmt.Printf("Created:    %s\n", b.CreatedAt.Format("2006-01-02"))
 		fmt.Printf("Went live:  %s\n", b.WentLiveAt.Format("2006-01-02"))
-		fmt.Printf("Issues:     %d\n", len(issues))
-		fmt.Printf("Archive at: %s\n", archivePath)
-		fmt.Printf("Validated:  %s\n", validStatus)
+		fmt.Printf("Issues:     %d\n", len(rb.issues))
+		fmt.Printf("Archive at: %s\n", rb.archivePath)
+		fmt.Printf("Validated:  %s\n", rb.validStatus)
 		fmt.Println("----------------------------------------")
 
 		if !prompt(stdin, fmt.Sprintf("Mark %s as archived? [y/N] ", b.FullName)) {
@@ -188,6 +175,53 @@ func main() {
 	fmt.Println()
 }
 
+// readyBatch holds a batch that has passed all validation and is ready to be
+// presented to the operator for archival confirmation.
+type readyBatch struct {
+	batch       *models.Batch
+	archivePath string
+	issues      []*models.Issue
+	validStatus string
+}
+
+// validateBatch runs all pre-archive checks for a single batch: issue load,
+// batch.xml issue-count match, and BagIt validation (cached or fresh). On
+// success it returns a readyBatch; on failure it prints the reason and
+// returns nil, false.
+func validateBatch(b *models.Batch, cache *validationCache) (*readyBatch, bool) {
+	var archivePath = filepath.Join(opts.ArchiveDir, b.FullName)
+
+	var issues, err = b.Issues()
+	if err != nil {
+		fmt.Printf("  FAIL: cannot load issues: %s\n", err)
+		return nil, false
+	}
+
+	var xmlCount int
+	xmlCount, err = countIssuesInBatchXML(archivePath)
+	if err != nil {
+		fmt.Printf("  FAIL: cannot read batch.xml: %s\n", err)
+		return nil, false
+	}
+	if xmlCount != len(issues) {
+		fmt.Printf("  FAIL: issue count mismatch (DB=%d, batch.xml=%d)\n", len(issues), xmlCount)
+		return nil, false
+	}
+
+	var validStatus string
+	if opts.SkipValidation {
+		validStatus = "SKIPPED (--skip-validation)"
+	} else {
+		var ok bool
+		validStatus, ok = ensureValidated(b, archivePath, cache)
+		if !ok {
+			return nil, false
+		}
+	}
+	fmt.Printf("  OK: %s\n", validStatus)
+	return &readyBatch{batch: b, archivePath: archivePath, issues: issues, validStatus: validStatus}, true
+}
+
 // ensureValidated returns a human-readable status string for the batch's
 // validation state and a boolean indicating whether the bag is valid (and
 // therefore safe to offer for archiving). It consults the cache first; on a
@@ -195,7 +229,7 @@ func main() {
 func ensureValidated(b *models.Batch, archivePath string, cache *validationCache) (string, bool) {
 	var fingerprint, err = tagmanifestFingerprint(archivePath)
 	if err != nil {
-		fmt.Printf("Cannot read tagmanifest for %s: %s\nSkipping (archive may not be a valid bag).\n", b.FullName, err)
+		fmt.Printf("  FAIL: cannot read tagmanifest (archive may not be a valid bag): %s\n", err)
 		return "", false
 	}
 
@@ -204,21 +238,20 @@ func ensureValidated(b *models.Batch, archivePath string, cache *validationCache
 		return fmt.Sprintf("YES (cached %s)", entry.ValidatedAt.Format("2006-01-02")), true
 	}
 
-	fmt.Printf("Validating %s (this may take a while) ...\n", b.FullName)
+	fmt.Printf("  validating (this may take a while)...\n")
 	var start = time.Now()
 	var discrepancies []string
 	discrepancies, err = validateArchive(archivePath)
 	var elapsed = time.Since(start).Round(time.Second)
 	if err != nil {
-		fmt.Printf("Validation error for %s: %s\nSkipping.\n", b.FullName, err)
+		fmt.Printf("  FAIL: validation error: %s\n", err)
 		return "", false
 	}
 	if len(discrepancies) > 0 {
-		fmt.Printf("Validation FAILED for %s (%s):\n", b.FullName, elapsed)
+		fmt.Printf("  FAIL: validation discrepancies (%s):\n", elapsed)
 		for _, d := range discrepancies {
-			fmt.Printf("  - %s\n", d)
+			fmt.Printf("    - %s\n", d)
 		}
-		fmt.Println("Skipping.")
 		return "", false
 	}
 
