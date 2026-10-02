@@ -16,7 +16,7 @@ var marcStripLocRE = regexp.MustCompile(`[ /:,]+$`)
 
 type subfield struct {
 	Code string `xml:"code,attr"`
-	Data string `xml:",innerxml"`
+	Data string `xml:",chardata"`
 }
 
 type datafield struct {
@@ -28,7 +28,7 @@ type datafield struct {
 
 type controlfield struct {
 	Tag  string `xml:"tag,attr"`
-	Data string `xml:",innerxml"`
+	Data string `xml:",chardata"`
 }
 
 type marcXML struct {
