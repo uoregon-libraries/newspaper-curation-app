@@ -34,6 +34,28 @@ Brief description, if necessary
 ### Migration
 -->
 
+## v6.3.2
+
+Compose updates, MARC bugfix
+
+### Changed
+
+- Refactored the compose stack (dev-only) to make things more podman-compatible
+  and adhere a little better to best practices
+  - Environment vars are hashes (key/value) instead of lists
+  - Volume overrides in the "hybrid" compose example are done by modifying the
+    volumes directly instead of mounting local files per-service
+  - All image names have their registry prefix (docker.io)
+  - Removed obsolete mysql config
+  - Fixed ONI setup for easier dev work in non-localhost environment (e.g., a
+    VMWare stack you need to access via an IP address)
+
+### Fixed
+
+- MARC XML values are now decoded properly, so characters like apostrophes and
+  ampersands no longer show up as HTML entities (e.g., `&#39;`) in a title's
+  MARC title, MARC location, or name.
+
 ## v6.3.1
 
 Minor changes and more bug fixing. Fun!
