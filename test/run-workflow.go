@@ -3,6 +3,7 @@
 package main
 
 import (
+	"fmt"
 	"os"
 	"path/filepath"
 	"sort"
@@ -98,8 +99,14 @@ func curate(u *models.User, i *models.Issue) {
 	if err != nil {
 		l.Fatalf("Cannot read pages: %s", err)
 	}
-	for range pages {
-		i.PageLabels = append(i.PageLabels, "0")
+	// Leave the first page unlabeled (like a cover page), then use section-style
+	// labels so no label matches its page's sequence number
+	for n := range pages {
+		var label = "0"
+		if n > 0 {
+			label = fmt.Sprintf("A%d", n)
+		}
+		i.PageLabels = append(i.PageLabels, label)
 	}
 
 	err = jobs.QueueIssueForMetadataReview(i, u)
