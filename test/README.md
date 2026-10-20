@@ -151,6 +151,9 @@ and then runs said operation: if you ask for curation, all issues awaiting
 metadata entry will have dummy data entered, while asking for review simply
 approves all issues awaiting metadata review.
 
+Dummy page labels leave the first page unlabeled and label the rest "A1",
+"A2", etc.
+
 For review, it also queues the job which finalizes the metadata (generating
 METS XML). Once those jobs run, issues will be ready for batching via the
 standard `queue-batches` command.
