@@ -55,10 +55,8 @@ else
 fi
 
 if [[ ! -d ./backup/03-$name ]]; then
-  make bin/run-jobs
-  start_docker_services
   wait_db
-  ./bin/queue-batches -c ./settings 2>&1 | tee -a queue-batches.log
+  ncacli queue-batches 2>&1 | tee -a queue-batches.log
 
   echo "Disable Solr in staging, then press [ENTER] continue."
   read
@@ -70,9 +68,11 @@ if [[ ! -d ./backup/03-$name ]]; then
   echo "Press [ENTER] to start the job runner"
   read
 
-  # Start workers, wait for jobs to complete (~30sec). Do NOT use the
-  # "workonce" shortcut, as it will restart solr!
-  ./bin/run-jobs -c ./settings -v --exit-when-done watchall
+  # Run jobs until they're done (~30sec). This mustn't start any services, or
+  # it would bring Solr back, so make sure the workers service stays stopped
+  # and the job runner skips dependencies (ncacli uses --no-deps).
+  nca_compose stop workers
+  ncacli run-jobs -v --exit-when-done watchall
 
   echo "Verify batches are on ONI staging, approve them in NCA, then press [ENTER] continue"
   read
@@ -96,6 +96,5 @@ else
   ./manage restore 04-$name
 fi
 
-wait_db
-go run test/report.go -c ./settings --dir=$(pwd)/test --name=$name
+make_report "$name"
 echo "DONE"

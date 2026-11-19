@@ -1,0 +1,6 @@
+# SFTPGo for publisher uploads, plus a dev-only seed file. The seed is *not*
+# loaded unless SFTPGO_LOADDATA_FROM points at it (see .env.example), since it
+# holds a publicly known admin password and API key.
+FROM docker.io/drakkan/sftpgo:v2.5-alpine
+
+COPY ./docker/sftpgo/dev-data.json /etc/sftpgo/dev-data.json

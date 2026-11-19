@@ -58,7 +58,7 @@ wait_db
 
 # Hack up one of the titles to say it isn't validated
 echo "Setting a title to be invalid"
-mysql -unca -pnca -Dnca -h127.0.0.1 -e "
+ncasql -e "
   UPDATE titles
     SET valid_lccn = 0
     WHERE lccn IN (
@@ -92,6 +92,5 @@ else
   ./manage restore 04-$name
 fi
 
-wait_db
-go run test/report.go -c ./settings --dir=$(pwd)/test --name=$name
+make_report "$name"
 echo "DONE"

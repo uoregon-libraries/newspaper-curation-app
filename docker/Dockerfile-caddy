@@ -1,0 +1,6 @@
+# Web proxy: the NCA stack's one public HTTP entry point
+FROM docker.io/library/caddy:2.11-alpine
+
+COPY ./docker/caddy/Caddyfile /etc/caddy/Caddyfile
+
+EXPOSE 80

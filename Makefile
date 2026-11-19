@@ -1,6 +1,6 @@
 SOURCES := $(shell find ./src ./internal -name "*.go")
 SOURCEDIRS := $(shell find ./src ./internal -type d)
-BUILD := $(shell git describe --tags)
+BUILD := $(shell git describe --tags 2>/dev/null)
 
 .PHONY: all
 all: deps validate build

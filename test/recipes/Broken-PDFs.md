@@ -16,7 +16,7 @@ export name=fix
 prep_for_testing >prep.log 2>&1
 
 # Wait until DB is up and start workers
-workers >work.log 2>&1
+workonce >work.log 2>&1
 
 # Check logs for errors just to be sure things did what we expect
 cat work.log | grep -v " - \(INFO\|DEBUG\) - "
@@ -35,7 +35,7 @@ cd test
 cd ..
 
 # Restart workers, replacing log
-workers >work.log 2>&1
+workonce >work.log 2>&1
 
 # Wait for jobs to complete and the two failures to finalize (~10min)
 
@@ -43,7 +43,7 @@ workers >work.log 2>&1
 ./manage backup 02-$name
 
 # Run the command to remove dead issues
-make clean && make bin/remove-dead-issues && ./bin/remove-dead-issues -c ./settings
+ncacli remove-dead-issues
 
 # Deleted issues should include:
 #
@@ -51,7 +51,7 @@ make clean && make bin/remove-dead-issues && ./bin/remove-dead-issues -c ./setti
 # 2021242619/2020090201
 
 # Run workers one last time
-workers >work.log 2>&1
+workonce >work.log 2>&1
 
 ```
 

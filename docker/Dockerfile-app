@@ -1,57 +1,99 @@
-FROM docker.io/golang:1 AS build
-LABEL maintainer="Jeremy Echols <jechols@uoregon.edu>"
+# NCA's image. One image runs the web server ("web"), the job runner
+# ("workers"), and one-off commands ("cli").
+#
+# Targets:
+#
+# - production (the default): compiled binaries, templates, and static files
+# - dev: production's runtime plus Go. The source tree gets bind-mounted over
+#   /usr/local/nca (see compose.override.example.yml), and the entrypoint
+#   recompiles whatever it's asked to run, so restarting a container picks up
+#   code changes.
+#
+# Configuration: /etc/nca/settings is settings-example, verbatim. Everything
+# environment-specific is set via NCA_* environment variables (see compose.yml
+# and .env.example), which override the file's values.
+
+ARG GO_IMAGE=docker.io/library/golang:1.26
+
+###
+# Go toolchain, used by "build" and copied into "dev"
+###
+FROM ${GO_IMAGE} AS go
+
+###
+# Runtime dependencies shared by "production" and "dev"
+###
+FROM docker.io/library/rockylinux:9 AS base
+
+RUN dnf install -y 'dnf-command(config-manager)' && \
+    dnf config-manager --set-enabled crb && \
+    dnf install -y epel-release && \
+    dnf upgrade --refresh -y && \
+    dnf install -y poppler-utils openjpeg2-tools GraphicsMagick ghostscript mariadb jq && \
+    dnf clean all
+
+WORKDIR /usr/local/nca
+
+# Lock dir for the entrypoint (backed by a volume shared by all NCA services)
+RUN mkdir -p /var/local/nca/locks /var/local/news/nca/cache
+
+ENV NCA_CONFIG=/etc/nca/settings
+ENV PATH=/usr/local/nca/bin:$PATH
+
+ENTRYPOINT ["/usr/local/bin/entrypoint.sh"]
+CMD ["server"]
+
+###
+# Compile all NCA binaries
+###
+FROM go AS build
 
 WORKDIR /usr/local/src/nca
 
-# Grab and build the source before worrying about config files so when config
-# changes we aren't having to rebuild everything
-COPY ./Makefile /usr/local/src/nca/Makefile
-COPY ./scripts /usr/local/src/nca/scripts
-COPY ./src /usr/local/src/nca/src
-COPY ./internal /usr/local/src/nca/internal
-COPY ./go.mod /usr/local/src/nca/go.mod
-COPY ./go.sum /usr/local/src/nca/go.sum
-COPY ./revive.toml /usr/local/src/nca/revive.toml
-RUN make
+# Dependencies first, so code changes don't mean re-downloading everything
+COPY ./go.mod ./go.sum ./
+RUN go mod download
 
-WORKDIR /opt/sudo
-COPY ./docker/sudo.go /opt/sudo/sudo.go
-RUN go build ./sudo.go
+COPY ./Makefile ./
+COPY ./scripts ./scripts
+COPY ./internal ./internal
+COPY ./src ./src
 
-# This image is used both for the workers and the web server containers; this
-# is not a great practice.  In a production environment you probably would want
-# a much slimmer web server that only had the "server" binary and the static
-# files and templates.  The worker system would need a bit more, like the
-# openjpeg tools, poppler, etc., but still wouldn't need the whole Go stack or
-# a Maria DB client.
-FROM docker.io/rockylinux:9 AS app
-LABEL maintainer="Jeremy Echols <jechols@uoregon.edu>"
+# Static binaries: the runtime image's libc isn't the build image's libc.
+# BUILD is NCA's version string (the Makefile normally gets it from git, which
+# isn't in the build context).
+ARG NCA_VERSION=unknown
+ENV CGO_ENABLED=0
+RUN make fast BUILD=$NCA_VERSION
 
-RUN dnf update -y && dnf upgrade --refresh -y
-RUN dnf install -y 'dnf-command(config-manager)'
-RUN dnf config-manager --set-enabled crb
-RUN dnf install -y epel-release
-RUN dnf install -y libpng-devel libtiff-devel
-RUN dnf install -y poppler-utils openjpeg2-tools GraphicsMagick ghostscript mariadb jq
+###
+# Dev: production's runtime plus Go, git, and make. The source isn't copied
+# in; it's expected to be bind-mounted at /usr/local/nca.
+###
+FROM base AS dev
 
-# NCA binaries are pulled from the build image
-WORKDIR /usr/local/nca
-RUN mkdir -p /usr/local/nca
-COPY --from=build /usr/local/src/nca/bin /usr/local/nca/bin
-COPY --from=build /opt/sudo/sudo /bin/sudo
+RUN dnf install -y git make && dnf clean all
 
-# NCA support files: SFTPGo helper scripts, web server dependencies, and the
-# settings file
-COPY ./sftpgo/*.sh /usr/local/nca/sftpgo/
-COPY ./static /usr/local/nca/static
-COPY ./templates /usr/local/nca/templates
-COPY ./settings-example /usr/local/nca/settings
+COPY --from=go /usr/local/go /usr/local/go
 
-# Utilities
-COPY ./docker/wait_for_database /usr/local/bin/
-COPY ./docker/entrypoint.sh /entrypoint.sh
+# Both Go caches live under /root/.cache so one volume can persist them
+ENV PATH=/usr/local/nca/bin:/usr/local/go/bin:$PATH
+ENV CGO_ENABLED=0
+ENV GOCACHE=/root/.cache/go-build
+ENV GOMODCACHE=/root/.cache/go-mod
+ENV GOTOOLCHAIN=local
 
-# Get the cache directory prepared
-RUN mkdir -p /var/local/news/nca/cache
+# Config and scripts go last in each final stage, since they change the most
+COPY ./settings-example /etc/nca/settings
+COPY ./docker/entrypoint.sh ./docker/wait-for-db /usr/local/bin/
 
-ENTRYPOINT ["/entrypoint.sh"]
+###
+# Production (default target): the compiled app
+###
+FROM base AS production
+
+COPY --from=build /usr/local/src/nca/bin ./bin
+COPY ./static ./static
+COPY ./templates ./templates
+COPY ./settings-example /etc/nca/settings
+COPY ./docker/entrypoint.sh ./docker/wait-for-db /usr/local/bin/

@@ -79,6 +79,5 @@ else
   ./manage restore 04-$name
 fi
 
-wait_db
-go run test/report.go -c ./settings --dir=$(pwd)/test --name=$name
+make_report "$name"
 echo "DONE"

@@ -1,0 +1,31 @@
+{
+	{$CADDY_DEBUG:}
+
+	# The stack is meant to sit behind another proxy (e.g., Apache doing
+	# authentication) that records the real client IP in X-Forwarded-For.
+	# Rootless podman's port forwarder hides the real peer address, so Caddy
+	# has to trust the forwarded header from these ranges to log anything
+	# useful.
+	servers {
+		trusted_proxies {$CADDY_TRUSTED_PROXIES:static private_ranges}
+	}
+}
+
+# Public listener: the only published HTTP port in the stack.
+#
+# SECURITY: NCA trusts the X-Remote-User header to say who's logged in, and
+# that header is passed through untouched. Whatever is in front of this
+# listener *must* authenticate users and set (or strip) X-Remote-User, and
+# nothing else may be able to reach this port.
+:80 {
+	log
+
+	# RAIS: page images for metadata entry and review
+	handle /images/iiif/* {
+		reverse_proxy iiif:12415
+	}
+
+	handle {
+		reverse_proxy web:8080
+	}
+}

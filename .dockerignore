@@ -1,11 +1,16 @@
+# Keep the build context small, and keep local config and data out of images
+.git
 /backup
 /bin
 /pkg
 /vendor/src
 /tmp
 /test
+/logs
+/docs
+/hugo
 /settings
+/.env
 /.build.txt
-.git
 /db/dbconf.yml
 /compose.override.yml

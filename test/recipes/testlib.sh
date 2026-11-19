@@ -2,7 +2,7 @@
 set -eu
 
 wait_db() {
-  start_docker_services
+  nca_up
   set +e && wait_for_database && set -e
 }
 
@@ -15,23 +15,21 @@ get_testname() {
   echo $name
 }
 
+# Makes sure images are current. NCA's binaries are built from your checkout
+# whenever a container starts, so there's nothing to compile here.
 build_and_clean() {
-  make clean
-  make fast
+  nca_compose build
+  nca_compose --profile tools build cli
   rm -f workers.log
 }
 
 load_titles() {
-  cd test
-  go run load-marc.go -c ../settings
-  cd ..
+  ncatest go run load-marc.go
 }
 
 prep_and_backup_00() {
   if [[ ! -d ./backup/00-$name ]]; then
     prep_for_testing
-    docker compose up -d oni-agent-staging oni-agent-prod
-    sleep 1
     load_titles
 
     # Save state using the "name" variable from above
@@ -49,7 +47,7 @@ queue_batches() {
   wait_db
 
   # Generate batches
-  ./bin/queue-batches -c ./settings 2>&1 | tee -a queue-batches.log
+  ncacli queue-batches 2>&1 | tee -a queue-batches.log
 
   # Start workers, wait for jobs to complete (~30sec)
   workonce 2>&1 | tee -a workers.log
@@ -69,17 +67,19 @@ curate_and_review() {
   wait_db
 
   # Fake-curate, fake-review
-  cd test
-  go run run-workflow.go -c ../settings --operation curate
-  cd ..
+  ncatest go run run-workflow.go --operation curate
 
   # Start workers, wait for jobs to complete (~30sec)
   workonce 2>&1 | tee -a workers.log
 
-  cd test
-  go run run-workflow.go -c ../settings --operation review
-  cd ..
+  ncatest go run run-workflow.go --operation review
 
   # Start workers, wait for jobs to complete (~30sec)
   workonce 2>&1 | tee -a workers.log
+}
+
+# Writes the end-of-test report to test/<name>-report
+make_report() {
+  wait_db
+  ncatest go run report.go --dir=/usr/local/nca/test --name="$1"
 }

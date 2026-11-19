@@ -1,0 +1,31 @@
+#!/usr/bin/env bash
+#
+# Runs "podman compose" with each profile in COMPOSE_PROFILES passed as a
+# --profile flag. podman-compose before 1.6.0 (e.g., a distro package we don't
+# control) ignores COMPOSE_PROFILES, so profiled services (e.g., the local-dev
+# ONI stacks) silently drop out of up, down, ps, logs, etc. Newer versions just
+# see the same profiles twice, which is harmless.
+#
+# COMPOSE_PROFILES comes from the environment if set, else .env, which is the
+# same precedence compose uses.
+
+set -euo pipefail
+
+# Change to project dir so compose works properly
+cd "$(dirname "$0")/.."
+
+if [ -z "${COMPOSE_PROFILES+x}" ] && [ -f .env ]; then
+  # Last assignment wins, as in compose; drop inline comments and quotes
+  COMPOSE_PROFILES=$(sed -n 's/^[[:space:]]*COMPOSE_PROFILES[[:space:]]*=//p' .env |
+    tail -n 1 | sed 's/[[:space:]]#.*//' | tr -d "\"'[:space:]")
+fi
+
+args=()
+IFS=, read -ra profiles <<<"${COMPOSE_PROFILES:-}"
+for p in "${profiles[@]}"; do
+  if [ -n "$p" ]; then
+    args+=(--profile "$p")
+  fi
+done
+
+exec podman compose "${args[@]}" "$@"

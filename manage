@@ -1,124 +1,97 @@
 #!/usr/bin/env bash
+#
+# Snapshots for dev and testing: back up or restore the whole dev stack's
+# state (test/fakemount plus the stack's volumes), or wipe it. Backups live in
+# ./backup/<name>. Requires rootless podman; see scripts/localdev.sh.
 set -eu
 
-PROJECT=$(docker compose config --format json | jq '.name' | sed 's|"||g')
-VOLUMES=$(docker compose config --volumes | sed 's|"||g')
+cd "$(dirname "$0")"
+source ./scripts/localdev.sh
+
+PROJECT=$(_nca_project)
+
+# Volumes that aren't stack state: Go's caches and the dev image's binaries
+SKIP_VOLUMES="go-cache dev-bin"
+
+# Prints the stack's volumes (compose names, e.g., "db") holding data we
+# snapshot: everything compose created except the skipped volumes and those
+# bound to host directories, which live in test/fakemount
+data_volumes() {
+  local vol name
+  for vol in $(podman volume ls -q --filter "label=io.podman.compose.project=$PROJECT"); do
+    name=${vol#"${PROJECT}_"}
+    if [[ " $SKIP_VOLUMES " == *" $name "* ]]; then
+      continue
+    fi
+    if [[ $(podman volume inspect --format '{{index .Options "o"}}' "$vol") == "bind" ]]; then
+      continue
+    fi
+    echo "$name"
+  done
+}
 
 nuke() {
   echo "Deleting the stack"
-  docker compose kill
-  docker compose down -v
-  rm ./test/fakemount/* -rf
+  nca_compose down
+  # shellcheck disable=SC2046
+  _nca_rm_volumes $(data_volumes)
+  podman unshare rm -rf ./test/fakemount
   echo "Done (Deleting the stack)"
 }
 
-dcup() {
-  echo "Starting up key docker services"
-  docker compose up -d iiif sftpgo db oni-agent-staging oni-agent-prod oni-staging oni-prod
-  echo "Done (Starting up key docker services)"
-}
-
 backup() {
-  # This "create" usually won't matter, but it ensures all volumes have been
-  # created so we don't get errors trying to back them up
-  docker compose create
+  local dir=$1 vol
 
-  dir=$(realpath $1)
-  mkdir -p $dir
+  # Make sure every volume exists so the backup is complete
+  _nca_host_dirs
+  nca_compose up --no-start
 
   echo "Taking down the stack gracefully"
-  docker compose down
-  echo "Done (Taking down the stack gracefully)"
+  nca_compose down
 
-  echo "Deleting old backups (if any)"
-  fakemount="$dir/fakemount.tar"
-  sudo rm -f $dir/*.tar
-  echo "Done (Deleting old backups (if any))"
+  mkdir -p "$dir"
+  rm -f "$dir"/*.tar
 
   echo "Writing fakemount backup"
-  sudo tar -cpf $fakemount ./test/fakemount
+  podman unshare tar -cpf "$dir/fakemount.tar" ./test/fakemount
 
-  echo "Backing up docker volumes..."
-  for vol in $VOLUMES; do
-    name="${PROJECT}_${vol}"
-    voldir="/var/lib/docker/volumes/$name"
-    backup="$dir/volume-$vol.tar"
-    echo "  - Processing volume $vol"
-    echo "    ($voldir -> $backup)"
-    sudo su -c "cd $voldir && tar -cpf $backup ."
+  echo "Backing up volumes..."
+  for vol in $(data_volumes); do
+    echo "  - $vol"
+    podman volume export "${PROJECT}_$vol" --output "$dir/volume-$vol.tar"
   done
+  echo "Done (Backing up to $dir)"
 
-  echo "Done (Writing new backup files)"
-
-  dcup
-}
-
-migrate() {
-  docker compose run --rm workers wait_for_database
-}
-
-load_seed_data() {
-  docker compose run --rm workers wait_for_database
-  docker compose run --rm workers mysql -unca -pnca -Dnca -hdb < ./docker/mysql/nca-seed-data.sql
+  nca_up
 }
 
 restore() {
+  local dir=$1 tarfile vol
+
   nuke
 
-  dir="$1"
   echo "Restoring from $dir"
-  fakemount="$dir/fakemount.tar"
-  sudo tar -xspf $fakemount ./test/fakemount
+  podman unshare tar -xpf "$dir/fakemount.tar"
 
-  echo "Restoring docker volumes..."
-  for vol in $VOLUMES; do
-    name="${PROJECT}_${vol}"
-    voldir="/var/lib/docker/volumes/$name"
-    backup="$dir/volume-$vol.tar"
-    echo "  - Processing volume $vol"
-    echo "    ($backup -> $voldir)"
-    sudo su -c "mkdir -p $voldir && cd $voldir && tar -mxspf $backup"
+  for tarfile in "$dir"/volume-*.tar; do
+    vol=${tarfile##*/volume-}
+    vol=${vol%.tar}
+    echo "  - $vol"
+    podman volume create --label "io.podman.compose.project=$PROJECT" "${PROJECT}_$vol" >/dev/null
+    podman volume import "${PROJECT}_$vol" "$tarfile"
   done
-
   echo "Done (Restoring from $dir)"
 
-  dcup
-
-  sleep 2
-  echo "Hacking SFTPGo 'home' volume permissions"
-  sudo chown $(whoami):$(whoami) /var/lib/docker/volumes/${PROJECT}_sftpgo-home/_data
-  echo "Done (Hacking SFTPGo 'home' volume permissions)"
-}
-
-build() {
-  echo "Building NCA images"
-  docker compose build
-  echo "Done (Building NCA images)"
-}
-
-resetfakemount() {
-  pushd .
-  cd ./test
-  ./makemine.sh
-  rm fakemount/* -rf
-  go run copy-sources.go .
-  ./make-older.sh
-  popd
+  nca_up
 }
 
 reset() {
   echo "Resetting the stack"
-  build
-  docker compose down -v
-  migrate
-  load_seed_data
+  nca_compose build
+  resetdb
   resetfakemount
   echo "Done (Resetting the stack)"
 }
-
-# This ensures the first thing I do is type my password so I can walk away
-# without unexpected sudo prompts holding up the process
-sudo echo
 
 dir="./backup/${2:-default}"
 
@@ -128,7 +101,7 @@ reset)
   ;;
 
 build)
-  build
+  nca_compose build
   ;;
 
 nuke)
@@ -136,23 +109,23 @@ nuke)
   ;;
 
 backup)
-  echo 'Backing up to "'$dir'" in two seconds....'
+  echo "Backing up to \"$dir\" in two seconds...."
   sleep 2
-  backup $dir
+  backup "$dir"
   ;;
 
 restore)
   sec=2
-  dir=$(realpath $dir)
+  dir=$(realpath "$dir")
   if [[ ! -d $dir ]]; then
     dirname=${dir%/*}
     wildcard="${dir##*/}*"
-    dir=$(find $dirname -mindepth 1 -maxdepth 1 -type d -name "$wildcard")
+    dir=$(find "$dirname" -mindepth 1 -maxdepth 1 -type d -name "$wildcard")
     sec=5
   fi
-  echo 'Restoring from "'$dir'" in '"$sec seconds...."
+  echo "Restoring from \"$dir\" in $sec seconds...."
   sleep $sec
-  restore $dir
+  restore "$dir"
   ;;
 
 migrate)
@@ -160,5 +133,6 @@ migrate)
   ;;
 
 *)
-  echo "Usage: ./manage <reset|build|nuke|backup|restore|migrate>"
+  echo "Usage: ./manage <reset|build|nuke|backup|restore|migrate> [backup name]"
+  ;;
 esac

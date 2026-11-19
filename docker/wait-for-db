@@ -1,0 +1,41 @@
+#!/usr/bin/env bash
+#
+# Waits until NCA's database accepts a login. Connection info comes from the
+# NCA settings file ($NCA_CONFIG), with any NCA_DB_* environment variables
+# taking precedence, the same way NCA itself reads it.
+set -uo pipefail
+
+# The settings file is bash-compatible, but NCA's env overrides must win, so
+# we read the file in a subshell and only take values it has
+read_setting() {
+  local name=$1
+  local override="NCA_$name"
+  if [[ -n ${!override+x} ]]; then
+    echo "${!override}"
+    return
+  fi
+  (
+    # shellcheck disable=SC1090
+    source "${NCA_CONFIG:?NCA_CONFIG must be set}"
+    echo "${!name:-}"
+  )
+}
+
+host=$(read_setting DB_HOST)
+port=$(read_setting DB_PORT)
+user=$(read_setting DB_USER)
+db=$(read_setting DB_DATABASE)
+export MYSQL_PWD
+MYSQL_PWD=$(read_setting DB_PASSWORD)
+
+max_tries=${WAIT_FOR_DB_TRIES:-60}
+for ((try = 1; try <= max_tries; try++)); do
+  if mysql -h"$host" -P"${port:-3306}" -u"$user" -D"$db" -e "SELECT 1" >/dev/null 2>&1; then
+    exit 0
+  fi
+  echo "Waiting for database $user@$host:${port:-3306}/$db ($try/$max_tries)"
+  sleep 2
+done
+
+echo "ERROR: unable to connect to the database after $max_tries attempts" >&2
+exit 2

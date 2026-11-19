@@ -1,0 +1,97 @@
+# Copy this to `compose.override.yml` for local development.
+#
+# Overrides are for *structural* changes only: published ports, host-directory
+# volumes, and the dev build target. All configuration goes in `.env`. If you
+# need to override an environment variable that `.env` doesn't expose, fix
+# compose.yml and `.env.example` instead of muddying up your override.
+#
+# Production would use an override too, but a much smaller one: publish the
+# proxy (and SFTPGo's SFTP port if it's in the stack), and redefine the news,
+# batches, and issue-cache volumes as binds to absolute paths. No dev target,
+# no source mount.
+
+# Dev build: web, workers, and cli run the "dev" image target with your
+# checkout mounted over the app directory. The entrypoint recompiles whatever
+# binary a container runs, so the edit/compile/test loop is:
+#
+#   scripts/compose restart web workers
+#
+# Templates and static files are read straight from the checkout, so changes
+# there only need a page reload.
+#
+# The named volumes keep Go's caches between runs, and keep the container's
+# binaries out of your checkout's bin/ directory. Inline binds are normally
+# off-limits, but a source mount is dev-only by definition.
+x-nca-dev: &nca-dev
+  build:
+    target: dev
+  volumes:
+    - .:/usr/local/nca
+    - go-cache:/root/.cache
+    - dev-bin:/usr/local/nca/bin
+
+services:
+  # NCA, plus page images at /images/iiif. If you change the port, change
+  # PUBLIC_URL in `.env` to match.
+  proxy:
+    ports:
+      - "3333:80"
+
+  web: *nca-dev
+  workers: *nca-dev
+  cli: *nca-dev
+
+  # SFTPGo's web admin on 8081 (login "admin", password "password" with the
+  # dev seed), and SFTP on 2022 for test uploads
+  sftpgo:
+    ports:
+      - "8081:8080"
+      - "2022:2022"
+
+  # ONI production and staging. If you change these ports, change
+  # ONI_PROD_URL and ONI_STAGING_URL in `.env` to match.
+  oni-prod:
+    ports:
+      - "8080:80"
+  oni-staging:
+    ports:
+      - "8082:80"
+
+  # Uncomment for direct database access (e.g., a GUI client)
+  #db:
+  #  ports:
+  #    - "127.0.0.1:3306:3306"
+
+volumes:
+  # Go build and module caches, and the dev image's compiled binaries
+  go-cache: {}
+  dev-bin: {}
+
+  # NCA's workflow tree lives in test/fakemount so the test scripts (see
+  # test/README.md) can work on it from the host. `batches` is the same tree's
+  # production-batches dir, separately mounted because ONI needs it.
+  #
+  # These are bind mounts: the directories must exist, and removing the
+  # volumes won't delete their contents. driver_opts are baked in when a
+  # volume is created, so if you move your checkout, remove these volumes.
+  news:
+    driver: local
+    driver_opts:
+      type: none
+      o: bind
+      device: ${PWD}/test/fakemount
+  batches:
+    driver: local
+    driver_opts:
+      type: none
+      o: bind
+      device: ${PWD}/test/fakemount/production-batches
+
+  # The issue cache lives on the host so wiping the stack doesn't mean a long
+  # (10+ minute) wait while NCA rebuilds it from the live site
+  issue-cache:
+    driver: local
+    driver_opts:
+      type: none
+      o: bind
+      device: ${PWD}/tmp/issue-cache

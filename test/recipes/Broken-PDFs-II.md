@@ -13,7 +13,7 @@ export name=baseline
 export name=fix
 
 # Begin
-make clean && make && source scripts/localdev.sh && prep_for_testing >prep.log 2>&1
+source scripts/localdev.sh && prep_for_testing >prep.log 2>&1
 
 # Check logs for errors just to be sure things did what we expect
 cat prep.log | grep -v " - \(INFO\|DEBUG\) - "
@@ -30,18 +30,18 @@ echo "bad" > ./test/fakemount/sftp/polkitemizer/2010-04-19/0005.pdf
 sed -i 's|var maxDelay =.*$|var maxDelay = time.Second|' src/models/job.go
 
 # Run workers; wait for jobs to complete / fail (~10min)
-workers
+workonce
 
 # Stop workers, make another backup using the "name" variable from above
 ./manage backup 02-$name
 
 # Run the command to remove dead issues
-./bin/remove-dead-issues -c ./settings
+ncacli remove-dead-issues
 
 # Removed issue should be sn96088087/2010041901
 
 # Run workers one last time (~1 min)
-workers
+workonce
 
 # Restore the bad PDF
 cp ./backup.pdf test/sources/sftp/sn96088087-2010041901/0005.pdf

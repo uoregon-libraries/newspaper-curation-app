@@ -1,0 +1,28 @@
+{
+  "version": 16,
+  "admins": [
+    {
+      "id": 1,
+      "status": 1,
+      "username": "admin",
+      "password": "$2a$10$BVT1IV9omez/x1Ebhkb3aeU3LeKE8hAgYTgB8thtIgIF2nhJJ9Gke",
+      "permissions": [
+        "*"
+      ],
+      "description": "Dev-only admin (password: password)",
+      "filters": {
+        "allow_api_key_auth": true
+      }
+    }
+  ],
+  "api_keys": [
+    {
+      "id": "ncadev",
+      "name": "nca-dev",
+      "key": "$2a$10$NmRWe9SA0N5P8AvcVX/FMeleIzAojo6y98G6GevkfmHONLJCvMHxK",
+      "scope": 1,
+      "admin": "admin",
+      "description": "Dev-only NCA key: ncadev.dev-only-sftpgo-key"
+    }
+  ]
+}

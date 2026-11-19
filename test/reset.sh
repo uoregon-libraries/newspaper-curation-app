@@ -1,22 +1,19 @@
-#!/bin/bash
+#!/usr/bin/env bash
+#
+# Quick reset between test runs: clears issues, jobs, and batches from NCA's
+# database and reloads test/fakemount from the test sources, but keeps users,
+# titles, and the cached live-site data, which take much longer to rebuild.
 set -eu
 
-pushd .
-cd ..
+cd "$(dirname "$0")/.."
+source scripts/localdev.sh
 
-# Fry the issues, jobs, and batches from the database
-docker compose up -d db
-docker compose run --rm workers wait_for_database
-docker compose exec db mysql -unca -pnca -Dnca -e "delete from jobs; delete from issues; delete from job_logs; delete from batches;"
+nca_compose stop web workers
+ncasql -e "delete from jobs; delete from issues; delete from job_logs; delete from batches;"
 
-docker compose down
+# Remove the finder cache, but *not* the cached web data, so startup only has
+# to rescan the filesystem
+ncacli rm -f /var/local/news/nca/cache/finder.cache
 
-# Remove the finder cache, but *not* the cached web data - this gives us a
-# quicker upstart since we'll only have to rescan the filesystem
-docker compose run --rm workers rm -f /var/local/news/nca/cache/finder.cache
-
-popd
-./makemine.sh
-rm fakemount/* -rf
-go run copy-sources.go .
-./make-older.sh
+resetfakemount
+nca_compose start web workers
