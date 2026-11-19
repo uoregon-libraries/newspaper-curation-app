@@ -7,11 +7,13 @@ import (
 	"os"
 	"path"
 	"path/filepath"
+	"strconv"
 	"time"
 
 	"github.com/gorilla/mux"
 	flags "github.com/jessevdk/go-flags"
 	"github.com/uoregon-libraries/newspaper-curation-app/internal/logger"
+	"github.com/uoregon-libraries/newspaper-curation-app/src/cli"
 	"github.com/uoregon-libraries/newspaper-curation-app/src/cmd/server/internal/audithandler"
 	"github.com/uoregon-libraries/newspaper-curation-app/src/cmd/server/internal/batchhandler"
 	"github.com/uoregon-libraries/newspaper-curation-app/src/cmd/server/internal/batchmakerhandler"
@@ -30,8 +32,8 @@ import (
 )
 
 var opts struct {
-	ConfigFile string `short:"c" long:"config" description:"path to NCA config file" required:"true"`
-	Debug      bool   `long:"debug" description:"Enables debug mode for testing different users"`
+	ConfigFile string `short:"c" long:"config" env:"NCA_CONFIG" description:"path to NCA config file (required)"`
+	Debug      bool   `long:"debug" description:"Enables debug mode for testing different users (or set NCA_DEBUG=true)"`
 }
 
 var conf *config.Config
@@ -42,6 +44,12 @@ func getConf() {
 
 	if err != nil {
 		fmt.Fprintf(os.Stderr, "Error: %s\n\n", err)
+		p.WriteHelp(os.Stderr)
+		os.Exit(1)
+	}
+
+	if opts.ConfigFile == "" {
+		fmt.Fprintf(os.Stderr, "%s\n\n", cli.ConfigRequiredMessage)
 		p.WriteHelp(os.Stderr)
 		os.Exit(1)
 	}
@@ -71,12 +79,20 @@ func getConf() {
 	webutil.IIIFBaseURL = conf.IIIFBaseURL
 	webutil.ProductionURL = conf.NewsWebroot
 
-	if opts.Debug == true {
+	if opts.Debug || debugEnv() {
 		logger.Warnf("Debug mode has been enabled")
 		settings.DEBUG = true
 	}
 
 	responder.InitRootTemplate(filepath.Join(conf.AppRoot, "templates"))
+}
+
+// debugEnv reports whether NCA_DEBUG explicitly turns debug mode on. This is
+// parsed by hand rather than via go-flags, because go-flags treats an empty
+// value as "true", and debug mode lets anybody act as any user.
+func debugEnv() bool {
+	var val, err = strconv.ParseBool(os.Getenv("NCA_DEBUG"))
+	return err == nil && val
 }
 
 func makeRedirect(dest string, code int) http.Handler {

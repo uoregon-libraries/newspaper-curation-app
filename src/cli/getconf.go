@@ -24,9 +24,16 @@ type CLI struct {
 // BaseOptions represents the simplest possible list of CLI options an NCA
 // command can have: a config file.  Commands should extend this rather than
 // having their own custom type in order to ensure consistency.
+//
+// The config file isn't flagged as required because go-flags doesn't count an
+// environment default as having set the option. GetConf enforces it instead.
 type BaseOptions struct {
-	ConfigFile string `short:"c" long:"config" description:"path to NCA config file" required:"true"`
+	ConfigFile string `short:"c" long:"config" env:"NCA_CONFIG" description:"path to NCA config file (required)"`
 }
+
+// ConfigRequiredMessage is the error shown when a command isn't told where its
+// config file is
+const ConfigRequiredMessage = "Error: the config file must be specified via -c / --config or NCA_CONFIG"
 
 // New returns a CLI instance for parsing flags into the given structure
 func New(opts any) *CLI {
@@ -60,6 +67,9 @@ func (c *CLI) GetConf() *config.Config {
 	}
 
 	var configFile = fV.Interface().(string)
+	if configFile == "" {
+		c.UsageFail(ConfigRequiredMessage)
+	}
 
 	var conf, err = config.Parse(configFile)
 	if err != nil {
