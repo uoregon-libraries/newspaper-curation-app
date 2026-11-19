@@ -101,14 +101,41 @@ func getDirParts(dirName string) (*issue, error) {
 	return i, nil
 }
 
+// refreshFakemount empties the fakemount's workflow directories, creating any
+// that are missing. The directories themselves are kept, not replaced: the
+// dev stack bind-mounts some of them directly (e.g., production-batches), and
+// a bind mount whose directory gets replaced is left pointing at the deleted
+// one.
 func refreshFakemount(testDir string) {
 	for _, dir := range []string{"backup/originals", "outgoing", "production-batches", "page-review", "scans", "sftp", "workflow", "errors", "batch-archive"} {
 		var fullPath = filepath.Join(testDir, "fakemount", dir)
-		if err := os.RemoveAll(fullPath); err != nil {
-			l.Criticalf("Unable to delete %q: %s", fullPath, err)
+		if err := emptyDir(fullPath); err != nil {
+			l.Criticalf("Unable to empty %q: %s", fullPath, err)
 			os.Exit(255)
 		}
 	}
+}
+
+// emptyDir removes everything inside pth, creating pth if it doesn't exist
+func emptyDir(pth string) error {
+	var err = os.MkdirAll(pth, 0775)
+	if err != nil {
+		return err
+	}
+
+	var entries []os.DirEntry
+	entries, err = os.ReadDir(pth)
+	if err != nil {
+		return err
+	}
+	for _, entry := range entries {
+		err = os.RemoveAll(filepath.Join(pth, entry.Name()))
+		if err != nil {
+			return err
+		}
+	}
+
+	return nil
 }
 
 func moveSFTPs(testDir string) {
