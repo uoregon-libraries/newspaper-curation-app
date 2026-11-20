@@ -57,12 +57,12 @@ Don't try to skimp on the proxy settings. If you are using nginx and you don't
 use **all four** proxy settings we put in our `sftpgo.env` file, you'll drown
 in weird form token errors when you try to log in.
 
-If you're using docker, an admin user (login: `admin`, password: `password`) is
-created for you automatically, but is extremely insecure: you must change the
-default admin user's password at a minimum, or better yet use a docker override
-to set up an admin that has a unique name *and* a good password.
+In the container setup's dev configuration, SFTPGo is seeded with an admin
+(login: `admin`, password: `password`) and an API key for NCA. Everybody who
+has read `.env.example` knows both, so **never** use the dev seed
+(`SFTPGO_LOADDATA_FROM`) anywhere else.
 
-If you aren't using docker, you will need an admin user. The first time you
+Otherwise, you will need an admin user. The first time you
 connect to the SFTPGo web UI, you will be required to create an admin account,
 though you can also use the `create_default_admin` SFTPGo setting to
 automatically create one when sftpgo first runs. See the "Configuration file"
@@ -95,10 +95,11 @@ preventing all other publishers from uploading anything.
 
 ### SFTPGo API Key
 
-NCA connects to SFTPGo via an API key for a user with admin privileges. If you
-are using Docker with defaults for development, this API key is created and
-assigned in your NCA `settings` file automatically. For any non-docker use, one
-will have to use the Bash scripts in the `sftpgo/` directory. You will need to
+NCA connects to SFTPGo via an API key for a user with admin privileges. In the
+container setup's dev configuration, the key is already set up (see above). In
+the container setup otherwise, create a key in SFTPGo's web UI (or with the
+script below) and put it in `.env` as `SFTPGO_ADMIN_API_KEY`. For bare metal
+installs, use the Bash scripts in the `sftpgo/` directory. You will need to
 provide the environment variable `SETTINGS_PATH` with a value corresponding to
 the path to your NCA `settings` file to these Bash scripts. An example
 invocation of the key-fetcher might look like this:

@@ -25,7 +25,12 @@ settings:
   the raw setting and set the config field accordingly.
 - Open `settings-example` and add the setting with some documentation
   (bash-style comments) explaning what it does and how it should be used. When
-  you can, make sure the default "just works" with a standard docker setup.
+  you can, make sure the default "just works" in the container setup: the NCA
+  image uses `settings-example` as its settings file.
+- If the setting varies by environment, expose it to the containers: add an
+  `NCA_<SETTING>` entry to `x-nca-env` in `compose.yml`, interpolated from a
+  variable documented in `.env.example`. Use `:?` if there's no sane default,
+  so the stack refuses to start without it.
 
 Notes:
 

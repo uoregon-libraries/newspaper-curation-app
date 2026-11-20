@@ -148,7 +148,7 @@ services:
   #
   #   scripts/compose --profile tools run --rm --no-deps cli queue-batches
   #
-  # Never drop `--no-deps`, or every command restarts the stack.
+  # Keep `--no-deps`, so a one-off never starts services stopped on purpose.
   cli:
     <<: *nca
     profiles: [tools]

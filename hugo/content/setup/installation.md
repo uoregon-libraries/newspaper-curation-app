@@ -36,24 +36,20 @@ Manual installation has several prerequisites:
 [oni]: <https://github.com/open-oni/open-oni>
 [agent]: <https://github.com/open-oni/oni-agent>
 
-**Please note**: The easiest way to get a quick demo / test setup of NCA is via
-our Docker configuration / setup, and using the dummy ONI Agent set up in
-docker compose builds:
+**Please note**: NCA has a container setup (podman compose) that runs the
+whole suite, including a pair of demo ONI stacks for NCA to load batches into.
+It's how we develop NCA, and it's built to run production as well, though we
+haven't moved our own production systems to it yet. See
+[Containers][containers] for details, and the [compose.yml][compose.yml] and
+[docker directory][docker-dir] on GitHub.
 
-- [compose.yml][compose.yml]
-- [Docker][docker-dir]
-
+[containers]: <{{% ref "containers" %}}>
 [compose.yml]: <https://github.com/uoregon-libraries/newspaper-curation-app/blob/main/compose.yml>
 [docker-dir]: <https://github.com/uoregon-libraries/newspaper-curation-app/tree/main/docker>
 
-This is great to try things out, or for a quick one-off use of NCA. We don't
-recommend using it as is for production, however.
-
-We strongly recommend either crafting your own containerized setup with a mind
-to production reliability (which we haven't done) or just running NCA on bare
-metal - once the prerequisites above are installed, the rest of NCA is very
-easy to get running. If you go this route, you'll still find the docker setup
-helpful just in terms of understanding the full stack and configuration.
+The rest of this page covers a manual (bare metal) installation. Even if you
+go that route, the container setup is helpful for understanding the full stack
+and its configuration.
 
 ## Compile
 
@@ -83,10 +79,6 @@ than a second.
 Once you've compiled, the two key binaries are going to be `bin/server` for the
 HTTP listener, and `bin/run-jobs`, the job queue processor.
 
-Note that even if you do use Docker, for development you'll probably want to
-run all NCA's binaries locally and just have them communicate with the
-dockerized services. Again, see our [Development Guide][dev-guide] for details.
-
 ### Security Updates
 
 Every now and then a security issue arises in the Go standard library. It's
@@ -111,6 +103,5 @@ make
 ./bin/migrate-database -c ./settings up
 ```
 
-If you use docker, the entrypoint script should migrate automatically whenever
-the container starts up. If you're doing development and break the automatic
-migration, just run `migrate-database` inside the web container.
+In the container setup, the web and workers services migrate the database
+automatically whenever they start.

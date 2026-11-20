@@ -12,8 +12,8 @@ order to connect to whatever local instances of NCA and ONI you have running.
 
 Once you have a CDP-enabled browser running (the compose setup or otherwise),
 you simply have to set up some environment variables and run `go test` to
-invoke the test suite. An example, if you are developing on NCA in "hybrid"
-mode, might look like this:
+invoke the test suite. An example, if you are running NCA's dev stack with the
+default ports, might look like this:
 
 ```bash
 export NCA_URL=http://localhost:3333

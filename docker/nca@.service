@@ -1,0 +1,29 @@
+# Rootless podman user unit for the NCA stack. It's a template so no host
+# paths live in the repo: the instance name is the escaped path of the
+# checkout, which %f turns back into the working directory. See "Containers"
+# in the docs (hugo/content/setup/containers.md).
+#
+#   systemctl --user enable --now "nca@$(systemd-escape --path /path/to/nca/app).service"
+
+[Unit]
+Description=Newspaper Curation App (%f)
+# Give up if it fails 3 times within a minute rather than thrashing forever
+StartLimitIntervalSec=60
+StartLimitBurst=3
+
+[Service]
+WorkingDirectory=%f
+# podman compose hands off to podman-compose, which is often a pip/pipx
+# install in ~/.local/bin, not on a user manager's default PATH
+Environment=PATH=%h/.local/bin:/usr/local/bin:/usr/bin:/bin
+# No service names: COMPOSE_PROFILES in .env decides what runs.
+# scripts/compose turns it into --profile flags, since older podman-compose
+# versions ignore it.
+ExecStart=%f/scripts/compose up
+ExecStop=%f/scripts/compose down
+TimeoutStartSec=0
+Restart=always
+RestartSec=10
+
+[Install]
+WantedBy=default.target

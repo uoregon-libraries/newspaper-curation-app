@@ -6,16 +6,20 @@ whole lot of repetitive data entry.
 
 ## Prerequisites
 
-To make this work, you *must* be following the ["Hybrid Dev" approach to
-development][hybrid-dev]. If you don't, the scripts and recipes here will not
-work! This means you have docker running the database, the IIIF server, and the
-SFTP server, but your NCA-native apps are compiled locally and run directly.
+These scripts and recipes assume the container-based dev setup from the
+[Developer's Guide][dev-guide]: your `compose.override.yml` binds NCA's
+workflow volume to `test/fakemount`, and NCA runs in containers with your
+checkout mounted. The Go scripts here run inside the `cli` container (they
+need NCA's database and settings), while the bash scripts run on your host.
 
-You will need some pieces of the local dev script. You can read it and try to
-do things manually, but the easiest approach is simply to source the script
-into bash: `source <NCA root>/scripts/localdev.sh`.
+Most of what you need is in the local dev script. You can read it and run
+things by hand, but the easiest approach is to source it into bash: `source
+<NCA root>/scripts/localdev.sh`. It provides `ncatest`, which runs a command
+from this directory in the `cli` container, e.g., `ncatest go run
+run-workflow.go --operation curate`. NCA's config is already set in the
+container, so the Go scripts don't need `-c`.
 
-[hybrid-dev]: <https://uoregon-libraries.github.io/newspaper-curation-app/contributing/dev-guide/#hybrid-developer>
+[dev-guide]: <https://uoregon-libraries.github.io/newspaper-curation-app/contributing/dev-guide/>
 
 ## Source Data
 
@@ -80,8 +84,8 @@ function, `prep_for_testing`, which does the following:
 
 - Deletes everything in the database
 - Removes all files from your fake newspaper "network mount"
-  (`<NCA root>/test/fakemount`, mounted by default in docker containers when
-  using the "Hybrid Developer" approach).
+  (`<NCA root>/test/fakemount`, which the dev override binds to NCA's
+  workflow volume).
 - Creates test users via `create-test-users.go`: one user is created per
   distinct NCA role.
 - Seeds the database with two MARC Organization codes (awardees) so that the
@@ -99,8 +103,9 @@ function, `prep_for_testing`, which does the following:
 
 ## Run Workers
 
-Run the NCA job runner, e.g., `workers` or `workonce` if you sourced in the
-local dev script.
+The `workers` service runs jobs as soon as the stack is up. To watch them run
+in the foreground instead, use `workonce` from the local dev script: it stops
+the service and runs jobs until there are none left.
 
 Depending on how many sources you defined, and what type, this could take no
 time or it could take a very long time. Scanned images are processed the moment
@@ -109,8 +114,8 @@ however, are simply pre-processed briefly (pages are split and converted to
 PDF/a) and then moved to the page review directory.
 
 When all jobs are complete (you may have to look in the `jobs` table manually
-for this, e.g., `select * from jobs where status not in ('success',
-'on_hold');`), you should see all *valid* issues moved either to the NCA
+for this, e.g., `ncasql -e "select * from jobs where status not in ('success',
+'on_hold')"`), you should see all *valid* issues moved either to the NCA
 workflow location (scanned issues) or the page review location (sftp issues).
 
 ## Page Review
@@ -124,9 +129,10 @@ To tell NCA these issues were processed a while ago, run `make-older.sh`. This
 hacks all manifests to say the issue was last changed four days ago, which will
 allow you to queue these issues for processing.
 
-Note that you may want to manually (re)start the job runner. It checks the
-filesystem fairly infrequently, so if it's already running, it could take
-several minutes for the issues to make their way into NCA.
+Note that you may want to restart the job runner (`nca_compose restart
+workers`, or `workonce`). It checks the filesystem fairly infrequently, so if
+it's already running, it could take several minutes for the issues to make
+their way into NCA.
 
 ## Curation and Review
 
@@ -136,14 +142,14 @@ review, the `run-workflow.go` script can automate one or both pieces.
 To enter metadata:
 
 ```bash
-go run run-workflow.go -c ../settings --operation curate
+ncatest go run run-workflow.go --operation curate
 ```
 
 To review metadata, the command is the same, but the operation is
 "review":
 
 ```bash
-go run run-workflow.go -c ../settings --operation review
+ncatest go run run-workflow.go --operation review
 ```
 
 This script iterates over all issues that are in need of the given operation
@@ -153,7 +159,7 @@ approves all issues awaiting metadata review.
 
 For review, it also queues the job which finalizes the metadata (generating
 METS XML). Once those jobs run, issues will be ready for batching via the
-standard `queue-batches` command.
+standard `queue-batches` command (`ncacli queue-batches`).
 
 ## Recipes
 

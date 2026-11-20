@@ -15,20 +15,17 @@ all times, several binaries you'll need to use occasionally for regular tasks,
 and of course the various external services (such as a IIIF server, SFTP
 server, MySQL / MariaDB, Apache / nginx, Open ONI and the ONI Agent, etc.).
 
-The docker setup is easy to get running, and extremely useful for learning how
-the stack is set up, but it's not something we recommend for production use. It
-bundles in two ONI servers and their dependencies (database, solr, and ONI
-Agent for both staging and production), there's no monitoring, and the setup
-has never been tested in a high-traffic environment.
-
-*Only go the container route if you have the devops chops to build a real,
-production-ready setup.*
+NCA's container setup (see [Containers][containers]) runs all of this with
+podman compose. It's what we use for development, and is built to be usable in
+production, though it hasn't been proven there yet. Its demo ONI stacks are
+for development only; production NCA talks to your real ONI servers.
 
 A bare-metal, manual installation is fairly easy to set up as well. Manual
 installations are described in the [installation][installation] documentation,
-and can be reverse-engineered by reading the various docker files, especially
-if you're on a Redhat / CentOS / RockyLinux setup.
+and can be reverse-engineered by reading the container files, especially if
+you're on a Redhat / CentOS / RockyLinux setup.
 
+[containers]: <{{% ref "containers" %}}>
 [installation]: <{{% ref "installation" %}}>
 
 **Note**: the repository contains working examples for systemd services and

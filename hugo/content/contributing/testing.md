@@ -26,22 +26,21 @@ load issues into NCA, enter metadata, etc. If you repeat this often enough, you
 may find the project's "test" directory helpful. It contains documentation and
 scripts which are meant to make real-world-like testing a lot easier.
 
-To use the manual test scripts/recipes, you will need to use the recommended
-development approach (["Hybrid Developer"][1]) or the scripts' behavior will
-not be defined.
+The test scripts and recipes assume the container-based dev setup described
+in the [Developer's Guide][1], including `scripts/localdev.sh`.
 
 View the README.md file in the test directory for details.
 
-[1]: <{{% ref "dev-guide#hybrid-developer" %}}>
+[1]: <{{% ref "dev-guide" %}}>
 
 ### Saving State
 
 At any time you can save and restore the application's state via the top-level
-`manage` script. This script has a variety of commands, but `./manage backup`
-and `./manage restore` will back up or restore **all files** in the fake mount
-as well as all data volumes for NCA, assuming your docker install puts data in
-`/var/lib/docker/volumes` and you don't change the project name from the
-default of "nca".
+`manage` script. This script has a variety of commands, but `./manage backup
+<name>` and `./manage restore <name>` will back up or restore **all files** in
+the fake mount as well as the stack's data volumes (databases, Solr indexes,
+etc.), using `podman volume export` and `import`. Go's caches and the dev
+image's binaries aren't included, since they're not application state.
 
 This can be very handy for verifying a process such as generating batches,
 where you may want to have the same initial state, but see what happens as you
