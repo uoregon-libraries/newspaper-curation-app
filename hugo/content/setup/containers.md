@@ -55,6 +55,26 @@ refuses to start if they're missing. Copy `.env.example` and read every
 setting: its defaults are for dev, and several of them (debug mode, the SFTPGo
 seed) must never be used in production.
 
+NCA's public URL (`PUBLIC_URL`) is built from pieces. In production, the
+browser reaches NCA through your authenticating proxy, usually on https's
+standard port, so you'd set something like:
+
+```bash
+PUBLIC_SCHEME=https
+PUBLIC_HOST=nca.example.edu
+PUBLIC_PORT=443
+PUBLIC_PORT_SUFFIX=
+```
+
+`PUBLIC_PORT_SUFFIX` is the URL's port with its colon (e.g., `:8443`), blank
+for the scheme's default port. Compose can't derive it, so set it to agree
+with `PUBLIC_PORT`. `PUBLIC_PORT` is the port the *browser* sees; only the
+dev override publishes the stack on it.
+
+NCA has to be at the root of its host: the proxy routes page images by path
+(`/images/iiif/...`), so a URL with a path, like `settings-example`'s
+`https://internal.somewhere.edu/nca`, won't work with this setup.
+
 NCA itself reads its usual settings file: the image contains
 `settings-example` verbatim, and `compose.yml` overrides values with `NCA_*`
 environment variables (NCA's normal environment override mechanism). If a
@@ -67,7 +87,8 @@ this:
 
 ```yaml
 services:
-  # Only the authenticating proxy should be able to reach this
+  # Only the authenticating proxy should be able to reach this. It's not
+  # PUBLIC_PORT: that's the port the browser uses on the proxy.
   proxy:
     ports:
       - "127.0.0.1:8080:80"

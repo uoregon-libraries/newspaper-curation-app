@@ -46,6 +46,9 @@ cp compose.override.example.yml compose.override.yml
   services run, and so on. Its defaults are meant for dev, so you may not need
   to change anything, but read through it. If you browse from another machine
   (e.g., NCA runs on a VM), set `PUBLIC_HOST` to the name or IP you browse to.
+  Public URLs are built from pieces (`PUBLIC_SCHEME`, `PUBLIC_HOST`,
+  `PUBLIC_PORT`, `ONI_PROD_PORT`, etc.), and the override publishes services
+  on the same ports, so a port collision is a one-line change in `.env`.
 - `compose.override.yml` is only for *structural* changes: published ports,
   host directories for volumes, and the dev build target. Don't put
   environment variables in it; if `.env` doesn't expose something you need,
@@ -67,7 +70,7 @@ seed data: two MARC org codes, the titles in `test/sources/marc-xml` (also
 loaded into both ONIs), and one test user per NCA role. Run it any time you
 want a clean database.
 
-Once it's done:
+Once it's done, with the default ports:
 
 - NCA: <http://localhost:3333>. Dev runs in debug mode (`NCA_DEBUG=true`), so
   you pick who you are with a query parameter: e.g.,

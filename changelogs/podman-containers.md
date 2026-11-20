@@ -27,6 +27,10 @@
 - `NCA_CONFIG` can be used in place of `-c` / `--config` for every NCA
   binary.
 - `NCA_DEBUG=true` turns on the web server's debug mode, same as `--debug`.
+- `.env` builds public URLs from pieces (`PUBLIC_SCHEME`, `PUBLIC_HOST`,
+  `PUBLIC_PORT`, and per-service ports for the dev ONI stacks and SFTPGo),
+  and the dev override publishes services on those same ports, so URLs and
+  ports can't drift apart.
 - A rootless podman systemd user unit for the stack (`docker/nca@.service`)
   and a "Containers" page in the setup docs.
 

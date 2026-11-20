@@ -5,6 +5,10 @@
 # need to override an environment variable that `.env` doesn't expose, fix
 # compose.yml and `.env.example` instead of muddying up your override.
 #
+# The published ports come from `.env` too, since the URLs there have to
+# agree with them. To move a service to another port, change `.env`, not this
+# file.
+#
 # Production would use an override too, but a much smaller one: publish the
 # proxy (and SFTPGo's SFTP port if it's in the stack), and redefine the news,
 # batches, and issue-cache volumes as binds to absolute paths. No dev target,
@@ -31,31 +35,33 @@ x-nca-dev: &nca-dev
     - dev-bin:/usr/local/nca/bin
 
 services:
-  # NCA, plus page images at /images/iiif. If you change the port, change
-  # PUBLIC_URL in `.env` to match.
+  # NCA, plus page images at /images/iiif. In dev, the browser talks straight
+  # to the proxy, so it's published on PUBLIC_PORT.
   proxy:
     ports:
-      - "3333:80"
+      - "${PUBLIC_PORT:?PUBLIC_PORT must be set}:80"
 
   web: *nca-dev
   workers: *nca-dev
   cli: *nca-dev
 
-  # SFTPGo's web admin on 8081 (login "admin", password "password" with the
-  # dev seed), and SFTP on 2022 for test uploads
+  # SFTPGo's web admin (login "admin", password "password" with the dev
+  # seed), and SFTP for test uploads.
+  #
+  # Profiled services get interpolated even when their profile is off, so
+  # their ports use defaults (matching `.env.example`) instead of `:?`.
   sftpgo:
     ports:
-      - "8081:8080"
-      - "2022:2022"
+      - "${SFTPGO_WEB_PORT:-8081}:8080"
+      - "${SFTPGO_SFTP_PORT:-2022}:2022"
 
-  # ONI production and staging. If you change these ports, change
-  # ONI_PROD_URL and ONI_STAGING_URL in `.env` to match.
+  # ONI production and staging
   oni-prod:
     ports:
-      - "8080:80"
+      - "${ONI_PROD_PORT:-8080}:80"
   oni-staging:
     ports:
-      - "8082:80"
+      - "${ONI_STAGING_PORT:-8082}:80"
 
   # Uncomment for direct database access (e.g., a GUI client)
   #db:
