@@ -17,7 +17,7 @@ deps:
 
 .PHONY: audit
 audit:
-	go tool govulncheck ./src/... ./internal/...
+	go tool govulncheck ./src/... ./internal/... ./test/harness/...
 
 .PHONY: fast
 fast: deps build
@@ -33,17 +33,31 @@ build: $(shell ./scripts/cmdslist.sh)
 bin/%: src/cmd/% $(SOURCES) $(SOURCEDIRS)
 	go build -ldflags="-s -w -X github.com/uoregon-libraries/newspaper-curation-app/src/version.Version=$(BUILD)" -o $@ github.com/uoregon-libraries/newspaper-curation-app/$<
 
+# Dev and test stack tools, run on the host: see the Developer's Guide. They're
+# their own module, with no dependencies, so they build fast without NCA's.
+TOOL_SOURCES := $(shell find ./tools/ncadev -name "*.go") tools/ncadev/go.mod
+
+.PHONY: tools
+tools: bin/ncadev bin/ncatest
+
+bin/ncadev: $(TOOL_SOURCES)
+	go build -C tools/ncadev -o $(abspath $@) .
+
+bin/ncatest: $(TOOL_SOURCES)
+	go build -C tools/ncadev -o $(abspath $@) ./cmd/ncatest
+
 .PHONY: lint
 lint:
-	go tool revive --config=./revive.toml --formatter=unix src/...
+	go tool revive --config=./revive.toml --formatter=unix src/... test/harness/... tools/ncadev/...
 
 .PHONY: format
 format:
-	find src/ internal/ -name "*.go" | xargs go tool goimports -l -w
+	find src/ internal/ test/harness/ tools/ -name "*.go" | xargs go tool goimports -l -w
 
 .PHONY: test
 test:
 	go test ./src/... ./internal/...
+	go -C tools/ncadev test ./...
 
 .PHONY: clean
 clean:

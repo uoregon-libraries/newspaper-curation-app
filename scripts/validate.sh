@@ -9,9 +9,11 @@ err() {
 }
 
 IFS=''
-unformatted=$(find src/ internal/ -name "*.go" | xargs go tool goimports -l)
-linter=$(go tool revive --config=./revive.toml --formatter=unix ./src/... ./internal/...)
-vet=$(go vet -printfuncs Debugf,Infof,Warnf,Errorf,Criticalf,Fatalf ./src/... ./internal/... 2>&1 || true)
+unformatted=$(find src/ internal/ test/harness/ tools/ -name "*.go" | xargs go tool goimports -l)
+linter=$(go tool revive --config=./revive.toml --formatter=unix ./src/... ./internal/... ./test/harness/... ./tools/ncadev/...)
+vet=$(go vet -printfuncs Debugf,Infof,Warnf,Errorf,Criticalf,Fatalf ./src/... ./internal/... ./test/harness/... 2>&1 || true)
+# The dev tools are their own module
+vet+=$(go -C tools/ncadev vet ./... 2>&1 || true)
 
 result=0
 

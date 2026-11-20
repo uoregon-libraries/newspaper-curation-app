@@ -37,8 +37,11 @@ Notes:
 - If you need more validation than what is provided, you can add that to the
   `Parse()` function. `MinimumIssuePages`, for instance, ensures it's always at
   least 1.
-- If you add a workflow path, you may need to alter [`test/copy-sources.go`][2]
-  in order to automatically create that path for testing.
+- If you add a workflow path, add it to `emptyWorkflowDirs` in
+  [`test/harness/sources.go`][2], so loading test issues empties it, and to
+  `workflowSubdirs` in [`tools/ncadev`'s `stack.go`][3], so the dev and test
+  stacks create it on the host.
 
 [1]: <https://github.com/uoregon-libraries/newspaper-curation-app/blob/main/src/config/config.go>
-[2]: <https://github.com/uoregon-libraries/newspaper-curation-app/blob/main/test/copy-sources.go>
+[2]: <https://github.com/uoregon-libraries/newspaper-curation-app/blob/main/test/harness/sources.go>
+[3]: <https://github.com/uoregon-libraries/newspaper-curation-app/blob/main/tools/ncadev/internal/devtool/stack.go>

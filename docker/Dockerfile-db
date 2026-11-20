@@ -1,7 +1,7 @@
 # NCA's database. init.sql is a snapshot of the migrated schema, which is much
 # faster than running every migration on a fresh database; the NCA services
-# migrate anything newer when they start. Regenerate it with
-# reset_and_build_init_sql in scripts/localdev.sh.
+# migrate anything newer when they start. Regenerate it with "bin/ncadev
+# init-sql".
 FROM docker.io/library/mariadb:12.3
 
 COPY ./docker/init.sql /docker-entrypoint-initdb.d/init.sql

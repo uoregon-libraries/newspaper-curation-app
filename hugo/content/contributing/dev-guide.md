@@ -20,9 +20,10 @@ production differ only in configuration (`.env`) and a small override file.
   [podman-compose](https://github.com/containers/podman-compose). The stack
   relies on podman features (rootless containers and the `k8s-file` log
   driver), so Docker won't work.
-- Optionally, a supported version of [Go](https://golang.org/dl/) for editor
-  tooling, running `make validate` / `make test` outside a container, etc.
-  Nothing in the dev stack needs it.
+- A supported version of [Go](https://golang.org/dl/), to build the tools
+  that run the dev and test stacks (`make tools`). It's also handy for editor
+  tooling, running `make validate` / `make test` outside a container, etc. NCA
+  itself is compiled in its containers.
 
 ## Environment Setup
 
@@ -63,21 +64,26 @@ collisions (e.g., a `DB_PASSWORD` from some other project).
 ### Start the stack
 
 ```bash
-source scripts/localdev.sh
-resetdb
+make tools
+bin/ncadev reset
 ```
 
-`resetdb` creates the host directories the stack needs, builds the images
-(slow the first time), starts everything, migrates the database, and loads
-seed data: two MARC org codes, the titles in `test/sources/marc-xml` (also
-loaded into both ONIs), and one test user per NCA role. Run it any time you
-want a clean database.
+`make tools` builds `bin/ncadev`, which runs the dev stack, and `bin/ncatest`,
+which runs the [test stack](#test-data). Rebuild them when they change (`make
+tools` only rebuilds what's out of date). They work from anywhere in the
+checkout, but the docs assume you're in the NCA root.
+
+`bin/ncadev reset` creates the host directories the stack needs (in `DEV-VOLS`
+and `logs`), builds the images (slow the first time), starts everything,
+migrates the database, and loads seed data: two MARC org codes, the titles in
+`test/sources/marc-xml` (also loaded into both ONIs), and one test user per
+NCA role. Run it any time you want a clean database.
 
 Once it's done, with the default ports:
 
 - NCA: <http://localhost:3333/nca>. Dev runs in debug mode
   (`NCA_DEBUG=true`), so you pick who you are with a query parameter: e.g.,
-  <http://localhost:3333/nca?debuguser=sysop>. `resetdb` creates one user per
+  <http://localhost:3333/nca?debuguser=sysop>. `reset` creates one user per
   role, named for the role without spaces (e.g., "sitemanager",
   "issuecurator").
 - ONI production: <http://localhost:8080>, and staging:
@@ -86,8 +92,8 @@ Once it's done, with the default ports:
   "password")
 
 The first start can take ten minutes or more while NCA caches issue data from
-the live site (`NEWS_WEBROOT`). The cache lives in `tmp/issue-cache` on your
-host, so this only happens once.
+the live site (`NEWS_WEBROOT`). The cache lives in `DEV-VOLS/issue-cache` on
+your host, so this only happens once.
 
 `NEWS_WEBROOT` has to point at a real ONI site with NCA's JSON endpoints
 patched in (see [Services][services]), which is why dev uses Oregon's live
@@ -97,25 +103,23 @@ site instead of the local ONI.
 
 ### Day to day
 
-`scripts/localdev.sh` has helpers for most things. Read the script, but the
-key functions are:
+`bin/ncadev help` lists everything it can do, but the key commands are:
 
-- `nca_up`: start the stack, or apply changes to it
-- `nca_compose ...`: compose with your configured profiles, e.g.,
-  `nca_compose ps` or `nca_compose restart web`. It wraps `scripts/compose`,
-  which you should use instead of a bare `podman compose` (see
+- `up`: start the stack, or apply changes to it
+- `compose ...`: compose with your configured profiles, e.g., `bin/ncadev
+  compose ps` or `bin/ncadev compose restart web`. `scripts/compose` does the
+  same, and either one is better than a bare `podman compose` (see
   [Profiles](#profiles)).
-- `ncacli <command> [args]`: run a one-off command in a throwaway NCA
-  container, e.g., `ncacli queue-batches` or `ncacli bash`. NCA binaries don't
-  need `-c`; the container sets `NCA_CONFIG`.
-- `ncatest <command> [args]`: the same, but in the `test` directory, for the
-  test scripts, e.g., `ncatest go run run-workflow.go --operation curate`
-- `ncasql`: a MariaDB console on NCA's database, or `ncasql -e "..."`
-- `resetdb`: described above
-- `prep_for_testing`: `resetdb`, then reload test issues (see [Test
-  Data](#test-data))
+- `cli <command> [args]`: run a one-off command in a throwaway NCA container,
+  e.g., `bin/ncadev cli queue-batches` or `bin/ncadev cli bash`. NCA binaries
+  don't need `-c`; the container sets `NCA_CONFIG`.
+- `sql`: a MariaDB console on NCA's database, or `bin/ncadev sql -e "..."`
+- `reset`: described above
+- `prep`: `reset`, then load the test issues (see [Test Data](#test-data))
 - `workonce`: stop the job runner service and run jobs in the foreground,
   verbosely, until there are none left
+- `curate`, `review`, and friends: stand in for a human at each step of the
+  workflow (see [Testing][testing])
 
 Each service logs to its own file in `logs/` (`web.log`, `workers.log`,
 etc.), so `tail -f logs/web.log logs/workers.log` is the easiest way to see
@@ -127,20 +131,20 @@ The NCA containers run your checkout, and rebuild whatever binary they run
 each time they start. After changing Go code:
 
 ```bash
-nca_compose restart web workers
+bin/ncadev compose restart web workers
 ```
 
 That usually takes a couple of seconds. Template and static file changes
 don't even need a restart, since they're read straight from your checkout.
 
-`ncacli` also rebuilds the binary it's asked to run, so `ncacli queue-batches`
-always runs your current code.
+`bin/ncadev cli` also rebuilds the binary it's asked to run, so `bin/ncadev cli
+queue-batches` always runs your current code.
 
 The containers' compiled binaries and Go's caches live in volumes, not your
 checkout, so they never mix with anything you build on your host.
 
 Run `make validate` and `make test` before you commit: CI does. If you don't
-have Go locally, `ncacli make validate test` works.
+have Go locally, `bin/ncadev cli make validate test` works.
 
 ### Profiles
 
@@ -149,29 +153,31 @@ Optional services are grouped into compose profiles, enabled by
 
 - `local-dev`: the staging and production ONI stacks and their agents
 - `sftpgo`: SFTPGo
-- `tools`: the `cli` service for one-off commands, which `ncacli` uses
+- `tools`: the `cli` service for one-off commands, which `bin/ncadev cli`
+  uses
 
 podman-compose before 1.6 ignores `COMPOSE_PROFILES`, which silently leaves
-those services out of `up`, `down`, `ps`, etc. `scripts/compose` passes each
-profile as a `--profile` flag, so use it (or `nca_compose`) instead of `podman
-compose`.
+those services out of `up`, `down`, `ps`, etc. `scripts/compose` and
+`bin/ncadev` pass each profile as a `--profile` flag, so use one of them
+instead of `podman compose`.
 
 ### Volumes and files
 
 NCA's workflow tree (uploads, page review, the workflow itself, batches, etc.)
-is the `news` volume. In dev, your override binds it to `test/fakemount`, so
-you can look at and change files directly, and the test scripts can set up
-issues there.
+is the `news` volume. In dev, your override binds it to `DEV-VOLS/news`, so
+you can look at and change files directly. `DEV-VOLS` also holds the issue
+cache and your save points (below), and it's ignored by git.
 
 Under rootless podman, files containers write as root are owned by you on the
 host. If something ends up owned by another UID (a container writing as a
-non-root user), `test/makemine.sh` fixes it without sudo.
+non-root user), `podman unshare chown -R 0:0 DEV-VOLS/news` makes it yours
+again without sudo.
 
 ### Snapshots
 
-`./manage backup <name>` saves the fake mount and every data volume to
-`backup/<name>`, and `./manage restore <name>` puts them back. This is handy
-for repeating a test from the same starting point. See
+`bin/ncadev save <name>` saves the workflow tree and every data volume to
+`DEV-VOLS/savepoints/<name>`, and `bin/ncadev restore <name>` puts them back.
+This is handy for repeating something from the same starting point. See
 [Testing][testing].
 
 [testing]: <{{% ref "testing" %}}>
@@ -181,14 +187,19 @@ for repeating a test from the same starting point. See
 If you used the old "hybrid" setup (NCA on your host, services in Docker),
 replace your `compose.override.yml` with the new example and create `.env`.
 Your old `settings` file is no longer used. The volume layout changed, so
-start fresh with `resetdb`, or `prep_for_testing`. To keep your issue cache,
-move its files into `tmp/issue-cache`.
+start fresh with `bin/ncadev reset`, or `prep`. To keep your issue cache, move
+its files into `DEV-VOLS/issue-cache`.
 
 ## Test Data
 
 You won't get far without setting up some test issues. NCA has a rudimentary
 setup for grabbing issues from a live server and turning them into testable
-data for local use.
+data for local use. `bin/ncadev prep` loads them into your dev stack.
+
+For repeatable testing, there's a separate test stack, run by `bin/ncatest`
+the same way `bin/ncadev` runs the dev stack. It's configured entirely by the
+repository, so your `.env` and override can't change how a test behaves, and
+testing never touches your dev stack's data.
 
 The processes are detailed in the `test` subdirectory of the NCA project and
 explained at a high level on the [Testing][testing] page.
@@ -222,7 +233,7 @@ comprehensive end-to-end testing is explained in the
 
 - New migrations run automatically when web or workers start. After other
   major changes (e.g., to `compose.override.yml` or `.env`), bring the whole
-  stack down and back up: `nca_compose down && nca_up`
+  stack down and back up: `bin/ncadev down && bin/ncadev up`
 - If things seem "weird", bring the whole stack down and back up
 - If you suspect a stale build, remove the `dev-bin` volume (with the stack
   down) and the containers will rebuild everything. The `go-cache` volume

@@ -15,12 +15,22 @@
   podman-compose versions ignore `COMPOSE_PROFILES`.
 - The web proxy is Caddy instead of nginx.
 - MariaDB is pinned to 12.3 (LTS) instead of `latest`.
-- `scripts/localdev.sh`, `manage`, and the test recipes drive the container
-  stack instead of host binaries. `manage backup|restore` no longer needs
-  sudo.
-- `test/copy-sources.go` empties the fake mount's directories instead of
-  deleting them, so containers with those directories mounted don't need to
-  be restarted.
+- Dev and test tooling is Go instead of bash. `bin/ncadev` (built by `make
+  tools`) replaces `scripts/localdev.sh` and `manage`. The `test/` scripts
+  are now `bin/ncatest` plus a test harness that runs in a container
+  (`test/harness`), and the recipe scripts are recipes built into `ncatest`.
+  Save points (formerly `manage backup|restore`) no longer need sudo.
+- Manual testing happens on a separate test stack, run by `bin/ncatest`. It's
+  configured by the repository, not your override or shell variables, and
+  takes only `PUBLIC_HOST` from your `.env`, so tests behave the same for
+  everybody, and testing doesn't touch your dev stack's data. Its workflow tree is `test/fakemount`;
+  the dev stack's is now `DEV-VOLS/news`.
+- Loading test issues copies the source files instead of hard-linking them, so
+  breaking a workflow file (as some recipes do) can't damage the test sources.
+  It empties the workflow directories rather than deleting them, so containers
+  with those directories mounted don't need to be restarted.
+- Recipes keep the workers service stopped and run jobs only at set points,
+  so runs are more repeatable.
 
 ### Added
 
@@ -40,6 +50,9 @@
 - `compose.override-example.yml` and `compose.override-hybrid-example.yml`,
   replaced by `compose.override.example.yml` and `.env.example`
 - The "Not Compiling Locally" developer docs
+- `scripts/localdev.sh`, `manage`, and the scripts in `test/` and
+  `test/recipes/`, replaced by `bin/ncadev`, `bin/ncatest`, and the test
+  harness. `test/reset.sh`'s quick reset is gone; use `bin/ncatest prep`.
 - Dead scripts: `docker/tag-latest.sh` and `docker/force-tag-latest.sh`
   (built a compose service that no longer exists), `test/mets.sh` (used the
   long-gone `rewrite-mets` command), and `scripts/fake-oni-manager.go` (faked
@@ -47,9 +60,10 @@
 
 ### Migration
 
-- Developers: create `.env` from `.env.example` and replace your
-  `compose.override.yml` with `compose.override.example.yml`, then run
-  `resetdb` or `prep_for_testing` (from `scripts/localdev.sh`) to start
-  fresh. Your old `settings` file isn't used by the dev stack. To keep your
-  issue cache, move its files into `tmp/issue-cache`. Dev NCA now lives under
-  a path, at <http://localhost:3333/nca>.
+- Developers: you need Go on your host for the dev tools. Create `.env` from
+  `.env.example`, replace your `compose.override.yml` with
+  `compose.override.example.yml`, run `make tools`, then `bin/ncadev reset`
+  or `bin/ncadev prep` to start fresh. Your old `settings` file isn't used by
+  the dev stack. To keep your issue cache, move its files into
+  `DEV-VOLS/issue-cache`. Dev NCA now lives under a path, at
+  <http://localhost:3333/nca>.

@@ -13,44 +13,43 @@ export name=baseline
 export name=fix
 
 # Begin
-source scripts/localdev.sh && prep_for_testing >prep.log 2>&1
+bin/ncatest prep >prep.log 2>&1
 
 # Check logs for errors just to be sure things did what we expect
-cat prep.log | grep -v " - \(INFO\|DEBUG\) - "
+grep -v " - \(INFO\|DEBUG\) - " prep.log
 
 # Save state using the "name" variable from above
-./manage backup 01-$name
+bin/ncatest save 01-$name
 
-# Break an issue so the "page_split" job fails. Backup the PDF first since it's
-# a hard-link of the file in sources!
-cp ./test/fakemount/sftp/polkitemizer/2010-04-19/0005.pdf ./backup.pdf
-echo "bad" > ./test/fakemount/sftp/polkitemizer/2010-04-19/0005.pdf
+# Break an issue so the "page_split" job fails. The workflow tree has copies
+# of the test sources, not links, so this doesn't damage the sources.
+echo "bad" > ./test/fakemount/sftp/sn96088087/2010-04-19/0005.pdf
 
 # Hack up the job runner's exponential backoff so it maxes at one second
 sed -i 's|var maxDelay =.*$|var maxDelay = time.Second|' src/models/job.go
 
-# Run workers; wait for jobs to complete / fail (~10min)
-workonce
+# Run jobs; wait for jobs to complete / fail (~10min)
+bin/ncatest workonce
 
-# Stop workers, make another backup using the "name" variable from above
-./manage backup 02-$name
+# Make another save point using the "name" variable from above
+bin/ncatest save 02-$name
 
 # Run the command to remove dead issues
-ncacli remove-dead-issues
+bin/ncatest cli remove-dead-issues
 
 # Removed issue should be sn96088087/2010041901
 
-# Run workers one last time (~1 min)
-workonce
+# Run jobs one last time (~1 min)
+bin/ncatest workonce
 
-# Restore the bad PDF
-cp ./backup.pdf test/sources/sftp/sn96088087-2010041901/0005.pdf
+# Undo the backoff hack
+git checkout src/models/job.go
 ```
 
-Wait for all jobs to complete, then create your report using `$name`. You may
-have to search for jobs that are *not* `on_hold` if still running a version of
-NCA that doesn't properly clean up non-issue-specific jobs, as those will never
-run or fail (hence the fix and this test). e.g.,
+Wait for all jobs to complete, then create your report: `bin/ncatest report
+$name`. You may have to search for jobs that are *not* `on_hold` if still
+running a version of NCA that doesn't properly clean up non-issue-specific
+jobs, as those will never run or fail (hence the fix and this test). e.g.,
 
 ```sql
 # This will show jobs that should have been closed but weren't:

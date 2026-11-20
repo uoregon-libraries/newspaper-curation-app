@@ -1,0 +1,63 @@
+# The test stack's override, used with compose.yml in place of
+# compose.override.yml. ncatest (tools/ncadev) runs the test stack; its
+# configuration is .env.example plus the test stack's own settings, never your
+# .env, so it behaves the same for everybody.
+#
+# It's the dev override, except that the workflow tree lives in
+# test/fakemount, and everything else the stack keeps on the host lives in
+# test/var. ncatest creates those directories.
+
+x-nca-dev: &nca-dev
+  build:
+    target: dev
+  volumes:
+    - .:/usr/local/nca
+    - go-cache:/root/.cache
+    - dev-bin:/usr/local/nca/bin
+
+services:
+  proxy:
+    ports:
+      - "${PUBLIC_PORT:?PUBLIC_PORT must be set}:80"
+
+  web: *nca-dev
+  workers: *nca-dev
+  cli: *nca-dev
+
+  sftpgo:
+    ports:
+      - "${SFTPGO_WEB_PORT:-4081}:8080"
+      - "${SFTPGO_SFTP_PORT:-4022}:2022"
+
+  oni-prod:
+    ports:
+      - "${ONI_PROD_PORT:-4080}:80"
+  oni-staging:
+    ports:
+      - "${ONI_STAGING_PORT:-4082}:80"
+
+volumes:
+  go-cache: {}
+  dev-bin: {}
+
+  # Bind mounts: removing the volumes doesn't delete their directories'
+  # contents. driver_opts are baked in when a volume is created, so if you
+  # move your checkout, run "ncatest nuke" and remove these volumes.
+  news:
+    driver: local
+    driver_opts:
+      type: none
+      o: bind
+      device: ${PWD}/test/fakemount
+  batches:
+    driver: local
+    driver_opts:
+      type: none
+      o: bind
+      device: ${PWD}/test/fakemount/production-batches
+  issue-cache:
+    driver: local
+    driver_opts:
+      type: none
+      o: bind
+      device: ${PWD}/test/var/issue-cache

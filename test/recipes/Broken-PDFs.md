@@ -13,46 +13,44 @@ export name=baseline
 export name=fix
 
 # Begin
-prep_for_testing >prep.log 2>&1
+bin/ncatest prep >prep.log 2>&1
 
-# Wait until DB is up and start workers
-workonce >work.log 2>&1
+# Run jobs until there are none left
+bin/ncatest workonce >work.log 2>&1
 
 # Check logs for errors just to be sure things did what we expect
-cat work.log | grep -v " - \(INFO\|DEBUG\) - "
-cat prep.log | grep -v " - \(INFO\|DEBUG\) - "
+grep -v " - \(INFO\|DEBUG\) - " work.log
+grep -v " - \(INFO\|DEBUG\) - " prep.log
 
-# Stop workers, save state using the "name" variable from above
-./manage backup 01-$name
+# Save state using the "name" variable from above
+bin/ncatest save 01-$name
 
 # Break two PDF issues
 echo "bad" > ./test/fakemount/page-review/sn88086023-2022080401-**/seq-0026.pdf
 echo "bad" > ./test/fakemount/page-review/2021242619-2020090201-**/seq-0003.pdf
 
 # Renumber and make older
-cd test
-./rename-page-review.sh && ./make-older.sh
-cd ..
+bin/ncatest rename-page-review && bin/ncatest make-older
 
-# Restart workers, replacing log
-workonce >work.log 2>&1
+# Run jobs again, replacing the log
+bin/ncatest workonce >work.log 2>&1
 
 # Wait for jobs to complete and the two failures to finalize (~10min)
 
-# Stop workers, make another backup using the "name" variable from above
-./manage backup 02-$name
+# Make another save point using the "name" variable from above
+bin/ncatest save 02-$name
 
 # Run the command to remove dead issues
-ncacli remove-dead-issues
+bin/ncatest cli remove-dead-issues
 
 # Deleted issues should include:
 #
 # sn88086023/2022080401
 # 2021242619/2020090201
 
-# Run workers one last time
-workonce >work.log 2>&1
-
+# Run jobs one last time
+bin/ncatest workonce >work.log 2>&1
 ```
 
-Wait for all jobs to complete, then create your report using `$name`.
+Wait for all jobs to complete, then create your report: `bin/ncatest report
+$name`.

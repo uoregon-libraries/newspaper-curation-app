@@ -73,31 +73,34 @@ volumes:
   go-cache: {}
   dev-bin: {}
 
-  # NCA's workflow tree lives in test/fakemount so the test scripts (see
-  # test/README.md) can work on it from the host. `batches` is the same tree's
-  # production-batches dir, separately mounted because ONI needs it.
+  # Dev volumes live on the host, in DEV-VOLS, so you can look at and change
+  # files directly. NCA's workflow tree is DEV-VOLS/news; `batches` is the same
+  # tree's production-batches dir, separately mounted because ONI needs it.
+  # (The test stack keeps its own tree in test/fakemount; see test/README.md.)
   #
-  # These are bind mounts: the directories must exist, and removing the
-  # volumes won't delete their contents. driver_opts are baked in when a
-  # volume is created, so if you move your checkout, remove these volumes.
+  # These are bind mounts: the directories must exist (bin/ncadev creates
+  # them), and removing the volumes won't delete their contents. driver_opts
+  # are baked in when a volume is created, so if you move your checkout,
+  # remove these volumes.
   news:
     driver: local
     driver_opts:
       type: none
       o: bind
-      device: ${PWD}/test/fakemount
+      device: ${PWD}/DEV-VOLS/news
   batches:
     driver: local
     driver_opts:
       type: none
       o: bind
-      device: ${PWD}/test/fakemount/production-batches
+      device: ${PWD}/DEV-VOLS/news/production-batches
 
   # The issue cache lives on the host so wiping the stack doesn't mean a long
-  # (10+ minute) wait while NCA rebuilds it from the live site
+  # (10+ minute) wait while NCA rebuilds it from the live site. The test stack
+  # copies it to start its own cache.
   issue-cache:
     driver: local
     driver_opts:
       type: none
       o: bind
-      device: ${PWD}/tmp/issue-cache
+      device: ${PWD}/DEV-VOLS/issue-cache

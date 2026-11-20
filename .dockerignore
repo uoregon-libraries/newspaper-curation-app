@@ -1,6 +1,7 @@
 # Keep the build context small, and keep local config and data out of images
 .git
 /backup
+/DEV-VOLS
 /bin
 /pkg
 /vendor/src

@@ -50,8 +50,8 @@ should never use the `--debug` flag in a production environment.
 
 ## Development
 
-For development use, `scripts/localdev.sh` already runs the server in debug
-mode. Assuming you follow the [development guide's][dev-guide] instructions,
-you'll always be in debug mode and able to fake any login, including sysop.
+The dev stack runs the server in debug mode (`NCA_DEBUG=true` in `.env`).
+Assuming you follow the [development guide's][dev-guide] instructions, you'll
+always be in debug mode and able to fake any login, including sysop.
 
 [dev-guide]: <{{% ref "/contributing/dev-guide" %}}>

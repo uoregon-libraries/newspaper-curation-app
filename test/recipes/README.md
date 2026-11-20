@@ -1,9 +1,9 @@
 # Test Recipes
 
-This directory contains a handful of (hopefully) helpful testing recipes and/or
-scripts, using NCA's manual test workflow. Each file contains an explanation
-and some general information about what's being tested and how it should be
-used.
+This directory contains a handful of (hopefully) helpful testing recipes,
+using NCA's test stack (see the [test README](../README.md)). Each file
+contains an explanation and some general information about what's being
+tested and how it should be used.
 
 At a high level, these test recipes are meant to be used to make sure that a
 new function or refactor doesn't change anything you don't expect it to change,
@@ -12,19 +12,36 @@ running the recipe in isolation.
 
 Some general / common information follows.
 
-## Scripts
+## Built-in Recipes
 
-Recipes that have been written as bash scripts can simply be run directly,
-e.g., `./test/recipes/general-test.sh baseline`. You should still read them to
-understand what they're testing and when they make sense to use directly vs.
-create a customized copy.
+Some recipes are built into `ncatest`. `bin/ncatest recipes` lists them, with
+their stages, and they're defined in `tools/ncadev/internal/devtool/recipes.go`:
 
-Scripts will create a completely fresh environment, run various commands, in
-some cases direct you to take actions manually in NCA, and eventually create a
-report. You should only have to check out the branches you need and run the
-script for each branch, then compare reports.
+- `general`: end to end, from nothing: process uploads, fake curation and
+  review, then build and approve batches. It's a good baseline for refactors,
+  and a starting point for new recipes.
+- `invalid-title`: the general test, but one title's LCCN is marked invalid
+  before batching, to verify that titles with an unvalidated LCCN are kept out
+  of batches
+- `broken-oni`: the general test, but you stop staging ONI's Solr while
+  batches load, to test NCA's handling of external job failures (entwined job
+  retry / restart)
 
-## Disclaimer
+Run one with a name for the run, e.g., `bin/ncatest run general baseline`.
+It creates a completely fresh environment, runs each stage, in some cases
+directs you to take actions manually in NCA, and eventually creates a report.
+You should only have to check out the branches you need and run the recipe for
+each branch, then compare reports.
+
+After each stage, the recipe makes a save point named for the stage and run
+(e.g., `02-baseline`). Running the recipe again with the same name restores
+the last save point and picks up from there, so an interrupted run doesn't
+start over. To repeat a stage, delete its save point (and any later ones) from
+`test/var/savepoints`.
+
+Everything the recipe runs is logged to `test/var/logs/recipe-<name>.log`.
+
+## Step-by-step Recipes
 
 For markdown documents, *don't just copy and paste the shell code!* We're
 putting stuff in here as we go, and sometimes correcting our processes after
@@ -35,21 +52,23 @@ the future. Consider these recipes a guide, not a blind process to run!
 ## Names
 
 Each recipe should be run once on your baseline (usually the `main` branch) and
-again on your fixed code. When making snapshots (backing up data state in case
-you need to repeat a step) and reports will need a meaningful name.
+again on your fixed code. Snapshots (save points, which back up data state in
+case you need to repeat a step) and reports need meaningful names.
 
-Generally it's easiest to do something like `export name=baseline`, then use
-`$name` when you make backups or reports, e.g., `cd test && ./report.sh $name`.
+Built-in recipes take the name as an argument. With no name, they use `git
+describe --tags`. For step-by-step recipes, it's easiest to do something like
+`export name=baseline`, then use `$name` when you make save points or
+reports, e.g., `bin/ncatest report $name`.
 
 ## Repeat And Compare
 
 You'll run the recipe twice: once on your baseline, once on your fix/refactor.
+The test stack's containers build NCA from your checkout as they start, so
+there's nothing to compile first, but rebuild the tools (`make tools`) if
+you've switched to a branch where they've changed.
 
-Before each recipe is kicked off, **run `make`** to get all the binaries built
-for whatever code you're testing!
-
-After each run, you should generate a report. Once you have two reports, you
-can compare them using git. Example:
+After each run, you should generate a report (built-in recipes do this for
+you). Once you have two reports, you can compare them using git. Example:
 
 ```bash
 cp -r ./test/baseline-report ./test/r
@@ -63,8 +82,9 @@ git status ./test/r
 
 ## Waiting for Jobs
 
-To wait for jobs to complete, at the moment I just check the database manually:
+`bin/ncatest workonce` runs jobs until there are none left. To check on jobs by
+hand:
 
-    select * from jobs where status not in ('success', 'on_hold');
+    bin/ncatest sql -e "select * from jobs where status not in ('success', 'on_hold')"
 
 Hopefully we get a UI for viewing jobs one day....
