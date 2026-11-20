@@ -40,6 +40,10 @@
 - `compose.override-example.yml` and `compose.override-hybrid-example.yml`,
   replaced by `compose.override.example.yml` and `.env.example`
 - The "Not Compiling Locally" developer docs
+- Dead scripts: `docker/tag-latest.sh` and `docker/force-tag-latest.sh`
+  (built a compose service that no longer exists), `test/mets.sh` (used the
+  long-gone `rewrite-mets` command), and `scripts/fake-oni-manager.go` (faked
+  ONI's `manage.py`, which NCA hasn't called since moving to the ONI Agent)
 
 ### Migration
 
