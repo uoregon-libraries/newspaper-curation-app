@@ -55,6 +55,9 @@
 - `scripts/localdev.sh`, `manage`, and the scripts in `test/` and
   `test/recipes/`, replaced by `bin/ncadev`, `bin/ncatest`, and the test
   harness. `test/reset.sh`'s quick reset is gone; use `bin/ncatest prep`.
+- The "Replacing Live Issues" docs and `scripts/help-remove-issues.go`. The
+  helper needed `find-issues`, which was removed in v6.3.0, so the process has
+  been broken since then. A replacement built into NCA is planned.
 - Dead scripts: `docker/tag-latest.sh` and `docker/force-tag-latest.sh`
   (built a compose service that no longer exists), `test/mets.sh` (used the
   long-gone `rewrite-mets` command), and `scripts/fake-oni-manager.go` (faked
