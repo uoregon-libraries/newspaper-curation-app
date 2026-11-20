@@ -48,9 +48,10 @@ cp compose.override.example.yml compose.override.yml
   (e.g., NCA runs on a VM), set `PUBLIC_HOST` to the name or IP you browse to.
   Public URLs are built from pieces (`PUBLIC_SCHEME`, `PUBLIC_HOST`,
   `PUBLIC_PORT`, `ONI_PROD_PORT`, etc.), and the override publishes services
-  on the same ports, so a port collision is a one-line change in `.env`. To
-  test NCA under a path, the way some production setups run it, set
-  `NCA_URL_PATH` (e.g., `/nca`); NCA's URLs below then gain that path.
+  on the same ports, so a port collision is a one-line change in `.env`. NCA
+  itself lives under a path (`NCA_URL_PATH`, `/nca` by default), so links
+  that don't account for one break in dev, not just in production setups that
+  use a path.
 - `compose.override.yml` is only for *structural* changes: published ports,
   host directories for volumes, and the dev build target. Don't put
   environment variables in it; if `.env` doesn't expose something you need,
@@ -74,9 +75,9 @@ want a clean database.
 
 Once it's done, with the default ports:
 
-- NCA: <http://localhost:3333>. Dev runs in debug mode (`NCA_DEBUG=true`), so
-  you pick who you are with a query parameter: e.g.,
-  <http://localhost:3333/?debuguser=sysop>. `resetdb` creates one user per
+- NCA: <http://localhost:3333/nca>. Dev runs in debug mode
+  (`NCA_DEBUG=true`), so you pick who you are with a query parameter: e.g.,
+  <http://localhost:3333/nca?debuguser=sysop>. `resetdb` creates one user per
   role, named for the role without spaces (e.g., "sitemanager",
   "issuecurator").
 - ONI production: <http://localhost:8080>, and staging:

@@ -47,4 +47,5 @@
   `compose.override.yml` with `compose.override.example.yml`, then run
   `resetdb` or `prep_for_testing` (from `scripts/localdev.sh`) to start
   fresh. Your old `settings` file isn't used by the dev stack. To keep your
-  issue cache, move its files into `tmp/issue-cache`.
+  issue cache, move its files into `tmp/issue-cache`. Dev NCA now lives under
+  a path, at <http://localhost:3333/nca>.
