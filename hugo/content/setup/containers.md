@@ -71,9 +71,18 @@ for the scheme's default port. Compose can't derive it, so set it to agree
 with `PUBLIC_PORT`. `PUBLIC_PORT` is the port the *browser* sees; only the
 dev override publishes the stack on it.
 
-NCA has to be at the root of its host: the proxy routes page images by path
-(`/images/iiif/...`), so a URL with a path, like `settings-example`'s
-`https://internal.somewhere.edu/nca`, won't work with this setup.
+If NCA doesn't live at the root of its host, set `NCA_URL_PATH` (e.g.,
+`/nca` for `https://nca.example.edu/nca`). Only NCA moves: page images are
+always at `/images/iiif` from the host's root. NCA builds its routes and links
+with the path, so the authenticating proxy forwards both paths to the stack
+unchanged rather than stripping them. With Apache, for instance:
+
+```apache
+ProxyPass        /nca         http://127.0.0.1:8080/nca
+ProxyPassReverse /nca         http://127.0.0.1:8080/nca
+ProxyPass        /images/iiif http://127.0.0.1:8080/images/iiif
+ProxyPassReverse /images/iiif http://127.0.0.1:8080/images/iiif
+```
 
 NCA itself reads its usual settings file: the image contains
 `settings-example` verbatim, and `compose.yml` overrides values with `NCA_*`

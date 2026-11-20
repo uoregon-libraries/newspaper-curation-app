@@ -42,8 +42,9 @@ networks:
 # image's settings file (settings-example, verbatim), so only what varies by
 # environment or must match the stack's layout is set here.
 x-nca-env: &nca-env
-  # Public URLs, as a browser sees them
-  NCA_WEBROOT: ${PUBLIC_URL:?PUBLIC_URL must be set}
+  # Public URLs, as a browser sees them. NCA may live under a path, but page
+  # images are always at /images/iiif from the stack's root.
+  NCA_WEBROOT: ${PUBLIC_URL:?PUBLIC_URL must be set}${NCA_URL_PATH:-}
   NCA_IIIF_BASE_URL: ${PUBLIC_URL:?PUBLIC_URL must be set}/images/iiif
   NCA_NEWS_WEBROOT: ${NEWS_WEBROOT:?NEWS_WEBROOT must be set}
   NCA_STAGING_NEWS_WEBROOT: ${STAGING_NEWS_WEBROOT:?STAGING_NEWS_WEBROOT must be set}

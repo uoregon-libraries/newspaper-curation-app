@@ -48,7 +48,9 @@ cp compose.override.example.yml compose.override.yml
   (e.g., NCA runs on a VM), set `PUBLIC_HOST` to the name or IP you browse to.
   Public URLs are built from pieces (`PUBLIC_SCHEME`, `PUBLIC_HOST`,
   `PUBLIC_PORT`, `ONI_PROD_PORT`, etc.), and the override publishes services
-  on the same ports, so a port collision is a one-line change in `.env`.
+  on the same ports, so a port collision is a one-line change in `.env`. To
+  test NCA under a path, the way some production setups run it, set
+  `NCA_URL_PATH` (e.g., `/nca`); NCA's URLs below then gain that path.
 - `compose.override.yml` is only for *structural* changes: published ports,
   host directories for volumes, and the dev build target. Don't put
   environment variables in it; if `.env` doesn't expose something you need,

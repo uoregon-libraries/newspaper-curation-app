@@ -30,7 +30,8 @@
 - `.env` builds public URLs from pieces (`PUBLIC_SCHEME`, `PUBLIC_HOST`,
   `PUBLIC_PORT`, and per-service ports for the dev ONI stacks and SFTPGo),
   and the dev override publishes services on those same ports, so URLs and
-  ports can't drift apart.
+  ports can't drift apart. `NCA_URL_PATH` puts NCA under a path (e.g.,
+  `/nca`) while page images stay at `/images/iiif`.
 - A rootless podman systemd user unit for the stack (`docker/nca@.service`)
   and a "Containers" page in the setup docs.
 
