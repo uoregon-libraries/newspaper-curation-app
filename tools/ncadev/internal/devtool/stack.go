@@ -28,20 +28,18 @@ type Stack struct {
 	composeArgs []string
 	env         []string
 
-	// newsDir is the host directory bound to the "news" volume, NCA's workflow
-	// tree. hostDirs must exist before the stack can start.
-	newsDir  string
-	hostDirs []string
+	// lay is where the stack keeps things on the host, read from compose when
+	// it's first needed (see layout)
+	lay *layout
 
 	savepointDir string
 
 	// publicHost is the host in the stack's URLs, for messages
 	publicHost string
 
-	// cacheDir is the host directory bound to the "issue-cache" volume. If
-	// it's empty when the stack starts, it's seeded from seedCacheFrom.
-	cacheDir      string
-	seedCacheFrom string
+	// seedCache is true if an empty issue cache should start as a copy of the
+	// dev stack's
+	seedCache bool
 
 	// Out and Err are where compose and everything it runs write
 	Out io.Writer
@@ -56,54 +54,60 @@ var workflowSubdirs = []string{
 }
 
 // NewDevStack returns the dev stack: compose.yml and compose.override.yml,
-// configured by .env, with dev volumes in DEV-VOLS
+// configured by .env. Where its volumes live is up to the override.
 func NewDevStack() (*Stack, error) {
 	var root, err = findRoot()
 	if err != nil {
 		return nil, err
 	}
 
-	var envPath = filepath.Join(root, ".env")
-	var vars []envVar
-	_, vars, err = readEnvFile(envPath)
+	var get func(string) string
+	get, err = devEnv(root)
 	if errors.Is(err, os.ErrNotExist) {
 		return nil, errors.New("no .env file: copy .env.example to .env (see the Developer's Guide)")
 	}
 	if err != nil {
-		return nil, fmt.Errorf("reading %s: %w", envPath, err)
-	}
-
-	// Like compose, the environment wins over .env
-	var dotenv = resolveEnv(vars, root)
-	var get = func(k string) string {
-		if v, ok := os.LookupEnv(k); ok {
-			return v
-		}
-		return dotenv[k]
+		return nil, err
 	}
 
 	var s = &Stack{
 		Name:         "dev",
 		Root:         root,
-		project:      get("COMPOSE_PROJECT_NAME"),
-		newsDir:      filepath.Join(root, "DEV-VOLS", "news"),
-		savepointDir: filepath.Join(root, "DEV-VOLS", "savepoints"),
-		cacheDir:     filepath.Join(root, "DEV-VOLS", "issue-cache"),
+		project:      devProject(root, get),
+		savepointDir: filepath.Join(root, "backup"),
 		env:          setEnv(os.Environ(), "PWD", root),
 		Out:          os.Stdout,
 		Err:          os.Stderr,
 	}
-	if s.project == "" {
-		s.project = filepath.Base(root)
-	}
-	s.hostDirs = append(subdirs(s.newsDir, workflowSubdirs), s.cacheDir)
-	var logDir = get("CONTAINER_LOG_DIR")
-	if logDir != "" {
-		s.hostDirs = append(s.hostDirs, logDir)
-	}
-
 	s.composeArgs = append([]string{"-p", s.project}, profileArgs(get("COMPOSE_PROFILES"))...)
 	return s, nil
+}
+
+// devEnv returns a lookup for the dev stack's settings: like compose, the
+// environment wins over .env
+func devEnv(root string) (func(string) string, error) {
+	var envPath = filepath.Join(root, ".env")
+	var _, vars, err = readEnvFile(envPath)
+	if err != nil {
+		return nil, fmt.Errorf("reading %s: %w", envPath, err)
+	}
+
+	var dotenv = resolveEnv(vars, root)
+	return func(k string) string {
+		if v, ok := os.LookupEnv(k); ok {
+			return v
+		}
+		return dotenv[k]
+	}, nil
+}
+
+// devProject returns the dev stack's compose project name
+func devProject(root string, get func(string) string) string {
+	var name = get("COMPOSE_PROJECT_NAME")
+	if name == "" {
+		name = filepath.Base(root)
+	}
+	return name
 }
 
 // The test stack's compose project, profiles, and files
@@ -168,10 +172,10 @@ func (s *Stack) testURL(portKey string) string {
 }
 
 // NewTestStack returns the test stack: compose.yml and test/stack/compose.yml,
-// configured by .env.example plus testEnv, with its workflow tree in
-// test/fakemount and everything else in test/var. Nothing in it comes from
-// compose.override.yml or the environment, and only PUBLIC_HOST comes from
-// .env.
+// configured by .env.example plus testEnv. Its override puts the workflow
+// tree in test/fakemount and everything else in test/var. Nothing in it comes
+// from compose.override.yml or the environment, and only PUBLIC_HOST comes
+// from .env.
 func NewTestStack() (*Stack, error) {
 	var root, err = findRoot()
 	if err != nil {
@@ -192,19 +196,16 @@ func NewTestStack() (*Stack, error) {
 	}
 
 	var s = &Stack{
-		Name:          "test",
-		Root:          root,
-		project:       testProject,
-		newsDir:       filepath.Join(root, "test", "fakemount"),
-		savepointDir:  filepath.Join(root, "test", "var", "savepoints"),
-		cacheDir:      filepath.Join(root, "test", "var", "issue-cache"),
-		seedCacheFrom: filepath.Join(root, "DEV-VOLS", "issue-cache"),
-		publicHost:    host,
-		env:           env,
-		Out:           os.Stdout,
-		Err:           os.Stderr,
+		Name:         "test",
+		Root:         root,
+		project:      testProject,
+		savepointDir: filepath.Join(root, "test", "var", "savepoints"),
+		seedCache:    true,
+		publicHost:   host,
+		env:          env,
+		Out:          os.Stdout,
+		Err:          os.Stderr,
 	}
-	s.hostDirs = append(subdirs(s.newsDir, workflowSubdirs), s.cacheDir, filepath.Join(root, "test", "var", "logs"))
 	s.composeArgs = append([]string{
 		"--env-file", testEnvFile,
 		"-f", "compose.yml",

@@ -23,8 +23,10 @@
 - Manual testing happens on a separate test stack, run by `bin/ncatest`. It's
   configured by the repository, not your override or shell variables, and
   takes only `PUBLIC_HOST` from your `.env`, so tests behave the same for
-  everybody, and testing doesn't touch your dev stack's data. Its workflow tree is `test/fakemount`;
-  the dev stack's is now `DEV-VOLS/news`.
+  everybody, and testing doesn't touch your dev stack's data. Its workflow
+  tree is `test/fakemount`. The dev stack's is wherever your override binds
+  it (`DEV-VOLS/news` in the example); the dev tools read that from the
+  override.
 - Loading test issues copies the source files instead of hard-linking them, so
   breaking a workflow file (as some recipes do) can't damage the test sources.
   It empties the workflow directories rather than deleting them, so containers

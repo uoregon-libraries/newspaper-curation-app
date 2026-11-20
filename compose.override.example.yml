@@ -77,11 +77,12 @@ volumes:
   # files directly. NCA's workflow tree is DEV-VOLS/news; `batches` is the same
   # tree's production-batches dir, separately mounted because ONI needs it.
   # (The test stack keeps its own tree in test/fakemount; see test/README.md.)
+  # Put them anywhere you like: bin/ncadev reads the paths from here.
   #
   # These are bind mounts: the directories must exist (bin/ncadev creates
   # them), and removing the volumes won't delete their contents. driver_opts
-  # are baked in when a volume is created, so if you move your checkout,
-  # remove these volumes.
+  # are baked in when a volume is created, so if you move these directories
+  # (or your checkout), remove these volumes.
   news:
     driver: local
     driver_opts:

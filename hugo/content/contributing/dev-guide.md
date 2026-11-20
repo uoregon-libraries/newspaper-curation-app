@@ -73,8 +73,9 @@ which runs the [test stack](#test-data). Rebuild them when they change (`make
 tools` only rebuilds what's out of date). They work from anywhere in the
 checkout, but the docs assume you're in the NCA root.
 
-`bin/ncadev reset` creates the host directories the stack needs (in `DEV-VOLS`
-and `logs`), builds the images (slow the first time), starts everything,
+`bin/ncadev reset` creates the host directories the stack needs (wherever your
+override binds volumes, `DEV-VOLS` in the example, and the log directory),
+builds the images (slow the first time), starts everything,
 migrates the database, and loads seed data: two MARC org codes, the titles in
 `test/sources/marc-xml` (also loaded into both ONIs), and one test user per
 NCA role. Run it any time you want a clean database.
@@ -92,8 +93,8 @@ Once it's done, with the default ports:
   "password")
 
 The first start can take ten minutes or more while NCA caches issue data from
-the live site (`NEWS_WEBROOT`). The cache lives in `DEV-VOLS/issue-cache` on
-your host, so this only happens once.
+the live site (`NEWS_WEBROOT`). The example override keeps the cache on your
+host, in `DEV-VOLS/issue-cache`, so this only happens once.
 
 `NEWS_WEBROOT` has to point at a real ONI site with NCA's JSON endpoints
 patched in (see [Services][services]), which is why dev uses Oregon's live
@@ -164,9 +165,10 @@ instead of `podman compose`.
 ### Volumes and files
 
 NCA's workflow tree (uploads, page review, the workflow itself, batches, etc.)
-is the `news` volume. In dev, your override binds it to `DEV-VOLS/news`, so
-you can look at and change files directly. `DEV-VOLS` also holds the issue
-cache and your save points (below), and it's ignored by git.
+is the `news` volume. The example override binds it to `DEV-VOLS/news`, so you
+can look at and change files directly, and the issue cache to
+`DEV-VOLS/issue-cache`. git ignores `DEV-VOLS`. You can bind them somewhere
+else: `bin/ncadev` reads the paths from your override.
 
 Under rootless podman, files containers write as root are owned by you on the
 host. If something ends up owned by another UID (a container writing as a
@@ -176,7 +178,7 @@ again without sudo.
 ### Snapshots
 
 `bin/ncadev save <name>` saves the workflow tree and every data volume to
-`DEV-VOLS/savepoints/<name>`, and `bin/ncadev restore <name>` puts them back.
+`backup/<name>`, and `bin/ncadev restore <name>` puts them back.
 This is handy for repeating something from the same starting point. See
 [Testing][testing].
 

@@ -44,8 +44,8 @@ The test stack:
   <http://localhost:4333/nca?debuguser=sysop>.
 
 The first time NCA starts in the test stack, it builds its issue cache. That
-takes ten minutes or more, unless your dev stack has a cache in
-`DEV-VOLS/issue-cache`, which the test stack copies to start its own.
+takes ten minutes or more, unless your dev stack has an issue cache, which the
+test stack copies to start its own.
 
 [dev-guide]: <https://uoregon-libraries.github.io/newspaper-curation-app/contributing/dev-guide/>
 

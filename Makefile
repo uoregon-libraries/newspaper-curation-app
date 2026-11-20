@@ -34,8 +34,8 @@ bin/%: src/cmd/% $(SOURCES) $(SOURCEDIRS)
 	go build -ldflags="-s -w -X github.com/uoregon-libraries/newspaper-curation-app/src/version.Version=$(BUILD)" -o $@ github.com/uoregon-libraries/newspaper-curation-app/$<
 
 # Dev and test stack tools, run on the host: see the Developer's Guide. They're
-# their own module, with no dependencies, so they build fast without NCA's.
-TOOL_SOURCES := $(shell find ./tools/ncadev -name "*.go") tools/ncadev/go.mod
+# their own module, so they build fast without NCA's dependencies.
+TOOL_SOURCES := $(shell find ./tools/ncadev -name "*.go") tools/ncadev/go.mod tools/ncadev/go.sum
 
 .PHONY: tools
 tools: bin/ncadev bin/ncatest

@@ -15,39 +15,78 @@ import (
 // prepareHostDirs creates the host directories the stack's volumes and logs
 // need, and seeds the issue cache if it's empty
 func (s *Stack) prepareHostDirs() error {
-	for _, dir := range s.hostDirs {
-		var err = os.MkdirAll(dir, 0755)
+	var lay, err = s.layout()
+	if err != nil {
+		return err
+	}
+	for _, dir := range lay.hostDirs() {
+		err = os.MkdirAll(dir, 0755)
 		if err != nil {
 			return err
 		}
 	}
-	return s.seedCache()
+	if s.seedCache {
+		return s.seedIssueCache(lay.binds["issue-cache"])
+	}
+	return nil
 }
 
-// seedCache copies the issue cache from seedCacheFrom into an empty cacheDir,
-// to skip the long wait (ten minutes or more) while NCA builds a cache from
-// the live site. The finder cache is left out: it describes the other stack's
-// workflow tree, not this one's.
-func (s *Stack) seedCache() error {
-	if s.seedCacheFrom == "" {
+// devCacheDir returns the dev stack's issue cache directory, or "" if there
+// isn't one: the directory its issue-cache volume is bound to, or failing
+// that, where podman keeps the volume
+func (s *Stack) devCacheDir() string {
+	var get, err = devEnv(s.Root)
+	if err != nil {
+		return ""
+	}
+	var vol = devProject(s.Root, get) + "_issue-cache"
+	var cmd = s.command("podman", "volume", "inspect", "--format",
+		`{{index .Options "o"}}|{{index .Options "device"}}|{{.Mountpoint}}`, vol)
+	cmd.Stdin, cmd.Stderr = nil, nil
+	var out []byte
+	out, err = cmd.Output()
+	if err != nil {
+		return ""
+	}
+
+	var parts = strings.SplitN(strings.TrimSpace(string(out)), "|", 3)
+	if len(parts) != 3 {
+		return ""
+	}
+	if strings.Contains(parts[0], "bind") {
+		return parts[1]
+	}
+	return parts[2]
+}
+
+// seedIssueCache copies the dev stack's issue cache into cacheDir if it's
+// empty, to skip the long wait (ten minutes or more) while NCA builds a cache
+// from the live site. The finder cache is left out: it describes the dev
+// stack's workflow tree, not this one's.
+func (s *Stack) seedIssueCache(cacheDir string) error {
+	if cacheDir == "" {
 		return nil
 	}
-	var entries, err = os.ReadDir(s.cacheDir)
+	var entries, err = os.ReadDir(cacheDir)
 	if err != nil || len(entries) > 0 {
 		return err
 	}
-	entries, err = os.ReadDir(s.seedCacheFrom)
+	var from = s.devCacheDir()
+	if from == "" {
+		return nil
+	}
+	entries, err = os.ReadDir(from)
 	if err != nil || len(entries) == 0 {
 		return nil
 	}
 
-	fmt.Fprintf(s.Out, "Seeding the issue cache from %s\n", s.seedCacheFrom)
-	return filepath.WalkDir(s.seedCacheFrom, func(pth string, e fs.DirEntry, err error) error {
+	fmt.Fprintf(s.Out, "Seeding the issue cache from the dev stack's (%s)\n", from)
+	return filepath.WalkDir(from, func(pth string, e fs.DirEntry, err error) error {
 		if err != nil {
 			return err
 		}
-		var rel, _ = filepath.Rel(s.seedCacheFrom, pth)
-		var dst = filepath.Join(s.cacheDir, rel)
+		var rel, _ = filepath.Rel(from, pth)
+		var dst = filepath.Join(cacheDir, rel)
 		switch {
 		case e.Name() == "finder.cache":
 			return nil

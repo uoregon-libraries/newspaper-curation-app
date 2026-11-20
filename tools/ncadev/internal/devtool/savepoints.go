@@ -9,14 +9,18 @@ import (
 	"time"
 )
 
-// skipVolumes aren't the stack's state: Go's caches and the dev image's
-// compiled binaries
-var skipVolumes = []string{"go-cache", "dev-bin"}
+// skipVolumes aren't the stack's state: Go's caches, the dev image's compiled
+// binaries, and NCA's issue cache (rebuildable, just slow)
+var skipVolumes = []string{"go-cache", "dev-bin", "issue-cache"}
+
+func isSkipped(name string) bool {
+	return slices.Contains(skipVolumes, name)
+}
 
 // dataVolumes returns the compose names (e.g., "db") of the stack's volumes
-// that hold its state: everything compose created except skipVolumes and
-// volumes bound to host directories. The workflow tree is saved separately,
-// and the issue cache isn't saved at all.
+// that hold its state and are managed by podman: everything compose created
+// except skipVolumes and volumes bound to host directories, which are saved
+// as directories instead (see layout.savedBinds).
 func (s *Stack) dataVolumes() ([]string, error) {
 	var out, err = s.podmanOutput("volume", "ls", "-q", "--filter", "label=io.podman.compose.project="+s.project)
 	if err != nil {
@@ -26,7 +30,7 @@ func (s *Stack) dataVolumes() ([]string, error) {
 	var names []string
 	for _, vol := range strings.Fields(out) {
 		var name = strings.TrimPrefix(vol, s.project+"_")
-		if slices.Contains(skipVolumes, name) {
+		if isSkipped(name) {
 			continue
 		}
 		var opt string
@@ -61,11 +65,16 @@ func (s *Stack) HasSavepoint(name string) bool {
 	return err == nil && info.IsDir()
 }
 
-// Save saves the stack's state (its workflow tree and data volumes) as the
-// named save point, replacing any save point with that name. The stack has
-// to stop while it's saved, and is left stopped.
+// Save saves the stack's state (its data volumes, including the workflow
+// tree) as the named save point, replacing any save point with that name.
+// The stack has to stop while it's saved, and is left stopped.
 func (s *Stack) Save(name string) error {
 	var dir, err = s.savepointPath(name)
+	if err != nil {
+		return err
+	}
+	var lay *layout
+	lay, err = s.layout()
 	if err != nil {
 		return err
 	}
@@ -91,10 +100,15 @@ func (s *Stack) Save(name string) error {
 		return err
 	}
 
-	fmt.Fprintf(s.Out, "Saving the workflow tree (%s)\n", s.newsDir)
-	err = s.podman("unshare", "tar", "-cpf", filepath.Join(dir, "news.tar"), "-C", s.newsDir, ".")
-	if err != nil {
-		return err
+	// Directories are saved as root in podman's user namespace, since
+	// containers may have written files we can't otherwise read
+	for _, vol := range lay.savedBinds() {
+		var dev = lay.binds[vol]
+		fmt.Fprintf(s.Out, "Saving volume %s (%s)\n", vol, dev)
+		err = s.podman("unshare", "tar", "-cpf", filepath.Join(dir, "bind-"+vol+".tar"), "-C", dev, ".")
+		if err != nil {
+			return err
+		}
 	}
 
 	var vols []string
@@ -153,21 +167,44 @@ func (s *Stack) Restore(name string) error {
 		time.Sleep(5 * time.Second)
 	}
 
-	err = s.Nuke()
-	if err == nil {
-		err = os.MkdirAll(s.newsDir, 0755)
-	}
+	var lay *layout
+	lay, err = s.layout()
 	if err != nil {
 		return err
 	}
 
-	fmt.Fprintf(s.Out, "Restoring the workflow tree (%s)\n", s.newsDir)
-	err = s.podman("unshare", "tar", "-xpf", filepath.Join(dir, "news.tar"), "-C", s.newsDir)
-	if err != nil {
-		return err
-	}
-
+	// Check that every directory in the save point has somewhere to go before
+	// deleting anything
 	var tarfiles []string
+	tarfiles, err = filepath.Glob(filepath.Join(dir, "bind-*.tar"))
+	if err != nil {
+		return err
+	}
+	for _, tarfile := range tarfiles {
+		var vol = strings.TrimSuffix(strings.TrimPrefix(filepath.Base(tarfile), "bind-"), ".tar")
+		if lay.binds[vol] == "" {
+			return fmt.Errorf("save point has volume %s as a directory, but the stack doesn't bind it to one", vol)
+		}
+	}
+
+	err = s.Nuke()
+	if err != nil {
+		return err
+	}
+
+	for _, tarfile := range tarfiles {
+		var vol = strings.TrimSuffix(strings.TrimPrefix(filepath.Base(tarfile), "bind-"), ".tar")
+		var dev = lay.binds[vol]
+		fmt.Fprintf(s.Out, "Restoring volume %s (%s)\n", vol, dev)
+		err = os.MkdirAll(dev, 0755)
+		if err == nil {
+			err = s.podman("unshare", "tar", "-xpf", tarfile, "-C", dev)
+		}
+		if err != nil {
+			return err
+		}
+	}
+
 	tarfiles, err = filepath.Glob(filepath.Join(dir, "volume-*.tar"))
 	if err != nil {
 		return err
@@ -188,10 +225,14 @@ func (s *Stack) Restore(name string) error {
 	return nil
 }
 
-// Nuke stops the stack and deletes its state: its data volumes and its
-// workflow tree. Go's caches, NCA's issue cache, and save points are kept.
+// Nuke stops the stack and deletes its state: its data volumes, and the
+// contents of volumes bound to host directories (e.g., the workflow tree).
+// Go's caches, NCA's issue cache, and save points are kept.
 func (s *Stack) Nuke() error {
-	var err = s.Down()
+	var lay, err = s.layout()
+	if err == nil {
+		err = s.Down()
+	}
 	if err != nil {
 		return err
 	}
@@ -206,6 +247,17 @@ func (s *Stack) Nuke() error {
 	}
 
 	// Containers may have written files we can only delete as root in
-	// podman's user namespace
-	return s.podman("unshare", "rm", "-rf", s.newsDir)
+	// podman's user namespace. The directories stay, since bind mounts need
+	// them.
+	for _, vol := range lay.savedBinds() {
+		var dev = lay.binds[vol]
+		if _, statErr := os.Stat(dev); statErr != nil {
+			continue
+		}
+		err = s.podman("unshare", "find", dev, "-mindepth", "1", "-delete")
+		if err != nil {
+			return err
+		}
+	}
+	return nil
 }
