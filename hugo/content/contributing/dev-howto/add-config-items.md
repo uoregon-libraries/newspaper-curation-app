@@ -38,10 +38,9 @@ Notes:
   `Parse()` function. `MinimumIssuePages`, for instance, ensures it's always at
   least 1.
 - If you add a workflow path, add it to `emptyWorkflowDirs` in
-  [`test/harness/sources.go`][2], so loading test issues empties it, and to
-  `workflowSubdirs` in [`tools/ncadev`'s `stack.go`][3], so the dev and test
-  stacks create it on the host.
+  [`test/harness/sources.go`][2], so loading test issues empties it. Give its
+  setting the `path,create` type, like the other workflow paths, so NCA
+  creates the directory.
 
 [1]: <https://github.com/uoregon-libraries/newspaper-curation-app/blob/main/src/config/config.go>
 [2]: <https://github.com/uoregon-libraries/newspaper-curation-app/blob/main/test/harness/sources.go>
-[3]: <https://github.com/uoregon-libraries/newspaper-curation-app/blob/main/tools/ncadev/internal/devtool/stack.go>

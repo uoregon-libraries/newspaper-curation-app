@@ -188,9 +188,10 @@ file hits it, conmon empties the file, which fights logrotate.
 
 ## Running commands
 
-Always run compose through `scripts/compose`: podman-compose before 1.6
-ignores `COMPOSE_PROFILES`, and `scripts/compose` turns it into `--profile`
-flags.
+These examples run compose through `scripts/compose`, which turns
+`COMPOSE_PROFILES` into `--profile` flags. podman-compose before 1.6.0 ignores
+`COMPOSE_PROFILES`, and servers are often stuck with an older distro package.
+With 1.6.0 or newer, plain `podman compose` works just as well.
 
 One-off commands run in the `cli` service. NCA binaries don't need `-c`,
 since the container sets `NCA_CONFIG`:

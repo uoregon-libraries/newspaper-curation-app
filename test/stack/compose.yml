@@ -1,11 +1,11 @@
 # The test stack's override, used with compose.yml in place of
-# compose.override.yml. ncatest (tools/ncadev) runs the test stack; its
-# configuration is .env.example plus the test stack's own settings, never your
-# .env, so it behaves the same for everybody.
+# compose.override.yml. test/stack/compose runs the test stack; its
+# configuration is .env.example plus the test stack's own settings
+# (test/stack/env), never your .env, so it behaves the same for everybody.
 #
 # It's the dev override, except that the workflow tree lives in
 # test/fakemount, and everything else the stack keeps on the host lives in
-# test/var. ncatest creates those directories.
+# test/var. test/stack/compose creates those directories.
 
 x-nca-dev: &nca-dev
   build:
@@ -42,7 +42,7 @@ volumes:
 
   # Bind mounts: removing the volumes doesn't delete their directories'
   # contents. driver_opts are baked in when a volume is created, so if you
-  # move your checkout, run "ncatest nuke" and remove these volumes.
+  # move your checkout, remove these volumes (with the stack down).
   news:
     driver: local
     driver_opts:

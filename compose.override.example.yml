@@ -18,7 +18,7 @@
 # checkout mounted over the app directory. The entrypoint recompiles whatever
 # binary a container runs, so the edit/compile/test loop is:
 #
-#   scripts/compose restart web workers
+#   podman compose restart web workers
 #
 # Templates and static files are read straight from the checkout, so changes
 # there only need a page reload.
@@ -77,10 +77,12 @@ volumes:
   # files directly. NCA's workflow tree is DEV-VOLS/news; `batches` is the same
   # tree's production-batches dir, separately mounted because ONI needs it.
   # (The test stack keeps its own tree in test/fakemount; see test/README.md.)
-  # Put them anywhere you like: bin/ncadev reads the paths from here.
+  # Put them anywhere you like: scripts/reset and scripts/savepoint ask podman
+  # where they are.
   #
-  # These are bind mounts: the directories must exist (bin/ncadev creates
-  # them), and removing the volumes won't delete their contents. driver_opts
+  # These are bind mounts: the directories must exist before the stack starts
+  # (see the Developer's Guide), and removing the volumes won't delete their
+  # contents. driver_opts
   # are baked in when a volume is created, so if you move these directories
   # (or your checkout), remove these volumes.
   news:

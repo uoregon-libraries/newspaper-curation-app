@@ -1,0 +1,94 @@
+#!/usr/bin/env bash
+#
+# Deletes all of the dev stack's data, then loads seed data:
+#
+#   scripts/reset [-y] [--issues]
+#
+# "All data" is NCA's database, both ONIs' databases and Solr indexes,
+# SFTPGo's data, and the workflow tree. Go's caches and NCA's issue cache are
+# kept. It asks first, unless you give it -y.
+#
+# The seed data is what you need to work with the NCA test data (see
+# test/README.md): its MARC org codes, a user for each role (e.g., "sysop",
+# "curator"), and its titles, from test/sources/marc-xml, loaded into NCA and
+# both ONIs. With --issues, it loads the test issues, too, and queues the
+# born-digital ones for page review.
+#
+# NCA itself (web, workers, and the proxy) is left stopped, so nothing runs
+# until you start it. To reset a stack other than the dev stack, see
+# scripts/lib/stack.sh.
+
+source "$(dirname "$0")/lib/stack.sh"
+
+usage() {
+  echo "Usage: $0 [-y] [--issues]" >&2
+  exit 2
+}
+
+yes=false
+issues=false
+for arg in "$@"; do
+  case $arg in
+    -y | --yes) yes=true ;;
+    --issues) issues=true ;;
+    *) usage ;;
+  esac
+done
+
+if ! $yes; then
+  scan_volumes
+  echo "This deletes all of the $project stack's data: its databases, Solr indexes, and SFTPGo's data."
+  if [[ ${#state_binds[@]} -gt 0 ]]; then
+    echo "It also deletes everything in:"
+    printf '  %s\n' "${state_binds[@]}"
+  fi
+  read -rp "Continue? [y/N] " answer
+  [[ $answer == [yY]* ]] || exit 1
+fi
+
+wipe_state
+
+# Start everything but NCA itself (and the proxy in front of it), so the job
+# runner can't start on anything until we're done
+mapfile -t services < <("${compose[@]}" config --services | grep -vxE 'web|workers|proxy')
+if [[ ${#services[@]} -eq 0 ]]; then
+  die "Couldn't list the stack's services"
+fi
+"${compose[@]}" up -d "${services[@]}"
+
+# "run" doesn't build a missing image the way "up" does
+if ! podman image exists "localhost/${project}_cli"; then
+  "${compose[@]}" --profile tools build cli
+fi
+cli() {
+  "${compose[@]}" --profile tools run --rm --no-deps -T cli "$@"
+}
+
+cli migrate
+
+# Loading titles goes badly if an ONI hasn't finished setting up Solr, and
+# ONI has no "are you ready?" query, so wait until each one answers HTTP
+for oni in oni-staging oni-prod; do
+  if ! printf '%s\n' "${services[@]}" | grep -qx "$oni"; then
+    continue
+  fi
+  printf 'Waiting for %s' "$oni"
+  deadline=$((SECONDS + 600))
+  until "${compose[@]}" exec -T "$oni" curl -s --head localhost >/dev/null 2>&1; do
+    if ((SECONDS > deadline)); then
+      echo
+      die "$oni still isn't answering after ten minutes: check its logs"
+    fi
+    printf .
+    sleep 1
+  done
+  echo
+done
+
+cli go run ./test/harness seed
+if $issues; then
+  cli go run ./test/harness load-issues
+fi
+
+echo
+echo "Done. NCA is stopped; start it with: ${compose[*]} up -d"

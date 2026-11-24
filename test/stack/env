@@ -1,0 +1,35 @@
+# The test stack's own settings. test/stack/compose writes the test stack's
+# env file (test/var/stack.env) from .env.example, with these values in place
+# of its own, so the test stack behaves the same for everybody.
+#
+# PUBLIC_HOST is the exception: it comes from your .env, if you've set it,
+# since it's about where your browser is (e.g., NCA runs on a VM), not how the
+# stack behaves.
+#
+# The format is .env's: a value can refer to anything assigned above it in
+# .env.example, or to an earlier value here.
+
+COMPOSE_PROJECT_NAME=nca-test
+COMPOSE_PROFILES=local-dev,sftpgo
+
+# Everything the test stack keeps on the host is in test/var, except the
+# workflow tree (test/fakemount; see test/stack/compose.yml)
+CONTAINER_LOG_DIR=${PWD}/test/var/logs
+
+# Ports that won't collide with the dev stack's
+PUBLIC_SCHEME=http
+PUBLIC_PORT=4333
+PUBLIC_PORT_SUFFIX=:${PUBLIC_PORT}
+NCA_URL_PATH=/nca
+ONI_PROD_PORT=4080
+ONI_STAGING_PORT=4082
+SFTPGO_WEB_PORT=4081
+SFTPGO_SFTP_PORT=4022
+
+# What the tests and the test data depend on
+NCA_DEBUG=true
+PDF_BATCH_MARC_ORG_CODE=oru
+MIN_BATCH_SIZE=4
+MAX_BATCH_SIZE=4000
+DURATION_ISSUE_CONSIDERED_DANGEROUS=48h
+DURATION_ISSUE_CONSIDERED_NEW=336h

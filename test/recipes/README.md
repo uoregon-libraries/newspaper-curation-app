@@ -12,26 +12,26 @@ running the recipe in isolation.
 
 Some general / common information follows.
 
-## Built-in Recipes
+## Scripted Recipes
 
-Some recipes are built into `ncatest`. `bin/ncatest recipes` lists them, with
-their stages, and they're defined in `tools/ncadev/internal/devtool/recipes.go`:
+Some recipes are scripts, built on the test stack's helpers in `test/lib.sh`:
 
-- `general`: end to end, from nothing: process uploads, fake curation and
+- `general.sh`: end to end, from nothing: process uploads, fake curation and
   review, then build and approve batches. It's a good baseline for refactors,
   and a starting point for new recipes.
-- `invalid-title`: the general test, but one title's LCCN is marked invalid
+- `invalid-title.sh`: the general test, but one title's LCCN is marked invalid
   before batching, to verify that titles with an unvalidated LCCN are kept out
   of batches
-- `broken-oni`: the general test, but you stop staging ONI's Solr while
+- `broken-oni.sh`: the general test, but you stop staging ONI's Solr while
   batches load, to test NCA's handling of external job failures (entwined job
   retry / restart)
 
-Run one with a name for the run, e.g., `bin/ncatest run general baseline`.
+Run one with a name for the run, e.g., `test/recipes/general.sh baseline`.
 It creates a completely fresh environment, runs each stage, in some cases
 directs you to take actions manually in NCA, and eventually creates a report.
 You should only have to check out the branches you need and run the recipe for
-each branch, then compare reports.
+each branch, then compare reports. It prints every command it runs, so if a
+stage goes wrong, you can see what it did and repeat any step by hand.
 
 After each stage, the recipe makes a save point named for the stage and run
 (e.g., `02-baseline`). Running the recipe again with the same name restores
@@ -40,6 +40,9 @@ start over. To repeat a stage, delete its save point (and any later ones) from
 `test/var/savepoints`.
 
 Everything the recipe runs is logged to `test/var/logs/recipe-<name>.log`.
+
+A new recipe is a short script: copy `general.sh`, and replace or add stages.
+Each stage is a shell function, using the helpers in `test/lib.sh`.
 
 ## Step-by-step Recipes
 
@@ -55,19 +58,18 @@ Each recipe should be run once on your baseline (usually the `main` branch) and
 again on your fixed code. Snapshots (save points, which back up data state in
 case you need to repeat a step) and reports need meaningful names.
 
-Built-in recipes take the name as an argument. With no name, they use `git
+Scripted recipes take the name as an argument. With no name, they use `git
 describe --tags`. For step-by-step recipes, it's easiest to do something like
 `export name=baseline`, then use `$name` when you make save points or
-reports, e.g., `bin/ncatest report $name`.
+reports, e.g., `harness report --name $name`.
 
 ## Repeat And Compare
 
 You'll run the recipe twice: once on your baseline, once on your fix/refactor.
 The test stack's containers build NCA from your checkout as they start, so
-there's nothing to compile first, but rebuild the tools (`make tools`) if
-you've switched to a branch where they've changed.
+there's nothing to compile first.
 
-After each run, you should generate a report (built-in recipes do this for
+After each run, you should generate a report (scripted recipes do this for
 you). Once you have two reports, you can compare them using git. Example:
 
 ```bash
@@ -82,9 +84,9 @@ git status ./test/r
 
 ## Waiting for Jobs
 
-`bin/ncatest workonce` runs jobs until there are none left. To check on jobs by
-hand:
+`workonce` (from `test/lib.sh`) runs jobs until there are none left. To check
+on jobs by hand:
 
-    bin/ncatest sql -e "select * from jobs where status not in ('success', 'on_hold')"
+    sql -e "select * from jobs where status not in ('success', 'on_hold')"
 
 Hopefully we get a UI for viewing jobs one day....

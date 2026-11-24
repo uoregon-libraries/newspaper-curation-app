@@ -1,0 +1,37 @@
+#!/usr/bin/env bash
+#
+# Regenerates docker/init.sql, the migrated schema new databases start from
+# (see docker/Dockerfile-db), by migrating a fresh database and dumping it.
+#
+# It uses the test stack, so it wipes the test stack's NCA database, but never
+# your dev stack's. Rebuild your stacks' db images afterward to use the new
+# snapshot, e.g., "podman compose build db".
+
+set -euo pipefail
+
+cd "$(dirname "$0")/.."
+export PODMAN_COMPOSE_WARNING_LOGS=${PODMAN_COMPOSE_WARNING_LOGS:-false}
+
+stack=test/stack/compose
+
+$stack down
+for vol in nca-test_db nca-test_locks; do
+  if podman volume exists "$vol"; then
+    podman volume rm "$vol" >/dev/null
+  fi
+done
+
+$stack up -d db
+# "run" doesn't build a missing image the way "up" does
+if ! podman image exists localhost/nca-test_cli; then
+  $stack --profile tools build cli
+fi
+$stack --profile tools run --rm --no-deps -T cli migrate
+
+# shellcheck disable=SC2016 # the variables are the db container's
+$stack exec -T db sh -c \
+  'MYSQL_PWD=$MARIADB_PASSWORD exec mariadb-dump -u"$MARIADB_USER" --databases "$MARIADB_DATABASE" --routines --triggers' \
+  >docker/init.sql
+$stack down
+
+echo "Wrote docker/init.sql. Rebuild your stacks' db images to use it, e.g., \"podman compose build db\"."

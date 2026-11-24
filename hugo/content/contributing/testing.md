@@ -27,11 +27,12 @@ may find the project's "test" directory helpful. It contains documentation and
 tools which are meant to make real-world-like testing a lot easier.
 
 Manual tests run on a separate test stack: a second copy of the [dev
-stack][1], run by `bin/ncatest`, that's configured entirely by the repository.
-Nobody's `.env` or compose override changes how it behaves, and testing never
-touches your dev stack's data. `bin/ncatest` loads test issues, stands in for
-curators and reviewers, and writes reports you can compare between runs. It
-also runs recipes: scripted end-to-end tests that pause when they need you.
+stack][1], run with `test/stack/compose`, that's configured entirely by the
+repository. Nobody's `.env` or compose override changes how it behaves, and
+testing never touches your dev stack's data. The test directory has helpers
+that load test issues, stand in for curators and reviewers, and write reports
+you can compare between runs, plus recipes: scripted end-to-end tests that
+pause when they need you.
 
 View the README.md file in the test directory for details.
 
@@ -39,13 +40,14 @@ View the README.md file in the test directory for details.
 
 ### Saving State
 
-At any time you can save and restore a stack's state: `bin/ncatest save
-<name>` and `bin/ncatest restore <name>` save or restore **all files** in the
-test stack's workflow tree (`test/fakemount`) as well as its data volumes
-(databases, Solr indexes, etc.), using `podman volume export` and `import`.
-Go's caches, NCA's issue cache, and the dev image's binaries aren't included,
-since they're not application state. `bin/ncadev save` and `restore` do the
-same for the dev stack.
+At any time you can save and restore a stack's state with
+`scripts/savepoint save <name>` and `scripts/savepoint restore <name>`. A save
+point holds **all files** in the stack's workflow tree as well as its data
+volumes (databases, Solr indexes, etc.), using `podman volume export` and
+`import`. Go's caches, NCA's issue cache, and the dev image's binaries aren't
+included, since they're not application state. Dev save points go in
+`backup/`; the test stack's helpers (see the test README) keep its save
+points in `test/var/savepoints`.
 
 This can be very handy for verifying a process such as generating batches,
 where you may want to have the same initial state, but see what happens as you

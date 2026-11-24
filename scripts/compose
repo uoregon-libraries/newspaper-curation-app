@@ -1,10 +1,13 @@
 #!/usr/bin/env bash
 #
 # Runs "podman compose" with each profile in COMPOSE_PROFILES passed as a
-# --profile flag. podman-compose before 1.6.0 (e.g., a distro package we don't
-# control) ignores COMPOSE_PROFILES, so profiled services (e.g., the local-dev
-# ONI stacks) silently drop out of up, down, ps, logs, etc. Newer versions just
-# see the same profiles twice, which is harmless.
+# --profile flag, for servers stuck with podman-compose older than 1.6.0 (e.g.,
+# a distro package you don't control). Those versions ignore COMPOSE_PROFILES,
+# so profiled services silently drop out of up, down, ps, logs, etc. Newer
+# versions just see the same profiles twice, which is harmless.
+#
+# Dev doesn't use this: upgrade podman-compose instead, and run plain "podman
+# compose".
 #
 # COMPOSE_PROFILES comes from the environment if set, else .env, which is the
 # same precedence compose uses.

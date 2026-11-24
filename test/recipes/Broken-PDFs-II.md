@@ -8,18 +8,23 @@ behind (hint: it wasn't).
 ## Script
 
 ```bash
+# Load the test stack's helpers (see test/README.md)
+source test/lib.sh
+
 # Set an environment variable "name" to "baseline" or "fix" depending on which run this is
 export name=baseline
 export name=fix
 
 # Begin
-bin/ncatest prep >prep.log 2>&1
+reset_stack -y --issues >prep.log 2>&1
+up_for_recipe
 
 # Check logs for errors just to be sure things did what we expect
 grep -v " - \(INFO\|DEBUG\) - " prep.log
 
 # Save state using the "name" variable from above
-bin/ncatest save 01-$name
+savepoint save 01-$name
+up_for_recipe
 
 # Break an issue so the "page_split" job fails. The workflow tree has copies
 # of the test sources, not links, so this doesn't damage the sources.
@@ -29,25 +34,26 @@ echo "bad" > ./test/fakemount/sftp/sn96088087/2010-04-19/0005.pdf
 sed -i 's|var maxDelay =.*$|var maxDelay = time.Second|' src/models/job.go
 
 # Run jobs; wait for jobs to complete / fail (~10min)
-bin/ncatest workonce
+workonce
 
 # Make another save point using the "name" variable from above
-bin/ncatest save 02-$name
+savepoint save 02-$name
+up_for_recipe
 
 # Run the command to remove dead issues
-bin/ncatest cli remove-dead-issues
+cli remove-dead-issues
 
 # Removed issue should be sn96088087/2010041901
 
 # Run jobs one last time (~1 min)
-bin/ncatest workonce
+workonce
 
 # Undo the backoff hack
 git checkout src/models/job.go
 ```
 
-Wait for all jobs to complete, then create your report: `bin/ncatest report
-$name`. You may have to search for jobs that are *not* `on_hold` if still
+Wait for all jobs to complete, then create your report: `harness report
+--name $name`. You may have to search for jobs that are *not* `on_hold` if still
 running a version of NCA that doesn't properly clean up non-issue-specific
 jobs, as those will never run or fail (hence the fix and this test). e.g.,
 

@@ -8,40 +8,46 @@ similar kind of test.
 ## Script
 
 ```bash
+# Load the test stack's helpers (see test/README.md)
+source test/lib.sh
+
 # Set an environment variable "name" to "baseline" or "fix" depending on which run this is
 export name=baseline
 export name=fix
 
 # Begin
-bin/ncatest prep >prep.log 2>&1
+reset_stack -y --issues >prep.log 2>&1
+up_for_recipe
 
 # Run jobs until there are none left
-bin/ncatest workonce >work.log 2>&1
+workonce >work.log 2>&1
 
 # Check logs for errors just to be sure things did what we expect
 grep -v " - \(INFO\|DEBUG\) - " work.log
 grep -v " - \(INFO\|DEBUG\) - " prep.log
 
 # Save state using the "name" variable from above
-bin/ncatest save 01-$name
+savepoint save 01-$name
+up_for_recipe
 
 # Break two PDF issues
 echo "bad" > ./test/fakemount/page-review/sn88086023-2022080401-**/seq-0026.pdf
 echo "bad" > ./test/fakemount/page-review/2021242619-2020090201-**/seq-0003.pdf
 
 # Renumber and make older
-bin/ncatest rename-page-review && bin/ncatest make-older
+harness rename-page-review && harness make-older
 
 # Run jobs again, replacing the log
-bin/ncatest workonce >work.log 2>&1
+workonce >work.log 2>&1
 
 # Wait for jobs to complete and the two failures to finalize (~10min)
 
 # Make another save point using the "name" variable from above
-bin/ncatest save 02-$name
+savepoint save 02-$name
+up_for_recipe
 
 # Run the command to remove dead issues
-bin/ncatest cli remove-dead-issues
+cli remove-dead-issues
 
 # Deleted issues should include:
 #
@@ -49,8 +55,8 @@ bin/ncatest cli remove-dead-issues
 # 2021242619/2020090201
 
 # Run jobs one last time
-bin/ncatest workonce >work.log 2>&1
+workonce >work.log 2>&1
 ```
 
-Wait for all jobs to complete, then create your report: `bin/ncatest report
-$name`.
+Wait for all jobs to complete, then create your report: `harness report
+--name $name`.

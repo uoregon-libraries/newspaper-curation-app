@@ -7,9 +7,9 @@
 #   compose.override.yml; it's only for structural changes (published ports,
 #   host-directory volumes, the dev build target). If a setting you need isn't
 #   exposed here, add it here and to `.env.example`.
-# - This targets podman (podman-compose and the k8s-file log driver). Run
-#   compose via `scripts/compose`, which makes COMPOSE_PROFILES work on
-#   podman-compose versions that ignore it.
+# - This targets podman (podman-compose 1.6.0 or newer, and the k8s-file log
+#   driver). Older podman-compose ignores COMPOSE_PROFILES; on a server stuck
+#   with one, run compose via `scripts/compose`, which works around it.
 # - Every service writes stdout/stderr to its own file in CONTAINER_LOG_DIR,
 #   so logs survive `down` and container recreation.
 # - Long-running services use `restart: always`, not "unless-stopped":
@@ -147,7 +147,7 @@ services:
   # One-off commands: any NCA binary, or anything else in the image. The
   # config file is already set (NCA_CONFIG), so there's no need for "-c":
   #
-  #   scripts/compose --profile tools run --rm --no-deps cli queue-batches
+  #   podman compose --profile tools run --rm --no-deps cli queue-batches
   #
   # Keep `--no-deps`, so a one-off never starts services stopped on purpose.
   cli:
@@ -157,7 +157,7 @@ services:
       driver: k8s-file
       options:
         path: ${CONTAINER_LOG_DIR:?CONTAINER_LOG_DIR must be set}/cli.log
-    command: ["echo", "Usage: scripts/compose --profile tools run --rm --no-deps cli <command> [args...]"]
+    command: ["echo", "Usage: podman compose --profile tools run --rm --no-deps cli <command> [args...]"]
 
   db:
     restart: always

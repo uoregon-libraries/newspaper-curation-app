@@ -1,0 +1,99 @@
+#!/usr/bin/env bash
+#
+# Saves the dev stack's state, or replaces it with a saved state:
+#
+#   scripts/savepoint save <name>
+#   scripts/savepoint restore <name>
+#
+# State is the stack's data volumes (databases, Solr indexes, etc.) and the
+# host directories its volumes are bound to (e.g., the workflow tree). Go's
+# caches and NCA's issue cache aren't saved, since they aren't application
+# state.
+#
+# Save points go in backup/<name>, or $NCA_SAVEPOINTS/<name>. The stack has
+# to stop while it's saved or restored, and is left stopped. To work on a
+# stack other than the dev stack, see scripts/lib/stack.sh.
+
+source "$(dirname "$0")/lib/stack.sh"
+
+usage() {
+  echo "Usage: $0 save|restore <name>" >&2
+  exit 2
+}
+
+[[ $# -eq 2 ]] || usage
+action=$1
+name=$2
+if [[ ! $name =~ ^[A-Za-z0-9_][A-Za-z0-9_.-]*$ ]]; then
+  die "Invalid save point name: $name"
+fi
+dir=${NCA_SAVEPOINTS:-backup}/$name
+
+# Directories are saved and restored as root in podman's user namespace,
+# since containers may have written files we can't otherwise read or write
+save() {
+  "${compose[@]}" down
+  scan_volumes
+
+  rm -rf "$dir"
+  mkdir -p "$dir"
+  local vol
+  for vol in "${!state_binds[@]}"; do
+    echo "Saving $vol (${state_binds[$vol]})"
+    podman unshare tar -cpf "$dir/bind-$vol.tar" -C "${state_binds[$vol]}" .
+  done
+  for vol in "${data_vols[@]}"; do
+    echo "Saving $vol"
+    podman volume export "${project}_$vol" --output "$dir/volume-$vol.tar"
+  done
+
+  echo
+  echo "Saved the $project stack to $dir. It's stopped; start it with: ${compose[*]} up -d"
+}
+
+restore() {
+  [[ -d $dir ]] || die "No save point in $dir"
+
+  # The stack's volumes have to exist to say where its directories are
+  "${compose[@]}" up --no-start
+  scan_volumes
+
+  # Make sure every saved directory has somewhere to go before deleting
+  # anything
+  local tarfile vol
+  for tarfile in "$dir"/bind-*.tar; do
+    [[ -e $tarfile ]] || continue
+    vol=$(basename "$tarfile" .tar)
+    vol=${vol#bind-}
+    if [[ -z ${state_binds[$vol]:-} ]]; then
+      die "The save point has $vol as a directory, but the stack doesn't bind $vol to one"
+    fi
+  done
+
+  wipe_state
+
+  for tarfile in "$dir"/bind-*.tar; do
+    [[ -e $tarfile ]] || continue
+    vol=$(basename "$tarfile" .tar)
+    vol=${vol#bind-}
+    echo "Restoring $vol (${state_binds[$vol]})"
+    podman unshare tar -xpf "$tarfile" -C "${state_binds[$vol]}"
+  done
+  for tarfile in "$dir"/volume-*.tar; do
+    [[ -e $tarfile ]] || continue
+    vol=$(basename "$tarfile" .tar)
+    vol=${vol#volume-}
+    echo "Restoring $vol"
+    podman volume create --label "io.podman.compose.project=$project" "${project}_$vol" >/dev/null
+    podman volume import "${project}_$vol" "$tarfile"
+  done
+
+  echo
+  echo "Restored the $project stack from $dir. It's stopped; start it with: ${compose[*]} up -d"
+}
+
+case $action in
+  save) save ;;
+  restore) restore ;;
+  *) usage ;;
+esac

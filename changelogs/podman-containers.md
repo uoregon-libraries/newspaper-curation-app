@@ -11,22 +11,31 @@
   services (`sftpgo`, `local-dev` for the demo ONI stacks, and `tools` for a
   `cli` service).
 - The compose setup requires podman and podman-compose; Docker is no longer
-  supported. Use `scripts/compose` instead of `podman compose`, since older
-  podman-compose versions ignore `COMPOSE_PROFILES`.
+  supported. Dev needs podman-compose 1.6.0 or newer, since older versions
+  ignore `COMPOSE_PROFILES`. Servers stuck with an older version can run
+  compose through `scripts/compose`, which works around it.
 - The web proxy is Caddy instead of nginx.
 - MariaDB is pinned to 12.3 (LTS) instead of `latest`.
-- Dev and test tooling is Go instead of bash. `bin/ncadev` (built by `make
-  tools`) replaces `scripts/localdev.sh` and `manage`. The `test/` scripts
-  are now `bin/ncatest` plus a test harness that runs in a container
-  (`test/harness`), and the recipe scripts are recipes built into `ncatest`.
-  Save points (formerly `manage backup|restore`) no longer need sudo.
-- Manual testing happens on a separate test stack, run by `bin/ncatest`. It's
-  configured by the repository, not your override or shell variables, and
-  takes only `PUBLIC_HOST` from your `.env`, so tests behave the same for
-  everybody, and testing doesn't touch your dev stack's data. Its workflow
-  tree is `test/fakemount`. The dev stack's is wherever your override binds
-  it (`DEV-VOLS/news` in the example); the dev tools read that from the
-  override.
+- Day-to-day development uses plain `podman compose` commands, documented in
+  the Developer's Guide, in place of `scripts/localdev.sh` and `manage`. A few
+  scripts cover what compose can't do in one step: `scripts/reset` (delete a
+  stack's data and load seed data, optionally with the test issues),
+  `scripts/savepoint` (save and restore a stack's state, formerly `manage
+  backup|restore`, without sudo), and `scripts/init-sql` (regenerate the
+  database snapshot).
+- Manual testing happens on a separate test stack, run with
+  `test/stack/compose`. It's configured by the repository, not your override
+  or shell variables, and takes only `PUBLIC_HOST` from your `.env`, so tests
+  behave the same for everybody, and testing doesn't touch your dev stack's
+  data. Its workflow tree is `test/fakemount`. The dev stack's is wherever
+  your override binds it (`DEV-VOLS/news` in the example).
+- The steps that stand in for curators, reviewers, and the like (loading test
+  issues, faking page review, curation, and review, seeding, and reports) are
+  a test harness that runs in an NCA container (`test/harness`), with shell
+  helpers for the test stack in `test/lib.sh`. The scripted recipes
+  (`test/recipes/*.sh`) are built on those helpers, print every command they
+  run, and make a save point after each stage, so an interrupted run picks up
+  where it left off.
 - Loading test issues copies the source files instead of hard-linking them, so
   breaking a workflow file (as some recipes do) can't damage the test sources.
   It empties the workflow directories rather than deleting them, so containers
@@ -57,9 +66,10 @@
 - `compose.override-example.yml` and `compose.override-hybrid-example.yml`,
   replaced by `compose.override.example.yml` and `.env.example`
 - The "Not Compiling Locally" developer docs
-- `scripts/localdev.sh`, `manage`, and the scripts in `test/` and
-  `test/recipes/`, replaced by `bin/ncadev`, `bin/ncatest`, and the test
-  harness. `test/reset.sh`'s quick reset is gone; use `bin/ncatest prep`.
+- `scripts/localdev.sh`, `manage`, and the old scripts in `test/` and
+  `test/recipes/`, replaced by plain compose commands, a few scripts, and the
+  test harness. `test/reset.sh`'s quick reset is gone; use `reset_stack
+  --issues` (see `test/README.md`).
 - The "Replacing Live Issues" docs and `scripts/help-remove-issues.go`. The
   helper needed `find-issues`, which was removed in v6.3.0, so the process has
   been broken since then. A replacement built into NCA is planned.
@@ -70,10 +80,11 @@
 
 ### Migration
 
-- Developers: you need Go on your host for the dev tools. Create `.env` from
+- Developers: upgrade podman-compose to 1.6.0 or newer. Create `.env` from
   `.env.example`, replace your `compose.override.yml` with
-  `compose.override.example.yml`, run `make tools`, then `bin/ncadev reset`
-  or `bin/ncadev prep` to start fresh. Your old `settings` file isn't used by
-  the dev stack. To keep your issue cache, move its files into
-  `DEV-VOLS/issue-cache`. Dev NCA now lives under a path, at
-  <http://localhost:3333/nca>.
+  `compose.override.example.yml`, create its directories (`mkdir -p
+  DEV-VOLS/news/production-batches DEV-VOLS/issue-cache`), then run
+  `scripts/reset` (or `scripts/reset --issues`) and `podman compose up -d` to
+  start fresh. Your old `settings` file isn't used by the dev stack. To keep
+  your issue cache, move its files into `DEV-VOLS/issue-cache`. Dev NCA now
+  lives under a path, at <http://localhost:3333/nca>.
