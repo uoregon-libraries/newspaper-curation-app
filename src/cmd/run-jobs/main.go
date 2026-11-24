@@ -29,6 +29,17 @@ var runners struct {
 
 var isDone int32
 
+// startupScans counts the folder watchers that haven't finished their first
+// scan. Those scans queue jobs, so --exit-when-done can't consider run-jobs
+// idle until they're done. Each watcher a command runs must be counted before
+// the exit watcher starts (see countStartupScans).
+var startupScans sync.WaitGroup
+
+// idleExitDelay is how long --exit-when-done waits with no unfinished jobs
+// before quitting, in case a finishing job's follow-up work hasn't been queued
+// quite yet
+const idleExitDelay = 5 * time.Second
+
 func addRunner(r *jobs.Runner) {
 	runners.Lock()
 	runners.list = append(runners.list, r)
@@ -51,7 +62,7 @@ func done() bool {
 // Command-line options
 var opts struct {
 	cli.BaseOptions
-	ExitWhenDone bool `long:"exit-when-done" description:"Exit the application when there are no jobs left to run. Note that this may not do anything if running any operations other than the 'watchall' command."`
+	ExitWhenDone bool `long:"exit-when-done" description:"Exit the application once there are no jobs left to run (and any folder scans run at startup are done). Note that this may not do anything if running any operations other than the 'watchall' command."`
 	Verbose      bool `short:"v" long:"verbose" description:"show verbose debugging when running jobs"`
 }
 
@@ -133,29 +144,16 @@ func main() {
 	// On CTRL-C / kill, try to finish the current task before exiting
 	interrupts.TrapIntTerm(quit)
 
-	// If requested, we also have a goroutine watching the jobs table so this app
-	// can exit once all jobs are completed
-	if opts.ExitWhenDone {
-		go func() {
-			// Create a brief delay so there's time for filesystem scanning to catch
-			// anything that needs to be queued up. This is hacky, but auto-shutdown
-			// of the job runner isn't meant for production use anyway.
-			time.Sleep(time.Second * 30)
-			for {
-				var list, err = models.FindUnfinishedJobs()
-				if err != nil {
-					logger.Errorf("Unable to scan for unfinished jobs: %s", err)
-				} else if len(list) == 0 {
-					logger.Infof("All jobs complete, sending word to runners that it's quitting time")
-					quit()
-				}
-				time.Sleep(time.Second)
-			}
-		}()
-	}
-
 	var action string
 	action, args = args[0], args[1:]
+
+	// If requested, we also have a goroutine watching the jobs table so this app
+	// can exit once all jobs are completed
+	countStartupScans(action)
+	if opts.ExitWhenDone {
+		go exitWhenDone()
+	}
+
 	switch action {
 	case "requeue":
 		requeue(args)
@@ -287,14 +285,55 @@ func watchJobTypes(conf *config.Config, jobTypes ...models.JobType) {
 	r.Watch(time.Second * 10)
 }
 
+// countStartupScans counts the folder watchers the given action runs, each of
+// which scans as soon as it starts
+func countStartupScans(action string) {
+	switch action {
+	case "watchall":
+		startupScans.Add(2)
+	case "watch-page-review", "watch-scans":
+		startupScans.Add(1)
+	}
+}
+
+// exitWhenDone quits once the startup folder scans are done and there have
+// been no unfinished jobs for idleExitDelay
+func exitWhenDone() {
+	startupScans.Wait()
+
+	var idleSince time.Time
+	for !done() {
+		var list, err = models.FindUnfinishedJobs()
+		switch {
+		case err != nil:
+			logger.Errorf("Unable to scan for unfinished jobs: %s", err)
+			idleSince = time.Time{}
+		case len(list) > 0:
+			idleSince = time.Time{}
+		case idleSince.IsZero():
+			idleSince = time.Now()
+		case time.Since(idleSince) >= idleExitDelay:
+			logger.Infof("All jobs complete, sending word to runners that it's quitting time")
+			quit()
+			return
+		}
+		time.Sleep(time.Second)
+	}
+}
+
 func watchPageReview(conf *config.Config) {
 	logger.Infof("Watching page review folders")
 
 	var nextAttempt time.Time
+	var first = true
 	for !done() {
 		if time.Now().After(nextAttempt) {
 			scanPageReviewIssues(conf)
 			nextAttempt = time.Now().Add(10 * time.Minute)
+			if first {
+				startupScans.Done()
+				first = false
+			}
 		}
 
 		// Try not to eat all the CPU
@@ -306,10 +345,15 @@ func watchDigitizedScans(conf *config.Config) {
 	logger.Infof("Watching in-house digitization folders")
 
 	var nextAttempt time.Time
+	var first = true
 	for !done() {
 		if time.Now().After(nextAttempt) {
 			scanScannerIssues(conf)
 			nextAttempt = time.Now().Add(time.Hour)
+			if first {
+				startupScans.Done()
+				first = false
+			}
 		}
 
 		// Try not to eat all the CPU

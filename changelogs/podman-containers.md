@@ -33,6 +33,11 @@
   with those directories mounted don't need to be restarted.
 - Recipes keep the workers service stopped and run jobs only at set points,
   so runs are more repeatable.
+- `run-jobs --exit-when-done` exits five seconds after the last job finishes,
+  once the folder scans it runs at startup are done, instead of always
+  waiting 30 seconds before it starts checking. That makes `workonce` and
+  recipes faster, and fixes the job runner quitting before a slow startup
+  scan (e.g., with a cold issue cache) could queue anything.
 
 ### Added
 
