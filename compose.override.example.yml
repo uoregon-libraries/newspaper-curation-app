@@ -16,6 +16,9 @@
 # The named volumes keep Go's caches between runs, and keep the container's
 # binaries out of your checkout's bin/ directory.
 #
+# Note that if you don't run the various profiles, you *still* need to set all
+# required env vars. Profiled services still interpolate values, unfortunately.
+#
 # Never do this in production.
 x-nca-dev: &nca-dev
   build:
@@ -37,13 +40,11 @@ services:
   cli: *nca-dev
 
   # SFTPGo's web admin (login "admin", password "password" with the dev seed),
-  # and SFTP for test uploads. If you don't run the SFTPGo profile, you *still*
-  # need to set the env vars. Profiled services still interpolate values,
-  # unfortunately.
+  # and SFTP for test uploads.
   sftpgo:
     ports:
       - "${SFTPGO_WEB_PORT:?SFTPGO_WEB_PORT must be set}:8080"
-      - "${SFTPGO_SFTP_PORT:?SFTPGO_WEB_PORT must be set}:2022"
+      - "${SFTPGO_SFTP_PORT:?SFTPGO_SFTP_PORT must be set}:2022"
 
   # ONI production and staging
   oni-prod:
