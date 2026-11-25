@@ -1,31 +1,22 @@
-# Copy this to `compose.override.yml` for local development.
+# Copy this to `compose.override.yml`. This is dev-centric: for development it
+# can work mostly as-is.
 #
-# Overrides are for *structural* changes only: published ports, host-directory
-# volumes, and the dev build target. All configuration goes in `.env`. If you
-# need to override an environment variable that `.env` doesn't expose, fix
-# compose.yml and `.env.example` instead of muddying up your override.
+# For production, start fresh. Don't use this at all. You only want to expose a
+# limited set of services, you won't have (and don't want) the ONI services,
+# you may or may not want host-mounted volumes, etc.
 #
-# The published ports come from `.env` too, since the URLs there have to
-# agree with them. To move a service to another port, change `.env`, not this
-# file.
-#
-# Production would use an override too, but a much smaller one: publish the
-# proxy (and SFTPGo's SFTP port if it's in the stack), and redefine the news,
-# batches, and issue-cache volumes as binds to absolute paths. No dev target,
-# no source mount.
+# **Note**: overrides are for *structural* changes only, never configuration.
 
-# Dev build: web, workers, and cli run the "dev" image target with your
+# Dev magic: web, workers, and cli run the "dev" image target with your
 # checkout mounted over the app directory. The entrypoint recompiles whatever
 # binary a container runs, so the edit/compile/test loop is:
 #
 #   podman compose restart web workers
 #
-# Templates and static files are read straight from the checkout, so changes
-# there only need a page reload.
-#
 # The named volumes keep Go's caches between runs, and keep the container's
-# binaries out of your checkout's bin/ directory. Inline binds are normally
-# off-limits, but a source mount is dev-only by definition.
+# binaries out of your checkout's bin/ directory.
+#
+# Never do this in production.
 x-nca-dev: &nca-dev
   build:
     target: dev
@@ -45,25 +36,24 @@ services:
   workers: *nca-dev
   cli: *nca-dev
 
-  # SFTPGo's web admin (login "admin", password "password" with the dev
-  # seed), and SFTP for test uploads.
-  #
-  # Profiled services get interpolated even when their profile is off, so
-  # their ports use defaults (matching `.env.example`) instead of `:?`.
+  # SFTPGo's web admin (login "admin", password "password" with the dev seed),
+  # and SFTP for test uploads. If you don't run the SFTPGo profile, you *still*
+  # need to set the env vars. Profiled services still interpolate values,
+  # unfortunately.
   sftpgo:
     ports:
-      - "${SFTPGO_WEB_PORT:-8081}:8080"
-      - "${SFTPGO_SFTP_PORT:-2022}:2022"
+      - "${SFTPGO_WEB_PORT:?SFTPGO_WEB_PORT must be set}:8080"
+      - "${SFTPGO_SFTP_PORT:?SFTPGO_WEB_PORT must be set}:2022"
 
   # ONI production and staging
   oni-prod:
     ports:
-      - "${ONI_PROD_PORT:-8080}:80"
+      - "${ONI_PROD_PORT:?ONI_PROD_PORT must be set}:80"
   oni-staging:
     ports:
-      - "${ONI_STAGING_PORT:-8082}:80"
+      - "${ONI_STAGING_PORT:?ONI_STAGING_PORT must be set}:80"
 
-  # Uncomment for direct database access (e.g., a GUI client)
+  # Uncomment for direct database access
   #db:
   #  ports:
   #    - "127.0.0.1:3306:3306"
@@ -73,18 +63,9 @@ volumes:
   go-cache: {}
   dev-bin: {}
 
-  # Dev volumes live on the host, in DEV-VOLS, so you can look at and change
-  # files directly. NCA's workflow tree is DEV-VOLS/news; `batches` is the same
-  # tree's production-batches dir, separately mounted because ONI needs it.
-  # (The test stack keeps its own tree in test/fakemount; see test/README.md.)
-  # Put them anywhere you like: scripts/reset and scripts/savepoint ask podman
-  # where they are.
-  #
-  # These are bind mounts: the directories must exist before the stack starts
-  # (see the Developer's Guide), and removing the volumes won't delete their
-  # contents. driver_opts
-  # are baked in when a volume is created, so if you move these directories
-  # (or your checkout), remove these volumes.
+  # Redefine the volumes we want mounted locally so we aren't trying to
+  # redefine everything service-by-service. Stick to DEV-VOLS unless you really
+  # can't: it's what we ignore for git and docker, and what docs assume.
   news:
     driver: local
     driver_opts:
@@ -96,11 +77,11 @@ volumes:
     driver_opts:
       type: none
       o: bind
-      device: ${PWD}/DEV-VOLS/news/production-batches
+      device: ${PWD}/DEV-VOLS/batches
 
-  # The issue cache lives on the host so wiping the stack doesn't mean a long
-  # (10+ minute) wait while NCA rebuilds it from the live site. The test stack
-  # copies it to start its own cache.
+  # The issue cache lives on the host so wiping the stack, even with `podman
+  # compose down -v`, doesn't mean a long (10+ minute) wait while NCA rebuilds
+  # it from the live site. The test stack copies this to start its own cache.
   issue-cache:
     driver: local
     driver_opts:
