@@ -111,13 +111,13 @@ volumes:
     driver_opts:
       type: none
       o: bind
-      device: /mnt/news
+      device: /path/to/nca/volumes/news
   batches:
     driver: local
     driver_opts:
       type: none
       o: bind
-      device: /mnt/news/production-batches
+      device: /path/to/nca/volumes/batches
   issue-cache:
     driver: local
     driver_opts:
