@@ -36,7 +36,8 @@ stage goes wrong, you can see what it did and repeat any step by hand.
 After each stage, the recipe makes a save point named for the stage and run
 (e.g., `02-baseline`). Running the recipe again with the same name restores
 the last save point and picks up from there, so an interrupted run doesn't
-start over. To repeat a stage, delete its save point (and any later ones) from
+start over. A save point whose save was interrupted is skipped, so that stage
+runs again. To repeat a stage, delete its save point (and any later ones) from
 `test/var/savepoints`.
 
 Everything the recipe runs is logged to `test/var/logs/recipe-<name>.log`.

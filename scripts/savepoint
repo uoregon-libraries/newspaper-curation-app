@@ -13,6 +13,10 @@
 # Save points go in backup/<name>, or $NCA_SAVEPOINTS/<name>. The stack has
 # to stop while it's saved or restored, and is left stopped. To work on a
 # stack other than the dev stack, see scripts/lib/stack.sh.
+#
+# A save writes the save point's manifest, the list of its files, last. A
+# save point without one is from a save that didn't finish, and restoring
+# refuses it, as it does one that's missing any of its files.
 
 source "$(dirname "$0")/lib/stack.sh"
 
@@ -34,18 +38,27 @@ dir=${NCA_SAVEPOINTS:-backup}/$name
 save() {
   stack_down
   scan_volumes
+  if [[ ${#state_binds[@]} -eq 0 && ${#data_vols[@]} -eq 0 ]]; then
+    die "The $project stack has no state to save: its volumes don't exist until it's started"
+  fi
 
   rm -rf "$dir"
   mkdir -p "$dir"
-  local vol
+  local vol files=()
   for vol in "${!state_binds[@]}"; do
     echo "Saving $vol (${state_binds[$vol]})"
     podman unshare tar -cpf "$dir/bind-$vol.tar" -C "${state_binds[$vol]}" .
+    files+=("bind-$vol.tar")
   done
   for vol in "${data_vols[@]}"; do
     echo "Saving $vol"
     podman volume export "${project}_$vol" --output "$dir/volume-$vol.tar"
+    files+=("volume-$vol.tar")
   done
+
+  # The manifest is renamed into place so that it's never half written
+  printf '%s\n' "${files[@]}" >"$dir/manifest.tmp"
+  mv "$dir/manifest.tmp" "$dir/manifest"
 
   echo
   echo "Saved the $project stack to $dir. It's stopped; start it with: ${compose[*]} up -d"
@@ -53,6 +66,23 @@ save() {
 
 restore() {
   [[ -d $dir ]] || die "No save point in $dir"
+  if [[ ! -f $dir/manifest ]]; then
+    die "$dir is incomplete (it has no manifest), probably from an interrupted save: save it again, or delete it"
+  fi
+
+  local files=() file vol saved_binds=() saved_vols=()
+  mapfile -t files <"$dir/manifest"
+  for file in "${files[@]}"; do
+    if [[ ! $file =~ ^(bind|volume)-([A-Za-z0-9_][A-Za-z0-9_.-]*)\.tar$ ]]; then
+      die "$dir/manifest lists \"$file\", which isn't a save point file"
+    fi
+    if [[ ${BASH_REMATCH[1]} == bind ]]; then
+      saved_binds+=("${BASH_REMATCH[2]}")
+    else
+      saved_vols+=("${BASH_REMATCH[2]}")
+    fi
+    [[ -f $dir/$file ]] || die "$dir is missing $file, so it can't be restored"
+  done
 
   # The stack's volumes have to exist to say where its directories are
   "${compose[@]}" up --no-start
@@ -60,11 +90,7 @@ restore() {
 
   # Make sure every saved directory has somewhere to go before deleting
   # anything
-  local tarfile vol
-  for tarfile in "$dir"/bind-*.tar; do
-    [[ -e $tarfile ]] || continue
-    vol=$(basename "$tarfile" .tar)
-    vol=${vol#bind-}
+  for vol in "${saved_binds[@]}"; do
     if [[ -z ${state_binds[$vol]:-} ]]; then
       die "The save point has $vol as a directory, but the stack doesn't bind $vol to one"
     fi
@@ -72,20 +98,14 @@ restore() {
 
   wipe_state
 
-  for tarfile in "$dir"/bind-*.tar; do
-    [[ -e $tarfile ]] || continue
-    vol=$(basename "$tarfile" .tar)
-    vol=${vol#bind-}
+  for vol in "${saved_binds[@]}"; do
     echo "Restoring $vol (${state_binds[$vol]})"
-    podman unshare tar -xpf "$tarfile" -C "${state_binds[$vol]}"
+    podman unshare tar -xpf "$dir/bind-$vol.tar" -C "${state_binds[$vol]}"
   done
-  for tarfile in "$dir"/volume-*.tar; do
-    [[ -e $tarfile ]] || continue
-    vol=$(basename "$tarfile" .tar)
-    vol=${vol#volume-}
+  for vol in "${saved_vols[@]}"; do
     echo "Restoring $vol"
     podman volume create --label "io.podman.compose.project=$project" "${project}_$vol" >/dev/null
-    podman volume import "${project}_$vol" "$tarfile"
+    podman volume import "${project}_$vol" "$dir/volume-$vol.tar"
   done
 
   echo

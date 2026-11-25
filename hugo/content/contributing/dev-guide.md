@@ -204,7 +204,8 @@ again without sudo.
 `scripts/savepoint save <name>` saves the stack's state (the workflow tree and
 every data volume) to `backup/<name>`, and `scripts/savepoint restore <name>`
 puts it back. This is handy for repeating something from the same starting
-point. Both stop the stack, and leave it stopped.
+point. Both stop the stack, and leave it stopped. If a save is interrupted,
+`restore` refuses that save point, rather than restoring part of it.
 
 ### Existing dev environments
 

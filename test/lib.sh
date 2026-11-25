@@ -158,15 +158,18 @@ run_recipe() {
 
   _show test/stack/compose --profile tools build
 
-  # Pick up after the last stage that has a save point
+  # Pick up after the last stage that has a complete save point (see
+  # scripts/savepoint)
   local i sp start=0
   for ((i = ${#_stage_funcs[@]} - 1; i >= 0; i--)); do
     sp=$(printf '%02d-%s' "$i" "$run")
-    if [[ -d $_nca_root/test/var/savepoints/$sp ]]; then
+    if [[ -f $_nca_root/test/var/savepoints/$sp/manifest ]]; then
       printf '\nFound save point %s; restoring it to skip ahead\n' "$sp"
       savepoint restore "$sp"
       start=$((i + 1))
       break
+    elif [[ -d $_nca_root/test/var/savepoints/$sp ]]; then
+      printf '\nSkipping save point %s: it has no manifest, so its save was interrupted\n' "$sp"
     fi
   done
 
