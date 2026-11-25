@@ -39,12 +39,10 @@ networks:
   oni-prod: {}
 
 # Settings for every NCA service (web, workers, cli). They override the
-# image's settings file (settings-example, verbatim), so only what varies by
-# environment or must match the stack's layout is set here.
-# NCA's settings: the image's settings file is settings-example, and these
-# override it. Every setting that can differ between environments is here,
-# interpolated from .env. Binary paths, workflow paths, template paths, and
-# internal service addresses aren't: the image and this file fix those.
+# image's settings file (settings-example, verbatim). Every setting that can
+# differ between environments is here, interpolated from .env. Binary paths,
+# workflow paths, template paths, and internal service addresses aren't: the
+# image and this file fix those.
 x-nca-env: &nca-env
   # Public URLs, as a browser sees them. NCA may live under a path, but page
   # images are always at /images/iiif from the stack's root.
