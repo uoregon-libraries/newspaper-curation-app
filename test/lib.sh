@@ -118,6 +118,9 @@ up_for_recipe() {
     return 1
   fi
   _show test/stack/compose up -d "${services[@]}"
+  # Create the workers container without starting it, so "stop" and "down"
+  # find one instead of complaining
+  _show test/stack/compose up --no-start workers
 }
 
 # run_recipe runs the recipe's stages, then writes a report (see the

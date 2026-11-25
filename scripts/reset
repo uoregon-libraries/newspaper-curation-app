@@ -56,6 +56,10 @@ if [[ ${#services[@]} -eq 0 ]]; then
 fi
 "${compose[@]}" up -d "${services[@]}"
 
+# Create NCA's containers without starting them, so later "stop" and "down"
+# commands find a container for every service instead of complaining
+"${compose[@]}" up --no-start
+
 # "run" doesn't build a missing image the way "up" does
 if ! podman image exists "localhost/${project}_cli"; then
   "${compose[@]}" --profile tools build cli

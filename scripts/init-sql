@@ -7,31 +7,32 @@
 # your dev stack's. Rebuild your stacks' db images afterward to use the new
 # snapshot, e.g., "podman compose build db".
 
-set -euo pipefail
+NCA_COMPOSE=test/stack/compose
+NCA_PROJECT=nca-test
+source "$(dirname "$0")/lib/stack.sh"
 
-cd "$(dirname "$0")/.."
-export PODMAN_COMPOSE_WARNING_LOGS=${PODMAN_COMPOSE_WARNING_LOGS:-false}
-
-stack=test/stack/compose
-
-$stack down
-for vol in nca-test_db nca-test_locks; do
-  if podman volume exists "$vol"; then
-    podman volume rm "$vol" >/dev/null
+stack_down
+for vol in db locks; do
+  if podman volume exists "${project}_$vol"; then
+    podman volume rm "${project}_$vol" >/dev/null
   fi
 done
 
-$stack up -d db
+# Create every container, so "down" finds one for each service, but only
+# start the database
+"${compose[@]}" up --no-start
+"${compose[@]}" up -d db
+
 # "run" doesn't build a missing image the way "up" does
-if ! podman image exists localhost/nca-test_cli; then
-  $stack --profile tools build cli
+if ! podman image exists "localhost/${project}_cli"; then
+  "${compose[@]}" --profile tools build cli
 fi
-$stack --profile tools run --rm --no-deps -T cli migrate
+"${compose[@]}" --profile tools run --rm --no-deps -T cli migrate
 
 # shellcheck disable=SC2016 # the variables are the db container's
-$stack exec -T db sh -c \
+"${compose[@]}" exec -T db sh -c \
   'MYSQL_PWD=$MARIADB_PASSWORD exec mariadb-dump -u"$MARIADB_USER" --databases "$MARIADB_DATABASE" --routines --triggers' \
   >docker/init.sql
-$stack down
+stack_down
 
 echo "Wrote docker/init.sql. Rebuild your stacks' db images to use it, e.g., \"podman compose build db\"."

@@ -29,6 +29,16 @@ die() {
   exit 1
 }
 
+# stack_down stops the stack and removes its containers. compose's "down"
+# complains about every service that doesn't have a container, so it's
+# skipped when none do. (That's also why scripts here create containers for
+# services they don't start: see "up --no-start" in scripts/reset.)
+stack_down() {
+  if [[ -n $(podman ps -aq --filter "label=io.podman.compose.project=$project") ]]; then
+    "${compose[@]}" down
+  fi
+}
+
 # Volumes that aren't the stack's state: Go's caches, the dev image's
 # compiled binaries, and NCA's issue cache (it can be rebuilt, just slowly)
 skip_volumes=" go-cache dev-bin issue-cache "
@@ -96,7 +106,7 @@ scan_volumes() {
 # the mounts need them. Containers can write files that only root in
 # podman's user namespace can delete, hence "podman unshare".
 wipe_state() {
-  "${compose[@]}" down
+  stack_down
   scan_volumes
 
   local name dir
