@@ -88,7 +88,7 @@
 - Developers: upgrade podman-compose to 1.6.0 or newer. Create `.env` from
   `.env.example`, replace your `compose.override.yml` with
   `compose.override.example.yml`, create its directories (`mkdir -p
-  DEV-VOLS/news/production-batches DEV-VOLS/issue-cache`), then run
+  DEV-VOLS/news DEV-VOLS/batches DEV-VOLS/issue-cache`), then run
   `scripts/reset` (or `scripts/reset --issues`) and `podman compose up -d` to
   start fresh. Your old `settings` file isn't used by the dev stack. To keep
   your issue cache, move its files into `DEV-VOLS/issue-cache`. Dev NCA now

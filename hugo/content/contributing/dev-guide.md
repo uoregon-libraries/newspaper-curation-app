@@ -64,7 +64,7 @@ collisions (e.g., a `DB_PASSWORD` from some other project).
 ### Start the stack
 
 ```bash
-mkdir -p DEV-VOLS/news/production-batches DEV-VOLS/issue-cache
+mkdir -p DEV-VOLS/news DEV-VOLS/batches DEV-VOLS/issue-cache
 podman compose up -d
 ```
 
@@ -73,7 +73,7 @@ to exist before the stack starts: podman won't create them. The first `up`
 builds the images, which is slow. NCA migrates its database whenever it
 starts.
 
-Once it's up, with the default ports:
+Once it's up, with `.env.example`'s ports:
 
 - NCA: <http://localhost:3333/nca>. Dev runs in debug mode
   (`NCA_DEBUG=true`), so you pick who you are with a query parameter: e.g.,
