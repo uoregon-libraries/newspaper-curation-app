@@ -58,6 +58,11 @@
   and the dev override publishes services on those same ports, so URLs and
   ports can't drift apart. `NCA_URL_PATH` puts NCA under a path (e.g.,
   `/nca`) while page images stay at `/images/iiif`.
+- Every setting that can differ between environments can be set in `.env`,
+  including the MARC locations (now required), JP2 quality, DPIs, the
+  minimum issue pages, and the SFTPGo quota for new publishers. Binary paths,
+  workflow paths, template paths, and internal service addresses are fixed
+  by the image and `compose.yml`.
 - A rootless podman systemd user unit for the stack (`docker/nca@.service`)
   and a "Containers" page in the setup docs.
 

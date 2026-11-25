@@ -86,8 +86,11 @@ ProxyPassReverse /images/iiif http://127.0.0.1:8080/images/iiif
 
 NCA itself reads its usual settings file: the image contains
 `settings-example` verbatim, and `compose.yml` overrides values with `NCA_*`
-environment variables (NCA's normal environment override mechanism). If a
-setting you need to change isn't exposed, add it to `x-nca-env` in
+environment variables (NCA's normal environment override mechanism). Every
+setting that can differ between environments is exposed this way, so `.env`
+is all you configure. The rest (binary paths, workflow paths, template paths,
+and internal service addresses) are fixed by the image and `compose.yml`. If
+a setting you need to change isn't exposed, add it to `x-nca-env` in
 `compose.yml` and to `.env.example`, rather than working around it.
 
 `compose.override.yml` is for structural changes only: published ports and

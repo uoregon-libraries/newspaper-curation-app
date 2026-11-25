@@ -41,6 +41,10 @@ networks:
 # Settings for every NCA service (web, workers, cli). They override the
 # image's settings file (settings-example, verbatim), so only what varies by
 # environment or must match the stack's layout is set here.
+# NCA's settings: the image's settings file is settings-example, and these
+# override it. Every setting that can differ between environments is here,
+# interpolated from .env. Binary paths, workflow paths, template paths, and
+# internal service addresses aren't: the image and this file fix those.
 x-nca-env: &nca-env
   # Public URLs, as a browser sees them. NCA may live under a path, but page
   # images are always at /images/iiif from the stack's root.
@@ -66,6 +70,18 @@ x-nca-env: &nca-env
   NCA_MAX_BATCH_SIZE: ${MAX_BATCH_SIZE:-10000}
   NCA_DURATION_ISSUE_CONSIDERED_DANGEROUS: ${DURATION_ISSUE_CONSIDERED_DANGEROUS:-48h}
   NCA_DURATION_ISSUE_CONSIDERED_NEW: ${DURATION_ISSUE_CONSIDERED_NEW:-336h}
+  NCA_MINIMUM_ISSUE_PAGES: ${MINIMUM_ISSUE_PAGES:-2}
+  NCA_SFTPGO_NEW_USER_QUOTA: ${SFTPGO_NEW_USER_QUOTA:-5gb}
+
+  # New titles' MARC records. These have no defaults here because
+  # podman-compose can't put "}" (as in "{{lccn}}") in one.
+  NCA_MARC_LOCATION_1: ${MARC_LOCATION_1:?MARC_LOCATION_1 must be set}
+  NCA_MARC_LOCATION_2: ${MARC_LOCATION_2:?MARC_LOCATION_2 must be set}
+
+  # Derivatives
+  NCA_DPI: ${DPI:-200}
+  NCA_QUALITY: ${QUALITY:-62.5}
+  NCA_SCANNED_PDF_DPI: ${SCANNED_PDF_DPI:-150}
 
   # Layout: settings-example's paths already match the "news" volume, except
   # production batches, which live in their own volume since ONI needs them
