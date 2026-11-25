@@ -5,22 +5,24 @@
 #   each value is set in one place. Required values use `:?`, so the stack
 #   refuses to start without them. Never set environment variables in
 #   compose.override.yml; it's only for structural changes (published ports,
-#   host-directory volumes, the dev build target). If a setting you need isn't
-#   exposed here, add it here and to `.env.example`.
-# - This targets podman (podman-compose 1.6.0 or newer, and the k8s-file log
-#   driver). Older podman-compose ignores COMPOSE_PROFILES; on a server stuck
-#   with one, run compose via `scripts/compose`, which works around it.
-# - Every service writes stdout/stderr to its own file in CONTAINER_LOG_DIR,
-#   so logs survive `down` and container recreation.
+#   host-directory volumes, logging, the dev build target). If a setting you
+#   need isn't exposed here, add it here and to `.env.example`.
+# - This targets podman (podman-compose 1.6.0 or newer). Older podman-compose
+#   ignores COMPOSE_PROFILES; on a server stuck with one, run compose via
+#   `scripts/compose`, which works around it.
+# - Logging is up to the override. Production's sends each service to its own
+#   log file (see "Containers" in the docs, hugo/content/setup/containers.md),
+#   so logs survive `down` and container recreation. Dev uses podman's default
+#   log driver, so `podman compose logs` works, but nothing piles up.
 # - Long-running services use `restart: always`, not "unless-stopped":
 #   podman-restart.service only honors "always".
 # - Every mount is a top-level named volume. Environments that need host
 #   directories redefine the volume in their override (see
 #   compose.override.example.yml) rather than adding inline binds here.
 # - Shared settings use YAML merge keys (`<<: *nca`), *not* `extends`:
-#   podman-compose's `extends` shallow-copies, so nested maps like
-#   `logging.options` leak between services. `<<:` merges one level deep: a
-#   service that sets `environment:` must start it with `<<: *nca-env`.
+#   podman-compose's `extends` shallow-copies, so nested maps leak between
+#   services. `<<:` merges one level deep: a service that sets `environment:`
+#   must start it with `<<: *nca-env`.
 #
 # Profiles (set COMPOSE_PROFILES in `.env`):
 #
@@ -113,10 +115,6 @@ services:
   # requirements around authentication.
   proxy:
     restart: always
-    logging:
-      driver: k8s-file
-      options:
-        path: ${CONTAINER_LOG_DIR:?CONTAINER_LOG_DIR must be set}/proxy.log
     build:
       context: .
       dockerfile: docker/Dockerfile-caddy
@@ -133,10 +131,6 @@ services:
   web:
     <<: *nca
     restart: always
-    logging:
-      driver: k8s-file
-      options:
-        path: ${CONTAINER_LOG_DIR:?CONTAINER_LOG_DIR must be set}/web.log
     command: ["server"]
     environment:
       <<: *nca-env
@@ -150,10 +144,6 @@ services:
   workers:
     <<: *nca
     restart: always
-    logging:
-      driver: k8s-file
-      options:
-        path: ${CONTAINER_LOG_DIR:?CONTAINER_LOG_DIR must be set}/workers.log
     command: ["run-jobs", "watchall"]
     depends_on:
       - db
@@ -167,18 +157,10 @@ services:
   cli:
     <<: *nca
     profiles: [tools]
-    logging:
-      driver: k8s-file
-      options:
-        path: ${CONTAINER_LOG_DIR:?CONTAINER_LOG_DIR must be set}/cli.log
     command: ["echo", "Usage: podman compose --profile tools run --rm --no-deps cli <command> [args...]"]
 
   db:
     restart: always
-    logging:
-      driver: k8s-file
-      options:
-        path: ${CONTAINER_LOG_DIR:?CONTAINER_LOG_DIR must be set}/db.log
     build:
       context: .
       dockerfile: docker/Dockerfile-db
@@ -195,10 +177,6 @@ services:
   # RAIS: serves the workflow's JP2s to NCA's metadata pages
   iiif:
     restart: always
-    logging:
-      driver: k8s-file
-      options:
-        path: ${CONTAINER_LOG_DIR:?CONTAINER_LOG_DIR must be set}/iiif.log
     image: docker.io/uolibraries/rais:4-alpine
     environment:
       RAIS_IIIFBASEURL: ${PUBLIC_URL:?PUBLIC_URL must be set}
@@ -216,10 +194,6 @@ services:
   sftpgo:
     profiles: [sftpgo]
     restart: always
-    logging:
-      driver: k8s-file
-      options:
-        path: ${CONTAINER_LOG_DIR:?CONTAINER_LOG_DIR must be set}/sftpgo.log
     build:
       context: .
       dockerfile: docker/Dockerfile-sftpgo
@@ -242,10 +216,6 @@ services:
 
   oni-agent-staging:
     profiles: [local-dev]
-    logging:
-      driver: k8s-file
-      options:
-        path: ${CONTAINER_LOG_DIR:?CONTAINER_LOG_DIR must be set}/oni-agent-staging.log
     build:
       context: .
       dockerfile: docker/Dockerfile-oni
@@ -268,10 +238,6 @@ services:
 
   oni-agent-prod:
     profiles: [local-dev]
-    logging:
-      driver: k8s-file
-      options:
-        path: ${CONTAINER_LOG_DIR:?CONTAINER_LOG_DIR must be set}/oni-agent-prod.log
     build:
       context: .
       dockerfile: docker/Dockerfile-oni
@@ -294,10 +260,6 @@ services:
 
   oni-staging:
     profiles: [local-dev]
-    logging:
-      driver: k8s-file
-      options:
-        path: ${CONTAINER_LOG_DIR:?CONTAINER_LOG_DIR must be set}/oni-staging.log
     build:
       context: .
       dockerfile: docker/Dockerfile-oni
@@ -318,10 +280,6 @@ services:
 
   oni-staging-db:
     profiles: [local-dev]
-    logging:
-      driver: k8s-file
-      options:
-        path: ${CONTAINER_LOG_DIR:?CONTAINER_LOG_DIR must be set}/oni-staging-db.log
     image: docker.io/library/mariadb:10.6
     environment:
       MYSQL_ROOT_PASSWORD: "123456"
@@ -337,10 +295,6 @@ services:
 
   oni-staging-solr:
     profiles: [local-dev]
-    logging:
-      driver: k8s-file
-      options:
-        path: ${CONTAINER_LOG_DIR:?CONTAINER_LOG_DIR must be set}/oni-staging-solr.log
     image: docker.io/library/solr:8-slim
     command: ["solr-precreate", "openoni"]
     volumes:
@@ -352,10 +306,6 @@ services:
 
   oni-prod:
     profiles: [local-dev]
-    logging:
-      driver: k8s-file
-      options:
-        path: ${CONTAINER_LOG_DIR:?CONTAINER_LOG_DIR must be set}/oni-prod.log
     build:
       context: .
       dockerfile: docker/Dockerfile-oni
@@ -376,10 +326,6 @@ services:
 
   oni-prod-db:
     profiles: [local-dev]
-    logging:
-      driver: k8s-file
-      options:
-        path: ${CONTAINER_LOG_DIR:?CONTAINER_LOG_DIR must be set}/oni-prod-db.log
     image: docker.io/library/mariadb:10.6
     environment:
       MYSQL_ROOT_PASSWORD: "123456"
@@ -395,10 +341,6 @@ services:
 
   oni-prod-solr:
     profiles: [local-dev]
-    logging:
-      driver: k8s-file
-      options:
-        path: ${CONTAINER_LOG_DIR:?CONTAINER_LOG_DIR must be set}/oni-prod-solr.log
     image: docker.io/library/solr:8-slim
     command: ["solr-precreate", "openoni"]
     volumes:
@@ -412,10 +354,6 @@ services:
   # production ONI's, so staging's page images come through production too.
   oni-iiif:
     profiles: [local-dev]
-    logging:
-      driver: k8s-file
-      options:
-        path: ${CONTAINER_LOG_DIR:?CONTAINER_LOG_DIR must be set}/oni-iiif.log
     image: docker.io/uolibraries/rais:4-alpine
     environment:
       RAIS_IIIFBASEURL: ${ONI_PROD_URL:-}

@@ -13,7 +13,7 @@
 #
 # - writes the test stack's env file, test/var/stack.env
 # - unsets shell variables compose would use instead of the env file's
-# - creates the host directories the stack's volumes and logs need
+# - creates the host directories the stack's volumes need
 # - copies the dev stack's issue cache to start the test stack's, so NCA
 #   doesn't spend ten minutes or more building one
 
@@ -87,10 +87,9 @@ done < <(
   compgen -e | grep '^COMPOSE_' || true
 )
 
-# Bind mounts need their directories (see test/stack/compose.yml), and
-# containers won't start without their log directory (CONTAINER_LOG_DIR)
+# Bind mounts need their directories (see test/stack/compose.yml)
 cache=test/var/issue-cache
-mkdir -p test/fakemount/production-batches "$cache" test/var/logs
+mkdir -p test/fakemount/production-batches "$cache"
 
 # The first time, the issue cache starts as a copy of the dev stack's, minus
 # its finder cache, which describes the dev stack's workflow tree. The dev

@@ -12,10 +12,6 @@
 COMPOSE_PROJECT_NAME=nca-test
 COMPOSE_PROFILES=local-dev,sftpgo
 
-# Everything the test stack keeps on the host is in test/var, except the
-# workflow tree (test/fakemount; see test/stack/compose.yml)
-CONTAINER_LOG_DIR=${PWD}/test/var/logs
-
 # Ports that won't collide with the dev stack's
 PUBLIC_SCHEME=http
 PUBLIC_PORT=4333

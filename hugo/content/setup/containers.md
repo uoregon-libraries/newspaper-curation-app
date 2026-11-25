@@ -18,7 +18,8 @@ a proven recipe.
 
 - Rootless [Podman](https://podman.io/) and
   [podman-compose](https://github.com/containers/podman-compose). The setup
-  uses podman's `k8s-file` log driver, so Docker won't work.
+  is built for podman (the systemd unit, `scripts/compose`, and the log files
+  below all assume it), so Docker isn't supported.
 - Two [Open ONI][oni] sites (staging and production), each with an [ONI
   Agent][agent] the NCA host can reach
 - An authenticating proxy (e.g., Apache) in front of the stack. See
@@ -93,9 +94,9 @@ and internal service addresses) are fixed by the image and `compose.yml`. If
 a setting you need to change isn't exposed, add it to `x-nca-env` in
 `compose.yml` and to `.env.example`, rather than working around it.
 
-`compose.override.yml` is for structural changes only: published ports and
-volumes bound to host directories. A production override might look like
-this:
+`compose.override.yml` is for structural changes only: published ports,
+volumes bound to host directories, and logging. A production override might
+look like this:
 
 ```yaml
 services:
@@ -104,6 +105,42 @@ services:
   proxy:
     ports:
       - "127.0.0.1:8080:80"
+    logging:
+      driver: k8s-file
+      options:
+        path: /path/to/nca/logs/proxy.log
+
+  # Every other service you run gets its own log file, too (see Logs)
+  web:
+    logging:
+      driver: k8s-file
+      options:
+        path: /path/to/nca/logs/web.log
+  workers:
+    logging:
+      driver: k8s-file
+      options:
+        path: /path/to/nca/logs/workers.log
+  cli:
+    logging:
+      driver: k8s-file
+      options:
+        path: /path/to/nca/logs/cli.log
+  db:
+    logging:
+      driver: k8s-file
+      options:
+        path: /path/to/nca/logs/db.log
+  iiif:
+    logging:
+      driver: k8s-file
+      options:
+        path: /path/to/nca/logs/iiif.log
+  sftpgo:
+    logging:
+      driver: k8s-file
+      options:
+        path: /path/to/nca/logs/sftpgo.log
 
 volumes:
   news:
@@ -127,7 +164,8 @@ volumes:
 ```
 
 Use absolute paths, not `${PWD}`: `driver_opts` are baked in when a volume is
-created, so a bad path sticks until you remove the volume.
+created, so a bad path sticks until you remove the volume. Giving a service
+from a disabled profile (e.g., `sftpgo`) a log file doesn't enable it.
 
 Variables exported in the shell override `.env`, so be careful running
 compose from an environment that sets things like `DB_PASSWORD`.
@@ -182,12 +220,20 @@ hides them otherwise.
 
 ## Logs
 
-Every service writes stdout/stderr to its own file in `CONTAINER_LOG_DIR`
-(`web.log`, `workers.log`, etc.), so logs survive container recreation. The
-directory must be an absolute path and must already exist, or containers
-won't start. Keep it outside the checkout and rotate the files, e.g., with
-logrotate's `copytruncate`. Don't also set a podman log size limit: when a
-file hits it, conmon empties the file, which fights logrotate.
+`compose.yml` leaves logging to the override, so dev gets podman's default
+log driver (usually journald), and doesn't collect log files. The production
+override example sends each service's stdout/stderr to its own file instead,
+so logs survive container recreation. `podman compose logs` reads either.
+
+For log files:
+
+- The directory must be an absolute path and must already exist, or
+  containers won't start. Keep it outside the checkout.
+- Rotate the files, e.g., with logrotate's `copytruncate`. Don't also set a
+  podman log size limit: when a file hits it, conmon empties the file, which
+  fights logrotate.
+- A service the override doesn't give a log file uses podman's default
+  driver, so give one to any service you add.
 
 ## Running commands
 

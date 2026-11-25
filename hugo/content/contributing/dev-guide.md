@@ -19,8 +19,9 @@ production differ only in configuration (`.env`) and a small override file.
 - [Podman](https://podman.io/) and
   [podman-compose](https://github.com/containers/podman-compose) 1.6.0 or
   newer (older versions ignore `COMPOSE_PROFILES`; see [Profiles](#profiles)).
-  The stack relies on podman features (rootless containers and the `k8s-file`
-  log driver), so Docker won't work.
+  The scripts (`scripts/reset`, `scripts/savepoint`, and the test stack's)
+  call podman directly, and rely on rootless podman to keep the files
+  containers write on your host owned by you, so Docker isn't supported.
 - Optionally, a supported version of [Go](https://golang.org/dl/), for editor
   tooling, running `make validate` / `make test` outside a container, etc. NCA
   itself is compiled in its containers.
@@ -140,9 +141,9 @@ podman compose stop workers
 podman compose --profile tools run --rm --no-deps cli run-jobs -v --exit-when-done watchall
 ```
 
-Each service logs to its own file in `logs/` (`web.log`, `workers.log`,
-etc.), so `tail -f logs/web.log logs/workers.log` is the easiest way to see
-what NCA is doing. `podman compose logs` works too.
+`podman compose logs -f web workers` is the easiest way to see what NCA is
+doing. Dev doesn't keep log files: logs go wherever podman's default log
+driver puts them (usually journald).
 
 If you type some of these a lot, make shell aliases for them.
 

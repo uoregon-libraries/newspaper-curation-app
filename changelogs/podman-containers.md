@@ -6,10 +6,13 @@
   and rebuild from it whenever they start. See the Developer's Guide.
 - The compose setup was rebuilt to work for production as well as dev,
   modeled on our other podman stacks: all configuration in `.env`,
-  production-minded defaults (no published ports, restart policies,
-  per-service log files), named volumes only, and profiles for optional
-  services (`sftpgo`, `local-dev` for the demo ONI stacks, and `tools` for a
-  `cli` service).
+  production-minded defaults (no published ports, restart policies), named
+  volumes only, and profiles for optional services (`sftpgo`, `local-dev` for
+  the demo ONI stacks, and `tools` for a `cli` service).
+- Logging is up to the compose override. The production example in the
+  "Containers" docs gives each service its own log file; dev uses podman's
+  default log driver, so it doesn't collect log files. Use `podman compose
+  logs` to see dev logs.
 - The compose setup requires podman and podman-compose; Docker is no longer
   supported. Dev needs podman-compose 1.6.0 or newer, since older versions
   ignore `COMPOSE_PROFILES`. Servers stuck with an older version can run

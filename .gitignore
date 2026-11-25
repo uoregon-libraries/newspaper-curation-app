@@ -13,7 +13,3 @@
 
 /test/*-report/
 /mysql-export/
-
-# Container logs (CONTAINER_LOG_DIR) for dev; the dir has to exist
-/logs/*
-!/logs/.keep
